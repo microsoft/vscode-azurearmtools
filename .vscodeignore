@@ -1,0 +1,12 @@
+.gitignore
+.vscode/**
+*.cmd
+**/*.map
+images/*.svg
+out/test/**
+README.dev.md
+src/**
+test/**
+tsconfig.json
+tsd.json
+typings/**
