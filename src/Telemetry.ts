@@ -7,6 +7,7 @@ import * as assert from "assert";
 import * as fs from "fs";
 import * as path from "path";
 
+import { reporter } from "./VSCodeTelReporter";
 import * as utilities from "./Utilities";
 
 /**
@@ -128,6 +129,35 @@ export class ApplicationInsights extends Endpoint {
             this._client.sendPendingData();
         }
     }
+}
+
+export class VSCode extends Endpoint {
+    public log(event: Event): void {
+        if (reporter) {
+            let properties: { [key: string]: string } = undefined;
+            let measurements: { [key: string]: number } = undefined;
+    
+            for (let propertyName in event) {
+                if (propertyName !== "eventName") {
+                    let propertyValue = event[propertyName];
+                    if (typeof propertyValue === "string") {
+                        if (!properties) {
+                            properties = {};
+                        }
+                        properties[propertyName] = propertyValue;
+                    }
+                    else if (typeof propertyValue === "number") {
+                        if (!measurements) {
+                            measurements = {};
+                        }
+                        measurements[propertyName] = propertyValue;
+                    }
+                }
+            }
+
+            reporter.sendTelemetryEvent(event.eventName, properties, measurements);
+        }
+    }        
 }
 
 /**
