@@ -19,6 +19,7 @@ import * as language from "./Language";
 import * as Reference from "./Reference";
 import * as TLE from "./TLE";
 import * as Telemetry from "./Telemetry";
+import { Reporter } from "./VSCodeTelReporter";
 
 import { AzureRMAssets } from "./AzureRMAssets";
 import { DeploymentTemplate } from "./DeploymentTemplate";
@@ -31,6 +32,7 @@ import { SurveySettings } from "./SurveySettings";
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    context.subscriptions.push(new Reporter(context));
     context.subscriptions.push(new AzureRMTools());
 }
 
@@ -701,9 +703,7 @@ export class AzureRMTools {
             }
             else {
                 if (!this._productionTelemetry) {
-                    this._productionTelemetry = new Telemetry.PropertySetter(this.productionTelemetryProperties, new Telemetry.ApplicationInsights({
-                        instrumentationKey: "71ebf67a-f23a-4893-bafb-e7fd7a0f43d3"
-                    }));
+                    this._productionTelemetry = new Telemetry.PropertySetter(this.productionTelemetryProperties, new Telemetry.VSCode());
                 }
 
                 this._productionTelemetry.log(event);
