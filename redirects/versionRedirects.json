@@ -1,0 +1,22 @@
+[
+    {
+      "Version": "azuresdk-3.0.0",
+      "StorageContainerUri": "https://azurermtoolsprod.blob.core.windows.net/assets-azuresdk-3-0-0/"
+    },
+    {
+      "Version": "azuresdk-2.9.5.1",
+      "StorageContainerUri": "https://azurermtoolsprod.blob.core.windows.net/assets-azuresdk-2-9-5-1/"
+    },
+    {
+      "Version": "azuresdk-2.9.5",
+      "StorageContainerUri": "https://azurermtoolsprod.blob.core.windows.net/assets-azuresdk-2-9-5/"
+    },
+    {
+      "Version": "azuresdk-2.9.1",
+      "StorageContainerUri": "https://azurermtoolsprod.blob.core.windows.net/assets-azuresdk-2-9-1/"
+    },
+    {
+      "Version": "azuresdk-2.9.0",
+      "StorageContainerUri": "https://azurermtoolsprod.blob.core.windows.net/assets-azuresdk-2-9-0/"
+    }
+]
