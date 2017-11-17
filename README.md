@@ -31,18 +31,22 @@ This extension provides language support for Azure Resource Manager deployment t
 
 Press F1 in VSCode, type "ext install" and then look for "Azure Resource Manager Tools".
 
-## Feedback
+## Contributing
 
-Please post questions, comments, feature requests, or bugs at [UserVoice](https://go.microsoft.com/fwlink/?LinkID=733961).
+This project welcomes contributions and suggestions.  Most contributions require you to agree to a
+Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
+the rights to use your contribution. For details, visit https://cla.microsoft.com.
 
-## License and Privacy Statement
+When you submit a pull request, a CLA-bot will automatically determine whether you need to provide
+a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the instructions
+provided by the bot. You will only need to do this once across all repos using our CLA.
 
-Please see our [EULA](https://go.microsoft.com/fwlink/?LinkID=734037) and [Privacy Statement](https://www.visualstudio.com/en-us/dn948229).
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
+contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
-If you want to opt out of telemetry, you can do so by:
-1. Opening VS Code
-2. Select File > Preferences > User Settings
-3. Change "azurermtools.enableTelemetry" value to false.
+## Telemetry
+VS Code collects usage data and sends it to Microsoft to help improve our products and services. Read our [privacy statement](https://go.microsoft.com/fwlink/?LinkID=528096&clcid=0x409) to learn more. If you don’t wish to send usage data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false`. Learn more in our [FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
 
 ## Related Links
 
