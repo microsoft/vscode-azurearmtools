@@ -9,6 +9,12 @@
     "Linters",
     "Other"
   ],
+  "repository": {
+    "url": "https://github.com/Microsoft/vscode-azurearmtools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Microsoft/vscode-azurearmtools/issues"
+  },
   "galleryBanner": {
     "color": "E7F1FA",
     "theme": "light"
