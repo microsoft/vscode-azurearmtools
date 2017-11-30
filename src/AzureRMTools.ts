@@ -56,7 +56,7 @@ export class AzureRMTools {
 
     private productionTelemetryProperties: Telemetry.Properties = {
         productName: "azurerm-vscode-tools", // Keep this value synchronized with the name in package.json
-        productVersion: "0.3.4", // Keep this value synchronized with the version in package.json
+        productVersion: "0.3.8", // Keep this value synchronized with the version in package.json
         locale: vscode.env.language,
         machineId: vscode.env.machineId,
         sessionId: vscode.env.sessionId,

@@ -55,6 +55,10 @@ VS Code collects usage data and sends it to Microsoft to help improve our produc
 
 ## Change Log
 
+Version 0.3.8 (11/30/2017)
+- Add support for guid TLE
+- Bug fixes
+
 Version 0.3.7 (09/08/2017)
 - Add support for if, and, or, not and json TLEs
 
