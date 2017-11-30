@@ -1,0 +1,72 @@
+{
+    "id": "http://schema.azuretools.visualstudio.microsoft.com/schemas/expressionMetadata",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "expressionMetadata",
+    "type": "object",
+    "properties": {
+      "functionSignatures": {
+        "id": "http://jsonschema.net/functionSignatures",
+        "type": "array",
+        "items": {
+          "id": "http://jsonschema.net/functionSignatures/0",
+          "type": "object",
+          "properties": {
+            "name": {
+              "id": "http://jsonschema.net/functionSignatures/0/name",
+              "type": "string"
+            },
+            "expectedUsage": {
+              "id": "http://jsonschema.net/functionSignatures/0/expectedUsage",
+              "type": "string"
+            },
+            "description": {
+              "id": "http://jsonschema.net/functionSignatures/0/description",
+              "type": "string"
+            },
+            "minimumArguments": {
+              "id": "http://jsonschema.net/functionSignatures/0/minimumArguments",
+              "type": "integer",
+              "minimum": 0
+            },
+            "maximumArguments": {
+              "oneOf": [
+                {
+                  "id": "http://jsonschema.net/functionSignatures/0/maximumArguments",
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "returnValueMembers": {
+              "id": "http://jsonschema.net/functionSignatures/0/returnValueMembers",
+              "type": "array",
+              "items": {
+                "id": "http://jsonschema.net/functionSignatures/0/returnValueMembers/0",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "id": "http://jsonschema.net/functionSignatures/0/returnValueMembers/0/name",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "required": [
+            "name",
+            "expectedUsage",
+            "description",
+            "minimumArguments",
+            "maximumArguments"
+          ]
+        }
+      }
+    },
+    "required": [
+      "functionSignatures"
+    ]
+  }
+  

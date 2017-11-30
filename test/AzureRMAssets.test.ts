@@ -10,41 +10,11 @@ import { AzureRMAssets, FunctionMetadata, VersionRedirect } from "../src/AzureRM
 import { SurveyMetadata } from "../src/SurveyMetadata";
 
 suite("AzureRMAssets", () => {
-    networkTest("getVersionRedirects()", () => {
-        return AzureRMAssets.getVersionRedirects().then((versionRedirects: VersionRedirect[]) => {
-            assert(versionRedirects);
-            assert(versionRedirects.length >= 1);
-            assert(versionRedirects.some((versionRedirect: VersionRedirect) => {
-                return versionRedirect.Version === AzureRMAssets.currentPublishVersion;
-            }));
-        });
-    });
-
-    networkTest("getCurrentVersionRedirectUri()", () => {
-        return AzureRMAssets.getCurrentVersionRedirectUri().then((versionRedirectUri: string) => {
-            assert(versionRedirectUri);
-            assert.deepStrictEqual(versionRedirectUri, "https://azurermtools.blob.core.windows.net/assets-azuresdk-2-9-1/");
-        });
-    });
-
-    networkTest("getSurveyMetadataUri()", () => {
-        return AzureRMAssets.getSurveyMetadataUri().then((surveyMetadataUri: string) => {
-            assert.deepStrictEqual(surveyMetadataUri, "https://azurermtools.blob.core.windows.net/assets-azuresdk-2-9-1/SurveyMetadata.json");
-        });
-    });
-
     networkTest("getSurveyMetadata()", () => {
         return AzureRMAssets.getSurveyMetadata().then((surveyMetadata: SurveyMetadata) => {
             assert(surveyMetadata, "Expected surveyMetadata to be defined and not-null");
             assert(surveyMetadata.surveyLink);
         });
-    });
-
-    networkTest("getFunctionMetadataUri()", () => {
-        return AzureRMAssets.getFunctionMetadataUri()
-            .then((functionMetadataUri: string) => {
-                assert.deepStrictEqual(functionMetadataUri, "https://azurermtools.blob.core.windows.net/assets-azuresdk-2-9-1/ExpressionMetadata.json");
-            });
     });
 
     networkTest("getFunctionMetadata()", () => {

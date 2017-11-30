@@ -2,9 +2,9 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import * as http from "http";
+import * as fs from "fs";
+import * as path from "path";
 
-import { HttpClient } from "./HttpClient";
 import { SurveyMetadata } from "./SurveyMetadata";
 
 /**
@@ -29,7 +29,7 @@ export class AzureRMAssets {
     public static getFunctionMetadata(): Promise<FunctionMetadata[]> {
         if (AzureRMAssets._functionMetadata === undefined) {
             AzureRMAssets._functionMetadata = AzureRMAssets.getFunctionMetadataUri()
-                .then(HttpClient.get)
+                .then(AzureRMAssets.readFile)
                 .then(FunctionMetadata.fromString);
         }
         return AzureRMAssets._functionMetadata;
@@ -73,82 +73,40 @@ export class AzureRMAssets {
      */
     public static getFunctionMetadataUri(): Promise<string> {
         if (AzureRMAssets._functionMetadataUri === undefined) {
-            AzureRMAssets._functionMetadataUri = AzureRMAssets.getAssetUri("ExpressionMetadata.json");
+            AzureRMAssets._functionMetadataUri = AzureRMAssets.getLocalAssetUri("ExpressionMetadata.json"); //AzureRMAssets.getAssetUri("ExpressionMetadata.json");
         }
         return AzureRMAssets._functionMetadataUri;
     }
 
-    private static getAssetUri(assetFileName: string): Promise<string> {
-        return AzureRMAssets.getCurrentVersionRedirectUri()
-            .then((versionRedirectUri: string) => {
-                return versionRedirectUri + (versionRedirectUri.endsWith("/") ? "" : "/") + assetFileName;
-            });
+    private static getLocalAssetUri(assetFileName: string): Promise<string> {
+        return Promise.resolve<string>(path.join(__filename, "..", "..", "..", "assets", assetFileName));
+    }
+
+    private static readFile(path: string): Promise<string> {
+        return new Promise<string>((resolve, reject) => fs.readFile(path, "utf8" ,(err, data) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+
+            resolve(data);
+        }));
     }
 
     public static getSurveyMetadata(): Promise<SurveyMetadata> {
         if (AzureRMAssets._surveyMetadata === undefined) {
             AzureRMAssets._surveyMetadata = AzureRMAssets.getSurveyMetadataUri()
-                .then(SurveyMetadata.fromUrl);
+                .then(AzureRMAssets.readFile)
+                .then(SurveyMetadata.fromString);
         }
         return AzureRMAssets._surveyMetadata;
     }
 
     public static getSurveyMetadataUri(): Promise<string> {
         if (AzureRMAssets._surveyMetadataUri === undefined) {
-            AzureRMAssets._surveyMetadataUri = AzureRMAssets.getAssetUri("SurveyMetadata.json");
+            AzureRMAssets._surveyMetadataUri = AzureRMAssets.getLocalAssetUri("SurveyMetadata.json"); // AzureRMAssets.getAssetUri("SurveyMetadata.json");
         }
         return AzureRMAssets._surveyMetadataUri;
-    }
-
-    public static getCurrentVersionRedirectUri(): Promise<string> {
-        if (AzureRMAssets._currentVersionRedirectUri === undefined) {
-            AzureRMAssets._currentVersionRedirectUri = new Promise((resolve, reject) => {
-                AzureRMAssets.getVersionRedirects()
-                    .then((versionRedirects: VersionRedirect[]) => {
-                        let foundVersionRedirectForPublishVersion: boolean = false;
-                        for (const versionRedirect of versionRedirects) {
-                            if (versionRedirect.Version === AzureRMAssets.currentPublishVersion) {
-                                foundVersionRedirectForPublishVersion = true;
-                                resolve(versionRedirect.StorageContainerUri);
-                                break;
-                            }
-                        }
-
-                        if (!foundVersionRedirectForPublishVersion) {
-                            reject({
-                                message: `Could not find a version redirect for publish version '${AzureRMAssets.currentPublishVersion}'`
-                            });
-                        }
-                    })
-                    .catch((reason: any) => {
-                        reject(reason);
-                    });
-            });
-        }
-        return AzureRMAssets._currentVersionRedirectUri;
-    }
-
-    public static getVersionRedirects(): Promise<VersionRedirect[]> {
-        if (AzureRMAssets._versionRedirects === undefined) {
-            AzureRMAssets._versionRedirects = new Promise((resolve, reject) => {
-                HttpClient.get("https://azurermtoolsprod.blob.core.windows.net/redirects/versionRedirects.json")
-                    .then((content: string) => {
-                        try {
-                            resolve(JSON.parse(content.trim()));
-                        }
-                        catch (e) {
-                            reject({
-                                message: "Could not parse the versionRedirects.json file.",
-                                error: e
-                            });
-                        }
-                    })
-                    .catch((reason: any) => {
-                        reject(reason);
-                    });
-            });
-        }
-        return AzureRMAssets._versionRedirects;
     }
 }
 
