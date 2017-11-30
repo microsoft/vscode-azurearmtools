@@ -73,7 +73,7 @@ export class AzureRMAssets {
      */
     public static getFunctionMetadataUri(): Promise<string> {
         if (AzureRMAssets._functionMetadataUri === undefined) {
-            AzureRMAssets._functionMetadataUri = AzureRMAssets.getLocalAssetUri("ExpressionMetadata.json"); //AzureRMAssets.getAssetUri("ExpressionMetadata.json");
+            AzureRMAssets._functionMetadataUri = AzureRMAssets.getLocalAssetUri("ExpressionMetadata.json");
         }
         return AzureRMAssets._functionMetadataUri;
     }
@@ -104,7 +104,7 @@ export class AzureRMAssets {
 
     public static getSurveyMetadataUri(): Promise<string> {
         if (AzureRMAssets._surveyMetadataUri === undefined) {
-            AzureRMAssets._surveyMetadataUri = AzureRMAssets.getLocalAssetUri("SurveyMetadata.json"); // AzureRMAssets.getAssetUri("SurveyMetadata.json");
+            AzureRMAssets._surveyMetadataUri = AzureRMAssets.getLocalAssetUri("SurveyMetadata.json");
         }
         return AzureRMAssets._surveyMetadataUri;
     }
