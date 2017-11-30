@@ -146,7 +146,7 @@ export class AzureRMTools {
             let foundDeploymentTemplate = false;
 
             if (document.getText() &&
-                lowerCasedDocumentUri.endsWith(".json") &&
+                document.languageId.toLowerCase() === 'json' &&
                 !lowerCasedDocumentUri.startsWith("git-index:/")) {
 
                 // If the documentUri is not in our dictionary of deployment templates, then we
