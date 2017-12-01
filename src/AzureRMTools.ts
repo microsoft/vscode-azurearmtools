@@ -54,18 +54,6 @@ export class AzureRMTools {
 
     private _deploymentTemplates: { [key: string]: DeploymentTemplate } = {};
 
-    private productionTelemetryProperties: Telemetry.Properties = {
-        productName: "azurerm-vscode-tools", // Keep this value synchronized with the name in package.json
-        productVersion: "0.3.8", // Keep this value synchronized with the version in package.json
-        locale: vscode.env.language,
-        machineId: vscode.env.machineId,
-        sessionId: vscode.env.sessionId,
-        osPlatform: os.platform(),
-        osType: os.type(),
-        osArch: os.arch(),
-        osRelease: os.release()
-    };
-
     // More information can be found about this definition at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
     // Several of these properties are CSS properties. More information about those can be found at https://www.w3.org/wiki/CSS/Properties
     private _braceHighlightDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
@@ -703,7 +691,7 @@ export class AzureRMTools {
             }
             else {
                 if (!this._productionTelemetry) {
-                    this._productionTelemetry = new Telemetry.PropertySetter(this.productionTelemetryProperties, new Telemetry.VSCode());
+                    this._productionTelemetry = new Telemetry.PropertySetter(null, new Telemetry.VSCode());
                 }
 
                 this._productionTelemetry.log(event);
