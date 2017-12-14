@@ -106,11 +106,8 @@
         "minimumArguments": 0,
         "maximumArguments": 0,
         "returnValueMembers": [
-          { "name": "templateLink" },
-          { "name": "template" },
-          { "name": "parameters" },
-          { "name": "mode" },
-          { "name": "provisioningState" }
+          { "name": "name" },
+          { "name": "properties" }
         ]
       },
       {
