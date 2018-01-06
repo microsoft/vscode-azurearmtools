@@ -5,9 +5,9 @@
   "version": "0.3.8",
   "publisher": "msazurermtools",
   "categories": [
+    "Azure",
     "Languages",
-    "Linters",
-    "Other"
+    "Linters"
   ],
   "repository": {
     "url": "https://github.com/Microsoft/vscode-azurearmtools.git"
