@@ -23,6 +23,7 @@ import { Reporter } from "./VSCodeTelReporter";
 
 import { AzureRMAssets } from "./AzureRMAssets";
 import { DeploymentTemplate } from "./DeploymentTemplate";
+import { JsonOutlineProvider } from "./Treeview";
 import { Histogram } from "./Histogram";
 import { PositionContext } from "./PositionContext";
 import { Stopwatch } from "./Stopwatch";
@@ -72,6 +73,10 @@ export class AzureRMTools {
     constructor() {
         this.loadConfiguration();
 
+        const jsonOutline = new JsonOutlineProvider();
+        vscode.window.registerTreeDataProvider("json-outline", jsonOutline);
+        vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => jsonOutline.goToDefinition(range));
+        
         this.log({
             eventName: "Extension Activated"
         });
