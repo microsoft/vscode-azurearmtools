@@ -3,7 +3,6 @@ import * as vscode from "vscode";
 import { TreeItem } from "vscode";
 
 
-
 export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     private tree;
     private text: string;
@@ -77,8 +76,6 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         }
     }
 
-    
-
     public getTreeItem(element: string): vscode.TreeItem {
 
         const elementInfo: IElementInfo = JSON.parse(element);
@@ -108,10 +105,6 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             // Swap the focus to the editor
             vscode.window.showTextDocument(editor.document, editor.viewColumn, false);
     }
-  
-    //public select(range: vscode.Range) {
-    //    this.editor.selection = new vscode.Selection(range.start, range.end);
-    //}
 
     private parseTree(document?: vscode.TextDocument): void {
         document = document !== undefined ? document : vscode.window.activeTextEditor.document;
@@ -163,7 +156,6 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             return `${keyNode._value}: ${valueNode._value}`;
         }
     }
-
 
     private getElementInfo (childElement, elementInfo?: IElementInfo){
 
@@ -254,7 +246,6 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         return JSON.stringify(result);
     }
 
-
     private getIconPath(elementInfo: IElementInfo): string{
 
             let icon;
@@ -306,12 +297,8 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             if (icon){
                return (__dirname + '/../../icons/' + icon);
             }
-
-
         return;
     } 
-
-    
 }
 
 export interface IElementInfo {
