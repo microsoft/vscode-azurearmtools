@@ -66,10 +66,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                                 result.push(item);
                             }
                         }
-                        // Array contains other values
-                        else {}
                     }
-                    else {}
                 }
                 return result;
             }
