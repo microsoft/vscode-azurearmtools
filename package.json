@@ -38,7 +38,16 @@
           "description": "Allow anonymous telemetry for the Azure Resource Manager Tools extension."
         }
       }
-    }
+    },
+    "views": {
+            "explorer": [
+                {
+                    "id": "json-outline",
+                    "name": "JSON Outline",
+                    "when": "resourceLangId == json"
+                }
+            ]
+        }
   },
   "main": "./out/src/AzureRMTools",
   "scripts": {
