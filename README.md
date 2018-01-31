@@ -1,4 +1,5 @@
-# Azure Resource Manager Tools [![Build Status](https://travis-ci.org/Microsoft/vscode-azurearmtools.svg?branch=master)](https://travis-ci.org/Microsoft/vscode-azurearmtools) [![Release Status](https://img.shields.io/github/release/Microsoft/vscode-azurearmtools.svg)](https://github.com/Microsoft/vscode-azurearmtools/releases)
+# Azure Resource Manager Tools
+[![Build Status](https://travis-ci.org/Microsoft/vscode-azurearmtools.svg?branch=master)](https://travis-ci.org/Microsoft/vscode-azurearmtools) [![Release Status](https://img.shields.io/github/release/Microsoft/vscode-azurearmtools.svg)](https://github.com/Microsoft/vscode-azurearmtools/releases)
 
 This extension provides language support for Azure Resource Manager deployment templates and template language expressions.
 
