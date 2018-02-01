@@ -4,6 +4,7 @@
 This extension provides language support for Azure Resource Manager deployment templates and template language expressions.
 
 ## Features
+- JSON outline for easy navigation through large templates.
 - IntelliSense
     - [Template Language Expression (TLE) function names](https://go.microsoft.com/fwlink/?LinkID=733958)
     - [Parameter references](https://go.microsoft.com/fwlink/?LinkID=733959)
@@ -55,6 +56,9 @@ VS Code collects usage data and sends it to Microsoft to help improve our produc
 - [Azure Quickstart Templates](https://go.microsoft.com/fwlink/?LinkID=734038)
 
 ## Change Log
+
+Version 0.3.9 (02/01/2018)
+- Add JSON outline for ARM depolyment templates
 
 Version 0.3.8 (11/30/2017)
 - Add support for guid TLE
