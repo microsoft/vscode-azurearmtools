@@ -34,7 +34,7 @@ import { SurveySettings } from "./SurveySettings";
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(new Reporter(context));
-    context.subscriptions.push(new AzureRMTools());
+    context.subscriptions.push(new AzureRMTools(context));
 }
 
 // this method is called when your extension is deactivated
@@ -70,12 +70,12 @@ export class AzureRMTools {
         }
     });
 
-    constructor() {
+    constructor(context: vscode.ExtensionContext) {
         this.loadConfiguration();
 
-        const jsonOutline = new JsonOutlineProvider();
-        vscode.window.registerTreeDataProvider("json-outline", jsonOutline);
-        vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => jsonOutline.goToDefinition(range));
+        const jsonOutline = new JsonOutlineProvider(context);
+        context.subscriptions.push(vscode.window.registerTreeDataProvider("json-outline", jsonOutline));
+        context.subscriptions.push(vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => jsonOutline.goToDefinition(range)));
         
         this.log({
             eventName: "Extension Activated"
