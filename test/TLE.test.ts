@@ -4,7 +4,7 @@
 
 import * as assert from "assert";
 
-import * as Json from "../src/Json";
+import * as Json from "../src/JSON";
 import * as language from "../src/Language";
 import * as Reference from "../src/Reference";
 import * as TLE from "../src/TLE";
