@@ -111,7 +111,7 @@ export class DeploymentTemplate {
     }
 
     public hasValidSchemaUri(): boolean {
-        return DeploymentTemplate.isValidSchemaUri(this.schemaUri);
+        return Utilities.isValidSchemaUri(this.schemaUri);
     }
 
     public get errors(): Promise<language.Issue[]> {
@@ -454,10 +454,6 @@ export class DeploymentTemplate {
         }
 
         return result;
-    }
-
-    public static isValidSchemaUri(schema: string): boolean {
-        return schema ? schema.match(/https?:\/\/schema.management.azure.com\/schemas\/.*\/deploymentTemplate.json/) !== null : false;
     }
 }
 

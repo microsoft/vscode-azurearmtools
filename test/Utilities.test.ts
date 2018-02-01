@@ -274,4 +274,42 @@ suite("Utilities", () => {
             assert.deepStrictEqual(Utilities.escapeAndQuote("\very"), `"\\very"`);
         });
     });
+
+    suite("isValidSchemaUri(string)", () => {
+        test("with null", () => {
+            assert.equal(false, Utilities.isValidSchemaUri(null));
+        });
+
+        test("with undefined", () => {
+            assert.equal(false, Utilities.isValidSchemaUri(undefined));
+        });
+
+        test("with 'hello world'", () => {
+            assert.equal(false, Utilities.isValidSchemaUri("hello world"));
+        });
+
+        test("with 'www.bing.com'", () => {
+            assert.equal(false, Utilities.isValidSchemaUri("www.bing.com"));
+        });
+
+        test("with 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#'", () => {
+            assert.equal(true, Utilities.isValidSchemaUri("https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"));
+        });
+
+        test("with 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json'", () => {
+            assert.equal(true, Utilities.isValidSchemaUri("https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json"));
+        });
+
+        test("with 'http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json'", () => {
+            assert.equal(true, Utilities.isValidSchemaUri("http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json"));
+        });
+
+        test("with 'http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#'", () => {
+            assert.equal(true, Utilities.isValidSchemaUri("http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"));
+        });
+
+        test("with 'https://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#'", () => {
+            assert.equal(true, Utilities.isValidSchemaUri("https://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#"));
+        });
+    });    
 });

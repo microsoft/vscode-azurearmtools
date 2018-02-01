@@ -1,7 +1,8 @@
 import * as Json from "./JSON";
 import * as vscode from "vscode";
 import { TreeItem } from "vscode";
-
+import { ContextTagKeys } from "applicationinsights/out/Declarations/Contracts";
+import * as Utilities from "./Utilities";
 
 export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     private tree;
@@ -13,23 +14,20 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     public readonly onDidChangeTreeData: vscode.Event<string | null> = this.onDidChangeTreeDataEmitter.event;
 
     constructor(private context?: vscode.ExtensionContext) {
+        context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(() => this.updateTreeState()));
+        context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(() => this.updateTreeState()));
 
-        vscode.window.onDidChangeActiveTextEditor((ev) => {
-
-            this.refresh();
-        });
-        vscode.workspace.onDidChangeTextDocument((ev) => this.refresh(ev));
-        vscode.workspace.onDidOpenTextDocument((ev) => this.refresh());
+        setTimeout(() => {
+            // In case there is already a document opened before the extension gets loaded.
+            this.updateTreeState();
+        }, 500);
     }
 
-    public refresh(event?: vscode.TextDocumentChangeEvent) {
-
-        this.parseTree(vscode.window.activeTextEditor.document);
+    public refresh() {
         this.onDidChangeTreeDataEmitter.fire(void 0);
     }
 
     public getChildren(element?: string): string[] {
-
         // check if there is a visible text editor
         if (vscode.window.visibleTextEditors.length > 0) {
             if (vscode.window.activeTextEditor.document.languageId === 'json') {
@@ -106,15 +104,13 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     }
 
     private parseTree(document?: vscode.TextDocument): void {
-
-        if (document.languageId === "json") {
+        if (!!document && document.languageId === "json") {
             this.text = document.getText();
             this.tree = Json.parse(this.text);
         }
     }
 
     private getLabel(elementInfo): string {
-
         const keyNode = this.tree.getValueAtCharacterIndex(elementInfo.current.key.start);
 
         // Key is an object (e.g. a resource object)
@@ -156,7 +152,6 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     }
 
     private getElementInfo(childElement, elementInfo?: IElementInfo) {
-
         let collapsible = false;
         let keyIsObject = false;
 
@@ -296,6 +291,40 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             return (__dirname + '/../../icons/' + icon);
         }
         return;
+    }
+
+    private updateTreeState() {
+        const activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
+        const document: vscode.TextDocument = !!activeEditor ? activeEditor.document : null;
+        this.parseTree(document);
+        const showTreeView = this.isArmTemplate(document);
+
+        if (showTreeView) {
+            this.refresh();
+        }
+
+        this.setTreeViewContext(showTreeView);
+    }
+
+    private isArmTemplate(document?: vscode.TextDocument): boolean {
+        return !!document && document.languageId.toLowerCase() === 'json' && Utilities.isValidSchemaUri(this.getSchemaUri());
+    }
+
+    private setTreeViewContext(visible: boolean) {
+        vscode.commands.executeCommand('setContext', 'showArmJsonView', visible);
+    }
+
+    private getSchemaUri(): string {
+        if (!!this.tree) {
+            const value: Json.ObjectValue = Json.asObjectValue(this.tree.value);
+            if (value) {
+                const schema: Json.Value = Json.asStringValue(value.getPropertyValue("$schema"));
+                if (schema) {
+                    return schema.toString();
+                }
+            }
+        }
+        return null;
     }
 }
 

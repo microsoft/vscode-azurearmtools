@@ -885,44 +885,6 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual(list.spans, [new language.Span(18, 5)]);
         });
     });
-
-    suite("isValidSchemaUri(string)", () => {
-        test("with null", () => {
-            assert.equal(false, DeploymentTemplate.isValidSchemaUri(null));
-        });
-
-        test("with undefined", () => {
-            assert.equal(false, DeploymentTemplate.isValidSchemaUri(undefined));
-        });
-
-        test("with 'hello world'", () => {
-            assert.equal(false, DeploymentTemplate.isValidSchemaUri("hello world"));
-        });
-
-        test("with 'www.bing.com'", () => {
-            assert.equal(false, DeploymentTemplate.isValidSchemaUri("www.bing.com"));
-        });
-
-        test("with 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#'", () => {
-            assert.equal(true, DeploymentTemplate.isValidSchemaUri("https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"));
-        });
-
-        test("with 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json'", () => {
-            assert.equal(true, DeploymentTemplate.isValidSchemaUri("https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json"));
-        });
-
-        test("with 'http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json'", () => {
-            assert.equal(true, DeploymentTemplate.isValidSchemaUri("http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json"));
-        });
-
-        test("with 'http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#'", () => {
-            assert.equal(true, DeploymentTemplate.isValidSchemaUri("http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"));
-        });
-
-        test("with 'https://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#'", () => {
-            assert.equal(true, DeploymentTemplate.isValidSchemaUri("https://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#"));
-        });
-    });
 });
 
 suite("ReferenceInVariableDefinitionJSONVisitor", () => {
