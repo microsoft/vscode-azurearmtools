@@ -44,7 +44,7 @@
                 {
                     "id": "json-outline",
                     "name": "JSON Outline",
-                    "when": "showArmJsonView"
+                    "when": "resourceLangId == json"
                 }
             ]
         }

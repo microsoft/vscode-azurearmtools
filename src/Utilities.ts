@@ -154,10 +154,6 @@ export function getCombinedText(values: { toString(): string }[]): string {
     return result;
 }
 
-export function isValidSchemaUri(schema: string): boolean {
-    return schema ? schema.match(/https?:\/\/schema.management.azure.com\/schemas\/.*\/deploymentTemplate.json/) !== null : false;
-}
-
 /**
  * An interface for an object that iterates through a sequence of values.
  */
