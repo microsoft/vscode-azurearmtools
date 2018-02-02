@@ -57,7 +57,7 @@ VS Code collects usage data and sends it to Microsoft to help improve our produc
 
 ## Change Log
 
-Version 0.3.9 (02/01/2018)
+Version 0.4.0 (02/01/2018)
 - Add JSON outline for ARM depolyment templates
 
 Version 0.3.8 (11/30/2017)
