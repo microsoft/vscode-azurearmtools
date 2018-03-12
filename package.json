@@ -19,11 +19,14 @@
     "color": "E7F1FA",
     "theme": "light"
   },
+  "homepage": "https://github.com/Microsoft/vscode-azurearmtools/blob/master/README.md",
+  "license": "SEE LICENSE IN LICENSE.md",
   "icon": "images/AzureRMTools128x128.png",
   "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
   "engines": {
     "vscode": "^1.14.0"
   },
+  "preview": true,
   "activationEvents": [
     "onLanguage:json"
   ],
@@ -40,19 +43,20 @@
       }
     },
     "views": {
-            "explorer": [
-                {
-                    "id": "json-outline",
-                    "name": "JSON Outline",
-                    "when": "showArmJsonView"
-                }
-            ]
+      "explorer": [
+        {
+          "id": "json-outline",
+          "name": "JSON Outline",
+          "when": "showArmJsonView"
         }
+      ]
+    }
   },
   "main": "./out/src/AzureRMTools",
   "scripts": {
     "vscode:prepublish": "tsc -p ./",
     "compile": "tsc -watch -p ./",
+    "build": "tsc -p ./",
     "lint": "tslint --project tsconfig.json src/*.ts -e src/*.d.ts --type-check -t verbose",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "node ./node_modules/vscode/bin/test"
@@ -61,13 +65,16 @@
     "@types/applicationinsights": "^0.15.33",
     "@types/mocha": "^2.2.41",
     "@types/node": "^8.0.17",
+    "azure-storage": "^2.8.1",
+    "gulp": "^3.9.1",
     "istanbul": "^0.4.5",
     "mocha": "^3.4.2",
     "remap-istanbul": "^0.8.4",
     "vscode": "^1.1.4",
     "tslint": "^5.7.0",
     "tslint-microsoft-contrib": "5.0.1",
-    "typescript": "^2.0.3"
+    "typescript": "^2.0.3",
+    "vsce": "^1.37.5"
   },
   "dependencies": {
     "applicationinsights": "0.21.0",
