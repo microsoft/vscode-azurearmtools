@@ -1,4 +1,4 @@
-langauge: node_js
+language: node_js
 
 node_js:
   - 'stable'
@@ -7,7 +7,8 @@ install:
   - npm install
 
 script:
-  - npm run vscode:prepublish
+  - gulp package
+  - gulp upload-vsix
 
 notifications:
   email:
