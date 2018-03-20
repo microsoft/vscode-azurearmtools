@@ -9,6 +9,13 @@
     "Languages",
     "Linters"
   ],
+  "keywords": [
+		"ARM",
+		"Azure",
+		"Resource Manager",
+		"Template",
+		"Deployment"
+	],
   "repository": {
     "url": "https://github.com/Microsoft/vscode-azurearmtools.git"
   },
@@ -40,14 +47,14 @@
       }
     },
     "views": {
-            "explorer": [
-                {
-                    "id": "json-outline",
-                    "name": "JSON Outline",
-                    "when": "showArmJsonView"
-                }
-            ]
+      "explorer": [
+        {
+          "id": "json-outline",
+          "name": "JSON Outline",
+          "when": "showArmJsonView"
         }
+      ]
+    }
   },
   "main": "./out/src/AzureRMTools",
   "scripts": {
