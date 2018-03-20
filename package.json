@@ -9,6 +9,13 @@
     "Languages",
     "Linters"
   ],
+  "keywords": [
+		"ARM",
+		"Azure",
+		"Resource Manager",
+		"Template",
+		"Deployment"
+	],
   "repository": {
     "url": "https://github.com/Microsoft/vscode-azurearmtools.git"
   },
