@@ -9,6 +9,7 @@ install:
 script:
   - gulp package
   - gulp upload-vsix
+  - npm run lint
 
 notifications:
   email:
