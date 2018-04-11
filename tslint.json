@@ -159,7 +159,7 @@
         "no-relative-imports": false, // changed
         "no-require-imports": false, // changed
         //TODO: "no-shadowed-variable": true,
-        "no-suspicious-comment": true,
+        // TODO: "no-suspicious-comment": true,
         "no-typeof-undefined": true,
         "no-unnecessary-field-initialization": true,
         // TODO: "no-unnecessary-local-variable": true,
