@@ -69,7 +69,7 @@ suite("Utilities", () => {
             assert.deepEqual({ okay: true, test: "testValue" }, clone);
         });
     });
-    
+
     suite("isWhitespaceCharacter(string)", () => {
         test("With null", () => {
             assert.equal(false, Utilities.isWhitespaceCharacter(null));
@@ -311,5 +311,5 @@ suite("Utilities", () => {
         test("with 'https://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#'", () => {
             assert.equal(true, Utilities.isValidSchemaUri("https://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#"));
         });
-    });    
+    });
 });
