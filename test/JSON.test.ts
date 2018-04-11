@@ -479,8 +479,7 @@ suite("JSON", () => {
             nextTestWithWhitespace(" ");
             nextTestWithWhitespace("  ");
             nextTestWithWhitespace("\t");
-            // TODO: Fix and re-enable
-            // nextTestWithWhitespace("\r");
+            nextTestWithWhitespace("\r");
             nextTestWithWhitespace("\r\n");
             nextTestWithWhitespace(" \r\n\t");
 
