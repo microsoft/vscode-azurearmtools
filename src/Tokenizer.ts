@@ -256,7 +256,7 @@ export class Tokenizer implements utilities.Iterator<Token> {
 
                 case "\r":
                     this.nextCharacter();
-                    if (this.currentCharacter.toString() === "\n") {
+                    if (this.currentCharacter && this.currentCharacter.toString() === "\n") {
                         this._currentToken = CarriageReturnNewLine;
                         this.nextCharacter();
                     }

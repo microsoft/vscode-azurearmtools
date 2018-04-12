@@ -10,7 +10,7 @@ import { AzureRMAssets, FunctionMetadata, VersionRedirect } from "../src/AzureRM
 import { SurveyMetadata } from "../src/SurveyMetadata";
 
 suite("AzureRMAssets", () => {
-    // TODO: Fix and re-enable
+    // Re-enable as part of https://github.com/Microsoft/vscode-azurearmtools/issues/51
     // networkTest("getSurveyMetadata()", () => {
     //     return AzureRMAssets.getSurveyMetadata().then((surveyMetadata: SurveyMetadata) => {
     //         assert(surveyMetadata, "Expected surveyMetadata to be defined and not-null");
@@ -25,8 +25,6 @@ suite("AzureRMAssets", () => {
                 assert(functionMetadataArray.length > 0, `Expected to get at least 1 function metadata, but got ${functionMetadataArray.length} instead.`);
             });
     });
-
-
 
     suite("FunctionMetadata", () => {
         test("constructor(string,string,string)", () => {
