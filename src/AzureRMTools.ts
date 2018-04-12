@@ -76,7 +76,7 @@ export class AzureRMTools {
         const jsonOutline = new JsonOutlineProvider(context);
         context.subscriptions.push(vscode.window.registerTreeDataProvider("json-outline", jsonOutline));
         context.subscriptions.push(vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => jsonOutline.goToDefinition(range)));
-        
+
         this.log({
             eventName: "Extension Activated"
         });
@@ -134,13 +134,13 @@ export class AzureRMTools {
 
     private updateDeploymentTemplate(document: vscode.TextDocument): void {
         if (document) {
-            const documentUri: string = document.uri.toString();
-            const lowerCasedDocumentUri: string = documentUri.toLowerCase();
             let foundDeploymentTemplate = false;
 
             if (document.getText() &&
                 document.languageId.toLowerCase() === 'json' &&
-                !lowerCasedDocumentUri.startsWith("git-index:/")) {
+                document.uri.scheme === 'file') {
+
+                const documentUri: string = document.uri.toString();
 
                 // If the documentUri is not in our dictionary of deployment templates, then we
                 // know that this document was opened (as opposed to changed/updated).
