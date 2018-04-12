@@ -48,7 +48,8 @@ suite("HttpClient", () => {
                 });
         });
 
-        // TODO: Fix and re-enable
+        // Not currently using these
+
         // networkTest("with https ('https://azurermtools.blob.core.windows.net/redirects/TemplateExplorerRedirect2.6.0.txt')", () => {
         //     return HttpClient.get("https://azurermtools.blob.core.windows.net/redirects/TemplateExplorerRedirect2.6.0.txt")
         //         .then((content: string) => {
