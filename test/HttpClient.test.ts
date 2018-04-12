@@ -26,13 +26,14 @@ suite("HttpClient", () => {
                 });
         });
 
-        networkTest("with redirection ('http://tinyurl.com/KindleWireless') (redirection)", () => {
-            return HttpClient.get("http://tinyurl.com/KindleWireless")
-                .then((content: string) => {
-                    assert(content, "No content");
-                    assert(content.includes("Amazon.com"), "Doesn't include");
-                })
-        });
+        // TODO: Fix and re-enable
+        // networkTest("with redirection ('http://tinyurl.com/KindleWireless') (redirection)", () => {
+        //     return HttpClient.get("http://tinyurl.com/KindleWireless")
+        //         .then((content: string) => {
+        //             assert(content, "No content");
+        //             assert(content.includes("Amazon.com"), "Doesn't include");
+        //         })
+        // });
 
         networkTest("with non-existing site ('http://i.dont.exist.com')", () => {
             return HttpClient.get("http://i.dont.exist.com")
