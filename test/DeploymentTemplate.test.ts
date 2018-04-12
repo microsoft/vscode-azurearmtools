@@ -275,7 +275,7 @@ suite("DeploymentTemplate", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": {} }, "z": "[variables('a').]" }`, "id");
             return dt.errors.then((errors: language.Issue[]) => {
                 assert.deepStrictEqual(
-                    errors, 
+                    errors,
                     [new language.Issue(new language.Span(50, 1), "Expected a literal value.")]);
             });
         });

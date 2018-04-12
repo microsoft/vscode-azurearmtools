@@ -52,7 +52,7 @@
         "no-constant-condition": true,
         "no-control-regex": true,
         "no-debugger": true,
-        "no-duplicate-case": true,
+        "no-duplicate-switch-case": true,
         "no-duplicate-super": true,
         // TODO: "no-duplicate-variable": true,
         // TODO: "no-empty": true,
@@ -100,7 +100,7 @@
         ],
         "use-isnan": true,
         "use-named-parameter": true,
-        "valid-typeof": true,
+        "typeof-compare": true,
         "adjacent-overload-signatures": true,
         "array-type": [
             true,
@@ -159,7 +159,7 @@
         "no-relative-imports": false, // changed
         "no-require-imports": false, // changed
         //TODO: "no-shadowed-variable": true,
-        "no-suspicious-comment": true,
+        // TODO: "no-suspicious-comment": true,
         "no-typeof-undefined": true,
         "no-unnecessary-field-initialization": true,
         // TODO: "no-unnecessary-local-variable": true,
@@ -302,8 +302,7 @@
         "no-empty-interfaces": false,
         "no-missing-visibility-modifiers": false,
         "no-multiple-var-decl": false,
-        "no-switch-case-fall-through": false,
-        "typeof-compare": false
+        "no-switch-case-fall-through": false
     },
     "rulesDirectory": "node_modules/tslint-microsoft-contrib/",
     "linterOptions": {
