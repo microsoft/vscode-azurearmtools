@@ -18,10 +18,6 @@ import { PositionContext } from "../src/PositionContext";
 
 import * as jsonTest from "./JSON.test";
 
-// TODO: Fix and re-enable
-function suiteTODODisabled(name: string, func: Function) {
-}
-
 suite("PositionContext", () => {
     suite("fromDocumentLineAndColumnIndexes(DeploymentTemplate,number,number)", () => {
         test("with null deploymentTemplate", () => {
@@ -1193,7 +1189,7 @@ suite("PositionContext", () => {
         }
     });
 
-    suiteTODODisabled("signatureHelp", () => {
+    suite("signatureHelp", () => {
         test("not in a TLE", () => {
             const dt = new DeploymentTemplate(`{ "a": "AA" }`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "A`.length);
