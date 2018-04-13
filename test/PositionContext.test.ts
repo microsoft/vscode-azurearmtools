@@ -691,7 +691,8 @@ suite("PositionContext", () => {
                                 []);
         }
 
-        for (let i = 0; i <= 0 /*45 asdf */; ++i) {
+        const repetitions = 2;
+        for (let repetition = 0; repetition < repetitions; ++repetition) {
             for (let i = 9; i <= 9; ++i) {
                 completionItemsTest(`{ "variables": { "v1": "value1" }, "v": "V" }`, i,
                     []);
@@ -1192,191 +1193,191 @@ suite("PositionContext", () => {
         }
     });
 
-    // suite("signatureHelp", () => {
-    //     test("not in a TLE", () => {
-    //         const dt = new DeploymentTemplate(`{ "a": "AA" }`, "id");
-    //         const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "A`.length);
-    //         return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
-    //             assert.deepStrictEqual(functionSignatureHelp, null);
-    //         });
-    //     });
+    suiteTODODisabled("signatureHelp", () => {
+        test("not in a TLE", () => {
+            const dt = new DeploymentTemplate(`{ "a": "AA" }`, "id");
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "A`.length);
+            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+                assert.deepStrictEqual(functionSignatureHelp, null);
+            });
+        });
 
-    //     test("in empty TLE", () => {
-    //         const dt = new DeploymentTemplate(`{ "a": "[]" }`, "id");
-    //         const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[`.length);
-    //         return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
-    //             assert.deepStrictEqual(functionSignatureHelp, null);
-    //         });
-    //     });
+        test("in empty TLE", () => {
+            const dt = new DeploymentTemplate(`{ "a": "[]" }`, "id");
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[`.length);
+            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+                assert.deepStrictEqual(functionSignatureHelp, null);
+            });
+        });
 
-    //     test("in TLE function name", () => {
-    //         const dt = new DeploymentTemplate(`{ "a": "[con]" }`, "id");
-    //         const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[con`.length);
-    //         return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
-    //             assert.deepStrictEqual(functionSignatureHelp, null);
-    //         });
-    //     });
+        test("in TLE function name", () => {
+            const dt = new DeploymentTemplate(`{ "a": "[con]" }`, "id");
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[con`.length);
+            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+                assert.deepStrictEqual(functionSignatureHelp, null);
+            });
+        });
 
-    //     test("after left parenthesis", () => {
-    //         const dt = new DeploymentTemplate(`{ "a": "[concat(`, "id");
-    //         const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat(`.length);
-    //         return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
-    //             assert(functionSignatureHelp);
-    //             assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 0);
-    //             assert(functionSignatureHelp.functionMetadata);
-    //             assert.deepStrictEqual(functionSignatureHelp.functionMetadata.name, "concat");
-    //         });
-    //     });
+        test("after left parenthesis", () => {
+            const dt = new DeploymentTemplate(`{ "a": "[concat(`, "id");
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat(`.length);
+            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+                assert(functionSignatureHelp);
+                assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 0);
+                assert(functionSignatureHelp.functionMetadata);
+                assert.deepStrictEqual(functionSignatureHelp.functionMetadata.name, "concat");
+            });
+        });
 
-    //     test("inside first parameter", () => {
-    //         const dt = new DeploymentTemplate(`{ "a": "[concat('test`, "id");
-    //         const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('test`.length);
-    //         return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
-    //             assert(functionSignatureHelp);
-    //             assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 0);
-    //             assert(functionSignatureHelp.functionMetadata);
-    //             assert.deepStrictEqual(functionSignatureHelp.functionMetadata.name, "concat");
-    //         });
-    //     });
+        test("inside first parameter", () => {
+            const dt = new DeploymentTemplate(`{ "a": "[concat('test`, "id");
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('test`.length);
+            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+                assert(functionSignatureHelp);
+                assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 0);
+                assert(functionSignatureHelp.functionMetadata);
+                assert.deepStrictEqual(functionSignatureHelp.functionMetadata.name, "concat");
+            });
+        });
 
-    //     test("inside second parameter", () => {
-    //         const dt = new DeploymentTemplate(`{ "a": "[concat('t1', 't2`, "id");
-    //         const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('t1', 't2`.length);
-    //         return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
-    //             assert(functionSignatureHelp);
-    //             assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 1);
-    //             assert(functionSignatureHelp.functionMetadata);
-    //             assert.deepStrictEqual(functionSignatureHelp.functionMetadata.name, "concat");
-    //         });
-    //     });
+        test("inside second parameter", () => {
+            const dt = new DeploymentTemplate(`{ "a": "[concat('t1', 't2`, "id");
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('t1', 't2`.length);
+            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+                assert(functionSignatureHelp);
+                assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 1);
+                assert(functionSignatureHelp.functionMetadata);
+                assert.deepStrictEqual(functionSignatureHelp.functionMetadata.name, "concat");
+            });
+        });
 
-    //     test("inside empty parameter", () => {
-    //         const dt = new DeploymentTemplate(`{ "a": "[concat(,,,`, "id");
-    //         const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat(,,`.length);
-    //         return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
-    //             assert(functionSignatureHelp);
-    //             assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 2);
-    //             assert(functionSignatureHelp.functionMetadata);
-    //             assert.deepStrictEqual(functionSignatureHelp.functionMetadata.name, "concat");
-    //         });
-    //     });
+        test("inside empty parameter", () => {
+            const dt = new DeploymentTemplate(`{ "a": "[concat(,,,`, "id");
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat(,,`.length);
+            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+                assert(functionSignatureHelp);
+                assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 2);
+                assert(functionSignatureHelp.functionMetadata);
+                assert.deepStrictEqual(functionSignatureHelp.functionMetadata.name, "concat");
+            });
+        });
 
-    //     test("in variadic parameter when function signature has '...' parameter and the current argument is greater than the parameter count", () => {
-    //         const dt = new DeploymentTemplate(`{ "a": "[concat('a', 'b', 'c', 'd', 'e', 'f'`, "id");
-    //         const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd', 'e', 'f'`.length);
-    //         return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
-    //             assert(functionSignatureHelp);
-    //             assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 3);
-    //             assert(functionSignatureHelp.functionMetadata);
-    //             assert.deepStrictEqual(functionSignatureHelp.functionMetadata.name, "concat");
-    //         });
-    //     });
+        test("in variadic parameter when function signature has '...' parameter and the current argument is greater than the parameter count", () => {
+            const dt = new DeploymentTemplate(`{ "a": "[concat('a', 'b', 'c', 'd', 'e', 'f'`, "id");
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd', 'e', 'f'`.length);
+            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+                assert(functionSignatureHelp);
+                assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 3);
+                assert(functionSignatureHelp.functionMetadata);
+                assert.deepStrictEqual(functionSignatureHelp.functionMetadata.name, "concat");
+            });
+        });
 
-    //     test("in variadic parameter when function signature has '...' parameter and the current argument is equal to the parameter count", () => {
-    //         const dt = new DeploymentTemplate(`{ "a": "[concat('a', 'b', 'c', 'd'`, "id");
-    //         const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd'`.length);
-    //         return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
-    //             assert(functionSignatureHelp);
-    //             assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 3);
-    //             assert(functionSignatureHelp.functionMetadata);
-    //             assert.deepStrictEqual(functionSignatureHelp.functionMetadata.name, "concat");
-    //         });
-    //     });
+        test("in variadic parameter when function signature has '...' parameter and the current argument is equal to the parameter count", () => {
+            const dt = new DeploymentTemplate(`{ "a": "[concat('a', 'b', 'c', 'd'`, "id");
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd'`.length);
+            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+                assert(functionSignatureHelp);
+                assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 3);
+                assert(functionSignatureHelp.functionMetadata);
+                assert.deepStrictEqual(functionSignatureHelp.functionMetadata.name, "concat");
+            });
+        });
 
-    //     test("in variadic parameter when function signature has 'name...' parameter", () => {
-    //         const dt = new DeploymentTemplate(`{ "a": "[resourceId('a', 'b', 'c', 'd', 'e', 'f', 'g'`, "id");
-    //         const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd', 'e', 'f', 'g'`.length);
-    //         return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
-    //             assert(functionSignatureHelp);
-    //             assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 4);
-    //             assert(functionSignatureHelp.functionMetadata);
-    //             assert.deepStrictEqual(functionSignatureHelp.functionMetadata.name, "resourceId");
-    //         });
-    //     });
-    // });
+        test("in variadic parameter when function signature has 'name...' parameter", () => {
+            const dt = new DeploymentTemplate(`{ "a": "[resourceId('a', 'b', 'c', 'd', 'e', 'f', 'g'`, "id");
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd', 'e', 'f', 'g'`.length);
+            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+                assert(functionSignatureHelp);
+                assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 4);
+                assert(functionSignatureHelp.functionMetadata);
+                assert.deepStrictEqual(functionSignatureHelp.functionMetadata.name, "resourceId");
+            });
+        });
+    });
 
-    // suite("parameterDefinition", () => {
-    //     test("with no parameters property", () => {
-    //         const dt = new DeploymentTemplate("{ 'a': '[parameters(\"pName\")]' }", "id");
-    //         const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': '[parameters(\"pN".length);
-    //         assert.deepStrictEqual(context.parameterDefinition, null);
-    //     });
+    suite("parameterDefinition", () => {
+        test("with no parameters property", () => {
+            const dt = new DeploymentTemplate("{ 'a': '[parameters(\"pName\")]' }", "id");
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': '[parameters(\"pN".length);
+            assert.deepStrictEqual(context.parameterDefinition, null);
+        });
 
-    //     test("with empty parameters property value", () => {
-    //         const dt = new DeploymentTemplate("{ 'parameters': {}, 'a': '[parameters(\"pName\")]' }", "id");
-    //         const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': {}, 'a': '[parameters(\"pN".length);
-    //         assert.deepStrictEqual(context.parameterDefinition, null);
-    //     });
+        test("with empty parameters property value", () => {
+            const dt = new DeploymentTemplate("{ 'parameters': {}, 'a': '[parameters(\"pName\")]' }", "id");
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': {}, 'a': '[parameters(\"pN".length);
+            assert.deepStrictEqual(context.parameterDefinition, null);
+        });
 
-    //     test("with matching parameter definition", () => {
-    //         const dt = new DeploymentTemplate("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\")]' }", "id");
-    //         const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pNa".length);
-    //         const parameterDefinition: ParameterDefinition = context.parameterDefinition;
-    //         assert(parameterDefinition);
-    //         assert.deepStrictEqual(parameterDefinition.name.toString(), "pName");
-    //         assert.deepStrictEqual(parameterDefinition.description, null);
-    //         assert.deepStrictEqual(parameterDefinition.span, new language.Span(18, 11));
-    //     });
+        test("with matching parameter definition", () => {
+            const dt = new DeploymentTemplate("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\")]' }", "id");
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pNa".length);
+            const parameterDefinition: ParameterDefinition = context.parameterDefinition;
+            assert(parameterDefinition);
+            assert.deepStrictEqual(parameterDefinition.name.toString(), "pName");
+            assert.deepStrictEqual(parameterDefinition.description, null);
+            assert.deepStrictEqual(parameterDefinition.span, new language.Span(18, 11));
+        });
 
-    //     test("with cursor before parameter name start quote with matching parameter definition", () => {
-    //         const dt = new DeploymentTemplate("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\")]' }", "id");
-    //         const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': {} }, 'a': '[parameters(".length);
-    //         const parameterDefinition: ParameterDefinition = context.parameterDefinition;
-    //         assert(parameterDefinition);
-    //         assert.deepStrictEqual(parameterDefinition.name.toString(), "pName");
-    //         assert.deepStrictEqual(parameterDefinition.description, null);
-    //         assert.deepStrictEqual(parameterDefinition.span, new language.Span(18, 11));
-    //     });
+        test("with cursor before parameter name start quote with matching parameter definition", () => {
+            const dt = new DeploymentTemplate("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\")]' }", "id");
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': {} }, 'a': '[parameters(".length);
+            const parameterDefinition: ParameterDefinition = context.parameterDefinition;
+            assert(parameterDefinition);
+            assert.deepStrictEqual(parameterDefinition.name.toString(), "pName");
+            assert.deepStrictEqual(parameterDefinition.description, null);
+            assert.deepStrictEqual(parameterDefinition.span, new language.Span(18, 11));
+        });
 
-    //     test("with cursor after parameter name end quote with matching parameter definition", () => {
-    //         const dt = new DeploymentTemplate("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\")]' }", "id");
-    //         const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\"".length);
-    //         const parameterDefinition: ParameterDefinition = context.parameterDefinition;
-    //         assert(parameterDefinition);
-    //         assert.deepStrictEqual(parameterDefinition.name.toString(), "pName");
-    //         assert.deepStrictEqual(parameterDefinition.description, null);
-    //         assert.deepStrictEqual(parameterDefinition.span, new language.Span(18, 11));
-    //     });
-    // });
+        test("with cursor after parameter name end quote with matching parameter definition", () => {
+            const dt = new DeploymentTemplate("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\")]' }", "id");
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\"".length);
+            const parameterDefinition: ParameterDefinition = context.parameterDefinition;
+            assert(parameterDefinition);
+            assert.deepStrictEqual(parameterDefinition.name.toString(), "pName");
+            assert.deepStrictEqual(parameterDefinition.description, null);
+            assert.deepStrictEqual(parameterDefinition.span, new language.Span(18, 11));
+        });
+    });
 
-    // suite("variableDefinition", () => {
-    //     test("with no variables property", () => {
-    //         const dt = new DeploymentTemplate("{ 'a': '[variables(\"vName\")]' }", "id");
-    //         const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': '[variables(\"vN".length);
-    //         assert.deepStrictEqual(context.variableDefinition, null);
-    //     });
+    suite("variableDefinition", () => {
+        test("with no variables property", () => {
+            const dt = new DeploymentTemplate("{ 'a': '[variables(\"vName\")]' }", "id");
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': '[variables(\"vN".length);
+            assert.deepStrictEqual(context.variableDefinition, null);
+        });
 
-    //     test("with empty variables property value", () => {
-    //         const dt = new DeploymentTemplate("{ 'variables': {}, 'a': '[variables(\"vName\")]' }", "id");
-    //         const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': {}, 'a': '[variables(\"vN".length);
-    //         assert.deepStrictEqual(context.variableDefinition, null);
-    //     });
+        test("with empty variables property value", () => {
+            const dt = new DeploymentTemplate("{ 'variables': {}, 'a': '[variables(\"vName\")]' }", "id");
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': {}, 'a': '[variables(\"vN".length);
+            assert.deepStrictEqual(context.variableDefinition, null);
+        });
 
-    //     test("with matching variable definition", () => {
-    //         const dt = new DeploymentTemplate("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\")]' }", "id");
-    //         const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vNa".length);
-    //         const vDef: Json.Property = context.variableDefinition;
-    //         assert(vDef);
-    //         assert.deepStrictEqual(vDef.name.toString(), "vName");
-    //         assert.deepStrictEqual(vDef.span, new language.Span(17, 11));
-    //     });
+        test("with matching variable definition", () => {
+            const dt = new DeploymentTemplate("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\")]' }", "id");
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vNa".length);
+            const vDef: Json.Property = context.variableDefinition;
+            assert(vDef);
+            assert.deepStrictEqual(vDef.name.toString(), "vName");
+            assert.deepStrictEqual(vDef.span, new language.Span(17, 11));
+        });
 
-    //     test("with cursor before variable name start quote with matching variable definition", () => {
-    //         const dt = new DeploymentTemplate("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\")]' }", "id");
-    //         const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(".length);
-    //         const vDef: Json.Property = context.variableDefinition;
-    //         assert(vDef);
-    //         assert.deepStrictEqual(vDef.name.toString(), "vName");
-    //         assert.deepStrictEqual(vDef.span, new language.Span(17, 11));
-    //     });
+        test("with cursor before variable name start quote with matching variable definition", () => {
+            const dt = new DeploymentTemplate("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\")]' }", "id");
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(".length);
+            const vDef: Json.Property = context.variableDefinition;
+            assert(vDef);
+            assert.deepStrictEqual(vDef.name.toString(), "vName");
+            assert.deepStrictEqual(vDef.span, new language.Span(17, 11));
+        });
 
-    //     test("with cursor after parameter name end quote with matching parameter definition", () => {
-    //         const dt = new DeploymentTemplate("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\")]' }", "id");
-    //         const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\"".length);
-    //         const vDef: Json.Property = context.variableDefinition;
-    //         assert(vDef);
-    //         assert.deepStrictEqual(vDef.name.toString(), "vName");
-    //         assert.deepStrictEqual(vDef.span, new language.Span(17, 11));
-    //     });
-    // });
+        test("with cursor after parameter name end quote with matching parameter definition", () => {
+            const dt = new DeploymentTemplate("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\")]' }", "id");
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\"".length);
+            const vDef: Json.Property = context.variableDefinition;
+            assert(vDef);
+            assert.deepStrictEqual(vDef.name.toString(), "vName");
+            assert.deepStrictEqual(vDef.span, new language.Span(17, 11));
+        });
+    });
 });
