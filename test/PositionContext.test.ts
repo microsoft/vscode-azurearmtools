@@ -1043,56 +1043,60 @@ suite("PositionContext", () => {
                                     []);
             }
 
-            // for (let i = 0; i <= 29; ++i) {
-            //     completionItemsTest(`{ "a": "[resourceGroup().]" }`, i,
-            //         (i === 9 || i === 23) ? allCompletions(i, 0) :
-            //             (10 <= i && i <= 11) ? [
-            //                 referenceCompletion(9, 13),
-            //                 replaceCompletion(9, 13),
-            //                 resourceGroupCompletion(9, 13),
-            //                 resourceIdCompletion(9, 13)
-            //             ] :
-            //                 (12 <= i && i <= 17) ? [
-            //                     resourceGroupCompletion(9, 13),
-            //                     resourceIdCompletion(9, 13)
-            //                 ] :
-            //                     (18 <= i && i <= 22) ? [
-            //                         resourceGroupCompletion(9, 13)
-            //                     ] :
-            //                         (24 <= i && i <= 25) ? [
-            //                             propertyCompletion("id", i, 0),
-            //                             propertyCompletion("location", i, 0),
-            //                             propertyCompletion("name", i, 0)
-            //                         ] :
-            //                             []);
-            // }
+            for (let i = 0; i <= 29; ++i) {
+                completionItemsTest(`{ "a": "[resourceGroup().]" }`, i,
+                    (i === 9 || i === 23) ? allCompletions(i, 0) :
+                        (10 <= i && i <= 11) ? [
+                            referenceCompletion(9, 13),
+                            replaceCompletion(9, 13),
+                            resourceGroupCompletion(9, 13),
+                            resourceIdCompletion(9, 13)
+                        ] :
+                            (12 <= i && i <= 17) ? [
+                                resourceGroupCompletion(9, 13),
+                                resourceIdCompletion(9, 13)
+                            ] :
+                                (18 <= i && i <= 22) ? [
+                                    resourceGroupCompletion(9, 13)
+                                ] :
+                                    (24 <= i && i <= 25) ? [
+                                        propertyCompletion("id", i, 0),
+                                        propertyCompletion("location", i, 0),
+                                        propertyCompletion("name", i, 0),
+                                        propertyCompletion("properties", i, 0),
+                                        propertyCompletion("tags", i, 0)
+                                    ] :
+                                        []);
+            }
 
-            // for (let i = 0; i <= 31; ++i) {
-            //     completionItemsTest(`{ "a": "[resourceGroup().lo]" }`, i,
-            //         (i === 9 || i === 23) ? allCompletions(i, 0) :
-            //             (10 <= i && i <= 11) ? [
-            //                 referenceCompletion(9, 13),
-            //                 replaceCompletion(9, 13),
-            //                 resourceGroupCompletion(9, 13),
-            //                 resourceIdCompletion(9, 13)
-            //             ] :
-            //                 (12 <= i && i <= 17) ? [
-            //                     resourceGroupCompletion(9, 13),
-            //                     resourceIdCompletion(9, 13)
-            //                 ] :
-            //                     (18 <= i && i <= 22) ? [
-            //                         resourceGroupCompletion(9, 13)
-            //                     ] :
-            //                         (24 <= i && i <= 25) ? [
-            //                             propertyCompletion("id", 25, 2),
-            //                             propertyCompletion("location", 25, 2),
-            //                             propertyCompletion("name", 25, 2)
-            //                         ] :
-            //                             (26 <= i && i <= 27) ? [
-            //                                 propertyCompletion("location", 25, 2),
-            //                             ] :
-            //                                 []);
-            // }
+            for (let i = 0; i <= 31; ++i) {
+                completionItemsTest(`{ "a": "[resourceGroup().lo]" }`, i,
+                    (i === 9 || i === 23) ? allCompletions(i, 0) :
+                        (10 <= i && i <= 11) ? [
+                            referenceCompletion(9, 13),
+                            replaceCompletion(9, 13),
+                            resourceGroupCompletion(9, 13),
+                            resourceIdCompletion(9, 13)
+                        ] :
+                            (12 <= i && i <= 17) ? [
+                                resourceGroupCompletion(9, 13),
+                                resourceIdCompletion(9, 13)
+                            ] :
+                                (18 <= i && i <= 22) ? [
+                                    resourceGroupCompletion(9, 13)
+                                ] :
+                                    (24 <= i && i <= 25) ? [
+                                        propertyCompletion("id", 25, 2),
+                                        propertyCompletion("location", 25, 2),
+                                        propertyCompletion("name", 25, 2),
+                                        propertyCompletion("properties", 25, 2),
+                                        propertyCompletion("tags", 25, 2)
+                                    ] :
+                                        (26 <= i && i <= 27) ? [
+                                            propertyCompletion("location", 25, 2),
+                                        ] :
+                                            []);
+            }
 
             for (let i = 0; i <= 28; ++i) {
                 completionItemsTest(`{ "b": "[variables('a').]" }`, i,
