@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 import { TreeItem } from "vscode";
 import { ContextTagKeys } from "applicationinsights/out/Declarations/Contracts";
 import * as Utilities from "./Utilities";
+import { isLanguageIdSupported } from "./supported";
 
 export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     private tree;
@@ -30,7 +31,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     public getChildren(element?: string): string[] {
         // check if there is a visible text editor
         if (vscode.window.visibleTextEditors.length > 0) {
-            if (vscode.window.activeTextEditor.document.languageId === 'json') {
+            if (isLanguageIdSupported(vscode.window.activeTextEditor.document.languageId)) {
 
                 if (!this.tree) {
                     this.refresh();
@@ -266,7 +267,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             if (rootNode._value.toUpperCase() === "outputs".toUpperCase()) { icon = "outputs.svg" };
         }
 
-        // If resourceType element is found on resource objects set to specific resourceType Icon or else a a default resource icon 
+        // If resourceType element is found on resource objects set to specific resourceType Icon or else a a default resource icon
         if (elementInfo.current.level > 1 && elementInfo.current.key.type === "ObjectValue") {
             const rootNode = this.tree.getValueAtCharacterIndex(elementInfo.root.key.start);
 
@@ -307,7 +308,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     }
 
     private isArmTemplate(document?: vscode.TextDocument): boolean {
-        return !!document && document.languageId.toLowerCase() === 'json' && Utilities.isValidSchemaUri(this.getSchemaUri());
+        return !!document && isLanguageIdSupported(document.languageId) && Utilities.isValidSchemaUri(this.getSchemaUri());
     }
 
     private setTreeViewContext(visible: boolean) {

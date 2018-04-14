@@ -29,6 +29,7 @@ import { PositionContext } from "./PositionContext";
 import { Stopwatch } from "./Stopwatch";
 import { SurveyMetadata } from "./SurveyMetadata";
 import { SurveySettings } from "./SurveySettings";
+import { isLanguageIdSupported } from "./supported";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -137,7 +138,7 @@ export class AzureRMTools {
             let foundDeploymentTemplate = false;
 
             if (document.getText() &&
-                document.languageId.toLowerCase() === 'json' &&
+                isLanguageIdSupported(document.languageId) &&
                 document.uri.scheme === 'file') {
 
                 const documentUri: string = document.uri.toString();
