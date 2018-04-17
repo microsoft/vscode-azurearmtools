@@ -83,7 +83,7 @@ export class AzureRMAssets {
     }
 
     private static readFile(path: string): Promise<string> {
-        return new Promise<string>((resolve, reject) => fs.readFile(path, "utf8" ,(err, data) => {
+        return new Promise<string>((resolve, reject) => fs.readFile(path, "utf8", (err, data) => {
             if (err) {
                 reject(err);
                 return;
@@ -119,13 +119,17 @@ export interface VersionRedirect {
  * Metadata for a TLE function.
  */
 export class FunctionMetadata {
+    private _lowerCaseName: string;
+
     constructor(
         private _name: string,
         private _usage: string,
         private _description: string,
         private _minimumArguments: number,
         private _maximumArguments: number,
-        private _returnValueMembers: string[]) {
+        private _returnValueMembers: string[]
+    ) {
+        this._lowerCaseName = this._name.toLowerCase();
     }
 
     public get name(): string {
@@ -166,6 +170,10 @@ export class FunctionMetadata {
 
     public get returnValueMembers(): string[] {
         return this._returnValueMembers;
+    }
+
+    public matchesName(name: string) {
+        return name && name.toLowerCase() === this._lowerCaseName;
     }
 
     public static fromString(metadataString: string): FunctionMetadata[] {

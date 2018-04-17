@@ -37,6 +37,15 @@ suite("AzureRMAssets", () => {
             assert.deepStrictEqual(metadata.returnValueMembers, []);
         });
 
+        test("matchesName", () => {
+            const metadata = new FunctionMetadata("MyFunction", "b", "c", 1, 2, []);
+            assert.equal(metadata.matchesName("MyFunction"), true);
+            assert.equal(metadata.matchesName("myfunction"), true);
+            assert.equal(metadata.matchesName("MYFUNCTION"), true);
+
+            assert.equal(metadata.matchesName("MyFunction2"), false);
+        });
+
         suite("parameters", () => {
             test("with no parameters in usage", () => {
                 const metadata = new FunctionMetadata("a", "a()", "description", 1, 2, []);
