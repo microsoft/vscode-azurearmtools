@@ -332,10 +332,10 @@
         },
         {
             "name": "reference",
-            "expectedUsage": "reference(resourceName\/resourceIdentifier, [apiVersion])",
+            "expectedUsage": "reference(resourceName\/resourceIdentifier, [apiVersion], ['Full'])",
             "description": "Enables an expression to derive its value from another resource's runtime state.",
             "minimumArguments": 1,
-            "maximumArguments": 2
+            "maximumArguments": 3
         },
         {
             "name": "replace",
