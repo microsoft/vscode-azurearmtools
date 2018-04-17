@@ -1747,30 +1747,30 @@ suite("TLE", () => {
 
     suite("UnrecognizedFunctionVisitor", () => {
         suite("visit(tle.Value)", () => {
-            const recognizedFunctionNames: string[] = ["concat"];
+            const functionMetadata: FunctionMetadata[] = [new FunctionMetadata("CONCAT", "", "", 1, 2, [])];
 
             test("with null", () => {
-                const visitor = TLE.UnrecognizedFunctionVisitor.visit(null, recognizedFunctionNames);
+                const visitor = TLE.UnrecognizedFunctionVisitor.visit(null, functionMetadata);
                 assert(visitor);
                 assert.deepStrictEqual([], visitor.errors);
             });
 
             test("with undefined", () => {
-                const visitor = TLE.UnrecognizedFunctionVisitor.visit(undefined, recognizedFunctionNames);
+                const visitor = TLE.UnrecognizedFunctionVisitor.visit(undefined, functionMetadata);
                 assert(visitor);
                 assert.deepStrictEqual([], visitor.errors);
             });
 
             test("with recognized function", () => {
                 const tleParseResult = TLE.Parser.parse("'[concat()]'");
-                const visitor = TLE.UnrecognizedFunctionVisitor.visit(tleParseResult.expression, recognizedFunctionNames);
+                const visitor = TLE.UnrecognizedFunctionVisitor.visit(tleParseResult.expression, functionMetadata);
                 assert(visitor);
                 assert.deepStrictEqual([], visitor.errors);
             });
 
             test("with unrecognized function", () => {
                 const tleParseResult = TLE.Parser.parse("'[concatenate()]'");
-                const visitor = TLE.UnrecognizedFunctionVisitor.visit(tleParseResult.expression, recognizedFunctionNames);
+                const visitor = TLE.UnrecognizedFunctionVisitor.visit(tleParseResult.expression, functionMetadata);
                 assert(visitor);
                 assert.deepStrictEqual(
                     [
@@ -1878,6 +1878,18 @@ suite("TLE", () => {
                 return AzureRMAssets.getFunctionMetadata()
                     .then((functionMetadata: FunctionMetadata[]) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[add(5, 6, 7)]"`).expression;
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        assert(visitor);
+                        assert.deepStrictEqual(
+                            visitor.errors,
+                            [new language.Issue(new language.Span(2, 12), "The function 'add' takes 2 arguments.")]);
+                    });
+            });
+
+            test("with add() with three arguments and different casing", () => {
+                return AzureRMAssets.getFunctionMetadata()
+                    .then((functionMetadata: FunctionMetadata[]) => {
+                        const concat: TLE.Value = TLE.Parser.parse(`"[Add(5, 6, 7)]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
                         assert(visitor);
                         assert.deepStrictEqual(
