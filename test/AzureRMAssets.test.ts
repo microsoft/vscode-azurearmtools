@@ -6,7 +6,7 @@ import * as assert from "assert";
 
 import { networkTest } from "./Network";
 
-import { AzureRMAssets, FunctionMetadata, VersionRedirect } from "../src/AzureRMAssets";
+import { AzureRMAssets, FunctionMetadata, VersionRedirect, FunctionsMetadata } from "../src/AzureRMAssets";
 import { SurveyMetadata } from "../src/SurveyMetadata";
 
 suite("AzureRMAssets", () => {
@@ -18,12 +18,10 @@ suite("AzureRMAssets", () => {
     //     });
     // });
 
-    networkTest("getFunctionMetadata()", () => {
-        return AzureRMAssets.getFunctionMetadata()
-            .then((functionMetadataArray: FunctionMetadata[]) => {
-                assert(functionMetadataArray);
-                assert(functionMetadataArray.length > 0, `Expected to get at least 1 function metadata, but got ${functionMetadataArray.length} instead.`);
-            });
+    networkTest("getFunctionMetadata()", async () => {
+        const functionMetadataArray = (await AzureRMAssets.getFunctionMetadata()).functionMetadata;
+        assert(functionMetadataArray);
+        assert(functionMetadataArray.length > 0, `Expected to get at least 1 function metadata, but got ${functionMetadataArray.length} instead.`);
     });
 
     suite("FunctionMetadata", () => {
@@ -37,13 +35,31 @@ suite("AzureRMAssets", () => {
             assert.deepStrictEqual(metadata.returnValueMembers, []);
         });
 
-        test("matchesName", () => {
-            const metadata = new FunctionMetadata("MyFunction", "b", "c", 1, 2, []);
-            assert.equal(metadata.matchesName("MyFunction"), true);
-            assert.equal(metadata.matchesName("myfunction"), true);
-            assert.equal(metadata.matchesName("MYFUNCTION"), true);
+        test("findByName", () => {
+            const metadata = new FunctionsMetadata([new FunctionMetadata("hi", "", "", 0, 0, []), new FunctionMetadata("MyFunction", "", "", 0, 0, [])]);
 
-            assert.equal(metadata.matchesName("MyFunction2"), false);
+            assert.equal(metadata.findbyName("MyFunction").name, "MyFunction");
+            assert.equal(metadata.findbyName("myfunction").name, "MyFunction");
+            assert.equal(metadata.findbyName("MYFUNCTION").name, "MyFunction");
+
+            assert.equal(metadata.findbyName("MyFunction2"), undefined);
+        });
+
+        test("findByPrefix", () => {
+            const metadata = new FunctionsMetadata([
+                new FunctionMetadata("One", "", "", 0, 0, []),
+                new FunctionMetadata("Onerous", "", "", 0, 0, []),
+                new FunctionMetadata("Two", "", "", 0, 0, [])
+            ]);
+
+            assert.deepStrictEqual(metadata.findByPrefix("MyFunction"), []);
+
+            assert.deepStrictEqual(metadata.findByPrefix("On").map(meta => meta.name), ["One", "Onerous"]);
+            assert.deepStrictEqual(metadata.findByPrefix("on").map(meta => meta.name), ["One", "Onerous"]);
+            assert.deepStrictEqual(metadata.findByPrefix("ONE").map(meta => meta.name), ["One", "Onerous"]);
+            assert.deepStrictEqual(metadata.findByPrefix("Oner").map(meta => meta.name), ["Onerous"]);
+            assert.deepStrictEqual(metadata.findByPrefix("Onerous").map(meta => meta.name), ["Onerous"]);
+            assert.deepStrictEqual(metadata.findByPrefix("Onerousy"), []);
         });
 
         suite("parameters", () => {

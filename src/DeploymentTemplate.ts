@@ -11,7 +11,7 @@ import * as TLE from "./TLE";
 import * as Telemetry from "./Telemetry";
 import * as Utilities from "./Utilities";
 
-import { AzureRMAssets, FunctionMetadata } from "./AzureRMAssets";
+import { AzureRMAssets, FunctionMetadata, FunctionsMetadata } from "./AzureRMAssets";
 import { Histogram } from "./Histogram";
 import { PositionContext } from "./PositionContext";
 import { ParameterDefinition } from "./ParameterDefinition";
@@ -117,7 +117,7 @@ export class DeploymentTemplate {
     public get errors(): Promise<language.Issue[]> {
         if (this._errors === undefined) {
             this._errors = AzureRMAssets.getFunctionMetadata()
-                .then((functionMetadataArray: FunctionMetadata[]) => {
+                .then((functions: FunctionsMetadata) => {
                     const parseErrors: language.Issue[] = [];
                     for (const jsonQuotedStringToken of this.jsonQuotedStringTokens) {
                         const jsonTokenStartIndex: number = jsonQuotedStringToken.span.startIndex;
@@ -133,12 +133,12 @@ export class DeploymentTemplate {
                             parseErrors.push(error.translate(jsonTokenStartIndex));
                         }
 
-                        const tleUnrecognizedFunctionVisitor = TLE.UnrecognizedFunctionVisitor.visit(tleExpression, functionMetadataArray);
+                        const tleUnrecognizedFunctionVisitor = TLE.UnrecognizedFunctionVisitor.visit(tleExpression, functions);
                         for (const error of tleUnrecognizedFunctionVisitor.errors) {
                             parseErrors.push(error.translate(jsonTokenStartIndex));
                         }
 
-                        const tleIncorrectArgumentCountVisitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(tleExpression, functionMetadataArray);
+                        const tleIncorrectArgumentCountVisitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(tleExpression, functions);
                         for (const error of tleIncorrectArgumentCountVisitor.errors) {
                             parseErrors.push(error.translate(jsonTokenStartIndex));
                         }

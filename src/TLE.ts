@@ -18,10 +18,6 @@ import { Histogram } from "./Histogram";
 import { HttpClient } from "./HttpClient";
 import { PositionContext } from "./PositionContext";
 
-function findFunctionMetadata(_tleFunctionMetadata: assets.FunctionMetadata[], functionName: string) {
-    return _tleFunctionMetadata.find(func => func.matchesName(functionName));
-}
-
 export function asStringValue(value: Value): StringValue {
     return value instanceof StringValue ? value : null;
 }
@@ -643,7 +639,7 @@ export class UndefinedParameterAndVariableVisitor extends Visitor {
 export class UnrecognizedFunctionVisitor extends Visitor {
     private _errors: language.Issue[] = [];
 
-    constructor(private _tleFunctionMetadata: assets.FunctionMetadata[]) {
+    constructor(private _tleFunctions: assets.FunctionsMetadata) {
         super();
     }
 
@@ -653,7 +649,7 @@ export class UnrecognizedFunctionVisitor extends Visitor {
 
     public visitFunction(tleFunction: FunctionValue): void {
         const functionName: string = tleFunction.nameToken.stringValue;
-        const functionMetadata: assets.FunctionMetadata = findFunctionMetadata(this._tleFunctionMetadata, functionName);
+        const functionMetadata: assets.FunctionMetadata = this._tleFunctions.findbyName(functionName);
         if (!functionMetadata) {
             this._errors.push(new language.Issue(tleFunction.nameToken.span, `Unrecognized function name '${functionName}'.`));
         }
@@ -661,8 +657,8 @@ export class UnrecognizedFunctionVisitor extends Visitor {
         super.visitFunction(tleFunction);
     }
 
-    public static visit(tleValue: Value, tleFunctionMetadata: assets.FunctionMetadata[]): UnrecognizedFunctionVisitor {
-        let visitor = new UnrecognizedFunctionVisitor(tleFunctionMetadata);
+    public static visit(tleValue: Value, tleFunctions: assets.FunctionsMetadata): UnrecognizedFunctionVisitor {
+        let visitor = new UnrecognizedFunctionVisitor(tleFunctions);
         if (tleValue) {
             tleValue.accept(visitor);
         }
@@ -677,7 +673,7 @@ export class UnrecognizedFunctionVisitor extends Visitor {
 export class IncorrectFunctionArgumentCountVisitor extends Visitor {
     private _errors: language.Issue[] = [];
 
-    constructor(private _tleFunctionMetadata: assets.FunctionMetadata[]) {
+    constructor(private _tleFunctions: assets.FunctionsMetadata) {
         super();
     }
 
@@ -687,7 +683,7 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
 
     public visitFunction(tleFunction: FunctionValue): void {
         const parsedFunctionName: string = tleFunction.nameToken.stringValue;
-        let functionMetadata: assets.FunctionMetadata = findFunctionMetadata(this._tleFunctionMetadata, parsedFunctionName);
+        let functionMetadata: assets.FunctionMetadata = this._tleFunctions.findbyName(parsedFunctionName);
         if (functionMetadata) {
             const actualFunctionName: string = functionMetadata.name;
 
@@ -722,8 +718,8 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
         return `argument${argumentCount === 1 ? "" : "s"}`;
     }
 
-    public static visit(tleValue: Value, tleFunctionMetadata: assets.FunctionMetadata[]): IncorrectFunctionArgumentCountVisitor {
-        const visitor = new IncorrectFunctionArgumentCountVisitor(tleFunctionMetadata);
+    public static visit(tleValue: Value, tleFunctions: assets.FunctionsMetadata): IncorrectFunctionArgumentCountVisitor {
+        const visitor = new IncorrectFunctionArgumentCountVisitor(tleFunctions);
         if (tleValue) {
             tleValue.accept(visitor);
         }
