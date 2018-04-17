@@ -29,6 +29,7 @@ import { PositionContext } from "./PositionContext";
 import { Stopwatch } from "./Stopwatch";
 import { SurveyMetadata } from "./SurveyMetadata";
 import { SurveySettings } from "./SurveySettings";
+import { isLanguageIdSupported, supportedDocumentSelector } from "./supported";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -76,7 +77,7 @@ export class AzureRMTools {
         const jsonOutline = new JsonOutlineProvider(context);
         context.subscriptions.push(vscode.window.registerTreeDataProvider("json-outline", jsonOutline));
         context.subscriptions.push(vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => jsonOutline.goToDefinition(range)));
-        
+
         this.log({
             eventName: "Extension Activated"
         });
@@ -134,13 +135,13 @@ export class AzureRMTools {
 
     private updateDeploymentTemplate(document: vscode.TextDocument): void {
         if (document) {
-            const documentUri: string = document.uri.toString();
-            const lowerCasedDocumentUri: string = documentUri.toLowerCase();
             let foundDeploymentTemplate = false;
 
             if (document.getText() &&
-                document.languageId.toLowerCase() === 'json' &&
-                !lowerCasedDocumentUri.startsWith("git-index:/")) {
+                isLanguageIdSupported(document.languageId) &&
+                document.uri.scheme === 'file') {
+
+                const documentUri: string = document.uri.toString();
 
                 // If the documentUri is not in our dictionary of deployment templates, then we
                 // know that this document was opened (as opposed to changed/updated).
@@ -187,42 +188,42 @@ export class AzureRMTools {
                                 return self.onProvideHover(document, position, token);
                             }
                         };
-                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerHoverProvider("json", hoverProvider));
+                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerHoverProvider(supportedDocumentSelector, hoverProvider));
 
                         const completionProvider: vscode.CompletionItemProvider = {
                             provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList> {
                                 return self.onProvideCompletionItems(document, position, token);
                             }
                         };
-                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerCompletionItemProvider("json", completionProvider, "'", "[", "."));
+                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerCompletionItemProvider(supportedDocumentSelector, completionProvider, "'", "[", "."));
 
                         const definitionProvider: vscode.DefinitionProvider = {
                             provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Definition {
                                 return self.onProvideDefinition(document, position, token);
                             }
                         };
-                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerDefinitionProvider("json", definitionProvider));
+                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerDefinitionProvider(supportedDocumentSelector, definitionProvider));
 
                         const referenceProvider: vscode.ReferenceProvider = {
                             provideReferences(document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): vscode.Location[] {
                                 return self.onProvideReferences(document, position, context, token);
                             }
                         };
-                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerReferenceProvider("json", referenceProvider));
+                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerReferenceProvider(supportedDocumentSelector, referenceProvider));
 
                         const signatureHelpProvider: vscode.SignatureHelpProvider = {
                             provideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp> {
                                 return self.onProvideSignatureHelp(document, position, token);
                             }
                         };
-                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerSignatureHelpProvider("json", signatureHelpProvider, ',', '(', '\n'));
+                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerSignatureHelpProvider(supportedDocumentSelector, signatureHelpProvider, ',', '(', '\n'));
 
                         const renameProvider: vscode.RenameProvider = {
                             provideRenameEdits(document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): vscode.WorkspaceEdit {
                                 return self.onProvideRename(document, position, newName, token);
                             }
                         }
-                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerRenameProvider("json", renameProvider));
+                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerRenameProvider(supportedDocumentSelector, renameProvider));
 
                         this._diagnosticsCollection = vscode.languages.createDiagnosticCollection("azurermtle");
                         deploymentTemplateFileSubscriptionsArray.push(this._diagnosticsCollection);
