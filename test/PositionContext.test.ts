@@ -494,6 +494,9 @@ suite("PositionContext", () => {
         // IMPORTANT
         // We will only test against the completions in this list.  Any new functions added to the ExpressionMetadata.json file
         //   will be ignored. Otherwise it becomes difficult to add items and update the tests.
+        //
+        // This way, the tests are testing the logic of IntelliSense itself (and are thus very important), but are not overtesting
+        //   against the function metadata itself.  If needed, that should be a separate test.
         let allTestableCompletionNames = new Set<string>(allCompletions(0, 0).map(item => item.name));
 
         function allCompletions(startIndex: number, length: number): Completion.Item[] {
