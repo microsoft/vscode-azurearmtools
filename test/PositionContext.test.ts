@@ -549,7 +549,7 @@ suite("PositionContext", () => {
         }
 
         function copyIndexCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("copyIndex", "copyIndex($0)", new language.Span(startIndex, length), "(function) copyIndex([offset])", "Returns the current index of an iteration loop.\nThis function is always used with a copy object.", Completion.Type.Function);
+            return new Completion.Item("copyIndex", "copyIndex($0)", new language.Span(startIndex, length), "(function) copyIndex([offset]) or copyIndex(loopName, [offset])", "Returns the current index of an iteration loop.\nThis function is always used with a copy object.", Completion.Type.Function);
         }
 
         function deploymentCompletion(startIndex: number, length: number): Completion.Item {
@@ -597,7 +597,7 @@ suite("PositionContext", () => {
         }
 
         function referenceCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("reference", "reference($0)", new language.Span(startIndex, length), "(function) reference(resourceName/resourceIdentifier, [apiVersion])", "Enables an expression to derive its value from another resource's runtime state.", Completion.Type.Function);
+            return new Completion.Item("reference", "reference($0)", new language.Span(startIndex, length), "(function) reference(resourceName/resourceIdentifier, [apiVersion], ['Full'])", "Enables an expression to derive its value from another resource's runtime state.", Completion.Type.Function);
         }
 
         function replaceCompletion(startIndex: number, length: number): Completion.Item {
