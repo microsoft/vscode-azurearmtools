@@ -12,7 +12,9 @@
             ],
             "stopOnEntry": false,
             "sourceMaps": true,
-            "outFiles": [ "${workspaceRoot}/out/src/**/*.js" ],
+            "outFiles": [
+                "${workspaceRoot}/out/src/**/*.js"
+            ],
             "preLaunchTask": "npm"
         },
         {
@@ -21,7 +23,11 @@
             "request": "launch",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "stopOnEntry": false,
-            "args": [ "--ui", "tdd", "--colors" ],
+            "args": [
+                "--ui",
+                "tdd",
+                "--colors"
+            ],
             "cwd": "${workspaceRoot}/out/",
             "runtimeExecutable": null,
             "runtimeArgs": [
@@ -32,7 +38,10 @@
             },
             "console": "internalConsole",
             "sourceMaps": true,
-            "outFiles": [ "${workspaceRoot}/out/test/**/*.js" ]
+            "outFiles": [
+                "${workspaceRoot}/out/test/**/*.js"
+            ],
+            "preLaunchTask": "npm"
         }
     ]
 }

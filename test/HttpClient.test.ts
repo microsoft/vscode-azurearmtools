@@ -26,14 +26,13 @@ suite("HttpClient", () => {
                 });
         });
 
-        // TODO: Fix and re-enable
-        // networkTest("with redirection ('http://tinyurl.com/KindleWireless') (redirection)", () => {
-        //     return HttpClient.get("http://tinyurl.com/KindleWireless")
-        //         .then((content: string) => {
-        //             assert(content, "No content");
-        //             assert(content.includes("Amazon.com"), "Doesn't include");
-        //         })
-        // });
+        networkTest("with redirection ('https://storageexplorer.com') (redirection)", () => {
+            return HttpClient.get("https://storageexplorer.com")
+                .then((content: string) => {
+                    assert(content, "No content");
+                    assert(content.includes("Azure Storage Explorer"), "Doesn't include");
+                })
+        });
 
         networkTest("with non-existing site ('http://i.dont.exist.com')", () => {
             return HttpClient.get("http://i.dont.exist.com")
@@ -49,7 +48,8 @@ suite("HttpClient", () => {
                 });
         });
 
-        // TODO: Fix and re-enable
+        // Not currently using these
+
         // networkTest("with https ('https://azurermtools.blob.core.windows.net/redirects/TemplateExplorerRedirect2.6.0.txt')", () => {
         //     return HttpClient.get("https://azurermtools.blob.core.windows.net/redirects/TemplateExplorerRedirect2.6.0.txt")
         //         .then((content: string) => {

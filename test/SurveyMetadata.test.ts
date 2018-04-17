@@ -7,8 +7,8 @@ import * as assert from "assert";
 import { SurveyMetadata } from "../src/SurveyMetadata";
 import { SurveySettings } from "../src/SurveySettings";
 
-// TODO: Fix and re-enable
-function suiteTODODisabled(name: string, func: Function) {
+// TODO: Re-enable as part of https://github.com/Microsoft/vscode-azurearmtools/issues/51
+function suiteDisabled(name: string, func: Function) {
 }
 
 suite("SurveyMetadata", () => {
@@ -20,7 +20,7 @@ suite("SurveyMetadata", () => {
         assert.deepStrictEqual(undefined, sm.surveysEnabled);
     });
 
-    suiteTODODisabled("shouldShowSurveyPrompt(SurveySettings)", () => {
+    suiteDisabled("shouldShowSurveyPrompt(SurveySettings)", () => {
         test("with undefined settings", () => {
             const sm = new SurveyMetadata();
             assert.deepStrictEqual(sm.shouldShowSurveyPrompt(undefined), false);
@@ -153,7 +153,7 @@ suite("SurveyMetadata", () => {
         });
     });
 
-    suiteTODODisabled("fromString(string)", () => {
+    suiteDisabled("fromString(string)", () => {
         test("with undefined", () => {
             const sm: SurveyMetadata = SurveyMetadata.fromString(undefined);
             assert(sm);
@@ -218,7 +218,7 @@ suite("SurveyMetadata", () => {
         });
     });
 
-    suiteTODODisabled("fromJSON(any)", () => {
+    suiteDisabled("fromJSON(any)", () => {
         test("with undefined", () => {
             const sm: SurveyMetadata = SurveyMetadata.fromJSON(undefined);
             assert(sm);
