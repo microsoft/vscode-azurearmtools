@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// TLE = Template Language Expression
+
 import * as assert from "assert";
 
 import * as assets from "./AzureRMAssets";
@@ -15,6 +17,10 @@ import { DeploymentTemplate } from "./DeploymentTemplate";
 import { Histogram } from "./Histogram";
 import { HttpClient } from "./HttpClient";
 import { PositionContext } from "./PositionContext";
+
+function findFunctionMetadata(_tleFunctionMetadata: assets.FunctionMetadata[], functionName: string) {
+    return _tleFunctionMetadata.find(func => func.matchesName(functionName));
+}
 
 export function asStringValue(value: Value): StringValue {
     return value instanceof StringValue ? value : null;
@@ -637,12 +643,8 @@ export class UndefinedParameterAndVariableVisitor extends Visitor {
 export class UnrecognizedFunctionVisitor extends Visitor {
     private _errors: language.Issue[] = [];
 
-    constructor(private _lowerCasedRecognizedFunctionNames: string[]) {
+    constructor(private _tleFunctionMetadata: assets.FunctionMetadata[]) {
         super();
-
-        for (const index in this._lowerCasedRecognizedFunctionNames) {
-            this._lowerCasedRecognizedFunctionNames[index] = this._lowerCasedRecognizedFunctionNames[index].toLowerCase();
-        }
     }
 
     public get errors(): language.Issue[] {
@@ -651,24 +653,16 @@ export class UnrecognizedFunctionVisitor extends Visitor {
 
     public visitFunction(tleFunction: FunctionValue): void {
         const functionName: string = tleFunction.nameToken.stringValue;
-        const lowerCasedFunctionName: string = functionName.toLowerCase();
-        let isRecognizedFunctionName = false;
-        for (const lowerCasedRecognizedFunctionName of this._lowerCasedRecognizedFunctionNames) {
-            if (lowerCasedRecognizedFunctionName === lowerCasedFunctionName) {
-                isRecognizedFunctionName = true;
-                break;
-            }
-        }
-
-        if (!isRecognizedFunctionName) {
+        const functionMetadata: assets.FunctionMetadata = findFunctionMetadata(this._tleFunctionMetadata, functionName);
+        if (!functionMetadata) {
             this._errors.push(new language.Issue(tleFunction.nameToken.span, `Unrecognized function name '${functionName}'.`));
         }
 
         super.visitFunction(tleFunction);
     }
 
-    public static visit(tleValue: Value, recognizedFunctionNames: string[]): UnrecognizedFunctionVisitor {
-        let visitor = new UnrecognizedFunctionVisitor(recognizedFunctionNames);
+    public static visit(tleValue: Value, tleFunctionMetadata: assets.FunctionMetadata[]): UnrecognizedFunctionVisitor {
+        let visitor = new UnrecognizedFunctionVisitor(tleFunctionMetadata);
         if (tleValue) {
             tleValue.accept(visitor);
         }
@@ -692,37 +686,31 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
     }
 
     public visitFunction(tleFunction: FunctionValue): void {
-        const tleFunctionName: string = tleFunction.nameToken.stringValue;
-
-        let functionMetadata: assets.FunctionMetadata;
-        for (const metadata of this._tleFunctionMetadata) {
-            if (tleFunctionName === metadata.name) {
-                functionMetadata = metadata;
-                break;
-            }
-        }
-
+        const parsedFunctionName: string = tleFunction.nameToken.stringValue;
+        let functionMetadata: assets.FunctionMetadata = findFunctionMetadata(this._tleFunctionMetadata, parsedFunctionName);
         if (functionMetadata) {
+            const actualFunctionName: string = functionMetadata.name;
+
             const minimumArguments: number = functionMetadata.minimumArguments;
-            assert(minimumArguments !== null && minimumArguments !== undefined, `TLE function metadata for '${tleFunctionName}' has a null or undefined minimum argument value.`);
+            assert(minimumArguments !== null && minimumArguments !== undefined, `TLE function metadata for '${actualFunctionName}' has a null or undefined minimum argument value.`);
 
             const maximumArguments: number = functionMetadata.maximumArguments;
             const functionCallArgumentCount: number = tleFunction.argumentExpressions ? tleFunction.argumentExpressions.length : 0;
 
             if (minimumArguments === maximumArguments) {
                 if (functionCallArgumentCount !== minimumArguments) {
-                    this._errors.push(new language.Issue(tleFunction.getSpan(), `The function '${tleFunctionName}' takes ${minimumArguments} ${this.getArgumentsString(minimumArguments)}.`))
+                    this._errors.push(new language.Issue(tleFunction.getSpan(), `The function '${actualFunctionName}' takes ${minimumArguments} ${this.getArgumentsString(minimumArguments)}.`))
                 }
             }
             else if (maximumArguments === null || maximumArguments === undefined) {
                 if (functionCallArgumentCount < minimumArguments) {
-                    this._errors.push(new language.Issue(tleFunction.getSpan(), `The function '${tleFunctionName}' takes at least ${minimumArguments} ${this.getArgumentsString(minimumArguments)}.`))
+                    this._errors.push(new language.Issue(tleFunction.getSpan(), `The function '${actualFunctionName}' takes at least ${minimumArguments} ${this.getArgumentsString(minimumArguments)}.`))
                 }
             }
             else {
                 assert(minimumArguments < maximumArguments);
                 if (functionCallArgumentCount < minimumArguments || maximumArguments < functionCallArgumentCount) {
-                    this._errors.push(new language.Issue(tleFunction.getSpan(), `The function '${tleFunctionName}' takes between ${minimumArguments} and ${maximumArguments} ${this.getArgumentsString(maximumArguments)}.`))
+                    this._errors.push(new language.Issue(tleFunction.getSpan(), `The function '${actualFunctionName}' takes between ${minimumArguments} and ${maximumArguments} ${this.getArgumentsString(maximumArguments)}.`))
                 }
             }
         }

@@ -73,7 +73,7 @@
         },
         {
             "name": "copyIndex",
-            "expectedUsage": "copyIndex([loopName,] [offset])",
+            "expectedUsage": "copyIndex([offset]) or copyIndex(loopName, [offset])",
             "description": "Returns the current index of an iteration loop.\nThis function is always used with a copy object.",
             "minimumArguments": 0,
             "maximumArguments": 2

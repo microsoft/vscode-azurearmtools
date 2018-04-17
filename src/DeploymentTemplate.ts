@@ -31,9 +31,9 @@ export class DeploymentTemplate {
 
     /**
      * Create a new DeploymentTemplate object.
-     * 
+     *
      * @param _documentText The string text of the document.
-     * @param _documentId A unique identifier for this document. Usually this will be a URI to the document. 
+     * @param _documentId A unique identifier for this document. Usually this will be a URI to the document.
      */
     constructor(private _documentText: string, private _documentId: string) {
         assert(_documentText !== null);
@@ -118,11 +118,6 @@ export class DeploymentTemplate {
         if (this._errors === undefined) {
             this._errors = AzureRMAssets.getFunctionMetadata()
                 .then((functionMetadataArray: FunctionMetadata[]) => {
-                    const lowerCasedFunctionNames: string[] = [];
-                    for (const functionMetadata of functionMetadataArray) {
-                        lowerCasedFunctionNames.push(functionMetadata.name.toLowerCase());
-                    }
-
                     const parseErrors: language.Issue[] = [];
                     for (const jsonQuotedStringToken of this.jsonQuotedStringTokens) {
                         const jsonTokenStartIndex: number = jsonQuotedStringToken.span.startIndex;
@@ -138,7 +133,7 @@ export class DeploymentTemplate {
                             parseErrors.push(error.translate(jsonTokenStartIndex));
                         }
 
-                        const tleUnrecognizedFunctionVisitor = TLE.UnrecognizedFunctionVisitor.visit(tleExpression, lowerCasedFunctionNames);
+                        const tleUnrecognizedFunctionVisitor = TLE.UnrecognizedFunctionVisitor.visit(tleExpression, functionMetadataArray);
                         for (const error of tleUnrecognizedFunctionVisitor.errors) {
                             parseErrors.push(error.translate(jsonTokenStartIndex));
                         }
