@@ -6,8 +6,8 @@ import * as assert from "assert";
 
 import { SurveySettings } from "../src/SurveySettings";
 
-// TODO: Fix and re-enable
-function suiteTODODisabled(name: string, func: Function) {
+// TODO: Re-enable as part of https://github.com/Microsoft/vscode-azurearmtools/issues/51
+function suiteDisabled(name: string, func: Function) {
 }
 
 suite("SurveySettings", () => {
@@ -68,7 +68,7 @@ suite("SurveySettings", () => {
         });
     });
 
-    suiteTODODisabled("fromString(string)", () => {
+    suiteDisabled("fromString(string)", () => {
         test("with undefined", () => {
             const ss: SurveySettings = SurveySettings.fromString(undefined);
             assert(ss);
@@ -133,7 +133,7 @@ suite("SurveySettings", () => {
         });
     });
 
-    suiteTODODisabled("fromJSON(any)", () => {
+    suiteDisabled("fromJSON(any)", () => {
         test("with undefined", () => {
             const ss: SurveySettings = SurveySettings.fromJSON(undefined);
             assert(ss);
