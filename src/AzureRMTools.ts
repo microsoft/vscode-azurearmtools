@@ -268,7 +268,7 @@ export class AzureRMTools {
                         this.logFunctionCounts(deploymentTemplate);
                     }
 
-                    this.logDeploymentTemplateErrors(document, deploymentTemplate);
+                    this.reportDeploymentTemplateErrors(document, deploymentTemplate);
                 }
             }
 
@@ -286,12 +286,12 @@ export class AzureRMTools {
         }
     }
 
-    private logDeploymentTemplateErrors(document: vscode.TextDocument, deploymentTemplate: DeploymentTemplate): void {
+    private reportDeploymentTemplateErrors(document: vscode.TextDocument, deploymentTemplate: DeploymentTemplate): void {
         deploymentTemplate.errors
-            .then((parseErrors: language.Issue[]) => {
+            .then((errors: language.Issue[]) => {
                 const diagnostics: vscode.Diagnostic[] = [];
 
-                for (const error of parseErrors) {
+                for (const error of errors) {
                     diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentTemplate, error, vscode.DiagnosticSeverity.Error));
                 }
 
@@ -415,13 +415,15 @@ export class AzureRMTools {
     }
 
     private logFunctionCounts(deploymentTemplate: DeploymentTemplate): void {
-        const functionCountEvent: Telemetry.Event = {
-            eventName: "TLE Function Counts"
+        const functionCountEvent: Telemetry.Event & { functionsJson?: string } = {
+            eventName: "tle-stats"
         };
         const functionCounts: Histogram = deploymentTemplate.functionCounts;
+        const data = {};
         for (const functionName of functionCounts.keys) {
-            functionCountEvent[functionName] = functionCounts.get(functionName);
+            data[functionName] = functionCounts.get(functionName);
         }
+        functionCountEvent.functionsJson = JSON.stringify(data);
         this.log(functionCountEvent);
     }
 

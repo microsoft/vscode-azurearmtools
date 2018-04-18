@@ -583,7 +583,12 @@ export class FunctionCountVisitor extends Visitor {
     }
 
     public visitFunction(tleFunction: FunctionValue): void {
-        this._functionCounts.add(tleFunction.nameToken.stringValue);
+        let args = tleFunction.argumentExpressions || [];
+        let argsCount = args.length;
+        let functionName = tleFunction.nameToken.stringValue;
+        let functionNameWithArgs = `${functionName}(${argsCount})`;
+        this._functionCounts.add(functionName);
+        this._functionCounts.add(functionNameWithArgs);
 
         super.visitFunction(tleFunction);
     }
