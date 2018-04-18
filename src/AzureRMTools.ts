@@ -19,8 +19,9 @@ import * as language from "./Language";
 import * as Reference from "./Reference";
 import * as TLE from "./TLE";
 import * as Telemetry from "./Telemetry";
-import { Reporter } from "./VSCodeTelReporter";
+import { Reporter, reporter } from "./VSCodeTelReporter";
 
+import { callWithTelemetryAndErrorHandling, IActionContext } from "vscode-azureextensionui";
 import { AzureRMAssets } from "./AzureRMAssets";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { JsonOutlineProvider } from "./Treeview";
@@ -30,6 +31,8 @@ import { Stopwatch } from "./Stopwatch";
 import { SurveyMetadata } from "./SurveyMetadata";
 import { SurveySettings } from "./SurveySettings";
 import { isLanguageIdSupported, supportedDocumentSelector } from "./supported";
+import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
+import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
