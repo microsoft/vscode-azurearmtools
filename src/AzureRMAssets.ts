@@ -108,25 +108,13 @@ export class FunctionsMetadata {
 
     public findbyName(functionName: string): FunctionMetadata | undefined {
         const lowerCasedFunctionName: string = functionName.toLowerCase();
-        for (const functionMetadata of this.functionMetadata) {
-            if (functionMetadata.lowerCaseName === lowerCasedFunctionName) {
-                return functionMetadata;
-            }
-        }
-
-        return undefined;
+        return this.functionMetadata.find(func => func.lowerCaseName === lowerCasedFunctionName);
     }
 
     public findByPrefix(functionNamePrefix: string): FunctionMetadata[] {
         const result: FunctionMetadata[] = [];
         const lowerCasedPrefix: string = functionNamePrefix.toLowerCase();
-        for (const functionMetadata of this.functionMetadata) {
-            if (functionMetadata.lowerCaseName.startsWith(lowerCasedPrefix)) {
-                result.push(functionMetadata);
-            }
-        }
-
-        return result;
+        return this.functionMetadata.filter(func => func.lowerCaseName.startsWith(lowerCasedPrefix));
     }
 }
 
