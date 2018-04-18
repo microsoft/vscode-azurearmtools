@@ -438,9 +438,9 @@ export class AzureRMTools {
             }
             delete this._deploymentTemplates[document.uri.toString()];
 
-            // if this is the last deployment template open, then we can safely
+            // If this is the last deployment template open, then we can safely
             // unregister all of our deployment template events from the VS
-            // code editor. The events will be registered again when the next
+            // Code editor. The events will be registered again when the next
             // deployment template is opened.
             if (Object.keys(this._deploymentTemplates).length === 0 && this._deploymentTemplateFileSubscriptions) {
                 this._deploymentTemplateFileSubscriptions.dispose();
@@ -668,7 +668,7 @@ export class AzureRMTools {
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
                 const referenceList: Reference.List = context.references;
                 if (referenceList) {
-                    // when trying to rename a parameter or variable reference inside of a TLE, the
+                    // When trying to rename a parameter or variable reference inside of a TLE, the
                     // textbox that pops up when you press F2 contains more than just the variable
                     // or parameter name. This next section of code parses out just the variable or
                     // parameter name.
@@ -744,7 +744,7 @@ export class AzureRMTools {
 
     private onDocumentSaved(savedDocument: vscode.TextDocument): void {
         this.logOnError(() => {
-            // the saved document is a deployment template if it shows up in our deployment
+            // The saved document is a deployment template if it shows up in our deployment
             // templates dictionary.
             if (this._deploymentTemplates[savedDocument.uri.toString()]) {
                 this.log({
