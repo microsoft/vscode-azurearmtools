@@ -1,9 +1,9 @@
 // ----------------------------------------------------------------------------
-// copyright (c) Microsoft Corporation.  All rights reserved.
+// Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// the module "vscode" contains the VS Code extensibility API
-// import the module and reference it with the alias vscode in your code below
+// The module "vscode" contains the VS Code extensibility API
+// Import the module and reference it with the alias vscode in your code below
 import * as assert from "assert";
 import * as fs from "fs";
 import * as os from "os";
@@ -57,8 +57,8 @@ export class AzureRMTools {
 
     private _deploymentTemplates: { [key: string]: DeploymentTemplate } = {};
 
-    // more information can be found about this definition at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
-    // several of these properties are CSS properties. More information about those can be found at https://www.w3.org/wiki/CSS/Properties
+    // More information can be found about this definition at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
+    // Several of these properties are CSS properties. More information about those can be found at https://www.w3.org/wiki/CSS/Properties
     private _braceHighlightDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         borderWidth: "1px",
         borderStyle: "solid",
@@ -144,7 +144,7 @@ export class AzureRMTools {
 
                 const documentUri: string = document.uri.toString();
 
-                // if the documentUri is not in our dictionary of deployment templates, then we
+                // If the documentUri is not in our dictionary of deployment templates, then we
                 // know that this document was opened (as opposed to changed/updated).
                 let stopwatch: Stopwatch;
                 if (!this._deploymentTemplates[documentUri]) {
@@ -156,7 +156,7 @@ export class AzureRMTools {
                 if (deploymentTemplate.hasValidSchemaUri()) {
                     const { surveySettings, surveySettingsFilePath } = this.updateSurveySettingsFromOpeningTemplate();
 
-                    // if this is the first deployment template to be opened,
+                    // If this is the first deployment template to be opened,
                     // then we need to register all of our deployment template
                     // editing tools with the editor. We don't do this when the
                     // extension is activated because we're concerned about the
@@ -254,7 +254,7 @@ export class AzureRMTools {
                     this._deploymentTemplates[documentUri] = deploymentTemplate;
                     foundDeploymentTemplate = true;
 
-                    // we only initialized the stopwatch if the deployment template was being
+                    // We only initialized the stopwatch if the deployment template was being
                     // opened. The stopwatch variable will not be initialized if the deployment
                     // template is being edited.
                     if (stopwatch) {
@@ -273,7 +273,7 @@ export class AzureRMTools {
             }
 
             if (!foundDeploymentTemplate) {
-                // if the document is not a deployment template, then we need
+                // If the document is not a deployment template, then we need
                 // to remove it from our deployment template cache. It doesn't
                 // matter if the document is a JSON file and was never a
                 // deployment template, or if the document was a deployment
