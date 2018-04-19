@@ -4,6 +4,9 @@
 
 // TLE = Template Language Expression
 
+// tslint:disable:switch-default // Grandfathered in
+// tslint:disable max-classes-per-file // Grandfathered in
+
 import * as assert from "assert";
 
 import * as assets from "./AzureRMAssets";
