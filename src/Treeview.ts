@@ -277,7 +277,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     if (keyNode.properties[i].name._value.toUpperCase() === "type".toUpperCase()) {
                         let resourceType = keyNode.properties[i].value._value.toUpperCase();
                         icon = "resources.svg";
-                        // tslint:disable:no-unused-expression
+                        // tslint:disable:no-unused-expression // Grandfathered in
                         resourceType === "Microsoft.Compute/virtualMachines".toUpperCase() ? icon = "virtualmachines.svg" : undefined;
                         resourceType === "Microsoft.Storage/storageAccounts".toUpperCase() ? icon = "storageaccounts.svg" : undefined;
                         resourceType === "Microsoft.Network/virtualNetworks".toUpperCase() ? icon = "virtualnetworks.svg" : undefined;
