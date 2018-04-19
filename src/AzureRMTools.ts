@@ -43,6 +43,11 @@ export function deactivate(): void {
     // nothing to do
 }
 
+type SurveyInfo = {
+    settings: SurveySettings;
+    filePath: string;
+}
+
 export class AzureRMTools {
     private _jsonFileSubscriptions: vscode.Disposable;
     private _deploymentTemplateFileSubscriptions: vscode.Disposable;
@@ -154,7 +159,7 @@ export class AzureRMTools {
 
                 let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(document.getText(), documentUri);
                 if (deploymentTemplate.hasValidSchemaUri()) {
-                    const { surveySettings, surveySettingsFilePath } = this.updateSurveySettingsFromOpeningTemplate();
+                    let surveyInfo: SurveyInfo = this.updateSurveySettingsFromOpeningTemplate();
 
                     // If this is the first deployment template to be opened,
                     // then we need to register all of our deployment template
@@ -218,15 +223,15 @@ export class AzureRMTools {
 
                         this._deploymentTemplateFileSubscriptions = vscode.Disposable.from(...deploymentTemplateFileSubscriptionsArray);
 
-                        if (surveySettings.showSurveyPrompts) {
+                        if (surveyInfo.settings.showSurveyPrompts) {
                             AzureRMAssets.getSurveyMetadata()
                                 .then((surveyMetadata: SurveyMetadata) => {
-                                    if (surveyMetadata.shouldShowSurveyPrompt(surveySettings)) {
+                                    if (surveyMetadata.shouldShowSurveyPrompt(surveyInfo.settings)) {
                                         const message: string = "We would like to collect your feedback on the Azure Resource Manager Tools extension. Please take a few minutes to fill out survey.";
                                         const options: string[] = ["Don't ask me again", "OK"]; // VS Code automatically inserts a "Close" option.
 
                                         vscode.window.showInformationMessage(message, ...options).then((selectedOption: string) => {
-                                            surveySettings.previousSurveyPromptDateAndTime = Date.now();
+                                            surveyInfo.settings.previousSurveyPromptDateAndTime = Date.now();
 
                                             this.log({
                                                 eventName: "Survey Prompt",
@@ -237,10 +242,10 @@ export class AzureRMTools {
                                                 open(surveyMetadata.surveyLink);
                                             }
                                             else if (selectedOption === "Don't ask me again") {
-                                                surveySettings.showSurveyPrompts = false;
+                                                surveyInfo.settings.showSurveyPrompts = false;
                                             }
 
-                                            surveySettings.toFile(surveySettingsFilePath);
+                                            surveyInfo.settings.toFile(surveyInfo.filePath);
                                         });
                                     }
                                 })
@@ -309,26 +314,26 @@ export class AzureRMTools {
     /**
      * Update survey settings on disk and return the updated version
      */
-    private updateSurveySettingsFromOpeningTemplate(): { surveySettings: SurveySettings, surveySettingsFilePath: string } {
-        const surveySettingsFilePath: string = path.join(os.homedir(), ".vscode", "azurerm", "surveyMetadata.json");
-        const surveySettings: SurveySettings = SurveySettings.fromFile(surveySettingsFilePath);
+    private updateSurveySettingsFromOpeningTemplate(): SurveyInfo {
+        const filePath: string = path.join(os.homedir(), ".vscode", "azurerm", "surveyMetadata.json");
+        const settings: SurveySettings = SurveySettings.fromFile(filePath);
 
-        surveySettings.incrementDeploymentTemplatesOpenedOrCreated();
+        settings.incrementDeploymentTemplatesOpenedOrCreated();
 
-        if (!surveySettings.deploymentTemplateFirstOpenedOrCreatedDateAndTime) {
-            surveySettings.deploymentTemplateFirstOpenedOrCreatedDateAndTime = Date.now();
+        if (!settings.deploymentTemplateFirstOpenedOrCreatedDateAndTime) {
+            settings.deploymentTemplateFirstOpenedOrCreatedDateAndTime = Date.now();
         }
 
-        if (surveySettings.showSurveyPrompts === undefined || surveySettings.showSurveyPrompts === null) {
-            surveySettings.showSurveyPrompts = true;
+        if (settings.showSurveyPrompts === undefined || settings.showSurveyPrompts === null) {
+            settings.showSurveyPrompts = true;
         }
 
-        surveySettings.toFile(surveySettingsFilePath);
+        settings.toFile(filePath);
 
-        return { surveySettings, surveySettingsFilePath };
+        return { settings, filePath };
     }
 
-    private initializeExtension(surveySettings: SurveySettings, surveySettingsFilePath: string): void {
+    private initializeExtension(surveyInfo: SurveyInfo): void {
         let deploymentTemplateFileSubscriptionsArray: vscode.Disposable[] = [];
 
         vscode.window.onDidChangeTextEditorSelection(this.onTextSelectionChanged, this, deploymentTemplateFileSubscriptionsArray);
@@ -383,15 +388,15 @@ export class AzureRMTools {
 
         this._deploymentTemplateFileSubscriptions = vscode.Disposable.from(...deploymentTemplateFileSubscriptionsArray);
 
-        if (surveySettings.showSurveyPrompts) {
+        if (surveyInfo.settings.showSurveyPrompts) {
             AzureRMAssets.getSurveyMetadata()
                 .then((surveyMetadata: SurveyMetadata) => {
-                    if (surveyMetadata.shouldShowSurveyPrompt(surveySettings)) {
+                    if (surveyMetadata.shouldShowSurveyPrompt(surveyInfo.settings)) {
                         const message: string = "We would like to collect your feedback on the Azure Resource Manager Tools extension. Please take a few minutes to fill out survey.";
-                        const options: string[] = ["Don't ask me again", "OK"]; // vS Code automatically inserts a "Close" option.
+                        const options: string[] = ["Don't ask me again", "OK"]; // VS Code automatically inserts a "Close" option.
 
                         vscode.window.showInformationMessage(message, ...options).then((selectedOption: string) => {
-                            surveySettings.previousSurveyPromptDateAndTime = Date.now();
+                            surveyInfo.settings.previousSurveyPromptDateAndTime = Date.now();
 
                             this.log({
                                 eventName: "Survey Prompt",
@@ -401,10 +406,10 @@ export class AzureRMTools {
                             if (selectedOption === "OK") {
                                 open(surveyMetadata.surveyLink);
                             } else if (selectedOption === "Don't ask me again") {
-                                surveySettings.showSurveyPrompts = false;
+                                surveyInfo.settings.showSurveyPrompts = false;
                             }
 
-                            surveySettings.toFile(surveySettingsFilePath);
+                            surveyInfo.settings.toFile(surveyInfo.filePath);
                         });
                     }
                 })
