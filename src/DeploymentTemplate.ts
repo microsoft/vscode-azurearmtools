@@ -175,14 +175,14 @@ export class DeploymentTemplate {
             this._warnings = [];
 
             for (const parameterDefinition of this.parameterDefinitions) {
-                const parameterReferences: Reference.List = this.findReferences(Reference.Type.Parameter, parameterDefinition.name.toString());
+                const parameterReferences: Reference.List = this.findReferences(Reference.ReferenceKind.Parameter, parameterDefinition.name.toString());
                 if (parameterReferences.length === 1) {
                     this._warnings.push(new language.Issue(parameterDefinition.name.span, `The parameter '${parameterDefinition.name.toString()}' is never used.`));
                 }
             }
 
             for (const variableDefinition of this.variableDefinitions) {
-                const variableReferences: Reference.List = this.findReferences(Reference.Type.Variable, variableDefinition.name.toString());
+                const variableReferences: Reference.List = this.findReferences(Reference.ReferenceKind.Variable, variableDefinition.name.toString());
                 if (variableReferences.length === 1) {
                     this._warnings.push(new language.Issue(variableDefinition.name.span, `The variable '${variableDefinition.name.toString()}' is never used.`));
                 }
@@ -415,19 +415,19 @@ export class DeploymentTemplate {
         return result;
     }
 
-    public findReferences(referenceType: Reference.Type, referenceName: string): Reference.List {
+    public findReferences(referenceType: Reference.ReferenceKind, referenceName: string): Reference.List {
         const result: Reference.List = new Reference.List(referenceType);
 
         if (referenceName) {
             switch (referenceType) {
-                case Reference.Type.Parameter:
+                case Reference.ReferenceKind.Parameter:
                     const parameterDefinition: ParameterDefinition = this.getParameterDefinition(referenceName);
                     if (parameterDefinition) {
                         result.add(parameterDefinition.name.unquotedSpan);
                     }
                     break;
 
-                case Reference.Type.Variable:
+                case Reference.ReferenceKind.Variable:
                     const variableDefinition: Json.Property = this.getVariableDefinition(referenceName);
                     if (variableDefinition) {
                         result.add(variableDefinition.name.unquotedSpan);
@@ -435,7 +435,7 @@ export class DeploymentTemplate {
                     break;
 
                 default:
-                    assert.fail(`Unrecognized Reference.Type: ${referenceType}`);
+                    assert.fail(`Unrecognized Reference.Kind: ${referenceType}`);
                     break;
             }
 

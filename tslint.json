@@ -17,7 +17,7 @@
         ],
         "no-inner-html": true,
         "no-octal-literal": true,
-        // TODO: "no-reserved-keywords": true,
+        "no-reserved-keywords": true,
         "no-string-based-set-immediate": true,
         "no-string-based-set-interval": true,
         "no-string-based-set-timeout": true,

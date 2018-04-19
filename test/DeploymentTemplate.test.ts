@@ -831,57 +831,57 @@ suite("DeploymentTemplate", () => {
 
         test("with null name", () => {
             const dt = new DeploymentTemplate("", "id");
-            const list: Reference.List = dt.findReferences(Reference.Type.Parameter, null);
+            const list: Reference.List = dt.findReferences(Reference.ReferenceKind.Parameter, null);
             assert(list);
-            assert.deepStrictEqual(list.type, Reference.Type.Parameter);
+            assert.deepStrictEqual(list.kind, Reference.ReferenceKind.Parameter);
             assert.deepStrictEqual(list.spans, []);
         });
 
         test("with undefined name", () => {
             const dt = new DeploymentTemplate("", "id");
-            const list: Reference.List = dt.findReferences(Reference.Type.Parameter, undefined);
+            const list: Reference.List = dt.findReferences(Reference.ReferenceKind.Parameter, undefined);
             assert(list);
-            assert.deepStrictEqual(list.type, Reference.Type.Parameter);
+            assert.deepStrictEqual(list.kind, Reference.ReferenceKind.Parameter);
             assert.deepStrictEqual(list.spans, []);
         });
 
         test("with empty name", () => {
             const dt = new DeploymentTemplate("", "id");
-            const list: Reference.List = dt.findReferences(Reference.Type.Parameter, "");
+            const list: Reference.List = dt.findReferences(Reference.ReferenceKind.Parameter, "");
             assert(list);
-            assert.deepStrictEqual(list.type, Reference.Type.Parameter);
+            assert.deepStrictEqual(list.kind, Reference.ReferenceKind.Parameter);
             assert.deepStrictEqual(list.spans, []);
         });
 
         test("with parameter type and no matching parameter definition", () => {
             const dt = new DeploymentTemplate(`{ "parameters": { "pName": {} } }`, "id");
-            const list: Reference.List = dt.findReferences(Reference.Type.Parameter, "dontMatchMe");
+            const list: Reference.List = dt.findReferences(Reference.ReferenceKind.Parameter, "dontMatchMe");
             assert(list);
-            assert.deepStrictEqual(list.type, Reference.Type.Parameter);
+            assert.deepStrictEqual(list.kind, Reference.ReferenceKind.Parameter);
             assert.deepStrictEqual(list.spans, []);
         });
 
         test("with parameter type and matching parameter definition", () => {
             const dt = new DeploymentTemplate(`{ "parameters": { "pName": {} } }`, "id");
-            const list: Reference.List = dt.findReferences(Reference.Type.Parameter, "pName");
+            const list: Reference.List = dt.findReferences(Reference.ReferenceKind.Parameter, "pName");
             assert(list);
-            assert.deepStrictEqual(list.type, Reference.Type.Parameter);
+            assert.deepStrictEqual(list.kind, Reference.ReferenceKind.Parameter);
             assert.deepStrictEqual(list.spans, [new language.Span(19, 5)]);
         });
 
         test("with variable type and no matching variable definition", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "vName": {} } }`, "id");
-            const list: Reference.List = dt.findReferences(Reference.Type.Variable, "dontMatchMe");
+            const list: Reference.List = dt.findReferences(Reference.ReferenceKind.Variable, "dontMatchMe");
             assert(list);
-            assert.deepStrictEqual(list.type, Reference.Type.Variable);
+            assert.deepStrictEqual(list.kind, Reference.ReferenceKind.Variable);
             assert.deepStrictEqual(list.spans, []);
         });
 
         test("with variable type and matching variable definition", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "vName": {} } }`, "id");
-            const list: Reference.List = dt.findReferences(Reference.Type.Variable, "vName");
+            const list: Reference.List = dt.findReferences(Reference.ReferenceKind.Variable, "vName");
             assert(list);
-            assert.deepStrictEqual(list.type, Reference.Type.Variable);
+            assert.deepStrictEqual(list.kind, Reference.ReferenceKind.Variable);
             assert.deepStrictEqual(list.spans, [new language.Span(18, 5)]);
         });
     });
