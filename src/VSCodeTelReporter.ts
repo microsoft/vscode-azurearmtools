@@ -6,7 +6,7 @@
 import TelemetryReporter from 'vscode-extension-telemetry';
 import * as vscode from 'vscode';
 
-export var reporter: TelemetryReporter;
+export let reporter: TelemetryReporter;
 
 export class Reporter extends vscode.Disposable {
     constructor(ctx: vscode.ExtensionContext) {
@@ -26,6 +26,7 @@ interface IPackageInfo {
 }
 
 function getPackageInfo(context: vscode.ExtensionContext): IPackageInfo | undefined {
+    // tslint:disable-next-line:non-literal-require
     let extensionPackage = require(context.asAbsolutePath('./package.json'));
     if (extensionPackage) {
         return {
