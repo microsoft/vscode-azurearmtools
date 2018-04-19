@@ -65,6 +65,7 @@ export class Token extends Segment {
         super(_startIndex);
     }
 
+    // tslint:disable-next-line:no-reserved-keywords // Not worth risk to change
     public get type(): TokenType {
         return this._type;
     }

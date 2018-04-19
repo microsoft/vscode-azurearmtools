@@ -343,11 +343,13 @@ export interface IElementInfo {
         key: {
             start: number;
             end: number;
+            // tslint:disable-next-line:no-reserved-keywords // Not worth the risk to change
             type: string;
         },
         value: {
             start: number;
             end: number;
+            // tslint:disable-next-line:no-reserved-keywords // Not worth the risk to change
             type: string;
         },
         level: number;
@@ -357,11 +359,13 @@ export interface IElementInfo {
         key: {
             start: number;
             end: number;
+            // tslint:disable-next-line:no-reserved-keywords // Not worth the risk to change
             type: string;
         },
         value: {
             start: number;
             end: number;
+            // tslint:disable-next-line:no-reserved-keywords // Not worth the risk to change
             type: string;
         }
     },

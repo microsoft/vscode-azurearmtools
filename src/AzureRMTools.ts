@@ -283,7 +283,7 @@ export class AzureRMTools {
                         };
                         const functionCounts: Histogram = deploymentTemplate.functionCounts;
                         for (const functionName of functionCounts.keys) {
-                            functionCountEvent[functionName] = functionCounts.get(functionName);
+                            functionCountEvent[functionName] = functionCounts.getCount(functionName);
                         }
                         this.log(functionCountEvent);
                     }
@@ -414,22 +414,22 @@ export class AzureRMTools {
                             completionToAdd.detail = completion.detail;
                             completionToAdd.documentation = completion.description;
 
-                            switch (completion.type) {
-                                case Completion.Type.Function:
+                            switch (completion.kind) {
+                                case Completion.CompletionKind.Function:
                                     completionToAdd.kind = vscode.CompletionItemKind.Function;
                                     break;
 
-                                case Completion.Type.Parameter:
-                                case Completion.Type.Variable:
+                                case Completion.CompletionKind.Parameter:
+                                case Completion.CompletionKind.Variable:
                                     completionToAdd.kind = vscode.CompletionItemKind.Variable;
                                     break;
 
-                                case Completion.Type.Property:
+                                case Completion.CompletionKind.Property:
                                     completionToAdd.kind = vscode.CompletionItemKind.Field;
                                     break;
 
                                 default:
-                                    assert.fail(`Unrecognized Completion.Type: ${completion.type}`);
+                                    assert.fail(`Unrecognized Completion.Type: ${completion.kind}`);
                                     break;
                             }
 
@@ -492,17 +492,17 @@ export class AzureRMTools {
                 const references: Reference.List = context.references;
                 if (references && references.length > 0) {
                     let referenceType: string;
-                    switch (references.type) {
-                        case Reference.Type.Parameter:
+                    switch (references.kind) {
+                        case Reference.ReferenceKind.Parameter:
                             referenceType = "parameter";
                             break;
 
-                        case Reference.Type.Variable:
+                        case Reference.ReferenceKind.Variable:
                             referenceType = "variable";
                             break;
 
                         default:
-                            assert.fail(`Unrecognized Reference.Type: ${references.type}`);
+                            assert.fail(`Unrecognized Reference.Kind: ${references.kind}`);
                             referenceType = "no reference type";
                             break;
                     }
