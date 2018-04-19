@@ -17,11 +17,11 @@
         ],
         "no-inner-html": true,
         "no-octal-literal": true,
-        // TODO: "no-reserved-keywords": true,
+        "no-reserved-keywords": true,
         "no-string-based-set-immediate": true,
         "no-string-based-set-interval": true,
         "no-string-based-set-timeout": true,
-        // TODO: "non-literal-require": true,
+        "non-literal-require": true,
         "possible-timing-attack": true,
         "react-anchor-blank-noopener": true,
         "react-iframe-missing-sandbox": true,
@@ -54,7 +54,7 @@
         "no-debugger": true,
         "no-duplicate-switch-case": true,
         "no-duplicate-super": true,
-        // TODO: "no-duplicate-variable": true,
+        "no-duplicate-variable": true,
         // TODO: "no-empty": true,
         "no-floating-promises": true,
         // TODO: "no-for-in-array": true,
@@ -93,14 +93,13 @@
             "allow-undefined-union", // changed
             "allow-mix" // changed
         ],
-        // TODO: "switch-default": true,
+        "switch-default": true,
         "triple-equals": [
             false, // TODO: true,
             "allow-null-check"
         ],
         "use-isnan": true,
         "use-named-parameter": true,
-        "typeof-compare": true,
         "adjacent-overload-signatures": true,
         "array-type": [
             true,
@@ -122,7 +121,7 @@
         // TODO: "interface-name": true,
         "jsdoc-format": true,
         "max-classes-per-file": [
-            false, // TODO: true,
+            true,
             3
         ],
         "max-file-line-count": true,
@@ -159,14 +158,14 @@
         "no-relative-imports": false, // changed
         "no-require-imports": false, // changed
         //TODO: "no-shadowed-variable": true,
-        // TODO: "no-suspicious-comment": true,
+        "no-suspicious-comment": true,
         "no-typeof-undefined": true,
         "no-unnecessary-field-initialization": true,
         // TODO: "no-unnecessary-local-variable": true,
         "no-unnecessary-qualifier": true,
         "no-unsupported-browser-code": true,
         "no-useless-files": true,
-        // TODO: "no-var-keyword": true,
+        "no-var-keyword": true,
         // TODO: "no-var-requires": true,
         // TODO: "no-var-self": true,
         "no-void-expression": [

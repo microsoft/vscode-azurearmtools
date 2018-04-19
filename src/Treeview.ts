@@ -1,3 +1,10 @@
+// ----------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// ----------------------------------------------------------------------------
+
+// tslint:disable:no-var-keyword // Grandfathered in
+// tslint:disable:no-duplicate-variable // Grandfathered in
+
 import * as Json from "./JSON";
 import * as vscode from "vscode";
 import { TreeItem } from "vscode";
@@ -334,11 +341,13 @@ export interface IElementInfo {
         key: {
             start: number;
             end: number;
+            // tslint:disable-next-line:no-reserved-keywords // Not worth the risk to change
             type: string;
         },
         value: {
             start: number;
             end: number;
+            // tslint:disable-next-line:no-reserved-keywords // Not worth the risk to change
             type: string;
         },
         level: number;
@@ -348,11 +357,13 @@ export interface IElementInfo {
         key: {
             start: number;
             end: number;
+            // tslint:disable-next-line:no-reserved-keywords // Not worth the risk to change
             type: string;
         },
         value: {
             start: number;
             end: number;
+            // tslint:disable-next-line:no-reserved-keywords // Not worth the risk to change
             type: string;
         }
     },

@@ -2,6 +2,9 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable switch-default // Grandfathered in
+// tslint:disable max-classes-per-file // Grandfathered in
+
 import * as assert from "assert";
 
 import * as basic from "./Tokenizer";
@@ -62,6 +65,7 @@ export class Token extends Segment {
         super(_startIndex);
     }
 
+    // tslint:disable-next-line:no-reserved-keywords // Not worth risk to change
     public get type(): TokenType {
         return this._type;
     }
@@ -555,7 +559,7 @@ export class ObjectValue extends Value {
     }
 
     /**
-     * Get the property names 
+     * Get the property names
      */
     public get propertyNames(): string[] {
         return Object.keys(this.propertyMap);

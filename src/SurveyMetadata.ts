@@ -54,7 +54,7 @@ export class SurveyMetadata {
     }
 
     public static fromUrl(metadataUrl: string): Promise<SurveyMetadata> {
-        return HttpClient.get(metadataUrl).then((content: string) => {
+        return HttpClient.request(metadataUrl).then((content: string) => {
             return SurveyMetadata.fromString(content);
         });
     }

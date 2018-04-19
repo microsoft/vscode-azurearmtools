@@ -416,12 +416,12 @@ export class AzureRMTools {
 
     private logFunctionCounts(deploymentTemplate: DeploymentTemplate): void {
         const functionCountEvent: Telemetry.Event & { functionsJson?: string } = {
-            eventName: "tle-stats"
+            eventName: "tle.stats"
         };
         const functionCounts: Histogram = deploymentTemplate.functionCounts;
         const data = {};
         for (const functionName of functionCounts.keys) {
-            data[functionName] = functionCounts.get(functionName);
+            data[functionName] = functionCounts.getCount(functionName);
         }
         functionCountEvent.functionsJson = JSON.stringify(data);
         this.log(functionCountEvent);
@@ -517,22 +517,22 @@ export class AzureRMTools {
                             completionToAdd.detail = completion.detail;
                             completionToAdd.documentation = completion.description;
 
-                            switch (completion.type) {
-                                case Completion.Type.Function:
+                            switch (completion.kind) {
+                                case Completion.CompletionKind.Function:
                                     completionToAdd.kind = vscode.CompletionItemKind.Function;
                                     break;
 
-                                case Completion.Type.Parameter:
-                                case Completion.Type.Variable:
+                                case Completion.CompletionKind.Parameter:
+                                case Completion.CompletionKind.Variable:
                                     completionToAdd.kind = vscode.CompletionItemKind.Variable;
                                     break;
 
-                                case Completion.Type.Property:
+                                case Completion.CompletionKind.Property:
                                     completionToAdd.kind = vscode.CompletionItemKind.Field;
                                     break;
 
                                 default:
-                                    assert.fail(`Unrecognized Completion.Type: ${completion.type}`);
+                                    assert.fail(`Unrecognized Completion.Type: ${completion.kind}`);
                                     break;
                             }
 
@@ -594,17 +594,17 @@ export class AzureRMTools {
                 const references: Reference.List = context.references;
                 if (references && references.length > 0) {
                     let referenceType: string;
-                    switch (references.type) {
-                        case Reference.Type.Parameter:
+                    switch (references.kind) {
+                        case Reference.ReferenceKind.Parameter:
                             referenceType = "parameter";
                             break;
 
-                        case Reference.Type.Variable:
+                        case Reference.ReferenceKind.Variable:
                             referenceType = "variable";
                             break;
 
                         default:
-                            assert.fail(`Unrecognized Reference.Type: ${references.type}`);
+                            assert.fail(`Unrecognized Reference.Kind: ${references.kind}`);
                             referenceType = "no reference type";
                             break;
                     }
@@ -626,7 +626,7 @@ export class AzureRMTools {
     }
 
     private onProvideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp> {
-        let result: Promise<vscode.SignatureHelp> = null;
+        let result: Promise<vscode.SignatureHelp> = Promise.resolve(null);
 
         this.logOnError(() => {
             const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
