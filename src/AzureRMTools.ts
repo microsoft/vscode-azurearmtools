@@ -523,7 +523,7 @@ export class AzureRMTools {
     }
 
     private onProvideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp> {
-        let result: Promise<vscode.SignatureHelp> = null;
+        let result: Promise<vscode.SignatureHelp> = Promise.resolve(null);
 
         this.logOnError(() => {
             const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
