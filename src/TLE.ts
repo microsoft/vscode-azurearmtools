@@ -20,6 +20,8 @@ import * as Utilities from "./Utilities";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { Histogram } from "./Histogram";
 import { PositionContext } from "./PositionContext";
+import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
+import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 
 function findFunctionMetadata(_tleFunctionMetadata: assets.FunctionMetadata[], functionName: string) {
     return _tleFunctionMetadata.find(func => func.matchesName(functionName));
@@ -652,7 +654,7 @@ export class UndefinedParameterAndVariableVisitor extends Visitor {
  * A TLE visitor that finds references to undefined functions.
  */
 export class UnrecognizedFunctionVisitor extends Visitor {
-    private _errors: language.Issue[] = [];
+    private _errors: UnrecognizedFunctionIssue[] = [];
 
     constructor(private _tleFunctionMetadata: assets.FunctionMetadata[]) {
         super();
@@ -666,7 +668,7 @@ export class UnrecognizedFunctionVisitor extends Visitor {
         const functionName: string = tleFunction.nameToken.stringValue;
         const functionMetadata: assets.FunctionMetadata = findFunctionMetadata(this._tleFunctionMetadata, functionName);
         if (!functionMetadata) {
-            this._errors.push(new language.Issue(tleFunction.nameToken.span, `Unrecognized function name '${functionName}'.`));
+            this._errors.push(new UnrecognizedFunctionIssue(tleFunction.nameToken.span, functionName));
         }
 
         super.visitFunction(tleFunction);
@@ -686,13 +688,13 @@ export class UnrecognizedFunctionVisitor extends Visitor {
  * TLE function.
  */
 export class IncorrectFunctionArgumentCountVisitor extends Visitor {
-    private _errors: language.Issue[] = [];
+    private _errors: IncorrectArgumentsCountIssue[] = [];
 
     constructor(private _tleFunctionMetadata: assets.FunctionMetadata[]) {
         super();
     }
 
-    public get errors(): language.Issue[] {
+    public get errors(): IncorrectArgumentsCountIssue[] {
         return this._errors;
     }
 
@@ -708,21 +710,32 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
             const maximumArguments: number = functionMetadata.maximumArguments;
             const functionCallArgumentCount: number = tleFunction.argumentExpressions ? tleFunction.argumentExpressions.length : 0;
 
+            let message: string;
             if (minimumArguments === maximumArguments) {
                 if (functionCallArgumentCount !== minimumArguments) {
-                    this._errors.push(new language.Issue(tleFunction.getSpan(), `The function '${actualFunctionName}' takes ${minimumArguments} ${this.getArgumentsString(minimumArguments)}.`))
+                    message = `The function '${actualFunctionName}' takes ${minimumArguments} ${this.getArgumentsString(minimumArguments)}.`;
                 }
             }
             else if (maximumArguments === null || maximumArguments === undefined) {
                 if (functionCallArgumentCount < minimumArguments) {
-                    this._errors.push(new language.Issue(tleFunction.getSpan(), `The function '${actualFunctionName}' takes at least ${minimumArguments} ${this.getArgumentsString(minimumArguments)}.`))
+                    message = `The function '${actualFunctionName}' takes at least ${minimumArguments} ${this.getArgumentsString(minimumArguments)}.`;
                 }
             }
             else {
                 assert(minimumArguments < maximumArguments);
                 if (functionCallArgumentCount < minimumArguments || maximumArguments < functionCallArgumentCount) {
-                    this._errors.push(new language.Issue(tleFunction.getSpan(), `The function '${actualFunctionName}' takes between ${minimumArguments} and ${maximumArguments} ${this.getArgumentsString(maximumArguments)}.`))
+                    message = `The function '${actualFunctionName}' takes between ${minimumArguments} and ${maximumArguments} ${this.getArgumentsString(maximumArguments)}.`;
                 }
+            }
+
+            if (message) {
+                let issue = new IncorrectArgumentsCountIssue(tleFunction.getSpan(),
+                    message,
+                    actualFunctionName,
+                    tleFunction.argumentExpressions.length,
+                    functionMetadata.minimumArguments,
+                    functionMetadata.maximumArguments);
+                this._errors.push(issue);
             }
         }
 
