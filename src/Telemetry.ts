@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable max-classes-per-file // Grandfathered in
+
 import * as appInsights from "applicationinsights";
 import * as assert from "assert";
 import * as fs from "fs";

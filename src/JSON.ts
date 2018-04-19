@@ -2,6 +2,9 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable switch-default // Grandfathered in
+// tslint:disable max-classes-per-file // Grandfathered in
+
 import * as assert from "assert";
 
 import * as basic from "./Tokenizer";

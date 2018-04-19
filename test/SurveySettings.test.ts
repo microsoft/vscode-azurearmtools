@@ -6,6 +6,7 @@ import * as assert from "assert";
 
 import { SurveySettings } from "../src/SurveySettings";
 
+// tslint:disable-next-line:no-suspicious-comment
 // TODO: Re-enable as part of https://github.com/Microsoft/vscode-azurearmtools/issues/51
 function suiteDisabled(name: string, func: Function) {
     // Disabled

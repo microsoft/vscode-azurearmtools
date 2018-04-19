@@ -5,6 +5,8 @@
 // TLE = Template Language Expression
 
 // tslint:disable:no-unnecessary-class // Grandfathered in
+// tslint:disable:switch-default // Grandfathered in
+// tslint:disable:max-classes-per-file // Grandfathered in
 
 import * as assert from "assert";
 
