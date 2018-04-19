@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable:no-unused-expression
+
 import * as assert from "assert";
 
 import * as Json from "../src/JSON";

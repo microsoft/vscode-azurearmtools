@@ -56,6 +56,7 @@ export abstract class Endpoint {
     public abstract log(event: Event): void;
 
     public close(): void {
+        // Nothing to do
     }
 }
 
@@ -136,7 +137,7 @@ export class VSCode extends Endpoint {
         if (reporter) {
             let properties: { [key: string]: string } = undefined;
             let measurements: { [key: string]: number } = undefined;
-    
+
             for (let propertyName in event) {
                 if (propertyName !== "eventName") {
                     let propertyValue = event[propertyName];
@@ -157,7 +158,7 @@ export class VSCode extends Endpoint {
 
             reporter.sendTelemetryEvent(event.eventName, properties, measurements);
         }
-    }        
+    }
 }
 
 /**

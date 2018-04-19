@@ -277,6 +277,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     if (keyNode.properties[i].name._value.toUpperCase() === "type".toUpperCase()) {
                         let resourceType = keyNode.properties[i].value._value.toUpperCase();
                         icon = "resources.svg";
+                        // tslint:disable:no-unused-expression
                         resourceType === "Microsoft.Compute/virtualMachines".toUpperCase() ? icon = "virtualmachines.svg" : undefined;
                         resourceType === "Microsoft.Storage/storageAccounts".toUpperCase() ? icon = "storageaccounts.svg" : undefined;
                         resourceType === "Microsoft.Network/virtualNetworks".toUpperCase() ? icon = "virtualnetworks.svg" : undefined;
@@ -284,6 +285,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                         resourceType === "Microsoft.Network/networkSecurityGroups".toUpperCase() ? icon = "nsg.svg" : undefined;
                         resourceType === "Microsoft.Network/networkInterfaces".toUpperCase() ? icon = "nic.svg" : undefined;
                         resourceType === "Microsoft.Network/publicIPAddresses".toUpperCase() ? icon = "publicip.svg" : undefined;
+                        // tslint:enable:no-unused-expression
                     }
                 }
             }

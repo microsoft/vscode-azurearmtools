@@ -10,6 +10,7 @@ import { SurveyMetadata } from "./SurveyMetadata";
 /**
  * An accessor class for the Azure RM storage account.
  */
+// tslint:disable-next-line:no-unnecessary-class // Grandfathered in
 export class AzureRMAssets {
     private static _versionRedirects: Promise<VersionRedirect[]>;
     private static _currentVersionRedirectUri: Promise<string>;

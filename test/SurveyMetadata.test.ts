@@ -9,6 +9,7 @@ import { SurveySettings } from "../src/SurveySettings";
 
 // TODO: Re-enable as part of https://github.com/Microsoft/vscode-azurearmtools/issues/51
 function suiteDisabled(name: string, func: Function) {
+    // Disabled
 }
 
 suite("SurveyMetadata", () => {

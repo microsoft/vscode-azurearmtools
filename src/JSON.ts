@@ -555,7 +555,7 @@ export class ObjectValue extends Value {
     }
 
     /**
-     * Get the property names 
+     * Get the property names
      */
     public get propertyNames(): string[] {
         return Object.keys(this.propertyMap);
@@ -1068,12 +1068,15 @@ export abstract class Visitor {
     }
 
     public visitStringValue(stringValue: StringValue): void {
+        // Nothing to do
     }
 
     public visitNumberValue(numberValue: NumberValue): void {
+        // Nothing to do
     }
 
     public visitBooleanValue(booleanValue: BooleanValue): void {
+        // Nothing to do
     }
 
     public visitObjectValue(objectValue: ObjectValue): void {
@@ -1095,5 +1098,6 @@ export abstract class Visitor {
     }
 
     public visitNullValue(nullValue: NullValue): void {
+        // Nothing to do
     }
 }
