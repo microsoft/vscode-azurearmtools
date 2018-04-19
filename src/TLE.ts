@@ -583,6 +583,7 @@ export class FunctionCountVisitor extends Visitor {
     }
 
     public visitFunction(tleFunction: FunctionValue): void {
+        // Log count for both "func" and "func(<args-count>)"
         let args = tleFunction.argumentExpressions || [];
         let argsCount = args.length;
         let functionName = tleFunction.nameToken.stringValue;
