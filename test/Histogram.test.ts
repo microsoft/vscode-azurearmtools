@@ -39,41 +39,41 @@ suite("Histogram", () => {
         test("With null key", () => {
             let h = new Histogram();
             h.add(null);
-            assert.deepEqual(1, h.get(null));
+            assert.deepEqual(1, h.getCount(null));
             assert.deepEqual([null], h.keys);
         });
 
         test("With undefined key", () => {
             let h = new Histogram();
             h.add(undefined);
-            assert.deepEqual(1, h.get(undefined));
+            assert.deepEqual(1, h.getCount(undefined));
             assert.deepEqual([undefined], h.keys);
         });
 
         test("With string key", () => {
             let h = new Histogram();
             h.add("a");
-            assert.deepEqual(1, h.get("a"));
+            assert.deepEqual(1, h.getCount("a"));
             assert.deepEqual(["a"], h.keys);
         });
 
         test("With string key and count", () => {
             let h = new Histogram();
             h.add("a", 20);
-            assert.deepEqual(20, h.get("a"));
+            assert.deepEqual(20, h.getCount("a"));
             assert.deepEqual(["a"], h.keys);
         });
 
         test("With Histogram key", () => {
             let h = new Histogram();
             h.add("a", 20);
-            assert.deepEqual(20, h.get("a"));
+            assert.deepEqual(20, h.getCount("a"));
             assert.deepEqual(["a"], h.keys);
             h.add(h);
-            assert.deepEqual(40, h.get("a"));
+            assert.deepEqual(40, h.getCount("a"));
             assert.deepEqual(["a"], h.keys);
             h.add(h);
-            assert.deepEqual(80, h.get("a"));
+            assert.deepEqual(80, h.getCount("a"));
             assert.deepEqual(["a"], h.keys);
         });
     });
@@ -81,34 +81,34 @@ suite("Histogram", () => {
     suite("get(string)", () => {
         test("with null", () => {
             let h = new Histogram();
-            assert.equal(0, h.get(null));
+            assert.equal(0, h.getCount(null));
 
             h.add(null);
-            assert.equal(1, h.get(null));
+            assert.equal(1, h.getCount(null));
         });
 
         test("with undefined", () => {
             let h = new Histogram();
-            assert.equal(0, h.get(undefined));
+            assert.equal(0, h.getCount(undefined));
 
             h.add(undefined);
-            assert.equal(1, h.get(undefined));
+            assert.equal(1, h.getCount(undefined));
         });
 
         test("with empty", () => {
             let h = new Histogram();
-            assert.equal(0, h.get(""));
+            assert.equal(0, h.getCount(""));
 
             h.add("");
-            assert.equal(1, h.get(""));
+            assert.equal(1, h.getCount(""));
         });
 
         test("with non-empty", () => {
             let h = new Histogram();
-            assert.equal(0, h.get("a"));
+            assert.equal(0, h.getCount("a"));
 
             h.add("a");
-            assert.equal(1, h.get("a"));
+            assert.equal(1, h.getCount("a"));
         });
     });
 });

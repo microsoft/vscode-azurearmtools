@@ -7,7 +7,7 @@ import * as http from "http";
 import * as https from "https";
 
 export class HttpClient {
-    public static get(url: string): Promise<string> {
+    public static request(url: string): Promise<string> {
         assert(url, "Cannot make a HTTP request for a null, undefined, or empty url.");
 
         if (!url.startsWith("http")) {
@@ -19,14 +19,14 @@ export class HttpClient {
 
             function callback(response: http.IncomingMessage): void {
                 if (300 <= response.statusCode && response.statusCode < 400 && response.headers["location"]) {
-                    resolve(HttpClient.get(response.headers["location"].toString()));
+                    resolve(HttpClient.request(response.headers["location"].toString()));
                 }
                 else if (200 <= response.statusCode && response.statusCode < 400) {
                     let responseContent: string = "";
                     let encoding: string;
 
-                    response.on("data", (dataChunk: string|Buffer) => {
-                        const buffer: Buffer = dataChunk instanceof Buffer? dataChunk: new Buffer(dataChunk);
+                    response.on("data", (dataChunk: string | Buffer) => {
+                        const buffer: Buffer = dataChunk instanceof Buffer ? dataChunk : new Buffer(dataChunk);
                         let byteOrderMarkLength: number = 0;
                         if (!encoding) {
                             if (dataChunk[0] == 0xFF &&

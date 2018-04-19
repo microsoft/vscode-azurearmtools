@@ -35,12 +35,12 @@ export class Histogram {
         }
         else {
             for (let rhsKey of key.keys) {
-                this.add(rhsKey, key.get(rhsKey));
+                this.add(rhsKey, key.getCount(rhsKey));
             }
         }
     }
 
-    public get(key: string): number {
+    public getCount(key: string): number {
         let result: number;
         if (key === null) {
             result = this._nullCounts;

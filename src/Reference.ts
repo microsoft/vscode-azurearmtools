@@ -10,7 +10,7 @@ import * as language from "./Language";
  * A list of references that have been found.
  */
 export class List {
-    constructor(private _type: Type, private _spans: language.Span[] = []) {
+    constructor(private _type: ReferenceKind, private _spans: language.Span[] = []) {
         assert(_type !== null, "Cannot create a reference list a null type.");
         assert(_type !== undefined, "Cannot create a reference list an undefined type.");
         assert(_spans, "Cannot create a reference list with a null spans array.");
@@ -24,7 +24,7 @@ export class List {
         return this._spans;
     }
 
-    public get type(): Type {
+    public get kind(): ReferenceKind {
         return this._type;
     }
 
@@ -36,7 +36,7 @@ export class List {
 
     public addAll(list: List): void {
         assert(list, "Cannot add all of the references from a null or undefined list.");
-        assert.deepStrictEqual(this._type, list.type, "Cannot add references from a list of a different reference type.");
+        assert.deepStrictEqual(this._type, list.kind, "Cannot add references from a list of a different reference type.");
 
         for (const span of list.spans) {
             this.add(span);
@@ -57,7 +57,7 @@ export class List {
     }
 }
 
-export enum Type {
+export enum ReferenceKind {
     Parameter,
 
     Variable

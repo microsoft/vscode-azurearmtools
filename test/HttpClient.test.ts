@@ -11,7 +11,7 @@ import { networkTest } from "./Network";
 suite("HttpClient", () => {
     suite("get(string)", () => {
         networkTest("with existing site ('http://www.bing.com')", () => {
-            return HttpClient.get("http://www.bing.com")
+            return HttpClient.request("http://www.bing.com")
                 .then((content: string) => {
                     assert(content, "Content was undefined, null, or empty");
                     assert(content.includes("Word Online"), "Content did not include the phrase 'Word Online'");
@@ -19,7 +19,7 @@ suite("HttpClient", () => {
         });
 
         networkTest("with existing site without 'http' ('www.bing.com')", () => {
-            return HttpClient.get("www.bing.com")
+            return HttpClient.request("www.bing.com")
                 .then((content: string) => {
                     assert(content, "Content was undefined, null, or empty");
                     assert(content.includes("Word Online"), "Content did not include the phrase 'Word Online'");
@@ -27,7 +27,7 @@ suite("HttpClient", () => {
         });
 
         networkTest("with redirection ('https://storageexplorer.com') (redirection)", () => {
-            return HttpClient.get("https://storageexplorer.com")
+            return HttpClient.request("https://storageexplorer.com")
                 .then((content: string) => {
                     assert(content, "No content");
                     assert(content.includes("Azure Storage Explorer"), "Doesn't include");
@@ -35,7 +35,7 @@ suite("HttpClient", () => {
         });
 
         networkTest("with non-existing site ('http://i.dont.exist.com')", () => {
-            return HttpClient.get("http://i.dont.exist.com")
+            return HttpClient.request("http://i.dont.exist.com")
                 .then((content: string) => {
                     assert(false, "Expected the catch function to be called.");
                 })
