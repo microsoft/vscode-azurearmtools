@@ -19,8 +19,9 @@ import * as language from "./Language";
 import * as Reference from "./Reference";
 import * as TLE from "./TLE";
 import * as Telemetry from "./Telemetry";
-import { Reporter } from "./VSCodeTelReporter";
+import { Reporter, reporter } from "./VSCodeTelReporter";
 
+import { callWithTelemetryAndErrorHandling, IActionContext } from "vscode-azureextensionui";
 import { AzureRMAssets } from "./AzureRMAssets";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { JsonOutlineProvider } from "./Treeview";
@@ -415,16 +416,27 @@ export class AzureRMTools {
     }
 
     private logFunctionCounts(deploymentTemplate: DeploymentTemplate): void {
-        const functionCountEvent: Telemetry.Event & { functionsJson?: string } = {
-            eventName: "tle.stats"
-        };
-        const functionCounts: Histogram = deploymentTemplate.functionCounts;
-        const data = {};
-        for (const functionName of functionCounts.keys) {
-            data[functionName] = functionCounts.getCount(functionName);
-        }
-        functionCountEvent.functionsJson = JSON.stringify(data);
-        this.log(functionCountEvent);
+        let me = this;
+        let outputChannel = undefined;
+        callWithTelemetryAndErrorHandling("tle.stats", reporter, outputChannel, async function (this: IActionContext) {
+            this.suppressErrorDisplay = true;
+
+            const functionCountEvent: Telemetry.Event & { functionsJson?: string } = {
+                eventName: "tle.stats"
+            };
+            const functionCounts: Histogram = deploymentTemplate.functionCounts;
+            const functionsData = {};
+            for (const functionName of functionCounts.keys) {
+                functionsData[functionName] = functionCounts.getCount(functionName);
+            }
+            this.properties.functionsJson = JSON.stringify(functionsData);
+
+            let errors: language.Issue[] = await deploymentTemplate.errors;
+
+            for (const error of errors) {
+                diagnostics.push(me.getVSCodeDiagnosticFromIssue(deploymentTemplate, error, vscode.DiagnosticSeverity.Error));
+            }
+        });
     }
 
     private getVSCodeDiagnosticFromIssue(deploymentTemplate: DeploymentTemplate, issue: language.Issue, severity: vscode.DiagnosticSeverity): vscode.Diagnostic {
