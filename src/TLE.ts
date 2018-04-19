@@ -4,8 +4,9 @@
 
 // TLE = Template Language Expression
 
+// tslint:disable:no-unnecessary-class // Grandfathered in
 // tslint:disable:switch-default // Grandfathered in
-// tslint:disable max-classes-per-file // Grandfathered in
+// tslint:disable:max-classes-per-file // Grandfathered in
 
 import * as assert from "assert";
 
@@ -18,7 +19,6 @@ import * as Utilities from "./Utilities";
 
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { Histogram } from "./Histogram";
-import { HttpClient } from "./HttpClient";
 import { PositionContext } from "./PositionContext";
 
 function findFunctionMetadata(_tleFunctionMetadata: assets.FunctionMetadata[], functionName: string) {
@@ -560,6 +560,7 @@ export abstract class Visitor {
     }
 
     public visitNumber(tleNumber: NumberValue): void {
+        // Nothing to do
     }
 
     public visitPropertyAccess(tlePropertyAccess: PropertyAccess): void {
@@ -569,6 +570,7 @@ export abstract class Visitor {
     }
 
     public visitString(tleString: StringValue): void {
+        // Nothing to do
     }
 }
 

@@ -58,6 +58,7 @@ export abstract class Endpoint {
     public abstract log(event: Event): void;
 
     public close(): void {
+        // Nothing to do
     }
 }
 

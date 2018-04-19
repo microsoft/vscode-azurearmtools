@@ -4,8 +4,8 @@
 
 import * as moment from "moment";
 
-import { HttpClient } from "./HttpClient";
 import { SurveySettings } from "./SurveySettings";
+import { httpGet } from "./HttpClient";
 
 /**
  * The SurveyMetadata class represents the settings related to our user
@@ -54,7 +54,7 @@ export class SurveyMetadata {
     }
 
     public static fromUrl(metadataUrl: string): Promise<SurveyMetadata> {
-        return HttpClient.request(metadataUrl).then((content: string) => {
+        return httpGet(metadataUrl).then((content: string) => {
             return SurveyMetadata.fromString(content);
         });
     }

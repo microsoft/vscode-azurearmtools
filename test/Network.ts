@@ -1,4 +1,5 @@
 import * as dns from "dns";
+import { ITestCallbackContext } from "mocha";
 
 let internetConnected: Promise<boolean>;
 /**
@@ -20,7 +21,7 @@ function hasInternetConnection(): Promise<boolean> {
  * to the internet, then the test will be skipped.
  */
 export function networkTest(testName: string, testFunction: () => void | Promise<any>) {
-    test(testName, function () {
+    test(testName, function (this: ITestCallbackContext) {
         this.timeout(10000);
 
         return hasInternetConnection()
