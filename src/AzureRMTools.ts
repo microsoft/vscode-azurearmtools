@@ -21,7 +21,7 @@ import * as TLE from "./TLE";
 import * as Telemetry from "./Telemetry";
 import { Reporter, reporter } from "./VSCodeTelReporter";
 
-import { callWithTelemetryAndErrorHandling, IActionContext } from "vscode-azureextensionui";
+import { callWithTelemetryAndErrorHandling, IActionContext, TelemetryProperties } from "vscode-azureextensionui";
 import { AzureRMAssets } from "./AzureRMAssets";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { JsonOutlineProvider } from "./Treeview";
@@ -31,6 +31,9 @@ import { Stopwatch } from "./Stopwatch";
 import { SurveyMetadata } from "./SurveyMetadata";
 import { SurveySettings } from "./SurveySettings";
 import { isLanguageIdSupported, supportedDocumentSelector } from "./supported";
+import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
+import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
+import { encode } from "punycode";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -266,7 +269,7 @@ export class AzureRMTools {
                             parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds
                         });
 
-                        this.logFunctionCounts(deploymentTemplate);
+                        this.logTleFunctionStats(deploymentTemplate);
                     }
 
                     this.reportDeploymentTemplateErrors(document, deploymentTemplate);
@@ -415,28 +418,55 @@ export class AzureRMTools {
         }
     }
 
-    private logFunctionCounts(deploymentTemplate: DeploymentTemplate): void {
+    private logTleFunctionStats(deploymentTemplate: DeploymentTemplate): void {
         let me = this;
         let outputChannel = undefined;
         callWithTelemetryAndErrorHandling("tle.stats", reporter, outputChannel, async function (this: IActionContext) {
             this.suppressErrorDisplay = true;
 
-            const functionCountEvent: Telemetry.Event & { functionsJson?: string } = {
-                eventName: "tle.stats"
-            };
+            let properties: {
+                functionCounts?: string,
+                unrecognized?: string,
+                incorrectArgs?: string,
+                [key: string]: string
+            } = this.properties;
+
+            // Full function counts
             const functionCounts: Histogram = deploymentTemplate.functionCounts;
             const functionsData = {};
             for (const functionName of functionCounts.keys) {
                 functionsData[functionName] = functionCounts.getCount(functionName);
             }
-            this.properties.functionsJson = JSON.stringify(functionsData);
+            properties.functionCounts = JSON.stringify(functionsData);
 
-            let errors: language.Issue[] = await deploymentTemplate.errors;
-
-            for (const error of errors) {
-                diagnostics.push(me.getVSCodeDiagnosticFromIssue(deploymentTemplate, error, vscode.DiagnosticSeverity.Error));
+            // Missing function names and incorrect number of arguments
+            let issues: language.Issue[] = await deploymentTemplate.errors;
+            let unrecognized = new Set<string>();
+            let incorrectArgCounts = new Set<string>();
+            for (const issue of issues) {
+                if (issue instanceof UnrecognizedFunctionIssue) {
+                    unrecognized.add(issue.functionName);
+                } else if (issue instanceof IncorrectArgumentsCountIssue) {
+                    // Encode function name as "funcname(<actual-args>)[<min-expected>..<max-expected>]"
+                    let encodedName = `${issue.functionName}(${issue.actual})[${issue.minExpected}..${issue.maxExpected}]`;
+                    incorrectArgCounts.add(encodedName);
+                }
             }
+            properties.unrecognized = AzureRMTools.setToJson(unrecognized);
+            properties.incorrectArgs = AzureRMTools.setToJson(incorrectArgCounts);
         });
+    }
+
+    private static setToJson(s: Set<string>): string {
+        if (!s.size) {
+            return "";
+        }
+
+        let array: string[] = [];
+        for (let item of s) {
+            array.push(item);
+        }
+        return JSON.stringify(array);
     }
 
     private getVSCodeDiagnosticFromIssue(deploymentTemplate: DeploymentTemplate, issue: language.Issue, severity: vscode.DiagnosticSeverity): vscode.Diagnostic {
@@ -616,7 +646,7 @@ export class AzureRMTools {
                             break;
 
                         default:
-                            assert.fail(`Unrecognized Reference.Kind: ${references.kind}`);
+                            assert.fail(`Unrecognized Reference.Kind: ${references.kind} `);
                             referenceType = "no reference type";
                             break;
                     }

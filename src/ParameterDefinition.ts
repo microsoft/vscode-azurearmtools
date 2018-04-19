@@ -12,7 +12,7 @@ import * as language from "./Language";
  */
 export class ParameterDefinition {
     private _description: string;
-    
+
     constructor(private _property: Json.Property) {
         assert(_property);
     }
@@ -28,7 +28,7 @@ export class ParameterDefinition {
     public get description(): string {
         if (this._description === undefined) {
             this._description = null;
-            
+
             const parameterDefinition: Json.ObjectValue = Json.asObjectValue(this._property.value);
             if (parameterDefinition) {
                 const metadata: Json.ObjectValue = Json.asObjectValue(parameterDefinition.getPropertyValue("metadata"));
