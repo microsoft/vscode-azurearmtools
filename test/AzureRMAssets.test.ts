@@ -19,7 +19,7 @@ suite("AzureRMAssets", () => {
     // });
 
     networkTest("getFunctionMetadata()", async () => {
-        const functionMetadataArray = (await AzureRMAssets.getFunctionMetadata()).functionMetadata;
+        const functionMetadataArray = (await AzureRMAssets.getFunctionsMetadata()).functionMetadata;
         assert(functionMetadataArray);
         assert(functionMetadataArray.length > 0, `Expected to get at least 1 function metadata, but got ${functionMetadataArray.length} instead.`);
     });

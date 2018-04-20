@@ -1811,7 +1811,7 @@ suite("TLE", () => {
             });
 
             test("with concat() with zero arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[concat()]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
@@ -1821,7 +1821,7 @@ suite("TLE", () => {
             });
 
             test("with concat() with one argument", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[concat(12)]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
@@ -1831,7 +1831,7 @@ suite("TLE", () => {
             });
 
             test("with concat() with two arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[concat(12, 'test')]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
@@ -1841,7 +1841,7 @@ suite("TLE", () => {
             });
 
             test("with add() with zero arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[add()]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
@@ -1853,7 +1853,7 @@ suite("TLE", () => {
             });
 
             test("with add() with one argument", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[add(5)]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
@@ -1865,7 +1865,7 @@ suite("TLE", () => {
             });
 
             test("with add() with two arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[add(5, 6)]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
@@ -1875,7 +1875,7 @@ suite("TLE", () => {
             });
 
             test("with add() with three arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[add(5, 6, 7)]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
@@ -1887,7 +1887,7 @@ suite("TLE", () => {
             });
 
             test("with add() with three arguments and different casing", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[Add(5, 6, 7)]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
@@ -1899,7 +1899,7 @@ suite("TLE", () => {
             });
 
             test("with resourceId() with zero arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[resourceId()]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
@@ -1911,7 +1911,7 @@ suite("TLE", () => {
             });
 
             test("with resourceId() with one argument", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[resourceId(5)]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
@@ -1923,7 +1923,7 @@ suite("TLE", () => {
             });
 
             test("with resourceId() with two arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[resourceId(5, 6)]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
@@ -1933,7 +1933,7 @@ suite("TLE", () => {
             });
 
             test("with resourceId() with three arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[resourceId(5, 6, 7)]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
@@ -1943,7 +1943,7 @@ suite("TLE", () => {
             });
 
             test("with substring() with zero arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[substring()]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
@@ -1955,7 +1955,7 @@ suite("TLE", () => {
             });
 
             test("with substring() with one argument", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[substring('abc')]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
@@ -1965,7 +1965,7 @@ suite("TLE", () => {
             });
 
             test("with substring() with two arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[substring('abc', 1)]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
@@ -1975,7 +1975,7 @@ suite("TLE", () => {
             });
 
             test("with substring() with three arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[substring('abc', 1, 1)]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
@@ -1985,7 +1985,7 @@ suite("TLE", () => {
             });
 
             test("with substring() with four arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[substring('abc', 1, 1, 'blah')]"`).expression;
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);

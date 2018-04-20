@@ -116,7 +116,7 @@ export class DeploymentTemplate {
 
     public get errors(): Promise<language.Issue[]> {
         if (this._errors === undefined) {
-            this._errors = AzureRMAssets.getFunctionMetadata()
+            this._errors = AzureRMAssets.getFunctionsMetadata()
                 .then((functions: FunctionsMetadata) => {
                     const parseErrors: language.Issue[] = [];
                     for (const jsonQuotedStringToken of this.jsonQuotedStringTokens) {

@@ -803,7 +803,7 @@ export class FindReferencesVisitor extends Visitor {
     public visitString(tleString: StringValue): void {
         if (tleString && Utilities.unquote(tleString.toString()).toLowerCase() === this._lowerCasedName) {
             switch (this._type) {
-                case Reference.ReferenceKind.Parameter:
+                case Reference.Type.Parameter:
                     if (tleString.isParametersArgument()) {
                         this._references.add(tleString.unquotedSpan);
                     }
