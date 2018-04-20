@@ -4,6 +4,10 @@
 
 // TLE = Template Language Expression
 
+// tslint:disable:no-unnecessary-class // Grandfathered in
+// tslint:disable:switch-default // Grandfathered in
+// tslint:disable:max-classes-per-file // Grandfathered in
+
 import * as assert from "assert";
 
 import * as assets from "./AzureRMAssets";
@@ -15,12 +19,7 @@ import * as Utilities from "./Utilities";
 
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { Histogram } from "./Histogram";
-import { HttpClient } from "./HttpClient";
 import { PositionContext } from "./PositionContext";
-
-function findFunctionMetadata(_tleFunctionMetadata: assets.FunctionMetadata[], functionName: string) {
-    return _tleFunctionMetadata.find(func => func.matchesName(functionName));
-}
 
 export function asStringValue(value: Value): StringValue {
     return value instanceof StringValue ? value : null;
@@ -557,6 +556,7 @@ export abstract class Visitor {
     }
 
     public visitNumber(tleNumber: NumberValue): void {
+        // Nothing to do
     }
 
     public visitPropertyAccess(tlePropertyAccess: PropertyAccess): void {
@@ -566,6 +566,7 @@ export abstract class Visitor {
     }
 
     public visitString(tleString: StringValue): void {
+        // Nothing to do
     }
 }
 
@@ -643,7 +644,7 @@ export class UndefinedParameterAndVariableVisitor extends Visitor {
 export class UnrecognizedFunctionVisitor extends Visitor {
     private _errors: language.Issue[] = [];
 
-    constructor(private _tleFunctionMetadata: assets.FunctionMetadata[]) {
+    constructor(private _tleFunctions: assets.FunctionsMetadata) {
         super();
     }
 
@@ -653,7 +654,7 @@ export class UnrecognizedFunctionVisitor extends Visitor {
 
     public visitFunction(tleFunction: FunctionValue): void {
         const functionName: string = tleFunction.nameToken.stringValue;
-        const functionMetadata: assets.FunctionMetadata = findFunctionMetadata(this._tleFunctionMetadata, functionName);
+        const functionMetadata: assets.FunctionMetadata = this._tleFunctions.findbyName(functionName);
         if (!functionMetadata) {
             this._errors.push(new language.Issue(tleFunction.nameToken.span, `Unrecognized function name '${functionName}'.`));
         }
@@ -661,8 +662,8 @@ export class UnrecognizedFunctionVisitor extends Visitor {
         super.visitFunction(tleFunction);
     }
 
-    public static visit(tleValue: Value, tleFunctionMetadata: assets.FunctionMetadata[]): UnrecognizedFunctionVisitor {
-        let visitor = new UnrecognizedFunctionVisitor(tleFunctionMetadata);
+    public static visit(tleValue: Value, tleFunctions: assets.FunctionsMetadata): UnrecognizedFunctionVisitor {
+        let visitor = new UnrecognizedFunctionVisitor(tleFunctions);
         if (tleValue) {
             tleValue.accept(visitor);
         }
@@ -677,7 +678,7 @@ export class UnrecognizedFunctionVisitor extends Visitor {
 export class IncorrectFunctionArgumentCountVisitor extends Visitor {
     private _errors: language.Issue[] = [];
 
-    constructor(private _tleFunctionMetadata: assets.FunctionMetadata[]) {
+    constructor(private _tleFunctions: assets.FunctionsMetadata) {
         super();
     }
 
@@ -687,7 +688,7 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
 
     public visitFunction(tleFunction: FunctionValue): void {
         const parsedFunctionName: string = tleFunction.nameToken.stringValue;
-        let functionMetadata: assets.FunctionMetadata = findFunctionMetadata(this._tleFunctionMetadata, parsedFunctionName);
+        let functionMetadata: assets.FunctionMetadata = this._tleFunctions.findbyName(parsedFunctionName);
         if (functionMetadata) {
             const actualFunctionName: string = functionMetadata.name;
 
@@ -722,8 +723,8 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
         return `argument${argumentCount === 1 ? "" : "s"}`;
     }
 
-    public static visit(tleValue: Value, tleFunctionMetadata: assets.FunctionMetadata[]): IncorrectFunctionArgumentCountVisitor {
-        const visitor = new IncorrectFunctionArgumentCountVisitor(tleFunctionMetadata);
+    public static visit(tleValue: Value, tleFunctions: assets.FunctionsMetadata): IncorrectFunctionArgumentCountVisitor {
+        const visitor = new IncorrectFunctionArgumentCountVisitor(tleFunctions);
         if (tleValue) {
             tleValue.accept(visitor);
         }
@@ -794,10 +795,10 @@ export class FindReferencesVisitor extends Visitor {
     private _references: Reference.List;
     private _lowerCasedName: string;
 
-    constructor(private _type: Reference.Type, private _name: string) {
+    constructor(private _kind: Reference.ReferenceKind, private _name: string) {
         super();
 
-        this._references = new Reference.List(_type);
+        this._references = new Reference.List(_kind);
         this._lowerCasedName = Utilities.unquote(_name).toLowerCase();
     }
 
@@ -807,27 +808,27 @@ export class FindReferencesVisitor extends Visitor {
 
     public visitString(tleString: StringValue): void {
         if (tleString && Utilities.unquote(tleString.toString()).toLowerCase() === this._lowerCasedName) {
-            switch (this._type) {
-                case Reference.Type.Parameter:
+            switch (this._kind) {
+                case Reference.ReferenceKind.Parameter:
                     if (tleString.isParametersArgument()) {
                         this._references.add(tleString.unquotedSpan);
                     }
                     break;
 
-                case Reference.Type.Variable:
+                case Reference.ReferenceKind.Variable:
                     if (tleString.isVariablesArgument()) {
                         this._references.add(tleString.unquotedSpan);
                     }
                     break;
 
                 default:
-                    assert.fail(`Unrecognized ReferenceType: ${this._type}`);
+                    assert.fail(`Unrecognized ReferenceKind: ${this._kind}`);
                     break;
             }
         }
     }
 
-    public static visit(tleValue: Value, referenceType: Reference.Type, referenceName: string): FindReferencesVisitor {
+    public static visit(tleValue: Value, referenceType: Reference.ReferenceKind, referenceName: string): FindReferencesVisitor {
         const visitor = new FindReferencesVisitor(referenceType, referenceName);
         if (tleValue) {
             tleValue.accept(visitor);
@@ -924,22 +925,22 @@ export class Parser {
 
         if (tokenizer.hasCurrent()) {
             let token = tokenizer.current;
-            let type = token.getType();
-            if (type === TokenType.Literal) {
+            let tokenType = token.getType();
+            if (tokenType === TokenType.Literal) {
                 expression = Parser.parseFunction(tokenizer, errors);
             }
-            else if (type === TokenType.QuotedString) {
+            else if (tokenType === TokenType.QuotedString) {
                 if (!token.stringValue.endsWith(token.stringValue[0])) {
                     errors.push(new language.Issue(token.span, "A constant string is missing an end quote."));
                 }
                 expression = new StringValue(token);
                 tokenizer.next();
             }
-            else if (type === TokenType.Number) {
+            else if (tokenType === TokenType.Number) {
                 expression = new NumberValue(token);
                 tokenizer.next();
             }
-            else if (type !== TokenType.RightSquareBracket && type !== TokenType.Comma) {
+            else if (tokenType !== TokenType.RightSquareBracket && tokenType !== TokenType.Comma) {
                 errors.push(new language.Issue(token.span, "Template language expressions must start with a function."));
                 tokenizer.next();
             }
@@ -962,8 +963,8 @@ export class Parser {
                         else {
                             errorSpan = tokenizer.current.span;
 
-                            let type = tokenizer.current.getType();
-                            if (type !== TokenType.RightParenthesis && type !== TokenType.RightSquareBracket && type !== TokenType.Comma) {
+                            let tokenType = tokenizer.current.getType();
+                            if (tokenType !== TokenType.RightParenthesis && tokenType !== TokenType.RightSquareBracket && tokenType !== TokenType.Comma) {
                                 tokenizer.next();
                             }
                         }
@@ -1336,12 +1337,12 @@ export class Token {
     private _span: language.Span;
     private _stringValue: string;
 
-    private static create(type: TokenType, startIndex: number, stringValue: string): Token {
-        assert.notEqual(null, type);
+    private static create(tokenType: TokenType, startIndex: number, stringValue: string): Token {
+        assert.notEqual(null, tokenType);
         assert.notEqual(null, stringValue);
 
         let t = new Token();
-        t._type = type;
+        t._type = tokenType;
         t._span = new language.Span(startIndex, stringValue.length);
         t._stringValue = stringValue;
         return t;

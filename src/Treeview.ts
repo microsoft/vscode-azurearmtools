@@ -1,3 +1,10 @@
+// ----------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// ----------------------------------------------------------------------------
+
+// tslint:disable:no-var-keyword // Grandfathered in
+// tslint:disable:no-duplicate-variable // Grandfathered in
+
 import * as Json from "./JSON";
 import * as vscode from "vscode";
 import { TreeItem } from "vscode";
@@ -277,6 +284,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     if (keyNode.properties[i].name._value.toUpperCase() === "type".toUpperCase()) {
                         let resourceType = keyNode.properties[i].value._value.toUpperCase();
                         icon = "resources.svg";
+                        // tslint:disable:no-unused-expression // Grandfathered in
                         resourceType === "Microsoft.Compute/virtualMachines".toUpperCase() ? icon = "virtualmachines.svg" : undefined;
                         resourceType === "Microsoft.Storage/storageAccounts".toUpperCase() ? icon = "storageaccounts.svg" : undefined;
                         resourceType === "Microsoft.Network/virtualNetworks".toUpperCase() ? icon = "virtualnetworks.svg" : undefined;
@@ -284,6 +292,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                         resourceType === "Microsoft.Network/networkSecurityGroups".toUpperCase() ? icon = "nsg.svg" : undefined;
                         resourceType === "Microsoft.Network/networkInterfaces".toUpperCase() ? icon = "nic.svg" : undefined;
                         resourceType === "Microsoft.Network/publicIPAddresses".toUpperCase() ? icon = "publicip.svg" : undefined;
+                        // tslint:enable:no-unused-expression
                     }
                 }
             }
@@ -334,11 +343,13 @@ export interface IElementInfo {
         key: {
             start: number;
             end: number;
+            // tslint:disable-next-line:no-reserved-keywords // Not worth the risk to change
             type: string;
         },
         value: {
             start: number;
             end: number;
+            // tslint:disable-next-line:no-reserved-keywords // Not worth the risk to change
             type: string;
         },
         level: number;
@@ -348,11 +359,13 @@ export interface IElementInfo {
         key: {
             start: number;
             end: number;
+            // tslint:disable-next-line:no-reserved-keywords // Not worth the risk to change
             type: string;
         },
         value: {
             start: number;
             end: number;
+            // tslint:disable-next-line:no-reserved-keywords // Not worth the risk to change
             type: string;
         }
     },

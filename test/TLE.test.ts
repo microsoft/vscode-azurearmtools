@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable:no-unused-expression
+
 import * as assert from "assert";
 
 import * as Json from "../src/JSON";
@@ -9,7 +11,7 @@ import * as language from "../src/Language";
 import * as Reference from "../src/Reference";
 import * as TLE from "../src/TLE";
 
-import { AzureRMAssets, FunctionMetadata } from "../src/AzureRMAssets";
+import { AzureRMAssets, FunctionMetadata, FunctionsMetadata } from "../src/AzureRMAssets";
 import { DeploymentTemplate } from "../src/DeploymentTemplate";
 import { PositionContext } from "../src/PositionContext";
 
@@ -1747,7 +1749,7 @@ suite("TLE", () => {
 
     suite("UnrecognizedFunctionVisitor", () => {
         suite("visit(tle.Value)", () => {
-            const functionMetadata: FunctionMetadata[] = [new FunctionMetadata("CONCAT", "", "", 1, 2, [])];
+            const functionMetadata: FunctionsMetadata = new FunctionsMetadata([new FunctionMetadata("CONCAT", "", "", 1, 2, [])]);
 
             test("with null", () => {
                 const visitor = TLE.UnrecognizedFunctionVisitor.visit(null, functionMetadata);
@@ -1782,69 +1784,69 @@ suite("TLE", () => {
     });
 
     suite("IncorrectFunctionArgumentCountVisitor", () => {
-        suite("visit(tle.Value, FunctionMetadata[])", () => {
+        suite("visit(tle.Value, FunctionsMetadata)", () => {
             test("with null value", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(null, functionMetadata);
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(null, functions);
                         assert(visitor);
                         assert.deepStrictEqual(visitor.errors, []);
                     });
             });
 
             test("with undefined value", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(undefined, functionMetadata);
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(undefined, functions);
                         assert(visitor);
                         assert.deepStrictEqual(visitor.errors, []);
                     });
             });
 
             test("with number value", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(new TLE.NumberValue(TLE.Token.createNumber(17, "3")), functionMetadata);
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(new TLE.NumberValue(TLE.Token.createNumber(17, "3")), functions);
                         assert(visitor);
                         assert.deepStrictEqual(visitor.errors, []);
                     });
             });
 
             test("with concat() with zero arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[concat()]"`).expression;
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                         assert(visitor);
                         assert.deepStrictEqual(visitor.errors, []);
                     });
             });
 
             test("with concat() with one argument", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[concat(12)]"`).expression;
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                         assert(visitor);
                         assert.deepStrictEqual(visitor.errors, []);
                     });
             });
 
             test("with concat() with two arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[concat(12, 'test')]"`).expression;
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                         assert(visitor);
                         assert.deepStrictEqual(visitor.errors, []);
                     });
             });
 
             test("with add() with zero arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[add()]"`).expression;
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                         assert(visitor);
                         assert.deepStrictEqual(
                             visitor.errors,
@@ -1853,10 +1855,10 @@ suite("TLE", () => {
             });
 
             test("with add() with one argument", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[add(5)]"`).expression;
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                         assert(visitor);
                         assert.deepStrictEqual(
                             visitor.errors,
@@ -1865,20 +1867,20 @@ suite("TLE", () => {
             });
 
             test("with add() with two arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[add(5, 6)]"`).expression;
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                         assert(visitor);
                         assert.deepStrictEqual(visitor.errors, []);
                     });
             });
 
             test("with add() with three arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[add(5, 6, 7)]"`).expression;
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                         assert(visitor);
                         assert.deepStrictEqual(
                             visitor.errors,
@@ -1887,10 +1889,10 @@ suite("TLE", () => {
             });
 
             test("with add() with three arguments and different casing", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[Add(5, 6, 7)]"`).expression;
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                         assert(visitor);
                         assert.deepStrictEqual(
                             visitor.errors,
@@ -1899,10 +1901,10 @@ suite("TLE", () => {
             });
 
             test("with resourceId() with zero arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[resourceId()]"`).expression;
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                         assert(visitor);
                         assert.deepStrictEqual(
                             visitor.errors,
@@ -1911,10 +1913,10 @@ suite("TLE", () => {
             });
 
             test("with resourceId() with one argument", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[resourceId(5)]"`).expression;
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                         assert(visitor);
                         assert.deepStrictEqual(
                             visitor.errors,
@@ -1923,30 +1925,30 @@ suite("TLE", () => {
             });
 
             test("with resourceId() with two arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[resourceId(5, 6)]"`).expression;
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                         assert(visitor);
                         assert.deepStrictEqual(visitor.errors, []);
                     });
             });
 
             test("with resourceId() with three arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[resourceId(5, 6, 7)]"`).expression;
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                         assert(visitor);
                         assert.deepStrictEqual(visitor.errors, []);
                     });
             });
 
             test("with substring() with zero arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[substring()]"`).expression;
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                         assert(visitor);
                         assert.deepStrictEqual(
                             visitor.errors,
@@ -1955,40 +1957,40 @@ suite("TLE", () => {
             });
 
             test("with substring() with one argument", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[substring('abc')]"`).expression;
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                         assert(visitor);
                         assert.deepStrictEqual(visitor.errors, []);
                     });
             });
 
             test("with substring() with two arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[substring('abc', 1)]"`).expression;
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                         assert(visitor);
                         assert.deepStrictEqual(visitor.errors, []);
                     });
             });
 
             test("with substring() with three arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[substring('abc', 1, 1)]"`).expression;
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                         assert(visitor);
                         assert.deepStrictEqual(visitor.errors, []);
                     });
             });
 
             test("with substring() with four arguments", () => {
-                return AzureRMAssets.getFunctionMetadata()
-                    .then((functionMetadata: FunctionMetadata[]) => {
+                return AzureRMAssets.getFunctionsMetadata()
+                    .then((functions: FunctionsMetadata) => {
                         const concat: TLE.Value = TLE.Parser.parse(`"[substring('abc', 1, 1, 'blah')]"`).expression;
-                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functionMetadata);
+                        const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                         assert(visitor);
                         assert.deepStrictEqual(
                             visitor.errors,
@@ -2037,24 +2039,24 @@ suite("TLE", () => {
     suite("FindReferencesVisitor", () => {
         suite("visit(tle.Value,string,string)", () => {
             test("with null TLE", () => {
-                const visitor = TLE.FindReferencesVisitor.visit(null, Reference.Type.Parameter, "pName");
+                const visitor = TLE.FindReferencesVisitor.visit(null, Reference.ReferenceKind.Parameter, "pName");
                 assert(visitor);
-                assert.deepStrictEqual(visitor.references, new Reference.List(Reference.Type.Parameter));
+                assert.deepStrictEqual(visitor.references, new Reference.List(Reference.ReferenceKind.Parameter));
             });
 
             test("with undefined TLE", () => {
-                const visitor = TLE.FindReferencesVisitor.visit(undefined, Reference.Type.Parameter, "pName");
+                const visitor = TLE.FindReferencesVisitor.visit(undefined, Reference.ReferenceKind.Parameter, "pName");
                 assert(visitor);
-                assert.deepStrictEqual(visitor.references, new Reference.List(Reference.Type.Parameter));
+                assert.deepStrictEqual(visitor.references, new Reference.List(Reference.ReferenceKind.Parameter));
             });
 
             test("with TLE", () => {
                 const pr: TLE.ParseResult = TLE.Parser.parse(`"[parameters('pName')]"`)
-                const visitor = TLE.FindReferencesVisitor.visit(pr.expression, Reference.Type.Parameter, "pName");
+                const visitor = TLE.FindReferencesVisitor.visit(pr.expression, Reference.ReferenceKind.Parameter, "pName");
                 assert(visitor);
                 assert.deepStrictEqual(
                     visitor.references,
-                    new Reference.List(Reference.Type.Parameter, [new language.Span(14, 5)]));
+                    new Reference.List(Reference.ReferenceKind.Parameter, [new language.Span(14, 5)]));
             });
         });
     });
