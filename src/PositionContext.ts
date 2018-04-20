@@ -142,7 +142,7 @@ export class PositionContext {
                 const tleValue: TLE.Value = this.tleValue;
                 if (tleValue instanceof TLE.FunctionValue) {
                     if (tleValue.nameToken.span.contains(this.tleCharacterIndex)) {
-                        this._hoverInfo = AzureRMAssets.getFunctionMetadataWithName(tleValue.nameToken.stringValue)
+                        this._hoverInfo = AzureRMAssets.getFunctionMetadataFromName(tleValue.nameToken.stringValue)
                             .then((functionMetadata: FunctionMetadata) => {
                                 let result: Hover.FunctionInfo = null;
                                 if (functionMetadata) {
@@ -282,7 +282,7 @@ export class PositionContext {
                             // We don't allow multiple levels of property access
                             // (resourceGroup().prop1.prop2) on functions other than variables.
                             const functionName: string = functionSource.nameToken.stringValue;
-                            this._completionItems = AzureRMAssets.getFunctionMetadataWithPrefix(functionName)
+                            this._completionItems = AzureRMAssets.getFunctionMetadataFromPrefix(functionName)
                                 .then((functionMetadataMatches: FunctionMetadata[]) => {
                                     const result: Completion.Item[] = [];
 
@@ -366,7 +366,7 @@ export class PositionContext {
                 }
 
                 if (functionToHelpWith) {
-                    this._signatureHelp = AzureRMAssets.getFunctionMetadataWithName(functionToHelpWith.nameToken.stringValue)
+                    this._signatureHelp = AzureRMAssets.getFunctionMetadataFromName(functionToHelpWith.nameToken.stringValue)
                         .then((functionMetadata: FunctionMetadata) => {
                             let result: TLE.FunctionSignatureHelp = null;
                             if (functionMetadata) {
@@ -439,32 +439,30 @@ export class PositionContext {
         return this._variableDefinition;
     }
 
-    private static getFunctionCompletions(prefix: string, replaceSpan: language.Span): Promise<Completion.Item[]> {
-        let functionMetadataPromise: Promise<FunctionMetadata[]>;
+    private static async getFunctionCompletions(prefix: string, replaceSpan: language.Span): Promise<Completion.Item[]> {
+        let functionMetadataMatches: FunctionMetadata[];
         if (prefix === "") {
-            functionMetadataPromise = AzureRMAssets.getFunctionMetadata();
+            functionMetadataMatches = (await AzureRMAssets.getFunctionsMetadata()).functionMetadata;
         }
         else {
-            functionMetadataPromise = AzureRMAssets.getFunctionMetadataWithPrefix(prefix);
+            functionMetadataMatches = (await AzureRMAssets.getFunctionMetadataFromPrefix(prefix));
         }
 
-        return functionMetadataPromise.then((functionMetadataMatches: FunctionMetadata[]) => {
-            const completionItems: Completion.Item[] = [];
-            for (const functionMetadata of functionMetadataMatches) {
-                const name: string = functionMetadata.name;
+        const completionItems: Completion.Item[] = [];
+        for (const functionMetadata of functionMetadataMatches) {
+            const name: string = functionMetadata.name;
 
-                let insertText: string = name;
-                if (functionMetadata.maximumArguments === 0) {
-                    insertText += "()$0";
-                }
-                else {
-                    insertText += "($0)";
-                }
-
-                completionItems.push(new Completion.Item(name, insertText, replaceSpan, `(function) ${functionMetadata.usage}`, functionMetadata.description, Completion.CompletionKind.Function));
+            let insertText: string = name;
+            if (functionMetadata.maximumArguments === 0) {
+                insertText += "()$0";
             }
-            return completionItems;
-        });
+            else {
+                insertText += "($0)";
+            }
+
+            completionItems.push(new Completion.Item(name, insertText, replaceSpan, `(function) ${functionMetadata.usage}`, functionMetadata.description, Completion.CompletionKind.Function));
+        }
+        return completionItems;
     }
 
     private getParameterCompletions(prefix: string, tleValue: TLE.StringValue | TLE.FunctionValue): Completion.Item[] {
