@@ -44,7 +44,7 @@ export class AzureRMAssets {
     }
 
     public static async getFunctionMetadataFromPrefix(functionNamePrefix: string): Promise<FunctionMetadata[]> {
-        return (await this.getFunctionsMetadata()).findByPrefix(functionNamePrefix);
+        return (await this.getFunctionsMetadata()).filterByPrefix(functionNamePrefix);
     }
 
     /**
@@ -106,7 +106,7 @@ export class FunctionsMetadata {
         return this.functionMetadata.find(func => func.lowerCaseName === lowerCasedFunctionName);
     }
 
-    public findByPrefix(functionNamePrefix: string): FunctionMetadata[] {
+    public filterByPrefix(functionNamePrefix: string): FunctionMetadata[] {
         const result: FunctionMetadata[] = [];
         const lowerCasedPrefix: string = functionNamePrefix.toLowerCase();
         return this.functionMetadata.filter(func => func.lowerCaseName.startsWith(lowerCasedPrefix));
