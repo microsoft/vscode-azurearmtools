@@ -19,27 +19,17 @@
         },
         {
             "name": "Launch Unit Tests",
-            "type": "node",
+            "type": "extensionHost",
             "request": "launch",
-            "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
-            "stopOnEntry": false,
+            "runtimeExecutable": "${execPath}",
             "args": [
-                "--ui",
-                "tdd",
-                "--colors"
+                "--extensionDevelopmentPath=${workspaceRoot}",
+                "--extensionTestsPath=${workspaceRoot}/out/test"
             ],
-            "cwd": "${workspaceRoot}/out/",
-            "runtimeExecutable": null,
-            "runtimeArgs": [
-                "--nolazy"
-            ],
-            "env": {
-                "NODE_ENV": "development"
-            },
-            "console": "internalConsole",
+            "stopOnEntry": false,
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceRoot}/out/test/**/*.js"
+                "${workspaceRoot}/out/test"
             ],
             "preLaunchTask": "npm"
         }
