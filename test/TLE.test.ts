@@ -1784,7 +1784,7 @@ suite("TLE", () => {
     suite("IncorrectFunctionArgumentCountVisitor", () => {
         suite("visit(tle.Value, FunctionsMetadata)", () => {
             test("with null value", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(null, functions);
                         assert(visitor);
@@ -1793,7 +1793,7 @@ suite("TLE", () => {
             });
 
             test("with undefined value", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(undefined, functions);
                         assert(visitor);
@@ -1802,7 +1802,7 @@ suite("TLE", () => {
             });
 
             test("with number value", () => {
-                return AzureRMAssets.getFunctionMetadata()
+                return AzureRMAssets.getFunctionsMetadata()
                     .then((functions: FunctionsMetadata) => {
                         const visitor = TLE.IncorrectFunctionArgumentCountVisitor.visit(new TLE.NumberValue(TLE.Token.createNumber(17, "3")), functions);
                         assert(visitor);

@@ -16,7 +16,6 @@ export class AzureRMAssets {
     private static _surveyMetadataUri: Promise<string>;
     private static _surveyMetadata: Promise<SurveyMetadata>;
     private static _functionMetadataUri: Promise<string>;
-    private static _functionMetadata: Promise<FunctionMetadata[]>;
     private static _functionsMetadata: Promise<FunctionsMetadata>;
 
     /**
@@ -27,29 +26,23 @@ export class AzureRMAssets {
         return "azuresdk-3.0.0";
     }
 
-    public static getFunctionMetadata(): Promise<FunctionsMetadata> {
-        if (AzureRMAssets._functionMetadata === undefined) {
-            AzureRMAssets._functionMetadata = AzureRMAssets.getFunctionMetadataUri()
-                .then(AzureRMAssets.readFile)
-                .then(FunctionMetadata.fromString);
-        }
-
+    public static getFunctionsMetadata(): Promise<FunctionsMetadata> {
         if (!AzureRMAssets._functionsMetadata) {
-            AzureRMAssets._functionsMetadata = AzureRMAssets._functionMetadata
-                .then((array: FunctionMetadata[]) => {
-                    return new FunctionsMetadata(array);
-                });
-        }
+            AzureRMAssets._functionsMetadata = AzureRMAssets.getFunctionMetadataUri()
+                .then(AzureRMAssets.readFile)
+                .then(FunctionMetadata.fromString)
+                .then((array: FunctionMetadata[]) => new FunctionsMetadata(array));
 
-        return AzureRMAssets._functionsMetadata;
+            return AzureRMAssets._functionsMetadata;
+        }
     }
 
     public static async getFunctionMetadataFromName(functionName: string): Promise<FunctionMetadata> {
-        return (await this.getFunctionMetadata()).findbyName(functionName);
+        return (await this.getFunctionsMetadata()).findbyName(functionName);
     }
 
     public static async getFunctionMetadataFromPrefix(functionNamePrefix: string): Promise<FunctionMetadata[]> {
-        return (await this.getFunctionMetadata()).findByPrefix(functionNamePrefix);
+        return (await this.getFunctionsMetadata()).findByPrefix(functionNamePrefix);
     }
 
     /**

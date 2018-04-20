@@ -15,7 +15,6 @@ import * as Utilities from "./Utilities";
 
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { Histogram } from "./Histogram";
-import { HttpClient } from "./HttpClient";
 import { PositionContext } from "./PositionContext";
 
 export function asStringValue(value: Value): StringValue {
@@ -790,7 +789,7 @@ export class FindReferencesVisitor extends Visitor {
     private _references: Reference.List;
     private _lowerCasedName: string;
 
-    constructor(private _type: Reference.Type, private _name: string) {
+    constructor(private _type: Reference.ReferenceKind, private _name: string) {
         super();
 
         this._references = new Reference.List(_type);
@@ -804,7 +803,7 @@ export class FindReferencesVisitor extends Visitor {
     public visitString(tleString: StringValue): void {
         if (tleString && Utilities.unquote(tleString.toString()).toLowerCase() === this._lowerCasedName) {
             switch (this._type) {
-                case Reference.Type.Parameter:
+                case Reference.ReferenceKind.Parameter:
                     if (tleString.isParametersArgument()) {
                         this._references.add(tleString.unquotedSpan);
                     }

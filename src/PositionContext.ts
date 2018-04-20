@@ -307,7 +307,7 @@ export class PositionContext {
     }
 
     private static createPropertyCompletionItem(propertyName: string, replaceSpan: language.Span): Completion.Item {
-        return new Completion.Item(propertyName, `${propertyName}$0`, replaceSpan, "(property)", "", Completion.Type.Property);
+        return new Completion.Item(propertyName, `${propertyName}$0`, replaceSpan, "(property)", "", Completion.CompletionKind.Property);
     }
 
     public get references(): Reference.List {
@@ -442,7 +442,7 @@ export class PositionContext {
     private static async getFunctionCompletions(prefix: string, replaceSpan: language.Span): Promise<Completion.Item[]> {
         let functionMetadataMatches: FunctionMetadata[];
         if (prefix === "") {
-            functionMetadataMatches = (await AzureRMAssets.getFunctionMetadata()).functionMetadata;
+            functionMetadataMatches = (await AzureRMAssets.getFunctionsMetadata()).functionMetadata;
         }
         else {
             functionMetadataMatches = (await AzureRMAssets.getFunctionMetadataFromPrefix(prefix));
