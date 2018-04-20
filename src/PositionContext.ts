@@ -315,17 +315,17 @@ export class PositionContext {
             this._references = null;
 
             let referenceName: string = null;
-            let referenceType: Reference.Type = null;
+            let referenceType: Reference.ReferenceKind = null;
 
             const tleStringValue: TLE.StringValue = TLE.asStringValue(this.tleValue);
             if (tleStringValue) {
                 referenceName = tleStringValue.toString();
 
                 if (tleStringValue.isParametersArgument()) {
-                    referenceType = Reference.Type.Parameter;
+                    referenceType = Reference.ReferenceKind.Parameter;
                 }
                 else if (tleStringValue.isVariablesArgument()) {
-                    referenceType = Reference.Type.Variable;
+                    referenceType = Reference.ReferenceKind.Variable;
                 }
             }
 
@@ -336,12 +336,12 @@ export class PositionContext {
 
                     const parameterDefinition: ParameterDefinition = this._deploymentTemplate.getParameterDefinition(referenceName);
                     if (parameterDefinition && parameterDefinition.name === jsonStringValue) {
-                        referenceType = Reference.Type.Parameter;
+                        referenceType = Reference.ReferenceKind.Parameter;
                     }
                     else {
                         const variableDefinition: Json.Property = this._deploymentTemplate.getVariableDefinition(referenceName);
                         if (variableDefinition && variableDefinition.name === jsonStringValue) {
-                            referenceType = Reference.Type.Variable;
+                            referenceType = Reference.ReferenceKind.Variable;
                         }
                     }
                 }
@@ -460,7 +460,7 @@ export class PositionContext {
                 insertText += "($0)";
             }
 
-            completionItems.push(new Completion.Item(name, insertText, replaceSpan, `(function) ${functionMetadata.usage}`, functionMetadata.description, Completion.Type.Function));
+            completionItems.push(new Completion.Item(name, insertText, replaceSpan, `(function) ${functionMetadata.usage}`, functionMetadata.description, Completion.CompletionKind.Function));
         }
         return completionItems;
     }
@@ -472,7 +472,7 @@ export class PositionContext {
         const parameterDefinitionMatches: ParameterDefinition[] = this._deploymentTemplate.findParameterDefinitionsWithPrefix(prefix);
         for (const parameterDefinition of parameterDefinitionMatches) {
             const name: string = `'${parameterDefinition.name}'`;
-            parameterCompletions.push(new Completion.Item(name, `${name}${replaceSpanInfo.includeRightParenthesisInCompletion ? ")" : ""}$0`, replaceSpanInfo.replaceSpan, `(parameter)`, parameterDefinition.description, Completion.Type.Parameter));
+            parameterCompletions.push(new Completion.Item(name, `${name}${replaceSpanInfo.includeRightParenthesisInCompletion ? ")" : ""}$0`, replaceSpanInfo.replaceSpan, `(parameter)`, parameterDefinition.description, Completion.CompletionKind.Parameter));
         }
         return parameterCompletions;
     }
@@ -484,7 +484,7 @@ export class PositionContext {
         const variableDefinitionMatches: Json.Property[] = this._deploymentTemplate.findVariableDefinitionsWithPrefix(prefix);
         for (const variableDefinition of variableDefinitionMatches) {
             const variableName: string = `'${variableDefinition.name.toString()}'`;
-            variableCompletions.push(new Completion.Item(variableName, `${variableName}${replaceSpanInfo.includeRightParenthesisInCompletion ? ")" : ""}$0`, replaceSpanInfo.replaceSpan, `(variable)`, "", Completion.Type.Variable));
+            variableCompletions.push(new Completion.Item(variableName, `${variableName}${replaceSpanInfo.includeRightParenthesisInCompletion ? ")" : ""}$0`, replaceSpanInfo.replaceSpan, `(variable)`, "", Completion.CompletionKind.Variable));
         }
         return variableCompletions;
     }

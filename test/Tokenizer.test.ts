@@ -9,12 +9,12 @@ import * as utilities from "../src/Utilities";
 
 suite("Tokenizer", () => {
     suite("Token", () => {
-        function constructorTest(text: string, type: basic.TokenType): void {
+        function constructorTest(text: string, tokenType: basic.TokenType): void {
             test(`with ${utilities.escapeAndQuote(text)}`, () => {
-                const token = new basic.Token(text, type);
+                const token = new basic.Token(text, tokenType);
                 assert.deepStrictEqual(token.toString(), text);
                 assert.deepStrictEqual(token.length(), text.length);
-                assert.deepStrictEqual(token.getType(), type);
+                assert.deepStrictEqual(token.getType(), tokenType);
             });
         }
 

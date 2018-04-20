@@ -40,6 +40,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 // this method is called when your extension is deactivated
 export function deactivate() {
+    // Nothing to do
 }
 
 export class AzureRMTools {
@@ -501,7 +502,7 @@ export class AzureRMTools {
                             break;
 
                         default:
-                            assert.fail(`Unrecognized Reference.Type: ${references.kind}`);
+                            assert.fail(`Unrecognized Reference.Kind: ${references.kind}`);
                             referenceType = "no reference type";
                             break;
                     }
@@ -523,7 +524,7 @@ export class AzureRMTools {
     }
 
     private onProvideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp> {
-        let result: Promise<vscode.SignatureHelp> = null;
+        let result: Promise<vscode.SignatureHelp> = Promise.resolve(null);
 
         this.logOnError(() => {
             const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);

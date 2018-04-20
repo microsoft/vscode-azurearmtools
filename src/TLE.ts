@@ -4,6 +4,10 @@
 
 // TLE = Template Language Expression
 
+// tslint:disable:no-unnecessary-class // Grandfathered in
+// tslint:disable:switch-default // Grandfathered in
+// tslint:disable:max-classes-per-file // Grandfathered in
+
 import * as assert from "assert";
 
 import * as assets from "./AzureRMAssets";
@@ -552,6 +556,7 @@ export abstract class Visitor {
     }
 
     public visitNumber(tleNumber: NumberValue): void {
+        // Nothing to do
     }
 
     public visitPropertyAccess(tlePropertyAccess: PropertyAccess): void {
@@ -561,6 +566,7 @@ export abstract class Visitor {
     }
 
     public visitString(tleString: StringValue): void {
+        // Nothing to do
     }
 }
 
@@ -803,26 +809,26 @@ export class FindReferencesVisitor extends Visitor {
     public visitString(tleString: StringValue): void {
         if (tleString && Utilities.unquote(tleString.toString()).toLowerCase() === this._lowerCasedName) {
             switch (this._type) {
-                case Reference.Type.Parameter:
+                case Reference.ReferenceKind.Parameter:
                     if (tleString.isParametersArgument()) {
                         this._references.add(tleString.unquotedSpan);
                     }
                     break;
 
-                case Reference.Type.Variable:
+                case Reference.ReferenceKind.Variable:
                     if (tleString.isVariablesArgument()) {
                         this._references.add(tleString.unquotedSpan);
                     }
                     break;
 
                 default:
-                    assert.fail(`Unrecognized ReferenceType: ${this._type}`);
+                    assert.fail(`Unrecognized ReferenceKind: ${this._type}`);
                     break;
             }
         }
     }
 
-    public static visit(tleValue: Value, referenceType: Reference.Type, referenceName: string): FindReferencesVisitor {
+    public static visit(tleValue: Value, referenceType: Reference.ReferenceKind, referenceName: string): FindReferencesVisitor {
         const visitor = new FindReferencesVisitor(referenceType, referenceName);
         if (tleValue) {
             tleValue.accept(visitor);
@@ -919,22 +925,22 @@ export class Parser {
 
         if (tokenizer.hasCurrent()) {
             let token = tokenizer.current;
-            let type = token.getType();
-            if (type === TokenType.Literal) {
+            let tokenType = token.getType();
+            if (tokenType === TokenType.Literal) {
                 expression = Parser.parseFunction(tokenizer, errors);
             }
-            else if (type === TokenType.QuotedString) {
+            else if (tokenType === TokenType.QuotedString) {
                 if (!token.stringValue.endsWith(token.stringValue[0])) {
                     errors.push(new language.Issue(token.span, "A constant string is missing an end quote."));
                 }
                 expression = new StringValue(token);
                 tokenizer.next();
             }
-            else if (type === TokenType.Number) {
+            else if (tokenType === TokenType.Number) {
                 expression = new NumberValue(token);
                 tokenizer.next();
             }
-            else if (type !== TokenType.RightSquareBracket && type !== TokenType.Comma) {
+            else if (tokenType !== TokenType.RightSquareBracket && tokenType !== TokenType.Comma) {
                 errors.push(new language.Issue(token.span, "Template language expressions must start with a function."));
                 tokenizer.next();
             }
@@ -957,8 +963,8 @@ export class Parser {
                         else {
                             errorSpan = tokenizer.current.span;
 
-                            let type = tokenizer.current.getType();
-                            if (type !== TokenType.RightParenthesis && type !== TokenType.RightSquareBracket && type !== TokenType.Comma) {
+                            let tokenType = tokenizer.current.getType();
+                            if (tokenType !== TokenType.RightParenthesis && tokenType !== TokenType.RightSquareBracket && tokenType !== TokenType.Comma) {
                                 tokenizer.next();
                             }
                         }
@@ -1331,12 +1337,12 @@ export class Token {
     private _span: language.Span;
     private _stringValue: string;
 
-    private static create(type: TokenType, startIndex: number, stringValue: string): Token {
-        assert.notEqual(null, type);
+    private static create(tokenType: TokenType, startIndex: number, stringValue: string): Token {
+        assert.notEqual(null, tokenType);
         assert.notEqual(null, stringValue);
 
         let t = new Token();
-        t._type = type;
+        t._type = tokenType;
         t._span = new language.Span(startIndex, stringValue.length);
         t._stringValue = stringValue;
         return t;

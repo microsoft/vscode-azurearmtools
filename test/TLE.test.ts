@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable:no-unused-expression
+
 import * as assert from "assert";
 
 import * as Json from "../src/JSON";
@@ -2037,24 +2039,24 @@ suite("TLE", () => {
     suite("FindReferencesVisitor", () => {
         suite("visit(tle.Value,string,string)", () => {
             test("with null TLE", () => {
-                const visitor = TLE.FindReferencesVisitor.visit(null, Reference.Type.Parameter, "pName");
+                const visitor = TLE.FindReferencesVisitor.visit(null, Reference.ReferenceKind.Parameter, "pName");
                 assert(visitor);
-                assert.deepStrictEqual(visitor.references, new Reference.List(Reference.Type.Parameter));
+                assert.deepStrictEqual(visitor.references, new Reference.List(Reference.ReferenceKind.Parameter));
             });
 
             test("with undefined TLE", () => {
-                const visitor = TLE.FindReferencesVisitor.visit(undefined, Reference.Type.Parameter, "pName");
+                const visitor = TLE.FindReferencesVisitor.visit(undefined, Reference.ReferenceKind.Parameter, "pName");
                 assert(visitor);
-                assert.deepStrictEqual(visitor.references, new Reference.List(Reference.Type.Parameter));
+                assert.deepStrictEqual(visitor.references, new Reference.List(Reference.ReferenceKind.Parameter));
             });
 
             test("with TLE", () => {
                 const pr: TLE.ParseResult = TLE.Parser.parse(`"[parameters('pName')]"`)
-                const visitor = TLE.FindReferencesVisitor.visit(pr.expression, Reference.Type.Parameter, "pName");
+                const visitor = TLE.FindReferencesVisitor.visit(pr.expression, Reference.ReferenceKind.Parameter, "pName");
                 assert(visitor);
                 assert.deepStrictEqual(
                     visitor.references,
-                    new Reference.List(Reference.Type.Parameter, [new language.Span(14, 5)]));
+                    new Reference.List(Reference.ReferenceKind.Parameter, [new language.Span(14, 5)]));
             });
         });
     });
