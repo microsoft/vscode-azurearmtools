@@ -34,8 +34,9 @@ export class AzureRMAssets {
                 .then(FunctionMetadata.fromString)
                 .then((array: FunctionMetadata[]) => new FunctionsMetadata(array));
 
-            return AzureRMAssets._functionsMetadata;
         }
+
+        return AzureRMAssets._functionsMetadata;
     }
 
     public static async getFunctionMetadataFromName(functionName: string): Promise<FunctionMetadata> {
