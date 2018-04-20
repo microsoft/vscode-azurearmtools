@@ -795,10 +795,10 @@ export class FindReferencesVisitor extends Visitor {
     private _references: Reference.List;
     private _lowerCasedName: string;
 
-    constructor(private _type: Reference.ReferenceKind, private _name: string) {
+    constructor(private _kind: Reference.ReferenceKind, private _name: string) {
         super();
 
-        this._references = new Reference.List(_type);
+        this._references = new Reference.List(_kind);
         this._lowerCasedName = Utilities.unquote(_name).toLowerCase();
     }
 
@@ -808,7 +808,7 @@ export class FindReferencesVisitor extends Visitor {
 
     public visitString(tleString: StringValue): void {
         if (tleString && Utilities.unquote(tleString.toString()).toLowerCase() === this._lowerCasedName) {
-            switch (this._type) {
+            switch (this._kind) {
                 case Reference.ReferenceKind.Parameter:
                     if (tleString.isParametersArgument()) {
                         this._references.add(tleString.unquotedSpan);
@@ -822,7 +822,7 @@ export class FindReferencesVisitor extends Visitor {
                     break;
 
                 default:
-                    assert.fail(`Unrecognized ReferenceKind: ${this._type}`);
+                    assert.fail(`Unrecognized ReferenceKind: ${this._kind}`);
                     break;
             }
         }
