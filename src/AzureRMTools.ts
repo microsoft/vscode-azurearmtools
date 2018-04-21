@@ -339,6 +339,10 @@ export class AzureRMTools {
         }
     }
 
+    /**
+     * Logs telemetry with information about the functions used in a template. Only meaningful if called
+     * in a relatively stable state, such as after first opening
+     */
     private logFunctionCounts(deploymentTemplate: DeploymentTemplate): void {
         let me = this;
         let outputChannel = undefined;
@@ -350,6 +354,7 @@ export class AzureRMTools {
                 incorrectArgs?: string,
                 [key: string]: string
             } = this.properties;
+
             // Full function counts
             const functionCounts: Histogram = deploymentTemplate.functionCounts;
             const functionsData = {};
@@ -357,7 +362,8 @@ export class AzureRMTools {
                 functionsData[functionName] = functionCounts.getCount(functionName);
             }
             properties.functionCounts = JSON.stringify(functionsData);
-            // Missing function names and incorrect number of arguments
+
+            // Missing function names and functions with incorrect number of arguments
             let issues: language.Issue[] = await deploymentTemplate.errors;
             let unrecognized = new Set<string>();
             let incorrectArgCounts = new Set<string>();
