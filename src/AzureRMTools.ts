@@ -33,14 +33,19 @@ import { isLanguageIdSupported, supportedDocumentSelector } from "./supported";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(new Reporter(context));
     context.subscriptions.push(new AzureRMTools(context));
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {
-    // Nothing to do
+export function deactivate(): void {
+    // nothing to do
+}
+
+type SurveyInfo = {
+    settings: SurveySettings;
+    filePath: string;
 }
 
 export class AzureRMTools {
@@ -75,7 +80,7 @@ export class AzureRMTools {
     constructor(context: vscode.ExtensionContext) {
         this.loadConfiguration();
 
-        const jsonOutline = new JsonOutlineProvider(context);
+        const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
         context.subscriptions.push(vscode.window.registerTreeDataProvider("json-outline", jsonOutline));
         context.subscriptions.push(vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => jsonOutline.goToDefinition(range)));
 
@@ -103,7 +108,7 @@ export class AzureRMTools {
         });
     }
 
-    public dispose() {
+    public dispose(): void {
         this.logOnError(() => {
             if (this._deploymentTemplateFileSubscriptions) {
                 this._deploymentTemplateFileSubscriptions.dispose();
@@ -152,22 +157,9 @@ export class AzureRMTools {
                     stopwatch.start();
                 }
 
-                let deploymentTemplate = new DeploymentTemplate(document.getText(), documentUri);
+                let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(document.getText(), documentUri);
                 if (deploymentTemplate.hasValidSchemaUri()) {
-                    const surveySettingsFilePath: string = path.join(os.homedir(), ".vscode", "azurerm", "surveyMetadata.json");
-                    const surveySettings: SurveySettings = SurveySettings.fromFile(surveySettingsFilePath);
-
-                    surveySettings.incrementDeploymentTemplatesOpenedOrCreated();
-
-                    if (!surveySettings.deploymentTemplateFirstOpenedOrCreatedDateAndTime) {
-                        surveySettings.deploymentTemplateFirstOpenedOrCreatedDateAndTime = Date.now();
-                    }
-
-                    if (surveySettings.showSurveyPrompts === undefined || surveySettings.showSurveyPrompts === null) {
-                        surveySettings.showSurveyPrompts = true;
-                    }
-
-                    surveySettings.toFile(surveySettingsFilePath);
+                    let surveyInfo: SurveyInfo = this.updateSurveySettingsFromOpeningTemplate();
 
                     // If this is the first deployment template to be opened,
                     // then we need to register all of our deployment template
@@ -177,90 +169,7 @@ export class AzureRMTools {
                     // are fired for all JSON files, not just deployment
                     // templates.
                     if (Object.keys(this._deploymentTemplates).length === 0) {
-                        let deploymentTemplateFileSubscriptionsArray: vscode.Disposable[] = [];
-
-                        vscode.window.onDidChangeTextEditorSelection(this.onTextSelectionChanged, this, deploymentTemplateFileSubscriptionsArray);
-
-                        vscode.workspace.onDidCloseTextDocument(this.onDocumentClosed, this, deploymentTemplateFileSubscriptionsArray);
-
-                        const self: AzureRMTools = this;
-                        const hoverProvider: vscode.HoverProvider = {
-                            provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover> {
-                                return self.onProvideHover(document, position, token);
-                            }
-                        };
-                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerHoverProvider(supportedDocumentSelector, hoverProvider));
-
-                        const completionProvider: vscode.CompletionItemProvider = {
-                            provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList> {
-                                return self.onProvideCompletionItems(document, position, token);
-                            }
-                        };
-                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerCompletionItemProvider(supportedDocumentSelector, completionProvider, "'", "[", "."));
-
-                        const definitionProvider: vscode.DefinitionProvider = {
-                            provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Definition {
-                                return self.onProvideDefinition(document, position, token);
-                            }
-                        };
-                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerDefinitionProvider(supportedDocumentSelector, definitionProvider));
-
-                        const referenceProvider: vscode.ReferenceProvider = {
-                            provideReferences(document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): vscode.Location[] {
-                                return self.onProvideReferences(document, position, context, token);
-                            }
-                        };
-                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerReferenceProvider(supportedDocumentSelector, referenceProvider));
-
-                        const signatureHelpProvider: vscode.SignatureHelpProvider = {
-                            provideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp> {
-                                return self.onProvideSignatureHelp(document, position, token);
-                            }
-                        };
-                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerSignatureHelpProvider(supportedDocumentSelector, signatureHelpProvider, ',', '(', '\n'));
-
-                        const renameProvider: vscode.RenameProvider = {
-                            provideRenameEdits(document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): vscode.WorkspaceEdit {
-                                return self.onProvideRename(document, position, newName, token);
-                            }
-                        }
-                        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerRenameProvider(supportedDocumentSelector, renameProvider));
-
-                        this._diagnosticsCollection = vscode.languages.createDiagnosticCollection("azurermtle");
-                        deploymentTemplateFileSubscriptionsArray.push(this._diagnosticsCollection);
-
-                        this._deploymentTemplateFileSubscriptions = vscode.Disposable.from(...deploymentTemplateFileSubscriptionsArray);
-
-                        if (surveySettings.showSurveyPrompts) {
-                            AzureRMAssets.getSurveyMetadata()
-                                .then((surveyMetadata: SurveyMetadata) => {
-                                    if (surveyMetadata.shouldShowSurveyPrompt(surveySettings)) {
-                                        const message: string = "We would like to collect your feedback on the Azure Resource Manager Tools extension. Please take a few minutes to fill out survey.";
-                                        const options: string[] = ["Don't ask me again", "OK"]; // VS Code automatically inserts a "Close" option.
-
-                                        vscode.window.showInformationMessage(message, ...options).then((selectedOption: string) => {
-                                            surveySettings.previousSurveyPromptDateAndTime = Date.now();
-
-                                            this.log({
-                                                eventName: "Survey Prompt",
-                                                selectedOption: selectedOption
-                                            });
-
-                                            if (selectedOption === "OK") {
-                                                open(surveyMetadata.surveyLink);
-                                            }
-                                            else if (selectedOption === "Don't ask me again") {
-                                                surveySettings.showSurveyPrompts = false;
-                                            }
-
-                                            surveySettings.toFile(surveySettingsFilePath);
-                                        });
-                                    }
-                                })
-                                .catch((error: any) => {
-                                    this.logError("Failed To Get Survey Metadata", error);
-                                });
-                        }
+                        this.initializeExtension(surveyInfo);
                     }
 
 
@@ -278,33 +187,10 @@ export class AzureRMTools {
                             parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds
                         });
 
-                        const functionCountEvent: Telemetry.Event = {
-                            eventName: "TLE Function Counts"
-                        };
-                        const functionCounts: Histogram = deploymentTemplate.functionCounts;
-                        for (const functionName of functionCounts.keys) {
-                            functionCountEvent[functionName] = functionCounts.getCount(functionName);
-                        }
-                        this.log(functionCountEvent);
+                        this.logFunctionCounts(deploymentTemplate);
                     }
 
-                    deploymentTemplate.errors
-                        .then((parseErrors: language.Issue[]) => {
-                            const diagnostics: vscode.Diagnostic[] = [];
-
-                            for (const error of parseErrors) {
-                                diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentTemplate, error, vscode.DiagnosticSeverity.Error));
-                            }
-
-                            for (const warning of deploymentTemplate.warnings) {
-                                diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentTemplate, warning, vscode.DiagnosticSeverity.Warning));
-                            }
-
-                            this._diagnosticsCollection.set(document.uri, diagnostics);
-                        })
-                        .catch((error: any) => {
-                            this.logError("UnhandledError", error);
-                        });
+                    this.logDeploymentTemplateErrors(document, deploymentTemplate);
                 }
             }
 
@@ -320,6 +206,145 @@ export class AzureRMTools {
                 this.closeDeploymentTemplate(document);
             }
         }
+    }
+
+    private logDeploymentTemplateErrors(document: vscode.TextDocument, deploymentTemplate: DeploymentTemplate): void {
+        deploymentTemplate.errors
+            .then((parseErrors: language.Issue[]) => {
+                const diagnostics: vscode.Diagnostic[] = [];
+
+                for (const error of parseErrors) {
+                    diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentTemplate, error, vscode.DiagnosticSeverity.Error));
+                }
+
+                for (const warning of deploymentTemplate.warnings) {
+                    diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentTemplate, warning, vscode.DiagnosticSeverity.Warning));
+                }
+
+                this._diagnosticsCollection.set(document.uri, diagnostics);
+            })
+            .catch((error: any) => {
+                this.logError("UnhandledError", error);
+            });
+    }
+
+    /**
+     * Update survey settings on disk and return the updated version
+     */
+    private updateSurveySettingsFromOpeningTemplate(): SurveyInfo {
+        const filePath: string = path.join(os.homedir(), ".vscode", "azurerm", "surveyMetadata.json");
+        const settings: SurveySettings = SurveySettings.fromFile(filePath);
+
+        settings.incrementDeploymentTemplatesOpenedOrCreated();
+
+        if (!settings.deploymentTemplateFirstOpenedOrCreatedDateAndTime) {
+            settings.deploymentTemplateFirstOpenedOrCreatedDateAndTime = Date.now();
+        }
+
+        if (settings.showSurveyPrompts === undefined || settings.showSurveyPrompts === null) {
+            settings.showSurveyPrompts = true;
+        }
+
+        settings.toFile(filePath);
+
+        return { settings, filePath };
+    }
+
+    private initializeExtension(surveyInfo: SurveyInfo): void {
+        let deploymentTemplateFileSubscriptionsArray: vscode.Disposable[] = [];
+
+        vscode.window.onDidChangeTextEditorSelection(this.onTextSelectionChanged, this, deploymentTemplateFileSubscriptionsArray);
+
+        vscode.workspace.onDidCloseTextDocument(this.onDocumentClosed, this, deploymentTemplateFileSubscriptionsArray);
+
+        const self: AzureRMTools = this;
+        const hoverProvider: vscode.HoverProvider = {
+            provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover> {
+                return self.onProvideHover(document, position, token);
+            }
+        };
+        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerHoverProvider(supportedDocumentSelector, hoverProvider));
+
+        const completionProvider: vscode.CompletionItemProvider = {
+            provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList> {
+                return self.onProvideCompletionItems(document, position, token);
+            }
+        };
+        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerCompletionItemProvider(supportedDocumentSelector, completionProvider, "'", "[", "."));
+
+        const definitionProvider: vscode.DefinitionProvider = {
+            provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Definition {
+                return self.onProvideDefinition(document, position, token);
+            }
+        };
+        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerDefinitionProvider(supportedDocumentSelector, definitionProvider));
+
+        const referenceProvider: vscode.ReferenceProvider = {
+            provideReferences(document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): vscode.Location[] {
+                return self.onProvideReferences(document, position, context, token);
+            }
+        };
+        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerReferenceProvider(supportedDocumentSelector, referenceProvider));
+
+        const signatureHelpProvider: vscode.SignatureHelpProvider = {
+            provideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp> {
+                return self.onProvideSignatureHelp(document, position, token);
+            }
+        };
+        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerSignatureHelpProvider(supportedDocumentSelector, signatureHelpProvider, ",", "(", "\n"));
+
+        const renameProvider: vscode.RenameProvider = {
+            provideRenameEdits(document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): vscode.WorkspaceEdit {
+                return self.onProvideRename(document, position, newName, token);
+            }
+        };
+        deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerRenameProvider(supportedDocumentSelector, renameProvider));
+
+        this._diagnosticsCollection = vscode.languages.createDiagnosticCollection("azurermtle");
+        deploymentTemplateFileSubscriptionsArray.push(this._diagnosticsCollection);
+
+        this._deploymentTemplateFileSubscriptions = vscode.Disposable.from(...deploymentTemplateFileSubscriptionsArray);
+
+        if (surveyInfo.settings.showSurveyPrompts) {
+            AzureRMAssets.getSurveyMetadata()
+                .then((surveyMetadata: SurveyMetadata) => {
+                    if (surveyMetadata.shouldShowSurveyPrompt(surveyInfo.settings)) {
+                        const message: string = "We would like to collect your feedback on the Azure Resource Manager Tools extension. Please take a few minutes to fill out survey.";
+                        const options: string[] = ["Don't ask me again", "OK"]; // VS Code automatically inserts a "Close" option.
+
+                        vscode.window.showInformationMessage(message, ...options).then((selectedOption: string) => {
+                            surveyInfo.settings.previousSurveyPromptDateAndTime = Date.now();
+
+                            this.log({
+                                eventName: "Survey Prompt",
+                                selectedOption: selectedOption
+                            });
+
+                            if (selectedOption === "OK") {
+                                open(surveyMetadata.surveyLink);
+                            } else if (selectedOption === "Don't ask me again") {
+                                surveyInfo.settings.showSurveyPrompts = false;
+                            }
+
+                            surveyInfo.settings.toFile(surveyInfo.filePath);
+                        });
+                    }
+                })
+                .catch((error: any) => {
+                    this.logError("Failed To Get Survey Metadata", error);
+                });
+        }
+    }
+
+    private logFunctionCounts(deploymentTemplate: DeploymentTemplate): void {
+        const functionCountEvent: Telemetry.Event = {
+            eventName: "TLE Function Counts"
+        };
+        const functionCounts: Histogram = deploymentTemplate.functionCounts;
+        for (const functionName of functionCounts.keys) {
+            functionCountEvent[functionName] = functionCounts.getCount(functionName);
+        }
+        this.log(functionCountEvent);
     }
 
     private getVSCodeDiagnosticFromIssue(deploymentTemplate: DeploymentTemplate, issue: language.Issue, severity: vscode.DiagnosticSeverity): vscode.Diagnostic {
@@ -364,14 +389,12 @@ export class AzureRMTools {
                                     hoverType: "TLE Function",
                                     tleFunctionName: hoverInfo.functionName
                                 });
-                            }
-                            else if (hoverInfo instanceof Hover.ParameterReferenceInfo) {
+                            } else if (hoverInfo instanceof Hover.ParameterReferenceInfo) {
                                 this.log({
                                     eventName: "Hover",
                                     hoverType: "Parameter Reference"
                                 });
-                            }
-                            else if (hoverInfo instanceof Hover.VariableReferenceInfo) {
+                            } else if (hoverInfo instanceof Hover.VariableReferenceInfo) {
                                 this.log({
                                     eventName: "Hover",
                                     hoverType: "Variable Reference"
@@ -461,8 +484,7 @@ export class AzureRMTools {
                     const definitionRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, context.parameterDefinition.span);
                     result = new vscode.Location(locationUri, definitionRange);
                     definitionType = "parameter";
-                }
-                else if (context.variableDefinition) {
+                } else if (context.variableDefinition) {
                     const locationUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
                     const definitionRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, context.variableDefinition.span);
                     result = new vscode.Location(locationUri, definitionRange);
@@ -577,8 +599,7 @@ export class AzureRMTools {
                         const secondSingleQuoteIndex: number = newName.indexOf(`'`, firstSingleQuoteIndex + 1);
                         if (secondSingleQuoteIndex >= 0) {
                             newName = newName.substring(firstSingleQuoteIndex + 1, secondSingleQuoteIndex);
-                        }
-                        else {
+                        } else {
                             newName = newName.substring(firstSingleQuoteIndex + 1);
                         }
                     }
@@ -589,8 +610,7 @@ export class AzureRMTools {
                         const referenceRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, referenceSpan);
                         result.replace(documentUri, referenceRange, newName);
                     }
-                }
-                else {
+                } else {
                     vscode.window.showInformationMessage("You can only rename parameters and variables.");
                 }
             }
@@ -695,8 +715,7 @@ export class AzureRMTools {
                 }
 
                 this._debugTelemetry.log(event);
-            }
-            else {
+            } else {
                 if (!this._productionTelemetry) {
                     this._productionTelemetry = new Telemetry.PropertySetter(null, new Telemetry.VSCode());
                 }
@@ -711,8 +730,7 @@ export class AzureRMTools {
 
         try {
             operation();
-        }
-        catch (error) {
+        } catch (error) {
             this.logError("UnhandledError", error);
         }
     }
@@ -724,10 +742,9 @@ export class AzureRMTools {
         };
 
         if (error instanceof TypeError) {
-            event["message"] = error.message;
-            event["stack"] = error.stack;
-        }
-        else {
+            event.message = error.message;
+            event.stack = error.stack;
+        } else {
             for (const propertyName in error) {
                 event[propertyName] = error[propertyName];
             }
