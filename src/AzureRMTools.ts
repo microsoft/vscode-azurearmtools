@@ -342,7 +342,7 @@ export class AzureRMTools {
         };
         const functionCounts: Histogram = deploymentTemplate.functionCounts;
         for (const functionName of functionCounts.keys) {
-            functionCountEvent[functionName] = functionCounts.get(functionName);
+            functionCountEvent[functionName] = functionCounts.getCount(functionName);
         }
         this.log(functionCountEvent);
     }
