@@ -17,7 +17,7 @@ export class AzureRMAssets {
     private static _surveyMetadataUri: Promise<string>;
     private static _surveyMetadata: Promise<SurveyMetadata>;
     private static _functionMetadataUri: Promise<string>;
-    private static _functionMetadata: Promise<FunctionMetadata[]>;
+    private static _functionsMetadata: Promise<FunctionsMetadata>;
 
     /**
      * Indicates which version container in the storage account the extension will use for its
@@ -27,46 +27,24 @@ export class AzureRMAssets {
         return "azuresdk-3.0.0";
     }
 
-    public static getFunctionMetadata(): Promise<FunctionMetadata[]> {
-        if (AzureRMAssets._functionMetadata === undefined) {
-            AzureRMAssets._functionMetadata = AzureRMAssets.getFunctionMetadataUri()
+    public static getFunctionsMetadata(): Promise<FunctionsMetadata> {
+        if (!AzureRMAssets._functionsMetadata) {
+            AzureRMAssets._functionsMetadata = AzureRMAssets.getFunctionMetadataUri()
                 .then(AzureRMAssets.readFile)
-                .then(FunctionMetadata.fromString);
+                .then(FunctionMetadata.fromString)
+                .then((array: FunctionMetadata[]) => new FunctionsMetadata(array));
+
         }
-        return AzureRMAssets._functionMetadata;
+
+        return AzureRMAssets._functionsMetadata;
     }
 
-    public static getFunctionMetadataWithName(functionName: string): Promise<FunctionMetadata> {
-        return AzureRMAssets.getFunctionMetadata()
-            .then((functionMetadataArray: FunctionMetadata[]) => {
-                let result: FunctionMetadata = null;
-
-                const lowerCasedFunctionName: string = functionName.toLowerCase();
-                for (const functionMetadata of functionMetadataArray) {
-                    if (functionMetadata.name && functionMetadata.name.toLowerCase() === lowerCasedFunctionName) {
-                        result = functionMetadata;
-                        break;
-                    }
-                }
-
-                return result;
-            });
+    public static async getFunctionMetadataFromName(functionName: string): Promise<FunctionMetadata> {
+        return (await this.getFunctionsMetadata()).findbyName(functionName);
     }
 
-    public static getFunctionMetadataWithPrefix(functionNamePrefix: string): Promise<FunctionMetadata[]> {
-        return AzureRMAssets.getFunctionMetadata()
-            .then((functionMetadataArray: FunctionMetadata[]) => {
-                const result: FunctionMetadata[] = [];
-
-                const lowerCasedPrefix: string = functionNamePrefix.toLowerCase();
-                for (const functionMetadata of functionMetadataArray) {
-                    if (functionMetadata.name && functionMetadata.name.toLowerCase().startsWith(lowerCasedPrefix)) {
-                        result.push(functionMetadata);
-                    }
-                }
-
-                return result;
-            });
+    public static async getFunctionMetadataFromPrefix(functionNamePrefix: string): Promise<FunctionMetadata[]> {
+        return (await this.getFunctionsMetadata()).filterByPrefix(functionNamePrefix);
     }
 
     /**
@@ -117,24 +95,49 @@ export interface VersionRedirect {
 }
 
 /**
- * Metadata for a TLE function.
+ * Metadata for all TLE (Template Language Expression) functions.
+ */
+export class FunctionsMetadata {
+    public constructor(public readonly functionMetadata: FunctionMetadata[]) {
+    }
+
+    public findbyName(functionName: string): FunctionMetadata | undefined {
+        const lowerCasedFunctionName: string = functionName.toLowerCase();
+        return this.functionMetadata.find(func => func.lowerCaseName === lowerCasedFunctionName);
+    }
+
+    public filterByPrefix(functionNamePrefix: string): FunctionMetadata[] {
+        const result: FunctionMetadata[] = [];
+        const lowerCasedPrefix: string = functionNamePrefix.toLowerCase();
+        return this.functionMetadata.filter(func => func.lowerCaseName.startsWith(lowerCasedPrefix));
+    }
+}
+
+/**
+ * Metadata for a TLE (Template Language Expression) function.
  */
 export class FunctionMetadata {
+    private _name: string;
     private _lowerCaseName: string;
 
     constructor(
-        private _name: string,
+        name: string,
         private _usage: string,
         private _description: string,
         private _minimumArguments: number,
         private _maximumArguments: number,
         private _returnValueMembers: string[]
     ) {
+        this._name = name || '';
         this._lowerCaseName = this._name.toLowerCase();
     }
 
     public get name(): string {
         return this._name;
+    }
+
+    public get lowerCaseName(): string {
+        return this._lowerCaseName;
     }
 
     public get usage(): string {
@@ -171,10 +174,6 @@ export class FunctionMetadata {
 
     public get returnValueMembers(): string[] {
         return this._returnValueMembers;
-    }
-
-    public matchesName(name: string) {
-        return name && name.toLowerCase() === this._lowerCaseName;
     }
 
     public static fromString(metadataString: string): FunctionMetadata[] {
@@ -217,7 +216,7 @@ export class FunctionMetadata {
     }
 }
 
-export interface FunctionMetadataContract {
+interface FunctionMetadataContract {
     functionSignatures?: {
         name?: string;
         expectedUsage?: string;
