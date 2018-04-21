@@ -19,8 +19,9 @@ import * as language from "./Language";
 import * as Reference from "./Reference";
 import * as TLE from "./TLE";
 import * as Telemetry from "./Telemetry";
-import { Reporter } from "./VSCodeTelReporter";
 
+import { Reporter, reporter } from "./VSCodeTelReporter";
+import { callWithTelemetryAndErrorHandling, IActionContext } from "vscode-azureextensionui";
 import { AzureRMAssets } from "./AzureRMAssets";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { JsonOutlineProvider } from "./Treeview";
@@ -30,9 +31,11 @@ import { Stopwatch } from "./Stopwatch";
 import { SurveyMetadata } from "./SurveyMetadata";
 import { SurveySettings } from "./SurveySettings";
 import { isLanguageIdSupported, supportedDocumentSelector } from "./supported";
+import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
+import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+// This method is called when your extension is activated
+// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(new Reporter(context));
     context.subscriptions.push(new AzureRMTools(context));
@@ -40,7 +43,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
 // this method is called when your extension is deactivated
 export function deactivate(): void {
-    // nothing to do
+    // Nothing to do
 }
 
 type SurveyInfo = {
@@ -190,7 +193,7 @@ export class AzureRMTools {
                         this.logFunctionCounts(deploymentTemplate);
                     }
 
-                    this.logDeploymentTemplateErrors(document, deploymentTemplate);
+                    this.reportDeploymentTemplateErrors(document, deploymentTemplate);
                 }
             }
 
@@ -208,7 +211,7 @@ export class AzureRMTools {
         }
     }
 
-    private logDeploymentTemplateErrors(document: vscode.TextDocument, deploymentTemplate: DeploymentTemplate): void {
+    private reportDeploymentTemplateErrors(document: vscode.TextDocument, deploymentTemplate: DeploymentTemplate): void {
         deploymentTemplate.errors
             .then((parseErrors: language.Issue[]) => {
                 const diagnostics: vscode.Diagnostic[] = [];
@@ -337,14 +340,50 @@ export class AzureRMTools {
     }
 
     private logFunctionCounts(deploymentTemplate: DeploymentTemplate): void {
-        const functionCountEvent: Telemetry.Event = {
-            eventName: "TLE Function Counts"
-        };
-        const functionCounts: Histogram = deploymentTemplate.functionCounts;
-        for (const functionName of functionCounts.keys) {
-            functionCountEvent[functionName] = functionCounts.getCount(functionName);
+        let me = this;
+        let outputChannel = undefined;
+        callWithTelemetryAndErrorHandling("tle.stats", reporter, outputChannel, async function (this: IActionContext) {
+            this.suppressErrorDisplay = true;
+            let properties: {
+                functionCounts?: string,
+                unrecognized?: string,
+                incorrectArgs?: string,
+                [key: string]: string
+            } = this.properties;
+            // Full function counts
+            const functionCounts: Histogram = deploymentTemplate.functionCounts;
+            const functionsData = {};
+            for (const functionName of functionCounts.keys) {
+                functionsData[functionName] = functionCounts.getCount(functionName);
+            }
+            properties.functionCounts = JSON.stringify(functionsData);
+            // Missing function names and incorrect number of arguments
+            let issues: language.Issue[] = await deploymentTemplate.errors;
+            let unrecognized = new Set<string>();
+            let incorrectArgCounts = new Set<string>();
+            for (const issue of issues) {
+                if (issue instanceof UnrecognizedFunctionIssue) {
+                    unrecognized.add(issue.functionName);
+                } else if (issue instanceof IncorrectArgumentsCountIssue) {
+                    // Encode function name as "funcname(<actual-args>)[<min-expected>..<max-expected>]"
+                    let encodedName = `${issue.functionName}(${issue.actual})[${issue.minExpected}..${issue.maxExpected}]`;
+                    incorrectArgCounts.add(encodedName);
+                }
+            }
+            properties.unrecognized = AzureRMTools.setToJson(unrecognized);
+            properties.incorrectArgs = AzureRMTools.setToJson(incorrectArgCounts);
+        });
+    }
+
+    private static setToJson(s: Set<string>): string {
+        if (!s.size) {
+            return "";
         }
-        this.log(functionCountEvent);
+        let array: string[] = [];
+        for (let item of s) {
+            array.push(item);
+        }
+        return JSON.stringify(array);
     }
 
     private getVSCodeDiagnosticFromIssue(deploymentTemplate: DeploymentTemplate, issue: language.Issue, severity: vscode.DiagnosticSeverity): vscode.Diagnostic {
