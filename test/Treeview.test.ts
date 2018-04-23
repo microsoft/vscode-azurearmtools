@@ -28,7 +28,7 @@ suite("TreeView", () => {
         }
 
         test("getChildren: Full tree: all default param types", async () => {
-            testGetChildren(template, [
+            await testGetChildren(template, [
                 {
                     label: "$schema",
                     collapsibleState: 0,
