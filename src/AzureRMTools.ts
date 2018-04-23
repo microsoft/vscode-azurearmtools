@@ -346,7 +346,9 @@ export class AzureRMTools {
     private logFunctionCounts(deploymentTemplate: DeploymentTemplate): void {
         let me = this;
         let outputChannel = undefined;
-        callWithTelemetryAndErrorHandling("tle.stats", reporter, outputChannel, async function (this: IActionContext) {
+
+        // Don't wait for promise
+        let dummyPromise = callWithTelemetryAndErrorHandling("tle.stats", reporter, outputChannel, async function (this: IActionContext) {
             this.suppressErrorDisplay = true;
             let properties: {
                 functionCounts?: string,
