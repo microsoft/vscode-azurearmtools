@@ -4,6 +4,8 @@
 
 // tslint:disable switch-default // Grandfathered in
 // tslint:disable max-classes-per-file // Grandfathered in
+// tslint:disable:function-name // Grandfathered in
+// tslint:disable:cyclomatic-complexity // Grandfathered in
 
 import * as assert from "assert";
 
@@ -325,7 +327,7 @@ export class Tokenizer {
         };
     }
 
-    // tslint:disable-next-line:cyclomatic-complexity // Grandfathered in
+    // tslint:disable-next-line:max-func-body-length
     public moveNext(): boolean {
         if (!this.hasStarted()) {
             this.moveNextBasicToken();
