@@ -7,14 +7,18 @@ import * as vscode from "vscode";
 import * as Json from "../src/JSON";
 import * as path from "path";
 
+import { ext } from "../src/extensionVariables"
 import { JsonOutlineProvider, IElementInfo } from "../src/Treeview";
 import { Span } from "../src/Language";
 
 suite("TreeView", () => {
-    suite("JsonOutlineProvider", async (): Promise<void> => {
+    suite("JsonOutlineProvider", () => {
         async function testGetChildren(template: string, expected: ITestTreeItem[]): Promise<void> {
-            let provider = new JsonOutlineProvider(null);
+            let extension = await vscode.extensions.getExtension(ext.extensionId);
+            await extension.activate();
+
             let editor = await showNewTextDocument(template);
+            let provider = ext.jsonOutlineProvider;
 
             let children = provider.getChildren(null);
             let testChildren = children.map(child => {
@@ -26,7 +30,7 @@ suite("TreeView", () => {
             assert.deepStrictEqual(testChildren, expected);
         }
 
-        test("getChildren: Full tree: all default param types", async () => {
+        test("getChildren: Full tree: all default param types", async (): Promise<void> => {
             await testGetChildren(template, [
                 {
                     label: "$schema: http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
