@@ -17,6 +17,7 @@ suite("TreeView", async (): Promise<void> => {
 
         setup(function (this: Mocha.IHookCallbackContext, done: MochaDone): void {
             this.timeout(10000);
+
             async function mySetup(): Promise<void> {
                 let extension = vscode.extensions.getExtension(ext.extensionId);
                 assert.equal(!!extension, true, "Extension not found");
@@ -25,7 +26,7 @@ suite("TreeView", async (): Promise<void> => {
                 assert.equal(!!provider, true, "JSON outlin provider not found");
             }
 
-            mySetup().then(done);
+            mySetup().then(done, () => { assert.fail("Setup failed"); });
         });
 
         async function testGetChildren(template: string, expected: ITestTreeItem[]): Promise<void> {
