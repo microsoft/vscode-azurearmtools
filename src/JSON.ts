@@ -5,6 +5,7 @@
 // tslint:disable switch-default // Grandfathered in
 // tslint:disable max-classes-per-file // Grandfathered in
 // tslint:disable:function-name // Grandfathered in
+// tslint:disable:cyclomatic-complexity // Grandfathered in
 
 import * as assert from "assert";
 
@@ -161,7 +162,7 @@ export function asBooleanValue(value: Value): BooleanValue {
  * either a SingleQuote or DoubleQuote Token.
  */
 export function readQuotedString(iterator: utilities.Iterator<basic.Token>): basic.Token[] {
-    const startQuote: basic.Token = iterator.current();;
+    const startQuote: basic.Token = iterator.current();
     const quotedStringTokens: basic.Token[] = [startQuote];
     iterator.moveNext();
 

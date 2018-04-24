@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 // tslint:disable:function-name // Grandfathered in
+// tslint:disable:cyclomatic-complexity // Grandfathered in
 
 import * as utilities from "./Utilities";
 
