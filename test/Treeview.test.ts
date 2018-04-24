@@ -14,7 +14,7 @@ import { Span } from "../src/Language";
 suite("TreeView", () => {
     suite("JsonOutlineProvider", () => {
         async function testGetChildren(template: string, expected: ITestTreeItem[]): Promise<void> {
-            let extension = await vscode.extensions.getExtension(ext.extensionId);
+            let extension = vscode.extensions.getExtension(ext.extensionId);
             await extension.activate();
 
             let editor = await showNewTextDocument(template);
