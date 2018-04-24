@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable:max-func-body-length
 // tslint:disable:cyclomatic-complexity
 
 import * as assert from "assert";

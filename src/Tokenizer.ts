@@ -2,6 +2,9 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable:function-name // Grandfathered in
+// tslint:disable:cyclomatic-complexity // Grandfathered in
+
 import * as utilities from "./Utilities";
 
 /**
@@ -154,7 +157,7 @@ export class Tokenizer implements utilities.Iterator<Token> {
     /**
      * Move this Tokenizer to the next Token in the source text string.
      */
-    // tslint:disable-next-line:cyclomatic-complexity // Grandfathered in
+    // tslint:disable-next-line:max-func-body-length
     public moveNext(): boolean {
         if (!this.hasStarted()) {
             this.nextCharacter();

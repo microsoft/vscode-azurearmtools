@@ -250,7 +250,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     // tslint:disable-next-line:cyclomatic-complexity // Grandfathered in
     private getIconPath(elementInfo: IElementInfo): string {
 
-        let icon;
+        let icon: string;
         const keyNode = this.tree.getValueAtCharacterIndex(elementInfo.current.key.start);
 
         // Is current element a root element?

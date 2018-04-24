@@ -5,7 +5,7 @@
 import * as moment from "moment";
 
 import { SurveySettings } from "./SurveySettings";
-import { httpGet } from "./HttpClient";
+import { httpGet } from "./httpGet";
 
 /**
  * The SurveyMetadata class represents the settings related to our user
