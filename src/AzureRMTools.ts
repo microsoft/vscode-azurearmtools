@@ -10,6 +10,7 @@ import * as os from "os";
 import * as path from "path";
 import * as vscode from "vscode";
 
+// tslint:disable-next-line:no-var-requires
 const open = require("open");
 
 import * as Completion from "./Completion";
@@ -171,7 +172,6 @@ export class AzureRMTools {
                     if (Object.keys(this._deploymentTemplates).length === 0) {
                         this.initializeExtension(surveyInfo);
                     }
-
 
                     this._deploymentTemplates[documentUri] = deploymentTemplate;
                     foundDeploymentTemplate = true;
@@ -509,9 +509,9 @@ export class AzureRMTools {
             if (deploymentTemplate) {
                 const locationUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
 
-                const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
+                const positionContext: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
-                const references: Reference.List = context.references;
+                const references: Reference.List = positionContext.references;
                 if (references && references.length > 0) {
                     let referenceType: string;
                     switch (references.kind) {
@@ -745,6 +745,7 @@ export class AzureRMTools {
             event.message = error.message;
             event.stack = error.stack;
         } else {
+            // tslint:disable-next-line:no-for-in // Grandfathered in
             for (const propertyName in error) {
                 event[propertyName] = error[propertyName];
             }
