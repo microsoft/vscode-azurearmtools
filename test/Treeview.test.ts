@@ -11,26 +11,42 @@ import { ext } from "../src/extensionVariables"
 import { JsonOutlineProvider, IElementInfo } from "../src/Treeview";
 import { Span } from "../src/Language";
 
-suite("TreeView", () => {
-    suite("JsonOutlineProvider", () => {
+suite("TreeView", async (): Promise<void> => {
+    suite("JsonOutlineProvider", async (): Promise<void> => {
+        let provider: JsonOutlineProvider;
+
+        setup(function (this: Mocha.IHookCallbackContext, done: MochaDone): void {
+            this.timeout(10000);
+            async function mySetup(): Promise<void> {
+                let extension = vscode.extensions.getExtension(ext.extensionId);
+                assert.equal(!!extension, true, "Extension not found");
+                await extension.activate();
+                provider = ext.jsonOutlineProvider;
+                assert.equal(!!provider, true, "JSON outlin provider not found");
+            }
+
+            mySetup().then(done);
+        });
+
         async function testGetChildren(template: string, expected: ITestTreeItem[]): Promise<void> {
-            let extension = vscode.extensions.getExtension(ext.extensionId);
-            await extension.activate();
-
+            console.log(1);
             let editor = await showNewTextDocument(template);
-            let provider = ext.jsonOutlineProvider;
-
+            console.log(2);
             let children = provider.getChildren(null);
+            console.log(3);
             let testChildren = children.map(child => {
+                console.log(4);
                 let treeItem = provider.getTreeItem(child);
+                console.log(5);
                 return toTestTreeItem(treeItem);
             });
-
+            console.log(6);
 
             assert.deepStrictEqual(testChildren, expected);
         }
 
-        test("getChildren: Full tree: all default param types", async (): Promise<void> => {
+        test("getChildren: Full tree: all default param types", async () => {
+
             await testGetChildren(template, [
                 {
                     label: "$schema: http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
