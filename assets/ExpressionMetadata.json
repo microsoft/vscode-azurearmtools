@@ -261,6 +261,13 @@
             "maximumArguments": 2
         },
         {
+            "name": "listSecrets",
+            "expectedUsage": "listSecrets(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Returns the secrets of a resource. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2
+        },
+        {
             "name": "max",
             "expectedUsage": "max(arg1, ...)",
             "description": "Returns the maximum value from an array of integers or a comma-separated list of integers.",
