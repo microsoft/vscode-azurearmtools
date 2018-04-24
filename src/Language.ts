@@ -5,7 +5,7 @@
 import * as assert from "assert";
 
 /**
- * A span representing the character indexes that are contained by a JSONToken. 
+ * A span representing the character indexes that are contained by a JSONToken.
  */
 export class Span {
     constructor(private _startIndex: number, private _length: number) {
@@ -34,7 +34,7 @@ export class Span {
 
     /**
      * Get the index directly after this span.
-     * 
+     *
      * If this span started at 3 and had a length of 4 ([3,7)), then the after
      * end index would be 7.
      */
@@ -44,7 +44,7 @@ export class Span {
 
     /**
      * Determine if the provided index is contained by this span.
-     * 
+     *
      * If this span started at 3 and had a length of 4 ([3, 7)), then all
      * indexes between 3 and 6 (inclusive) would be contained. 2 and 7 would
      * not be contained.
