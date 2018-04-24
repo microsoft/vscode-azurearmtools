@@ -21,9 +21,11 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         new vscode.EventEmitter<string | null>();
     public readonly onDidChangeTreeData: vscode.Event<string | null> = this.onDidChangeTreeDataEmitter.event;
 
-    constructor(private context?: vscode.ExtensionContext) {
-        context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(() => this.updateTreeState()));
-        context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(() => this.updateTreeState()));
+    constructor(private context: vscode.ExtensionContext | undefined) {
+        if (context) {
+            context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(() => this.updateTreeState()));
+            context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(() => this.updateTreeState()));
+        }
 
         setTimeout(() => {
             // In case there is already a document opened before the extension gets loaded.

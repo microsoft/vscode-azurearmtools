@@ -11,10 +11,9 @@ import { JsonOutlineProvider, IElementInfo } from "../src/Treeview";
 import { Span } from "../src/Language";
 
 suite("TreeView", () => {
-    suite("JsonOutlineProvider", () => {
-
-        async function testGetChildren(template: string, expected: ITestTreeItem[]) {
-            let provider = new JsonOutlineProvider();
+    suite("JsonOutlineProvider", async (): Promise<void> => {
+        async function testGetChildren(template: string, expected: ITestTreeItem[]): Promise<void> {
+            let provider = new JsonOutlineProvider(null);
             let editor = await showNewTextDocument(template);
 
             let children = provider.getChildren(null);
@@ -30,15 +29,15 @@ suite("TreeView", () => {
         test("getChildren: Full tree: all default param types", async () => {
             await testGetChildren(template, [
                 {
-                    label: "$schema",
+                    label: "$schema: http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     collapsibleState: 0,
                     iconFile: "label.svg"
                 }, {
-                    label: "contentVersion",
+                    label: "contentVersion: 1.0.0.0",
                     collapsibleState: 0,
                     iconFile: "label.svg"
                 }, {
-                    label: "a",
+                    label: "a: undefined", // Until https://github.com/Microsoft/vscode-azurearmtools/issues is fixed
                     collapsibleState: 0,
                     iconFile: undefined
                 }, {
