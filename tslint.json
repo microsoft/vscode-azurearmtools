@@ -41,7 +41,7 @@
         "no-bitwise": true,
         "no-conditional-assignment": true,
         "no-console": [
-            false, // TODO: true,
+            true,
             "debug",
             "info",
             "log",
@@ -70,23 +70,23 @@
         "no-regex-spaces": true,
         "no-sparse-arrays": true,
         "no-unnecessary-class": true,
-        // TODO: "no-string-literal": true,
+        "no-string-literal": true,
         "no-string-throw": true,
         "no-unnecessary-bind": true,
         "no-unnecessary-callback-wrapper": true,
-        // TODO: "no-unnecessary-initializer": true,
+        "no-unnecessary-initializer": true,
         "no-unnecessary-override": true,
         // TODO: "no-unsafe-any": true,
         "no-unsafe-finally": true,
         "no-unused-expression": true,
-        // TODO: "no-use-before-declare": true,
+        "no-use-before-declare": false, // changed
         "no-with-statement": true,
         // TODO: "promise-function-async": true,
         "promise-must-complete": true,
         "radix": true,
         "react-this-binding-issue": true,
         "react-unused-props-and-state": true,
-        // TODO: "restrict-plus-operands": true,
+        "restrict-plus-operands": true,
         "strict-boolean-expressions": [
             false, // TODO: true,
             "allow-string", // changed
@@ -95,7 +95,7 @@
         ],
         "switch-default": true,
         "triple-equals": [
-            false, // TODO: true,
+            true,
             "allow-null-check"
         ],
         "use-isnan": true,

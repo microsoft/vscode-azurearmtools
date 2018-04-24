@@ -105,8 +105,8 @@ export class ApplicationInsights extends Endpoint {
     }
 
     public log(event: Event): void {
-        let properties: { [key: string]: string } = undefined;
-        let measurements: { [key: string]: number } = undefined;
+        let properties: { [key: string]: string };
+        let measurements: { [key: string]: number };
 
         for (let propertyName in event) {
             if (propertyName !== "eventName") {
@@ -137,8 +137,8 @@ export class ApplicationInsights extends Endpoint {
 export class VSCode extends Endpoint {
     public log(event: Event): void {
         if (reporter) {
-            let properties: { [key: string]: string } = undefined;
-            let measurements: { [key: string]: number } = undefined;
+            let properties: { [key: string]: string };
+            let measurements: { [key: string]: number };
 
             for (let propertyName in event) {
                 if (propertyName !== "eventName") {
@@ -171,6 +171,7 @@ export class Console extends Endpoint {
 
     public log(event: Event): void {
         let eventNumber = ++this._sessionEventNumber;
+        // tslint:disable-next-line:no-console
         console.log(`AzureRM (${eventNumber}): ${toString(event)}`);
     }
 }

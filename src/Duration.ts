@@ -36,7 +36,7 @@ export class Duration {
 
     public toString(): string {
         let ms = this.totalMilliseconds;
-        return ms + " millisecond" + (ms !== 1 ? "s" : "");
+        return String(ms) + " millisecond" + (ms !== 1 ? "s" : "");
     }
 
     public static zero: Duration = Duration.milliseconds(0);

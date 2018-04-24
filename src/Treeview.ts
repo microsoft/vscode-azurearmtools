@@ -249,7 +249,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
 
     private getIconPath(elementInfo: IElementInfo): string {
 
-        let icon;
+        let icon: string;
         const keyNode = this.tree.getValueAtCharacterIndex(elementInfo.current.key.start);
 
         // Is current element a root element?

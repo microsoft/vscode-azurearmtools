@@ -17,8 +17,8 @@ export function httpGet(url: string): Promise<string> {
         let request: http.ClientRequest;
 
         function callback(response: http.IncomingMessage): void {
-            if (300 <= response.statusCode && response.statusCode < 400 && response.headers["location"]) {
-                resolve(httpGet(response.headers["location"].toString()));
+            if (300 <= response.statusCode && response.statusCode < 400 && response.headers.location) {
+                resolve(httpGet(response.headers.location.toString()));
             }
             else if (200 <= response.statusCode && response.statusCode < 400) {
                 let responseContent: string = "";
@@ -28,15 +28,15 @@ export function httpGet(url: string): Promise<string> {
                     const buffer: Buffer = dataChunk instanceof Buffer ? dataChunk : new Buffer(dataChunk);
                     let byteOrderMarkLength: number = 0;
                     if (!encoding) {
-                        if (dataChunk[0] == 0xFF &&
-                            dataChunk[1] == 0xFE) {
+                        if (dataChunk[0] === 0xFF &&
+                            dataChunk[1] === 0xFE) {
                             byteOrderMarkLength = 2;
                             encoding = "utf16le";
                         }
                         else {
-                            if (dataChunk[0] == 0xEF &&
-                                dataChunk[1] == 0xBB &&
-                                dataChunk[2] == 0xBF) {
+                            if (dataChunk[0] === 0xEF &&
+                                dataChunk[1] === 0xBB &&
+                                dataChunk[2] === 0xBF) {
                                 byteOrderMarkLength = 3;
                             }
                             encoding = "utf8";

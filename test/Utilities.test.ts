@@ -28,6 +28,7 @@ suite("Utilities", () => {
             let emptyObject = {};
             let clone = Utilities.clone(emptyObject);
             assert.deepEqual(emptyObject, clone);
+            // tslint:disable-next-line:no-string-literal
             clone["name"] = "value";
             assert.deepEqual({}, emptyObject);
             assert.deepEqual({ name: "value" }, clone);
@@ -46,6 +47,7 @@ suite("Utilities", () => {
             let value = { hello: "there" };
             let clone = Utilities.clone(value);
             assert.deepEqual(value, clone);
+            // tslint:disable-next-line:no-string-literal
             clone["test"] = "testValue";
             assert.deepEqual({ hello: "there" }, value);
             assert.deepEqual({ hello: "there", test: "testValue" }, clone);
@@ -55,6 +57,7 @@ suite("Utilities", () => {
             let value = { age: 3 };
             let clone = Utilities.clone(value);
             assert.deepEqual(value, clone);
+            // tslint:disable-next-line:no-string-literal
             clone["test"] = "testValue";
             assert.deepEqual({ age: 3 }, value);
             assert.deepEqual({ age: 3, test: "testValue" }, clone);
@@ -64,6 +67,7 @@ suite("Utilities", () => {
             let value = { okay: true };
             let clone = Utilities.clone(value);
             assert.deepEqual(value, clone);
+            // tslint:disable-next-line:no-string-literal
             clone["test"] = "testValue";
             assert.deepEqual({ okay: true }, value);
             assert.deepEqual({ okay: true, test: "testValue" }, clone);
