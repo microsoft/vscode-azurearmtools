@@ -247,7 +247,7 @@ export class ArrayAccessValue extends ParentValue {
     }
 
     public toString(): string {
-        let result: string = this._source.toString() + "[";
+        let result: string = `${this._source.toString()}[`;
         if (this._index !== null) {
             result += this._index.toString();
         }
@@ -436,7 +436,7 @@ export class PropertyAccess extends ParentValue {
     }
 
     public toString(): string {
-        let result = this._source.toString() + ".";
+        let result = `${this._source.toString()}.`;
         if (this._nameToken !== null) {
             result += this._nameToken.stringValue;
         }
@@ -1003,6 +1003,7 @@ export class Parser {
         return expression;
     }
 
+    // tslint:disable-next-line:cyclomatic-complexity // Grandfathered in
     private static parseFunction(tokenizer: Tokenizer, errors: language.Issue[]): FunctionValue {
         assert.notEqual(null, tokenizer);
         assert(tokenizer.hasCurrent(), "tokenizer must have a current token.");

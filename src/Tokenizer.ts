@@ -154,6 +154,7 @@ export class Tokenizer implements utilities.Iterator<Token> {
     /**
      * Move this Tokenizer to the next Token in the source text string.
      */
+    // tslint:disable-next-line:cyclomatic-complexity // Grandfathered in
     public moveNext(): boolean {
         if (!this.hasStarted()) {
             this.nextCharacter();

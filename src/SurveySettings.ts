@@ -103,6 +103,7 @@ export class SurveySettings {
         const result: SurveySettings = new SurveySettings();
 
         if (settingsJSON) {
+            // tslint:disable-next-line:no-for-in // Grandfathered in
             for (const settingName in result) {
                 if (settingsJSON[settingName]) {
                     result[settingName] = settingsJSON[settingName];

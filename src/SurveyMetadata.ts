@@ -74,9 +74,10 @@ export class SurveyMetadata {
         let result: SurveyMetadata = (initialResult ? initialResult : new SurveyMetadata());
 
         if (metadataJSON) {
+            // tslint:disable-next-line:no-for-in // Grandfathered in
             for (const metadataName in result) {
                 if (metadataJSON[metadataName]) {
-                    result["_" + metadataName] = metadataJSON[metadataName];
+                    result[`_${metadataName}`] = metadataJSON[metadataName];
                 }
             }
 

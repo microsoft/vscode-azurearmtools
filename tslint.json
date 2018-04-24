@@ -138,7 +138,7 @@
         ],
         "member-access": true,
         "member-ordering": [
-            false, // TODO: true,
+            false, // changed
             {
                 "order": "fields-first"
             }
@@ -149,7 +149,7 @@
         "no-construct": true,
         "no-default-export": true,
         "no-empty-interface": true,
-        // TODO: "no-for-in": true,
+        "no-for-in": true,
         // TODO: "no-function-expression": true,
         "no-inferrable-types": false,
         "no-multiline-string": false, // changed
@@ -166,21 +166,23 @@
         "no-unsupported-browser-code": true,
         "no-useless-files": true,
         "no-var-keyword": true,
-        // TODO: "no-var-requires": true,
-        // TODO: "no-var-self": true,
+        "no-var-requires": true,
         "no-void-expression": [
             false, // changed
             "ignore-arrow-function-shorthand" // changed
         ],
         "object-literal-sort-keys": false,
-        // TODO: "one-variable-per-declaration": true,
+        "one-variable-per-declaration": [
+            true,
+            "ignore-for-loop" // changed
+        ],
         "only-arrow-functions": false,
         // TODO: "ordered-imports": true,
         "prefer-array-literal": true,
         "prefer-const": false, // changed
         "prefer-for-of": true,
         "prefer-method-signature": true,
-        // TODO: "prefer-template": true,
+        "prefer-template": true,
         "return-undefined": false,
         "typedef": [
             false, // TODO: true,
@@ -220,7 +222,7 @@
             "statements"
         ],
         "curly": true,
-        // TODO: "eofline": true,
+        "eofline": true,
         "import-spacing": true,
         "indent": [
             true,
@@ -228,11 +230,11 @@
         ],
         "linebreak-style": false, //changed
         "newline-before-return": false, // changed
-        // TODO: "no-consecutive-blank-lines": true,
+        "no-consecutive-blank-lines": true,
         "no-empty-line-after-opening-brace": false,
         "no-single-line-block-comment": true,
-        // TODO: "no-trailing-whitespace": true,
-        // TODO: "no-unnecessary-semicolons": true,
+        "no-trailing-whitespace": true,
+        "no-unnecessary-semicolons": true,
         "object-literal-key-quotes": [
             true,
             "as-needed"
@@ -254,7 +256,7 @@
             "always"
         ],
         "trailing-comma": [
-            false, // TODO: true,
+            false,
             {
                 "singleline": "never",
                 "multiline": "never"
@@ -262,7 +264,7 @@
         ],
         "typedef-whitespace": false,
         "whitespace": [
-            false, // TODO: true,
+            true,
             "check-branch",
             "check-decl",
             "check-operator",
@@ -271,7 +273,7 @@
         ],
         "ban": false,
         "ban-types": true,
-        // TODO: "cyclomatic-complexity": true,
+        "cyclomatic-complexity": true,
         "file-header": false,
         "import-blacklist": false,
         "interface-over-type-literal": false,
@@ -294,7 +296,7 @@
             }
         ],
         "object-literal-shorthand": false,
-        // TODO: "prefer-type-cast": true,
+        "prefer-type-cast": false, // changed
         "space-before-function-paren": false,
         "missing-optional-annotation": false,
         "no-duplicate-parameter-names": false,

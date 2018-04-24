@@ -29,7 +29,7 @@ export class FunctionInfo extends Info {
     }
 
     public getHoverText(): string {
-        return `**${this._usage}**` + (this._description ? `\n${this._description}` : ``);
+        return `**${this._usage}**${(this._description ? `\n${this._description}` : ``)}`;
     }
 
     public get functionName(): string {
@@ -46,7 +46,7 @@ export class ParameterReferenceInfo extends Info {
     }
 
     public getHoverText(): string {
-        return `**${this._name}** (parameter)` + (this._description ? `\n${this._description}` : "");
+        return `**${this._name}** (parameter)${(this._description ? `\n${this._description}` : "")}`;
     }
 }
 
