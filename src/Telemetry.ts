@@ -34,6 +34,7 @@ export class Event implements Properties {
 function toString(event: Event): string {
     let result = `"eventName": "${event.eventName}"`;
 
+    // tslint:disable-next-line:no-for-in // Grandfathered in
     for (let propertyName in event) {
         if (propertyName !== "eventName") {
             result += `, "${propertyName}": `;
@@ -76,6 +77,7 @@ export class PropertySetter extends Endpoint {
 
         if (this._propertiesToSet) {
             newEvent = utilities.clone(event);
+            // tslint:disable-next-line:no-for-in // Grandfathered in
             for (let propertyName in this._propertiesToSet) {
                 newEvent[propertyName] = this._propertiesToSet[propertyName];
             }
@@ -105,9 +107,10 @@ export class ApplicationInsights extends Endpoint {
     }
 
     public log(event: Event): void {
-        let properties: { [key: string]: string } = undefined;
-        let measurements: { [key: string]: number } = undefined;
+        let properties: { [key: string]: string };
+        let measurements: { [key: string]: number };
 
+        // tslint:disable-next-line:no-for-in // Grandfathered in
         for (let propertyName in event) {
             if (propertyName !== "eventName") {
                 let propertyValue = event[propertyName];
@@ -137,9 +140,10 @@ export class ApplicationInsights extends Endpoint {
 export class VSCode extends Endpoint {
     public log(event: Event): void {
         if (reporter) {
-            let properties: { [key: string]: string } = undefined;
-            let measurements: { [key: string]: number } = undefined;
+            let properties: { [key: string]: string };
+            let measurements: { [key: string]: number };
 
+            // tslint:disable-next-line:no-for-in // Grandfathered in
             for (let propertyName in event) {
                 if (propertyName !== "eventName") {
                     let propertyValue = event[propertyName];
@@ -171,6 +175,7 @@ export class Console extends Endpoint {
 
     public log(event: Event): void {
         let eventNumber = ++this._sessionEventNumber;
+        // tslint:disable-next-line:no-console
         console.log(`AzureRM (${eventNumber}): ${toString(event)}`);
     }
 }
@@ -218,7 +223,7 @@ export class FileTelemetry extends Endpoint {
     }
 
     public log(event: Event): void {
-        let line = toString(event) + "\n";
+        let line = `${toString(event)}\n`;
         if (this._writeStream) {
             this._writeStream.write(line);
         }

@@ -4,9 +4,9 @@
 
 import * as assert from "assert";
 
-import { httpGet } from "../src/HttpClient";
+import { httpGet } from "../src/httpGet";
 
-import { networkTest } from "./Network";
+import { networkTest } from "./networkTest";
 
 suite("HttpClient", () => {
     suite("get(string)", () => {

@@ -17,12 +17,14 @@ export function clone<T>(value: T): T {
     }
     else if (value instanceof Array) {
         result = [];
+        // tslint:disable-next-line:no-for-in // Grandfathered in
         for (let index in value) {
             result[index] = clone(value[index]);
         }
     }
     else {
         result = {};
+        // tslint:disable-next-line:no-for-in // Grandfathered in
         for (let propertyName in value) {
             if (value.hasOwnProperty(propertyName)) {
                 result[propertyName] = clone(value[propertyName]);

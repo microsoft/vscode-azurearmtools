@@ -61,8 +61,8 @@ export class AzureRMAssets {
         return Promise.resolve<string>(path.join(__filename, "..", "..", "..", "assets", assetFileName));
     }
 
-    private static readFile(path: string): Promise<string> {
-        return new Promise<string>((resolve, reject) => fs.readFile(path, "utf8", (err, data) => {
+    private static readFile(filePath: string): Promise<string> {
+        return new Promise<string>((resolve, reject) => fs.readFile(filePath, "utf8", (err, data) => {
             if (err) {
                 reject(err);
                 return;

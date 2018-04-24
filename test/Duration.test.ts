@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable:max-func-body-length
+
 import * as assert from "assert";
 
 import { Duration } from "../src/Duration";

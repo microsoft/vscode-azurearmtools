@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable:max-func-body-length
+
 import * as assert from "assert";
 
 import * as basic from "../src/Tokenizer";
@@ -495,6 +497,7 @@ suite("JSON", () => {
             nextTestWithQuotedString(`"C:\\\\Users\\\\"`);
             nextTestWithQuotedString(`"hello\\"there"`);
 
+            //
 
             nextTest("{}",
                 [
@@ -606,7 +609,6 @@ suite("JSON", () => {
                     parseWhitespace(" ", 7),
                     parseLiteral("there", 8)
                 ]);
-
 
             nextTest(".[]82348923",
                 [
