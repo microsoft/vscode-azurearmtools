@@ -261,6 +261,33 @@
             "maximumArguments": 2
         },
         {
+            "name": "listCallbackUrl",
+            "expectedUsage": "listCallbackUrl(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Get callback URL for a trigger of a workflow version. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. See https://docs.microsoft.com/en-us/rest/api/logic/WorkflowVersions/ListCallbackUrl#workflowtriggercallbackurl for more information.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "value"
+                },
+                {
+                    "name": "method"
+                },
+                {
+                    "name": "basePath"
+                },
+                {
+                    "name": "queries"
+                },
+                {
+                    "name": "relativePath"
+                },
+                {
+                    "name": "relativePathParameters"
+                }
+            ]
+        },
+        {
             "name": "listSecrets",
             "expectedUsage": "listSecrets(resourceName\/resourceIdentifier, apiVersion)",
             "description": "Returns the secrets of a resource. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
