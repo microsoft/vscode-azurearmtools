@@ -115,10 +115,19 @@
             false, // changed
             "classes"
         ],
-        // TODO: "export-name": true,
-        // TODO: "function-name": true,
+        "export-name": true,
+        "function-name": [
+            true,
+            {
+                "method-regex": "^[a-z][\\w\\d]+$",
+                "private-method-regex": "^[a-z][\\w\\d]+$",
+                "protected-method-regex": "^[a-z][\\w\\d]+$",
+                "static-method-regex": "^[a-z][\\w\\d]+$", // changed
+                "function-regex": "^[a-z][\\w\\d]+$"
+            }
+        ],
         "import-name": false, // changed
-        // TODO: "interface-name": true,
+        "interface-name": false, // changed
         "jsdoc-format": true,
         "max-classes-per-file": [
             true,
@@ -126,7 +135,7 @@
         ],
         "max-file-line-count": true,
         "max-func-body-length": [
-            false, // TODO: true,
+            true,
             100,
             {
                 "ignore-parameters-to-function-regex": "describe"

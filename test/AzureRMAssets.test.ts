@@ -2,9 +2,11 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable:max-func-body-length
+
 import * as assert from "assert";
 
-import { networkTest } from "./Network";
+import { networkTest } from "./networkTest";
 
 import { AzureRMAssets, FunctionMetadata, VersionRedirect, FunctionsMetadata } from "../src/AzureRMAssets";
 import { SurveyMetadata } from "../src/SurveyMetadata";
