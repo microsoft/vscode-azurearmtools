@@ -358,6 +358,10 @@ export class AzureRMTools {
             } = this.properties;
 
             // Full function counts
+            //
+            // Note: Due to the way DeploymentTemplate is implemented (see quotedStringToTleParseResultMap), string expressions which are exactly
+            //   the same (e.g. 'prop1': '[add(1,2)]' and 'prop2': '[add(1,2)]') only get counted once, thus the functions inside them will only get
+            //   counted once.
             const functionCounts: Histogram = deploymentTemplate.functionCounts;
             const functionsData = {};
             for (const functionName of functionCounts.keys) {
