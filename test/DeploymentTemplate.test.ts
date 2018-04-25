@@ -15,6 +15,8 @@ import { DeploymentTemplate } from "../src/DeploymentTemplate";
 import { Histogram } from "../src/Histogram";
 import { ReferenceInVariableDefinitionJSONVisitor } from "../src/DeploymentTemplate";
 import { ParameterDefinition } from "../src/ParameterDefinition";
+import { IncorrectArgumentsCountIssue } from "../src/IncorrectArgumentsCountIssue";
+import { UnrecognizedFunctionIssue } from "../src/UnrecognizedFunctionIssue";
 
 suite("DeploymentTemplate", () => {
     suite("constructor(string)", () => {
@@ -248,7 +250,7 @@ suite("DeploymentTemplate", () => {
         test("with one unrecognized function error deployment template", () => {
             const dt = new DeploymentTemplate("{ 'name': '[blah(\"test\")]' }", "id");
             const expectedErrors = [
-                new language.Issue(new language.Span(12, 4), "Unrecognized function name 'blah'.")
+                new UnrecognizedFunctionIssue(new language.Span(12, 4), "blah")
             ];
             return dt.errors.then((errors: language.Issue[]) => {
                 assert.deepStrictEqual(errors, expectedErrors);
@@ -288,7 +290,7 @@ suite("DeploymentTemplate", () => {
             return dt.errors.then((errors: language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
-                    [new language.Issue(new language.Span(35, 11), "The function 'variables' takes 1 argument.")]);
+                    [new IncorrectArgumentsCountIssue(new language.Span(35, 11), "The function 'variables' takes 1 argument.", "variables", 0, 1, 1)]);
             });
         });
 
@@ -379,10 +381,15 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual(expectedHistogram, dt.functionCounts);
         });
 
-        test("with one TLE function deployment template", () => {
-            const dt = new DeploymentTemplate("{ 'name': '[concat()]' }", "id");
+        test("with one TLE function used multiple times in deployment template", () => {
+            const dt = new DeploymentTemplate("{ 'variables': { 'name': '[concat()]', 'name2': '[concat(1, 2)]', 'name3': '[concat(2, 3)]' } }", "id");
             const expectedHistogram = new Histogram();
             expectedHistogram.add("concat");
+            expectedHistogram.add("concat");
+            expectedHistogram.add("concat");
+            expectedHistogram.add("concat(0)");
+            expectedHistogram.add("concat(2)");
+            expectedHistogram.add("concat(2)");
             assert.deepStrictEqual(expectedHistogram, dt.functionCounts);
             assert.deepStrictEqual(expectedHistogram, dt.functionCounts);
         });
@@ -391,7 +398,9 @@ suite("DeploymentTemplate", () => {
             const dt = new DeploymentTemplate("{ 'name': '[concat()]', 'height': '[add()]' }", "id");
             const expectedHistogram = new Histogram();
             expectedHistogram.add("concat");
+            expectedHistogram.add("concat(0)");
             expectedHistogram.add("add");
+            expectedHistogram.add("add(0)");
             assert.deepStrictEqual(expectedHistogram, dt.functionCounts);
             assert.deepStrictEqual(expectedHistogram, dt.functionCounts);
         });

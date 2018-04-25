@@ -15,6 +15,8 @@ import * as TLE from "../src/TLE";
 import { AzureRMAssets, FunctionMetadata, FunctionsMetadata } from "../src/AzureRMAssets";
 import { DeploymentTemplate } from "../src/DeploymentTemplate";
 import { PositionContext } from "../src/PositionContext";
+import { IncorrectArgumentsCountIssue } from "../src/IncorrectArgumentsCountIssue";
+import { UnrecognizedFunctionIssue } from "../src/UnrecognizedFunctionIssue";
 
 suite("TLE", () => {
     suite("StringValue", () => {
@@ -1777,9 +1779,10 @@ suite("TLE", () => {
                 assert(visitor);
                 assert.deepStrictEqual(
                     [
-                        new language.Issue(new language.Span(2, 11), "Unrecognized function name 'concatenate'.")
+                        new UnrecognizedFunctionIssue(new language.Span(2, 11), "concatenate")
                     ],
                     visitor.errors);
+                assert.equal(visitor.errors[0].message, "Unrecognized function name 'concatenate'.")
             });
         });
     });
@@ -1851,7 +1854,7 @@ suite("TLE", () => {
                         assert(visitor);
                         assert.deepStrictEqual(
                             visitor.errors,
-                            [new language.Issue(new language.Span(2, 5), "The function 'add' takes 2 arguments.")]);
+                            [new IncorrectArgumentsCountIssue(new language.Span(2, 5), "The function 'add' takes 2 arguments.", "add", 0, 2, 2)]);
                     });
             });
 
@@ -1863,7 +1866,7 @@ suite("TLE", () => {
                         assert(visitor);
                         assert.deepStrictEqual(
                             visitor.errors,
-                            [new language.Issue(new language.Span(2, 6), "The function 'add' takes 2 arguments.")]);
+                            [new IncorrectArgumentsCountIssue(new language.Span(2, 6), "The function 'add' takes 2 arguments.", "add", 1, 2, 2)]);
                     });
             });
 
@@ -1885,7 +1888,7 @@ suite("TLE", () => {
                         assert(visitor);
                         assert.deepStrictEqual(
                             visitor.errors,
-                            [new language.Issue(new language.Span(2, 12), "The function 'add' takes 2 arguments.")]);
+                            [new IncorrectArgumentsCountIssue(new language.Span(2, 12), "The function 'add' takes 2 arguments.", "add", 3, 2, 2)]);
                     });
             });
 
@@ -1897,7 +1900,7 @@ suite("TLE", () => {
                         assert(visitor);
                         assert.deepStrictEqual(
                             visitor.errors,
-                            [new language.Issue(new language.Span(2, 12), "The function 'add' takes 2 arguments.")]);
+                            [new IncorrectArgumentsCountIssue(new language.Span(2, 12), "The function 'add' takes 2 arguments.", "add", 3, 2, 2)]);
                     });
             });
 
@@ -1909,7 +1912,7 @@ suite("TLE", () => {
                         assert(visitor);
                         assert.deepStrictEqual(
                             visitor.errors,
-                            [new language.Issue(new language.Span(2, 12), "The function 'resourceId' takes at least 2 arguments.")]);
+                            [new IncorrectArgumentsCountIssue(new language.Span(2, 12), "The function 'resourceId' takes at least 2 arguments.", "resourceId", 0, 2, null)]);
                     });
             });
 
@@ -1921,7 +1924,7 @@ suite("TLE", () => {
                         assert(visitor);
                         assert.deepStrictEqual(
                             visitor.errors,
-                            [new language.Issue(new language.Span(2, 13), "The function 'resourceId' takes at least 2 arguments.")]);
+                            [new IncorrectArgumentsCountIssue(new language.Span(2, 13), "The function 'resourceId' takes at least 2 arguments.", "resourceId", 1, 2, null)]);
                     });
             });
 
@@ -1953,7 +1956,7 @@ suite("TLE", () => {
                         assert(visitor);
                         assert.deepStrictEqual(
                             visitor.errors,
-                            [new language.Issue(new language.Span(2, 11), "The function 'substring' takes between 1 and 3 arguments.")]);
+                            [new IncorrectArgumentsCountIssue(new language.Span(2, 11), "The function 'substring' takes between 1 and 3 arguments.", "substring", 0, 1, 3)]);
                     });
             });
 
@@ -1995,7 +1998,7 @@ suite("TLE", () => {
                         assert(visitor);
                         assert.deepStrictEqual(
                             visitor.errors,
-                            [new language.Issue(new language.Span(2, 30), "The function 'substring' takes between 1 and 3 arguments.")]);
+                            [new IncorrectArgumentsCountIssue(new language.Span(2, 30), "The function 'substring' takes between 1 and 3 arguments.", "substring", 4, 1, 3)]);
                     });
             });
         });
