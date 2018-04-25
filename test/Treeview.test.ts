@@ -30,18 +30,12 @@ suite("TreeView", async (): Promise<void> => {
         });
 
         async function testGetChildren(template: string, expected: ITestTreeItem[]): Promise<void> {
-            console.log(1);
             let editor = await showNewTextDocument(template);
-            console.log(2);
             let children = provider.getChildren(null);
-            console.log(3);
             let testChildren = children.map(child => {
-                console.log(4);
                 let treeItem = provider.getTreeItem(child);
-                console.log(5);
                 return toTestTreeItem(treeItem);
             });
-            console.log(6);
 
             assert.deepStrictEqual(testChildren, expected);
         }
