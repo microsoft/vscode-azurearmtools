@@ -13,6 +13,7 @@ import * as vscode from "vscode";
 // tslint:disable-next-line:no-var-requires
 const open = require("open");
 
+import { ext } from "./extensionVariables"
 import * as Completion from "./Completion";
 import * as Hover from "./Hover";
 import * as Json from "./JSON";
@@ -82,9 +83,11 @@ export class AzureRMTools {
     });
 
     constructor(context: vscode.ExtensionContext) {
+        ext.extensionContext = context;
         this.loadConfiguration();
 
         const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
+        ext.jsonOutlineProvider = jsonOutline;
         context.subscriptions.push(vscode.window.registerTreeDataProvider("json-outline", jsonOutline));
         context.subscriptions.push(vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => jsonOutline.goToDefinition(range)));
 

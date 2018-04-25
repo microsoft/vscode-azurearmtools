@@ -66,7 +66,7 @@
     "build": "tsc -p ./",
     "lint": "tslint --project tsconfig.json -t verbose",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "node_modules/.bin/mocha --ui tdd out/test",
+    "test": "node ./node_modules/vscode/bin/test",
     "all": "git clean -xdf && npm i && npm run build && npm run lint && npm test"
   },
   "devDependencies": {
