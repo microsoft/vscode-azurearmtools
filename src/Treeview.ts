@@ -7,6 +7,7 @@
 
 import * as Json from "./JSON";
 import * as vscode from "vscode";
+import * as assert from "assert";
 import { TreeItem } from "vscode";
 import { ContextTagKeys } from "applicationinsights/out/Declarations/Contracts";
 import * as Utilities from "./Utilities";
@@ -21,7 +22,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         new vscode.EventEmitter<string | null>();
     public readonly onDidChangeTreeData: vscode.Event<string | null> = this.onDidChangeTreeDataEmitter.event;
 
-    constructor(private context?: vscode.ExtensionContext) {
+    constructor(private context: vscode.ExtensionContext) {
         context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(() => this.updateTreeState()));
         context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(() => this.updateTreeState()));
 
@@ -42,6 +43,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
 
                 if (!this.tree) {
                     this.refresh();
+                    assert(this.tree, "No tree");
                 }
 
                 let result = [];
@@ -55,6 +57,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                 }
                 else {
                     let elementInfo = JSON.parse(element);
+                    assert(!!elementInfo.tree, "elementInfo.tree not defined");
                     let valueNode = this.tree.getValueAtCharacterIndex(elementInfo.current.value.start);
 
                     // Value is an object and is collapsible
