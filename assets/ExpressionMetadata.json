@@ -252,7 +252,12 @@
             "expectedUsage": "listKeys(resourceName\/resourceIdentifier, apiVersion)",
             "description": "Returns the keys of a storage account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primaryKey and secondaryKey.",
             "minimumArguments": 2,
-            "maximumArguments": 2
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "keys"
+                }
+            ]
         },
         {
             "name": "listPackage",
@@ -290,7 +295,7 @@
         {
             "name": "listSecrets",
             "expectedUsage": "listSecrets(resourceName\/resourceIdentifier, apiVersion)",
-            "description": "Returns the secrets of a resource. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "description": "List the secrets of a key vault. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
             "minimumArguments": 2,
             "maximumArguments": 2
         },
