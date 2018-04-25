@@ -87,6 +87,7 @@ export class AzureRMTools {
         this.loadConfiguration();
 
         const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
+        ext.jsonOutlineProvider = jsonOutline;
         context.subscriptions.push(vscode.window.registerTreeDataProvider("json-outline", jsonOutline));
         context.subscriptions.push(vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => jsonOutline.goToDefinition(range)));
 
