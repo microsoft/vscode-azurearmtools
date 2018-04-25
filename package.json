@@ -6,7 +6,7 @@
   "publisher": "msazurermtools",
   "categories": [
     "Azure",
-    "Languages",
+    "Programming Languages",
     "Linters"
   ],
   "keywords": [
@@ -31,7 +31,7 @@
   "icon": "images/AzureRMTools128x128.png",
   "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
   "engines": {
-    "vscode": "^1.14.0"
+    "vscode": "^1.20.0"
   },
   "preview": true,
   "activationEvents": [
@@ -77,7 +77,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.4.2",
     "remap-istanbul": "^0.8.4",
-    "vscode": "^1.1.4",
+    "vscode": "^1.1.5",
     "tslint": "^5.7.0",
     "tslint-microsoft-contrib": "5.0.3",
     "typescript": "^2.0.3",
@@ -87,6 +87,7 @@
     "applicationinsights": "0.21.0",
     "moment": "^2.17.1",
     "open": "^0.0.5",
-    "vscode-extension-telemetry": "^0.0.8"
+    "vscode-azureextensionui": "~0.12.0",
+    "vscode-extension-telemetry": "^0.0.15"
   }
 }

@@ -5,7 +5,7 @@
 import * as moment from "moment";
 
 import { SurveySettings } from "./SurveySettings";
-import { httpGet } from "./HttpClient";
+import { httpGet } from "./httpGet";
 
 /**
  * The SurveyMetadata class represents the settings related to our user
@@ -74,9 +74,10 @@ export class SurveyMetadata {
         let result: SurveyMetadata = (initialResult ? initialResult : new SurveyMetadata());
 
         if (metadataJSON) {
+            // tslint:disable-next-line:no-for-in // Grandfathered in
             for (const metadataName in result) {
                 if (metadataJSON[metadataName]) {
-                    result["_" + metadataName] = metadataJSON[metadataName];
+                    result[`_${metadataName}`] = metadataJSON[metadataName];
                 }
             }
 

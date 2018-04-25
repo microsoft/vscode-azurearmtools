@@ -174,6 +174,7 @@ export class PositionContext {
         return this._hoverInfo;
     }
 
+    // tslint:disable-next-line:cyclomatic-complexity // Grandfathered in
     public get completionItems(): Promise<Completion.Item[]> {
         if (this._completionItems === undefined) {
             this._completionItems = Promise.resolve([]);

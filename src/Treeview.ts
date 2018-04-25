@@ -63,7 +63,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     // Value is an object and is collapsible
                     if (elementInfo.current.value.type === "ObjectValue" && elementInfo.current.collapsible) {
 
-                        for (var i = 0, il = valueNode.properties.length; i < il; i++) {
+                        for (let i = 0, il = valueNode.properties.length; i < il; i++) {
                             let item = this.getElementInfo(valueNode.properties[i], elementInfo);
                             result.push(item);
 
@@ -72,7 +72,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     else if (elementInfo.current.value.type === "ArrayValue" && elementInfo.current.collapsible) {
                         // Array with Object
                         if (valueNode.elements[0].constructor.name === "ObjectValue") {
-                            for (var i = 0, il = valueNode.length; i < il; i++) {
+                            for (let i = 0, il = valueNode.length; i < il; i++) {
                                 let item = this.getElementInfo(valueNode.elements[i], elementInfo);
                                 result.push(item);
                             }
@@ -250,21 +250,22 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         return JSON.stringify(result);
     }
 
+    // tslint:disable-next-line:cyclomatic-complexity // Grandfathered in
     private getIconPath(elementInfo: IElementInfo): string {
 
-        let icon;
+        let icon: string;
         const keyNode = this.tree.getValueAtCharacterIndex(elementInfo.current.key.start);
 
         // Is current element a root element?
         if (elementInfo.current.level === 1) {
-            if (keyNode._value.toUpperCase() === "$schema".toUpperCase()) { icon = "label.svg" };
-            if (keyNode._value.toUpperCase() === "version".toUpperCase()) { icon = "label.svg" };
-            if (keyNode._value.toUpperCase() === "contentVersion".toUpperCase()) { icon = "label.svg" };
-            if (keyNode._value.toUpperCase() === "handler".toUpperCase()) { icon = "label.svg" };
-            if (keyNode._value.toUpperCase() === "parameters".toUpperCase()) { icon = "parameters.svg" };
-            if (keyNode._value.toUpperCase() === "variables".toUpperCase()) { icon = "variables.svg" };
-            if (keyNode._value.toUpperCase() === "resources".toUpperCase()) { icon = "resources.svg" };
-            if (keyNode._value.toUpperCase() === "outputs".toUpperCase()) { icon = "outputs.svg" };
+            if (keyNode._value.toUpperCase() === "$schema".toUpperCase()) { icon = "label.svg" }
+            if (keyNode._value.toUpperCase() === "version".toUpperCase()) { icon = "label.svg" }
+            if (keyNode._value.toUpperCase() === "contentVersion".toUpperCase()) { icon = "label.svg" }
+            if (keyNode._value.toUpperCase() === "handler".toUpperCase()) { icon = "label.svg" }
+            if (keyNode._value.toUpperCase() === "parameters".toUpperCase()) { icon = "parameters.svg" }
+            if (keyNode._value.toUpperCase() === "variables".toUpperCase()) { icon = "variables.svg" }
+            if (keyNode._value.toUpperCase() === "resources".toUpperCase()) { icon = "resources.svg" }
+            if (keyNode._value.toUpperCase() === "outputs".toUpperCase()) { icon = "outputs.svg" }
 
         }
         // Is current element a element of a root element?
@@ -272,9 +273,9 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             // Get root value
             const rootNode = this.tree.getValueAtCharacterIndex(elementInfo.root.key.start);
 
-            if (rootNode._value.toUpperCase() === "parameters".toUpperCase()) { icon = "parameters.svg" };
-            if (rootNode._value.toUpperCase() === "variables".toUpperCase()) { icon = "variables.svg" };
-            if (rootNode._value.toUpperCase() === "outputs".toUpperCase()) { icon = "outputs.svg" };
+            if (rootNode._value.toUpperCase() === "parameters".toUpperCase()) { icon = "parameters.svg" }
+            if (rootNode._value.toUpperCase() === "variables".toUpperCase()) { icon = "variables.svg" }
+            if (rootNode._value.toUpperCase() === "outputs".toUpperCase()) { icon = "outputs.svg" }
         }
 
         // If resourceType element is found on resource objects set to specific resourceType Icon or else a a default resource icon
@@ -301,7 +302,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             }
         }
         if (icon) {
-            return (__dirname + '/../../icons/' + icon);
+            return (`${__dirname}/../../icons/${icon}`);
         }
         return;
     }
