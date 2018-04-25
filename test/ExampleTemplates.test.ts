@@ -48,6 +48,40 @@ suite("Template tests", () => {
             }
             `);
         });
-    });
 
+        test("listKeys", async () => {
+            await verifyTemplateHasNoErrors(`
+            {
+                "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "parameters": {
+                    "storageAccountName": {
+                        "type": "string"
+                    }
+                },
+                "resources": [
+                  {
+                    "name": "[parameters('storageAccountName')]",
+                    "type": "Microsoft.Storage/storageAccounts",
+                    "apiVersion": "2016-12-01",
+                    "sku": {
+                      "name": "Standard_LRS"
+                    },
+                    "kind": "Storage",
+                    "location": "[resourceGroup().location]",
+                    "tags": {},
+                    "properties": {
+                    }
+                  }
+                ],
+                "outputs": {
+                    "referenceOutput": {
+                        "type": "object",
+                        "value": "[listKeys(parameters('storageAccountName'), '2016-12-01')]"
+                    }
+                  }
+              }
+              `);
+        });
+    });
 });
