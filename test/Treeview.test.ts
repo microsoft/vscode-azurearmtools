@@ -68,7 +68,7 @@ suite("TreeView", async (): Promise<void> => {
 
         test("getChildren: Top level: all default param types", async () => {
 
-            await testChildren(template, [
+            await testChildren(templateAllParamDefaultTypes, [
                 {
                     label: "$schema: http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     collapsibleState: 0,
@@ -79,8 +79,7 @@ suite("TreeView", async (): Promise<void> => {
                     icon: "label.svg"
                 }, {
                     label: "a: undefined", // Until https://github.com/Microsoft/vscode-azurearmtools/issues is fixed
-                    collapsibleState: 0,
-                    icon: undefined
+                    collapsibleState: 0
                 }, {
                     label: "parameters",
                     collapsibleState: 1,
@@ -97,9 +96,87 @@ suite("TreeView", async (): Promise<void> => {
             ]);
         });
 
+        test("getLabel: displayName tag", async () => {
+
+            await testTree(`
+                {
+                    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "apiVersion": "2017-03-01",
+                            "type": "Microsoft.Network/networkSecurityGroups",
+                            "name": "SwarmNSG",
+                            "location": "[resourceGroup().location]",
+                            "tags": {
+                                "any": "who there",
+                                "displayName": "NSG - Swarm"
+                            }
+                        }
+                    ]
+                }`,
+                [
+                    {
+                        label: "$schema: http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                        collapsibleState: 0,
+                        icon: "label.svg"
+                    },
+                    {
+                        label: "contentVersion: 1.0.0.0",
+                        collapsibleState: 0,
+                        icon: "label.svg"
+                    },
+                    {
+                        label: "resources",
+                        collapsibleState: 1,
+                        icon: "resources.svg",
+                        children: [
+                            {
+                                label: "SwarmNSG",
+                                collapsibleState: 1,
+                                icon: "nsg.svg",
+                                children: [
+                                    {
+                                        label: "apiVersion: 2017-03-01",
+                                        collapsibleState: 0
+                                    },
+                                    {
+                                        label: "type: Microsoft.Network/networkSecurityGroups",
+                                        collapsibleState: 0
+                                    },
+                                    {
+                                        label: "name: SwarmNSG",
+                                        collapsibleState: 0
+                                    },
+                                    {
+                                        label: "location: [resourceGroup().location]",
+                                        collapsibleState: 0
+                                    },
+                                    {
+                                        label: "tags",
+                                        collapsibleState: 1,
+                                        children: [
+                                            {
+                                                label: "any: who there",
+                                                collapsibleState: 0
+                                            },
+                                            {
+                                                label: "displayName: NSG - Swarm",
+                                                collapsibleState: 0
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            );
+        });
+
         test("getChildren: Full tree: all default param types", async () => {
 
-            await testTree(template,
+            await testTree(templateAllParamDefaultTypes,
                 [
                     {
                         label: "$schema: http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
@@ -721,17 +798,15 @@ function toTestTreeItem(item: vscode.TreeItem): ITestTreeItem {
 }
 
 function getTextAtSpan(span: Span): string {
-    return template.substr(span.startIndex, span.length);
+    return templateAllParamDefaultTypes.substr(span.startIndex, span.length);
 }
 
 async function showNewTextDocument(text: string): Promise<vscode.TextEditor> {
     let textDocument = await vscode.workspace.openTextDocument({
         language: "jsonc",
-        content: template
+        content: text
     });
-    let editor = await vscode.window.showTextDocument(textDocument);
-    await writeToEditor(editor, template);
-    return editor;
+    return await vscode.window.showTextDocument(textDocument);
 }
 
 async function writeToEditor(editor: vscode.TextEditor, data: string): Promise<void> {
@@ -745,7 +820,7 @@ async function writeToEditor(editor: vscode.TextEditor, data: string): Promise<v
     });
 }
 
-const template: string = `
+const templateAllParamDefaultTypes: string = `
             {
                 "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
