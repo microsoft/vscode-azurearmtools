@@ -67,7 +67,7 @@
     "lint": "tslint --project tsconfig.json -t verbose",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "npm run build && node ./node_modules/vscode/bin/test",
-    "all": "npm i && npm run build && npm run lint && npm test"
+    "all": "npm i && npm run lint && npm test"
   },
   "devDependencies": {
     "@types/applicationinsights": "^0.15.33",
