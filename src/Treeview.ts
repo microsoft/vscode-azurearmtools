@@ -56,8 +56,8 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     }
                 }
                 else {
-                    let elementInfo = JSON.parse(element);
-                    assert(!!elementInfo.tree, "elementInfo.tree not defined");
+                    let elementInfo = <IElementInfo>JSON.parse(element);
+                    assert(!!elementInfo.current, "elementInfo.current not defined");
                     let valueNode = this.tree.getValueAtCharacterIndex(elementInfo.current.value.start);
 
                     // Value is an object and is collapsible
