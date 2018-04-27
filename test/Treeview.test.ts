@@ -161,7 +161,7 @@ suite("TreeView", async (): Promise<void> => {
                         label: "resources",
                         children: [
                             {
-                                label: "SwarmNSG",
+                                label: "NSG - Swarm",
                                 children: [
                                     {
                                         label: "apiVersion: 2017-03-01",
