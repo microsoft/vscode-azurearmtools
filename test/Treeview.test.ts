@@ -145,7 +145,7 @@ suite("TreeView", async (): Promise<void> => {
                             "location": "[resourceGroup().location]",
                             "tags": {
                                 "any": "who there",
-                                "displayName": "NSG - Swarm"
+                                "displayName": "Swarm Display Name"
                             }
                         }
                     ]
@@ -161,7 +161,7 @@ suite("TreeView", async (): Promise<void> => {
                         label: "resources",
                         children: [
                             {
-                                label: "NSG - Swarm",
+                                label: "Swarm Display Name",
                                 children: [
                                     {
                                         label: "apiVersion: 2017-03-01",
@@ -182,7 +182,7 @@ suite("TreeView", async (): Promise<void> => {
                                                 label: "any: who there",
                                             },
                                             {
-                                                label: "displayName: NSG - Swarm",
+                                                label: "displayName: Swarm Display Name",
                                             }
                                         ]
                                     }
@@ -637,7 +637,7 @@ suite("TreeView", async (): Promise<void> => {
                                 ]
                             },
                             {
-                                label: "SwarmNSG",
+                                label: "Swarm Display Name",
                                 collapsibleState: 1,
                                 icon: "nsg.svg",
                                 children: [
@@ -666,7 +666,7 @@ suite("TreeView", async (): Promise<void> => {
                                                 collapsibleState: 0
                                             },
                                             {
-                                                label: "displayName: NSG - Swarm",
+                                                label: "displayName: Swarm Display Name",
                                                 collapsibleState: 0
                                             }
                                         ]
@@ -985,7 +985,7 @@ const templateAllParamDefaultTypes: string = `
                         "location": "[resourceGroup().location]",
                         "tags": {
                             "any": "who there",
-                            "displayName": "NSG - Swarm"
+                            "displayName": "Swarm Display Name"
                         },
                         "properties": {
                             "securityRules": [

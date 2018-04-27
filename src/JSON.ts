@@ -498,6 +498,11 @@ export abstract class Value {
     }
 
     public abstract accept(visitor: Visitor): void;
+
+    /**
+     * A user-friendly string that represents this value, suitable for display in a label, etc.
+     */
+    public abstract toFriendlyString(): string;
 }
 
 /**
@@ -571,6 +576,10 @@ export class ObjectValue extends Value {
     public accept(visitor: Visitor): void {
         visitor.visitObjectValue(this);
     }
+
+    public toFriendlyString(): string {
+        return "(object)";
+    }
 }
 
 /**
@@ -597,6 +606,10 @@ export class Property extends Value {
 
     public accept(visitor: Visitor): void {
         visitor.visitProperty(this);
+    }
+
+    public toFriendlyString(): string {
+        return "(property)";
     }
 }
 
@@ -632,6 +645,10 @@ export class ArrayValue extends Value {
     public accept(visitor: Visitor): void {
         visitor.visitArrayValue(this);
     }
+
+    public toFriendlyString(): string {
+        return "(array)";
+    }
 }
 
 /**
@@ -656,6 +673,10 @@ export class BooleanValue extends Value {
     public accept(visitor: Visitor): void {
         visitor.visitBooleanValue(this);
     }
+
+    public toFriendlyString(): string {
+        return this.toString();
+    }
 }
 
 /**
@@ -677,6 +698,10 @@ export class StringValue extends Value {
     public accept(visitor: Visitor): void {
         visitor.visitStringValue(this);
     }
+
+    public toFriendlyString(): string {
+        return this.toString();
+    }
 }
 
 /**
@@ -694,6 +719,10 @@ export class NumberValue extends Value {
     public accept(visitor: Visitor): void {
         visitor.visitNumberValue(this);
     }
+
+    public toFriendlyString(): string {
+        return this.toString();
+    }
 }
 
 /**
@@ -710,6 +739,10 @@ export class NullValue extends Value {
 
     public accept(visitor: Visitor): void {
         visitor.visitNullValue(this);
+    }
+
+    public toFriendlyString(): string {
+        return this.toString();
     }
 }
 

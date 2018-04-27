@@ -125,21 +125,32 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         const keyNode = this.tree.getValueAtCharacterIndex(elementInfo.current.key.start);
 
         // Key is an object (e.g. a resource object)
-        if (elementInfo.current.key.type === "ObjectValue") {
+        if (keyNode instanceof Json.ObjectValue) {
             let foundName = false;
             // Object contains no elements
             if (keyNode.properties.length === 0) {
                 return "{}";
             }
             else {
+                // Object contains elements, look for displayName tag first
+                let tags = keyNode.properties.find(p => p.name && p.name.toString().toLowerCase() === 'tags');
+                if (tags && tags.value instanceof Json.ObjectValue) {
+                    let displayNameProp = tags.value.properties.find(p => p.name && p.name.toString().toLowerCase() === 'displayname');
+                    if (displayNameProp) {
+                        let displayName = displayNameProp.value && displayNameProp.value.toString();
+                        if (displayName) {
+                            return displayName;
+                        }
+                    }
+                }
 
-                // Object contains elements, look for name element
+                // Look for name element
                 for (var i = 0, l = keyNode.properties.length; i < l; i++) {
                     let props = keyNode.properties[i];
                     // If name element is found
-                    if (props.name._value.toUpperCase() === "name".toUpperCase()) {
+                    if (props.name instanceof Json.StringValue && props.name.toString().toUpperCase() === "name".toUpperCase()) {
                         foundName = true;
-                        return props.value._value;
+                        return props.value.toFriendlyString();
                     }
                 }
                 // Object contains elements, but not a name element
