@@ -149,8 +149,8 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     let props = keyNode.properties[i];
                     // If name element is found
                     if (props.name instanceof Json.StringValue && props.name.toString().toUpperCase() === "name".toUpperCase()) {
-                        foundName = true;
-                        return props.value.toFriendlyString();
+                        let name = props.value.toFriendlyString();
+                        return shortenTreeLabel(name);
                     }
                 }
                 // Object contains elements, but not a name element
@@ -389,4 +389,37 @@ export interface IElementInfo {
             start: number;
         }
     }
+}
+
+/**
+ * Shortens a label in a way intended to keep the important information but make it easier to read and shorter (so you can read more in the limited horizontal space)
+ */
+export function shortenTreeLabel(label: string): string {
+    let originalLabel = label;
+
+    // If it's an expression - starts and ends with [], but doesn't start with [[, and at least one character inside the []
+    if (label && label.match(/^\[[^\[].*]$/)) {
+
+        //  variables/parameters('a') -> [a]
+        label = label.replace(/(variables|parameters)\('([^']+)'\)/g, '<$2>');
+
+        // concat(x,'y') => x,'y'
+        // Repeat multiple times for recursive cases
+        // tslint:disable-next-line:no-constant-condition
+        while (true) {
+            let newLabel = label.replace(/concat\((.*)\)/g, '$1');
+            if (label !== newLabel) {
+                label = newLabel;
+            } else {
+                break;
+            }
+        }
+
+        if (label !== originalLabel) {
+            // If we actually made changes, remove the brackets so users don't think this is the exact expression
+            return label.substr(1, label.length - 2);
+        }
+    }
+
+    return originalLabel;
 }

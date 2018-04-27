@@ -10,10 +10,39 @@ import * as Json from "../src/JSON";
 import * as path from "path";
 
 import { ext } from "../src/extensionVariables"
-import { JsonOutlineProvider, IElementInfo } from "../src/Treeview";
+import { JsonOutlineProvider, IElementInfo, shortenTreeLabel } from "../src/Treeview";
 import { Span } from "../src/Language";
 
 suite("TreeView", async (): Promise<void> => {
+    suite("shortenTreeLabel", async (): Promise<void> => {
+        test("shortenTreeLabel", () => {
+            function testShorten(label: string, expected: string) {
+                let shortenedLabel = shortenTreeLabel(label);
+                assert.equal(shortenedLabel, expected);
+            }
+
+            testShorten(undefined, undefined);
+            testShorten(null, null);
+            testShorten("", "");
+            testShorten("a", "a");
+            testShorten("[]", "[]");
+            testShorten("[parameter('a')]", "[parameter('a')]");
+            testShorten("[parameterss('a')]", "[parameterss('a')]");
+
+            // params/vars
+            testShorten("[parameters('a')]", "<a>");
+            testShorten("[variables('a')]", "<a>");
+            testShorten("[(variables('a')+variables('abc'))]", "(<a>+<abc>)");
+
+            // concat
+            testShorten("[concat(a)]", "a");
+            testShorten("[concat(variables('a'),'b',variables('abc'))]", "<a>,'b',<abc>");
+
+            // nested concat
+            testShorten("[concat(concat(a))]", "a");
+        });
+    });
+
     suite("JsonOutlineProvider", async (): Promise<void> => {
         let provider: JsonOutlineProvider;
 
@@ -542,7 +571,7 @@ suite("TreeView", async (): Promise<void> => {
                         icon: "resources.svg",
                         children: [
                             {
-                                label: "[variables('virtualNetworkName')]",
+                                label: "<virtualNetworkName>",
                                 collapsibleState: 1,
                                 icon: "virtualnetworks.svg",
                                 children: [
@@ -581,7 +610,7 @@ suite("TreeView", async (): Promise<void> => {
                                                 collapsibleState: 1,
                                                 children: [
                                                     {
-                                                        label: "[variables('subnetName')]",
+                                                        label: "<subnetName>",
                                                         collapsibleState: 1,
                                                         children: [
                                                             {
@@ -611,7 +640,7 @@ suite("TreeView", async (): Promise<void> => {
                                                         ]
                                                     },
                                                     {
-                                                        label: "[variables('appGwSubnetName')]",
+                                                        label: "<appGwSubnetName>",
                                                         collapsibleState: 1,
                                                         children: [
                                                             {
