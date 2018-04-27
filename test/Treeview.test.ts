@@ -18,7 +18,7 @@ suite("TreeView", async (): Promise<void> => {
         let provider: JsonOutlineProvider;
 
         setup(function (this: Mocha.IHookCallbackContext, done: MochaDone): void {
-            this.timeout(10000);
+            this.timeout(15000);
 
             async function mySetup(): Promise<void> {
                 let extension = vscode.extensions.getExtension(ext.extensionId);
@@ -42,10 +42,45 @@ suite("TreeView", async (): Promise<void> => {
             assert.deepStrictEqual(testChildren, expected);
         }
 
-        async function testTree(template: string, expected: ITestTreeItem[]): Promise<void> {
+        async function testTree(template: string, expected: ITestTreeItem[], selectProperties?: string[]): Promise<void> {
             let editor = await showNewTextDocument(template);
             let testChildren = getTree(null);
-            assert.deepStrictEqual(testChildren, expected);
+
+            function select(node: ITestTreeItem): Partial<ITestTreeItem> {
+                if (selectProperties) {
+                    let newNode: Partial<ITestTreeItem> = {};
+                    for (let prop of selectProperties) {
+                        newNode[prop] = node[prop];
+                    }
+                    return newNode;
+                } else {
+                    return node;
+                }
+            }
+
+            let testChildrenSelected = treeMap(testChildren, select);
+            assert.deepStrictEqual(testChildrenSelected, expected);
+        }
+
+        interface INode<T> {
+            children?: INode<T>[];
+        }
+
+        function treeMap<T extends INode<T>, U extends INode<U>>(tree: T[], visit: (node: T) => U): INode<U>[] {
+            let newTree = tree.map<INode<T>>(node => {
+                let newNode = visit(node);
+                if (node.children) {
+                    newNode.children = treeMap(node.children, visit);
+                }
+
+                return newNode;
+            });
+
+            return newTree;
+        }
+
+        async function testLabels(template: string, expected: Partial<ITestTreeItem>[]): Promise<void> {
+            testTree(template, expected, ["label"]);
         }
 
         function getTree(element?: string): ITestTreeItem[] {
@@ -96,9 +131,9 @@ suite("TreeView", async (): Promise<void> => {
             ]);
         });
 
-        test("getLabel: displayName tag", async () => {
+        test("getLabel: displayName tag overrides name", async () => {
 
-            await testTree(`
+            await testLabels(`
                 {
                     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
@@ -118,51 +153,36 @@ suite("TreeView", async (): Promise<void> => {
                 [
                     {
                         label: "$schema: http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                        collapsibleState: 0,
-                        icon: "label.svg"
                     },
                     {
                         label: "contentVersion: 1.0.0.0",
-                        collapsibleState: 0,
-                        icon: "label.svg"
                     },
                     {
                         label: "resources",
-                        collapsibleState: 1,
-                        icon: "resources.svg",
                         children: [
                             {
                                 label: "SwarmNSG",
-                                collapsibleState: 1,
-                                icon: "nsg.svg",
                                 children: [
                                     {
                                         label: "apiVersion: 2017-03-01",
-                                        collapsibleState: 0
                                     },
                                     {
                                         label: "type: Microsoft.Network/networkSecurityGroups",
-                                        collapsibleState: 0
                                     },
                                     {
                                         label: "name: SwarmNSG",
-                                        collapsibleState: 0
                                     },
                                     {
                                         label: "location: [resourceGroup().location]",
-                                        collapsibleState: 0
                                     },
                                     {
                                         label: "tags",
-                                        collapsibleState: 1,
                                         children: [
                                             {
                                                 label: "any: who there",
-                                                collapsibleState: 0
                                             },
                                             {
                                                 label: "displayName: NSG - Swarm",
-                                                collapsibleState: 0
                                             }
                                         ]
                                     }
@@ -778,8 +798,8 @@ suite("TreeView", async (): Promise<void> => {
 });
 
 type ITestTreeItem = {
-    label: string;
-    collapsibleState: vscode.TreeItemCollapsibleState;
+    label?: string;
+    collapsibleState?: vscode.TreeItemCollapsibleState;
     icon?: string;
     children?: ITestTreeItem[];
 }
