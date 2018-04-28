@@ -109,7 +109,7 @@ suite("TreeView", async (): Promise<void> => {
         }
 
         async function testLabels(template: string, expected: Partial<ITestTreeItem>[]): Promise<void> {
-            testTree(template, expected, ["label"]);
+            await testTree(template, expected, ["label"]);
         }
 
         function getTree(element?: string): ITestTreeItem[] {
