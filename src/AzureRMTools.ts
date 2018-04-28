@@ -430,7 +430,6 @@ export class AzureRMTools {
 
         this.logOnError(() => {
             const deploymentTemplate = this.getDeploymentTemplate(document);
-            throw new Error("hi");
             if (deploymentTemplate) {
                 const context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
                 if (context.hoverInfo) {
