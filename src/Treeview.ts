@@ -56,8 +56,8 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     }
                 }
                 else {
-                    let elementInfo = JSON.parse(element);
-                    assert(!!elementInfo.tree, "elementInfo.tree not defined");
+                    let elementInfo = <IElementInfo>JSON.parse(element);
+                    assert(!!elementInfo.current, "elementInfo.current not defined");
                     let valueNode = this.tree.getValueAtCharacterIndex(elementInfo.current.value.start);
 
                     // Value is an object and is collapsible
@@ -125,21 +125,32 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         const keyNode = this.tree.getValueAtCharacterIndex(elementInfo.current.key.start);
 
         // Key is an object (e.g. a resource object)
-        if (elementInfo.current.key.type === "ObjectValue") {
+        if (keyNode instanceof Json.ObjectValue) {
             let foundName = false;
             // Object contains no elements
             if (keyNode.properties.length === 0) {
                 return "{}";
             }
             else {
+                // Object contains elements, look for displayName tag first
+                let tags = keyNode.properties.find(p => p.name && p.name.toString().toLowerCase() === 'tags');
+                if (tags && tags.value instanceof Json.ObjectValue) {
+                    let displayNameProp = tags.value.properties.find(p => p.name && p.name.toString().toLowerCase() === 'displayname');
+                    if (displayNameProp) {
+                        let displayName = displayNameProp.value && displayNameProp.value.toString();
+                        if (displayName) {
+                            return displayName;
+                        }
+                    }
+                }
 
-                // Object contains elements, look for name element
+                // Look for name element
                 for (var i = 0, l = keyNode.properties.length; i < l; i++) {
                     let props = keyNode.properties[i];
                     // If name element is found
-                    if (props.name._value.toUpperCase() === "name".toUpperCase()) {
-                        foundName = true;
-                        return props.value._value;
+                    if (props.name instanceof Json.StringValue && props.name.toString().toUpperCase() === "name".toUpperCase()) {
+                        let name = props.value.toFriendlyString();
+                        return shortenTreeLabel(name);
                     }
                 }
                 // Object contains elements, but not a name element
@@ -378,4 +389,37 @@ export interface IElementInfo {
             start: number;
         }
     }
+}
+
+/**
+ * Shortens a label in a way intended to keep the important information but make it easier to read and shorter (so you can read more in the limited horizontal space)
+ */
+export function shortenTreeLabel(label: string): string {
+    let originalLabel = label;
+
+    // If it's an expression - starts and ends with [], but doesn't start with [[, and at least one character inside the []
+    if (label && label.match(/^\[[^\[].*]$/)) {
+
+        //  variables/parameters('a') -> [a]
+        label = label.replace(/(variables|parameters)\('([^']+)'\)/g, '<$2>');
+
+        // concat(x,'y') => x,'y'
+        // Repeat multiple times for recursive cases
+        // tslint:disable-next-line:no-constant-condition
+        while (true) {
+            let newLabel = label.replace(/concat\((.*)\)/g, '$1');
+            if (label !== newLabel) {
+                label = newLabel;
+            } else {
+                break;
+            }
+        }
+
+        if (label !== originalLabel) {
+            // If we actually made changes, remove the brackets so users don't think this is the exact expression
+            return label.substr(1, label.length - 2);
+        }
+    }
+
+    return originalLabel;
 }
