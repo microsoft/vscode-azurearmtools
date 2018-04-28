@@ -792,17 +792,11 @@ export class AzureRMTools {
     private logError(eventName: string, error: any): void {
         const event: Telemetry.Event = {
             eventName: eventName,
-            errorType: typeof error
+            errorType: (typeof error === "object" && error.constructor) ? error.constructor.name : typeof error,
         };
 
-        if (error instanceof TypeError) {
-            event.message = error.message;
-            event.stack = error.stack;
-        } else {
-            // tslint:disable-next-line:no-for-in // Grandfathered in
-            for (const propertyName in error) {
-                event[propertyName] = error[propertyName];
-            }
+        for (const propertyName of Object.getOwnPropertyNames(error)) {
+            event[propertyName] = error[propertyName];
         }
 
         this.log(event);
