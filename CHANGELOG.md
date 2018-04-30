@@ -1,6 +1,22 @@
 # Change Log
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+Version 0.4.1 (05/07/2018)
+
+- Add support for JSONC
+- Improved labeling in JSON outline, similar to Visual Studio
+  - Use displayName tag for label of resources when available
+  - Shorten labels when possible (e.g. parameters['abc'] -> &lt;abc&gt;)
+- Engineering improvements (tests, lint, telemetry)
+- Bug fixes:
+  - [Unhandled exception: Cannot read property 'catch' of null inside non-template JSON files](https://github.com/Microsoft/vscode-azurearmtools/issues/35)
+  - [Incorrect number of parameters is not detected if function name differs in case](https://github.com/Microsoft/vscode-azurearmtools/issues/64)
+  - [reference TLE signature intellisense out of date](https://github.com/Microsoft/vscode-azurearmtools/issues/32)
+  - [CopyIndex with 2 arguments is considered an error](https://github.com/Microsoft/vscode-azurearmtools/issues/48)
+  - [Unrecognized function name 'listCallbackUrl'](https://github.com/Microsoft/vscode-azurearmtools/issues/59)
+  - [listSecrets and generic list* functions not recognized](https://github.com/Microsoft/vscode-azurearmtools/issues/72)
+  - [listPackage function metadata is missing a description](https://github.com/Microsoft/vscode-azurearmtools/issues/69)
+
 Version 0.4.0 (02/01/2018)
 - Add JSON outline for ARM depolyment templates
 

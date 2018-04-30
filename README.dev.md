@@ -11,7 +11,6 @@ A JSON language extension to support Azure Resource Manager deployment templates
 * To run this extension's **code coverage unit tests** from the command line, run _"coverage.cmd"_.
 * To create a VSCode .vsix package for this extension, run `gulp package`
 
-
 ## Related Links
 See [Extending VS Code](https://code.visualstudio.com/docs/extensions/overview) for more information on how to create VS Code extensions.
 
@@ -22,7 +21,3 @@ See [Authoring Azure Resource Manager Templates](https://azure.microsoft.com/en-
 See [Template Language Expressions](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/) for more information about how to use Template Language Expressions in your deployment templates.
 
 See [Azure CLI](https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-azure-resource-manager/) for more information about how to interact with Microsoft Azure from the command line.
-
-## Documentation Needed (TODO)
-* Insert snippets with VS Code
-* Deploy from VS Code
