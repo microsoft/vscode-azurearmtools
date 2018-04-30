@@ -262,6 +262,7 @@
         {
             "name": "listPackage",
             "expectedUsage": "listPackage(resourceId, apiVersion)",
+            "description": "Lists the virtual network gateway package. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
             "minimumArguments": 2,
             "maximumArguments": 2
         },
