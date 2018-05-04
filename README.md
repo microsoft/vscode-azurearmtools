@@ -29,6 +29,20 @@ This extension provides language support for Azure Resource Manager deployment t
     - Unused parameters
     - Unused variables
 
+## Using comments in JSON
+
+- If you would like to use comments in your template files, you can use the jsonc ("JSON with comments") language mode.  Add the following to your user settings in VS code:
+
+```json
+    "files.associations": {
+        // Use the following to allow comments inside .jsonc
+        "*.jsonc": "jsonc"
+
+        // Use the following to also allow comments inside .json file
+        // "*.json": "jsonc"
+    }
+```
+
 ## To Install
 
 Press F1 in VSCode, type "ext install" and then look for "Azure Resource Manager Tools".
@@ -39,9 +53,9 @@ Press F1 in VSCode, type "ext install" and then look for "Azure Resource Manager
 - [Azure Quickstart Templates](https://go.microsoft.com/fwlink/?LinkID=734038)
 
 ## Contributing
-There are a couple of ways you can contribute to this repo:
+There are several ways you can contribute to our [repo](https://github.com/Microsoft/vscode-azurearmtools):
 
-- **Ideas, feature requests and bugs**: We are open to all ideas and we want to get rid of bugs! Use the Issues section to either report a new issue, provide your ideas or contribute to existing threads.
+- **Ideas, feature requests and bugs**: We are open to all ideas and we want to get rid of bugs! Use the [Issues](https://github.com/Microsoft/vscode-azurearmtools/issues) section to report a new issue, provide your ideas or contribute to existing threads.
 - **Documentation**: Found a typo or strangely worded sentences? Submit a PR!
 - **Code**: Contribute bug fixes, features or design changes:
   - Clone the repository locally and open in VS Code.
