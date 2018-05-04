@@ -3,7 +3,7 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 
 Version 0.4.1 (05/07/2018)
 
-- Add support for JSONC
+- Added support for [JSONC](README.md#using-comments-inside-JSON)
 - Improved labeling in JSON outline, similar to Visual Studio
   - Use displayName tag for label of resources when available
   - Shorten labels when possible (e.g. parameters['abc'] -> &lt;abc&gt;)

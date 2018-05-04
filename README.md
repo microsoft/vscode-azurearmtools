@@ -31,12 +31,15 @@ This extension provides language support for Azure Resource Manager deployment t
 
 ## Using comments in JSON
 
-- If you would like to use comments in your template files, you can set the language mode to jsonc in the status bar (you may need to tab to a different file and tab back again to see the JSON outline window).  Or save the file with the .jsonc extension and add the following to your user settings in VS code:
+- If you would like to use comments in your template files, you can use the jsonc ("JSON with comments") language mode.  Add the following to your user settings in VS code:
 
 ```json
     "files.associations": {
-        // Always open .jsonc files as JSON-with-comments files
+        // Use the following to allow comments inside .jsonc
         "*.jsonc": "jsonc"
+
+        // Use the following to also allow comments inside .json file
+        // "*.json": "jsonc"
     }
 ```
 
