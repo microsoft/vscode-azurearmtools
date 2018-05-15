@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+Version 0.4.2 (05/015/2018)
+
+Bug fixed:
+
+- [JSON outline doesn't show up if jsonc template opened before any json templates](https://github.com/Microsoft/vscode-azurearmtools/issues/106)
+
 Version 0.4.1 (05/07/2018)
 
 - Added support for [JSONC](README.md#using-comments-inside-JSON)

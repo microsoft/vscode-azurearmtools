@@ -36,6 +36,7 @@ This extension provides language support for Azure Resource Manager deployment t
 ```json
     "files.associations": {
         // Use the following to allow comments inside .jsonc
+        // (This will not be necessary after VS Code ships the fix for https://github.com/Microsoft/vscode/issues/48969)
         "*.jsonc": "jsonc"
 
         // Use the following to also allow comments inside .json file
