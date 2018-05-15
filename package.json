@@ -35,7 +35,8 @@
   },
   "preview": true,
   "activationEvents": [
-    "onLanguage:json"
+    "onLanguage:json",
+    "onLanguage:jsonc"
   ],
   "contributes": {
     "configuration": {
