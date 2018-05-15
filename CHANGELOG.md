@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
-Version 0.4.2 (05/015/2018)
+Version 0.4.2 (05/15/2018)
 
 Bug fixed:
 
