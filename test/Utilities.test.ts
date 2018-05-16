@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 // tslint:disable:max-func-body-length
+// tslint:disable:no-http-string
 
 import * as assert from "assert";
 

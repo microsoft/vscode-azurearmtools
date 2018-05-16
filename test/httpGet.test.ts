@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable:no-http-string
+
 import * as assert from "assert";
 
 import { httpGet } from "../src/httpGet";

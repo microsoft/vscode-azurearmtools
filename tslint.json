@@ -11,7 +11,7 @@
         "no-exec-script": true,
         "no-function-constructor-with-string-args": true,
         "no-http-string": [
-            false, // TODO: true,
+            true,
             "http://www.example.com/?.*",
             "http://www.examples.com/?.*"
         ],
@@ -30,7 +30,7 @@
             true,
             "Thenable" // changed
         ],
-        // TODO: "forin": true,
+        "forin": true,
         "jquery-deferred-must-complete": true,
         "label-position": true,
         "match-default-export-name": true,
@@ -159,14 +159,14 @@
         "no-default-export": true,
         "no-empty-interface": true,
         "no-for-in": true,
-        // TODO: "no-function-expression": true,
+        "no-function-expression": true,
         "no-inferrable-types": false,
         "no-multiline-string": false, // changed
         "no-null-keyword": false,
         "no-parameter-properties": false, // changed
         "no-relative-imports": false, // changed
         "no-require-imports": false, // changed
-        //TODO: "no-shadowed-variable": true,
+        "no-shadowed-variable": true,
         "no-suspicious-comment": true,
         "no-typeof-undefined": true,
         "no-unnecessary-field-initialization": true,
