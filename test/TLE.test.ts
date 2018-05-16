@@ -1747,6 +1747,13 @@ suite("TLE", () => {
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(32), tt.readToken());
                 assert.equal(null, tt.readToken());
             });
+
+            test("https://github.com/Microsoft/vscode-azurearmtools/issues/34", () => {
+                let tt = TLE.Tokenizer.fromString(""[concat('cd /hub*/docker-compose; sudo docker-compose down -t 60; sudo -s source /set_hub_url.sh ', reference(parameters('publicIpName')).dnsSettings.fqdn, ';  sudo docker volume rm ''dockercompose_cert-volume''; sudo docker-compose up')]"");
+                assert.deepStrictEqual(TLE.Token.createLiteral(1, "base64"), tt.readToken());
+                assert.equal(null, tt.readToken());
+            });
+
         });
     });
 
