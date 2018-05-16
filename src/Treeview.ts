@@ -5,14 +5,14 @@
 // tslint:disable:no-var-keyword // Grandfathered in
 // tslint:disable:no-duplicate-variable // Grandfathered in
 
-import * as Json from "./JSON";
-import * as vscode from "vscode";
-import * as assert from "assert";
-import { TreeItem } from "vscode";
 import { ContextTagKeys } from "applicationinsights/out/Declarations/Contracts";
-import * as Utilities from "./Utilities";
+import * as assert from "assert";
+import * as vscode from "vscode";
+import { TreeItem } from "vscode";
+import * as Json from "./JSON";
 import { isLanguageIdSupported } from "./supported";
 import { Parser } from "./TLE";
+import * as Utilities from "./Utilities";
 
 export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     private tree: Json.ParseResult;

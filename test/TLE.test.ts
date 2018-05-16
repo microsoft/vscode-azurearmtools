@@ -14,8 +14,8 @@ import * as TLE from "../src/TLE";
 
 import { AzureRMAssets, FunctionMetadata, FunctionsMetadata } from "../src/AzureRMAssets";
 import { DeploymentTemplate } from "../src/DeploymentTemplate";
-import { PositionContext } from "../src/PositionContext";
 import { IncorrectArgumentsCountIssue } from "../src/IncorrectArgumentsCountIssue";
+import { PositionContext } from "../src/PositionContext";
 import { UnrecognizedFunctionIssue } from "../src/UnrecognizedFunctionIssue";
 
 suite("TLE", () => {
