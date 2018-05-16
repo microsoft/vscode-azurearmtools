@@ -74,7 +74,7 @@ export class DeploymentTemplate {
         if (this._tleParseResults === undefined) {
             this._tleParseResults = [];
 
-            // tslint:disable-next-line:no-for-in // Grandfathered in
+            // tslint:disable-next-line:forin no-for-in // Grandfathered in
             for (let quotedString in this.quotedStringToTleParseResultMap) {
                 this._tleParseResults.push(this.quotedStringToTleParseResultMap[quotedString]);
             }

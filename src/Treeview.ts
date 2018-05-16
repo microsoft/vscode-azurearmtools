@@ -14,6 +14,33 @@ import * as Utilities from "./Utilities";
 import { isLanguageIdSupported } from "./supported";
 import { Parser } from "./TLE";
 
+const topLevelIcons: [string, string][] = [
+    ["$schema", "label.svg"],
+    ["version", "label.svg"],
+    ["contentVersion", "label.svg"],
+    ["handler", "label.svg"],
+    ["parameters", "parameters.svg"],
+    ["variables", "variables.svg"],
+    ["resources", "resources.svg"],
+    ["outputs", "outputs.svg"],
+];
+
+const topLevelChildIconsByRootNode: [string, string][] = [
+    ["parameters", "parameters.svg"],
+    ["variables", "variables.svg"],
+    ["outputs", "outputs.svg"],
+];
+
+const resourceIcons: [string, string][] = [
+    ["Microsoft.Compute/virtualMachines", "virtualmachines.svg"],
+    ["Microsoft.Storage/storageAccounts", "storageaccounts.svg"],
+    ["Microsoft.Network/virtualNetworks", "virtualnetworks.svg"],
+    ["Microsoft.Compute/virtualMachines/extensions", "extensions.svg"],
+    ["Microsoft.Network/networkSecurityGroups", "nsg.svg"],
+    ["Microsoft.Network/networkInterfaces", "nic.svg"],
+    ["Microsoft.Network/publicIPAddresses", "publicip.svg"]
+];
+
 export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     private tree: Json.ParseResult;
     private text: string;
@@ -73,9 +100,9 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     else if (valueNode instanceof Json.ArrayValue && elementInfo.current.collapsible) {
                         // Array with objects
                         for (let i = 0, il = valueNode.length; i < il; i++) {
-                            let element = valueNode.elements[i];
-                            if (element instanceof Json.ObjectValue) {
-                                let item = this.getElementInfo(element, elementInfo);
+                            let valueElement = valueNode.elements[i];
+                            if (valueElement instanceof Json.ObjectValue) {
+                                let item = this.getElementInfo(valueElement, elementInfo);
                                 result.push(item);
                             }
                         }
@@ -265,7 +292,12 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         return JSON.stringify(result);
     }
 
-    // tslint:disable-next-line:cyclomatic-complexity // Grandfathered in
+    private getIcon(icons: [string, string][], itemName: string, defaultIcon: string) {
+        itemName = (itemName || "").toLowerCase();
+        let iconItem = icons.find(item => item[0].toLowerCase() === itemName);
+        return iconItem ? iconItem[1] : defaultIcon;
+    }
+
     private getIconPath(elementInfo: IElementInfo): string | undefined {
 
         let icon: string;
@@ -273,23 +305,13 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
 
         // Is current element a root element?
         if (elementInfo.current.level === 1) {
-            if (keyOrResourceNode.toString().toUpperCase() === "$schema".toUpperCase()) { icon = "label.svg" }
-            if (keyOrResourceNode.toString().toUpperCase() === "version".toUpperCase()) { icon = "label.svg" }
-            if (keyOrResourceNode.toString().toUpperCase() === "contentVersion".toUpperCase()) { icon = "label.svg" }
-            if (keyOrResourceNode.toString().toUpperCase() === "handler".toUpperCase()) { icon = "label.svg" }
-            if (keyOrResourceNode.toString().toUpperCase() === "parameters".toUpperCase()) { icon = "parameters.svg" }
-            if (keyOrResourceNode.toString().toUpperCase() === "variables".toUpperCase()) { icon = "variables.svg" }
-            if (keyOrResourceNode.toString().toUpperCase() === "resources".toUpperCase()) { icon = "resources.svg" }
-            if (keyOrResourceNode.toString().toUpperCase() === "outputs".toUpperCase()) { icon = "outputs.svg" }
+            icon = this.getIcon(topLevelIcons, keyOrResourceNode.toString(), "");
         }
         // Is current element an element of a root element?
         else if (elementInfo.current.level === 2) {
             // Get root value
             const rootNode = this.tree.getValueAtCharacterIndex(elementInfo.root.key.start);
-
-            if (rootNode.toString().toUpperCase() === "parameters".toUpperCase()) { icon = "parameters.svg" }
-            if (rootNode.toString().toUpperCase() === "variables".toUpperCase()) { icon = "variables.svg" }
-            if (rootNode.toString().toUpperCase() === "outputs".toUpperCase()) { icon = "outputs.svg" }
+            icon = this.getIcon(topLevelChildIconsByRootNode, rootNode.toString(), "");
         }
 
         // If resourceType element is found on resource objects set to specific resourceType Icon or else a default resource icon
@@ -300,16 +322,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                 for (var i = 0, il = keyOrResourceNode.properties.length; i < il; i++) {
                     if (keyOrResourceNode.properties[i].name.toString().toUpperCase() === "type".toUpperCase()) {
                         let resourceType = keyOrResourceNode.properties[i].value.toString().toUpperCase();
-                        icon = "resources.svg";
-                        // tslint:disable:no-unused-expression // Grandfathered in
-                        resourceType === "Microsoft.Compute/virtualMachines".toUpperCase() ? icon = "virtualmachines.svg" : undefined;
-                        resourceType === "Microsoft.Storage/storageAccounts".toUpperCase() ? icon = "storageaccounts.svg" : undefined;
-                        resourceType === "Microsoft.Network/virtualNetworks".toUpperCase() ? icon = "virtualnetworks.svg" : undefined;
-                        resourceType === "Microsoft.Compute/virtualMachines/extensions".toUpperCase() ? icon = "extensions.svg" : undefined;
-                        resourceType === "Microsoft.Network/networkSecurityGroups".toUpperCase() ? icon = "nsg.svg" : undefined;
-                        resourceType === "Microsoft.Network/networkInterfaces".toUpperCase() ? icon = "nic.svg" : undefined;
-                        resourceType === "Microsoft.Network/publicIPAddresses".toUpperCase() ? icon = "publicip.svg" : undefined;
-                        // tslint:enable:no-unused-expression
+                        icon = this.getIcon(resourceIcons, resourceType, "resources.svg");
                     }
                 }
             }

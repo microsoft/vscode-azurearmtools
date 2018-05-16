@@ -25,8 +25,8 @@ export function networkTest(testName: string, testFunction: () => void | Promise
         this.timeout(10000);
 
         return hasInternetConnection()
-            .then((internetConnected: boolean) => {
-                if (internetConnected) {
+            .then((connected: boolean) => {
+                if (connected) {
                     return testFunction();
                 }
                 else {
