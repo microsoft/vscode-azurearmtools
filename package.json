@@ -66,6 +66,7 @@
     "compile": "tsc -watch -p ./",
     "build": "tsc -p ./",
     "lint": "tslint --project tsconfig.json -t verbose",
+    "lint-fix": "tslint --project tsconfig.json -t verbose --fix",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "npm run build && node ./node_modules/vscode/bin/test",
     "all": "npm i && npm run lint && npm test"
