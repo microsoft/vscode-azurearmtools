@@ -77,7 +77,7 @@ export class PropertySetter extends Endpoint {
 
         if (this._propertiesToSet) {
             newEvent = utilities.clone(event);
-            // tslint:disable-next-line:no-for-in // Grandfathered in
+            // tslint:disable-next-line:forin no-for-in // Grandfathered in
             for (let propertyName in this._propertiesToSet) {
                 newEvent[propertyName] = this._propertiesToSet[propertyName];
             }
@@ -192,7 +192,7 @@ export class FileTelemetry extends Endpoint {
         super();
 
         function createDirectory(directoryPath: string, callback?: () => void) {
-            fs.mkdir(directoryPath, function (error) {
+            fs.mkdir(directoryPath, (error) => {
                 // 34 => Error: ENOENT, no such file or directory ‘parent/child’)
                 if (error && error.errno === 34) {
                     createDirectory(path.dirname(directoryPath));

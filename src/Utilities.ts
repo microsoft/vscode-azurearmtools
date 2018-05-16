@@ -17,7 +17,7 @@ export function clone<T>(value: T): T {
     }
     else if (value instanceof Array) {
         result = [];
-        // tslint:disable-next-line:no-for-in // Grandfathered in
+        // tslint:disable-next-line:forin no-for-in // Grandfathered in
         for (let index in value) {
             result[index] = clone(value[index]);
         }

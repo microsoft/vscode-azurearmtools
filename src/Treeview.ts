@@ -73,9 +73,9 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     else if (valueNode instanceof Json.ArrayValue && elementInfo.current.collapsible) {
                         // Array with objects
                         for (let i = 0, il = valueNode.length; i < il; i++) {
-                            let element = valueNode.elements[i];
-                            if (element instanceof Json.ObjectValue) {
-                                let item = this.getElementInfo(element, elementInfo);
+                            let valueElement = valueNode.elements[i];
+                            if (valueElement instanceof Json.ObjectValue) {
+                                let item = this.getElementInfo(valueElement, elementInfo);
                                 result.push(item);
                             }
                         }
