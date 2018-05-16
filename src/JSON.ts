@@ -13,6 +13,16 @@ import * as basic from "./Tokenizer";
 import * as language from "./Language";
 import * as utilities from "./Utilities";
 
+export enum ValueKind {
+    'ObjectValue',
+    'StringValue',
+    'PropertyValue',
+    'ArrayValue',
+    'NumberValue',
+    'NullValue',
+    'BooleanValue'
+}
+
 /**
  * The different types of tokens that can be parsed from a JSON string.
  */
@@ -482,6 +492,8 @@ export abstract class Value {
     constructor(private _span: language.Span) {
     }
 
+    public abstract get valueKind(): ValueKind;
+
     /**
      * The span that this Value covers (character start index through after the character end index).
      */
@@ -513,6 +525,10 @@ export class ObjectValue extends Value {
 
     constructor(span: language.Span, private _properties: Property[]) {
         super(span);
+    }
+
+    public get valueKind(): ValueKind {
+        return ValueKind.ObjectValue;
     }
 
     /**
@@ -590,6 +606,10 @@ export class Property extends Value {
         super(span);
     }
 
+    public get valueKind(): ValueKind {
+        return ValueKind.PropertyValue;
+    }
+
     /**
      * The name of the property.
      */
@@ -628,6 +648,10 @@ export class ArrayValue extends Value {
         super(span);
     }
 
+    public get valueKind(): ValueKind {
+        return ValueKind.ArrayValue;
+    }
+
     /**
      * The elements contained in this Array.
      */
@@ -659,6 +683,10 @@ export class BooleanValue extends Value {
         super(span);
     }
 
+    public get valueKind(): ValueKind {
+        return ValueKind.BooleanValue;
+    }
+
     /**
      * The boolean value of this JSON Boolean.
      */
@@ -687,6 +715,10 @@ export class StringValue extends Value {
         super(span);
     }
 
+    public get valueKind(): ValueKind {
+        return ValueKind.StringValue;
+    }
+
     public get unquotedSpan(): language.Span {
         return new language.Span(this.startIndex + 1, this._value.length);
     }
@@ -712,6 +744,10 @@ export class NumberValue extends Value {
         super(span);
     }
 
+    public get valueKind(): ValueKind {
+        return ValueKind.NumberValue;
+    }
+
     public toString(): string {
         return this._text.toString();
     }
@@ -731,6 +767,10 @@ export class NumberValue extends Value {
 export class NullValue extends Value {
     constructor(span: language.Span) {
         super(span);
+    }
+
+    public get valueKind(): ValueKind {
+        return ValueKind.NullValue;
     }
 
     public toString(): string {

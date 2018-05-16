@@ -9,5 +9,14 @@
         "**/node_modules": true
     },
     "tslint.autoFixOnSave": true,
-    "tslint.ignoreDefinitionFiles": true
+    "tslint.ignoreDefinitionFiles": true,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        ".vscode-test": true,
+        "out": true
+    }
 }

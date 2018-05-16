@@ -142,7 +142,7 @@ suite("TreeView", async (): Promise<void> => {
                     collapsibleState: 0,
                     icon: "label.svg"
                 }, {
-                    label: "a: undefined", // Until https://github.com/Microsoft/vscode-azurearmtools/issues is fixed
+                    label: "a: 1",
                     collapsibleState: 0
                 }, {
                     label: "parameters",
@@ -238,7 +238,7 @@ suite("TreeView", async (): Promise<void> => {
                         icon: "label.svg"
                     },
                     {
-                        label: "a: undefined",
+                        label: "a: 1",
                         collapsibleState: 0
                     },
                     {
@@ -256,7 +256,7 @@ suite("TreeView", async (): Promise<void> => {
                                         collapsibleState: 0
                                     },
                                     {
-                                        label: "defaultValue: undefined",
+                                        label: "defaultValue: 1",
                                         collapsibleState: 0
                                     }
                                 ]
@@ -309,7 +309,7 @@ suite("TreeView", async (): Promise<void> => {
                                                 collapsibleState: 0
                                             },
                                             {
-                                                label: "one: undefined",
+                                                label: "one: 1",
                                                 collapsibleState: 0
                                             }
                                         ]
@@ -341,7 +341,7 @@ suite("TreeView", async (): Promise<void> => {
                                         collapsibleState: 0
                                     },
                                     {
-                                        label: "defaultValue: undefined",
+                                        label: "defaultValue: null",
                                         collapsibleState: 0
                                     }
                                 ]
@@ -749,7 +749,7 @@ suite("TreeView", async (): Promise<void> => {
                                                                         collapsibleState: 0
                                                                     },
                                                                     {
-                                                                        label: "priority: undefined",
+                                                                        label: "priority: 100",
                                                                         collapsibleState: 0
                                                                     },
                                                                     {
@@ -801,7 +801,7 @@ suite("TreeView", async (): Promise<void> => {
                                                                         collapsibleState: 0
                                                                     },
                                                                     {
-                                                                        label: "priority: undefined",
+                                                                        label: "priority: 101",
                                                                         collapsibleState: 0
                                                                     },
                                                                     {
@@ -823,6 +823,39 @@ suite("TreeView", async (): Promise<void> => {
                 ]
             )
         });
+
+        test("getChildren: Errors: Bad key type", async () => {
+            await testTree(`{
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                true: false
+            }`,
+                [
+                    {
+                        label: "$schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                        collapsibleState: 0,
+                        icon: "label.svg"
+                    }
+                ]
+            );
+        });
+
+        test("getChildren: Errors: Missing end quote", async () => {
+            await testTree(`{
+                {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "true: false
+                }
+            }`,
+                [
+                    {
+                        label: "$schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                        collapsibleState: 0,
+                        icon: "label.svg"
+                    }
+                ]
+            );
+        });
+
     });
 });
 
