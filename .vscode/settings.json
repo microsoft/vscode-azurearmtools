@@ -17,6 +17,6 @@
         "**/CVS": true,
         "**/.DS_Store": true,
         ".vscode-test": true,
-        "out": false
+        "out": true
     }
 }
