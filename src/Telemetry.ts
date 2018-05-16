@@ -42,8 +42,7 @@ function toString(event: Event): string {
             const propertyValue = event[propertyName];
             if (typeof propertyValue === "string") {
                 result += `"${propertyValue}"`;
-            }
-            else {
+            } else {
                 result += propertyValue;
             }
         }
@@ -119,8 +118,7 @@ export class ApplicationInsights extends Endpoint {
                         properties = {};
                     }
                     properties[propertyName] = propertyValue;
-                }
-                else if (typeof propertyValue === "number") {
+                } else if (typeof propertyValue === "number") {
                     if (!measurements) {
                         measurements = {};
                     }
@@ -152,8 +150,7 @@ export class VSCode extends Endpoint {
                             properties = {};
                         }
                         properties[propertyName] = propertyValue;
-                    }
-                    else if (typeof propertyValue === "number") {
+                    } else if (typeof propertyValue === "number") {
                         if (!measurements) {
                             measurements = {};
                         }
@@ -226,8 +223,7 @@ export class FileTelemetry extends Endpoint {
         let line = `${toString(event)}\n`;
         if (this._writeStream) {
             this._writeStream.write(line);
-        }
-        else {
+        } else {
             this._pendingWrites.push(line);
         }
     }

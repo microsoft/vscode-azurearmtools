@@ -19,8 +19,7 @@ export function httpGet(url: string): Promise<string> {
         function callback(response: http.IncomingMessage): void {
             if (300 <= response.statusCode && response.statusCode < 400 && response.headers.location) {
                 resolve(httpGet(response.headers.location.toString()));
-            }
-            else if (200 <= response.statusCode && response.statusCode < 400) {
+            } else if (200 <= response.statusCode && response.statusCode < 400) {
                 let responseContent: string = "";
                 let encoding: string;
 
@@ -32,8 +31,7 @@ export function httpGet(url: string): Promise<string> {
                             dataChunk[1] === 0xFE) {
                             byteOrderMarkLength = 2;
                             encoding = "utf16le";
-                        }
-                        else {
+                        } else {
                             if (dataChunk[0] === 0xEF &&
                                 dataChunk[1] === 0xBB &&
                                 dataChunk[2] === 0xBF) {
@@ -46,8 +44,7 @@ export function httpGet(url: string): Promise<string> {
                 }).on("end", () => {
                     resolve(responseContent);
                 });
-            }
-            else {
+            } else {
                 reject({
                     method: response.method,
                     requestUrl: url,
@@ -59,11 +56,9 @@ export function httpGet(url: string): Promise<string> {
 
         if (url.startsWith("https")) {
             request = https.get(url, callback);
-        }
-        else if (url.startsWith("http")) {
+        } else if (url.startsWith("http")) {
             request = http.get(url, callback);
-        }
-        else {
+        } else {
             reject(`Unsupported url schema: '${url}`);
         }
 

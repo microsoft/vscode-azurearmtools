@@ -27,8 +27,7 @@ export class SurveySettings {
     public incrementDeploymentTemplatesOpenedOrCreated(): void {
         if (this.deploymentTemplatesOpenedOrCreated) {
             this.deploymentTemplatesOpenedOrCreated = this.deploymentTemplatesOpenedOrCreated + 1;
-        }
-        else {
+        } else {
             this.deploymentTemplatesOpenedOrCreated = 1;
         }
     }
@@ -80,8 +79,7 @@ export class SurveySettings {
         if (fs.existsSync(settingsFilePath)) {
             const settingsFileContents: string = fs.readFileSync(settingsFilePath, "utf8");
             result = SurveySettings.fromString(settingsFileContents);
-        }
-        else {
+        } else {
             result = new SurveySettings();
         }
 
@@ -92,8 +90,7 @@ export class SurveySettings {
         let settingsJSON: SurveySettingsContract;
         try {
             settingsJSON = JSON.parse(settingsFileContents);
-        }
-        catch (e) {
+        } catch (e) {
             settingsJSON = {};
         }
         return SurveySettings.fromJSON(settingsJSON);

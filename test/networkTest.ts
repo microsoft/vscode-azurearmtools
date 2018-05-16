@@ -28,8 +28,7 @@ export function networkTest(testName: string, testFunction: () => void | Promise
             .then((internetConnected: boolean) => {
                 if (internetConnected) {
                     return testFunction();
-                }
-                else {
+                } else {
                     return this.skip();
                 }
             });

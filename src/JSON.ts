@@ -183,12 +183,10 @@ export function readQuotedString(iterator: utilities.Iterator<basic.Token>): bas
 
         if (escaped) {
             escaped = false;
-        }
-        else {
+        } else {
             if (iterator.current().getType() === basic.TokenType.Backslash) {
                 escaped = true;
-            }
-            else if (iterator.current().getType() === startQuote.getType()) {
+            } else if (iterator.current().getType() === startQuote.getType()) {
                 endQuote = iterator.current();
             }
         }
@@ -341,8 +339,7 @@ export class Tokenizer {
     public moveNext(): boolean {
         if (!this.hasStarted()) {
             this.moveNextBasicToken();
-        }
-        else if (this.current) {
+        } else if (this.current) {
             this._currentTokenStartIndex += this.current.length();
         }
 
@@ -389,8 +386,7 @@ export class Tokenizer {
                     this.moveNextBasicToken();
                     if (!this.currentBasicToken()) {
                         this._current = Literal(this._currentTokenStartIndex, [basic.ForwardSlash]);
-                    }
-                    else {
+                    } else {
                         switch (this.currentBasicTokenType()) {
                             case basic.TokenType.ForwardSlash:
                                 const lineCommentBasicTokens: basic.Token[] = [basic.ForwardSlash, basic.ForwardSlash];
@@ -415,8 +411,7 @@ export class Tokenizer {
                                             this.moveNextBasicToken();
                                             break;
                                         }
-                                    }
-                                    else {
+                                    } else {
                                         this.moveNextBasicToken();
                                     }
                                 }
@@ -855,8 +850,7 @@ export class ParseResult {
             if (lineLength <= characterIndex) {
                 ++line;
                 characterIndex -= lineLength;
-            }
-            else {
+            } else {
                 column = characterIndex;
                 break;
             }
@@ -897,8 +891,7 @@ export class ParseResult {
 
         if (this.lastToken !== null && this.lastToken.span.afterEndIndex === characterIndex) {
             token = this.lastToken;
-        }
-        else {
+        } else {
             let minTokenIndex = 0;
             let maxTokenIndex = this.tokenCount - 1;
             while (token === null && minTokenIndex <= maxTokenIndex) {
@@ -908,11 +901,9 @@ export class ParseResult {
 
                 if (characterIndex < currentTokenSpan.startIndex) {
                     maxTokenIndex = midTokenIndex - 1;
-                }
-                else if (currentTokenSpan.endIndex < characterIndex) {
+                } else if (currentTokenSpan.endIndex < characterIndex) {
                     minTokenIndex = midTokenIndex + 1;
-                }
-                else {
+                } else {
                     token = currentToken;
                 }
             }
@@ -935,12 +926,10 @@ export class ParseResult {
                 if (currentValue instanceof Property) {
                     if (currentValue.name && currentValue.name.span.contains(characterIndex, true)) {
                         current = currentValue.name;
-                    }
-                    else if (currentValue.value && currentValue.value.span.contains(characterIndex, true)) {
+                    } else if (currentValue.value && currentValue.value.span.contains(characterIndex, true)) {
                         current = currentValue.value;
                     }
-                }
-                else if (currentValue instanceof ObjectValue) {
+                } else if (currentValue instanceof ObjectValue) {
                     if (currentValue.properties) {
                         for (const property of currentValue.properties) {
                             if (property && property.span.contains(characterIndex, true)) {
@@ -948,8 +937,7 @@ export class ParseResult {
                             }
                         }
                     }
-                }
-                else if (currentValue instanceof ArrayValue) {
+                } else if (currentValue instanceof ArrayValue) {
                     if (currentValue.elements) {
                         for (const element of currentValue.elements) {
                             if (element && element.span.contains(characterIndex, true)) {
@@ -1050,28 +1038,23 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
         if (tokenizer.current.type === TokenType.RightCurlyBracket) {
             next(tokenizer, tokens);
             break;
-        }
-        else if (propertyName === null) {
+        } else if (propertyName === null) {
             if (tokenizer.current.type === TokenType.QuotedString) {
                 propertySpan = tokenizer.current.span;
                 propertyName = new StringValue(propertySpan, utilities.unquote(tokenizer.current.toString()));
                 next(tokenizer, tokens);
-            }
-            else {
+            } else {
                 next(tokenizer, tokens);
             }
-        }
-        else if (!foundColon) {
+        } else if (!foundColon) {
             propertySpan = propertySpan.union(tokenizer.current.span);
             if (tokenizer.current.type === TokenType.Colon) {
                 foundColon = true;
                 next(tokenizer, tokens);
-            }
-            else {
+            } else {
                 propertyName = null;
             }
-        }
-        else {
+        } else {
             const propertyValue: Value = parseValue(tokenizer, tokens);
             propertySpan = propertySpan.union(propertyValue.span);
             objectSpan = objectSpan.union(propertyValue.span);
@@ -1100,20 +1083,17 @@ function parseArray(tokenizer: Tokenizer, tokens: Token[]): ArrayValue {
         if (tokenizer.current.type === TokenType.RightSquareBracket) {
             next(tokenizer, tokens);
             break;
-        }
-        else if (expectElement) {
+        } else if (expectElement) {
             const element: Value = parseValue(tokenizer, tokens);
             if (element) {
                 span = span.union(element.span);
 
                 elements.push(element);
                 expectElement = false;
-            }
-            else {
+            } else {
                 next(tokenizer, tokens);
             }
-        }
-        else {
+        } else {
             if (tokenizer.current.type === TokenType.Comma) {
                 expectElement = true;
             }

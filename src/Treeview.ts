@@ -55,8 +55,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                             result.push(item);
                         }
                     }
-                }
-                else {
+                } else {
                     let elementInfo = <IElementInfo>JSON.parse(element);
                     assert(!!elementInfo.current, "elementInfo.current not defined");
                     let valueNode = this.tree.getValueAtCharacterIndex(elementInfo.current.value.start);
@@ -69,8 +68,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                             result.push(item);
 
                         }
-                    }
-                    else if (valueNode instanceof Json.ArrayValue && elementInfo.current.collapsible) {
+                    } else if (valueNode instanceof Json.ArrayValue && elementInfo.current.collapsible) {
                         // Array with objects
                         for (let i = 0, il = valueNode.length; i < il; i++) {
                             let element = valueNode.elements[i];
@@ -132,8 +130,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             // Object contains no elements
             if (keyNode.properties.length === 0) {
                 return "{}";
-            }
-            else {
+            } else {
                 // Object contains elements, look for displayName tag first
                 let tags = keyNode.properties.find(p => p.name && p.name.toString().toLowerCase() === 'tags');
                 if (tags && tags.value instanceof Json.ObjectValue) {
@@ -162,12 +159,10 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                 }
             }
 
-        }
-        else if (elementInfo.current.value.kind === Json.ValueKind.ArrayValue || elementInfo.current.value.kind === Json.ValueKind.ObjectValue) {
+        } else if (elementInfo.current.value.kind === Json.ValueKind.ArrayValue || elementInfo.current.value.kind === Json.ValueKind.ObjectValue) {
             // The value of the node is an array or object (e.g. properties or resources) - return key as the node label
             return keyNode.toFriendlyString();
-        }
-        else {
+        } else {
             // For other value types, display key and value since they won't be expandable
             const valueNode = this.tree.getValueAtCharacterIndex(elementInfo.current.value.start);
             return `${keyNode instanceof Json.StringValue ? keyNode.toFriendlyString() : "?"}: ${valueNode.toFriendlyString()}`;
@@ -194,9 +189,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                 if (childElement.value.elements[0].valueKind === Json.ValueKind.ObjectValue) {
                     collapsible = true;
                 }
-            }
-            // Is it a property with an Object value and does it have elements?
-            else if (childElement.value instanceof Json.ObjectValue && childElement.value.properties.length > 0) {
+            } else if (childElement.value instanceof Json.ObjectValue && childElement.value.properties.length > 0) {
                 collapsible = true;
             }
         }
@@ -240,8 +233,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             result.current.value.start = childElement.value.startIndex;
             result.current.value.end = childElement.value.span.afterEndIndex;
             result.current.value.kind = childElement.value.valueKind;
-        }
-        else {
+        } else {
             result.current.key.kind = childElement.valueKind;
             result.current.value.start = childElement.startIndex;
             result.current.value.end = childElement.span.afterEndIndex;
@@ -257,8 +249,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             result.parent.value.end = elementInfo.current.value.end;
             result.root.key.start = elementInfo.root.key.start;
             result.current.level = elementInfo.current.level + 1;
-        }
-        else {
+        } else {
             result.current.level = 1;
         }
 
@@ -281,9 +272,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             if (keyOrResourceNode.toString().toUpperCase() === "variables".toUpperCase()) { icon = "variables.svg" }
             if (keyOrResourceNode.toString().toUpperCase() === "resources".toUpperCase()) { icon = "resources.svg" }
             if (keyOrResourceNode.toString().toUpperCase() === "outputs".toUpperCase()) { icon = "outputs.svg" }
-        }
-        // Is current element an element of a root element?
-        else if (elementInfo.current.level === 2) {
+        } else if (elementInfo.current.level === 2) {
             // Get root value
             const rootNode = this.tree.getValueAtCharacterIndex(elementInfo.root.key.start);
 

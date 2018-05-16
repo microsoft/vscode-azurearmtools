@@ -343,8 +343,7 @@ export class DeploymentTemplate {
                     result.push(parameterDefinition);
                 }
             }
-        }
-        else {
+        } else {
             result = this.parameterDefinitions;
         }
 
@@ -365,8 +364,7 @@ export class DeploymentTemplate {
                     result.push(variableDefinition);
                 }
             }
-        }
-        else {
+        } else {
             result = this.variableDefinitions;
         }
 
