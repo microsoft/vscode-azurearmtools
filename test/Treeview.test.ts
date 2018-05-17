@@ -5,13 +5,13 @@
 // tslint:disable:max-func-body-length
 
 import * as assert from "assert";
+import * as path from "path";
 import * as vscode from "vscode";
 import * as Json from "../src/JSON";
-import * as path from "path";
 
 import { ext } from "../src/extensionVariables"
-import { JsonOutlineProvider, IElementInfo, shortenTreeLabel } from "../src/Treeview";
 import { Span } from "../src/Language";
+import { IElementInfo, JsonOutlineProvider, shortenTreeLabel } from "../src/Treeview";
 
 suite("TreeView", async (): Promise<void> => {
     suite("shortenTreeLabel", async (): Promise<void> => {
@@ -62,18 +62,19 @@ suite("TreeView", async (): Promise<void> => {
 
         async function testChildren(template: string, expected: ITestTreeItem[]): Promise<void> {
             let editor = await showNewTextDocument(template);
-            let children = provider.getChildren(null);
-            let testChildren = children.map(child => {
+            let rawTree = provider.getChildren(null);
+            let tree = rawTree.map(child => {
                 let treeItem = provider.getTreeItem(child);
                 return toTestTreeItem(treeItem);
             });
 
-            assert.deepStrictEqual(testChildren, expected);
+            assert.deepStrictEqual(tree, expected);
         }
 
+        // Tests the tree against only the given properties
         async function testTree(template: string, expected: ITestTreeItem[], selectProperties?: string[]): Promise<void> {
             let editor = await showNewTextDocument(template);
-            let testChildren = getTree(null);
+            let rawTree = getTree(null);
 
             function select(node: ITestTreeItem): Partial<ITestTreeItem> {
                 if (selectProperties) {
@@ -87,8 +88,8 @@ suite("TreeView", async (): Promise<void> => {
                 }
             }
 
-            let testChildrenSelected = treeMap(testChildren, select);
-            assert.deepStrictEqual(testChildrenSelected, expected);
+            let tree = treeMap(rawTree, select);
+            assert.deepStrictEqual(tree, expected);
         }
 
         interface INode<T> {
@@ -114,7 +115,7 @@ suite("TreeView", async (): Promise<void> => {
 
         function getTree(element?: string): ITestTreeItem[] {
             let children = provider.getChildren(element);
-            let testChildren = children.map(child => {
+            let tree = children.map(child => {
                 let treeItem = provider.getTreeItem(child);
                 let testItem = toTestTreeItem(treeItem);
 
@@ -127,7 +128,7 @@ suite("TreeView", async (): Promise<void> => {
                 return testItem;
             });
 
-            return testChildren;
+            return tree;
         }
 
         test("getChildren: Top level: all default param types", async () => {

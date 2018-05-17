@@ -7,14 +7,14 @@ import * as assert from "assert";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import * as Reference from "./Reference";
-import * as TLE from "./TLE";
 import * as Telemetry from "./Telemetry";
+import * as TLE from "./TLE";
 import * as Utilities from "./Utilities";
 
 import { AzureRMAssets, FunctionMetadata, FunctionsMetadata } from "./AzureRMAssets";
 import { Histogram } from "./Histogram";
-import { PositionContext } from "./PositionContext";
 import { ParameterDefinition } from "./ParameterDefinition";
+import { PositionContext } from "./PositionContext";
 import { Stopwatch } from "./Stopwatch";
 
 export class DeploymentTemplate {
@@ -74,7 +74,7 @@ export class DeploymentTemplate {
         if (this._tleParseResults === undefined) {
             this._tleParseResults = [];
 
-            // tslint:disable-next-line:no-for-in // Grandfathered in
+            // tslint:disable-next-line:forin no-for-in // Grandfathered in
             for (let quotedString in this.quotedStringToTleParseResultMap) {
                 this._tleParseResults.push(this.quotedStringToTleParseResultMap[quotedString]);
             }

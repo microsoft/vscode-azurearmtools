@@ -9,8 +9,8 @@ import * as assert from "assert";
 import * as fs from "fs";
 import * as path from "path";
 
-import { reporter } from "./VSCodeTelReporter";
 import * as utilities from "./Utilities";
+import { reporter } from "./VSCodeTelReporter";
 
 /**
  * An interface that describes the type of properties that can be assigned to a telemetry Event.
@@ -76,7 +76,7 @@ export class PropertySetter extends Endpoint {
 
         if (this._propertiesToSet) {
             newEvent = utilities.clone(event);
-            // tslint:disable-next-line:no-for-in // Grandfathered in
+            // tslint:disable-next-line:forin no-for-in // Grandfathered in
             for (let propertyName in this._propertiesToSet) {
                 newEvent[propertyName] = this._propertiesToSet[propertyName];
             }
@@ -189,7 +189,7 @@ export class FileTelemetry extends Endpoint {
         super();
 
         function createDirectory(directoryPath: string, callback?: () => void) {
-            fs.mkdir(directoryPath, function (error) {
+            fs.mkdir(directoryPath, (error) => {
                 // 34 => Error: ENOENT, no such file or directory ‘parent/child’)
                 if (error && error.errno === 34) {
                     createDirectory(path.dirname(directoryPath));

@@ -6,9 +6,9 @@
 
 import * as assert from "assert";
 
-import * as basic from "../src/Tokenizer";
 import * as Json from "../src/JSON";
 import * as language from "../src/Language";
+import * as basic from "../src/Tokenizer";
 import * as utilities from "../src/Utilities";
 
 /**

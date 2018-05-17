@@ -11,17 +11,17 @@
 import * as assert from "assert";
 
 import * as assets from "./AzureRMAssets";
-import * as basic from "./Tokenizer";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import * as Reference from "./Reference";
+import * as basic from "./Tokenizer";
 import * as Utilities from "./Utilities";
 
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { Histogram } from "./Histogram";
+import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 import { PositionContext } from "./PositionContext";
 import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
-import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 
 export function asStringValue(value: Value): StringValue {
     return value instanceof StringValue ? value : null;
