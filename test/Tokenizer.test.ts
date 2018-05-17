@@ -144,8 +144,7 @@ suite("Tokenizer", () => {
             function nextTest(text: string, expectedTokens?: basic.Token | basic.Token[]): void {
                 if (!expectedTokens) {
                     expectedTokens = [];
-                }
-                else if (expectedTokens instanceof basic.Token) {
+                } else if (expectedTokens instanceof basic.Token) {
                     expectedTokens = [expectedTokens] as basic.Token[];
                 }
 
