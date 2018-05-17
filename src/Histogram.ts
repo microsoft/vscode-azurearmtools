@@ -21,19 +21,15 @@ export class Histogram {
     public add(key: string | Histogram, count: number = 1): void {
         if (key === null) {
             this._nullCounts += count;
-        }
-        else if (key === undefined) {
+        } else if (key === undefined) {
             this._undefinedCounts += count;
-        }
-        else if (typeof key === "string") {
+        } else if (typeof key === "string") {
             if (!this._counts[key]) {
                 this._counts[key] = count;
-            }
-            else {
+            } else {
                 this._counts[key] += count;
             }
-        }
-        else {
+        } else {
             for (let rhsKey of key.keys) {
                 this.add(rhsKey, key.getCount(rhsKey));
             }
@@ -44,14 +40,11 @@ export class Histogram {
         let result: number;
         if (key === null) {
             result = this._nullCounts;
-        }
-        else if (key === undefined) {
+        } else if (key === undefined) {
             result = this._undefinedCounts;
-        }
-        else if (key in this._counts) {
+        } else if (key in this._counts) {
             result = this._counts[key];
-        }
-        else {
+        } else {
             result = 0;
         }
         return result;

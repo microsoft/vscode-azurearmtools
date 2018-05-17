@@ -165,8 +165,7 @@ export class Tokenizer implements utilities.Iterator<Token> {
 
         if (!this.currentCharacter) {
             this._currentToken = undefined;
-        }
-        else {
+        } else {
             switch (this.currentCharacter) {
                 case "{":
                     this._currentToken = LeftCurlyBracket;
@@ -263,8 +262,7 @@ export class Tokenizer implements utilities.Iterator<Token> {
                     if (this.currentCharacter && this.currentCharacter.toString() === "\n") {
                         this._currentToken = CarriageReturnNewLine;
                         this.nextCharacter();
-                    }
-                    else {
+                    } else {
                         this._currentToken = CarriageReturn;
                     }
                     break;
@@ -282,11 +280,9 @@ export class Tokenizer implements utilities.Iterator<Token> {
                 default:
                     if (isLetter(this.currentCharacter)) {
                         this._currentToken = Letters(this.readWhile(isLetter));
-                    }
-                    else if (isDigit(this.currentCharacter)) {
+                    } else if (isDigit(this.currentCharacter)) {
                         this._currentToken = Digits(this.readWhile(isDigit));
-                    }
-                    else {
+                    } else {
                         this._currentToken = Unrecognized(this.currentCharacter);
                         this.nextCharacter();
                     }
