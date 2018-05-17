@@ -170,7 +170,7 @@
         "no-suspicious-comment": true,
         "no-typeof-undefined": true,
         "no-unnecessary-field-initialization": true,
-        // TODO: "no-unnecessary-local-variable": true,
+        "no-unnecessary-local-variable": false, // changed
         "no-unnecessary-qualifier": true,
         "no-unsupported-browser-code": true,
         "no-useless-files": true,
@@ -186,7 +186,7 @@
             "ignore-for-loop" // changed
         ],
         "only-arrow-functions": false,
-        // TODO: "ordered-imports": true,
+        "ordered-imports": true,
         "prefer-array-literal": true,
         "prefer-const": false, // changed
         "prefer-for-of": true,

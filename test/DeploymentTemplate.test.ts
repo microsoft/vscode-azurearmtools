@@ -12,10 +12,10 @@ import * as language from "../src/Language";
 import * as Reference from "../src/Reference";
 
 import { DeploymentTemplate } from "../src/DeploymentTemplate";
-import { Histogram } from "../src/Histogram";
 import { ReferenceInVariableDefinitionJSONVisitor } from "../src/DeploymentTemplate";
-import { ParameterDefinition } from "../src/ParameterDefinition";
+import { Histogram } from "../src/Histogram";
 import { IncorrectArgumentsCountIssue } from "../src/IncorrectArgumentsCountIssue";
+import { ParameterDefinition } from "../src/ParameterDefinition";
 import { UnrecognizedFunctionIssue } from "../src/UnrecognizedFunctionIssue";
 
 suite("DeploymentTemplate", () => {

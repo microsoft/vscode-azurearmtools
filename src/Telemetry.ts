@@ -9,8 +9,8 @@ import * as assert from "assert";
 import * as fs from "fs";
 import * as path from "path";
 
-import { reporter } from "./VSCodeTelReporter";
 import * as utilities from "./Utilities";
+import { reporter } from "./VSCodeTelReporter";
 
 /**
  * An interface that describes the type of properties that can be assigned to a telemetry Event.

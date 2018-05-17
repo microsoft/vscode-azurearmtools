@@ -5,13 +5,13 @@
 // tslint:disable:max-func-body-length
 
 import * as assert from "assert";
+import * as path from "path";
 import * as vscode from "vscode";
 import * as Json from "../src/JSON";
-import * as path from "path";
 
 import { ext } from "../src/extensionVariables"
-import { JsonOutlineProvider, IElementInfo, shortenTreeLabel } from "../src/Treeview";
 import { Span } from "../src/Language";
+import { IElementInfo, JsonOutlineProvider, shortenTreeLabel } from "../src/Treeview";
 
 suite("TreeView", async (): Promise<void> => {
     suite("shortenTreeLabel", async (): Promise<void> => {

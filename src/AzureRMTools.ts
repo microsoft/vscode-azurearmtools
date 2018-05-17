@@ -13,28 +13,28 @@ import * as vscode from "vscode";
 // tslint:disable-next-line:no-var-requires
 const open = require("open");
 
-import { ext } from "./extensionVariables"
 import * as Completion from "./Completion";
+import { ext } from "./extensionVariables"
 import * as Hover from "./Hover";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import * as Reference from "./Reference";
-import * as TLE from "./TLE";
 import * as Telemetry from "./Telemetry";
+import * as TLE from "./TLE";
 
-import { Reporter, reporter } from "./VSCodeTelReporter";
 import { callWithTelemetryAndErrorHandling, IActionContext } from "vscode-azureextensionui";
 import { AzureRMAssets } from "./AzureRMAssets";
 import { DeploymentTemplate } from "./DeploymentTemplate";
-import { JsonOutlineProvider } from "./Treeview";
 import { Histogram } from "./Histogram";
+import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 import { PositionContext } from "./PositionContext";
 import { Stopwatch } from "./Stopwatch";
+import { isLanguageIdSupported, supportedDocumentSelector } from "./supported";
 import { SurveyMetadata } from "./SurveyMetadata";
 import { SurveySettings } from "./SurveySettings";
-import { isLanguageIdSupported, supportedDocumentSelector } from "./supported";
+import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
-import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
+import { Reporter, reporter } from "./VSCodeTelReporter";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed

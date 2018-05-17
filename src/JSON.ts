@@ -9,8 +9,8 @@
 
 import * as assert from "assert";
 
-import * as basic from "./Tokenizer";
 import * as language from "./Language";
+import * as basic from "./Tokenizer";
 import * as utilities from "./Utilities";
 
 export enum ValueKind {
