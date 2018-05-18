@@ -9,7 +9,7 @@ import * as path from "path";
 import * as vscode from "vscode";
 import * as Json from "../src/JSON";
 
-import { ext } from "../src/extensionVariables"
+import { ext } from "../src/extensionVariables";
 import { Span } from "../src/Language";
 import { IElementInfo, JsonOutlineProvider, shortenTreeLabel } from "../src/Treeview";
 
@@ -163,8 +163,8 @@ suite("TreeView", async (): Promise<void> => {
 
         test("getLabel: displayName tag overrides name", async () => {
 
-            await testLabels(`
-                {
+            await testLabels(
+                `{
                     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
                     "resources": [
@@ -226,7 +226,8 @@ suite("TreeView", async (): Promise<void> => {
 
         test("getChildren: Full tree: all default param types", async () => {
 
-            await testTree(templateAllParamDefaultTypes,
+            await testTree(
+                templateAllParamDefaultTypes,
                 [
                     {
                         label: "$schema: http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
@@ -822,14 +823,15 @@ suite("TreeView", async (): Promise<void> => {
                         ]
                     }
                 ]
-            )
+            );
         });
 
         test("getChildren: Errors: Bad key type", async () => {
-            await testTree(`{
-                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                true: false
-            }`,
+            await testTree(
+                `{
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    true: false
+                }`,
                 [
                     {
                         label: "$schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
@@ -841,12 +843,13 @@ suite("TreeView", async (): Promise<void> => {
         });
 
         test("getChildren: Errors: Missing end quote", async () => {
-            await testTree(`{
-                {
-                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                    "true: false
-                }
-            }`,
+            await testTree(
+                `{
+                    {
+                        "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                        "true: false
+                    }
+                }`,
                 [
                     {
                         label: "$schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
@@ -865,7 +868,7 @@ type ITestTreeItem = {
     collapsibleState?: vscode.TreeItemCollapsibleState;
     icon?: string;
     children?: ITestTreeItem[];
-}
+};
 
 function toTestTreeItem(item: vscode.TreeItem): ITestTreeItem {
     let testItem: ITestTreeItem = {

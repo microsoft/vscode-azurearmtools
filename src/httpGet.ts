@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable:promise-function-async // Grandfathered in
+
 import * as assert from "assert";
 import * as http from "http";
 import * as https from "https";

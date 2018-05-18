@@ -2,8 +2,9 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import * as moment from "moment";
+// tslint:disable:promise-function-async // Grandfathered in
 
+import * as moment from "moment";
 import { httpGet } from "./httpGet";
 import { SurveySettings } from "./SurveySettings";
 
@@ -101,5 +102,5 @@ interface SurveyMetadataContract {
         daysBeforeFirstSurvey?: number;
         daysBetweenSurveys?: number;
         surveyLink?: string;
-    }
+    };
 }

@@ -36,7 +36,7 @@
         "match-default-export-name": true,
         "mocha-avoid-only": true,
         "mocha-no-side-effect-code": true,
-        // TODO: "no-any": true,
+        "no-any": true,
         "no-arg": true,
         "no-bitwise": true,
         "no-conditional-assignment": true,
@@ -81,7 +81,7 @@
         "no-unused-expression": true,
         "no-use-before-declare": false, // changed
         "no-with-statement": true,
-        // TODO: "promise-function-async": true,
+        "promise-function-async": true,
         "promise-must-complete": true,
         "radix": true,
         "react-this-binding-issue": true,
@@ -225,7 +225,7 @@
         "react-a11y-tabindex-no-positive": true,
         "react-a11y-titles": true,
         "align": [
-            false, // TODO: true,
+            true,
             "parameters",
             "arguments",
             "statements"
@@ -261,7 +261,7 @@
         ],
         "react-tsx-curly-spacing": true,
         "semicolon": [
-            false, // TODO: true,
+            true,
             "always"
         ],
         "trailing-comma": [

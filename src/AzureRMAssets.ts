@@ -7,6 +7,8 @@ import * as path from "path";
 
 import { SurveyMetadata } from "./SurveyMetadata";
 
+// tslint:disable:promise-function-async // Grandfathered in
+
 /**
  * An accessor class for the Azure RM storage account.
  */

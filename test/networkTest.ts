@@ -1,3 +1,9 @@
+// ----------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+// ----------------------------------------------------------------------------
+
+// tslint:disable:promise-function-async
+
 import * as dns from "dns";
 import { ITestCallbackContext } from "mocha";
 
@@ -20,6 +26,7 @@ function hasInternetConnection(): Promise<boolean> {
  * A test that is dependant on internet connectivity. If the application is not currently connected
  * to the internet, then the test will be skipped.
  */
+// tslint:disable-next-line:no-any
 export function networkTest(testName: string, testFunction: () => void | Promise<any>) {
     test(testName, function (this: ITestCallbackContext) {
         this.timeout(10000);

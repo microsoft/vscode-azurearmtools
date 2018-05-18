@@ -107,14 +107,16 @@ suite("AzureRMAssets", () => {
             });
 
             test("with one function signature with only name property", () => {
-                assert.deepStrictEqual(FunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z", "description": "1" } ] }`),
+                assert.deepStrictEqual(
+                    FunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z", "description": "1" } ] }`),
                     [
                         new FunctionMetadata("a", "z", "1", undefined, undefined, [])
                     ]);
             });
 
             test("with two function signatures with only name property", () => {
-                assert.deepStrictEqual(FunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z" }, { "name": "b", "expectedUsage": "y", "description": "7" } ] }`),
+                assert.deepStrictEqual(
+                    FunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z" }, { "name": "b", "expectedUsage": "y", "description": "7" } ] }`),
                     [
                         new FunctionMetadata("a", "z", undefined, undefined, undefined, []),
                         new FunctionMetadata("b", "y", "7", undefined, undefined, [])
@@ -322,7 +324,7 @@ suite("AzureRMAssets", () => {
                 const functionMetadata: FunctionMetadata[] = FunctionMetadata.fromString(fileContents);
                 assert(functionMetadata);
                 assert(functionMetadata.length > 0);
-            })
+            });
         });
     });
 });

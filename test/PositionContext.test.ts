@@ -4,6 +4,8 @@
 
 // tslint:disable:max-func-body-length
 // tslint:disable:cyclomatic-complexity
+// tslint:disable:promise-function-async
+// tslint:disable:align
 
 import * as assert from "assert";
 
@@ -560,7 +562,7 @@ suite("PositionContext", () => {
         }
 
         function divCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("div", "div($0)", new language.Span(startIndex, length), "(function) div(operand1, operand2)", "Returns the integer division of the two provided integers.", Completion.CompletionKind.Function)
+            return new Completion.Item("div", "div($0)", new language.Span(startIndex, length), "(function) div(operand1, operand2)", "Returns the integer division of the two provided integers.", Completion.CompletionKind.Function);
         }
 
         function intCompletion(startIndex: number, length: number): Completion.Item {
