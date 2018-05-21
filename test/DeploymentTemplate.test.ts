@@ -4,6 +4,7 @@
 
 // tslint:disable:no-unused-expression
 // tslint:disable:max-func-body-length
+// tslint:disable:promise-function-async
 
 import * as assert from "assert";
 

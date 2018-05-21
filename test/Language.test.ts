@@ -19,7 +19,7 @@ suite("Language", () => {
                     assert.deepStrictEqual(span.length, length);
                     assert.deepStrictEqual(span.endIndex, startIndex + (length > 0 ? length - 1 : 0), "Wrong endIndex");
                     assert.deepStrictEqual(span.afterEndIndex, startIndex + length, "Wrong afterEndIndex");
-                })
+                });
             }
             constructorTest(-1, 3);
             constructorTest(0, 3);

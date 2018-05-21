@@ -426,7 +426,7 @@ export class PropertyAccess extends ParentValue {
     }
 
     public contains(characterIndex: number): boolean {
-        return this.getSpan().contains(characterIndex, true)
+        return this.getSpan().contains(characterIndex, true);
     }
 
     public accept(visitor: Visitor): void {
@@ -715,7 +715,8 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
             }
 
             if (message) {
-                let issue = new IncorrectArgumentsCountIssue(tleFunction.getSpan(),
+                let issue = new IncorrectArgumentsCountIssue(
+                    tleFunction.getSpan(),
                     message,
                     actualFunctionName,
                     tleFunction.argumentExpressions.length,

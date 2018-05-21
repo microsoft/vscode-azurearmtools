@@ -54,10 +54,12 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(() => this.updateTreeState()));
         context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(() => this.updateTreeState()));
 
-        setTimeout(() => {
-            // In case there is already a document opened before the extension gets loaded.
-            this.updateTreeState();
-        }, 500);
+        setTimeout(
+            () => {
+                // In case there is already a document opened before the extension gets loaded.
+                this.updateTreeState();
+            },
+            500);
     }
 
     public refresh() {
@@ -126,7 +128,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                 command: "extension.treeview.goto",
                 title: "",
             }
-        }
+        };
         return treeItem;
     }
 
@@ -253,7 +255,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     start: childElement.startIndex
                 }
             }
-        }
+        };
 
         if (childElement instanceof Json.Property) {
             result.current.key.kind = childElement.valueKind;
@@ -375,7 +377,7 @@ export interface IElementInfo {
         },
         level: number;
         collapsible: boolean;
-    },
+    };
     parent: {
         key: {
             start: number;
@@ -387,12 +389,12 @@ export interface IElementInfo {
             end: number;
             kind: Json.ValueKind;
         }
-    },
+    };
     root: {
         key: {
             start: number;
         }
-    }
+    };
 }
 
 /**

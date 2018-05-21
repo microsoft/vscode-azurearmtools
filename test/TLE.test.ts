@@ -4,6 +4,7 @@
 
 // tslint:disable:no-unused-expression
 // tslint:disable:max-func-body-length
+// tslint:disable:promise-function-async
 
 import * as assert from "assert";
 
@@ -1312,7 +1313,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(add.argumentExpressions.length, 2);
                 const addArg1: TLE.NumberValue = TLE.asNumberValue(add.argumentExpressions[0]);
                 assert.deepStrictEqual(addArg1.parent, add);
-                assert.deepStrictEqual(addArg1.token, TLE.Token.createNumber(21, "12"))
+                assert.deepStrictEqual(addArg1.token, TLE.Token.createNumber(21, "12"));
                 const addArg2: TLE.NumberValue = TLE.asNumberValue(add.argumentExpressions[1]);
                 assert.deepStrictEqual(addArg2.parent, add);
                 assert.deepStrictEqual(addArg2.token, TLE.Token.createNumber(24, "3"));
@@ -1782,7 +1783,7 @@ suite("TLE", () => {
                         new UnrecognizedFunctionIssue(new language.Span(2, 11), "concatenate")
                     ],
                     visitor.errors);
-                assert.equal(visitor.errors[0].message, "Unrecognized function name 'concatenate'.")
+                assert.equal(visitor.errors[0].message, "Unrecognized function name 'concatenate'.");
             });
         });
     });
@@ -2027,7 +2028,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(
                     visitor.errors,
                     [new language.Issue(new language.Span(18, 6), `Property "apples" is not a defined property of "variables('v1')".`)]);
-            })
+            });
 
             test("with grandchild property access from variable reference to non-object variable", () => {
                 const dt = new DeploymentTemplate(`{ "variables": { "v1": "blah" }, "a": "[variables('v1').apples.bananas]" }`, "id");
@@ -2036,7 +2037,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(
                     visitor.errors,
                     [new language.Issue(new language.Span(18, 6), `Property "apples" is not a defined property of "variables('v1')".`)]);
-            })
+            });
         });
     });
 
@@ -2055,7 +2056,7 @@ suite("TLE", () => {
             });
 
             test("with TLE", () => {
-                const pr: TLE.ParseResult = TLE.Parser.parse(`"[parameters('pName')]"`)
+                const pr: TLE.ParseResult = TLE.Parser.parse(`"[parameters('pName')]"`);
                 const visitor = TLE.FindReferencesVisitor.visit(pr.expression, Reference.ReferenceKind.Parameter, "pName");
                 assert(visitor);
                 assert.deepStrictEqual(

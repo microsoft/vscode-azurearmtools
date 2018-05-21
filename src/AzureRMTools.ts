@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable:promise-function-async // Grandfathered in
+
 // The module "vscode" contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as assert from "assert";
@@ -14,7 +16,7 @@ import * as vscode from "vscode";
 const open = require("open");
 
 import * as Completion from "./Completion";
-import { ext } from "./extensionVariables"
+import { ext } from "./extensionVariables";
 import * as Hover from "./Hover";
 import * as Json from "./JSON";
 import * as language from "./Language";
@@ -51,7 +53,7 @@ export function deactivate(): void {
 type SurveyInfo = {
     settings: SurveySettings;
     filePath: string;
-}
+};
 
 export class AzureRMTools {
     private _jsonFileSubscriptions: vscode.Disposable;
@@ -229,6 +231,7 @@ export class AzureRMTools {
 
                 this._diagnosticsCollection.set(document.uri, diagnostics);
             })
+            // tslint:disable-next-line:no-any
             .catch((error: any) => {
                 this.logError("UnhandledError", error);
             });
@@ -336,6 +339,7 @@ export class AzureRMTools {
                         });
                     }
                 })
+                // tslint:disable-next-line:no-any
                 .catch((error: any) => {
                     this.logError("Failed To Get Survey Metadata", error);
                 });
@@ -465,6 +469,7 @@ export class AzureRMTools {
             }
         });
 
+        // tslint:disable-next-line:no-any
         return result.catch((error: any) => {
             this.logError("UnhandledError", error);
             return undefined;
@@ -518,6 +523,7 @@ export class AzureRMTools {
             }
         });
 
+        // tslint:disable-next-line:no-any
         return result.catch((error: any) => {
             this.logError("UnhandledError", error);
             return undefined;
@@ -629,6 +635,7 @@ export class AzureRMTools {
             }
         });
 
+        // tslint:disable-next-line:no-any
         return result.catch((error: any) => {
             this.logError("UnhandledError", error);
             return undefined;
@@ -789,6 +796,7 @@ export class AzureRMTools {
         }
     }
 
+    // tslint:disable-next-line:no-any
     private logError(eventName: string, error: any): void {
         const event: Telemetry.Event = {
             eventName: eventName,

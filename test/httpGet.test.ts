@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 // tslint:disable:no-http-string
+// tslint:disable:promise-function-async
 
 import * as assert from "assert";
 
@@ -33,7 +34,7 @@ suite("HttpClient", () => {
                 .then((content: string) => {
                     assert(content, "No content");
                     assert(content.includes("Azure Storage Explorer"), "Doesn't include");
-                })
+                });
         });
 
         networkTest("with non-existing site ('http://i.dont.exist.com')", () => {
@@ -41,6 +42,7 @@ suite("HttpClient", () => {
                 .then((content: string) => {
                     assert(false, "Expected the catch function to be called.");
                 })
+                // tslint:disable-next-line:no-any
                 .catch((reason: any) => {
                     assert(reason);
                     assert.deepStrictEqual(reason.code, "ENOTFOUND");

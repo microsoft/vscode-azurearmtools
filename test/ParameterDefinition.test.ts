@@ -22,7 +22,7 @@ suite("ParameterDefinition", () => {
         });
 
         test("with property with no metadata", () => {
-            const parameterName = new Json.StringValue(new language.Span(0, 13), "parameterName")
+            const parameterName = new Json.StringValue(new language.Span(0, 13), "parameterName");
             const parameterDefinition = new Json.ObjectValue(new language.Span(16, 2), []);
             const property = new Json.Property(parameterName.span.union(parameterDefinition.span), parameterName, parameterDefinition);
             const pd = new ParameterDefinition(property);
