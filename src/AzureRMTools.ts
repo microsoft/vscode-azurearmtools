@@ -231,7 +231,8 @@ export class AzureRMTools {
 
                 this._diagnosticsCollection.set(document.uri, diagnostics);
             })
-            .catch((error: {}) => {
+            // tslint:disable-next-line:no-any
+            .catch((error: any) => {
                 this.logError("UnhandledError", error);
             });
     }
@@ -338,7 +339,8 @@ export class AzureRMTools {
                         });
                     }
                 })
-                .catch((error: {}) => {
+                // tslint:disable-next-line:no-any
+                .catch((error: any) => {
                     this.logError("Failed To Get Survey Metadata", error);
                 });
         }
@@ -467,7 +469,8 @@ export class AzureRMTools {
             }
         });
 
-        return result.catch((error: {}) => {
+        // tslint:disable-next-line:no-any
+        return result.catch((error: any) => {
             this.logError("UnhandledError", error);
             return undefined;
         });
@@ -520,7 +523,8 @@ export class AzureRMTools {
             }
         });
 
-        return result.catch((error: {}) => {
+        // tslint:disable-next-line:no-any
+        return result.catch((error: any) => {
             this.logError("UnhandledError", error);
             return undefined;
         });
@@ -631,7 +635,8 @@ export class AzureRMTools {
             }
         });
 
-        return result.catch((error: {}) => {
+        // tslint:disable-next-line:no-any
+        return result.catch((error: any) => {
             this.logError("UnhandledError", error);
             return undefined;
         });
@@ -791,7 +796,8 @@ export class AzureRMTools {
         }
     }
 
-    private logError(eventName: string, error: {}): void {
+    // tslint:disable-next-line:no-any
+    private logError(eventName: string, error: any): void {
         const event: Telemetry.Event = {
             eventName: eventName,
             errorType: (typeof error === "object" && error.constructor) ? error.constructor.name : typeof error,
