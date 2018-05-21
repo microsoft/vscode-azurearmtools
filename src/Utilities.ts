@@ -14,15 +14,13 @@ export function clone<T>(value: T): T {
         typeof value === "number" ||
         typeof value === "string") {
         result = value;
-    }
-    else if (value instanceof Array) {
+    } else if (value instanceof Array) {
         result = [];
         // tslint:disable-next-line:forin no-for-in // Grandfathered in
         for (let index in value) {
             result[index] = clone(value[index]);
         }
-    }
-    else {
+    } else {
         result = {};
         // tslint:disable-next-line:no-for-in // Grandfathered in
         for (let propertyName in value) {
@@ -74,11 +72,9 @@ export function quote(value: string): string {
     let result;
     if (value === null) {
         result = "null";
-    }
-    else if (value === undefined) {
+    } else if (value === undefined) {
         result = "undefined";
-    }
-    else {
+    } else {
         result = `"${value}"`;
     }
     return result;
@@ -119,8 +115,7 @@ export function escape(value: string): string {
                     break;
             }
         }
-    }
-    else {
+    } else {
         result = value;
     }
     return result;

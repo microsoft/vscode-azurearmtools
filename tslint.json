@@ -249,7 +249,7 @@
             "as-needed"
         ],
         "one-line": [
-            false, // TODO: true,
+            true,
             "check-open-brace",
             "check-catch",
             "check-else",

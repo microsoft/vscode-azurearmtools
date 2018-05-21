@@ -152,16 +152,14 @@ export class PositionContext {
                                 return result;
                             });
                     }
-                }
-                else if (tleValue instanceof TLE.StringValue) {
+                } else if (tleValue instanceof TLE.StringValue) {
                     if (tleValue.isParametersArgument()) {
                         const parameterDefinition: ParameterDefinition = this._deploymentTemplate.getParameterDefinition(this.tleValue.toString());
                         if (parameterDefinition) {
                             const hoverSpan: language.Span = tleValue.getSpan().translate(this.jsonTokenStartIndex);
                             this._hoverInfo = Promise.resolve(new Hover.ParameterReferenceInfo(parameterDefinition.name.toString(), parameterDefinition.description, hoverSpan));
                         }
-                    }
-                    else if (tleValue.isVariablesArgument()) {
+                    } else if (tleValue.isVariablesArgument()) {
                         const variableDefinition: Json.Property = this._deploymentTemplate.getVariableDefinition(this.tleValue.toString());
                         if (variableDefinition) {
                             const hoverSpan: language.Span = tleValue.getSpan().translate(this.jsonTokenStartIndex);
@@ -191,8 +189,7 @@ export class PositionContext {
 
                         this._completionItems = PositionContext.getFunctionCompletions("", this.emptySpanAtDocumentCharacterIndex);
                     }
-                }
-                else if (tleValue instanceof TLE.FunctionValue) {
+                } else if (tleValue instanceof TLE.FunctionValue) {
                     if (tleValue.nameToken.span.contains(this.tleCharacterIndex, true)) {
                         // If the caret is inside the TLE function's name
                         const functionNameStartIndex: number = tleValue.nameToken.span.startIndex;
@@ -201,41 +198,33 @@ export class PositionContext {
                         let replaceSpan: language.Span;
                         if (functionNamePrefix.length === 0) {
                             replaceSpan = this.emptySpanAtDocumentCharacterIndex;
-                        }
-                        else {
+                        } else {
                             replaceSpan = tleValue.nameToken.span.translate(this.jsonTokenStartIndex);
                         }
 
                         this._completionItems = PositionContext.getFunctionCompletions(functionNamePrefix, replaceSpan);
-                    }
-                    // If the caret is between the function name and the left parenthesis
-                    else if (tleValue.leftParenthesisToken && this.tleCharacterIndex <= tleValue.leftParenthesisToken.span.startIndex) {
+                    } else if (tleValue.leftParenthesisToken && this.tleCharacterIndex <= tleValue.leftParenthesisToken.span.startIndex) {
+                        // The caret is between the function name and the left parenthesis
                         this._completionItems = PositionContext.getFunctionCompletions("", this.emptySpanAtDocumentCharacterIndex);
-                    }
-                    else {
+                    } else {
                         if (tleValue.nameToken.stringValue === "parameters" && tleValue.argumentExpressions.length === 0) {
                             this._completionItems = Promise.resolve(this.getParameterCompletions("", tleValue));
-                        }
-                        else if (tleValue.nameToken.stringValue === "variables" && tleValue.argumentExpressions.length === 0) {
+                        } else if (tleValue.nameToken.stringValue === "variables" && tleValue.argumentExpressions.length === 0) {
                             this._completionItems = Promise.resolve(this.getVariableCompletions("", tleValue));
-                        }
-                        else {
+                        } else {
                             this._completionItems = PositionContext.getFunctionCompletions("", this.emptySpanAtDocumentCharacterIndex);
                         }
                     }
-                }
-                else if (tleValue instanceof TLE.StringValue) {
+                } else if (tleValue instanceof TLE.StringValue) {
                     // Start at index 1 to skip past the opening single-quote.
                     const prefix: string = tleValue.toString().substring(1, this.tleCharacterIndex - tleValue.getSpan().startIndex);
 
                     if (tleValue.isParametersArgument()) {
                         this._completionItems = Promise.resolve(this.getParameterCompletions(prefix, tleValue));
-                    }
-                    else if (tleValue.isVariablesArgument()) {
+                    } else if (tleValue.isVariablesArgument()) {
                         this._completionItems = Promise.resolve(this.getVariableCompletions(prefix, tleValue));
                     }
-                }
-                else if (tleValue instanceof TLE.PropertyAccess) {
+                } else if (tleValue instanceof TLE.PropertyAccess) {
                     const functionSource: TLE.FunctionValue = tleValue.functionSource;
                     if (functionSource) {
 
@@ -260,8 +249,7 @@ export class PositionContext {
                                     let matchingPropertyNames: string[];
                                     if (!propertyPrefix) {
                                         matchingPropertyNames = sourcePropertyDefinition.propertyNames;
-                                    }
-                                    else {
+                                    } else {
                                         matchingPropertyNames = [];
                                         for (const propertyName of sourcePropertyDefinition.propertyNames) {
                                             if (propertyName.startsWith(propertyPrefix)) {
@@ -278,8 +266,7 @@ export class PositionContext {
                                     this._completionItems = Promise.resolve(result);
                                 }
                             }
-                        }
-                        else if (sourcesNameStack.length === 0) {
+                        } else if (sourcesNameStack.length === 0) {
                             // We don't allow multiple levels of property access
                             // (resourceGroup().prop1.prop2) on functions other than variables.
                             const functionName: string = functionSource.nameToken.stringValue;
@@ -324,8 +311,7 @@ export class PositionContext {
 
                 if (tleStringValue.isParametersArgument()) {
                     referenceType = Reference.ReferenceKind.Parameter;
-                }
-                else if (tleStringValue.isVariablesArgument()) {
+                } else if (tleStringValue.isVariablesArgument()) {
                     referenceType = Reference.ReferenceKind.Variable;
                 }
             }
@@ -338,8 +324,7 @@ export class PositionContext {
                     const parameterDefinition: ParameterDefinition = this._deploymentTemplate.getParameterDefinition(referenceName);
                     if (parameterDefinition && parameterDefinition.name === jsonStringValue) {
                         referenceType = Reference.ReferenceKind.Parameter;
-                    }
-                    else {
+                    } else {
                         const variableDefinition: Json.Property = this._deploymentTemplate.getVariableDefinition(referenceName);
                         if (variableDefinition && variableDefinition.name === jsonStringValue) {
                             referenceType = Reference.ReferenceKind.Variable;
@@ -401,8 +386,7 @@ export class PositionContext {
         let replaceSpan: language.Span;
         if (tleValue.rightParenthesisToken) {
             replaceSpan = new language.Span(this.documentCharacterIndex, tleValue.rightParenthesisToken.span.startIndex - this.tleCharacterIndex + 1);
-        }
-        else {
+        } else {
             replaceSpan = this.emptySpanAtDocumentCharacterIndex;
         }
         return replaceSpan;
@@ -444,8 +428,7 @@ export class PositionContext {
         let functionMetadataMatches: FunctionMetadata[];
         if (prefix === "") {
             functionMetadataMatches = (await AzureRMAssets.getFunctionsMetadata()).functionMetadata;
-        }
-        else {
+        } else {
             functionMetadataMatches = (await AzureRMAssets.getFunctionMetadataFromPrefix(prefix));
         }
 
@@ -456,8 +439,7 @@ export class PositionContext {
             let insertText: string = name;
             if (functionMetadata.maximumArguments === 0) {
                 insertText += "()$0";
-            }
-            else {
+            } else {
                 insertText += "($0)";
             }
 
@@ -502,25 +484,20 @@ export class PositionContext {
             const rightSquareBracketIndex: number = tleValue.toString().indexOf("]");
             if (rightParenthesisIndex >= 0) {
                 replaceSpan = new language.Span(stringStartIndex, rightParenthesisIndex + 1);
-            }
-            else if (rightSquareBracketIndex >= 0) {
+            } else if (rightSquareBracketIndex >= 0) {
                 replaceSpan = new language.Span(stringStartIndex, rightSquareBracketIndex);
-            }
-            else if (functionValue.rightParenthesisToken && functionValue.argumentExpressions.length === 1) {
+            } else if (functionValue.rightParenthesisToken && functionValue.argumentExpressions.length === 1) {
                 replaceSpan = new language.Span(stringStartIndex, functionValue.rightParenthesisToken.span.afterEndIndex - stringStartIndex);
-            }
-            else {
+            } else {
                 includeRightParenthesisInCompletion = functionValue.argumentExpressions.length <= 1;
                 replaceSpan = stringSpan;
             }
 
             replaceSpan = replaceSpan.translate(this.jsonTokenStartIndex);
-        }
-        else {
+        } else {
             if (tleValue.rightParenthesisToken) {
                 replaceSpan = new language.Span(this.documentCharacterIndex, tleValue.rightParenthesisToken.span.startIndex - this.tleCharacterIndex + 1);
-            }
-            else {
+            } else {
                 replaceSpan = this.emptySpanAtDocumentCharacterIndex;
             }
         }

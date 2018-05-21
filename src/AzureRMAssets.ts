@@ -180,8 +180,7 @@ export class FunctionMetadata {
         let metadataJSON: FunctionMetadataContract;
         try {
             metadataJSON = JSON.parse(metadataString);
-        }
-        catch (e) {
+        } catch (e) {
             metadataJSON = {};
         }
         return FunctionMetadata.fromJSON(metadataJSON);

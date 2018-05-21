@@ -54,8 +54,7 @@ export class Span {
         if (result) {
             if (includeAfterEndIndex) {
                 result = index <= this.afterEndIndex;
-            }
-            else {
+            } else {
                 result = index <= this.endIndex;
             }
         }
@@ -72,8 +71,7 @@ export class Span {
             let minStart = Math.min(this.startIndex, rhs.startIndex);
             let maxAfterEndIndex = Math.max(this.afterEndIndex, rhs.afterEndIndex);
             result = new Span(minStart, maxAfterEndIndex - minStart);
-        }
-        else {
+        } else {
             result = this;
         }
         return result;
