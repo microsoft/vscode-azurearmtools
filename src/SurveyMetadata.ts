@@ -44,8 +44,7 @@ export class SurveyMetadata {
             if (!surveySettings.previousSurveyPromptDateAndTime) {
                 const daysSinceFirstDeploymentTemplate: number = now.diff(surveySettings.deploymentTemplateFirstOpenedOrCreatedDateAndTime, "days");
                 result = daysSinceFirstDeploymentTemplate >= this.daysBeforeFirstSurvey;
-            }
-            else {
+            } else {
                 const daysSincePreviousSurveyPrompt: number = now.diff(surveySettings.previousSurveyPromptDateAndTime, "days");
                 result = daysSincePreviousSurveyPrompt >= this.daysBetweenSurveys;
             }
@@ -64,8 +63,7 @@ export class SurveyMetadata {
         let metadataJSON: SurveyMetadataContract;
         try {
             metadataJSON = JSON.parse(metadataString);
-        }
-        catch (e) {
+        } catch (e) {
             metadataJSON = {};
         }
         return SurveyMetadata.fromJSON(metadataJSON);

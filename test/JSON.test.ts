@@ -443,8 +443,7 @@ suite("JSON", () => {
             function nextTest(text: string, expectedTokens?: Json.Token | Json.Token[]): void {
                 if (!expectedTokens) {
                     expectedTokens = [];
-                }
-                else if (expectedTokens instanceof Json.Token) {
+                } else if (expectedTokens instanceof Json.Token) {
                     expectedTokens = [expectedTokens] as Json.Token[];
                 }
 

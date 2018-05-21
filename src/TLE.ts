@@ -229,11 +229,9 @@ export class ArrayAccessValue extends ParentValue {
 
         if (this._rightSquareBracketToken) {
             result = result.union(this._rightSquareBracketToken.span);
-        }
-        else if (this._index) {
+        } else if (this._index) {
             result = result.union(this._index.getSpan());
-        }
-        else {
+        } else {
             result = result.union(this._leftSquareBracketToken.span);
         }
 
@@ -309,8 +307,7 @@ export class FunctionValue extends ParentValue {
 
             if (this._rightParenthesisToken) {
                 result = result.union(this._rightParenthesisToken.span);
-            }
-            else if (this._argumentExpressions.length > 0 || this._commaTokens.length > 0) {
+            } else if (this._argumentExpressions.length > 0 || this._commaTokens.length > 0) {
                 for (let i = this._argumentExpressions.length - 1; 0 <= i; --i) {
                     let arg = this._argumentExpressions[i];
                     if (arg !== null) {
@@ -421,8 +418,7 @@ export class PropertyAccess extends ParentValue {
 
         if (this._nameToken !== null) {
             result = result.union(this._nameToken.span);
-        }
-        else {
+        } else {
             result = result.union(this._periodToken.span);
         }
 
@@ -461,15 +457,13 @@ export class BraceHighlighter {
 
             if (tleParseResult.leftSquareBracketToken !== null && tleParseResult.leftSquareBracketToken.span.startIndex === tleCharacterIndex) {
                 BraceHighlighter.addTLEBracketHighlights(highlightCharacterIndexes, tleParseResult);
-            }
-            else {
+            } else {
                 let tleValue: Value = tleParseResult.getValueAtCharacterIndex(tleCharacterIndex);
                 if (tleValue instanceof FunctionValue) {
                     if (tleValue.leftParenthesisToken !== null && tleValue.leftParenthesisToken.span.startIndex === tleCharacterIndex) {
                         BraceHighlighter.addTLEFunctionHighlights(highlightCharacterIndexes, tleValue);
                     }
-                }
-                else if (tleValue instanceof ArrayAccessValue) {
+                } else if (tleValue instanceof ArrayAccessValue) {
                     if (tleValue.leftSquareBracketToken !== null && tleValue.leftSquareBracketToken.span.startIndex === tleCharacterIndex) {
                         BraceHighlighter.addTLEArrayHighlights(highlightCharacterIndexes, tleValue);
                     }
@@ -479,15 +473,13 @@ export class BraceHighlighter {
             let leftOfTLECharacterIndex = tleCharacterIndex - 1;
             if (tleParseResult.rightSquareBracketToken !== null && tleParseResult.rightSquareBracketToken.span.startIndex === leftOfTLECharacterIndex) {
                 BraceHighlighter.addTLEBracketHighlights(highlightCharacterIndexes, tleParseResult);
-            }
-            else if (0 <= leftOfTLECharacterIndex) {
+            } else if (0 <= leftOfTLECharacterIndex) {
                 let tleValue: Value = tleParseResult.getValueAtCharacterIndex(leftOfTLECharacterIndex);
                 if (tleValue instanceof FunctionValue) {
                     if (tleValue.rightParenthesisToken !== null && tleValue.rightParenthesisToken.span.startIndex === leftOfTLECharacterIndex) {
                         BraceHighlighter.addTLEFunctionHighlights(highlightCharacterIndexes, tleValue);
                     }
-                }
-                else if (tleValue instanceof ArrayAccessValue) {
+                } else if (tleValue instanceof ArrayAccessValue) {
                     if (tleValue.rightSquareBracketToken !== null && tleValue.rightSquareBracketToken.span.startIndex === leftOfTLECharacterIndex) {
                         BraceHighlighter.addTLEArrayHighlights(highlightCharacterIndexes, tleValue);
                     }
@@ -711,13 +703,11 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
                 if (functionCallArgumentCount !== minimumArguments) {
                     message = `The function '${actualFunctionName}' takes ${minimumArguments} ${this.getArgumentsString(minimumArguments)}.`;
                 }
-            }
-            else if (maximumArguments === null || maximumArguments === undefined) {
+            } else if (maximumArguments === null || maximumArguments === undefined) {
                 if (functionCallArgumentCount < minimumArguments) {
                     message = `The function '${actualFunctionName}' takes at least ${minimumArguments} ${this.getArgumentsString(minimumArguments)}.`;
                 }
-            }
-            else {
+            } else {
                 assert(minimumArguments < maximumArguments);
                 if (functionCallArgumentCount < minimumArguments || maximumArguments < functionCallArgumentCount) {
                     message = `The function '${actualFunctionName}' takes between ${minimumArguments} and ${maximumArguments} ${this.getArgumentsString(maximumArguments)}.`;
@@ -781,8 +771,7 @@ export class UndefinedVariablePropertyVisitor extends Visitor {
                         if (sourcePropertyDefinition && !sourcePropertyDefinition.hasProperty(tlePropertyAccess.nameToken.stringValue)) {
                             this.addIssue(tlePropertyAccess);
                         }
-                    }
-                    else if (sourcesNameStack.length === 0) {
+                    } else if (sourcesNameStack.length === 0) {
                         this.addIssue(tlePropertyAccess);
                     }
                 }
@@ -886,15 +875,13 @@ export class Parser {
 
         if (3 <= stringValue.length && stringValue.substr(1, 2) === "[[") {
             expression = new StringValue(Token.createQuotedString(0, stringValue));
-        }
-        else {
+        } else {
             let tokenizer = Tokenizer.fromString(stringValue);
             tokenizer.next();
 
             if (!tokenizer.hasCurrent() || tokenizer.current.getType() !== TokenType.LeftSquareBracket) {
                 expression = new StringValue(Token.createQuotedString(0, stringValue));
-            }
-            else {
+            } else {
                 leftSquareBracketToken = tokenizer.current;
                 tokenizer.next();
 
@@ -910,8 +897,7 @@ export class Parser {
                         rightSquareBracketToken = tokenizer.current;
                         tokenizer.next();
                         break;
-                    }
-                    else {
+                    } else {
                         errors.push(new language.Issue(tokenizer.current.span, "Expected the end of the string."));
                         tokenizer.next();
                     }
@@ -922,8 +908,7 @@ export class Parser {
                         errors.push(new language.Issue(tokenizer.current.span, "Nothing should exist after the closing ']' except for whitespace."));
                         tokenizer.next();
                     }
-                }
-                else {
+                } else {
                     errors.push(new language.Issue(new language.Span(stringValue.length - 1, 1), "Expected a right square bracket (']')."));
                 }
 
@@ -948,19 +933,16 @@ export class Parser {
             let tokenType = token.getType();
             if (tokenType === TokenType.Literal) {
                 expression = Parser.parseFunction(tokenizer, errors);
-            }
-            else if (tokenType === TokenType.QuotedString) {
+            } else if (tokenType === TokenType.QuotedString) {
                 if (!token.stringValue.endsWith(token.stringValue[0])) {
                     errors.push(new language.Issue(token.span, "A constant string is missing an end quote."));
                 }
                 expression = new StringValue(token);
                 tokenizer.next();
-            }
-            else if (tokenType === TokenType.Number) {
+            } else if (tokenType === TokenType.Number) {
                 expression = new NumberValue(token);
                 tokenizer.next();
-            }
-            else if (tokenType !== TokenType.RightSquareBracket && tokenType !== TokenType.Comma) {
+            } else if (tokenType !== TokenType.RightSquareBracket && tokenType !== TokenType.Comma) {
                 errors.push(new language.Issue(token.span, "Template language expressions must start with a function."));
                 tokenizer.next();
             }
@@ -979,8 +961,7 @@ export class Parser {
                         if (tokenizer.current.getType() === TokenType.Literal) {
                             propertyNameToken = tokenizer.current;
                             tokenizer.next();
-                        }
-                        else {
+                        } else {
                             errorSpan = tokenizer.current.span;
 
                             let tokenType = tokenizer.current.getType();
@@ -988,8 +969,7 @@ export class Parser {
                                 tokenizer.next();
                             }
                         }
-                    }
-                    else {
+                    } else {
                         errorSpan = periodToken.span;
                     }
 
@@ -999,8 +979,7 @@ export class Parser {
                     }
 
                     expression = new PropertyAccess(expression, periodToken, propertyNameToken);
-                }
-                else if (tokenizer.current.getType() === TokenType.LeftSquareBracket) {
+                } else if (tokenizer.current.getType() === TokenType.LeftSquareBracket) {
                     let leftSquareBracketToken: Token = tokenizer.current;
                     tokenizer.next();
 
@@ -1013,8 +992,7 @@ export class Parser {
                     }
 
                     expression = new ArrayAccessValue(expression, leftSquareBracketToken, index, rightSquareBracketToken);
-                }
-                else {
+                } else {
                     break;
                 }
             }
@@ -1044,18 +1022,15 @@ export class Parser {
                     leftParenthesisToken = tokenizer.current;
                     tokenizer.next();
                     break;
-                }
-                else if (tokenizer.current.getType() === TokenType.RightSquareBracket) {
+                } else if (tokenizer.current.getType() === TokenType.RightSquareBracket) {
                     errors.push(new language.Issue(nameToken.span, "Missing function argument list."));
                     break;
-                }
-                else {
+                } else {
                     errors.push(new language.Issue(tokenizer.current.span, "Expected the end of the string."));
                     tokenizer.next();
                 }
             }
-        }
-        else {
+        } else {
             errors.push(new language.Issue(nameToken.span, "Missing function argument list."));
         }
 
@@ -1065,21 +1040,18 @@ export class Parser {
             while (tokenizer.hasCurrent()) {
                 if (tokenizer.current.getType() === TokenType.RightParenthesis || tokenizer.current.getType() === TokenType.RightSquareBracket) {
                     break;
-                }
-                else if (expectingArgument) {
+                } else if (expectingArgument) {
                     let expression = Parser.parseExpression(tokenizer, errors);
                     if (expression === null && tokenizer.hasCurrent() && tokenizer.current.getType() === TokenType.Comma) {
                         errors.push(new language.Issue(tokenizer.current.span, "Expected a constant string, function, or property expression."));
                     }
                     argumentExpressions.push(expression);
                     expectingArgument = false;
-                }
-                else if (tokenizer.current.getType() === TokenType.Comma) {
+                } else if (tokenizer.current.getType() === TokenType.Comma) {
                     expectingArgument = true;
                     commaTokens.push(tokenizer.current);
                     tokenizer.next();
-                }
-                else {
+                } else {
                     errors.push(new language.Issue(tokenizer.current.span, "Expected a comma (',')."));
                     tokenizer.next();
                 }
@@ -1090,16 +1062,14 @@ export class Parser {
                 let errorSpan: language.Span;
                 if (tokenizer.hasCurrent()) {
                     errorSpan = tokenizer.current.span;
-                }
-                else {
+                } else {
                     assert(0 < commaTokens.length);
 
                     errorSpan = commaTokens[commaTokens.length - 1].span;
                 }
                 errors.push(new language.Issue(errorSpan, "Expected a constant string, function, or property expression."));
             }
-        }
-        else if (leftParenthesisToken !== null) {
+        } else if (leftParenthesisToken !== null) {
             errors.push(new language.Issue(leftParenthesisToken.span, "Expected a right parenthesis (')')."));
         }
 
@@ -1127,8 +1097,7 @@ export class Parser {
         if (expectingArgument && leftParenthesisToken !== null && 0 < existingArguments) {
             if (!tokenizer.hasCurrent()) {
                 result = true;
-            }
-            else {
+            } else {
                 result = tokenizer.current.getType() === TokenType.RightParenthesis ||
                     tokenizer.current.getType() === TokenType.RightSquareBracket;
             }
@@ -1184,27 +1153,21 @@ export class ParseResult {
                     if (current === currentValue) {
                         result = current;
                     }
-                }
-                else if (currentValue instanceof ArrayAccessValue) {
+                } else if (currentValue instanceof ArrayAccessValue) {
                     if (currentValue.source && currentValue.source.contains(characterIndex)) {
                         current = currentValue.source;
-                    }
-                    else if (currentValue.index && currentValue.index.contains(characterIndex)) {
+                    } else if (currentValue.index && currentValue.index.contains(characterIndex)) {
                         current = currentValue.index;
-                    }
-                    else {
+                    } else {
                         result = current;
                     }
-                }
-                else if (currentValue instanceof PropertyAccess) {
+                } else if (currentValue instanceof PropertyAccess) {
                     if (currentValue.source.contains(characterIndex)) {
                         current = currentValue.source;
-                    }
-                    else {
+                    } else {
                         result = current;
                     }
-                }
-                else {
+                } else {
                     result = current;
                 }
             }
@@ -1261,8 +1224,7 @@ export class Tokenizer {
     public readToken(): Token {
         if (this.hasStarted() === false) {
             this.nextBasicToken();
-        }
-        else if (this.hasCurrent()) {
+        } else if (this.hasCurrent()) {
             this._currentTokenStartIndex += this.current.length;
         }
 

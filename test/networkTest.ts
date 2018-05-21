@@ -35,8 +35,7 @@ export function networkTest(testName: string, testFunction: () => void | Promise
             .then((connected: boolean) => {
                 if (connected) {
                     return testFunction();
-                }
-                else {
+                } else {
                     return this.skip();
                 }
             });
