@@ -2,7 +2,7 @@
   "name": "azurerm-vscode-tools",
   "displayName": "Azure Resource Manager Tools",
   "description": "Template language support for Azure Resource Manager JSON files.",
-  "version": "1.2.3",
+  "version": "2.0.0",
   "publisher": "msazurermtools",
   "categories": [
     "Azure",
