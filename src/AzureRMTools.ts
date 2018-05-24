@@ -24,7 +24,7 @@ import * as Reference from "./Reference";
 import * as Telemetry from "./Telemetry";
 import * as TLE from "./TLE";
 
-import { callWithTelemetryAndErrorHandling, IActionContext } from "vscode-azureextensionui";
+import { callWithTelemetryAndErrorHandling, IActionContext, parseError } from "vscode-azureextensionui";
 import { AzureRMAssets } from "./AzureRMAssets";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { Histogram } from "./Histogram";
@@ -36,7 +36,9 @@ import { SurveyMetadata } from "./SurveyMetadata";
 import { SurveySettings } from "./SurveySettings";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
-import { Reporter, reporter } from "./VSCodeTelReporter";
+import { Reporter, vscodeReporter } from "./VSCodeTelReporter";
+
+let nullChannel: vscode.OutputChannel;
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -93,8 +95,9 @@ export class AzureRMTools {
         context.subscriptions.push(vscode.window.registerTreeDataProvider("json-outline", jsonOutline));
         context.subscriptions.push(vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => jsonOutline.goToDefinition(range)));
 
-        this.log({
-            eventName: "Extension Activated"
+        // tslint:disable-next-line:no-function-expression
+        let dummyPromise = callWithTelemetryAndErrorHandling("Extension Activated", vscodeReporter, nullChannel, async () => {
+            // Empty
         });
 
         this.logOnError(() => {
@@ -126,7 +129,7 @@ export class AzureRMTools {
             this._jsonFileSubscriptions.dispose();
         });
 
-        this.log({
+        this.logEvent({
             eventName: "Extension Deactivated"
         });
 
@@ -189,7 +192,7 @@ export class AzureRMTools {
                     // template is being edited.
                     if (stopwatch) {
                         stopwatch.stop();
-                        this.log({
+                        this.logEvent({
                             eventName: "Deployment Template Opened",
                             documentSizeInCharacters: document.getText().length,
                             parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds
@@ -324,7 +327,7 @@ export class AzureRMTools {
                         vscode.window.showInformationMessage(message, ...options).then((selectedOption: string) => {
                             surveyInfo.settings.previousSurveyPromptDateAndTime = Date.now();
 
-                            this.log({
+                            this.logEvent({
                                 eventName: "Survey Prompt",
                                 selectedOption: selectedOption
                             });
@@ -352,10 +355,9 @@ export class AzureRMTools {
      */
     private logFunctionCounts(deploymentTemplate: DeploymentTemplate): void {
         let me = this;
-        let outputChannelIgnoreForNow: vscode.OutputChannel;
 
         // Don't wait for promise
-        let dummyPromise = callWithTelemetryAndErrorHandling("tle.stats", reporter, outputChannelIgnoreForNow, async function (this: IActionContext) {
+        let dummyPromise = callWithTelemetryAndErrorHandling("tle.stats", vscodeReporter, nullChannel, async function (this: IActionContext) {
             this.suppressErrorDisplay = true;
             let properties: {
                 functionCounts?: string,
@@ -442,18 +444,18 @@ export class AzureRMTools {
 
                         if (hoverInfo) {
                             if (hoverInfo instanceof Hover.FunctionInfo) {
-                                this.log({
+                                this.logEvent({
                                     eventName: "Hover",
                                     hoverType: "TLE Function",
                                     tleFunctionName: hoverInfo.functionName
                                 });
                             } else if (hoverInfo instanceof Hover.ParameterReferenceInfo) {
-                                this.log({
+                                this.logEvent({
                                     eventName: "Hover",
                                     hoverType: "Parameter Reference"
                                 });
                             } else if (hoverInfo instanceof Hover.VariableReferenceInfo) {
-                                this.log({
+                                this.logEvent({
                                     eventName: "Hover",
                                     hoverType: "Variable Reference"
                                 });
@@ -551,7 +553,7 @@ export class AzureRMTools {
                     definitionType = "variable";
                 }
 
-                this.log({
+                this.logEvent({
                     eventName: "Go To Definition",
                     definitionType: definitionType
                 });
@@ -589,7 +591,7 @@ export class AzureRMTools {
                             break;
                     }
 
-                    this.log({
+                    this.logEvent({
                         eventName: "Find References",
                         referenceType: referenceType
                     });
@@ -730,7 +732,7 @@ export class AzureRMTools {
             // The saved document is a deployment template if it shows up in our deployment
             // templates dictionary.
             if (this._deploymentTemplates[savedDocument.uri.toString()]) {
-                this.log({
+                this.logEvent({
                     eventName: "Deployment Template Saved",
                     autoSave: this._autoSave
                 });
@@ -768,7 +770,7 @@ export class AzureRMTools {
         return new vscode.Range(vscodeStartPosition, vscodeEndPosition);
     }
 
-    private log(event: Telemetry.Event): void {
+    private logEvent(event: Telemetry.Event): void {
         if (this._azureRMToolsConfiguration.enableTelemetry) {
             if (this._azureRMToolsConfiguration.debug) {
                 if (!this._debugTelemetry) {
@@ -798,16 +800,14 @@ export class AzureRMTools {
 
     // tslint:disable-next-line:no-any
     private logError(eventName: string, error: any): void {
+        let parsed = parseError(error);
         const event: Telemetry.Event = {
             eventName: eventName,
-            errorType: (typeof error === "object" && error.constructor) ? error.constructor.name : typeof error,
+            error: parsed.errorType,
+            errorMessage: parsed.message
         };
 
-        for (const propertyName of Object.getOwnPropertyNames(error)) {
-            event[propertyName] = error[propertyName];
-        }
-
-        this.log(event);
+        this.logEvent(event);
     }
 }
 

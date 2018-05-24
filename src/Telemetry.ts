@@ -10,7 +10,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 import * as utilities from "./Utilities";
-import { reporter } from "./VSCodeTelReporter";
+import { vscodeReporter } from "./VSCodeTelReporter";
 
 /**
  * An interface that describes the type of properties that can be assigned to a telemetry Event.
@@ -66,19 +66,19 @@ export abstract class Endpoint {
  * A telemetry Endpoint decorator that applies the provided properties to each Event that is
  * logged.
  */
-export class PropertySetter extends Endpoint {
-    constructor(private _propertiesToSet: Properties, private _innerEndpoint: Endpoint) {
+export class PropertySetter extends Endpoint { // _defaultProperties not used asdf
+    constructor(private _defaultProperties: Properties, private _innerEndpoint: Endpoint) {
         super();
     }
 
     public log(event: Event): void {
         let newEvent = event;
 
-        if (this._propertiesToSet) {
+        if (this._defaultProperties) {
             newEvent = utilities.clone(event);
             // tslint:disable-next-line:forin no-for-in // Grandfathered in
-            for (let propertyName in this._propertiesToSet) {
-                newEvent[propertyName] = this._propertiesToSet[propertyName];
+            for (let propertyName in this._defaultProperties) {
+                newEvent[propertyName] = this._defaultProperties[propertyName];
             }
         }
 
@@ -137,7 +137,7 @@ export class ApplicationInsights extends Endpoint {
 
 export class VSCode extends Endpoint {
     public log(event: Event): void {
-        if (reporter) {
+        if (vscodeReporter) {
             let properties: { [key: string]: string };
             let measurements: { [key: string]: number };
 
@@ -159,7 +159,7 @@ export class VSCode extends Endpoint {
                 }
             }
 
-            reporter.sendTelemetryEvent(event.eventName, properties, measurements);
+            vscodeReporter.sendTelemetryEvent(event.eventName, properties, measurements);
         }
     }
 }
