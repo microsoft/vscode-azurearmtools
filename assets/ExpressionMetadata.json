@@ -249,7 +249,7 @@
         },
         {
             "name": "listAccountSas",
-            "expectedUsage": "listAccountSas(resourceId, apiVersion, requestContent)",
+            "expectedUsage": "listAccountSas(resourceName\/resourceIdentifier, apiVersion, requestContent)",
             "description": "Creates and returns a SAS token with the specified permissions and expiry from the requestContent. The requestContent object must contain the signedServices, signedResourceTypes, signedPermission and signedExpiry properties.",
             "minimumArguments": 3,
             "maximumArguments": 3,
@@ -261,7 +261,7 @@
         },
         {
             "name": "listKeys",
-            "expectedUsage": "listKeys(resourceId, apiVersion)",
+            "expectedUsage": "listKeys(resourceName\/resourceIdentifier, apiVersion)",
             "description": "Returns the keys of a storage account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primaryKey and secondaryKey.",
             "minimumArguments": 2,
             "maximumArguments": 2,
@@ -273,14 +273,14 @@
         },
         {
             "name": "listPackage",
-            "expectedUsage": "listPackage(resourceId, apiVersion)",
+            "expectedUsage": "listPackage(resourceName\/resourceIdentifier, apiVersion)",
             "description": "Lists the virtual network gateway package. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
             "minimumArguments": 2,
             "maximumArguments": 2
         },
         {
             "name": "listCallbackUrl",
-            "expectedUsage": "listCallbackUrl(resourceId, apiVersion)",
+            "expectedUsage": "listCallbackUrl(resourceName\/resourceIdentifier, apiVersion)",
             "description": "Get callback URL for a trigger of a workflow version. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. See https://docs.microsoft.com/en-us/rest/api/logic/WorkflowVersions/ListCallbackUrl#workflowtriggercallbackurl for more information.",
             "minimumArguments": 2,
             "maximumArguments": 2,
@@ -307,7 +307,7 @@
         },
         {
             "name": "listSecrets",
-            "expectedUsage": "listSecrets(resourceId, apiVersion)",
+            "expectedUsage": "listSecrets(resourceName\/resourceIdentifier, apiVersion)",
             "description": "List the secrets of a key vault. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
             "minimumArguments": 2,
             "maximumArguments": 2
