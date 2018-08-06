@@ -184,7 +184,7 @@ suite("AzureRMAssets", () => {
                     },
                     {
                     "name": "listPackage",
-                    "expectedUsage": "listPackage(resourceId, apiVersion)",
+                    "expectedUsage": "listPackage(resourceName\/resourceIdentifier, apiVersion)",
                     "minimumArguments": 2,
                     "maximumArguments": 2
                     },

@@ -578,7 +578,7 @@ suite("PositionContext", () => {
         }
 
         function listPackageCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("listPackage", "listPackage($0)", new language.Span(startIndex, length), "(function) listPackage(resourceId, apiVersion)", "Lists the virtual network gateway package. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.", Completion.CompletionKind.Function);
+            return new Completion.Item("listPackage", "listPackage($0)", new language.Span(startIndex, length), "(function) listPackage(resourceName\/resourceIdentifier, apiVersion)", "Lists the virtual network gateway package. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.", Completion.CompletionKind.Function);
         }
 
         function modCompletion(startIndex: number, length: number): Completion.Item {
