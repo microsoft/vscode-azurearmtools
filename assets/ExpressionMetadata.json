@@ -248,6 +248,18 @@
             "maximumArguments": 2
         },
         {
+            "name": "listAccountSas",
+            "expectedUsage": "listAccountSas(resourceName\/resourceIdentifier, apiVersion, requestContent)",
+            "description": "Creates and returns a SAS token with the specified permissions and expiry from the requestContent. The requestContent object must contain the signedServices, signedResourceTypes, signedPermission and signedExpiry properties.",
+            "minimumArguments": 3,
+            "maximumArguments": 3,
+            "returnValueMembers": [
+                {
+                    "name": "accountSasToken"
+                }
+            ]
+        },
+        {
             "name": "listKeys",
             "expectedUsage": "listKeys(resourceName\/resourceIdentifier, apiVersion)",
             "description": "Returns the keys of a storage account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primaryKey and secondaryKey.",
@@ -261,7 +273,7 @@
         },
         {
             "name": "listPackage",
-            "expectedUsage": "listPackage(resourceId, apiVersion)",
+            "expectedUsage": "listPackage(resourceName\/resourceIdentifier, apiVersion)",
             "description": "Lists the virtual network gateway package. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
             "minimumArguments": 2,
             "maximumArguments": 2
