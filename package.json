@@ -91,6 +91,6 @@
     "moment": "^2.17.1",
     "open": "^0.0.5",
     "vscode-azureextensionui": "~0.12.0",
-    "vscode-extension-telemetry": "^0.0.15"
+    "vscode-extension-telemetry": "^0.0.22"
   }
 }
