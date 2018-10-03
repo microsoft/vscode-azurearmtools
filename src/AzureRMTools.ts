@@ -351,11 +351,8 @@ export class AzureRMTools {
      * in a relatively stable state, such as after first opening
      */
     private logFunctionCounts(deploymentTemplate: DeploymentTemplate): void {
-        let me = this;
-        let outputChannelIgnoreForNow: vscode.OutputChannel;
-
         // Don't wait for promise
-        let dummyPromise = callWithTelemetryAndErrorHandling("tle.stats", reporter, outputChannelIgnoreForNow, async function (this: IActionContext) {
+        let dummyPromise = callWithTelemetryAndErrorHandling("tle.stats", async function (this: IActionContext) {
             this.suppressErrorDisplay = true;
             let properties: {
                 functionCounts?: string,

@@ -5,7 +5,6 @@
 // tslint:disable:no-var-keyword // Grandfathered in
 // tslint:disable:no-duplicate-variable // Grandfathered in
 
-import { ContextTagKeys } from "applicationinsights/out/Declarations/Contracts";
 import * as assert from "assert";
 import * as vscode from "vscode";
 import { TreeItem } from "vscode";
