@@ -17,7 +17,8 @@
     "Deployment"
   ],
   "repository": {
-    "url": "https://github.com/Microsoft/vscode-azurearmtools.git"
+    "type": "git",
+    "url": "https://github.com/Microsoft/vscode-azurearmtools"
   },
   "bugs": {
     "url": "https://github.com/Microsoft/vscode-azurearmtools/issues"
