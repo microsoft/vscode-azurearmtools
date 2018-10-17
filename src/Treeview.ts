@@ -38,7 +38,13 @@ const resourceIcons: [string, string][] = [
     ["Microsoft.Compute/virtualMachines/extensions", "extensions.svg"],
     ["Microsoft.Network/networkSecurityGroups", "nsg.svg"],
     ["Microsoft.Network/networkInterfaces", "nic.svg"],
-    ["Microsoft.Network/publicIPAddresses", "publicip.svg"]
+    ["Microsoft.Network/publicIPAddresses", "publicip.svg"],
+    ["Microsoft.DocumentDB/databaseAccounts", "documentdb.svg"],
+    ["Microsoft.Web/serverfarms", "appserviceplan.svg"],
+    ["Microsoft.Sql/servers", "sqldatabase.svg"],
+    ["databases", "database.svg"],
+    ["firewallrules", "security.svg"],
+    ["Microsoft.Web/sites", "appservice.svg"]
 ];
 
 export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
