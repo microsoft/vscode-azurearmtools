@@ -10,3 +10,4 @@ test/**
 tsconfig.json
 tsd.json
 typings/**
+.github/**
