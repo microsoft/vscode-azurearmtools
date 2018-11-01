@@ -11,3 +11,5 @@ tsconfig.json
 tsd.json
 typings/**
 .github/**
+test-results.xml
+.azure-pipelines/**
