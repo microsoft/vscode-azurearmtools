@@ -291,7 +291,6 @@ __pycache__/
 out
 node_modules
 *.vsix
-package-lock.json
 
 # Artifacts from running vscode extension tests
 .vscode-test
