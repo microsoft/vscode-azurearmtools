@@ -100,6 +100,13 @@
             "maximumArguments": 1
         },
         {
+            "name": "dateTime",
+            "expectedUsage": "dateTime([format])",
+            "description": "Creates a datetime (UTC) in the format provided. Defaults to ISO 8601 (yyyyMMddTHH:mm:ssZ), if the format is not specified. This can be used in scenarios where the generated value can be random and would like to stamp date/time (for example domain name labels, storage account names, role Assigment name). Usage is limited to parameter default values to keep template deployment idempotent."
+            "minimumArguments": 0,
+            "maximumArguments": 1
+        },
+        {
             "name": "deployment",
             "expectedUsage": "deployment()",
             "description": "Returns information about the current deployment operation. This function returns the object that is passed during deployment. The properties in the returned object will differ based on whether the deployment object is passed as a link or as an in-line object.",
@@ -339,6 +346,13 @@
             "description": "Returns the multiplication of the two provided integers.",
             "minimumArguments": 2,
             "maximumArguments": 2
+        },
+        {
+            "name": "newGuid",
+            "expectedUsage": "newGuid()",
+            "description": "Creates a globally unique identifier that can be used in scenarios where the generated value can be random (for example domain name labels, storage account names, role Assigment name). Usage is limited to parameter default values to keep template deployment idempotent"
+            "minimumArguments": 0,
+            "maximumArguments": 0
         },
         {
             "name": "not",
