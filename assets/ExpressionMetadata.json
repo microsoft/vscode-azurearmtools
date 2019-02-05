@@ -10,10 +10,10 @@
         },
         {
             "name": "and",
-            "expectedUsage": "and(arg1, arg2)",
-            "description": "Checks whether both parameter values are true.",
+            "expectedUsage": "and(arg1, arg2, ...)",
+            "description": "Checks whether all parameter values are true.",
             "minimumArguments": 2,
-            "maximumArguments": 2
+            "maximumArguments": null
         },
         {
             "name": "array",
@@ -376,10 +376,10 @@
         },
         {
             "name": "or",
-            "expectedUsage": "or(arg1, arg2)",
-            "description": "Checks whether either parameter value is true.",
+            "expectedUsage": "or(arg1, arg2, ...)",
+            "description": "Checks whether any parameter value is true.",
             "minimumArguments": 2,
-            "maximumArguments": 2
+            "maximumArguments": null
         },
         {
             "name": "padLeft",
