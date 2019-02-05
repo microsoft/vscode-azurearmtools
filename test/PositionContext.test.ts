@@ -16,7 +16,6 @@ import * as language from "../src/Language";
 import * as Tle from "../src/TLE";
 import * as Utilities from "../src/Utilities";
 
-import { AzureRMAssets } from "../src/AzureRMAssets";
 import { DeploymentTemplate } from "../src/DeploymentTemplate";
 import { ParameterDefinition } from "../src/ParameterDefinition";
 import { PositionContext } from "../src/PositionContext";
@@ -496,12 +495,8 @@ suite("PositionContext", () => {
             assert.deepStrictEqual(actualItems, expectedItems);
         }
 
-        // IMPORTANT
-        // We will only test against the completions in this list.  Any new functions added to the ExpressionMetadata.json file
-        //   will be ignored. Otherwise it becomes difficult to add items and update the tests.
-        //
-        // This way, the tests are testing the logic of IntelliSense itself (and are thus very important), but are not overtesting
-        //   against the function metadata itself.  If needed, that should be a separate test.
+        // NOTE: We are testing against test metadata, not the real data
+
         let allTestableCompletionNames = new Set<string>(allCompletions(0, 0).map(item => item.name));
 
         function allCompletions(startIndex: number, length: number): Completion.Item[] {
@@ -574,7 +569,7 @@ suite("PositionContext", () => {
         }
 
         function listKeysCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("listKeys", "listKeys($0)", new language.Span(startIndex, length), "(function) listKeys(resourceName/resourceIdentifier, apiVersion)", "Returns the keys of a storage account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primaryKey and secondaryKey.", Completion.CompletionKind.Function);
+            return new Completion.Item("listKeys", "listKeys($0)", new language.Span(startIndex, length), "(function) listKeys(resourceName/resourceIdentifier, apiVersion)", "Returns the keys of a storage account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primary (key[0]) and secondary key (key[1]).", Completion.CompletionKind.Function);
         }
 
         function listPackageCompletion(startIndex: number, length: number): Completion.Item {
