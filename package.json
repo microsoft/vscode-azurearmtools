@@ -62,34 +62,36 @@
   },
   "main": "./out/src/AzureRMTools",
   "scripts": {
-    "vscode:prepublish": "tsc -p ./",
     "compile": "tsc -watch -p ./",
     "build": "tsc -p ./",
+    "package": "vsce package",
     "lint": "tslint --project tsconfig.json -t verbose",
     "lint-fix": "tslint --project tsconfig.json -t verbose --fix",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "npm run build && node ./node_modules/vscode/bin/test",
+    "test": "gulp test",
     "all": "npm i && npm run lint && npm test"
   },
   "devDependencies": {
     "@types/applicationinsights": "^0.15.33",
     "@types/mocha": "^2.2.41",
     "@types/node": "^8.0.17",
-    "azure-storage": "^2.8.1",
-    "gulp": "^3.9.1",
+    "@types/opn": "^5.1.0",
+    "gulp": "^4.0.0",
     "istanbul": "^0.4.5",
-    "mocha": "^3.4.2",
+    "mocha": "^5.2.0",
+    "mocha-junit-reporter": "^1.18.0",
     "remap-istanbul": "^0.8.4",
-    "vscode": "^1.1.5",
+    "ts-node": "^7.0.1",
     "tslint": "^5.7.0",
     "tslint-microsoft-contrib": "5.0.3",
     "typescript": "^2.0.3",
-    "vsce": "^1.37.5"
+    "vsce": "^1.37.5",
+    "vscode": "^1.1.5"
   },
   "dependencies": {
     "applicationinsights": "0.21.0",
     "moment": "^2.17.1",
-    "open": "^0.0.5",
+    "opn": "^5.4.0",
     "vscode-azureextensionui": "~0.12.0",
     "vscode-extension-telemetry": "^0.0.15"
   }

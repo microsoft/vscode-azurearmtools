@@ -12,8 +12,7 @@ import * as os from "os";
 import * as path from "path";
 import * as vscode from "vscode";
 
-// tslint:disable-next-line:no-var-requires
-const open = require("open");
+import opn = require("opn");
 
 import * as Completion from "./Completion";
 import { ext } from "./extensionVariables";
@@ -330,7 +329,8 @@ export class AzureRMTools {
                             });
 
                             if (selectedOption === "OK") {
-                                open(surveyMetadata.surveyLink);
+                                // tslint:disable-next-line:no-floating-promises
+                                opn(surveyMetadata.surveyLink);
                             } else if (selectedOption === "Don't ask me again") {
                                 surveyInfo.settings.showSurveyPrompts = false;
                             }

@@ -1,6 +1,5 @@
 {
     "recommendations": [
-        "eg2.tslint",
-        "DavidAnson.vscode-markdownlint"
+        "eg2.tslint"
     ]
 }
