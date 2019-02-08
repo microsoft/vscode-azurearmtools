@@ -100,8 +100,8 @@
             "maximumArguments": 1
         },
         {
-            "name": "dateTime",
-            "expectedUsage": "dateTime([format])",
+            "name": "utcNow",
+            "expectedUsage": "utcNow([format])",
             "description": "Returns the current (UTC) datetime value in the format provided. If no format is provided the ISO 8601 (yyyyMMddTHH:mm:ssZ) format will be used. This function may only be used as a defaultValue on a parameter.",
             "minimumArguments": 0,
             "maximumArguments": 1
