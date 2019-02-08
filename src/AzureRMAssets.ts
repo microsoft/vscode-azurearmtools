@@ -29,6 +29,14 @@ export class AzureRMAssets {
         return "azuresdk-3.0.0";
     }
 
+    // For test dependency injection only
+    public static setFunctionsMetadata(metadataString: string): void {
+        AzureRMAssets._functionsMetadata = Promise.resolve(metadataString)
+            .then(FunctionMetadata.fromString)
+            .then((array: FunctionMetadata[]) => new FunctionsMetadata(array));
+
+    }
+
     public static getFunctionsMetadata(): Promise<FunctionsMetadata> {
         if (!AzureRMAssets._functionsMetadata) {
             AzureRMAssets._functionsMetadata = AzureRMAssets.getFunctionMetadataUri()
@@ -52,7 +60,7 @@ export class AzureRMAssets {
     /**
      * Get the URI to the file where the function metadata is stored.
      */
-    public static getFunctionMetadataUri(): Promise<string> {
+    private static getFunctionMetadataUri(): Promise<string> {
         if (AzureRMAssets._functionMetadataUri === undefined) {
             AzureRMAssets._functionMetadataUri = AzureRMAssets.getLocalAssetUri("ExpressionMetadata.json");
         }
