@@ -13,7 +13,7 @@ import { AzureRMAssets } from "../src/AzureRMAssets";
 // Runs before all tests
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     let testMetadata = fs.readFileSync(path.join(__dirname, '..', '..', 'test', 'ExpressionMetadata.test.json'));
-    AzureRMAssets.setFunctionsMetadata(JSON.parse(testMetadata.toString()));
+    AzureRMAssets.setFunctionsMetadata(testMetadata.toString());
     console.log('global.test.ts: suiteSetup');
 });
 
