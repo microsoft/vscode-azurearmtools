@@ -8,18 +8,7 @@
 // tslint:disable:align
 
 import * as assert from "assert";
-
-import * as Completion from "../src/Completion";
-import * as Hover from "../src/Hover";
-import * as Json from "../src/JSON";
-import * as language from "../src/Language";
-import * as Tle from "../src/TLE";
-import * as Utilities from "../src/Utilities";
-
-import { DeploymentTemplate } from "../src/DeploymentTemplate";
-import { ParameterDefinition } from "../src/ParameterDefinition";
-import { PositionContext } from "../src/PositionContext";
-
+import { Completion, DeploymentTemplate, Hover, Json, Language, ParameterDefinition, PositionContext, TLE, Utilities } from "../extension.bundle";
 import * as jsonTest from "./JSON.test";
 
 suite("PositionContext", () => {
@@ -78,7 +67,7 @@ suite("PositionContext", () => {
             let documentLineIndex = 0;
             let documentColumnIndex = 2;
             let pc = PositionContext.fromDocumentLineAndColumnIndexes(dt, documentLineIndex, documentColumnIndex);
-            assert.deepStrictEqual(new language.Position(0, 2), pc.documentPosition);
+            assert.deepStrictEqual(new Language.Position(0, 2), pc.documentPosition);
             assert.deepStrictEqual(0, pc.documentLineIndex);
             assert.deepStrictEqual(2, pc.documentColumnIndex);
         });
@@ -124,12 +113,12 @@ suite("PositionContext", () => {
     suite("documentPosition", () => {
         test("with PositionContext from line and column indexes", () => {
             let pc = PositionContext.fromDocumentLineAndColumnIndexes(new DeploymentTemplate("{\n}", "id"), 1, 0);
-            assert.deepStrictEqual(new language.Position(1, 0), pc.documentPosition);
+            assert.deepStrictEqual(new Language.Position(1, 0), pc.documentPosition);
         });
 
         test("with PositionContext from characterIndex", () => {
             let pc = PositionContext.fromDocumentCharacterIndex(new DeploymentTemplate("{\n}", "id"), 2);
-            assert.deepStrictEqual(new language.Position(1, 0), pc.documentPosition);
+            assert.deepStrictEqual(new Language.Position(1, 0), pc.documentPosition);
         });
     });
 
@@ -205,59 +194,59 @@ suite("PositionContext", () => {
         test("with characterIndex at the start of a non-TLE QuotedString", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(2);
-            assert.deepStrictEqual(Tle.Parser.parse("'a'"), pc.tleParseResult);
+            assert.deepStrictEqual(TLE.Parser.parse("'a'"), pc.tleParseResult);
         });
 
         test("with characterIndex at the start of a closed TLE QuotedString", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(17);
 
-            const tleParseResult: Tle.ParseResult = pc.tleParseResult;
+            const tleParseResult: TLE.ParseResult = pc.tleParseResult;
             assert(tleParseResult);
             assert.deepStrictEqual(tleParseResult.errors, []);
-            assert.deepStrictEqual(tleParseResult.leftSquareBracketToken, Tle.Token.createLeftSquareBracket(1));
-            assert.deepStrictEqual(tleParseResult.rightSquareBracketToken, Tle.Token.createRightSquareBracket(13));
+            assert.deepStrictEqual(tleParseResult.leftSquareBracketToken, TLE.Token.createLeftSquareBracket(1));
+            assert.deepStrictEqual(tleParseResult.rightSquareBracketToken, TLE.Token.createRightSquareBracket(13));
 
-            const concat: Tle.FunctionValue = Tle.asFunctionValue(tleParseResult.expression);
+            const concat: TLE.FunctionValue = TLE.asFunctionValue(tleParseResult.expression);
             assert(concat);
             assert.deepStrictEqual(concat.parent, undefined);
-            assert.deepStrictEqual(concat.nameToken, Tle.Token.createLiteral(2, "concat"));
-            assert.deepStrictEqual(concat.leftParenthesisToken, Tle.Token.createLeftParenthesis(8));
-            assert.deepStrictEqual(concat.rightParenthesisToken, Tle.Token.createRightParenthesis(12));
+            assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
+            assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
+            assert.deepStrictEqual(concat.rightParenthesisToken, TLE.Token.createRightParenthesis(12));
             assert.deepStrictEqual(concat.commaTokens, []);
             assert.deepStrictEqual(concat.argumentExpressions.length, 1);
-            const arg1: Tle.StringValue = Tle.asStringValue(concat.argumentExpressions[0]);
+            const arg1: TLE.StringValue = TLE.asStringValue(concat.argumentExpressions[0]);
             assert(arg1);
             assert.deepStrictEqual(arg1.parent, concat);
-            assert.deepStrictEqual(arg1.token, Tle.Token.createQuotedString(9, "'B'"));
+            assert.deepStrictEqual(arg1.token, TLE.Token.createQuotedString(9, "'B'"));
         });
 
         test("with characterIndex at the start of an unclosed TLE QuotedString", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(17);
 
-            const tleParseResult: Tle.ParseResult = pc.tleParseResult;
+            const tleParseResult: TLE.ParseResult = pc.tleParseResult;
             assert(tleParseResult);
             assert.deepStrictEqual(
                 tleParseResult.errors,
                 [
-                    new language.Issue(new language.Span(11, 1), "Expected a right square bracket (']').")
+                    new Language.Issue(new Language.Span(11, 1), "Expected a right square bracket (']').")
                 ]);
-            assert.deepStrictEqual(tleParseResult.leftSquareBracketToken, Tle.Token.createLeftSquareBracket(1));
+            assert.deepStrictEqual(tleParseResult.leftSquareBracketToken, TLE.Token.createLeftSquareBracket(1));
             assert.deepStrictEqual(tleParseResult.rightSquareBracketToken, null);
 
-            const concat: Tle.FunctionValue = Tle.asFunctionValue(tleParseResult.expression);
+            const concat: TLE.FunctionValue = TLE.asFunctionValue(tleParseResult.expression);
             assert(concat);
             assert.deepStrictEqual(concat.parent, undefined);
-            assert.deepStrictEqual(concat.nameToken, Tle.Token.createLiteral(2, "concat"));
-            assert.deepStrictEqual(concat.leftParenthesisToken, Tle.Token.createLeftParenthesis(8));
+            assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
+            assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
             assert.deepStrictEqual(concat.rightParenthesisToken, null);
             assert.deepStrictEqual(concat.commaTokens, []);
             assert.deepStrictEqual(concat.argumentExpressions.length, 1);
-            const arg1: Tle.StringValue = Tle.asStringValue(concat.argumentExpressions[0]);
+            const arg1: TLE.StringValue = TLE.asStringValue(concat.argumentExpressions[0]);
             assert(arg1);
             assert.deepStrictEqual(arg1.parent, concat);
-            assert.deepStrictEqual(arg1.token, Tle.Token.createQuotedString(9, "'B'"));
+            assert.deepStrictEqual(arg1.token, TLE.Token.createQuotedString(9, "'B'"));
         });
     });
 
@@ -323,7 +312,7 @@ suite("PositionContext", () => {
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(2);
             assert.deepStrictEqual(
                 pc.tleValue,
-                new Tle.StringValue(Tle.Token.createQuotedString(0, "'a'")));
+                new TLE.StringValue(TLE.Token.createQuotedString(0, "'a'")));
         });
 
         test("with characterIndex at the start of a TLE", () => {
@@ -336,17 +325,17 @@ suite("PositionContext", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(21);
 
-            const concat: Tle.FunctionValue = Tle.asFunctionValue(pc.tleValue);
+            const concat: TLE.FunctionValue = TLE.asFunctionValue(pc.tleValue);
             assert(concat);
-            assert.deepStrictEqual(concat.nameToken, Tle.Token.createLiteral(2, "concat"));
-            assert.deepStrictEqual(concat.leftParenthesisToken, Tle.Token.createLeftParenthesis(8));
-            assert.deepStrictEqual(concat.rightParenthesisToken, Tle.Token.createRightParenthesis(12));
+            assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
+            assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
+            assert.deepStrictEqual(concat.rightParenthesisToken, TLE.Token.createRightParenthesis(12));
             assert.deepStrictEqual(concat.commaTokens, []);
             assert.deepStrictEqual(concat.argumentExpressions.length, 1);
-            const arg1: Tle.StringValue = Tle.asStringValue(concat.argumentExpressions[0]);
+            const arg1: TLE.StringValue = TLE.asStringValue(concat.argumentExpressions[0]);
             assert(arg1);
             assert.deepStrictEqual(arg1.parent, concat);
-            assert.deepStrictEqual(arg1.token, Tle.Token.createQuotedString(9, "'B'"));
+            assert.deepStrictEqual(arg1.token, TLE.Token.createQuotedString(9, "'B'"));
         });
 
         test("with characterIndex after the end of a closed TLE", () => {
@@ -359,13 +348,13 @@ suite("PositionContext", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[concat('B'".length);
 
-            const b: Tle.StringValue = Tle.asStringValue(pc.tleValue);
+            const b: TLE.StringValue = TLE.asStringValue(pc.tleValue);
             assert(b);
-            assert.deepStrictEqual(b.token, Tle.Token.createQuotedString(9, "'B'"));
-            const concat: Tle.FunctionValue = Tle.asFunctionValue(b.parent);
+            assert.deepStrictEqual(b.token, TLE.Token.createQuotedString(9, "'B'"));
+            const concat: TLE.FunctionValue = TLE.asFunctionValue(b.parent);
             assert(concat);
-            assert.deepStrictEqual(concat.nameToken, Tle.Token.createLiteral(2, "concat"));
-            assert.deepStrictEqual(concat.leftParenthesisToken, Tle.Token.createLeftParenthesis(8));
+            assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
+            assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
             assert.deepStrictEqual(concat.rightParenthesisToken, null);
             assert.deepStrictEqual(concat.commaTokens, []);
             assert.deepStrictEqual(concat.argumentExpressions.length, 1);
@@ -403,7 +392,7 @@ suite("PositionContext", () => {
                 assert(hi instanceof Hover.FunctionInfo);
                 if (hi instanceof Hover.FunctionInfo) {
                     assert.deepStrictEqual(hi.functionName, "concat");
-                    assert.deepStrictEqual(hi.span, new language.Span("{ 'a': 'A', 'b': \"[".length, 6));
+                    assert.deepStrictEqual(hi.span, new Language.Span("{ 'a': 'A', 'b': \"[".length, 6));
                 }
             });
         });
@@ -423,7 +412,7 @@ suite("PositionContext", () => {
                 assert(hi instanceof Hover.ParameterReferenceInfo);
                 if (hi instanceof Hover.ParameterReferenceInfo) {
                     assert.deepStrictEqual("**pName** (parameter)", hi.getHoverText());
-                    assert.deepStrictEqual(new language.Span("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters(".length, 7), hi.span);
+                    assert.deepStrictEqual(new Language.Span("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters(".length, 7), hi.span);
                 }
             });
         });
@@ -459,7 +448,7 @@ suite("PositionContext", () => {
                 assert(hi instanceof Hover.VariableReferenceInfo);
                 if (hi instanceof Hover.VariableReferenceInfo) {
                     assert.deepStrictEqual("**vName** (variable)", hi.getHoverText());
-                    assert.deepStrictEqual(new language.Span("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables(".length, 7), hi.span);
+                    assert.deepStrictEqual(new Language.Span("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables(".length, 7), hi.span);
                 }
             });
         });
@@ -537,143 +526,143 @@ suite("PositionContext", () => {
         }
 
         function addCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("add", "add($0)", new language.Span(startIndex, length), "(function) add(operand1, operand2)", "Returns the sum of the two provided integers.", Completion.CompletionKind.Function);
+            return new Completion.Item("add", "add($0)", new Language.Span(startIndex, length), "(function) add(operand1, operand2)", "Returns the sum of the two provided integers.", Completion.CompletionKind.Function);
         }
 
         function base64Completion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("base64", "base64($0)", new language.Span(startIndex, length), "(function) base64(inputString)", "Returns the base64 representation of the input string.", Completion.CompletionKind.Function);
+            return new Completion.Item("base64", "base64($0)", new Language.Span(startIndex, length), "(function) base64(inputString)", "Returns the base64 representation of the input string.", Completion.CompletionKind.Function);
         }
 
         function concatCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("concat", "concat($0)", new language.Span(startIndex, length), "(function) concat(arg1, arg2, arg3, ...)", "Combines multiple values and returns the concatenated result. This function can take any number of arguments, and can accept either strings or arrays for the parameters.", Completion.CompletionKind.Function);
+            return new Completion.Item("concat", "concat($0)", new Language.Span(startIndex, length), "(function) concat(arg1, arg2, arg3, ...)", "Combines multiple values and returns the concatenated result. This function can take any number of arguments, and can accept either strings or arrays for the parameters.", Completion.CompletionKind.Function);
         }
 
         function copyIndexCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("copyIndex", "copyIndex($0)", new language.Span(startIndex, length), "(function) copyIndex([offset]) or copyIndex(loopName, [offset])", "Returns the current index of an iteration loop.\nThis function is always used with a copy object.", Completion.CompletionKind.Function);
+            return new Completion.Item("copyIndex", "copyIndex($0)", new Language.Span(startIndex, length), "(function) copyIndex([offset]) or copyIndex(loopName, [offset])", "Returns the current index of an iteration loop.\nThis function is always used with a copy object.", Completion.CompletionKind.Function);
         }
 
         function deploymentCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("deployment", "deployment()$0", new language.Span(startIndex, length), "(function) deployment()", "Returns information about the current deployment operation. This function returns the object that is passed during deployment. The properties in the returned object will differ based on whether the deployment object is passed as a link or as an in-line object.", Completion.CompletionKind.Function);
+            return new Completion.Item("deployment", "deployment()$0", new Language.Span(startIndex, length), "(function) deployment()", "Returns information about the current deployment operation. This function returns the object that is passed during deployment. The properties in the returned object will differ based on whether the deployment object is passed as a link or as an in-line object.", Completion.CompletionKind.Function);
         }
 
         function divCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("div", "div($0)", new language.Span(startIndex, length), "(function) div(operand1, operand2)", "Returns the integer division of the two provided integers.", Completion.CompletionKind.Function);
+            return new Completion.Item("div", "div($0)", new Language.Span(startIndex, length), "(function) div(operand1, operand2)", "Returns the integer division of the two provided integers.", Completion.CompletionKind.Function);
         }
 
         function intCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("int", "int($0)", new language.Span(startIndex, length), "(function) int(valueToConvert)", "Converts the specified value to Integer.", Completion.CompletionKind.Function);
+            return new Completion.Item("int", "int($0)", new Language.Span(startIndex, length), "(function) int(valueToConvert)", "Converts the specified value to Integer.", Completion.CompletionKind.Function);
         }
 
         function lengthCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("length", "length($0)", new language.Span(startIndex, length), "(function) length(array/string)", "Returns the number of elements in an array or the number of characters in a string. You can use this function with an array to specify the number of iterations when creating resources.", Completion.CompletionKind.Function);
+            return new Completion.Item("length", "length($0)", new Language.Span(startIndex, length), "(function) length(array/string)", "Returns the number of elements in an array or the number of characters in a string. You can use this function with an array to specify the number of iterations when creating resources.", Completion.CompletionKind.Function);
         }
 
         function listKeysCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("listKeys", "listKeys($0)", new language.Span(startIndex, length), "(function) listKeys(resourceName/resourceIdentifier, apiVersion)", "Returns the keys of a storage account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primary (key[0]) and secondary key (key[1]).", Completion.CompletionKind.Function);
+            return new Completion.Item("listKeys", "listKeys($0)", new Language.Span(startIndex, length), "(function) listKeys(resourceName/resourceIdentifier, apiVersion)", "Returns the keys of a storage account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primary (key[0]) and secondary key (key[1]).", Completion.CompletionKind.Function);
         }
 
         function listPackageCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("listPackage", "listPackage($0)", new language.Span(startIndex, length), "(function) listPackage(resourceName\/resourceIdentifier, apiVersion)", "Lists the virtual network gateway package. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.", Completion.CompletionKind.Function);
+            return new Completion.Item("listPackage", "listPackage($0)", new Language.Span(startIndex, length), "(function) listPackage(resourceName\/resourceIdentifier, apiVersion)", "Lists the virtual network gateway package. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.", Completion.CompletionKind.Function);
         }
 
         function modCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("mod", "mod($0)", new language.Span(startIndex, length), "(function) mod(operand1, operand2)", "Returns the remainder of the integer division using the two provided integers.", Completion.CompletionKind.Function);
+            return new Completion.Item("mod", "mod($0)", new Language.Span(startIndex, length), "(function) mod(operand1, operand2)", "Returns the remainder of the integer division using the two provided integers.", Completion.CompletionKind.Function);
         }
 
         function mulCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("mul", "mul($0)", new language.Span(startIndex, length), "(function) mul(operand1, operand2)", "Returns the multiplication of the two provided integers.", Completion.CompletionKind.Function);
+            return new Completion.Item("mul", "mul($0)", new Language.Span(startIndex, length), "(function) mul(operand1, operand2)", "Returns the multiplication of the two provided integers.", Completion.CompletionKind.Function);
         }
 
         function padLeftCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("padLeft", "padLeft($0)", new language.Span(startIndex, length), "(function) padLeft(stringToPad, totalLength, paddingCharacter)", "Returns a right-aligned string by adding characters to the left until reaching the total specified length.", Completion.CompletionKind.Function);
+            return new Completion.Item("padLeft", "padLeft($0)", new Language.Span(startIndex, length), "(function) padLeft(stringToPad, totalLength, paddingCharacter)", "Returns a right-aligned string by adding characters to the left until reaching the total specified length.", Completion.CompletionKind.Function);
         }
 
         function parametersCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("parameters", "parameters($0)", new language.Span(startIndex, length), "(function) parameters(parameterName)", "Returns a parameter value. The specified parameter name must be defined in the parameters section of the template.", Completion.CompletionKind.Function);
+            return new Completion.Item("parameters", "parameters($0)", new Language.Span(startIndex, length), "(function) parameters(parameterName)", "Returns a parameter value. The specified parameter name must be defined in the parameters section of the template.", Completion.CompletionKind.Function);
         }
 
         function providersCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("providers", "providers($0)", new language.Span(startIndex, length), "(function) providers(providerNamespace, [resourceType])", "Return information about a resource provider and its supported resource types. If not type is provided, all of the supported types are returned.", Completion.CompletionKind.Function);
+            return new Completion.Item("providers", "providers($0)", new Language.Span(startIndex, length), "(function) providers(providerNamespace, [resourceType])", "Return information about a resource provider and its supported resource types. If not type is provided, all of the supported types are returned.", Completion.CompletionKind.Function);
         }
 
         function referenceCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("reference", "reference($0)", new language.Span(startIndex, length), "(function) reference(resourceName/resourceIdentifier, [apiVersion], ['Full'])", "Enables an expression to derive its value from another resource's runtime state.", Completion.CompletionKind.Function);
+            return new Completion.Item("reference", "reference($0)", new Language.Span(startIndex, length), "(function) reference(resourceName/resourceIdentifier, [apiVersion], ['Full'])", "Enables an expression to derive its value from another resource's runtime state.", Completion.CompletionKind.Function);
         }
 
         function replaceCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("replace", "replace($0)", new language.Span(startIndex, length), "(function) replace(originalString, oldCharacter, newCharacter)", "Returns a new string with all instances of one character in the specified string replaced by another character.", Completion.CompletionKind.Function);
+            return new Completion.Item("replace", "replace($0)", new Language.Span(startIndex, length), "(function) replace(originalString, oldCharacter, newCharacter)", "Returns a new string with all instances of one character in the specified string replaced by another character.", Completion.CompletionKind.Function);
         }
 
         function resourceGroupCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("resourceGroup", "resourceGroup()$0", new language.Span(startIndex, length), "(function) resourceGroup()", "Returns a structured object that represents the current resource group.", Completion.CompletionKind.Function);
+            return new Completion.Item("resourceGroup", "resourceGroup()$0", new Language.Span(startIndex, length), "(function) resourceGroup()", "Returns a structured object that represents the current resource group.", Completion.CompletionKind.Function);
         }
 
         function resourceIdCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("resourceId", "resourceId($0)", new language.Span(startIndex, length), "(function) resourceId([subscriptionId], [resourceGroupName], resourceType, resourceName1, [resourceName2]...)", "Returns the unique identifier of a resource. You use this function when the resource name is ambiguous or not provisioned within the same template.", Completion.CompletionKind.Function);
+            return new Completion.Item("resourceId", "resourceId($0)", new Language.Span(startIndex, length), "(function) resourceId([subscriptionId], [resourceGroupName], resourceType, resourceName1, [resourceName2]...)", "Returns the unique identifier of a resource. You use this function when the resource name is ambiguous or not provisioned within the same template.", Completion.CompletionKind.Function);
         }
 
         function skipCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("skip", "skip($0)", new language.Span(startIndex, length), "(function) skip(originalValue, numberToSkip)", "Returns an array or string with all of the elements or characters after the specified number in the array or string.", Completion.CompletionKind.Function);
+            return new Completion.Item("skip", "skip($0)", new Language.Span(startIndex, length), "(function) skip(originalValue, numberToSkip)", "Returns an array or string with all of the elements or characters after the specified number in the array or string.", Completion.CompletionKind.Function);
         }
 
         function splitCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("split", "split($0)", new language.Span(startIndex, length), "(function) split(inputString, delimiter)", "Returns an array of strings that contains the substrings of the input string that are delimited by the sent delimiters.", Completion.CompletionKind.Function);
+            return new Completion.Item("split", "split($0)", new Language.Span(startIndex, length), "(function) split(inputString, delimiter)", "Returns an array of strings that contains the substrings of the input string that are delimited by the sent delimiters.", Completion.CompletionKind.Function);
         }
 
         function stringCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("string", "string($0)", new language.Span(startIndex, length), "(function) string(valueToConvert)", "Converts the specified value to String.", Completion.CompletionKind.Function);
+            return new Completion.Item("string", "string($0)", new Language.Span(startIndex, length), "(function) string(valueToConvert)", "Converts the specified value to String.", Completion.CompletionKind.Function);
         }
 
         function subCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("sub", "sub($0)", new language.Span(startIndex, length), "(function) sub(operand1, operand2)", "Returns the subtraction of the two provided integers.", Completion.CompletionKind.Function);
+            return new Completion.Item("sub", "sub($0)", new Language.Span(startIndex, length), "(function) sub(operand1, operand2)", "Returns the subtraction of the two provided integers.", Completion.CompletionKind.Function);
         }
 
         function subscriptionCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("subscription", "subscription()$0", new language.Span(startIndex, length), "(function) subscription()", "Returns details about the subscription.", Completion.CompletionKind.Function);
+            return new Completion.Item("subscription", "subscription()$0", new Language.Span(startIndex, length), "(function) subscription()", "Returns details about the subscription.", Completion.CompletionKind.Function);
         }
 
         function substringCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("substring", "substring($0)", new language.Span(startIndex, length), "(function) substring(stringToParse, startIndex, length)", "Returns a substring that starts at the specified character position and contains the specified number of characters.", Completion.CompletionKind.Function);
+            return new Completion.Item("substring", "substring($0)", new Language.Span(startIndex, length), "(function) substring(stringToParse, startIndex, length)", "Returns a substring that starts at the specified character position and contains the specified number of characters.", Completion.CompletionKind.Function);
         }
 
         function takeCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("take", "take($0)", new language.Span(startIndex, length), "(function) take(originalValue, numberToTake)", "Returns an array or string with the specified number of elements or characters from the start of the array or string.", Completion.CompletionKind.Function);
+            return new Completion.Item("take", "take($0)", new Language.Span(startIndex, length), "(function) take(originalValue, numberToTake)", "Returns an array or string with the specified number of elements or characters from the start of the array or string.", Completion.CompletionKind.Function);
         }
 
         function toLowerCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("toLower", "toLower($0)", new language.Span(startIndex, length), "(function) toLower(string)", "Converts the specified string to lower case.", Completion.CompletionKind.Function);
+            return new Completion.Item("toLower", "toLower($0)", new Language.Span(startIndex, length), "(function) toLower(string)", "Converts the specified string to lower case.", Completion.CompletionKind.Function);
         }
 
         function toUpperCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("toUpper", "toUpper($0)", new language.Span(startIndex, length), "(function) toUpper(string)", "Converts the specified string to upper case.", Completion.CompletionKind.Function);
+            return new Completion.Item("toUpper", "toUpper($0)", new Language.Span(startIndex, length), "(function) toUpper(string)", "Converts the specified string to upper case.", Completion.CompletionKind.Function);
         }
 
         function trimCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("trim", "trim($0)", new language.Span(startIndex, length), "(function) trim(stringToTrim)", "Removes all leading and trailing white-space characters from the specified string.", Completion.CompletionKind.Function);
+            return new Completion.Item("trim", "trim($0)", new Language.Span(startIndex, length), "(function) trim(stringToTrim)", "Removes all leading and trailing white-space characters from the specified string.", Completion.CompletionKind.Function);
         }
 
         function uniqueStringCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("uniqueString", "uniqueString($0)", new language.Span(startIndex, length), "(function) uniqueString(stringForCreatingUniqueString, ...)", "Performs a 64-bit hash of the provided strings to create a unique string. This function is helpful when you need to create a unique name for a resource. You provide parameter values that represent the level of uniqueness for the result. You can specify whether the name is unique for your subscription, resource group, or deployment.", Completion.CompletionKind.Function);
+            return new Completion.Item("uniqueString", "uniqueString($0)", new Language.Span(startIndex, length), "(function) uniqueString(stringForCreatingUniqueString, ...)", "Performs a 64-bit hash of the provided strings to create a unique string. This function is helpful when you need to create a unique name for a resource. You provide parameter values that represent the level of uniqueness for the result. You can specify whether the name is unique for your subscription, resource group, or deployment.", Completion.CompletionKind.Function);
         }
 
         function uriCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("uri", "uri($0)", new language.Span(startIndex, length), "(function) uri(baseUri, relativeUri)", "Creates an absolute URI by combining the baseUri and the relativeUri string.", Completion.CompletionKind.Function);
+            return new Completion.Item("uri", "uri($0)", new Language.Span(startIndex, length), "(function) uri(baseUri, relativeUri)", "Creates an absolute URI by combining the baseUri and the relativeUri string.", Completion.CompletionKind.Function);
         }
 
         function variablesCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("variables", "variables($0)", new language.Span(startIndex, length), "(function) variables(variableName)", "Returns the value of variable. The specified variable name must be defined in the variables section of the template.", Completion.CompletionKind.Function);
+            return new Completion.Item("variables", "variables($0)", new Language.Span(startIndex, length), "(function) variables(variableName)", "Returns the value of variable. The specified variable name must be defined in the variables section of the template.", Completion.CompletionKind.Function);
         }
 
         function parameterCompletion(parameterName: string, startIndex: number, length: number, includeRightParenthesis: boolean = true): Completion.Item {
-            return new Completion.Item(`'${parameterName}'`, `'${parameterName}'${includeRightParenthesis ? ")" : ""}$0`, new language.Span(startIndex, length), "(parameter)", null, Completion.CompletionKind.Parameter);
+            return new Completion.Item(`'${parameterName}'`, `'${parameterName}'${includeRightParenthesis ? ")" : ""}$0`, new Language.Span(startIndex, length), "(parameter)", null, Completion.CompletionKind.Parameter);
         }
 
         function propertyCompletion(propertyName: string, startIndex: number, length: number): Completion.Item {
-            return new Completion.Item(propertyName, `${propertyName}$0`, new language.Span(startIndex, length), "(property)", "", Completion.CompletionKind.Property);
+            return new Completion.Item(propertyName, `${propertyName}$0`, new Language.Span(startIndex, length), "(property)", "", Completion.CompletionKind.Property);
         }
 
         function variableCompletion(variableName: string, startIndex: number, length: number, includeRightParenthesis: boolean = true): Completion.Item {
-            return new Completion.Item(`'${variableName}'`, `'${variableName}'${includeRightParenthesis ? ")" : ""}$0`, new language.Span(startIndex, length), "(variable)", "", Completion.CompletionKind.Variable);
+            return new Completion.Item(`'${variableName}'`, `'${variableName}'${includeRightParenthesis ? ")" : ""}$0`, new Language.Span(startIndex, length), "(variable)", "", Completion.CompletionKind.Variable);
         }
 
         for (let i = 0; i <= 24; ++i) {
@@ -1196,7 +1185,7 @@ suite("PositionContext", () => {
         test("not in a TLE", () => {
             const dt = new DeploymentTemplate(`{ "a": "AA" }`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "A`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert.deepStrictEqual(functionSignatureHelp, null);
             });
         });
@@ -1204,7 +1193,7 @@ suite("PositionContext", () => {
         test("in empty TLE", () => {
             const dt = new DeploymentTemplate(`{ "a": "[]" }`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert.deepStrictEqual(functionSignatureHelp, null);
             });
         });
@@ -1212,7 +1201,7 @@ suite("PositionContext", () => {
         test("in TLE function name", () => {
             const dt = new DeploymentTemplate(`{ "a": "[con]" }`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[con`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert.deepStrictEqual(functionSignatureHelp, null);
             });
         });
@@ -1220,7 +1209,7 @@ suite("PositionContext", () => {
         test("after left parenthesis", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat(`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat(`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert(functionSignatureHelp);
                 assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 0);
                 assert(functionSignatureHelp.functionMetadata);
@@ -1231,7 +1220,7 @@ suite("PositionContext", () => {
         test("inside first parameter", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat('test`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('test`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert(functionSignatureHelp);
                 assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 0);
                 assert(functionSignatureHelp.functionMetadata);
@@ -1242,7 +1231,7 @@ suite("PositionContext", () => {
         test("inside second parameter", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat('t1', 't2`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('t1', 't2`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert(functionSignatureHelp);
                 assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 1);
                 assert(functionSignatureHelp.functionMetadata);
@@ -1253,7 +1242,7 @@ suite("PositionContext", () => {
         test("inside empty parameter", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat(,,,`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat(,,`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert(functionSignatureHelp);
                 assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 2);
                 assert(functionSignatureHelp.functionMetadata);
@@ -1264,7 +1253,7 @@ suite("PositionContext", () => {
         test("in variadic parameter when function signature has '...' parameter and the current argument is greater than the parameter count", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat('a', 'b', 'c', 'd', 'e', 'f'`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd', 'e', 'f'`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert(functionSignatureHelp);
                 assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 3);
                 assert(functionSignatureHelp.functionMetadata);
@@ -1275,7 +1264,7 @@ suite("PositionContext", () => {
         test("in variadic parameter when function signature has '...' parameter and the current argument is equal to the parameter count", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat('a', 'b', 'c', 'd'`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd'`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert(functionSignatureHelp);
                 assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 3);
                 assert(functionSignatureHelp.functionMetadata);
@@ -1286,7 +1275,7 @@ suite("PositionContext", () => {
         test("in variadic parameter when function signature has 'name...' parameter", () => {
             const dt = new DeploymentTemplate(`{ "a": "[resourceId('a', 'b', 'c', 'd', 'e', 'f', 'g'`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd', 'e', 'f', 'g'`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: Tle.FunctionSignatureHelp) => {
+            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert(functionSignatureHelp);
                 assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 4);
                 assert(functionSignatureHelp.functionMetadata);
@@ -1315,7 +1304,7 @@ suite("PositionContext", () => {
             assert(parameterDefinition);
             assert.deepStrictEqual(parameterDefinition.name.toString(), "pName");
             assert.deepStrictEqual(parameterDefinition.description, null);
-            assert.deepStrictEqual(parameterDefinition.span, new language.Span(18, 11));
+            assert.deepStrictEqual(parameterDefinition.span, new Language.Span(18, 11));
         });
 
         test("with cursor before parameter name start quote with matching parameter definition", () => {
@@ -1325,7 +1314,7 @@ suite("PositionContext", () => {
             assert(parameterDefinition);
             assert.deepStrictEqual(parameterDefinition.name.toString(), "pName");
             assert.deepStrictEqual(parameterDefinition.description, null);
-            assert.deepStrictEqual(parameterDefinition.span, new language.Span(18, 11));
+            assert.deepStrictEqual(parameterDefinition.span, new Language.Span(18, 11));
         });
 
         test("with cursor after parameter name end quote with matching parameter definition", () => {
@@ -1335,7 +1324,7 @@ suite("PositionContext", () => {
             assert(parameterDefinition);
             assert.deepStrictEqual(parameterDefinition.name.toString(), "pName");
             assert.deepStrictEqual(parameterDefinition.description, null);
-            assert.deepStrictEqual(parameterDefinition.span, new language.Span(18, 11));
+            assert.deepStrictEqual(parameterDefinition.span, new Language.Span(18, 11));
         });
     });
 
@@ -1358,7 +1347,7 @@ suite("PositionContext", () => {
             const vDef: Json.Property = context.variableDefinition;
             assert(vDef);
             assert.deepStrictEqual(vDef.name.toString(), "vName");
-            assert.deepStrictEqual(vDef.span, new language.Span(17, 11));
+            assert.deepStrictEqual(vDef.span, new Language.Span(17, 11));
         });
 
         test("with cursor before variable name start quote with matching variable definition", () => {
@@ -1367,7 +1356,7 @@ suite("PositionContext", () => {
             const vDef: Json.Property = context.variableDefinition;
             assert(vDef);
             assert.deepStrictEqual(vDef.name.toString(), "vName");
-            assert.deepStrictEqual(vDef.span, new language.Span(17, 11));
+            assert.deepStrictEqual(vDef.span, new Language.Span(17, 11));
         });
 
         test("with cursor after parameter name end quote with matching parameter definition", () => {
@@ -1376,7 +1365,7 @@ suite("PositionContext", () => {
             const vDef: Json.Property = context.variableDefinition;
             assert(vDef);
             assert.deepStrictEqual(vDef.name.toString(), "vName");
-            assert.deepStrictEqual(vDef.span, new language.Span(17, 11));
+            assert.deepStrictEqual(vDef.span, new Language.Span(17, 11));
         });
     });
 });

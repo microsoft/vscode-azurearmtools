@@ -1,3 +1,4 @@
+# These files are excluded during vsce package
 .gitignore
 .vscode/**
 *.cmd
@@ -13,3 +14,14 @@ typings/**
 .github/**
 test-results.xml
 .azure-pipelines/**
+build
+out/**
+tslint.json
+node_modules/**
+**/*.map
+.vscode-test/**
+.github/**
+dist/test/**
+gulp*
+webpack.config*
+stats.json

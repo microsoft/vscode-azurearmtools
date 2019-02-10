@@ -291,6 +291,8 @@ __pycache__/
 out
 node_modules
 *.vsix
+dist
+*.zip
 
 # Artifacts from running vscode extension tests
 .vscode-test

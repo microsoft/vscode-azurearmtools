@@ -7,7 +7,6 @@ import * as assert from "assert";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import * as Reference from "./Reference";
-import * as Telemetry from "./Telemetry";
 import * as TLE from "./TLE";
 import * as Utilities from "./Utilities";
 

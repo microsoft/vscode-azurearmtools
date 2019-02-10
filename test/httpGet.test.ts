@@ -6,9 +6,7 @@
 // tslint:disable:promise-function-async
 
 import * as assert from "assert";
-
-import { httpGet } from "../src/httpGet";
-
+import { httpGet } from "../extension.bundle";
 import { networkTest } from "./networkTest";
 
 suite("HttpClient", () => {

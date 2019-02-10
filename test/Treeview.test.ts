@@ -7,11 +7,8 @@
 import * as assert from "assert";
 import * as path from "path";
 import * as vscode from "vscode";
-import * as Json from "../src/JSON";
-
-import { ext } from "../src/extensionVariables";
-import { Span } from "../src/Language";
-import { IElementInfo, JsonOutlineProvider, shortenTreeLabel } from "../src/Treeview";
+import { ext, Span } from "../extension.bundle";
+import { JsonOutlineProvider, shortenTreeLabel } from "../extension.bundle";
 
 suite("TreeView", async (): Promise<void> => {
     suite("shortenTreeLabel", async (): Promise<void> => {

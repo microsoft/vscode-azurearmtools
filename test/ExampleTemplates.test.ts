@@ -6,15 +6,7 @@
 // tslint:disable:max-func-body-length
 
 import * as assert from "assert";
-
-import * as Json from "../src/JSON";
-import * as language from "../src/Language";
-import * as Reference from "../src/Reference";
-import * as TLE from "../src/TLE";
-
-import { AzureRMAssets, FunctionMetadata, FunctionsMetadata } from "../src/AzureRMAssets";
-import { DeploymentTemplate } from "../src/DeploymentTemplate";
-import { PositionContext } from "../src/PositionContext";
+import { DeploymentTemplate } from "../extension.bundle";
 
 suite("Template tests", () => {
     suite("Functions metadata", () => {

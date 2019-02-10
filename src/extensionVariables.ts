@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from "vscode";
+import { IAzureUserInput, ITelemetryReporter } from "vscode-azureextensionui";
 import { JsonOutlineProvider } from "./Treeview";
 
 /**
@@ -12,6 +13,9 @@ import { JsonOutlineProvider } from "./Treeview";
 export namespace ext {
     export const extensionId: string = "msazurermtools.azurerm-vscode-tools";
 
-    export let extensionContext: vscode.ExtensionContext;
+    export let context: vscode.ExtensionContext;
     export let jsonOutlineProvider: JsonOutlineProvider;
+    export let reporter: ITelemetryReporter;
+    export let outputChannel: vscode.OutputChannel;
+    export let ui: IAzureUserInput;
 }
