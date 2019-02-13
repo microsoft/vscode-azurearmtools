@@ -84,7 +84,6 @@ export class AzureRMTools {
     });
 
     constructor(context: vscode.ExtensionContext) {
-        ext.context = context;
         this.loadConfiguration();
 
         const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);

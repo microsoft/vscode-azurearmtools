@@ -25,3 +25,4 @@ dist/test/**
 gulp*
 webpack.config*
 stats.json
+*.ts
