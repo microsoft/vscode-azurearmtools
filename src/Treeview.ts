@@ -285,7 +285,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         return JSON.stringify(result);
     }
 
-    private getIcon(icons: [string, string][], itemName: string, defaultIcon: string) {
+    private getIcon(icons: [string, string][], itemName: string, defaultIcon: string): string {
         itemName = (itemName || "").toLowerCase();
         let iconItem = icons.find(item => item[0].toLowerCase() === itemName);
         return iconItem ? iconItem[1] : defaultIcon;
@@ -322,7 +322,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         }
 
         if (icon) {
-            return (`${__dirname}/../../icons/${icon}`);
+            return (`${__dirname}/../icons/${icon}`);
         }
 
         return undefined;

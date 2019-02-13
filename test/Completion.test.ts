@@ -3,9 +3,8 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
-
-import * as Completion from "../src/Completion";
-import * as language from "../src/Language";
+import * as Completion from "../extension.bundle";
+import * as language from "../extension.bundle";
 
 suite("Completion", () => {
     suite("Item", () => {

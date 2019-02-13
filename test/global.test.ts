@@ -6,7 +6,7 @@
 import * as fs from "fs";
 import mocha = require("mocha");
 import * as path from "path";
-import { AzureRMAssets } from "../src/AzureRMAssets";
+import { AzureRMAssets } from "../extension.bundle";
 
 // tslint:disable:no-console no-function-expression
 

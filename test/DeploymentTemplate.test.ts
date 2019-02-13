@@ -7,17 +7,7 @@
 // tslint:disable:promise-function-async
 
 import * as assert from "assert";
-
-import * as Json from "../src/JSON";
-import * as language from "../src/Language";
-import * as Reference from "../src/Reference";
-
-import { DeploymentTemplate } from "../src/DeploymentTemplate";
-import { ReferenceInVariableDefinitionJSONVisitor } from "../src/DeploymentTemplate";
-import { Histogram } from "../src/Histogram";
-import { IncorrectArgumentsCountIssue } from "../src/IncorrectArgumentsCountIssue";
-import { ParameterDefinition } from "../src/ParameterDefinition";
-import { UnrecognizedFunctionIssue } from "../src/UnrecognizedFunctionIssue";
+import { DeploymentTemplate, Histogram, IncorrectArgumentsCountIssue, Json, Language, ParameterDefinition, Reference, ReferenceInVariableDefinitionJSONVisitor, UnrecognizedFunctionIssue } from "../extension.bundle";
 
 suite("DeploymentTemplate", () => {
     suite("constructor(string)", () => {
@@ -72,7 +62,7 @@ suite("DeploymentTemplate", () => {
             assert(pd0);
             assert.deepStrictEqual(pd0.name.toString(), "num");
             assert.deepStrictEqual(pd0.description, null);
-            assert.deepStrictEqual(pd0.span, new language.Span(18, 27));
+            assert.deepStrictEqual(pd0.span, new Language.Span(18, 27));
             assert.equal(null, dt.schemaUri);
         });
 
@@ -86,7 +76,7 @@ suite("DeploymentTemplate", () => {
             assert(pd0);
             assert.deepStrictEqual(pd0.name.toString(), "num");
             assert.deepStrictEqual(pd0.description, null);
-            assert.deepStrictEqual(pd0.span, new language.Span(18, 64));
+            assert.deepStrictEqual(pd0.span, new Language.Span(18, 64));
             assert.equal(null, dt.schemaUri);
         });
 
@@ -100,7 +90,7 @@ suite("DeploymentTemplate", () => {
             assert(pd0);
             assert.deepStrictEqual(pd0.name.toString(), "num");
             assert.deepStrictEqual(pd0.description, "");
-            assert.deepStrictEqual(pd0.span, new language.Span(18, 62));
+            assert.deepStrictEqual(pd0.span, new Language.Span(18, 62));
             assert.equal(null, dt.schemaUri);
         });
 
@@ -114,7 +104,7 @@ suite("DeploymentTemplate", () => {
             assert(pd0);
             assert.deepStrictEqual(pd0.name.toString(), "num");
             assert.deepStrictEqual(pd0.description, "num description");
-            assert.deepStrictEqual(pd0.span, new language.Span(18, 77));
+            assert.deepStrictEqual(pd0.span, new Language.Span(18, 77));
             assert.equal(null, dt.schemaUri);
         });
 
@@ -135,7 +125,7 @@ suite("DeploymentTemplate", () => {
 
             const variableDefinition: Json.StringValue = Json.asStringValue(dt.variableDefinitions[0].value);
             assert(variableDefinition);
-            assert.deepStrictEqual(variableDefinition.span, new language.Span(22, 3));
+            assert.deepStrictEqual(variableDefinition.span, new Language.Span(22, 3));
             assert.deepStrictEqual(variableDefinition.toString(), "A");
 
             assert.equal(null, dt.schemaUri);
@@ -150,13 +140,13 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual(dt.variableDefinitions[0].name.toString(), "a");
             const a: Json.StringValue = Json.asStringValue(dt.variableDefinitions[0].value);
             assert(a);
-            assert.deepStrictEqual(a.span, new language.Span(22, 3));
+            assert.deepStrictEqual(a.span, new Language.Span(22, 3));
             assert.deepStrictEqual(a.toString(), "A");
 
             assert.deepStrictEqual(dt.variableDefinitions[1].name.toString(), "b");
             const b: Json.NumberValue = Json.asNumberValue(dt.variableDefinitions[1].value);
             assert(b);
-            assert.deepStrictEqual(b.span, new language.Span(32, 1));
+            assert.deepStrictEqual(b.span, new Language.Span(32, 1));
 
             assert.equal(null, dt.schemaUri);
         });
@@ -199,21 +189,21 @@ suite("DeploymentTemplate", () => {
     suite("errors", () => {
         test("with empty deployment template", () => {
             const dt = new DeploymentTemplate("", "id");
-            return dt.errors.then((errors: language.Issue[]) => {
+            return dt.errors.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, []);
             });
         });
 
         test("with empty object deployment template", () => {
             const dt = new DeploymentTemplate("{}", "id");
-            return dt.errors.then((errors: language.Issue[]) => {
+            return dt.errors.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, []);
             });
         });
 
         test("with one property deployment template", () => {
             const dt = new DeploymentTemplate("{ 'name': 'value' }", "id");
-            return dt.errors.then((errors: language.Issue[]) => {
+            return dt.errors.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, []);
             });
         });
@@ -221,9 +211,9 @@ suite("DeploymentTemplate", () => {
         test("with one TLE parse error deployment template", () => {
             const dt = new DeploymentTemplate("{ 'name': '[concat()' }", "id");
             const expectedErrors = [
-                new language.Issue(new language.Span(20, 1), "Expected a right square bracket (']').")
+                new Language.Issue(new Language.Span(20, 1), "Expected a right square bracket (']').")
             ];
-            return dt.errors.then((errors: language.Issue[]) => {
+            return dt.errors.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, expectedErrors);
             });
         });
@@ -231,9 +221,9 @@ suite("DeploymentTemplate", () => {
         test("with one undefined parameter error deployment template", () => {
             const dt = new DeploymentTemplate("{ 'name': '[parameters(\"test\")]' }", "id");
             const expectedErrors = [
-                new language.Issue(new language.Span(23, 6), "Undefined parameter reference: \"test\"")
+                new Language.Issue(new Language.Span(23, 6), "Undefined parameter reference: \"test\"")
             ];
-            return dt.errors.then((errors: language.Issue[]) => {
+            return dt.errors.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, expectedErrors);
             });
         });
@@ -241,9 +231,9 @@ suite("DeploymentTemplate", () => {
         test("with one undefined variable error deployment template", () => {
             const dt = new DeploymentTemplate("{ 'name': '[variables(\"test\")]' }", "id");
             const expectedErrors = [
-                new language.Issue(new language.Span(22, 6), "Undefined variable reference: \"test\"")
+                new Language.Issue(new Language.Span(22, 6), "Undefined variable reference: \"test\"")
             ];
-            return dt.errors.then((errors: language.Issue[]) => {
+            return dt.errors.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, expectedErrors);
             });
         });
@@ -251,83 +241,83 @@ suite("DeploymentTemplate", () => {
         test("with one unrecognized function error deployment template", () => {
             const dt = new DeploymentTemplate("{ 'name': '[blah(\"test\")]' }", "id");
             const expectedErrors = [
-                new UnrecognizedFunctionIssue(new language.Span(12, 4), "blah")
+                new UnrecognizedFunctionIssue(new Language.Span(12, 4), "blah")
             ];
-            return dt.errors.then((errors: language.Issue[]) => {
+            return dt.errors.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, expectedErrors);
             });
         });
 
         test("with reference() call in variable definition", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "[reference('test')]" } }`, "id");
-            return dt.errors.then((errors: language.Issue[]) => {
+            return dt.errors.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
-                    [new language.Issue(new language.Span(24, 9), "reference() cannot be invoked inside of a variable definition.")]
+                    [new Language.Issue(new Language.Span(24, 9), "reference() cannot be invoked inside of a variable definition.")]
                 );
             });
         });
 
         test("with reference() call inside a different expression in a variable definition", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "[concat(reference('test'))]" } }`, "id");
-            return dt.errors.then((errors: language.Issue[]) => {
+            return dt.errors.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
-                    [new language.Issue(new language.Span(31, 9), "reference() cannot be invoked inside of a variable definition.")]);
+                    [new Language.Issue(new Language.Span(31, 9), "reference() cannot be invoked inside of a variable definition.")]);
             });
         });
 
         test("with unnamed property access on variable reference", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": {} }, "z": "[variables('a').]" }`, "id");
-            return dt.errors.then((errors: language.Issue[]) => {
+            return dt.errors.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
-                    [new language.Issue(new language.Span(50, 1), "Expected a literal value.")]);
+                    [new Language.Issue(new Language.Span(50, 1), "Expected a literal value.")]);
             });
         });
 
         test("with property access on variable reference without variable name", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": {} }, "z": "[variables().b]" }`, "id");
-            return dt.errors.then((errors: language.Issue[]) => {
+            return dt.errors.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
-                    [new IncorrectArgumentsCountIssue(new language.Span(35, 11), "The function 'variables' takes 1 argument.", "variables", 0, 1, 1)]);
+                    [new IncorrectArgumentsCountIssue(new Language.Span(35, 11), "The function 'variables' takes 1 argument.", "variables", 0, 1, 1)]);
             });
         });
 
         test("with property access on string variable reference", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "A" }, "z": "[variables('a').b]" }`, "id");
-            return dt.errors.then((errors: language.Issue[]) => {
+            return dt.errors.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
-                    [new language.Issue(new language.Span(51, 1), `Property "b" is not a defined property of "variables('a')".`)]);
+                    [new Language.Issue(new Language.Span(51, 1), `Property "b" is not a defined property of "variables('a')".`)]);
             });
         });
 
         test("with undefined variable reference child property", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": {} }, "z": "[variables('a').b]" }`, "id");
-            return dt.errors.then((errors: language.Issue[]) => {
+            return dt.errors.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
-                    [new language.Issue(new language.Span(50, 1), `Property "b" is not a defined property of "variables('a')".`)]);
+                    [new Language.Issue(new Language.Span(50, 1), `Property "b" is not a defined property of "variables('a')".`)]);
             });
         });
 
         test("with undefined variable reference grandchild property", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": { "b": {} } }, "z": "[variables('a').b.c]" }`, "id");
-            return dt.errors.then((errors: language.Issue[]) => {
+            return dt.errors.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
-                    [new language.Issue(new language.Span(61, 1), `Property "c" is not a defined property of "variables('a').b".`)]);
+                    [new Language.Issue(new Language.Span(61, 1), `Property "c" is not a defined property of "variables('a').b".`)]);
             });
         });
 
         test("with undefined variable reference child and grandchild properties", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": { "d": {} } }, "z": "[variables('a').b.c]" }`, "id");
-            return dt.errors.then((errors: language.Issue[]) => {
+            return dt.errors.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
-                    [new language.Issue(new language.Span(59, 1), `Property "b" is not a defined property of "variables('a')".`)]);
+                    [new Language.Issue(new Language.Span(59, 1), `Property "b" is not a defined property of "variables('a')".`)]);
             });
         });
     });
@@ -337,7 +327,7 @@ suite("DeploymentTemplate", () => {
             const dt = new DeploymentTemplate(`{ "parameters": { "a": {} } }`, "id");
             assert.deepStrictEqual(
                 dt.warnings,
-                [new language.Issue(new language.Span(18, 3), "The parameter 'a' is never used.")]);
+                [new Language.Issue(new Language.Span(18, 3), "The parameter 'a' is never used.")]);
         });
 
         test("with no unused parameters", () => {
@@ -350,7 +340,7 @@ suite("DeploymentTemplate", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "A" } }`, "id");
             assert.deepStrictEqual(
                 dt.warnings,
-                [new language.Issue(new language.Span(17, 3), "The variable 'a' is never used.")]);
+                [new Language.Issue(new Language.Span(17, 3), "The variable 'a' is never used.")]);
         });
 
         test("with no unused variables", () => {
@@ -456,7 +446,7 @@ suite("DeploymentTemplate", () => {
             assert(pd0);
             assert.deepStrictEqual(pd0.name.toString(), "a");
             assert.deepStrictEqual(pd0.description, null);
-            assert.deepStrictEqual(pd0.span, new language.Span(18, 7));
+            assert.deepStrictEqual(pd0.span, new Language.Span(18, 7));
         });
 
         test("with parameter with metadata but no description", () => {
@@ -468,7 +458,7 @@ suite("DeploymentTemplate", () => {
             assert(pd0);
             assert.deepStrictEqual(pd0.name.toString(), "a");
             assert.deepStrictEqual(pd0.description, null);
-            assert.deepStrictEqual(pd0.span, new language.Span(18, 23));
+            assert.deepStrictEqual(pd0.span, new Language.Span(18, 23));
         });
 
         test("with parameter with metadata and description", () => {
@@ -480,7 +470,7 @@ suite("DeploymentTemplate", () => {
             assert(pd0);
             assert.deepStrictEqual(pd0.name.toString(), "a");
             assert.deepStrictEqual(pd0.description, "b");
-            assert.deepStrictEqual(pd0.span, new language.Span(18, 43));
+            assert.deepStrictEqual(pd0.span, new Language.Span(18, 43));
         });
     });
 
@@ -526,9 +516,9 @@ suite("DeploymentTemplate", () => {
             assert(apples);
             assert.deepStrictEqual(apples.name.toString(), "apples");
             assert.deepStrictEqual(apples.description, null);
-            assert.deepStrictEqual(apples.span, new language.Span(18, 30));
-            assert.deepStrictEqual(apples.name.span, new language.Span(18, 8), "Wrong name.span");
-            assert.deepStrictEqual(apples.name.unquotedSpan, new language.Span(19, 6), "Wrong name.unquotedSpan");
+            assert.deepStrictEqual(apples.span, new Language.Span(18, 30));
+            assert.deepStrictEqual(apples.name.span, new Language.Span(18, 8), "Wrong name.span");
+            assert.deepStrictEqual(apples.name.unquotedSpan, new Language.Span(19, 6), "Wrong name.unquotedSpan");
         });
 
         test("with one-sided-quote match", () => {
@@ -537,7 +527,7 @@ suite("DeploymentTemplate", () => {
             assert(apples);
             assert.deepStrictEqual(apples.name.toString(), "apples");
             assert.deepStrictEqual(apples.description, null);
-            assert.deepStrictEqual(apples.span, new language.Span(18, 30));
+            assert.deepStrictEqual(apples.span, new Language.Span(18, 30));
         });
 
         test("with quoted match", () => {
@@ -546,7 +536,7 @@ suite("DeploymentTemplate", () => {
             assert(apples);
             assert.deepStrictEqual(apples.name.toString(), "apples");
             assert.deepStrictEqual(apples.description, null);
-            assert.deepStrictEqual(apples.span, new language.Span(18, 30));
+            assert.deepStrictEqual(apples.span, new Language.Span(18, 30));
         });
 
         test("with case insensitive match", () => {
@@ -555,7 +545,7 @@ suite("DeploymentTemplate", () => {
             assert(apples);
             assert.deepStrictEqual(apples.name.toString(), "apples");
             assert.deepStrictEqual(apples.description, null);
-            assert.deepStrictEqual(apples.span, new language.Span(18, 30));
+            assert.deepStrictEqual(apples.span, new Language.Span(18, 30));
         });
 
         test("with case sensitive and insensitive match", () => {
@@ -564,13 +554,13 @@ suite("DeploymentTemplate", () => {
             assert(APPLES);
             assert.deepStrictEqual(APPLES.name.toString(), "APPLES");
             assert.deepStrictEqual(APPLES.description, null);
-            assert.deepStrictEqual(APPLES.span, new language.Span(50, 31));
+            assert.deepStrictEqual(APPLES.span, new Language.Span(50, 31));
 
             const apples: ParameterDefinition = dt.getParameterDefinition("'APPles'");
             assert(apples);
             assert.deepStrictEqual(apples.name.toString(), "apples");
             assert.deepStrictEqual(apples.description, null);
-            assert.deepStrictEqual(apples.span, new language.Span(18, 30));
+            assert.deepStrictEqual(apples.span, new Language.Span(18, 30));
         });
     });
 
@@ -596,13 +586,13 @@ suite("DeploymentTemplate", () => {
             assert(match0);
             assert.deepStrictEqual(match0.name.toString(), "apples");
             assert.deepStrictEqual(match0.description, null);
-            assert.deepStrictEqual(match0.span, new language.Span(18, 30));
+            assert.deepStrictEqual(match0.span, new Language.Span(18, 30));
 
             const match1: ParameterDefinition = matches[1];
             assert(match1);
             assert.deepStrictEqual(match1.name.toString(), "bananas");
             assert.deepStrictEqual(match1.description, null);
-            assert.deepStrictEqual(match1.span, new language.Span(50, 32));
+            assert.deepStrictEqual(match1.span, new Language.Span(50, 32));
         });
 
         test("with prefix of one of the parameters", () => {
@@ -616,7 +606,7 @@ suite("DeploymentTemplate", () => {
             assert(match0);
             assert.deepStrictEqual(match0.name.toString(), "apples");
             assert.deepStrictEqual(match0.description, null);
-            assert.deepStrictEqual(match0.span, new language.Span(18, 30));
+            assert.deepStrictEqual(match0.span, new Language.Span(18, 30));
         });
 
         test("with prefix of none of the parameters", () => {
@@ -635,7 +625,7 @@ suite("DeploymentTemplate", () => {
             assert(match0);
             assert.deepStrictEqual(match0.name.toString(), "apples");
             assert.deepStrictEqual(match0.description, null);
-            assert.deepStrictEqual(match0.span, new language.Span(18, 30));
+            assert.deepStrictEqual(match0.span, new Language.Span(18, 30));
         });
 
         test("with case sensitive and insensitive match", () => {
@@ -649,13 +639,13 @@ suite("DeploymentTemplate", () => {
             assert(match0);
             assert.deepStrictEqual(match0.name.toString(), "apples");
             assert.deepStrictEqual(match0.description, null);
-            assert.deepStrictEqual(match0.span, new language.Span(18, 30));
+            assert.deepStrictEqual(match0.span, new Language.Span(18, 30));
 
             const match1: ParameterDefinition = matches[1];
             assert(match1);
             assert.deepStrictEqual(match1.name.toString(), "APPLES");
             assert.deepStrictEqual(match1.description, null);
-            assert.deepStrictEqual(match1.span, new language.Span(50, 31));
+            assert.deepStrictEqual(match1.span, new Language.Span(50, 31));
         });
     });
 
@@ -704,7 +694,7 @@ suite("DeploymentTemplate", () => {
 
             const value: Json.Value = Json.asStringValue(apples.value);
             assert(value);
-            assert.deepStrictEqual(value.span, new language.Span(27, 5));
+            assert.deepStrictEqual(value.span, new Language.Span(27, 5));
             assert.deepStrictEqual(value.toString(), "yum");
         });
 
@@ -717,7 +707,7 @@ suite("DeploymentTemplate", () => {
 
             const value: Json.StringValue = Json.asStringValue(apples.value);
             assert(value);
-            assert.deepStrictEqual(value.span, new language.Span(27, 5));
+            assert.deepStrictEqual(value.span, new Language.Span(27, 5));
             assert.deepStrictEqual(value.toString(), "yum");
         });
 
@@ -730,7 +720,7 @@ suite("DeploymentTemplate", () => {
 
             const value: Json.StringValue = Json.asStringValue(apples.value);
             assert(value);
-            assert.deepStrictEqual(value.span, new language.Span(27, 5));
+            assert.deepStrictEqual(value.span, new Language.Span(27, 5));
             assert.deepStrictEqual(value.toString(), "yum");
         });
 
@@ -743,7 +733,7 @@ suite("DeploymentTemplate", () => {
 
             const value: Json.StringValue = Json.asStringValue(apples.value);
             assert(value);
-            assert.deepStrictEqual(value.span, new language.Span(27, 5));
+            assert.deepStrictEqual(value.span, new Language.Span(27, 5));
             assert.deepStrictEqual(value.toString(), "yum");
         });
 
@@ -756,7 +746,7 @@ suite("DeploymentTemplate", () => {
 
             const APPLESvalue: Json.StringValue = Json.asStringValue(APPLES.value);
             assert(APPLESvalue);
-            assert.deepStrictEqual(APPLESvalue.span, new language.Span(44, 6));
+            assert.deepStrictEqual(APPLESvalue.span, new Language.Span(44, 6));
             assert.deepStrictEqual(APPLESvalue.toString(), "good");
 
             const apples: Json.Property = dt.getVariableDefinition("'APPles'");
@@ -765,7 +755,7 @@ suite("DeploymentTemplate", () => {
 
             const value: Json.StringValue = Json.asStringValue(apples.value);
             assert(value);
-            assert.deepStrictEqual(value.span, new language.Span(27, 5));
+            assert.deepStrictEqual(value.span, new Language.Span(27, 5));
             assert.deepStrictEqual(value.toString(), "yum");
         });
     });
@@ -791,13 +781,13 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual(apples.name.toString(), "apples");
             const applesValue: Json.StringValue = Json.asStringValue(apples.value);
             assert(applesValue);
-            assert.deepStrictEqual(applesValue.span, new language.Span(27, 8));
+            assert.deepStrictEqual(applesValue.span, new Language.Span(27, 8));
             assert.deepStrictEqual(applesValue.toString(), "APPLES");
 
             const bananas: Json.Property = definitions[1];
             assert.deepStrictEqual(bananas.name.toString(), "bananas");
             const bananasValue: Json.NumberValue = Json.asNumberValue(bananas.value);
-            assert.deepStrictEqual(bananasValue.span, new language.Span(48, 2));
+            assert.deepStrictEqual(bananasValue.span, new Language.Span(48, 2));
         });
 
         test("with prefix of one of the variables", () => {
@@ -810,7 +800,7 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual(apples.name.toString(), "apples");
             const applesValue: Json.StringValue = Json.asStringValue(apples.value);
             assert(applesValue);
-            assert.deepStrictEqual(applesValue.span, new language.Span(27, 8));
+            assert.deepStrictEqual(applesValue.span, new Language.Span(27, 8));
             assert.deepStrictEqual(applesValue.toString(), "APPLES");
         });
 
@@ -879,7 +869,7 @@ suite("DeploymentTemplate", () => {
             const list: Reference.List = dt.findReferences(Reference.ReferenceKind.Parameter, "pName");
             assert(list);
             assert.deepStrictEqual(list.kind, Reference.ReferenceKind.Parameter);
-            assert.deepStrictEqual(list.spans, [new language.Span(19, 5)]);
+            assert.deepStrictEqual(list.spans, [new Language.Span(19, 5)]);
         });
 
         test("with variable type and no matching variable definition", () => {
@@ -895,7 +885,7 @@ suite("DeploymentTemplate", () => {
             const list: Reference.List = dt.findReferences(Reference.ReferenceKind.Variable, "vName");
             assert(list);
             assert.deepStrictEqual(list.kind, Reference.ReferenceKind.Variable);
-            assert.deepStrictEqual(list.spans, [new language.Span(18, 5)]);
+            assert.deepStrictEqual(list.spans, [new Language.Span(18, 5)]);
         });
     });
 });
@@ -946,7 +936,7 @@ suite("ReferenceInVariableDefinitionJSONVisitor", () => {
             const tle: Json.StringValue = Json.asStringValue(variablesObject.getPropertyValue("a"));
 
             visitor.visitStringValue(tle);
-            assert.deepStrictEqual(visitor.referenceSpans, [new language.Span(24, 9)]);
+            assert.deepStrictEqual(visitor.referenceSpans, [new Language.Span(24, 9)]);
         });
 
         test("with TLE string with reference() call inside concat() call", () => {
@@ -957,7 +947,7 @@ suite("ReferenceInVariableDefinitionJSONVisitor", () => {
             const tle: Json.StringValue = Json.asStringValue(variablesObject.getPropertyValue("a"));
 
             visitor.visitStringValue(tle);
-            assert.deepStrictEqual(visitor.referenceSpans, [new language.Span(31, 9)]);
+            assert.deepStrictEqual(visitor.referenceSpans, [new Language.Span(31, 9)]);
         });
     });
 });

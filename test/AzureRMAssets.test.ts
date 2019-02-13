@@ -8,7 +8,7 @@ import * as assert from "assert";
 
 import { networkTest } from "./networkTest";
 
-import { AzureRMAssets, FunctionMetadata, FunctionsMetadata, VersionRedirect } from "../src/AzureRMAssets";
+import { AzureRMAssets, FunctionMetadata, FunctionsMetadata } from "../extension.bundle";
 import { SurveyMetadata } from "../src/SurveyMetadata";
 
 suite("AzureRMAssets", () => {

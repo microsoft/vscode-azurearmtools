@@ -6,8 +6,7 @@
 // tslint:disable:no-http-string
 
 import * as assert from "assert";
-
-import * as Utilities from "../src/Utilities";
+import { Utilities } from "../extension.bundle";
 
 suite("Utilities", () => {
     suite("clone(any)", () => {

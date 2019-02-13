@@ -5,9 +5,7 @@
 // tslint:disable:max-func-body-length
 
 import * as assert from "assert";
-
-import { SurveyMetadata } from "../src/SurveyMetadata";
-import { SurveySettings } from "../src/SurveySettings";
+import { SurveyMetadata, SurveySettings } from '../extension.bundle';
 
 // tslint:disable-next-line:no-suspicious-comment
 // TODO: Re-enable as part of https://github.com/Microsoft/vscode-azurearmtools/issues/51

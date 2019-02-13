@@ -60,17 +60,21 @@
       ]
     }
   },
-  "main": "./out/src/AzureRMTools",
+  "main": "main",
   "scripts": {
+    "vscode:prepublish": "npm run webpack-prod",
     "compile": "tsc -watch -p ./",
     "build": "tsc -p ./",
     "package": "vsce package",
     "lint": "tslint --project tsconfig.json -t verbose",
     "lint-fix": "tslint --project tsconfig.json -t verbose --fix",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "pretest": "npm run build",
+    "pretest": "npm run build && npm run webpack-prod",
     "test": "gulp test",
-    "all": "npm i && npm run lint && npm test"
+    "all": "npm i && npm run lint && npm test",
+    "webpack": "gulp webpack-dev",
+    "webpack-prod": "gulp webpack-prod",
+    "webpack-profile": "webpack --profile --json --mode production > webpack-stats.json && echo Use http://webpack.github.io/analyse to analyze the stats"
   },
   "devDependencies": {
     "@types/applicationinsights": "^0.15.33",
@@ -86,15 +90,17 @@
     "ts-node": "^7.0.1",
     "tslint": "^5.12.1",
     "tslint-microsoft-contrib": "5.0.3",
-    "typescript": "^2.0.3",
+    "typescript": "^3.3.3",
     "vsce": "^1.55.0",
-    "vscode": "^1.1.28"
+    "vscode": "^1.1.28",
+    "vscode-azureextensiondev": "0.1.8",
+    "webpack": "4.28.1",
+    "webpack-cli": "^3.1.2"
   },
   "dependencies": {
     "applicationinsights": "0.21.0",
     "moment": "^2.24.0",
     "opn": "^5.4.0",
-    "vscode-azureextensionui": "~0.12.0",
-    "vscode-extension-telemetry": "^0.0.15"
+    "vscode-azureextensionui": "~0.20.0"
   }
 }
