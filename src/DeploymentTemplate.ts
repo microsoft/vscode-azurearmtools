@@ -116,8 +116,9 @@ export class DeploymentTemplate {
 
     public get errors(): Promise<language.Issue[]> {
         if (this._errors === undefined) {
-            this._errors = AzureRMAssets.getFunctionsMetadata()
-                .then((functions: FunctionsMetadata) => {
+            this._errors = new Promise<language.Issue[]>(async (resolve, reject) => {
+                try {
+                    let functions: FunctionsMetadata = await AzureRMAssets.getFunctionsMetadata();
                     const parseErrors: language.Issue[] = [];
                     for (const jsonQuotedStringToken of this.jsonQuotedStringTokens) {
                         const jsonTokenStartIndex: number = jsonQuotedStringToken.span.startIndex;
@@ -164,9 +165,13 @@ export class DeploymentTemplate {
                         }
                     }
 
-                    return parseErrors;
-                });
+                    resolve(parseErrors);
+                } catch (err) {
+                    reject(err);
+                }
+            });
         }
+
         return this._errors;
     }
 

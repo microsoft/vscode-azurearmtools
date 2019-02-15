@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:max-func-body-length
+// tslint:disable:max-func-body-length align
 
 import * as assert from "assert";
 import * as path from "path";
@@ -51,7 +51,7 @@ suite("TreeView", async (): Promise<void> => {
                 assert.equal(!!extension, true, "Extension not found");
                 await extension.activate();
                 provider = ext.jsonOutlineProvider;
-                assert.equal(!!provider, true, "JSON outlin provider not found");
+                assert.equal(!!provider, true, "JSON outline provider not found");
             }
 
             mySetup().then(done, () => { assert.fail("Setup failed"); });
@@ -1519,7 +1519,7 @@ suite("TreeView", async (): Promise<void> => {
                 }                        `;
 
             await testTree(templateNewVM,
-                           [
+                [
                     {
                         label: "$schema: http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                         collapsibleState: 0,
@@ -3011,7 +3011,7 @@ suite("TreeView", async (): Promise<void> => {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 true: false
             }`,
-                           [
+                [
                     {
                         label: "$schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                         collapsibleState: 0,
@@ -3030,7 +3030,7 @@ suite("TreeView", async (): Promise<void> => {
                     "true: false
                 }
             }`,
-                           [
+                [
                     {
                         label: "$schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                         collapsibleState: 0,
