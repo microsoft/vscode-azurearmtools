@@ -54,7 +54,7 @@
       "explorer": [
         {
           "id": "json-outline",
-          "name": "JSON Outline",
+          "name": "ARM Template Outline",
           "when": "showArmJsonView"
         }
       ]
