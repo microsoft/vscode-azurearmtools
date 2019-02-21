@@ -214,7 +214,7 @@ export class AzureRMTools {
         const me = this;
 
         // Don't wait
-        callWithTelemetryAndErrorHandling('reportDeploymentTemplateErrors', async function (this: IActionContext) {
+        let dontWait = callWithTelemetryAndErrorHandling('reportDeploymentTemplateErrors', async function (this: IActionContext) {
             this.suppressTelemetry = true;
 
             let parseErrors: language.Issue[] = await deploymentTemplate.errors;

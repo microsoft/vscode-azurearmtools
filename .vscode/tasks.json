@@ -18,6 +18,13 @@
             "type": "npm",
             "script": "lint",
             "problemMatcher": "$tslint5"
+        },
+        {
+            "type": "npm",
+            "script": "all",
+            "problemMatcher": [
+                "$eslint-compact"
+            ]
         }
     ]
 }

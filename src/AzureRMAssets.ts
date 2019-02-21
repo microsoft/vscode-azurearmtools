@@ -18,7 +18,7 @@ export class AzureRMAssets {
     // For test dependency injection only
     public static setFunctionsMetadata(metadataString: string): void {
         AzureRMAssets._functionsMetadataPromise = new Promise<FunctionsMetadata>(async (resolve, reject) => {
-            let array = await FunctionMetadata.fromString(metadataString);
+            let array = FunctionMetadata.fromString(metadataString);
             resolve(new FunctionsMetadata(array));
         });
     }
@@ -29,7 +29,7 @@ export class AzureRMAssets {
                 try {
                     let uri = AzureRMAssets.getFunctionMetadataUri();
                     let contents = await AzureRMAssets.readFile(uri);
-                    let array: FunctionMetadata[] = await FunctionMetadata.fromString(contents);
+                    let array: FunctionMetadata[] = FunctionMetadata.fromString(contents);
                     resolve(new FunctionsMetadata(array));
                 } catch (err) {
                     reject(err);
@@ -67,9 +67,9 @@ export class AzureRMAssets {
     public static async getSurveyMetadata(): Promise<SurveyMetadata> {
         if (AzureRMAssets._surveyMetadataPromise === undefined) {
             AzureRMAssets._surveyMetadataPromise = new Promise<SurveyMetadata>(async (resolve, reject) => {
-                let uri = await AzureRMAssets.getSurveyMetadataUri();
+                let uri = AzureRMAssets.getSurveyMetadataUri();
                 let contents = await AzureRMAssets.readFile(uri);
-                let data = await SurveyMetadata.fromString(contents);
+                let data = SurveyMetadata.fromString(contents);
                 resolve(data);
             });
         }
