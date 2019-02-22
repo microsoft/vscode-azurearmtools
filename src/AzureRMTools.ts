@@ -5,12 +5,11 @@
 // tslint:disable:promise-function-async // Grandfathered in
 
 import * as assert from "assert";
-import * as fs from "fs";
 import opn = require("opn");
 import * as os from "os";
 import * as path from "path";
 import * as vscode from "vscode";
-import { AzureUserInput, callWithTelemetryAndErrorHandling, createTelemetryReporter, IActionContext, IParsedError, parseError, registerUIExtensionVariables, TelemetryMeasurements, TelemetryProperties } from "vscode-azureextensionui";
+import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createTelemetryReporter, IActionContext, IParsedError, parseError, registerUIExtensionVariables, TelemetryMeasurements, TelemetryProperties, UserCancelledError } from "vscode-azureextensionui";
 import { AzureRMAssets } from "./AzureRMAssets";
 import * as Completion from "./Completion";
 import { DeploymentTemplate } from "./DeploymentTemplate";
@@ -18,7 +17,6 @@ import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
 import * as Hover from "./Hover";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
-import * as Json from "./JSON";
 import * as language from "./Language";
 import { PositionContext } from "./PositionContext";
 import * as Reference from "./Reference";
@@ -91,38 +89,36 @@ export class AzureRMTools {
         context.subscriptions.push(vscode.window.registerTreeDataProvider("json-outline", jsonOutline));
         context.subscriptions.push(vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => jsonOutline.goToDefinition(range)));
 
-        this.log("Extension Activated");
+        const jsonFileSubscriptionArray: vscode.Disposable[] = [];
 
-        this.logOnError(() => {
-            const jsonFileSubscriptionArray: vscode.Disposable[] = [];
+        vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, jsonFileSubscriptionArray);
 
-            vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, jsonFileSubscriptionArray);
+        vscode.workspace.onDidChangeConfiguration(this.loadConfiguration, this, jsonFileSubscriptionArray);
 
-            vscode.workspace.onDidChangeConfiguration(this.loadConfiguration, this, jsonFileSubscriptionArray);
+        vscode.workspace.onDidOpenTextDocument(this.onDocumentOpened, this, jsonFileSubscriptionArray);
+        vscode.workspace.onDidChangeTextDocument(this.onDocumentChanged, this, jsonFileSubscriptionArray);
+        vscode.workspace.onDidSaveTextDocument(this.onDocumentSaved, this, jsonFileSubscriptionArray);
 
-            vscode.workspace.onDidOpenTextDocument(this.onDocumentOpened, this, jsonFileSubscriptionArray);
-            vscode.workspace.onDidChangeTextDocument(this.onDocumentChanged, this, jsonFileSubscriptionArray);
-            vscode.workspace.onDidSaveTextDocument(this.onDocumentSaved, this, jsonFileSubscriptionArray);
+        this._jsonFileSubscriptions = vscode.Disposable.from(...jsonFileSubscriptionArray);
 
-            this._jsonFileSubscriptions = vscode.Disposable.from(...jsonFileSubscriptionArray);
-
-            const activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
-            if (activeEditor) {
-                this.updateDeploymentTemplate(activeEditor.document);
-            }
-        });
+        const activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
+        if (activeEditor) {
+            this.updateDeploymentTemplate(activeEditor.document);
+        }
     }
 
     public dispose(): void {
-        this.logOnError(() => {
-            if (this._deploymentTemplateFileSubscriptions) {
-                this._deploymentTemplateFileSubscriptions.dispose();
+        const me = this;
+        callWithTelemetryAndErrorHandlingSync('dispose', function (this: IActionContext) {
+            this.properties.isActivationEvent = 'true';
+            this.suppressErrorDisplay = true;
+
+            if (me._deploymentTemplateFileSubscriptions) {
+                me._deploymentTemplateFileSubscriptions.dispose();
             }
 
-            this._jsonFileSubscriptions.dispose();
+            me._jsonFileSubscriptions.dispose();
         });
-
-        this.log("Extension Deactivated");
     }
 
     private getDeploymentTemplate(document: vscode.TextDocument): DeploymentTemplate {
@@ -136,7 +132,16 @@ export class AzureRMTools {
     }
 
     private updateDeploymentTemplate(document: vscode.TextDocument): void {
-        if (document) {
+        if (!document) {
+            return;
+        }
+
+        const me = this;
+        callWithTelemetryAndErrorHandlingSync('updateDeploymentTemplate', function (this: IActionContext) {
+            this.suppressErrorDisplay = true;
+            this.suppressTelemetry = true;
+            this.properties.isActivationEvent = 'true';
+
             let foundDeploymentTemplate = false;
 
             if (document.getText() &&
@@ -148,14 +153,14 @@ export class AzureRMTools {
                 // If the documentUri is not in our dictionary of deployment templates, then we
                 // know that this document was opened (as opposed to changed/updated).
                 let stopwatch: Stopwatch;
-                if (!this._deploymentTemplates[documentUri]) {
+                if (!me._deploymentTemplates[documentUri]) {
                     stopwatch = new Stopwatch();
                     stopwatch.start();
                 }
 
                 let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(document.getText(), documentUri);
                 if (deploymentTemplate.hasValidSchemaUri()) {
-                    let surveyInfo: SurveyInfo = this.updateSurveySettingsFromOpeningTemplate();
+                    let surveyInfo: SurveyInfo = me.updateSurveySettingsFromOpeningTemplate();
 
                     // If this is the first deployment template to be opened,
                     // then we need to register all of our deployment template
@@ -164,11 +169,11 @@ export class AzureRMTools {
                     // performance impact that might occur if these events
                     // are fired for all JSON files, not just deployment
                     // templates.
-                    if (Object.keys(this._deploymentTemplates).length === 0) {
-                        this.initializeExtension(surveyInfo);
+                    if (Object.keys(me._deploymentTemplates).length === 0) {
+                        me.initializeExtension(surveyInfo);
                     }
 
-                    this._deploymentTemplates[documentUri] = deploymentTemplate;
+                    me._deploymentTemplates[documentUri] = deploymentTemplate;
                     foundDeploymentTemplate = true;
 
                     // We only initialized the stopwatch if the deployment template was being
@@ -176,7 +181,7 @@ export class AzureRMTools {
                     // template is being edited.
                     if (stopwatch) {
                         stopwatch.stop();
-                        this.log(
+                        ext.reporter.sendTelemetryEvent(
                             "Deployment Template Opened",
                             {
                             },
@@ -185,10 +190,10 @@ export class AzureRMTools {
                                 parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds
                             });
 
-                        this.logFunctionCounts(deploymentTemplate);
+                        me.logFunctionCounts(deploymentTemplate);
                     }
 
-                    this.reportDeploymentTemplateErrors(document, deploymentTemplate);
+                    me.reportDeploymentTemplateErrors(document, deploymentTemplate);
                 }
             }
 
@@ -201,30 +206,31 @@ export class AzureRMTools {
                 // template (the $schema property changed to not be a
                 // deployment template schema). In either case, we should
                 // remove the deployment template from our cache.
-                this.closeDeploymentTemplate(document);
+                me.closeDeploymentTemplate(document);
             }
-        }
+        });
     }
 
     private reportDeploymentTemplateErrors(document: vscode.TextDocument, deploymentTemplate: DeploymentTemplate): void {
-        deploymentTemplate.errors
-            .then((parseErrors: language.Issue[]) => {
-                const diagnostics: vscode.Diagnostic[] = [];
+        const me = this;
 
-                for (const error of parseErrors) {
-                    diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentTemplate, error, vscode.DiagnosticSeverity.Error));
-                }
+        // Don't wait
+        let dontWait = callWithTelemetryAndErrorHandling('reportDeploymentTemplateErrors', async function (this: IActionContext) {
+            this.suppressTelemetry = true;
 
-                for (const warning of deploymentTemplate.warnings) {
-                    diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentTemplate, warning, vscode.DiagnosticSeverity.Warning));
-                }
+            let parseErrors: language.Issue[] = await deploymentTemplate.errors;
+            const diagnostics: vscode.Diagnostic[] = [];
 
-                this._diagnosticsCollection.set(document.uri, diagnostics);
-            })
-            // tslint:disable-next-line:no-any
-            .catch((error: any) => {
-                this.logError("UnhandledError", error);
-            });
+            for (const error of parseErrors) {
+                diagnostics.push(me.getVSCodeDiagnosticFromIssue(deploymentTemplate, error, vscode.DiagnosticSeverity.Error));
+            }
+
+            for (const warning of deploymentTemplate.warnings) {
+                diagnostics.push(me.getVSCodeDiagnosticFromIssue(deploymentTemplate, warning, vscode.DiagnosticSeverity.Warning));
+            }
+
+            me._diagnosticsCollection.set(document.uri, diagnostics);
+        });
     }
 
     /**
@@ -314,7 +320,7 @@ export class AzureRMTools {
                         vscode.window.showInformationMessage(message, ...options).then((selectedOption: string) => {
                             surveyInfo.settings.previousSurveyPromptDateAndTime = Date.now();
 
-                            this.log("Survey Prompt", {
+                            ext.reporter.sendTelemetryEvent('Survey Prompt', {
                                 selectedOption: selectedOption
                             });
 
@@ -331,7 +337,7 @@ export class AzureRMTools {
                 })
                 // tslint:disable-next-line:no-any
                 .catch((error: any) => {
-                    this.logError("Failed To Get Survey Metadata", error);
+                    ext.reporter.sendTelemetryEvent("Failed To Get Survey Metadata", <TelemetryProperties>{ errorMessage: parseError(error).message });
                 });
         }
     }
@@ -341,7 +347,7 @@ export class AzureRMTools {
      * in a relatively stable state, such as after first opening
      */
     private logFunctionCounts(deploymentTemplate: DeploymentTemplate): void {
-        let me = this;
+        const me = this;
 
         // Don't wait for promise
         let dummyPromise = callWithTelemetryAndErrorHandling("tle.stats", async function (this: IActionContext) {
@@ -418,142 +424,122 @@ export class AzureRMTools {
         }
     }
 
-    private onProvideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover> {
-        let result: Promise<vscode.Hover> = Promise.resolve(null);
+    private async onProvideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover> {
+        const deploymentTemplate = this.getDeploymentTemplate(document);
+        if (deploymentTemplate) {
+            const me = this;
+            return await callWithTelemetryAndErrorHandling('Hover', async function (this: IActionContext) {
+                let properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string; }>this.properties;
 
-        this.logOnError(() => {
-            const deploymentTemplate = this.getDeploymentTemplate(document);
-            if (deploymentTemplate) {
                 const context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
                 if (context.hoverInfo) {
-                    result = context.hoverInfo.then((hoverInfo: Hover.Info) => {
-                        let hover: vscode.Hover = null;
+                    let hoverInfo: Hover.Info = await context.hoverInfo;
+                    let hover: vscode.Hover = null;
 
-                        if (hoverInfo) {
-                            if (hoverInfo instanceof Hover.FunctionInfo) {
-                                this.log("Hover", {
-                                    hoverType: "TLE Function",
-                                    tleFunctionName: hoverInfo.functionName
-                                });
-                            } else if (hoverInfo instanceof Hover.ParameterReferenceInfo) {
-                                this.log("Hover", {
-                                    hoverType: "Parameter Reference"
-                                });
-                            } else if (hoverInfo instanceof Hover.VariableReferenceInfo) {
-                                this.log("Hover", {
-                                    hoverType: "Variable Reference"
-                                });
-                            }
-
-                            const hoverRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, hoverInfo.span);
-                            hover = new vscode.Hover(hoverInfo.getHoverText(), hoverRange);
+                    if (hoverInfo) {
+                        if (hoverInfo instanceof Hover.FunctionInfo) {
+                            properties.hoverType = "TLE Function";
+                            properties.tleFunctionName = hoverInfo.functionName;
+                        } else if (hoverInfo instanceof Hover.ParameterReferenceInfo) {
+                            properties.hoverType = "Parameter Reference";
+                        } else if (hoverInfo instanceof Hover.VariableReferenceInfo) {
+                            properties.hoverType = "Variable Reference";
                         }
 
+                        const hoverRange: vscode.Range = me.getVSCodeRangeFromSpan(deploymentTemplate, hoverInfo.span);
+                        hover = new vscode.Hover(hoverInfo.getHoverText(), hoverRange);
                         return hover;
-                    });
+                    }
                 }
-            }
-        });
-
-        // tslint:disable-next-line:no-any
-        return result.catch((error: any) => {
-            this.logError("UnhandledError", error);
-            return undefined;
-        });
+            });
+        }
     }
 
-    private onProvideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList> {
-        let result: Promise<vscode.CompletionList> = Promise.resolve(null);
+    private async onProvideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList> {
+        const deploymentTemplate = this.getDeploymentTemplate(document);
+        if (deploymentTemplate) {
+            const me = this;
+            return await callWithTelemetryAndErrorHandling('provideCompletionItems', async function (this: IActionContext): Promise<vscode.CompletionList | undefined> {
+                let properties = <TelemetryProperties & { completionKind?: string }>this.properties;
+                this.suppressTelemetry = true;
 
-        this.logOnError(() => {
-            const deploymentTemplate = this.getDeploymentTemplate(document);
-            if (deploymentTemplate) {
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
                 if (context.completionItems) {
+                    let completionItemArray: Completion.Item[] = await context.completionItems;
+                    const completionItems: vscode.CompletionItem[] = [];
+                    for (const completion of completionItemArray) {
+                        const insertRange: vscode.Range = me.getVSCodeRangeFromSpan(deploymentTemplate, completion.insertSpan);
 
-                    result = context.completionItems.then((completionItemArray: Completion.Item[]) => {
-                        const completionItems: vscode.CompletionItem[] = [];
-                        for (const completion of completionItemArray) {
-                            const insertRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, completion.insertSpan);
+                        const completionToAdd = new vscode.CompletionItem(completion.name);
+                        completionToAdd.range = insertRange;
+                        completionToAdd.insertText = new vscode.SnippetString(completion.insertText);
+                        completionToAdd.detail = completion.detail;
+                        completionToAdd.documentation = completion.description;
 
-                            const completionToAdd = new vscode.CompletionItem(completion.name);
-                            completionToAdd.range = insertRange;
-                            completionToAdd.insertText = new vscode.SnippetString(completion.insertText);
-                            completionToAdd.detail = completion.detail;
-                            completionToAdd.documentation = completion.description;
+                        switch (completion.kind) {
+                            case Completion.CompletionKind.Function:
+                                completionToAdd.kind = vscode.CompletionItemKind.Function;
+                                break;
 
-                            switch (completion.kind) {
-                                case Completion.CompletionKind.Function:
-                                    completionToAdd.kind = vscode.CompletionItemKind.Function;
-                                    break;
+                            case Completion.CompletionKind.Parameter:
+                            case Completion.CompletionKind.Variable:
+                                completionToAdd.kind = vscode.CompletionItemKind.Variable;
+                                break;
 
-                                case Completion.CompletionKind.Parameter:
-                                case Completion.CompletionKind.Variable:
-                                    completionToAdd.kind = vscode.CompletionItemKind.Variable;
-                                    break;
+                            case Completion.CompletionKind.Property:
+                                completionToAdd.kind = vscode.CompletionItemKind.Field;
+                                break;
 
-                                case Completion.CompletionKind.Property:
-                                    completionToAdd.kind = vscode.CompletionItemKind.Field;
-                                    break;
-
-                                default:
-                                    assert.fail(`Unrecognized Completion.Type: ${completion.kind}`);
-                                    break;
-                            }
-
-                            completionItems.push(completionToAdd);
+                            default:
+                                assert.fail(`Unrecognized Completion.Type: ${completion.kind}`);
+                                break;
                         }
-                        return new vscode.CompletionList(completionItems, true);
-                    });
-                }
-            }
-        });
+                        properties.completionKind = vscode.CompletionItemKind[completionToAdd.kind];
 
-        // tslint:disable-next-line:no-any
-        return result.catch((error: any) => {
-            this.logError("UnhandledError", error);
-            return undefined;
-        });
+                        completionItems.push(completionToAdd);
+                    }
+                    return new vscode.CompletionList(completionItems, true);
+                }
+            });
+        }
     }
 
     private onProvideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Location {
-        let result: vscode.Location = null;
+        const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
+        if (deploymentTemplate) {
+            const me = this;
+            return callWithTelemetryAndErrorHandlingSync('Go To Definition', function (this: IActionContext) {
+                let properties = <TelemetryProperties & { definitionType?: string }>this.properties;
+                let result: vscode.Location = null;
 
-        this.logOnError(() => {
-            const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
-            if (deploymentTemplate) {
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
                 let definitionType: string = "no definition";
                 if (context.parameterDefinition) {
                     const locationUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
-                    const definitionRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, context.parameterDefinition.span);
+                    const definitionRange: vscode.Range = me.getVSCodeRangeFromSpan(deploymentTemplate, context.parameterDefinition.span);
                     result = new vscode.Location(locationUri, definitionRange);
                     definitionType = "parameter";
                 } else if (context.variableDefinition) {
                     const locationUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
-                    const definitionRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, context.variableDefinition.span);
+                    const definitionRange: vscode.Range = me.getVSCodeRangeFromSpan(deploymentTemplate, context.variableDefinition.span);
                     result = new vscode.Location(locationUri, definitionRange);
                     definitionType = "variable";
                 }
 
-                this.log("Go To Definition", {
-                    definitionType: definitionType
-                });
-            }
-        });
-
-        return result;
+                properties.definitionType = definitionType;
+                return result;
+            });
+        }
     }
 
     private onProvideReferences(document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): vscode.Location[] {
-        const result: vscode.Location[] = [];
-
-        this.logOnError(() => {
-            const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
-            if (deploymentTemplate) {
+        const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
+        if (deploymentTemplate) {
+            const me = this;
+            return callWithTelemetryAndErrorHandlingSync('Find References', function (this: IActionContext) {
+                const results: vscode.Location[] = [];
                 const locationUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
-
                 const positionContext: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
                 const references: Reference.List = positionContext.references;
@@ -574,64 +560,54 @@ export class AzureRMTools {
                             break;
                     }
 
-                    this.log("Find References", {
-                        referenceType: referenceType
-                    });
+                    this.properties.referenceType = referenceType;
 
                     for (const span of references.spans) {
-                        const referenceRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, span);
-                        result.push(new vscode.Location(locationUri, referenceRange));
+                        const referenceRange: vscode.Range = me.getVSCodeRangeFromSpan(deploymentTemplate, span);
+                        results.push(new vscode.Location(locationUri, referenceRange));
                     }
                 }
-            }
-        });
 
-        return result;
+                return results;
+            });
+        }
     }
 
-    private onProvideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp> {
-        let result: Promise<vscode.SignatureHelp> = Promise.resolve(null);
-
-        this.logOnError(() => {
-            const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
-            if (deploymentTemplate) {
+    private async onProvideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp | undefined> {
+        const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
+        if (deploymentTemplate) {
+            return await callWithTelemetryAndErrorHandling('provideSignatureHelp', async () => {
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
-                result = context.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
-                    let signatureHelp: vscode.SignatureHelp = null;
+                let functionSignatureHelp: TLE.FunctionSignatureHelp = await context.signatureHelp;
+                let signatureHelp: vscode.SignatureHelp;
 
-                    if (functionSignatureHelp) {
+                if (functionSignatureHelp) {
 
-                        const signatureInformation = new vscode.SignatureInformation(functionSignatureHelp.functionMetadata.usage, functionSignatureHelp.functionMetadata.description);
-                        signatureInformation.parameters = [];
-                        for (const parameterName of functionSignatureHelp.functionMetadata.parameters) {
-                            signatureInformation.parameters.push(new vscode.ParameterInformation(parameterName));
-                        }
-
-                        signatureHelp = new vscode.SignatureHelp();
-                        signatureHelp.activeParameter = functionSignatureHelp.activeParameterIndex;
-                        signatureHelp.activeSignature = 0;
-                        signatureHelp.signatures = [signatureInformation];
+                    const signatureInformation = new vscode.SignatureInformation(functionSignatureHelp.functionMetadata.usage, functionSignatureHelp.functionMetadata.description);
+                    signatureInformation.parameters = [];
+                    for (const parameterName of functionSignatureHelp.functionMetadata.parameters) {
+                        signatureInformation.parameters.push(new vscode.ParameterInformation(parameterName));
                     }
 
-                    return signatureHelp;
-                });
-            }
-        });
+                    signatureHelp = new vscode.SignatureHelp();
+                    signatureHelp.activeParameter = functionSignatureHelp.activeParameterIndex;
+                    signatureHelp.activeSignature = 0;
+                    signatureHelp.signatures = [signatureInformation];
+                }
 
-        // tslint:disable-next-line:no-any
-        return result.catch((error: any) => {
-            this.logError("UnhandledError", error);
-            return undefined;
-        });
+                return signatureHelp;
+            });
+        }
     }
 
     private onProvideRename(document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): vscode.WorkspaceEdit {
-        const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
+        const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
+        if (deploymentTemplate) {
+            const me = this;
+            return callWithTelemetryAndErrorHandlingSync('Rename', () => {
+                const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
 
-        this.logOnError(() => {
-            const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
-            if (deploymentTemplate) {
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
                 const referenceList: Reference.List = context.references;
                 if (referenceList) {
@@ -652,34 +628,44 @@ export class AzureRMTools {
                     const documentUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
 
                     for (const referenceSpan of referenceList.spans) {
-                        const referenceRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, referenceSpan);
+                        const referenceRange: vscode.Range = me.getVSCodeRangeFromSpan(deploymentTemplate, referenceSpan);
                         result.replace(documentUri, referenceRange, newName);
                     }
                 } else {
-                    vscode.window.showInformationMessage("You can only rename parameters and variables.");
+                    throw new Error('You can only rename parameters and variables.');
                 }
-            }
-        });
 
-        return result;
+                return result;
+            });
+        }
     }
 
     private onActiveTextEditorChanged(): void {
-        this.logOnError(() => {
+        const me = this;
+        callWithTelemetryAndErrorHandlingSync('onActiveTextEditorChanged', function (this: IActionContext) {
+            this.properties.isActivationEvent = 'true';
+            this.suppressErrorDisplay = true;
+            this.suppressTelemetry = true;
+
             let activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
             if (activeEditor) {
-                if (this.getDeploymentTemplate(activeEditor.document) === undefined) {
-                    this.updateDeploymentTemplate(activeEditor.document);
+                if (me.getDeploymentTemplate(activeEditor.document) === undefined) {
+                    me.updateDeploymentTemplate(activeEditor.document);
                 }
             }
         });
     }
 
     private onTextSelectionChanged(): void {
-        this.logOnError(() => {
+        const me = this;
+        callWithTelemetryAndErrorHandlingSync('onTextSelectionChanged', function (this: IActionContext) {
+            this.properties.isActivationEvent = 'true';
+            this.suppressErrorDisplay = true;
+            this.suppressTelemetry = true;
+
             let editor: vscode.TextEditor = vscode.window.activeTextEditor;
             if (editor) {
-                let deploymentTemplate = this.getDeploymentTemplate(editor.document);
+                let deploymentTemplate = me.getDeploymentTemplate(editor.document);
                 if (deploymentTemplate) {
                     let position = editor.selection.anchor;
                     let context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
@@ -688,54 +674,61 @@ export class AzureRMTools {
                     let braceHighlightRanges: vscode.Range[] = [];
                     for (let tleHighlightIndex of tleBraceHighlightIndexes) {
                         const highlightSpan = new language.Span(tleHighlightIndex + context.jsonTokenStartIndex, 1);
-                        braceHighlightRanges.push(this.getVSCodeRangeFromSpan(deploymentTemplate, highlightSpan));
+                        braceHighlightRanges.push(me.getVSCodeRangeFromSpan(deploymentTemplate, highlightSpan));
                     }
 
-                    editor.setDecorations(this._braceHighlightDecorationType, braceHighlightRanges);
+                    editor.setDecorations(me._braceHighlightDecorationType, braceHighlightRanges);
                 }
             }
         });
     }
 
     private onDocumentChanged(event: vscode.TextDocumentChangeEvent) {
-        this.logOnError(() => {
-            this.updateDeploymentTemplate(event.document);
-        });
+        this.updateDeploymentTemplate(event.document);
     }
 
     private onDocumentOpened(openedDocument: vscode.TextDocument): void {
-        this.logOnError(() => {
-            this.updateDeploymentTemplate(openedDocument);
-        });
+        this.updateDeploymentTemplate(openedDocument);
     }
 
     private onDocumentSaved(savedDocument: vscode.TextDocument): void {
-        this.logOnError(() => {
+        const me = this;
+        callWithTelemetryAndErrorHandlingSync('onDocumentSaved', function (this: IActionContext) {
+            this.properties.isActivationEvent = 'true';
+            this.suppressTelemetry = true;
+
             // The saved document is a deployment template if it shows up in our deployment
             // templates dictionary.
-            if (this._deploymentTemplates[savedDocument.uri.toString()]) {
-                this.log("Deployment Template Saved", {
-                    autoSave: this._autoSave
+            if (me._deploymentTemplates[savedDocument.uri.toString()]) {
+                ext.reporter.sendTelemetryEvent("Deployment Template Saved", {
+                    autoSave: me._autoSave
                 });
             }
         });
     }
 
     private onDocumentClosed(closedDocument: vscode.TextDocument): void {
-        this.logOnError(() => {
-            this.closeDeploymentTemplate(closedDocument);
+        const me = this;
+        callWithTelemetryAndErrorHandlingSync('onDocumentClosed', function (this: IActionContext) {
+            this.properties.isActivationEvent = 'true';
+            this.suppressTelemetry = true;
+            this.suppressErrorDisplay = true;
+
+            me.closeDeploymentTemplate(closedDocument);
         });
     }
 
     private loadConfiguration(): void {
-        const configuration = vscode.workspace.getConfiguration("azurermtools");
-        this._azureRMToolsConfiguration = {
-            debug: configuration.get("debug", false),
-            enableTelemetry: configuration.get("enableTelemetry", false)
-        };
+        callWithTelemetryAndErrorHandlingSync('loadConfiguration', () => {
+            const configuration = vscode.workspace.getConfiguration("azurermtools");
+            this._azureRMToolsConfiguration = {
+                debug: configuration.get("debug", false),
+                enableTelemetry: configuration.get("enableTelemetry", false)
+            };
 
-        const filesConfiguration = vscode.workspace.getConfiguration("files");
-        this._autoSave = filesConfiguration.get("autoSave", "off");
+            const filesConfiguration = vscode.workspace.getConfiguration("files");
+            this._autoSave = filesConfiguration.get("autoSave", "off");
+        });
     }
 
     private getVSCodeRangeFromSpan(deploymentTemplate: DeploymentTemplate, span: language.Span): vscode.Range {
@@ -750,40 +743,6 @@ export class AzureRMTools {
 
         return new vscode.Range(vscodeStartPosition, vscodeEndPosition);
     }
-
-    private log(
-        eventName: string,
-        properties: TelemetryProperties = {},
-        measures: TelemetryMeasurements = {}
-    ): void {
-        ext.reporter.sendTelemetryEvent(eventName, properties, measures);
-    }
-
-    private logOnError(operation: () => void): void {
-        assert(operation);
-
-        try {
-            operation();
-        } catch (error) {
-            this.logError("UnhandledError", error);
-        }
-    }
-
-    private logError(eventName: string, error: unknown): void {
-        const errorData: IParsedError = parseError(error);
-        let properties: TelemetryProperties = {};
-
-        if (errorData.isUserCancelledError) {
-            properties.result = 'Canceled';
-        } else {
-            properties.result = 'Failed';
-            properties.error = errorData.errorType;
-            properties.errorMessage = errorData.message;
-        }
-
-        ext.reporter.sendTelemetryEvent(eventName, properties);
-    }
-
 }
 
 interface AzureRMToolsConfiguration {
