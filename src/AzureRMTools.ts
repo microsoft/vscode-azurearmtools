@@ -111,6 +111,7 @@ export class AzureRMTools {
         const me = this;
         callWithTelemetryAndErrorHandlingSync('dispose', function (this: IActionContext) {
             this.properties.isActivationEvent = 'true';
+            this.suppressErrorDisplay = true;
 
             if (me._deploymentTemplateFileSubscriptions) {
                 me._deploymentTemplateFileSubscriptions.dispose();
@@ -604,7 +605,7 @@ export class AzureRMTools {
         const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
         if (deploymentTemplate) {
             const me = this;
-            return callWithTelemetryAndErrorHandlingSync('Rename', function (this: IActionContext) {
+            return callWithTelemetryAndErrorHandlingSync('Rename', () => {
                 const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
@@ -631,10 +632,7 @@ export class AzureRMTools {
                         result.replace(documentUri, referenceRange, newName);
                     }
                 } else {
-                    const message = 'You can only rename parameters and variables.';
-                    vscode.window.showInformationMessage(message);
-                    this.suppressErrorDisplay = true;
-                    throw new Error(message);
+                    throw new Error('You can only rename parameters and variables.');
                 }
 
                 return result;
