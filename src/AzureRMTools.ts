@@ -460,6 +460,7 @@ export class AzureRMTools {
             const me = this;
             return await callWithTelemetryAndErrorHandling('provideCompletionItems', async function (this: IActionContext): Promise<vscode.CompletionList | undefined> {
                 let properties = <TelemetryProperties & { completionKind?: string }>this.properties;
+                this.suppressTelemetry = true;
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
                 if (context.completionItems) {
