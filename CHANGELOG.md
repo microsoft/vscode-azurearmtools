@@ -7,6 +7,7 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 - Add "Report Issue" button directly to error messages
 ### Fixed
 - Improved start-up and installation performance
+- Rename variable/parameter definition doesn't work if you don't rename double quotes [#63](https://github.com/Microsoft/vscode-azurearmtools/issues/63)
 - Added `listAccountSas` [#125](https://github.com/Microsoft/vscode-azurearmtools/pull/125)
 - Added `listAdminKeys` (on SearchService) and `listServiceSas` (on Storage) [#128](https://github.com/Microsoft/vscode-azurearmtools/pull/128)
 - Updated text on `listKeys` to reflect 2016 and later apiVersion changes [#128](https://github.com/Microsoft/vscode-azurearmtools/pull/128)
