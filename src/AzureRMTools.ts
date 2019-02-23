@@ -615,6 +615,8 @@ export class AzureRMTools {
                     // textbox that pops up when you press F2 contains more than just the variable
                     // or parameter name. This next section of code parses out just the variable or
                     // parameter name.
+                    // For instance, it might provide the textbox with the value "[parameters('location')]"
+                    // We need to pull out the parameter name "location" (no quotes) from that
                     const firstSingleQuoteIndex: number = newName.indexOf(`'`);
                     if (firstSingleQuoteIndex >= 0) {
                         const secondSingleQuoteIndex: number = newName.indexOf(`'`, firstSingleQuoteIndex + 1);
@@ -624,6 +626,10 @@ export class AzureRMTools {
                             newName = newName.substring(firstSingleQuoteIndex + 1);
                         }
                     }
+
+                    // When trying to rename a parameter or variable definition, the textbox provided by vscode to
+                    // the user is contained in double quotes.  Remove those.
+                    newName = newName.replace(/^"(.*)"$/, '$1');
 
                     const documentUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
 
