@@ -1,14 +1,24 @@
 # Change Log
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
-Version 0.4.2 (05/15/2018)
+## Version 0.5.0 (2019-02-26)
+### Changed
+- Changed view title from "JSON OUTLINE" to "ARM TEMPLATE OUTLINE" [#145](https://github.com/Microsoft/vscode-azurearmtools/issues/145)
+- Add "Report Issue" button directly to error messages
+### Fixed
+- Improved start-up and installation performance
+- Rename variable/parameter definition doesn't work if you don't rename double quotes [#63](https://github.com/Microsoft/vscode-azurearmtools/issues/63)
+- Added `listAccountSas` [#125](https://github.com/Microsoft/vscode-azurearmtools/pull/125)
+- Added `listAdminKeys` (on SearchService) and `listServiceSas` (on Storage) [#128](https://github.com/Microsoft/vscode-azurearmtools/pull/128)
+- Updated text on `listKeys` to reflect 2016 and later apiVersion changes [#128](https://github.com/Microsoft/vscode-azurearmtools/pull/128)
+- Allow for 1..n args on `and` and `or` [#159](https://github.com/Microsoft/vscode-azurearmtools/pull/159)
+- Better handle asynchronous errors [#169](https://github.com/Microsoft/vscode-azurearmtools/pull/169)
 
-Bug fixed:
+## Version 0.4.2 (05/15/2018)
+### Fixed:
+- [JSON outline doesn"t show up if jsonc template opened before any json templates](https://github.com/Microsoft/vscode-azurearmtools/issues/106)
 
-- [JSON outline doesn't show up if jsonc template opened before any json templates](https://github.com/Microsoft/vscode-azurearmtools/issues/106)
-
-Version 0.4.1 (05/07/2018)
-
+## Version 0.4.1 (05/07/2018)
 - Added support for [JSONC](README.md#using-comments-inside-JSON)
 - Improved labeling in JSON outline, similar to Visual Studio
   - Use displayName tag for label of resources when available
@@ -23,35 +33,35 @@ Version 0.4.1 (05/07/2018)
   - [listSecrets and generic list* functions not recognized](https://github.com/Microsoft/vscode-azurearmtools/issues/72)
   - [listPackage function metadata is missing a description](https://github.com/Microsoft/vscode-azurearmtools/issues/69)
 
-Version 0.4.0 (02/01/2018)
+## Version 0.4.0 (02/01/2018)
 - Add JSON outline for ARM depolyment templates
 
-Version 0.3.8 (11/30/2017)
+## Version 0.3.8 (11/30/2017)
 - Add support for guid TLE
 - Bug fixes
 
-Version 0.3.7 (09/08/2017)
+## Version 0.3.7 (09/08/2017)
 - Add support for if, and, or, not and json TLEs
 
-Version 0.3.6 (07/27/2017)
+## Version 0.3.6 (07/27/2017)
 - Bug fix for autocompletion
 
-Version 0.3.5 (05/11/2017)
+## Version 0.3.5 (05/11/2017)
 - Add new TLE function metadata
 
-Version 0.3.4 (01/27/2017)
+## Version 0.3.4 (01/27/2017)
 - Update dependencies versions
 
-Version 0.3.3 (10/31/2016)
+## Version 0.3.3 (10/31/2016)
 - Bug fixes
 
-Version 0.3.2 (06/15/2016)
+## Version 0.3.2 (06/15/2016)
 - Bug fixes
 
-Version 0.3.1 (06/08/2016)
+## Version 0.3.1 (06/08/2016)
 - Removed Resources link to License
 
-Version 0.3.0 (06/08/2016)
+## Version 0.3.0 (06/08/2016)
 - Add [resourceGroup() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#resourcegroup)
 - Add [subscription() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#subscription)
 - Add [signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
@@ -63,16 +73,16 @@ Version 0.3.0 (06/08/2016)
 - Add warning for unused variables
 - Add IntelliSense for properties of references to variables that are objects
 
-Version 0.2.0 (05/23/2016)
+## Version 0.2.0 (05/23/2016)
 - Add [Go to Definition](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-definition) for parameter and variable references
 - Add [Peek](https://code.visualstudio.com/docs/editor/editingevolved#_peek) for variable and parameter definitions
 - Various bug fixes and improved telemetry
 
-Version 0.1.2
+## Version 0.1.2
 - Add user survey prompt and make parameter and variable references case-insensitive
 
-Version 0.1.1
+## Version 0.1.1
 - Fix function, parameter, and variable IntelliSense
 
-Version 0.1.0
+## Version 0.1.0
 - Initial release
