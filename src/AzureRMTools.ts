@@ -170,7 +170,7 @@ export class AzureRMTools {
                     // are fired for all JSON files, not just deployment
                     // templates.
                     if (Object.keys(me._deploymentTemplates).length === 0) {
-                        me.initializeExtension(surveyInfo);
+                        me.hookDeploymentTemplateEvents(surveyInfo);
                     }
 
                     me._deploymentTemplates[documentUri] = deploymentTemplate;
@@ -221,15 +221,18 @@ export class AzureRMTools {
             let parseErrors: language.Issue[] = await deploymentTemplate.errors;
             const diagnostics: vscode.Diagnostic[] = [];
 
-            for (const error of parseErrors) {
-                diagnostics.push(me.getVSCodeDiagnosticFromIssue(deploymentTemplate, error, vscode.DiagnosticSeverity.Error));
-            }
+            // It's possible the _diagnosticsCollection could have been disposed while we were waiting for errors to get processed
+            if (me._diagnosticsCollection) {
+                for (const error of parseErrors) {
+                    diagnostics.push(me.getVSCodeDiagnosticFromIssue(deploymentTemplate, error, vscode.DiagnosticSeverity.Error));
+                }
 
-            for (const warning of deploymentTemplate.warnings) {
-                diagnostics.push(me.getVSCodeDiagnosticFromIssue(deploymentTemplate, warning, vscode.DiagnosticSeverity.Warning));
-            }
+                for (const warning of deploymentTemplate.warnings) {
+                    diagnostics.push(me.getVSCodeDiagnosticFromIssue(deploymentTemplate, warning, vscode.DiagnosticSeverity.Warning));
+                }
 
-            me._diagnosticsCollection.set(document.uri, diagnostics);
+                me._diagnosticsCollection.set(document.uri, diagnostics);
+            }
         });
     }
 
@@ -255,7 +258,12 @@ export class AzureRMTools {
         return { settings, filePath };
     }
 
-    private initializeExtension(surveyInfo: SurveyInfo): void {
+    /**
+     * Hook up events related to template files (as opposed to plain JSON files). This is only called when
+     * actual template files are open, to avoid slowing performance when just JSON files are opened.
+     * @param surveyInfo
+     */
+    private hookDeploymentTemplateEvents(surveyInfo: SurveyInfo): void {
         let deploymentTemplateFileSubscriptionsArray: vscode.Disposable[] = [];
 
         vscode.window.onDidChangeTextEditorSelection(this.onTextSelectionChanged, this, deploymentTemplateFileSubscriptionsArray);
@@ -342,13 +350,20 @@ export class AzureRMTools {
         }
     }
 
+    private unhookDeploymentFileEvents(): void {
+        // Dispose all registered events and services, including this._diagnosticsCollection
+        if (this._deploymentTemplateFileSubscriptions) {
+            this._deploymentTemplateFileSubscriptions.dispose();
+            this._deploymentTemplateFileSubscriptions = null;
+            this._diagnosticsCollection = null;
+        }
+    }
+
     /**
      * Logs telemetry with information about the functions used in a template. Only meaningful if called
      * in a relatively stable state, such as after first opening
      */
     private logFunctionCounts(deploymentTemplate: DeploymentTemplate): void {
-        const me = this;
-
         // Don't wait for promise
         let dummyPromise = callWithTelemetryAndErrorHandling("tle.stats", async function (this: IActionContext) {
             this.suppressErrorDisplay = true;
@@ -418,8 +433,7 @@ export class AzureRMTools {
             // Code editor. The events will be registered again when the next
             // deployment template is opened.
             if (Object.keys(this._deploymentTemplates).length === 0 && this._deploymentTemplateFileSubscriptions) {
-                this._deploymentTemplateFileSubscriptions.dispose();
-                this._deploymentTemplateFileSubscriptions = null;
+                this.unhookDeploymentFileEvents();
             }
         }
     }
