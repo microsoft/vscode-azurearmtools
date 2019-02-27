@@ -17,7 +17,7 @@ import * as path from 'path';
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
 
-// tslint:disable-next-line:no-require-imports no-var-requires
+// tslint:disable-next-line:no-require-imports no-var-requires no-submodule-imports
 let testRunner = require('vscode/lib/testrunner');
 
 let options: { [key: string]: string | boolean | number | object } = {

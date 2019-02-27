@@ -4,10 +4,12 @@
 
 // tslint:disable:no-var-keyword // Grandfathered in
 // tslint:disable:no-duplicate-variable // Grandfathered in
+// tslint:disable: no-parameter-reassignment // Grandfathered in
+
+// tslint:disable:no-increment-decrement
 
 import * as assert from "assert";
 import * as vscode from "vscode";
-import { TreeItem } from "vscode";
 import * as Json from "./JSON";
 import { isLanguageIdSupported } from "./supported";
 import { Parser } from "./TLE";
@@ -107,6 +109,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                         }
                     }
                 }
+
                 return result;
             }
         }
@@ -114,7 +117,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
 
     public getTreeItem(element: string): vscode.TreeItem {
 
-        const elementInfo: IElementInfo = JSON.parse(element);
+        const elementInfo: IElementInfo = <IElementInfo>JSON.parse(element);
         const start = vscode.window.activeTextEditor.document.positionAt(elementInfo.current.key.start);
         const end = vscode.window.activeTextEditor.document.positionAt(elementInfo.current.value.end);
 
@@ -128,6 +131,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                 title: "",
             }
         };
+
         return treeItem;
     }
 
@@ -177,6 +181,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     // If name element is found
                     if (props.name instanceof Json.StringValue && props.name.toString().toUpperCase() === "name".toUpperCase()) {
                         let name = props.value.toFriendlyString();
+
                         return shortenTreeLabel(name);
                     }
                 }
@@ -193,6 +198,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         } else {
             // For other value types, display key and value since they won't be expandable
             const valueNode = this.tree.getValueAtCharacterIndex(elementInfo.current.value.start);
+
             return `${keyNode instanceof Json.StringValue ? keyNode.toFriendlyString() : "?"}: ${valueNode.toFriendlyString()}`;
         }
     }
@@ -285,8 +291,10 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     }
 
     private getIcon(icons: [string, string][], itemName: string, defaultIcon: string): string {
+        // tslint:disable-next-line: strict-boolean-expressions
         itemName = (itemName || "").toLowerCase();
         let iconItem = icons.find(item => item[0].toLowerCase() === itemName);
+
         return iconItem ? iconItem[1] : defaultIcon;
     }
 
@@ -358,6 +366,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                 }
             }
         }
+
         return null;
     }
 }
@@ -368,12 +377,12 @@ export interface IElementInfo {
             start: number;
             end: number;
             kind: Json.ValueKind;
-        },
+        };
         value: {
             start: number;
             end: number;
             kind: Json.ValueKind;
-        },
+        };
         level: number;
         collapsible: boolean;
     };
@@ -382,17 +391,17 @@ export interface IElementInfo {
             start: number;
             end: number;
             kind: Json.ValueKind;
-        },
+        };
         value: {
             start: number;
             end: number;
             kind: Json.ValueKind;
-        }
+        };
     };
     root: {
         key: {
             start: number;
-        }
+        };
     };
 }
 

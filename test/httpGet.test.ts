@@ -7,7 +7,7 @@
 
 import * as assert from "assert";
 import { httpGet } from "../extension.bundle";
-import { networkTest } from "./networkTest";
+import { networkTest } from "./networkTest.test";
 
 suite("HttpClient", () => {
     suite("get(string)", () => {

@@ -6,7 +6,7 @@
 
 import * as assert from "assert";
 
-import { networkTest } from "./networkTest";
+import { networkTest } from "./networkTest.test";
 
 import { AzureRMAssets, FunctionMetadata, FunctionsMetadata } from "../extension.bundle";
 import { SurveyMetadata } from "../src/SurveyMetadata";
