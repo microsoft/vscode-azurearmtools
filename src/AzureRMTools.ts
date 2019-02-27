@@ -30,7 +30,7 @@ import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
-export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number, loadEndTime: number }): Promise<void> {
+export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
     ext.context = context;
     ext.reporter = createTelemetryReporter(context);
     ext.outputChannel = vscode.window.createOutputChannel("Azure Resource Manager Tools");
@@ -372,10 +372,10 @@ export class AzureRMTools {
         let dummyPromise = callWithTelemetryAndErrorHandling("tle.stats", async function (this: IActionContext) {
             this.suppressErrorDisplay = true;
             let properties: {
-                functionCounts?: string,
-                unrecognized?: string,
-                incorrectArgs?: string,
-                [key: string]: string
+                functionCounts?: string;
+                unrecognized?: string;
+                incorrectArgs?: string;
+                [key: string]: string;
             } = this.properties;
 
             // Full function counts
@@ -447,7 +447,7 @@ export class AzureRMTools {
         if (deploymentTemplate) {
             const me = this;
             return await callWithTelemetryAndErrorHandling('Hover', async function (this: IActionContext) {
-                let properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string; }>this.properties;
+                let properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>this.properties;
 
                 const context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
                 if (context.hoverInfo) {

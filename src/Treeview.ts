@@ -377,12 +377,12 @@ export interface IElementInfo {
             start: number;
             end: number;
             kind: Json.ValueKind;
-        },
+        };
         value: {
             start: number;
             end: number;
             kind: Json.ValueKind;
-        },
+        };
         level: number;
         collapsible: boolean;
     };
@@ -391,17 +391,17 @@ export interface IElementInfo {
             start: number;
             end: number;
             kind: Json.ValueKind;
-        },
+        };
         value: {
             start: number;
             end: number;
             kind: Json.ValueKind;
-        }
+        };
     };
     root: {
         key: {
             start: number;
-        }
+        };
     };
 }
 

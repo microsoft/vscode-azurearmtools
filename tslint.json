@@ -54,7 +54,6 @@
             false,
             140
         ],
-        "member-access": true,
         "member-ordering": [
             false,
             {
@@ -100,21 +99,10 @@
         ],
         "no-unnecessary-local-variable": false,
         "no-unnecessary-type-assertion": false,
-        "no-unsafe-any": false,
+        "no-unsafe-any": false, // TODO
         "no-void-expression": [
-            false,
+            true,
             "ignore-arrow-function-shorthand"
-        ],
-        "object-literal-key-quotes": [
-            true,
-            "as-needed"
-        ],
-        "one-line": [
-            true,
-            "check-open-brace",
-            "check-catch",
-            "check-else",
-            "check-whitespace"
         ],
         "one-variable-per-declaration": [
             true,
@@ -122,55 +110,26 @@
         ],
         "prefer-const": false,
         "prefer-type-cast": false,
-        "quotemark": [
-            false,
-            "single"
-        ],
-        "radix": false,
-        "react-tsx-curly-spacing": true,
-        "semicolon": [
-            true,
-            "always"
-        ],
+        "quotemark": false,
         "strict-boolean-expressions": [
-            false,
+            false, // TODO
             "allow-string",
             "allow-undefined-union",
             "allow-mix"
         ],
         "switch-final-break": false,
-        "trailing-comma": [
-            false,
-            {
-                "multiline": "never",
-                "singleline": "never"
-            }
-        ],
-        "triple-equals": [
-            true,
-            "allow-null-check"
-        ],
-        "type-literal-delimiter": false,
+        "trailing-comma": false,
         "typedef": [
-            false,
+            false, // TODO
             "call-signature",
             "parameter",
             "property-declaration",
             "member-variable-declaration"
         ],
-        "typedef-whitespace": false,
         "variable-name": [
             true,
             "allow-leading-underscore",
             "ban-keywords"
-        ],
-        "whitespace": [
-            true,
-            "check-branch",
-            "check-decl",
-            "check-operator",
-            "check-separator",
-            "check-type"
         ]
     },
     "rulesDirectory": "node_modules/tslint-microsoft-contrib/"
