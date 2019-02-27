@@ -9,17 +9,8 @@ import * as assert from "assert";
 import { networkTest } from "./networkTest";
 
 import { AzureRMAssets, FunctionMetadata, FunctionsMetadata } from "../extension.bundle";
-import { SurveyMetadata } from "../src/SurveyMetadata";
 
 suite("AzureRMAssets", () => {
-    // Re-enable as part of https://github.com/Microsoft/vscode-azurearmtools/issues/51
-    // networkTest("getSurveyMetadata()", () => {
-    //     return AzureRMAssets.getSurveyMetadata().then((surveyMetadata: SurveyMetadata) => {
-    //         assert(surveyMetadata, "Expected surveyMetadata to be defined and not-null");
-    //         assert(surveyMetadata.surveyLink);
-    //     });
-    // });
-
     networkTest("getFunctionMetadata()", async () => {
         const functionMetadataArray = (await AzureRMAssets.getFunctionsMetadata()).functionMetadata;
         assert(functionMetadataArray);

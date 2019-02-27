@@ -22,8 +22,6 @@ import { PositionContext } from "./PositionContext";
 import * as Reference from "./Reference";
 import { Stopwatch } from "./Stopwatch";
 import { isLanguageIdSupported, supportedDocumentSelector } from "./supported";
-import { SurveyMetadata } from "./SurveyMetadata";
-import { SurveySettings } from "./SurveySettings";
 import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
@@ -49,11 +47,6 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
 export function deactivateInternal(): void {
     // Nothing to do
 }
-
-type SurveyInfo = {
-    settings: SurveySettings;
-    filePath: string;
-};
 
 export class AzureRMTools {
     private _jsonFileSubscriptions: vscode.Disposable;
@@ -160,8 +153,6 @@ export class AzureRMTools {
 
                 let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(document.getText(), documentUri);
                 if (deploymentTemplate.hasValidSchemaUri()) {
-                    let surveyInfo: SurveyInfo = me.updateSurveySettingsFromOpeningTemplate();
-
                     // If this is the first deployment template to be opened,
                     // then we need to register all of our deployment template
                     // editing tools with the editor. We don't do this when the
@@ -170,7 +161,7 @@ export class AzureRMTools {
                     // are fired for all JSON files, not just deployment
                     // templates.
                     if (Object.keys(me._deploymentTemplates).length === 0) {
-                        me.hookDeploymentTemplateEvents(surveyInfo);
+                        me.hookDeploymentTemplateEvents();
                     }
 
                     me._deploymentTemplates[documentUri] = deploymentTemplate;
@@ -237,33 +228,11 @@ export class AzureRMTools {
     }
 
     /**
-     * Update survey settings on disk and return the updated version
-     */
-    private updateSurveySettingsFromOpeningTemplate(): SurveyInfo {
-        const filePath: string = path.join(os.homedir(), ".vscode", "azurerm", "surveyMetadata.json");
-        const settings: SurveySettings = SurveySettings.fromFile(filePath);
-
-        settings.incrementDeploymentTemplatesOpenedOrCreated();
-
-        if (!settings.deploymentTemplateFirstOpenedOrCreatedDateAndTime) {
-            settings.deploymentTemplateFirstOpenedOrCreatedDateAndTime = Date.now();
-        }
-
-        if (settings.showSurveyPrompts === undefined || settings.showSurveyPrompts === null) {
-            settings.showSurveyPrompts = true;
-        }
-
-        settings.toFile(filePath);
-
-        return { settings, filePath };
-    }
-
-    /**
      * Hook up events related to template files (as opposed to plain JSON files). This is only called when
      * actual template files are open, to avoid slowing performance when just JSON files are opened.
      * @param surveyInfo
      */
-    private hookDeploymentTemplateEvents(surveyInfo: SurveyInfo): void {
+    private hookDeploymentTemplateEvents(): void {
         let deploymentTemplateFileSubscriptionsArray: vscode.Disposable[] = [];
 
         vscode.window.onDidChangeTextEditorSelection(this.onTextSelectionChanged, this, deploymentTemplateFileSubscriptionsArray);
@@ -317,37 +286,6 @@ export class AzureRMTools {
         deploymentTemplateFileSubscriptionsArray.push(this._diagnosticsCollection);
 
         this._deploymentTemplateFileSubscriptions = vscode.Disposable.from(...deploymentTemplateFileSubscriptionsArray);
-
-        if (surveyInfo.settings.showSurveyPrompts) {
-            AzureRMAssets.getSurveyMetadata()
-                .then((surveyMetadata: SurveyMetadata) => {
-                    if (surveyMetadata.shouldShowSurveyPrompt(surveyInfo.settings)) {
-                        const message: string = "We would like to collect your feedback on the Azure Resource Manager Tools extension. Please take a few minutes to fill out survey.";
-                        const options: string[] = ["Don't ask me again", "OK"]; // VS Code automatically inserts a "Close" option.
-
-                        vscode.window.showInformationMessage(message, ...options).then((selectedOption: string) => {
-                            surveyInfo.settings.previousSurveyPromptDateAndTime = Date.now();
-
-                            ext.reporter.sendTelemetryEvent('Survey Prompt', {
-                                selectedOption: selectedOption
-                            });
-
-                            if (selectedOption === "OK") {
-                                // tslint:disable-next-line:no-floating-promises
-                                opn(surveyMetadata.surveyLink);
-                            } else if (selectedOption === "Don't ask me again") {
-                                surveyInfo.settings.showSurveyPrompts = false;
-                            }
-
-                            surveyInfo.settings.toFile(surveyInfo.filePath);
-                        });
-                    }
-                })
-                // tslint:disable-next-line:no-any
-                .catch((error: any) => {
-                    ext.reporter.sendTelemetryEvent("Failed To Get Survey Metadata", <TelemetryProperties>{ errorMessage: parseError(error).message });
-                });
-        }
     }
 
     private unhookDeploymentFileEvents(): void {
@@ -432,7 +370,7 @@ export class AzureRMTools {
             // unregister all of our deployment template events from the VS
             // Code editor. The events will be registered again when the next
             // deployment template is opened.
-            if (Object.keys(this._deploymentTemplates).length === 0 && this._deploymentTemplateFileSubscriptions) {
+            if (Object.keys(this._deploymentTemplates).length === 0) {
                 this.unhookDeploymentFileEvents();
             }
         }
