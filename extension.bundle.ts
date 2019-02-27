@@ -46,6 +46,4 @@ export { PositionContext } from "./src/PositionContext";
 import * as TLE from "./src/TLE";
 export { TLE };
 export { isLanguageIdSupported } from "./src/supported";
-export { SurveyMetadata } from "./src/SurveyMetadata";
-export { SurveySettings } from "./src/SurveySettings";
 export { JsonOutlineProvider, shortenTreeLabel } from "./src/Treeview";

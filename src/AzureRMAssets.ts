@@ -5,14 +5,11 @@
 import * as fse from 'fs-extra';
 import * as path from "path";
 
-import { SurveyMetadata } from "./SurveyMetadata";
-
 /**
  * An accessor class for the Azure RM storage account.
  */
 // tslint:disable-next-line:no-unnecessary-class // Grandfathered in
 export class AzureRMAssets {
-    private static _surveyMetadataPromise: Promise<SurveyMetadata>;
     private static _functionsMetadataPromise: Promise<FunctionsMetadata>;
 
     // For test dependency injection only
@@ -62,22 +59,6 @@ export class AzureRMAssets {
 
     private static async readFile(filePath: string): Promise<string> {
         return await fse.readFile(filePath, "utf8");
-    }
-
-    public static async getSurveyMetadata(): Promise<SurveyMetadata> {
-        if (AzureRMAssets._surveyMetadataPromise === undefined) {
-            AzureRMAssets._surveyMetadataPromise = new Promise<SurveyMetadata>(async (resolve, reject) => {
-                let uri = AzureRMAssets.getSurveyMetadataUri();
-                let contents = await AzureRMAssets.readFile(uri);
-                let data = SurveyMetadata.fromString(contents);
-                resolve(data);
-            });
-        }
-        return await AzureRMAssets._surveyMetadataPromise;
-    }
-
-    public static getSurveyMetadataUri(): string {
-        return AzureRMAssets.getLocalAssetUri("SurveyMetadata.json");
     }
 }
 
