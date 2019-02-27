@@ -2,8 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:max-func-body-length
-// tslint:disable:no-http-string
+// tslint:disable:max-func-body-length no-http-string no-multiline-string
 
 import * as assert from "assert";
 import { Utilities } from "../extension.bundle";

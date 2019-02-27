@@ -41,6 +41,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
         this.properties.isActivationEvent = 'true';
         this.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
 
+        // tslint:disable-next-line: no-use-before-declare
         context.subscriptions.push(new AzureRMTools(context));
     });
 }
@@ -108,6 +109,7 @@ export class AzureRMTools {
     }
 
     public dispose(): void {
+        // tslint:disable-next-line: no-this-assignment
         const me = this;
         callWithTelemetryAndErrorHandlingSync('dispose', function (this: IActionContext) {
             this.properties.isActivationEvent = 'true';
@@ -136,6 +138,7 @@ export class AzureRMTools {
             return;
         }
 
+        // tslint:disable-next-line: no-this-assignment
         const me = this;
         callWithTelemetryAndErrorHandlingSync('updateDeploymentTemplate', function (this: IActionContext) {
             this.suppressErrorDisplay = true;
@@ -212,6 +215,7 @@ export class AzureRMTools {
     }
 
     private reportDeploymentTemplateErrors(document: vscode.TextDocument, deploymentTemplate: DeploymentTemplate): void {
+        // tslint:disable-next-line: no-this-assignment
         const me = this;
 
         // Don't wait
@@ -261,7 +265,6 @@ export class AzureRMTools {
     /**
      * Hook up events related to template files (as opposed to plain JSON files). This is only called when
      * actual template files are open, to avoid slowing performance when just JSON files are opened.
-     * @param surveyInfo
      */
     private hookDeploymentTemplateEvents(surveyInfo: SurveyInfo): void {
         let deploymentTemplateFileSubscriptionsArray: vscode.Disposable[] = [];
@@ -270,6 +273,7 @@ export class AzureRMTools {
 
         vscode.workspace.onDidCloseTextDocument(this.onDocumentClosed, this, deploymentTemplateFileSubscriptionsArray);
 
+        // tslint:disable-next-line: no-this-assignment
         const self: AzureRMTools = this;
         const hoverProvider: vscode.HoverProvider = {
             provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover> {
@@ -631,9 +635,9 @@ export class AzureRMTools {
                     // parameter name.
                     // For instance, it might provide the textbox with the value "[parameters('location')]"
                     // We need to pull out the parameter name "location" (no quotes) from that
-                    const firstSingleQuoteIndex: number = newName.indexOf(`'`);
+                    const firstSingleQuoteIndex: number = newName.indexOf("'");
                     if (firstSingleQuoteIndex >= 0) {
-                        const secondSingleQuoteIndex: number = newName.indexOf(`'`, firstSingleQuoteIndex + 1);
+                        const secondSingleQuoteIndex: number = newName.indexOf("'", firstSingleQuoteIndex + 1);
                         if (secondSingleQuoteIndex >= 0) {
                             newName = newName.substring(firstSingleQuoteIndex + 1, secondSingleQuoteIndex);
                         } else {

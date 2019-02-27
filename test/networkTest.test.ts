@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:promise-function-async
+// tslint:disable:promise-function-async no-implicit-dependencies
 
 import * as dns from "dns";
 import { ITestCallbackContext } from "mocha";
