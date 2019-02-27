@@ -51,8 +51,8 @@
             }
         ],
         "max-line-length": [
-            false,
-            140
+            true,
+            150
         ],
         "member-ordering": [
             false,
@@ -76,7 +76,6 @@
                 "vscode-azureextensiondev"
             ]
         ],
-        "no-use-before-declare": false, // TODO
         "no-increment-decrement": false,
         "no-multiline-string": false,
         "no-object-literal-type-assertion": false,
@@ -120,7 +119,7 @@
         "switch-final-break": false,
         "trailing-comma": false,
         "typedef": [
-            false, // TODO
+            true,
             "call-signature",
             "parameter",
             "property-declaration",

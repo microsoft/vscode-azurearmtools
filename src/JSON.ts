@@ -6,6 +6,7 @@
 // tslint:disable max-classes-per-file // Grandfathered in
 // tslint:disable:function-name // Grandfathered in
 // tslint:disable:cyclomatic-complexity // Grandfathered in
+// tslint:disable:no-use-before-declare
 
 import * as assert from "assert";
 
@@ -99,7 +100,7 @@ export function RightCurlyBracket(startIndex: number): Token {
     return new Token(TokenType.RightCurlyBracket, startIndex, [basic.RightCurlyBracket]);
 }
 
-export function LeftSquareBracket(startIndex: number) {
+export function LeftSquareBracket(startIndex: number): Token {
     return new Token(TokenType.LeftSquareBracket, startIndex, [basic.LeftSquareBracket]);
 }
 
@@ -255,7 +256,9 @@ export function readNumber(iterator: utilities.Iterator<basic.Token>): basic.Tok
             numberBasicTokens.push(iterator.current());
             iterator.moveNext();
 
-            if (iterator.current() && (iterator.current().getType() === basic.TokenType.Dash || iterator.current().getType() === basic.TokenType.Plus)) {
+            if (iterator.current()
+                && (iterator.current().getType() === basic.TokenType.Dash || iterator.current().getType() === basic.TokenType.Plus)
+            ) {
                 // Exponent number sign
                 numberBasicTokens.push(iterator.current());
                 iterator.moveNext();
@@ -390,7 +393,10 @@ export class Tokenizer {
                         switch (this.currentBasicTokenType()) {
                             case basic.TokenType.ForwardSlash:
                                 const lineCommentBasicTokens: basic.Token[] = [basic.ForwardSlash, basic.ForwardSlash];
-                                while (this.moveNextBasicToken() && this.currentBasicTokenType() !== basic.TokenType.NewLine && this.currentBasicTokenType() !== basic.TokenType.CarriageReturnNewLine) {
+                                while (this.moveNextBasicToken()
+                                    && this.currentBasicTokenType() !== basic.TokenType.NewLine
+                                    && this.currentBasicTokenType() !== basic.TokenType.CarriageReturnNewLine
+                                ) {
                                     lineCommentBasicTokens.push(this.currentBasicToken());
                                 }
                                 this._current = Comment(this._currentTokenStartIndex, lineCommentBasicTokens);
@@ -825,9 +831,13 @@ export class ParseResult {
      * line and column indexes.
      */
     public getCharacterIndex(lineIndex: number, columnIndex: number): number {
+        // tslint:disable-next-line:max-line-length
         assert(0 <= lineIndex, `Cannot get a character index for a negative line index (${lineIndex}).`);
+        // tslint:disable-next-line:max-line-length
         assert(lineIndex < this.lineLengths.length, `Cannot get a character index for a line index greater than the number of parsed lines (lineIndex: ${lineIndex}, lines parsed: ${this.lineLengths.length}).`);
+        // tslint:disable-next-line:max-line-length
         assert(0 <= columnIndex, `Cannot get a character index for a negative columnIndex (${columnIndex}).`);
+        // tslint:disable-next-line:max-line-length
         assert(columnIndex <= this.getMaxColumnIndex(lineIndex), `Cannot get a character index for a columnIndex (${columnIndex}) that is greater than the lineIndex's (${lineIndex}) line max column index (${this.getMaxColumnIndex(lineIndex)}).`);
 
         let characterIndex = columnIndex;
@@ -871,6 +881,7 @@ export class ParseResult {
     }
 
     private getToken(tokenIndex: number): Token {
+        // tslint:disable-next-line:max-line-length
         assert(0 <= tokenIndex && tokenIndex < this.tokenCount, `The tokenIndex (${tokenIndex}) must always be between 0 and the token count - 1 (${this.tokenCount - 1}).`);
 
         return this._tokens[tokenIndex];

@@ -2,9 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:no-unused-expression
-// tslint:disable:max-func-body-length
-// tslint:disable:promise-function-async
+// tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length
 
 import * as assert from "assert";
 import { DeploymentTemplate, Histogram, IncorrectArgumentsCountIssue, Json, Language, ParameterDefinition, Reference, ReferenceInVariableDefinitionJSONVisitor, UnrecognizedFunctionIssue } from "../extension.bundle";

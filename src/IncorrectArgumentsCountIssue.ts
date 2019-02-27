@@ -20,7 +20,13 @@ export class IncorrectArgumentsCountIssue extends language.Issue {
     }
 
     public translate(movement: number): language.Issue {
-        return new IncorrectArgumentsCountIssue(this.span.translate(movement), this.message, this.functionName, this.actual, this.minExpected, this.maxExpected);
+        return new IncorrectArgumentsCountIssue(
+            this.span.translate(movement),
+            this.message,
+            this.functionName,
+            this.actual,
+            this.minExpected,
+            this.maxExpected);
     }
 
     public get functionName(): string {
