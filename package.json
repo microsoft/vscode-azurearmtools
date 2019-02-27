@@ -77,10 +77,10 @@
     "webpack-profile": "webpack --profile --json --mode production > webpack-stats.json && echo Use http://webpack.github.io/analyse to analyze the stats"
   },
   "devDependencies": {
+    "@types/fs-extra": "^5.0.5",
     "@types/mocha": "^2.2.41",
     "@types/node": "^8.0.17",
     "@types/opn": "^5.1.0",
-    "@types/fs-extra": "^5.0.5",
     "gulp": "^4.0.0",
     "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
@@ -88,11 +88,11 @@
     "mocha-multi-reporters": "^1.1.7",
     "remap-istanbul": "^0.8.4",
     "ts-node": "^7.0.1",
-    "tslint": "^5.12.1",
+    "tslint": "^5.13.0",
     "tslint-microsoft-contrib": "5.0.3",
-    "typescript": "^3.3.3",
-    "vsce": "^1.55.0",
-    "vscode": "^1.1.28",
+    "typescript": "^3.3.3333",
+    "vsce": "^1.57.1",
+    "vscode": "^1.1.30",
     "vscode-azureextensiondev": "0.1.8",
     "webpack": "4.28.1",
     "webpack-cli": "^3.1.2"
@@ -101,6 +101,6 @@
     "fs-extra": "^7.0.1",
     "moment": "^2.24.0",
     "opn": "^5.4.0",
-    "vscode-azureextensionui": "~0.20.3"
+    "vscode-azureextensionui": "^0.20.4"
   }
 }
