@@ -316,5 +316,21 @@ suite("Utilities", () => {
         test("with 'https://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#'", () => {
             assert.equal(true, Utilities.isValidSchemaUri("https://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#"));
         });
+
+        test("subscription deployment template: 'https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#'", () => {
+            assert.equal(true, Utilities.isValidSchemaUri("https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#"));
+        });
+
+        test("subscription deployment template: 'http://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#'", () => {
+            assert.equal(true, Utilities.isValidSchemaUri("http://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#"));
+        });
+
+        test("subscription deployment template: 'http://schema.management.azure.com/schemas/xxxx-yy-zz/subscriptionDeploymentTemplate.json#'", () => {
+            assert.equal(true, Utilities.isValidSchemaUri("http://schema.management.azure.com/schemas/xxxx-yy-zz/subscriptionDeploymentTemplate.json#"));
+        });
+
+        test("false: subscription deployment template: 'http://schema.management.azure.com/schemas/xxxx-yy-zz/SubscriptionDeploymentTemplate.json#'", () => {
+            assert.equal(false, Utilities.isValidSchemaUri("http://schema.management.azure.com/schemas/xxxx-yy-zz/SubscriptionDeploymentTemplate.json#"));
+        });
     });
 });
