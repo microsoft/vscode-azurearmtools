@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable:no-use-before-declare
+
 import * as assert from "assert";
 
 import * as Json from "./JSON";
@@ -159,7 +161,8 @@ export class DeploymentTemplate {
                                 variablesObject.accept(referenceInVariablesFinder);
 
                                 for (const referenceSpan of referenceInVariablesFinder.referenceSpans) {
-                                    parseErrors.push(new language.Issue(referenceSpan, "reference() cannot be invoked inside of a variable definition."));
+                                    parseErrors.push(
+                                        new language.Issue(referenceSpan, "reference() cannot be invoked inside of a variable definition."));
                                 }
                             }
                         }
@@ -180,16 +183,19 @@ export class DeploymentTemplate {
             this._warnings = [];
 
             for (const parameterDefinition of this.parameterDefinitions) {
-                const parameterReferences: Reference.List = this.findReferences(Reference.ReferenceKind.Parameter, parameterDefinition.name.toString());
+                const parameterReferences: Reference.List =
+                    this.findReferences(Reference.ReferenceKind.Parameter, parameterDefinition.name.toString());
                 if (parameterReferences.length === 1) {
-                    this._warnings.push(new language.Issue(parameterDefinition.name.span, `The parameter '${parameterDefinition.name.toString()}' is never used.`));
+                    this._warnings.push(
+                        new language.Issue(parameterDefinition.name.span, `The parameter '${parameterDefinition.name.toString()}' is never used.`));
                 }
             }
 
             for (const variableDefinition of this.variableDefinitions) {
                 const variableReferences: Reference.List = this.findReferences(Reference.ReferenceKind.Variable, variableDefinition.name.toString());
                 if (variableReferences.length === 1) {
-                    this._warnings.push(new language.Issue(variableDefinition.name.span, `The variable '${variableDefinition.name.toString()}' is never used.`));
+                    this._warnings.push(
+                        new language.Issue(variableDefinition.name.span, `The variable '${variableDefinition.name.toString()}' is never used.`));
                 }
             }
         }

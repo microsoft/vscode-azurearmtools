@@ -2,10 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:max-func-body-length
-// tslint:disable:cyclomatic-complexity
-// tslint:disable:promise-function-async
-// tslint:disable:align
+// tslint:disable:max-func-body-length cyclomatic-complexity promise-function-async align no-use-before-declare max-line-length max-line-length
 
 import * as assert from "assert";
 import { Completion, DeploymentTemplate, Hover, Json, Language, ParameterDefinition, PositionContext, TLE, Utilities } from "../extension.bundle";

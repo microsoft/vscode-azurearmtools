@@ -2,8 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:no-unused-expression
-// tslint:disable:max-func-body-length
+// tslint:disable:no-unused-expression max-func-body-length max-line-length
 
 import * as assert from "assert";
 import { DeploymentTemplate } from "../extension.bundle";

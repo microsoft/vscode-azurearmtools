@@ -29,7 +29,8 @@ suite("AzureRMAssets", () => {
         });
 
         test("findByName", () => {
-            const metadata = new FunctionsMetadata([new FunctionMetadata("hi", "", "", 0, 0, []), new FunctionMetadata("MyFunction", "", "", 0, 0, [])]);
+            const metadata = new FunctionsMetadata(
+                [new FunctionMetadata("hi", "", "", 0, 0, []), new FunctionMetadata("MyFunction", "", "", 0, 0, [])]);
 
             assert.equal(metadata.findbyName("MyFunction").name, "MyFunction");
             assert.equal(metadata.findbyName("myfunction").name, "MyFunction");
@@ -107,6 +108,7 @@ suite("AzureRMAssets", () => {
 
             test("with two function signatures with only name property", () => {
                 assert.deepStrictEqual(
+                    // tslint:disable-next-line:max-line-length
                     FunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z" }, { "name": "b", "expectedUsage": "y", "description": "7" } ] }`),
                     [
                         new FunctionMetadata("a", "z", undefined, undefined, undefined, []),

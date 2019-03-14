@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable:max-line-length
+
 import * as assert from "assert";
 
 import * as Completion from "./Completion";
@@ -10,7 +12,6 @@ import * as Json from "./JSON";
 import * as language from "./Language";
 import * as Reference from "./Reference";
 import * as TLE from "./TLE";
-import * as Utilities from "./Utilities";
 
 import { AzureRMAssets, FunctionMetadata } from "./AzureRMAssets";
 import { DeploymentTemplate } from "./DeploymentTemplate";

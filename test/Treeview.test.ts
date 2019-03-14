@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:max-func-body-length align
+// tslint:disable:max-func-body-length align no-use-before-declare max-line-length
 
 import * as assert from "assert";
 import * as path from "path";
@@ -12,7 +12,7 @@ import { ext, JsonOutlineProvider, shortenTreeLabel, Span } from "../extension.b
 suite("TreeView", async (): Promise<void> => {
     suite("shortenTreeLabel", async (): Promise<void> => {
         test("shortenTreeLabel", () => {
-            function testShorten(label: string, expected: string) {
+            function testShorten(label: string, expected: string): void {
                 let shortenedLabel = shortenTreeLabel(label);
                 assert.equal(shortenedLabel, expected);
             }
@@ -53,7 +53,9 @@ suite("TreeView", async (): Promise<void> => {
                 assert.equal(!!provider, true, "JSON outline provider not found");
             }
 
-            mySetup().then(done, () => { assert.fail("Setup failed"); });
+            mySetup().then(done, () => {
+                assert.fail("Setup failed");
+            });
         });
 
         async function testChildren(template: string, expected: ITestTreeItem[]): Promise<void> {

@@ -63,7 +63,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             500);
     }
 
-    public refresh() {
+    public refresh(): void {
         this.onDidChangeTreeDataEmitter.fire(void 0);
     }
 
@@ -135,7 +135,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         return treeItem;
     }
 
-    public goToDefinition(range: vscode.Range) {
+    public goToDefinition(range: vscode.Range): void {
         const editor: vscode.TextEditor = vscode.window.activeTextEditor;
 
         // Center the method in the document
@@ -206,7 +206,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     /**
      * Returns an IElementInfo that describes either an array element or an object element (a property)
      */
-    private getElementInfo(childElement: Json.Property | Json.ObjectValue, elementInfo?: IElementInfo) {
+    private getElementInfo(childElement: Json.Property | Json.ObjectValue, elementInfo?: IElementInfo): string {
         let collapsible = false;
 
         // Is childElement an Object (thus an array element, e.g. a top-level element of "resources")
@@ -335,7 +335,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         return undefined;
     }
 
-    private updateTreeState() {
+    private updateTreeState(): void {
         const activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
         const document: vscode.TextDocument = !!activeEditor ? activeEditor.document : null;
         this.parseTree(document);
@@ -352,7 +352,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         return !!document && isLanguageIdSupported(document.languageId) && Utilities.isValidSchemaUri(this.getSchemaUri());
     }
 
-    private setTreeViewContext(visible: boolean) {
+    private setTreeViewContext(visible: boolean): void {
         vscode.commands.executeCommand('setContext', 'showArmJsonView', visible);
     }
 
@@ -406,7 +406,8 @@ export interface IElementInfo {
 }
 
 /**
- * Shortens a label in a way intended to keep the important information but make it easier to read and shorter (so you can read more in the limited horizontal space)
+ * Shortens a label in a way intended to keep the important information but make it easier to read
+ * and shorter (so you can read more in the limited horizontal space)
  */
 export function shortenTreeLabel(label: string): string {
     let originalLabel = label;

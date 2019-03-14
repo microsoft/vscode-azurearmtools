@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable:no-use-before-declare
+
 import * as fse from 'fs-extra';
 import * as path from "path";
 

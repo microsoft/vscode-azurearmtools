@@ -27,8 +27,8 @@ function hasInternetConnection(): Promise<boolean> {
  * to the internet, then the test will be skipped.
  */
 // tslint:disable-next-line:no-any
-export function networkTest(testName: string, testFunction: () => void | Promise<any>) {
-    test(testName, function (this: ITestCallbackContext) {
+export function networkTest(testName: string, testFunction: () => void | Promise<any>): void {
+    test(testName, function (this: ITestCallbackContext): Promise<void> {
         this.timeout(10000);
 
         return hasInternetConnection()
