@@ -152,7 +152,10 @@ export function getCombinedText(values: { toString(): string }[]): string {
 }
 
 export function isValidSchemaUri(schema: string): boolean {
-    return schema ? schema.match(/https?:\/\/schema\.management\.azure\.com\/schemas\/[^"\/]+\/(deploymentTemplate|subscriptionDeploymentTemplate)\.json/) !== null : false;
+    return schema ?
+        // tslint:disable-next-line:max-line-length
+        schema.match(/https?:\/\/schema\.management\.azure\.com\/schemas\/[^"\/]+\/(deploymentTemplate|subscriptionDeploymentTemplate)\.json/) !== null :
+        false;
 }
 
 /**
