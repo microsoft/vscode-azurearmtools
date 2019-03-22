@@ -13,6 +13,9 @@ export function startArmLanguageClient(context: ExtensionContext): void {
     // let serverExe = 'dotnet';
 
     let serverExe = 'C:\\Users\\stephwe\\Repos\\arm-language-server\\arm-language-server\\bin\\Debug\\netcoreapp2.2\\win-x64\\arm-language-server.exe';
+    let serverDll = 'C:\\Users\\stephwe\\Repos\\arm-language-server\\arm-language-server\\bin\\Debug\\netcoreapp2.2\\arm-language-server.dll';
+    serverExe = 'c:\\Users\\stephwe\\.dotnet\\x64\\dotnet.exe';
+
     // let serverExe = context.asAbsolutePath('D:/Development/Omnisharp/omnisharp-roslyn/artifacts/publish/OmniSharp.Stdio/win7-x64/OmniSharp.exe');
     // The debug options for the server
     // let debugOptions = { execArgv: ['-lsp', '-d' };5
@@ -20,8 +23,8 @@ export function startArmLanguageClient(context: ExtensionContext): void {
     // If the extension is launched in debug mode then the debug server options are used
     // Otherwise the run options are used
     let serverOptions: ServerOptions = {
-        run: { command: serverExe, args: ['-lsp', '-d'] }, //TODO:
-        debug: { command: serverExe, args: ['-lsp', '-d'] } // TODO:         let debugOptions = { execArgv: ['--nolazy', '--debug=6005', '--inspect'] };
+        run: { command: serverExe, args: [serverDll, '-lsp', '-d'] }, //TODO:
+        debug: { command: serverExe, args: [serverDll, '-lsp', '-d'] } // TODO:         let debugOptions = { execArgv: ['--nolazy', '--debug=6005', '--inspect'] };
     };
 
     // Options to control the language client
