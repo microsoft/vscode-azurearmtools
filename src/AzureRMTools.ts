@@ -14,6 +14,7 @@ import { Histogram } from "./Histogram";
 import * as Hover from "./Hover";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 import * as language from "./Language";
+import { startArmLanguageClient } from "./languageclient/startArmLanguageClient";
 import { PositionContext } from "./PositionContext";
 import * as Reference from "./Reference";
 import { Stopwatch } from "./Stopwatch";
@@ -286,6 +287,8 @@ export class AzureRMTools {
         deploymentTemplateFileSubscriptionsArray.push(this._diagnosticsCollection);
 
         this._deploymentTemplateFileSubscriptions = vscode.Disposable.from(...deploymentTemplateFileSubscriptionsArray);
+
+        startArmLanguageClient(ext.context);
     }
 
     private unhookDeploymentFileEvents(): void {
