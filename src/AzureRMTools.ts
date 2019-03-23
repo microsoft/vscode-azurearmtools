@@ -288,6 +288,7 @@ export class AzureRMTools {
 
         this._deploymentTemplateFileSubscriptions = vscode.Disposable.from(...deploymentTemplateFileSubscriptionsArray);
 
+        // TODO: Should we really shut it down when doc is closed?
         startArmLanguageClient(ext.context);
     }
 
