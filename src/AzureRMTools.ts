@@ -6,7 +6,7 @@
 
 import * as assert from "assert";
 import * as vscode from "vscode";
-import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createTelemetryReporter, IActionContext, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
+import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createTelemetryReporter, IActionContext, registerUIExtensionVariables, TelemetryProperties, registerCommand } from "vscode-azureextensionui";
 import * as Completion from "./Completion";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
@@ -38,6 +38,29 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
 
         // tslint:disable-next-line: no-use-before-declare
         context.subscriptions.push(new AzureRMTools(context));
+
+        registerCommand('azurerm-vscode.expand', async () => {
+            let editor = vscode.window.activeTextEditor;
+            if (editor) {
+                let document = editor.document;
+                let originalText = document.getText();
+                let newText = originalText.replace(/(\\r\\n)|\\n|\\r/g, '\n');
+                await editor.edit(editBuilder => {
+                    editBuilder.replace(new vscode.Range(0, 0, Number.MAX_VALUE, Number.MAX_VALUE), newText);
+                });
+            }
+        });
+        registerCommand('azurerm-vscode.collapse', async () => {
+            let editor = vscode.window.activeTextEditor;
+            if (editor) {
+                let document = editor.document;
+                let originalText = document.getText();
+                let newText = originalText.replace(/(\n\r)|\n|\r/g, '\\n');
+                await editor.edit(editBuilder => {
+                    editBuilder.replace(new vscode.Range(0, 0, Number.MAX_VALUE, Number.MAX_VALUE), newText);
+                });
+            }
+        });
     });
 }
 

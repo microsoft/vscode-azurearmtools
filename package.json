@@ -58,7 +58,19 @@
           "when": "showArmJsonView"
         }
       ]
-    }
+    },
+    "commands": [
+      {
+        "command": "azurerm-vscode.expand",
+        "title": "Expand multiline strings",
+        "category": "ARM"
+      },
+      {
+        "command": "azurerm-vscode.collapse",
+        "title": "Collapse multiline strings",
+        "category": "ARM"
+      }
+    ]
   },
   "main": "main",
   "scripts": {
