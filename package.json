@@ -39,6 +39,23 @@
     "onLanguage:jsonc"
   ],
   "contributes": {
+    "grammars": [
+      {
+        "injectTo": [
+          "source.json"
+        ],
+        "scopeName": "detect-arm.injection.json.comments",
+        "path": "dist/grammars/detect-arm.injection.tmLanguage.json"
+      },
+      {
+        "scopeName": "source.json.arm",
+        "path": "dist/grammars/JSONC.arm.tmLanguage.json"
+      },
+      {
+        "scopeName": "source.tle.arm",
+        "path": "dist/grammars/arm-expression-string.tmLanguage.json"
+      }
+    ],
     "configuration": {
       "type": "object",
       "title": "Azure Resource Manager Tools Configuration Settings",
@@ -70,11 +87,13 @@
     "lint-fix": "tslint --project tsconfig.json -t verbose --fix",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "pretest": "npm run build && npm run webpack-prod",
+    "pretest-dev": "npm run build && npm run webpack",
     "test": "gulp test",
     "all": "npm i && npm run lint && npm test",
     "webpack": "gulp webpack-dev",
     "webpack-prod": "gulp webpack-prod",
-    "webpack-profile": "webpack --profile --json --mode production > webpack-stats.json && echo Use http://webpack.github.io/analyse to analyze the stats"
+    "webpack-profile": "webpack --profile --json --mode production > webpack-stats.json && echo Use http://webpack.github.io/analyse to analyze the stats",
+    "build-grammars": "gulp build-grammars"
   },
   "devDependencies": {
     "@types/fs-extra": "^5.0.5",
@@ -82,6 +101,7 @@
     "@types/node": "^8.0.17",
     "@types/opn": "^5.1.0",
     "gulp": "^4.0.0",
+    "gulp-cli": "^2.1.0",
     "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
     "mocha-junit-reporter": "^1.18.0",

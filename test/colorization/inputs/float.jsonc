@@ -1,0 +1,10 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "$note": "I can't actually find any valid uses of a float literal, but they are definitely parsed",
+    "$TEST": "[1.1]",
+    "$TEST": "[-0.2]",
+    "$TEST": "[-1.2e34]",
+    "$TEST": "[1E2]",
+    "$TEST": "[1E+2]",
+    "$TEST": "[1E-2]"
+}

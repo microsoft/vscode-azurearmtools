@@ -1,0 +1,3 @@
+TEST STRING: ""
+"                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.begin.json.arm
+"                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.end.json.arm

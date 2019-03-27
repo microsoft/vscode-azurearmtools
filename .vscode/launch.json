@@ -39,7 +39,8 @@
             "env": {
                 "DEBUGTELEMETRY": "1",
                 "NODE_DEBUG": ""
-            }
+            },
+            "preLaunchTask": "npm: build-grammars"
         },
         {
             "name": "Launch Tests",
@@ -56,7 +57,7 @@
             "outFiles": [
                 "${workspaceFolder}/dist/**/*.js"
             ],
-            "preLaunchTask": "npm: webpack",
+            "preLaunchTask": "npm: pretest-dev",
             "env": {
                 "MOCHA_grep": "", // RegExp of tests to run (empty for all)
                 "MOCHA_enableTimeouts": "0", // Disable time-outs

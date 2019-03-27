@@ -1,0 +1,13 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    // Variables
+    "$TEST": "[variables('a')]",
+    // Parameters
+    "$TEST": "[ parameters ( 'b' ) ]",
+    // User function
+    "$TEST": "[my.parameters('c')]",
+    // Built-in function
+    "$TEST": "[max(1)]",
+    // Unknown functions
+    "$TEST": "[unknown(1)]",
+}
