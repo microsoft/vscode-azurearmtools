@@ -1,0 +1,48 @@
+{                   source.json meta.structure.dictionary.json punctuation.definition.dictionary.begin.json
+                    source.json meta.structure.dictionary.json
+"                   source.json meta.structure.dictionary.json string.json support.type.property-name.json punctuation.support.type.property-name.begin.json
+$schema             source.json meta.structure.dictionary.json string.json support.type.property-name.json
+"                   source.json meta.structure.dictionary.json string.json support.type.property-name.json punctuation.support.type.property-name.end.json
+:                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json punctuation.separator.dictionary.key-value.json
+                    source.json meta.structure.dictionary.json meta.structure.dictionary.value.json
+"                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json string.quoted.double.json punctuation.definition.string.begin.json
+http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#
+                    source.json meta.structure.dictionary.json meta.structure.dictionary.value.json string.quoted.double.json
+"                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json string.quoted.double.json punctuation.definition.string.end.json
+,                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json punctuation.separator.dictionary.pair.json
+                    source.json meta.structure.dictionary.json
+"                   source.json meta.structure.dictionary.json string.json support.type.property-name.json punctuation.support.type.property-name.begin.json
+parameters          source.json meta.structure.dictionary.json string.json support.type.property-name.json
+"                   source.json meta.structure.dictionary.json string.json support.type.property-name.json punctuation.support.type.property-name.end.json
+:                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json punctuation.separator.dictionary.key-value.json
+                    source.json meta.structure.dictionary.json meta.structure.dictionary.value.json
+{                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json punctuation.definition.dictionary.begin.json
+                    source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json
+"                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json string.json support.type.property-name.json punctuation.support.type.property-name.begin.json
+guid                source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json string.json support.type.property-name.json
+"                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json string.json support.type.property-name.json punctuation.support.type.property-name.end.json
+:                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json punctuation.separator.dictionary.key-value.json
+                    source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json
+{                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json punctuation.definition.dictionary.begin.json
+                    source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json
+"                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json string.json support.type.property-name.json punctuation.support.type.property-name.begin.json
+type                source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json string.json support.type.property-name.json
+"                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json string.json support.type.property-name.json punctuation.support.type.property-name.end.json
+:                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json punctuation.separator.dictionary.key-value.json
+                    source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json
+"                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json string.quoted.double.json punctuation.definition.string.begin.json
+string              source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json string.quoted.double.json
+"                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json string.quoted.double.json punctuation.definition.string.end.json
+,                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json punctuation.separator.dictionary.pair.json
+                    source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json
+"                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json string.json support.type.property-name.json punctuation.support.type.property-name.begin.json
+defaultValue        source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json string.json support.type.property-name.json
+"                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json string.json support.type.property-name.json punctuation.support.type.property-name.end.json
+:                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json punctuation.separator.dictionary.key-value.json
+                    source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json
+1.23                source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json constant.numeric.json
+                    source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json
+}                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json punctuation.definition.dictionary.end.json
+                    source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json meta.structure.dictionary.value.json
+}                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json meta.structure.dictionary.json punctuation.definition.dictionary.end.json
+}                   source.json meta.structure.dictionary.json punctuation.definition.dictionary.end.json

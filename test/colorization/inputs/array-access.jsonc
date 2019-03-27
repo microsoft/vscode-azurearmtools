@@ -1,0 +1,11 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    // After func call
+    "$TEST": "[my.var('array0')[1]]",
+    // After another array access
+    "$TEST": "[a() [ 1 ] [ 2 ] ]",
+    // After property access
+    "$TEST": "[my.func(1).array1[0]]",
+    // Real example
+    "$TEST": "[my.var('array0')[copyIndex()]]"
+}

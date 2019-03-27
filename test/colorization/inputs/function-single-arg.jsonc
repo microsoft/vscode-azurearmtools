@@ -1,0 +1,7 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "$TEST": "[max(1.2)]",
+    "$TEST": "[me.say('hello')]",
+    "$TEST": "[a(b())]",
+    "$TEST": "[ a . b ( c ( 'string' ) ) ]"
+}

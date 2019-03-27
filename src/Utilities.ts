@@ -151,7 +151,7 @@ export function getCombinedText(values: { toString(): string }[]): string {
     return result;
 }
 
-export function isValidSchemaUri(schema: string): boolean {
+export function isArmSchemaUri(schema: string): boolean {
     return schema ?
         // tslint:disable-next-line:max-line-length
         schema.match(/https?:\/\/schema\.management\.azure\.com\/schemas\/[^"\/]+\/(deploymentTemplate|subscriptionDeploymentTemplate)\.json/) !== null :

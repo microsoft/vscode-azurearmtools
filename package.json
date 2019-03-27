@@ -39,6 +39,17 @@
     "onLanguage:jsonc"
   ],
   "contributes": {
+    "grammars": [
+      {
+        "language": "jsonc",
+        "scopeName": "source.json.comments",
+        "path": "grammars/JSONC.arm.tmLanguage.json"
+      },
+      {
+        "scopeName": "source.expression-string.arm-deployment",
+        "path": "dist/arm-deployment-tle.tmLanguage.json"
+      }
+    ],
     "configuration": {
       "type": "object",
       "title": "Azure Resource Manager Tools Configuration Settings",
@@ -74,7 +85,8 @@
     "all": "npm i && npm run lint && npm test",
     "webpack": "gulp webpack-dev",
     "webpack-prod": "gulp webpack-prod",
-    "webpack-profile": "webpack --profile --json --mode production > webpack-stats.json && echo Use http://webpack.github.io/analyse to analyze the stats"
+    "webpack-profile": "webpack --profile --json --mode production > webpack-stats.json && echo Use http://webpack.github.io/analyse to analyze the stats",
+    "build-grammars": "gulp build-grammars"
   },
   "devDependencies": {
     "@types/fs-extra": "^5.0.5",
@@ -101,6 +113,8 @@
     "fs-extra": "^7.0.1",
     "moment": "^2.24.0",
     "opn": "^5.4.0",
-    "vscode-azureextensionui": "^0.20.4"
+    "vscode-azureextensionui": "^0.20.4",
+    "vscode-jsonrpc": "^4.0.0",
+    "vscode-languageclient": "^5.2.1"
   }
 }

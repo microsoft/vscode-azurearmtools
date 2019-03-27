@@ -1,0 +1,17 @@
+TEST STRING: "[1.]"
+"[                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.begin.arm-deployment
+1                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment constant.numeric.arm-deployment
+.                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment invalid.illegal.expected-expression.arm-deployment
+]"                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.end.arm-deployment
+
+TEST STRING: "[-.2]"
+"[                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.begin.arm-deployment
+-.                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment invalid.illegal.expected-expression.arm-deployment
+2                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment constant.numeric.arm-deployment
+]"                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.end.arm-deployment
+
+TEST STRING: "[2e]"
+"[                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.begin.arm-deployment
+2                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment constant.numeric.arm-deployment
+e                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment invalid.illegal.expected-expression.arm-deployment
+]"                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.end.arm-deployment

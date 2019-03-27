@@ -1,0 +1,77 @@
+comment
+comment.block.documentation
+comment.block.preprocessor
+comment.documentation
+constant
+constant.character
+constant.character.entity
+constant.character.escape
+constant.language
+constant.numeric
+constant.other.symbol
+entity.name.exception
+entity.name.function
+entity.name.section
+entity.name.tag
+entity.name.tag.css
+entity.name.type
+entity.other.attribute-name.html
+entity.other.inherited-class
+invalid.illegal
+keyword
+keyword.operator
+keyword.other.important
+markup.bold
+markup.bold
+markup.changed
+markup.deleted
+markup.error
+markup.heading
+markup.inline.raw
+markup.inserted
+markup.italic
+markup.italic
+markup.list
+markup.output
+markup.prompt
+markup.quote
+markup.raw
+markup.traceback
+markup.underline
+meta.diff.header.from-file
+meta.diff.header.to-file
+meta.diff.index
+meta.diff.range
+meta.link
+meta.property-name
+meta.property-value
+meta.property-value constant.other
+meta.selector
+meta.selector entity
+meta.selector entity punctuation
+meta.separator
+meta.tag
+meta.tag entity.other.attribute-name
+meta.tag.sgml punctuation.definition.tag.html
+meta.tag.sgml.doctype
+meta.tag.sgml.doctype entity.name.tag
+meta.tag.sgml.doctype string
+punctuation
+punctuation.definition.comment
+punctuation.definition.entity
+punctuation.definition.tag.begin.html
+punctuation.definition.tag.end.html
+punctuation.definition.tag.html
+storage
+storage.type
+string
+string.regexp
+support.class
+support.constant
+support.constant.property-value
+support.function
+support.type
+support.type.property-name
+support.variable
+variable
+variable.language

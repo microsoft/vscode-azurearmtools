@@ -113,7 +113,7 @@ export class DeploymentTemplate {
     }
 
     public hasValidSchemaUri(): boolean {
-        return Utilities.isValidSchemaUri(this.schemaUri);
+        return Utilities.isArmSchemaUri(this.schemaUri);
     }
 
     public get errors(): Promise<language.Issue[]> {

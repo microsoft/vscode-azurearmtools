@@ -1,0 +1,22 @@
+TEST STRING: "[max()]"
+"[                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.begin.arm-deployment
+max                 source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment meta.function-call.arm-deployment support.function.builtin.arm-deployment
+()                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment meta.function-call.arm-deployment meta.brace.round.arm-deployment
+]"                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.end.arm-deployment
+
+TEST STRING: "[$max()]"
+"[                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.begin.arm-deployment
+$max                source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment meta.function-call.arm-deployment entity.name.function.arm-deployment
+()                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment meta.function-call.arm-deployment meta.brace.round.arm-deployment
+]"                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.end.arm-deployment
+
+TEST STRING: "[ _$max12$_$_ ( ) ]"
+"[                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.begin.arm-deployment
+                    source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment meta.function-call.arm-deployment
+_$max12$_$_         source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment meta.function-call.arm-deployment entity.name.function.arm-deployment
+                    source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment meta.function-call.arm-deployment
+(                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment meta.function-call.arm-deployment meta.brace.round.arm-deployment
+                    source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment meta.function-call.arm-deployment meta.function-arguments.arm-deployment
+)                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment meta.function-call.arm-deployment meta.brace.round.arm-deployment
+                    source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment
+]"                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.end.arm-deployment

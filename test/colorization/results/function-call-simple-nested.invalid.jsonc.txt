@@ -1,0 +1,18 @@
+TEST STRING: "[a)]"
+"[                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.begin.arm-deployment
+a)                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment invalid.illegal.expected-expression.arm-deployment
+]"                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.end.arm-deployment
+
+TEST STRING: "[a.b]"
+"[                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.begin.arm-deployment
+a                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment invalid.illegal.expected-expression.arm-deployment
+.                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment meta.property-access.arm-deployment punctuation.accessor.property.arm-deployment
+b                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment meta.property-access.arm-deployment entity.name.tag.property.arm-deployment
+]"                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.end.arm-deployment
+
+TEST STRING: "[b())]"
+"[                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.begin.arm-deployment
+b                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment meta.function-call.arm-deployment entity.name.function.arm-deployment
+()                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment meta.function-call.arm-deployment meta.brace.round.arm-deployment
+)                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment invalid.illegal.expected-expression.arm-deployment
+]"                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.end.arm-deployment

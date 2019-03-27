@@ -1,0 +1,3 @@
+TEST STRING: ""
+"                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json string.quoted.double.json punctuation.definition.string.begin.json
+"                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json string.quoted.double.json punctuation.definition.string.end.json

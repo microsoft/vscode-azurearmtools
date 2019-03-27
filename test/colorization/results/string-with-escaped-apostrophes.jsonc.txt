@@ -1,0 +1,15 @@
+TEST STRING: "['That''s all, folks!']"
+"[                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.begin.arm-deployment
+'                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment string.quoted.single.arm-deployment punctuation.definition.string.begin.arm-deployment
+That                source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment string.quoted.single.arm-deployment
+''                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment string.quoted.single.arm-deployment constant.character.escape.arm-deployment
+s all, folks!       source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment string.quoted.single.arm-deployment
+'                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment string.quoted.single.arm-deployment punctuation.definition.string.end.arm-deployment
+]"                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.end.arm-deployment
+
+TEST STRING: "['''''']"
+"[                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.begin.arm-deployment
+'                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment string.quoted.single.arm-deployment punctuation.definition.string.begin.arm-deployment
+''''                source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment string.quoted.single.arm-deployment constant.character.escape.arm-deployment
+'                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment string.quoted.single.arm-deployment punctuation.definition.string.end.arm-deployment
+]"                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.end.arm-deployment

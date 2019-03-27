@@ -349,7 +349,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     }
 
     private isArmTemplate(document?: vscode.TextDocument): boolean {
-        return !!document && isLanguageIdSupported(document.languageId) && Utilities.isValidSchemaUri(this.getSchemaUri());
+        return !!document && isLanguageIdSupported(document.languageId) && Utilities.isArmSchemaUri(this.getSchemaUri());
     }
 
     private setTreeViewContext(visible: boolean): void {

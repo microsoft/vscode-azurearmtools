@@ -1,0 +1,45 @@
+https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#syntax
+
+TODO: Need to handle JSON string escape characters
+
+				{
+					"patterns": [
+						{
+							"name": "constant.character.escape.json.comments",
+							"$comment": "These are JSON string escape characters, not ARM",
+							"match": "(?x) # turn on extended mode\n \\\\ # a literal backslash\n (?: # ...followed by...\n [\"\\\\/bfnrt] # one of these characters\n | # ...or...\n u # a u\n    [0-9a-fA-F]{4}) # and four hex digits",
+						},
+						{
+							"match": "\\\\.",
+							"name": "invalid.illegal.unrecognized-string-escape.arm-deployment"
+						}
+					]
+				}
+
+
+	 case '\'':
+                        while (currentPosition < expression.Length)
+                        {
+                            currentPosition = ExpressionScanner.ScanForward(
+                                expression: expression,
+                                startPosition: currentPosition + 1,
+                                predicate: character => character != '\'');
+
+                            // NOTE(jogao): skip the 2nd \' for next ScanForward
+                            if (currentPosition + 1 < expression.Length && expression[currentPosition + 1] == '\'')
+                            {
+                                currentPosition++;
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+
+
+
+TODO:
+    "$TEST": "[concat('sudo sh config-bootstrap-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 public ',parameters('LicenseKey'),' ',parameters('Licensee'))]",
+    "$TEST": "[concat('sudo sh config-additional-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 ',string(variables('enableHA')),' ',parameters('LicenseKey'),' ',parameters('Licensee'))]"
+
+TODO: parens grouping in expressions not allowed
