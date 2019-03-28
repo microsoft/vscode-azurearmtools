@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// tslint:disable:max-func-body-length
+// tslint:disable:max-func-body-length no-console
 'use strict';
 
 // Turn on to overwrite results files rather than creating new ".txt.actual" files when there are differences.
@@ -33,6 +33,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     // Let's use more reasonable property names in our data
     let data: ITokenInfo[] = rawData.map(d => <ITokenInfo>{ text: d.c, scopes: d.t, colors: d.r });
     let testCases: ITestcase[];
+    let allDataAsString = data.map((d, i) => `${i}: ${d.text} => ${d.scopes}`).join("\n");
 
     // If the test filename contains ".invalid.", then all testcases in it should have at least one "invalid" token.
     // Otherwise they should contain none.
@@ -57,13 +58,18 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
             break;
         }
 
-        // Skip past the end quote, colon and whitespace
-        assert(data[nBegin + 1].text === '"');
-        assert(data[nBegin + 2].text === ':');
-        assert(data[nBegin + 3].text === ' ');
-        nBegin += 4;
+        // Skip to the dictionary value
+        while (!data[nBegin].scopes.includes("meta.structure.dictionary.value")) {
+            nBegin++;
+        }
+        // Skip past the ":" and any whitespace
+        assert(data[nBegin].text === ':');
+        nBegin++;
+        if (data[nBegin].text === ' ') {
+            nBegin++;
+        }
 
-        // Find the end of the test data - either } or ,
+        // Find the end of the test data - after the dictionary value
         let nEnd = data.findIndex((t, i) =>
             i >= nBegin &&
             // end of the dictionary value item
@@ -73,6 +79,11 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
             assert(false, `Couldn't find end of test string starting here:\\n${text}\n${fullString}`);
         }
         nEnd -= 1;
+
+        // Remove the last item if it's comma or }
+        if (data[nEnd].text === ',' || data[nEnd].text === '}') {
+            --nEnd;
+        }
 
         assert(nEnd >= nBegin);
 
@@ -127,13 +138,15 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
         } catch (e) {
             fs.writeFileSync(resultPathToWriteTo, resultsFullString, { flag: 'w' });
 
+            console.log(e.message ? e.message : e.toString());
+
             if (OVERWRITE) {
                 removeActualResultPath = true;
                 // tslint:disable-next-line: max-line-length
-                throw new Error(`*** MODIFIED THE RESULTS FILE (${resultPathToWriteTo}). VERIFY THE CHANGES BEFORE CHECKING IN!\r\n${e.message ? e.message : e.toString()}`);
+                throw new Error(`*** MODIFIED THE RESULTS FILE (${resultPathToWriteTo}). VERIFY THE CHANGES BEFORE CHECKING IN!`);
             } else {
                 fs.writeFileSync(resultPathToWriteTo, resultsFullString, { flag: 'w' });
-                throw new Error(`*** ACTUAL RESULTS ARE IN (${resultPathToWriteTo}).\r\n${e.message ? e.message : e.toString()}`);
+                throw new Error(`*** ACTUAL RESULTS ARE IN (${resultPathToWriteTo}).`);
             }
         }
     } else {

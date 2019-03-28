@@ -102,9 +102,9 @@
                     "$comment": "========================== START OF ADDITION ==========================",
                     "$comment2": "Inside of a dictionary, if the key/value are an ARM deployment schema, then allow expression strings for the rest of the dictionary (expected to be to the end of the file)",
                     "$comment3": "",
-                    "name": "meta.arm-deployment-template",
+                    "$asdfname": "meta.arm-deployment-template",
                     "begin": "\\s*\"\\$schema\":\\s*\"https?:\\/\\/schema.management.azure.com\\/schemas\\/[^\"\\/]+\\/(deploymentTemplate|subscriptionDeploymentTemplate)\\.json#?\"\\s*,",
-                    "beginCaptures": {
+                    "$asdfbeginCaptures": {
                         "0": {
                             "name": "keyword.other.meta.azure-schema.arm-deployment"
                         }

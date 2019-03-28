@@ -16,7 +16,11 @@ parameters          source.json.comments meta.structure.dictionary.json.comments
 defaultValue        source.json.comments meta.structure.dictionary.json.comments string.json.comments support.type.property-name.json.comments
 "                   source.json.comments meta.structure.dictionary.json.comments string.json.comments support.type.property-name.json.comments punctuation.support.type.property-name.end.json.comments
 :                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments punctuation.separator.dictionary.key-value.json.comments
- 1.23               source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments
+                    source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments
+"[                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.begin.arm-deployment
+subscription        source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment meta.function-call.arm-deployment support.function.builtin.arm-deployment
+()                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment meta.function-call.arm-deployment meta.brace.round.arm-deployment
+]"                  source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments meta.expression.arm-deployment keyword.other.expression.end.arm-deployment
                     source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments
 }                   source.json.comments meta.structure.dictionary.json.comments
     }               source.json.comments meta.structure.dictionary.json.comments
