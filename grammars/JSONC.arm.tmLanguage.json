@@ -103,13 +103,13 @@
                     "$comment2": "Inside of a dictionary, if the key/value are an ARM deployment schema, then allow expression strings for the rest of the dictionary (expected to be to the end of the file)",
                     "$comment3": "",
                     "name": "meta.arm-deployment-template",
-                    "begin": "\\s*\"\\$schema\":\\s*\"http:\\/\\/schema.management.azure.com\\/schemas\\/[^\"\\/]+\\/(deploymentTemplate|subscriptionDeploymentTemplate)\\.json#?\"\\s*,",
+                    "begin": "\\s*\"\\$schema\":\\s*\"https?:\\/\\/schema.management.azure.com\\/schemas\\/[^\"\\/]+\\/(deploymentTemplate|subscriptionDeploymentTemplate)\\.json#?\"\\s*,",
                     "beginCaptures": {
                         "0": {
                             "name": "keyword.other.meta.azure-schema.arm-deployment"
                         }
                     },
-                    "end": "$do-not-match-scope-continues-to-end-of-file",
+                    "end": "$no-end-we-want-scope-to-continue-to-end-of-file",
                     "patterns": [
                         {
                             "comment": "the JSON object key",

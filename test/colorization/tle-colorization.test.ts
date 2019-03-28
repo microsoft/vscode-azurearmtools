@@ -6,8 +6,7 @@
 // tslint:disable:max-func-body-length
 'use strict';
 
-// Turn on temporarily to overwrite results files rather than creating new ".txt.actual" files when there are differences.
-// Should normally leave this as false.
+// Turn on to overwrite results files rather than creating new ".txt.actual" files when there are differences.
 const OVERWRITE = true;
 
 import * as assert from 'assert';
@@ -67,9 +66,8 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
         // Find the end of the test data - either } or ,
         let nEnd = data.findIndex((t, i) =>
             i >= nBegin &&
-            (t.text === '}' && t.scopes.includes('punctuation.definition.dictionary.end.json')
-                || (t.text === ',' && t.scopes.includes('punctuation.separator.dictionary.pair.json')
-                )));
+            // end of the dictionary value item
+            !t.scopes.includes('meta.structure.dictionary.value'));
         if (nEnd < 0) {
             let { fullString, text } = getTestcaseResults([{ testString: '', data: data.slice(nBegin) }]);
             assert(false, `Couldn't find end of test string starting here:\\n${text}\n${fullString}`);

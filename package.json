@@ -46,6 +46,12 @@
         "path": "grammars/JSONC.arm.tmLanguage.json"
       },
       {
+        "language": "json",
+        "scopeName": "source.json.comments",
+        "path": "grammars/JSONC.arm.tmLanguage.json",
+        "$asdf": "todo"
+      },
+      {
         "scopeName": "source.expression-string.arm-deployment",
         "path": "dist/arm-deployment-tle.tmLanguage.json"
       }

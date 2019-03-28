@@ -1,0 +1,10 @@
+{
+    // We ignore the version number so that we won't choke on future versions - thus we should consider this a valid template file and do colorization
+    "$schema": "https://schema.management.azure.com/schemas/2031-01-02-alpha/subscriptionDeploymentTemplate.json#",
+    "parameters": {
+        "guid": {
+            "type": "string",
+            "defaultValue": "[subscription()]"
+        }
+    }
+}
