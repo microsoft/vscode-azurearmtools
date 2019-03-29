@@ -43,21 +43,21 @@
       {
         "language": "jsonc",
         "scopeName": "source.json.comments",
-        "path": "grammars/JSONC.arm.tmLanguage.json"
+        "path": "grammars/JSONC.detect-arm.tmLanguage.json"
       },
       {
         "language": "json",
-        "scopeName": "source.json.comments",
+        "scopeName": "source.json",
         "path": "grammars/JSONC.tmLanguage.json",
         "$asdf": "todo"
       },
       {
-        "scopeName": "source.json-with-tle",
-        "path": "dist/JSONC.arm.tmLanguage.json"
+        "scopeName": "source.json.arm",
+        "path": "grammars/JSON.arm.tmLanguage.json"
       },
       {
         "scopeName": "source.expression-string.arm-deployment",
-        "path": "dist/arm-deployment-tle.tmLanguage.json"
+        "path": "dist/arm-expression-string.tmLanguage.json"
       }
     ],
     "configuration": {

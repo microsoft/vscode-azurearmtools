@@ -1,13 +1,10 @@
 {
-    "$from": "// https://github.com/Microsoft/vscode/blob/master/extensions/json/syntaxes/JSONC.tmLanguage.json",
-    "information_for_contributors": [
-        "This file has been converted from https://github.com/Microsoft/vscode-JSON.tmLanguage/blob/master/JSON.tmLanguage",
-        "If you want to provide a fix or improvement, please create a pull request against the original repository.",
-        "Once accepted there, we are happy to receive an update request."
-    ],
+    "$modified_from": "https://github.com/Microsoft/vscode/blob/6850012cf41f74fc48bf025569c0ec383c341df9/extensions/json/syntaxes/JSONC.tmLanguage.json",
     "version": "https://github.com/Microsoft/vscode-JSON.tmLanguage/commit/9bd83f1c252b375e957203f21793316203f61f70",
-    "name": "JSON with comments",
-    "scopeName": "source.json-with-tle",
+    "$comment1": "This is the same as JSON/JSONC except with the addition of support for embedded expressions whenever a string value is allowed, and the scope name extension",
+    "$comment2": "See MODIFICATION comments for changes from JSON/JSONC",
+    "name": "ARM Deployment Template",
+    "scopeName": "source.json.arm",
     "patterns": [
         {
             "include": "#value"
@@ -191,9 +188,9 @@
         "value": {
             "patterns": [
                 {
-                    "$comment": "========================== START OF ADDITION ==========================",
+                    "$comment": "========================== START OF MODIFICATION: ADDED ==========================",
                     "include": "source.expression-string.arm-deployment",
-                    "$commentEnd": "========================== END OF ADDITION =========================="
+                    "$commentEnd": "========================== END OF MODIFICATION =========================="
                 },
                 {
                     "include": "#constant"

@@ -1,0 +1,6 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "$TEST": "[Flüsse.Bäche('array0')[1]]",
+    "$TEST": "[γνῶθι().σεαυτὸν",
+    "$TEST": "[ᠠᠪᠴᠳᠡᠸ()]"
+}

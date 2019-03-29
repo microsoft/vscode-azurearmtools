@@ -1,10 +1,4 @@
 {
-    "$from": "// https://github.com/Microsoft/vscode/blob/master/extensions/json/syntaxes/JSONC.tmLanguage.json",
-    "information_for_contributors": [
-        "This file has been converted from https://github.com/Microsoft/vscode-JSON.tmLanguage/blob/master/JSON.tmLanguage",
-        "If you want to provide a fix or improvement, please create a pull request against the original repository.",
-        "Once accepted there, we are happy to receive an update request."
-    ],
     "version": "https://github.com/Microsoft/vscode-JSON.tmLanguage/commit/9bd83f1c252b375e957203f21793316203f61f70",
     "name": "JSON with comments",
     "scopeName": "source.json.comments",
@@ -99,12 +93,12 @@
             "name": "meta.structure.dictionary.json.comments",
             "patterns": [
                 {
-                    "$comment": "========================== START OF ADDITION ==========================",
-                    "$comment2": "Inside of a dictionary, if the key/value are an ARM deployment schema, then allow expression strings for the rest of the dictionary (expected to be to the end of the file)",
+                    "$comment": "========================== START OF MODIFICATION: ADDED ==========================",
+                    "$comment2": "Inside of a dictionary, if the key/value are a valid ARM deployment schema, then switch to the ARM grammar for property values for the rest of the file",
                     "$comment3": "",
-                    "name": "meta.arm-deployment-template",
+                    "$asdfname": "meta.arm-deployment-template",
                     "begin": "\\s*\"\\$schema\":\\s*\"https?:\\/\\/schema.management.azure.com\\/schemas\\/[^\"\\/]+\\/(deploymentTemplate|subscriptionDeploymentTemplate)\\.json#?\"\\s*,",
-                    "beginCaptures": {
+                    "$asdfbeginCaptures": {
                         "0": {
                             "name": "keyword.other.meta.azure-schema.arm-deployment"
                         }
@@ -134,20 +128,12 @@
                             "name": "meta.structure.dictionary.value.json.comments",
                             "patterns": [
                                 {
-                                    "include": "source.expression-string.arm-deployment"
-                                },
-                                {
-                                    "comment": "the JSON object value",
-                                    "include": "#value"
-                                },
-                                {
-                                    "match": "[^\\s,]",
-                                    "name": "invalid.illegal.expected-dictionary-separator.json.comments"
+                                    "include": "source.json.arm"
                                 }
                             ]
                         }
                     ],
-                    "$commentEnd": "========================== END OF ADDITION =========================="
+                    "$commentEnd": "========================== END OF MODIFICATION =========================="
                 },
                 {
                     "comment": "the JSON object key",

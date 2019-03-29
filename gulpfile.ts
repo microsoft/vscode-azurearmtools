@@ -40,8 +40,8 @@ async function buildGrammars(): Promise<void> {
         fs.mkdirSync('dist');
     }
 
-    const source: string = path.resolve('grammars/arm-deployment-tle.tmLanguage.json');
-    const dest: string = path.resolve('dist/arm-deployment-tle.tmLanguage.json');
+    const source: string = path.resolve('grammars/arm-expression-string.tmLanguage.json');
+    const dest: string = path.resolve('dist/arm-expression-string.tmLanguage.json');
     const sourceGrammar: string = fs.readFileSync(source).toString();
     let grammar: string = sourceGrammar;
     console.log(2);
