@@ -4,7 +4,7 @@
 comment
 constant.character
 constant.character.escape
-constant.escape
+constant.escape2
 constant.language
 constant.numeric
 constant.other.color

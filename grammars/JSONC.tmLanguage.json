@@ -7,7 +7,7 @@
     ],
     "version": "https://github.com/Microsoft/vscode-JSON.tmLanguage/commit/9bd83f1c252b375e957203f21793316203f61f70",
     "name": "JSON with comments",
-    "scopeName": "source.json-with-tle",
+    "scopeName": "source.json.comments",
     "patterns": [
         {
             "include": "#value"
@@ -18,27 +18,27 @@
             "begin": "\\[",
             "beginCaptures": {
                 "0": {
-                    "name": "punctuation.definition.array.begin.json.arm"
+                    "name": "punctuation.definition.array.begin.json.comments"
                 }
             },
             "end": "\\]",
             "endCaptures": {
                 "0": {
-                    "name": "punctuation.definition.array.end.json.arm"
+                    "name": "punctuation.definition.array.end.json.comments"
                 }
             },
-            "name": "meta.structure.array.json.arm",
+            "name": "meta.structure.array.json.comments",
             "patterns": [
                 {
                     "include": "#value"
                 },
                 {
                     "match": ",",
-                    "name": "punctuation.separator.array.json.arm"
+                    "name": "punctuation.separator.array.json.comments"
                 },
                 {
                     "match": "[^\\s\\]]",
-                    "name": "invalid.illegal.expected-array-separator.json.arm"
+                    "name": "invalid.illegal.expected-array-separator.json.comments"
                 }
             ]
         },
@@ -48,26 +48,26 @@
                     "begin": "/\\*\\*(?!/)",
                     "captures": {
                         "0": {
-                            "name": "punctuation.definition.comment.json.arm"
+                            "name": "punctuation.definition.comment.json.comments"
                         }
                     },
                     "end": "\\*/",
-                    "name": "comment.block.documentation.json.arm"
+                    "name": "comment.block.documentation.json.comments"
                 },
                 {
                     "begin": "/\\*",
                     "captures": {
                         "0": {
-                            "name": "punctuation.definition.comment.json.arm"
+                            "name": "punctuation.definition.comment.json.comments"
                         }
                     },
                     "end": "\\*/",
-                    "name": "comment.block.json.arm"
+                    "name": "comment.block.json.comments"
                 },
                 {
                     "captures": {
                         "1": {
-                            "name": "punctuation.definition.comment.json.arm"
+                            "name": "punctuation.definition.comment.json.comments"
                         }
                     },
                     "match": "(//).*$\\n?",
@@ -77,27 +77,78 @@
         },
         "constant": {
             "match": "\\b(?:true|false|null)\\b",
-            "name": "constant.language.json.arm"
+            "name": "constant.language.json.comments"
         },
         "number": {
             "match": "(?x)        # turn on extended mode\n  -?        # an optional minus\n  (?:\n    0       # a zero\n    |       # ...or...\n    [1-9]   # a 1-9 character\n    \\d*     # followed by zero or more digits\n  )\n  (?:\n    (?:\n      \\.    # a period\n      \\d+   # followed by one or more digits\n    )?\n    (?:\n      [eE]  # an e character\n      [+-]? # followed by an option +/-\n      \\d+   # followed by one or more digits\n    )?      # make exponent optional\n  )?        # make decimal portion optional",
-            "name": "constant.numeric.json.arm"
+            "name": "constant.numeric.json.comments"
         },
         "object": {
             "begin": "\\{",
             "beginCaptures": {
                 "0": {
-                    "name": "punctuation.definition.dictionary.begin.json.arm"
+                    "name": "punctuation.definition.dictionary.begin.json.comments"
                 }
             },
             "end": "\\}",
             "endCaptures": {
                 "0": {
-                    "name": "punctuation.definition.dictionary.end.json.arm"
+                    "name": "punctuation.definition.dictionary.end.json.comments"
                 }
             },
-            "name": "meta.structure.dictionary.json.arm",
+            "name": "meta.structure.dictionary.json.comments",
             "patterns": [
+                {
+                    "$comment": "========================== START OF ADDITION ==========================",
+                    "$comment2": "Inside of a dictionary, if the key/value are an ARM deployment schema, then allow expression strings for the rest of the dictionary (expected to be to the end of the file)",
+                    "$comment3": "",
+                    "name": "meta.arm-deployment-template",
+                    "begin": "\\s*\"\\$schema\":\\s*\"https?:\\/\\/schema.management.azure.com\\/schemas\\/[^\"\\/]+\\/(deploymentTemplate|subscriptionDeploymentTemplate)\\.json#?\"\\s*,",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "keyword.other.meta.azure-schema.arm-deployment"
+                        }
+                    },
+                    "end": "$no-end-we-want-scope-to-continue-to-end-of-file",
+                    "patterns": [
+                        {
+                            "comment": "the JSON object key",
+                            "include": "#objectkey"
+                        },
+                        {
+                            "include": "#comments"
+                        },
+                        {
+                            "begin": ":",
+                            "beginCaptures": {
+                                "0": {
+                                    "name": "punctuation.separator.dictionary.key-value.json.comments"
+                                }
+                            },
+                            "end": "(,)|(?=\\})",
+                            "endCaptures": {
+                                "1": {
+                                    "name": "punctuation.separator.dictionary.pair.json.comments"
+                                }
+                            },
+                            "name": "meta.structure.dictionary.value.json.comments",
+                            "patterns": [
+                                {
+                                    "include": "source.expression-string.arm-deployment"
+                                },
+                                {
+                                    "comment": "the JSON object value",
+                                    "include": "#value"
+                                },
+                                {
+                                    "match": "[^\\s,]",
+                                    "name": "invalid.illegal.expected-dictionary-separator.json.comments"
+                                }
+                            ]
+                        }
+                    ],
+                    "$commentEnd": "========================== END OF ADDITION =========================="
+                },
                 {
                     "comment": "the JSON object key",
                     "include": "#objectkey"
@@ -109,16 +160,16 @@
                     "begin": ":",
                     "beginCaptures": {
                         "0": {
-                            "name": "punctuation.separator.dictionary.key-value.json.arm"
+                            "name": "punctuation.separator.dictionary.key-value.json.comments"
                         }
                     },
                     "end": "(,)|(?=\\})",
                     "endCaptures": {
                         "1": {
-                            "name": "punctuation.separator.dictionary.pair.json.arm"
+                            "name": "punctuation.separator.dictionary.pair.json.comments"
                         }
                     },
-                    "name": "meta.structure.dictionary.value.json.arm",
+                    "name": "meta.structure.dictionary.value.json.comments",
                     "patterns": [
                         {
                             "comment": "the JSON object value",
@@ -126,13 +177,13 @@
                         },
                         {
                             "match": "[^\\s,]",
-                            "name": "invalid.illegal.expected-dictionary-separator.json.arm"
+                            "name": "invalid.illegal.expected-dictionary-separator.json.comments"
                         }
                     ]
                 },
                 {
                     "match": "[^\\s\\}]",
-                    "name": "invalid.illegal.expected-dictionary-separator.json.arm"
+                    "name": "invalid.illegal.expected-dictionary-separator.json.comments"
                 }
             ]
         },
@@ -140,16 +191,16 @@
             "begin": "\"",
             "beginCaptures": {
                 "0": {
-                    "name": "punctuation.definition.string.begin.json.arm"
+                    "name": "punctuation.definition.string.begin.json.comments"
                 }
             },
             "end": "\"",
             "endCaptures": {
                 "0": {
-                    "name": "punctuation.definition.string.end.json.arm"
+                    "name": "punctuation.definition.string.end.json.comments"
                 }
             },
-            "name": "string.quoted.double.json.arm",
+            "name": "string.quoted.double.json.comments",
             "patterns": [
                 {
                     "include": "#stringcontent"
@@ -160,16 +211,16 @@
             "begin": "\"",
             "beginCaptures": {
                 "0": {
-                    "name": "punctuation.support.type.property-name.begin.json.arm"
+                    "name": "punctuation.support.type.property-name.begin.json.comments"
                 }
             },
             "end": "\"",
             "endCaptures": {
                 "0": {
-                    "name": "punctuation.support.type.property-name.end.json.arm"
+                    "name": "punctuation.support.type.property-name.end.json.comments"
                 }
             },
-            "name": "string.json.arm support.type.property-name.json.arm",
+            "name": "string.json.comments support.type.property-name.json.comments",
             "patterns": [
                 {
                     "include": "#stringcontent"
@@ -180,21 +231,16 @@
             "patterns": [
                 {
                     "match": "(?x)                # turn on extended mode\n  \\\\                # a literal backslash\n  (?:               # ...followed by...\n    [\"\\\\/bfnrt]     # one of these characters\n    |               # ...or...\n    u               # a u\n    [0-9a-fA-F]{4}) # and four hex digits",
-                    "name": "constant.character.escape.json.arm"
+                    "name": "constant.character.escape.json.comments"
                 },
                 {
                     "match": "\\\\.",
-                    "name": "invalid.illegal.unrecognized-string-escape.json.arm"
+                    "name": "invalid.illegal.unrecognized-string-escape.json.comments"
                 }
             ]
         },
         "value": {
             "patterns": [
-                {
-                    "$comment": "========================== START OF ADDITION ==========================",
-                    "include": "source.expression-string.arm-deployment",
-                    "$commentEnd": "========================== END OF ADDITION =========================="
-                },
                 {
                     "include": "#constant"
                 },

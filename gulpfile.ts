@@ -36,11 +36,15 @@ function test(): cp.ChildProcess {
 }
 
 async function buildGrammars(): Promise<void> {
+    if (!fs.existsSync('dist')) {
+        fs.mkdirSync('dist');
+    }
+
     const source: string = path.resolve('grammars/arm-deployment-tle.tmLanguage.json');
     const dest: string = path.resolve('dist/arm-deployment-tle.tmLanguage.json');
     const sourceGrammar: string = fs.readFileSync(source).toString();
     let grammar: string = sourceGrammar;
-
+    console.log(2);
     const expressionMetadataPath: string = path.resolve("assets/ExpressionMetadata.json");
     const expressionMetadata = <IExpressionMetadata>JSON.parse(fs.readFileSync(expressionMetadataPath).toString());
 

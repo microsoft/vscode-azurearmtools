@@ -48,8 +48,12 @@
       {
         "language": "json",
         "scopeName": "source.json.comments",
-        "path": "grammars/JSONC.arm.tmLanguage.json",
+        "path": "grammars/JSONC.tmLanguage.json",
         "$asdf": "todo"
+      },
+      {
+        "scopeName": "source.json-with-tle",
+        "path": "dist/JSONC.arm.tmLanguage.json"
       },
       {
         "scopeName": "source.expression-string.arm-deployment",
@@ -100,6 +104,7 @@
     "@types/node": "^8.0.17",
     "@types/opn": "^5.1.0",
     "gulp": "^4.0.0",
+    "gulp-cli": "^2.1.0",
     "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
     "mocha-junit-reporter": "^1.18.0",
