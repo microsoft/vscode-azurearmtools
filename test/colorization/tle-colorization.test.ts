@@ -7,13 +7,13 @@
 'use strict';
 
 // Turn on to overwrite results files rather than creating new ".txt.actual" files when there are differences.
-const OVERWRITE = true;
+const OVERWRITE = false;
 
 import * as assert from 'assert';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { commands, Uri } from 'vscode';
-import * as os from 'os';
 
 interface ITestcase {
     testString?: string;
