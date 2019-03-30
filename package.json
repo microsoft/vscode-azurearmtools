@@ -41,9 +41,12 @@
   "contributes": {
     "grammars": [
       {
-        "language": "jsonc",
-        "scopeName": "source.json.comments",
-        "path": "grammars/JSONC.detect-arm.tmLanguage.json"
+        "scopeName": "source.json.detect-arm",
+        "path": "grammars/JSON.detect-arm.tmLanguage.json",
+        "injectTo": [
+          "source.json",
+          "source.json.comments"
+        ]
       },
       {
         "language": "json",
@@ -52,7 +55,7 @@
       },
       {
         "scopeName": "source.json.arm",
-        "path": "grammars/arm.tmLanguage.json"
+        "path": "grammars/JSON.arm.tmLanguage.json"
       },
       {
         "scopeName": "source.expression-string.arm-deployment",

@@ -20,7 +20,7 @@
                     "name": "punctuation.definition.array.begin.json.arm"
                 }
             },
-            "end": "\\]",
+            "todo end": "\\]",
             "endCaptures": {
                 "0": {
                     "name": "punctuation.definition.array.end.json.arm"

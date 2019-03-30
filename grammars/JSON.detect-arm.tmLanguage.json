@@ -5,10 +5,51 @@
     "$comment1": "This is the same as the JSON grammar except that it switches to source.json.arm if it detects a",
     "$comment2": "valid ARM deployment schema",
     "$commentZ": "==================================================================================================",
-    "scopeName": "source.json",
+    "scopeName": "source.json.detect-arm",
+    "injectionSelector": "L:meta.structure.dictionary.json,L:meta.structure.dictionary.json.comments",
     "patterns": [
         {
-            "include": "#value"
+            "$comment": "========================== START OF MODIFICATION: ADDED ==========================",
+            "$comment2": "Inside of a dictionary, if the key/value are a valid ARM deployment schema, then switch to the ARM grammar for property values for the rest of the file",
+            "$comment3": "",
+            "name": "meta.arm-deployment-template",
+            "begin": "\\s*\"\\$schema\":\\s*\"https?:\\/\\/schema.management.azure.com\\/schemas\\/[^\"\\/]+\\/(deploymentTemplate|subscriptionDeploymentTemplate)\\.json#?\"\\s*,",
+            "beginCaptures": {
+                "0": {
+                    "name": "keyword.other.meta.azure-schema.arm-deployment"
+                }
+            },
+            "end": "$no-end-we-want-scope-to-continue-to-end-of-file",
+            "patterns": [
+                {
+                    "comment": "the JSON object key",
+                    "include": "#objectkey"
+                },
+                {
+                    "include": "#comments"
+                },
+                {
+                    "begin": ":",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.separator.dictionary.key-value.json.comments.detect"
+                        }
+                    },
+                    "end": "(,)|(?=\\})",
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.separator.dictionary.pair.json.comments.detect"
+                        }
+                    },
+                    "name": "meta.structure.dictionary.value.json.comments.detect",
+                    "patterns": [
+                        {
+                            "include": "source.json.arm"
+                        }
+                    ]
+                }
+            ],
+            "$commentEnd": "========================== END OF MODIFICATION =========================="
         }
     ],
     "repository": {
@@ -96,49 +137,6 @@
             },
             "name": "meta.structure.dictionary.json",
             "patterns": [
-                {
-                    "$comment": "========================== START OF MODIFICATION: ADDED ==========================",
-                    "$comment2": "Inside of a dictionary, if the key/value are a valid ARM deployment schema, then switch to the ARM grammar for property values for the rest of the file",
-                    "$comment3": "",
-                    "$asdfname": "meta.arm-deployment-template",
-                    "begin": "\\s*\"\\$schema\":\\s*\"https?:\\/\\/schema.management.azure.com\\/schemas\\/[^\"\\/]+\\/(deploymentTemplate|subscriptionDeploymentTemplate)\\.json#?\"\\s*,",
-                    "$asdfbeginCaptures": {
-                        "0": {
-                            "name": "keyword.other.meta.azure-schema.arm-deployment"
-                        }
-                    },
-                    "end": "$no-end-we-want-scope-to-continue-to-end-of-file",
-                    "patterns": [
-                        {
-                            "comment": "the JSON object key",
-                            "include": "#objectkey"
-                        },
-                        {
-                            "include": "#comments"
-                        },
-                        {
-                            "begin": ":",
-                            "beginCaptures": {
-                                "0": {
-                                    "name": "punctuation.separator.dictionary.key-value.json.comments"
-                                }
-                            },
-                            "end": "(,)|(?=\\})",
-                            "endCaptures": {
-                                "1": {
-                                    "name": "punctuation.separator.dictionary.pair.json.comments"
-                                }
-                            },
-                            "name": "meta.structure.dictionary.value.json.comments",
-                            "patterns": [
-                                {
-                                    "include": "source.json.arm"
-                                }
-                            ]
-                        }
-                    ],
-                    "$commentEnd": "========================== END OF MODIFICATION =========================="
-                },
                 {
                     "comment": "the JSON object key",
                     "include": "#objectkey"
