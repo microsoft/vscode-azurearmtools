@@ -13,6 +13,7 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import * as path from 'path';
 import { commands, Uri } from 'vscode';
+import * as os from 'os';
 
 interface ITestcase {
     testString?: string;
@@ -33,7 +34,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     // Let's use more reasonable property names in our data
     let data: ITokenInfo[] = rawData.map(d => <ITokenInfo>{ text: d.c, scopes: d.t, colors: d.r });
     let testCases: ITestcase[];
-    let allDataAsString = data.map((d, i) => `${i}: ${d.text} => ${d.scopes}`).join("\n");
+    let allDataAsString = data.map((d, i) => `${i}: ${d.text} => ${d.scopes}`).join(os.EOL);
 
     // If the test filename contains ".invalid.", then all testcases in it should have at least one "invalid" token.
     // Otherwise they should contain none.
@@ -108,7 +109,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     let resultPathToWriteTo = OVERWRITE ? resultPath : actualResultPath;
     let removeActualResultPath = false;
     if (fs.existsSync(resultPath)) {
-        let previousResult = fs.readFileSync(resultPath).toString().trimRight().replace(/(\r\n)|\r/g, '\n');
+        let previousResult = fs.readFileSync(resultPath).toString().trimRight().replace(/(\r\n)|\r/g, os.EOL);
 
         try {
             for (let testcaseResult of testcaseResults) {
@@ -168,7 +169,7 @@ function getDictionaryNestingLevel(scopes: string): number {
 
 function getTestcaseResults(testCases: ITestcase[]): { text: string; results: string[]; fullString: string } {
     let results = testCases.map((testcase: ITestcase) => {
-        let prefix = testcase.testString ? `${testcase.testString}\n` : "";
+        let prefix = testcase.testString ? `${testcase.testString}${os.EOL}` : "";
 
         let testCaseString = testcase.data.map(td => {
             let padding = tabSize - td.text.length;
@@ -176,14 +177,14 @@ function getTestcaseResults(testCases: ITestcase[]): { text: string; results: st
             if (padding > 0) {
                 return `${text}${" ".repeat(padding)}${td.scopes}`;
             } else {
-                return `${text}\n${" ".repeat(tabSize)}${td.scopes}`;
+                return `${text}${os.EOL}${" ".repeat(tabSize)}${td.scopes}`;
             }
-        }).join('\n');
+        }).join(os.EOL);
         return prefix + testCaseString;
     });
 
-    let fullString = results.join('\n\n');
-    fullString = `${fullString.trimRight()}\n`;
+    let fullString = results.join(`${os.EOL}${os.EOL}`);
+    fullString = `${fullString.trimRight()}${os.EOL}`;
 
     let text = testCases.map(tc => tc.data).map((tis: ITokenInfo[]) => tis.map(ti => ti.text).join('')).join('');
 
