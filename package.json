@@ -48,12 +48,11 @@
       {
         "language": "json",
         "scopeName": "source.json",
-        "path": "grammars/JSONC.tmLanguage.json",
-        "$asdf": "todo"
+        "path": "grammars/JSON.detect-arm.tmLanguage.json"
       },
       {
         "scopeName": "source.json.arm",
-        "path": "grammars/JSON.arm.tmLanguage.json"
+        "path": "grammars/arm.tmLanguage.json"
       },
       {
         "scopeName": "source.expression-string.arm-deployment",

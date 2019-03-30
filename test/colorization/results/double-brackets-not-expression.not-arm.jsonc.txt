@@ -1,2 +1,0 @@
-TEST STRING:  "[[2]]"
- "[[2]]"            source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments

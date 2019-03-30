@@ -43,3 +43,4 @@ TODO:
     "$TEST": "[concat('sudo sh config-additional-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 ',string(variables('enableHA')),' ',parameters('LicenseKey'),' ',parameters('Licensee'))]"
 
 TODO: parens grouping in expressions not allowed
+TODO: "$schema": "https://schema.management.azure.com/schemas/2031-01-02-alpha/subscriptionDeploymentTemplate.json#", - shouldn't be all one color, should be colorized like in regular JSON

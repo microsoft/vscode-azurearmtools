@@ -1,3 +1,4 @@
-TEST STRING: ""
+TEST STRING: "[[2]]"
 "                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json.comments string.quoted.double.json.comments punctuation.definition.string.begin.json.comments
+[[2]]               source.json meta.structure.dictionary.json meta.structure.dictionary.value.json.comments string.quoted.double.json.comments
 "                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json.comments string.quoted.double.json.comments punctuation.definition.string.end.json.comments

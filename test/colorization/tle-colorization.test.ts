@@ -45,21 +45,22 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
 
     // If the test contains code like this:
     //
-    //   "$TEST": <test1-text>",
-    //   "$TEST": <test2-text>"
+    //   "$TEST{xxx}": <test1-text>",
+    //   "$TEST{yyy}": <test2-text>"
     //   ...
     // }
     // then only the data for <test1..n-text> will be put into the results file
-    const testStartToken: string = '$TEST';
+    const testStartToken = /^\$TEST/;
     for (let iData = 0; iData < data.length; ++iData) {
         // Extract the tokens before the test string
-        let nBegin = data.findIndex((t, i) => i >= iData && t.text === testStartToken);
+        let nBegin = data.findIndex((t, i) => i >= iData && t.text.match(testStartToken) !== null);
         if (nBegin < 0) {
             break;
         }
 
-        // Skip to the dictionary value
-        while (!data[nBegin].scopes.includes("meta.structure.dictionary.value")) {
+        // Skip past the dictionary key
+        let dictionaryNestingLevel = getDictionaryNestingLevel(data[nBegin].scopes);
+        while (getDictionaryNestingLevel(data[nBegin].scopes) === dictionaryNestingLevel) {
             nBegin++;
         }
         // Skip past the ":" and any whitespace
@@ -73,7 +74,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
         let nEnd = data.findIndex((t, i) =>
             i >= nBegin &&
             // end of the dictionary value item
-            !t.scopes.includes('meta.structure.dictionary.value'));
+            getDictionaryNestingLevel(t.scopes) === dictionaryNestingLevel);
         if (nEnd < 0) {
             let { fullString, text } = getTestcaseResults([{ testString: '', data: data.slice(nBegin) }]);
             assert(false, `Couldn't find end of test string starting here:\\n${text}\n${fullString}`);
@@ -158,6 +159,11 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     if (removeActualResultPath && fs.existsSync(actualResultPath)) {
         fs.unlinkSync(actualResultPath);
     }
+}
+
+function getDictionaryNestingLevel(scopes: string): number {
+    let matches = scopes.match(/meta\.structure\.dictionary\.value/g);
+    return matches ? matches.length : 0;
 }
 
 function getTestcaseResults(testCases: ITestcase[]): { text: string; results: string[]; fullString: string } {

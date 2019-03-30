@@ -1,8 +1,4 @@
 {
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    "parameters": {
-        "guid": {
-            "$TEST": "['abc'def]"
-        }
-    }
+    "Test1": "[']"
 }
