@@ -11,11 +11,13 @@ import * as gulp from 'gulp';
 import * as path from 'path';
 
 import { gulp_installAzureAccount, gulp_webpack } from 'vscode-azureextensiondev';
-import { Value } from './src/JSON';
 
 const env = process.env;
 
-interface IGrammar {
+export const tleGrammarSourcePath: string = path.resolve('grammars/arm-expression-string.tmLanguage.json');
+export const tleGrammarBuiltPath: string = path.resolve('dist/arm-expression-string.tmLanguage.json');
+
+export interface IGrammar {
     preprocess?: {
         builtin: string;
         [key: string]: string;
@@ -40,9 +42,7 @@ async function buildGrammars(): Promise<void> {
         fs.mkdirSync('dist');
     }
 
-    const source: string = path.resolve('grammars/arm-expression-string.tmLanguage.json');
-    const dest: string = path.resolve('dist/arm-expression-string.tmLanguage.json');
-    const sourceGrammar: string = fs.readFileSync(source).toString();
+    const sourceGrammar: string = fs.readFileSync(tleGrammarSourcePath).toString();
     let grammar: string = sourceGrammar;
     console.log(2);
     const expressionMetadataPath: string = path.resolve("assets/ExpressionMetadata.json");
@@ -56,7 +56,7 @@ async function buildGrammars(): Promise<void> {
         ... (grammarAsObject.preprocess || {})
     };
     grammarAsObject = {
-        $comment: `DO NOT EDIT - This file was built from ${path.relative(__dirname, source)}`,
+        $comment: `DO NOT EDIT - This file was built from ${path.relative(__dirname, tleGrammarBuiltPath)}`,
         ...grammarAsObject
     };
     grammar = JSON.stringify(grammarAsObject, null, 4);
@@ -72,13 +72,13 @@ async function buildGrammars(): Promise<void> {
         // remove quotes
         valueString = valueString.slice(1, valueString.length - 1);
         if (!sourceGrammar.includes(replacementKey)) {
-            console.log(`WARNING: Preprocess key ${replacementKey} not found in ${source}`);
+            console.log(`WARNING: Preprocess key ${replacementKey} not found in ${tleGrammarSourcePath}`);
         }
         grammar = grammar.replace(new RegExp(replacementKey, "g"), valueString);
     }
 
-    console.log(`Built ${dest}`);
-    fs.writeFileSync(dest, grammar);
+    fs.writeFileSync(tleGrammarBuiltPath, grammar);
+    console.log(`Built ${tleGrammarBuiltPath}`);
 
     if (grammar.includes('{{')) {
         throw new Error("At least one replacement key could not be found in the grammar - '{{' was found in the final file");

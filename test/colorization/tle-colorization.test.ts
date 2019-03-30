@@ -1,19 +1,28 @@
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
 // tslint:disable:max-func-body-length no-console
 'use strict';
 
 // Turn on to overwrite results files rather than creating new ".txt.actual" files when there are differences.
-const OVERWRITE = false;
+const OVERWRITE = true;
 
 import * as assert from 'assert';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { commands, Uri } from 'vscode';
+
+const tleGrammarSourcePath: string = path.join(__dirname, '../../../grammars/arm-expression-string.tmLanguage.json');
+export interface IGrammar {
+    preprocess?: {
+        builtin: string;
+        [key: string]: string;
+    };
+    [key: string]: unknown;
+}
 
 interface ITestcase {
     testString?: string;
@@ -27,6 +36,28 @@ interface ITokenInfo {
 }
 
 const tabSize = 20;
+let unpreprocess: [RegExp, string][];
+
+// E.g., change keyword.other.expression.begin.arm-deployment => {{scope-expression-start}}, according to the preprocess section of the grammar
+function unpreprocessScopes(scopes: string): string {
+    if (!unpreprocess) {
+        let source: string = fs.readFileSync(tleGrammarSourcePath).toString();
+        let grammar = <IGrammar>JSON.parse(source);
+        let preprocess = grammar.preprocess || {};
+        unpreprocess = [];
+        for (let key of Object.getOwnPropertyNames(preprocess)) {
+            let value = preprocess[key];
+            unpreprocess.push([new RegExp(value.replace('.', '\\.'), "g"), `{{${key}}}`]);
+        }
+    }
+
+    unpreprocess.forEach(entry => {
+        let [regex, replacement] = entry;
+        scopes = scopes.replace(regex, replacement);
+    });
+
+    return scopes;
+}
 
 async function assertUnchangedTokens(testPath: string, resultPath: string): Promise<void> {
     let rawData = <{ c: string; t: string; r: unknown[] }[]>await commands.executeCommand('_workbench.captureSyntaxTokens', Uri.file(testPath));
@@ -173,11 +204,11 @@ function getTestcaseResults(testCases: ITestcase[]): { text: string; results: st
 
         let testCaseString = testcase.data.map(td => {
             let padding = tabSize - td.text.length;
-            let text = td.text;
+            let scopes = unpreprocessScopes(td.scopes);
             if (padding > 0) {
-                return `${text}${" ".repeat(padding)}${td.scopes}`;
+                return `${td.text}${" ".repeat(padding)}${scopes}`;
             } else {
-                return `${text}${os.EOL}${" ".repeat(tabSize)}${td.scopes}`;
+                return `${td.text}${os.EOL}${" ".repeat(tabSize)}${scopes}`;
             }
         }).join(os.EOL);
         return prefix + testCaseString;
