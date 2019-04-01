@@ -1300,11 +1300,16 @@ export class Tokenizer {
                         this._currentTokenStartIndex, Utilities.getCombinedText(Json.readWhitespace(this._basicTokenizer)));
                     break;
 
-                case basic.TokenType.SingleQuote:
                 case basic.TokenType.DoubleQuote:
                     this._current = Token.createQuotedString(
                         this._currentTokenStartIndex,
                         Utilities.getCombinedText(Json.readQuotedString(this._basicTokenizer)));
+                    break;
+
+                case basic.TokenType.SingleQuote:
+                    this._current = Token.createQuotedString(
+                        this._currentTokenStartIndex,
+                        Utilities.getCombinedText(readQuotedTLEString(this._basicTokenizer)));
                     break;
 
                 case basic.TokenType.Dash:
@@ -1451,4 +1456,46 @@ export enum TokenType {
     Literal,
     Period,
     Number,
+}
+
+/**
+ * Handles reading a single-quoted string inside a JSON-encoded TLE string. Handles both JSON string
+ * escape characters (e.g. \n, \") and escaped single quotes in TLE style (two single quotes together,
+ * e.g. 'That''s all, folks!')
+ */
+export function readQuotedTLEString(iterator: Utilities.Iterator<basic.Token>): basic.Token[] {
+    assert(iterator.current().getType() === basic.TokenType.SingleQuote);
+    const quotedStringTokens: basic.Token[] = [iterator.current()];
+    iterator.moveNext();
+
+    let escaped: boolean = false;
+    while (iterator.current()) {
+        quotedStringTokens.push(iterator.current());
+
+        if (escaped) {
+            escaped = false;
+        } else {
+            if (iterator.current().getType() === basic.TokenType.Backslash) {
+                escaped = true;
+            } else if (iterator.current().getType() === basic.TokenType.SingleQuote) {
+                // If the next token is also a single quote, it's escaped, otherwise it's the
+                // end of the string.
+                iterator.moveNext();
+                if (!iterator.current()) {
+                    break;
+                }
+
+                if (iterator.current().getType() === basic.TokenType.SingleQuote) {
+                    escaped = true;
+                    continue;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        iterator.moveNext();
+    }
+
+    return quotedStringTokens;
 }
