@@ -70,6 +70,7 @@
     "lint-fix": "tslint --project tsconfig.json -t verbose --fix",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "pretest": "npm run build && npm run webpack-prod",
+    "pretest-dev": "npm run build && npm run webpack",
     "test": "gulp test",
     "all": "npm i && npm run lint && npm test",
     "webpack": "gulp webpack-dev",

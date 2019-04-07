@@ -356,7 +356,9 @@ export class AzureRMTools {
     private getVSCodeDiagnosticFromIssue(deploymentTemplate: DeploymentTemplate, issue: language.Issue, severity: vscode.DiagnosticSeverity): vscode.Diagnostic {
         const range: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, issue.span);
         const message: string = issue.message;
-        return new vscode.Diagnostic(range, message, severity);
+        let diagnostic = new vscode.Diagnostic(range, message, severity);
+        diagnostic.source = 'ARM Tools';
+        return diagnostic;
     }
 
     private closeDeploymentTemplate(document: vscode.TextDocument): void {
