@@ -6,6 +6,7 @@
 
 import * as fse from 'fs-extra';
 import * as path from "path";
+import { assetsPath } from './constants';
 
 /**
  * An accessor class for the Azure RM storage account.
@@ -55,8 +56,7 @@ export class AzureRMAssets {
     }
 
     private static getLocalAssetUri(assetFileName: string): string {
-        // Relative to dist
-        return path.join(__filename, "..", "..", "assets", assetFileName);
+        return path.join(assetsPath, assetFileName);
     }
 
     private static async readFile(filePath: string): Promise<string> {
