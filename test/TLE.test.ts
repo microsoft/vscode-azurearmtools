@@ -1720,6 +1720,101 @@ suite("TLE", () => {
                 assert.equal(null, tt.readToken());
             });
 
+            suite("Quoted TLE strings", () => {
+                test("simple string", () => {
+                    let tt = TLE.Tokenizer.fromString("\"['Seattle']\"");
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createLeftSquareBracket(1));
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createQuotedString(2, "'Seattle'"));
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createRightSquareBracket(11));
+                    assert.equal(tt.readToken(), null);
+                });
+
+                test("empty string", () => {
+                    let tt = TLE.Tokenizer.fromString("\"['']\"");
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createLeftSquareBracket(1));
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createQuotedString(2, "''"));
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createRightSquareBracket(4));
+                    assert.equal(tt.readToken(), null);
+                });
+
+                test("string with just escaped apostrophe", () => {
+                    let tt = TLE.Tokenizer.fromString("\"['''']\"");
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createLeftSquareBracket(1));
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createQuotedString(2, "''''"));
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createRightSquareBracket(6));
+                    assert.equal(tt.readToken(), null);
+                });
+
+                test("with single escaped apostrophe", () => {
+                    let tt = TLE.Tokenizer.fromString("\"['That''s all, folks!']\"");
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createLeftSquareBracket(1));
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createQuotedString(2, "'That''s all, folks!'"));
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createRightSquareBracket(23));
+                    assert.equal(tt.readToken(), null);
+                });
+
+                test("with double escaped apostrophes", () => {
+                    let tt = TLE.Tokenizer.fromString("\"['That''''s all, folks!']\"");
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createLeftSquareBracket(1));
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createQuotedString(2, "'That''''s all, folks!'"));
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createRightSquareBracket(25));
+                    assert.equal(tt.readToken(), null);
+                });
+
+                test("with multiple escaped apostrophes", () => {
+                    let tt = TLE.Tokenizer.fromString("\"['That''s all, ''folks''!']\"");
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createLeftSquareBracket(1));
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createQuotedString(2, "'That''s all, ''folks''!'"));
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createRightSquareBracket(27));
+                    assert.equal(tt.readToken(), null);
+                });
+
+                test("with escaped apostrophes at beginning and end of expression", () => {
+                    let tt = TLE.Tokenizer.fromString("\"['''That is all, folks!''']\"");
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createLeftSquareBracket(1));
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createQuotedString(2, "'''That is all, folks!'''"));
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createRightSquareBracket(27));
+                    assert.equal(tt.readToken(), null);
+                });
+
+                test("with double quote", () => {
+                    let tt = TLE.Tokenizer.fromString("\"['That is \"all\", folks!']\"");
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createLeftSquareBracket(1));
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createQuotedString(2, "'That is \"all\", folks!'"));
+                    assert.deepStrictEqual(tt.readToken(), TLE.Token.createRightSquareBracket(25));
+                    assert.equal(tt.readToken(), null);
+                });
+
+                test("https://github.com/Microsoft/vscode-azurearmtools/issues/34", () => {
+                    let tt = TLE.Tokenizer.fromString("\"[concat(reference(parameters('publicIpName')).dnsSettings.fqdn, ';  sudo docker volume rm ''dockercompose_cert-volume''; sudo docker-compose up')]\"");
+                    let expected = [
+                        "[",
+                        "concat",
+                        "(",
+                        "reference",
+                        "(",
+                        "parameters",
+                        "(",
+                        "'publicIpName'",
+                        ")",
+                        ")",
+                        ".",
+                        "dnsSettings",
+                        ".",
+                        "fqdn",
+                        ",",
+                        " ",
+                        "';  sudo docker volume rm ''dockercompose_cert-volume''; sudo docker-compose up'",
+                        ")",
+                        "]"
+                    ];
+                    for (let expectedToken of expected) {
+                        assert.deepStrictEqual(tt.readToken().stringValue, expectedToken);
+                    }
+                    assert.equal(tt.readToken(), null);
+                });
+            });
+
             test("with function TLE with multiple arguments", () => {
                 let tt = TLE.Tokenizer.fromString("\"[concat('Seattle', 'WA', 'USA')]\"");
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), tt.readToken());
