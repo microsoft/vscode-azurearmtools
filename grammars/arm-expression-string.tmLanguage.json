@@ -1,0 +1,235 @@
+{
+	"name": "ARM Template",
+	"scopeName": "source.tle.arm",
+	"uuid": "3ADA43CD-2258-4907-8477-169A7FDDF216",
+	"$preprocessComment1": "Items in the preprocess section get replaced during gulp build-grammars",
+	"$preprocessComment2": "The {{builtin}} key/value are special - they're created during build from our function metadata",
+	"preprocess": {
+		"id": "(?:[_$[:alpha:]][_$[:alnum:]]*)",
+		"ns-userfunc": "(?:{{id}}\\s*(\\.)\\s*{{id}})",
+		"runtime": "(?i)(?:reference|list[a-z]+)",
+		"scope-expression-start": "keyword.other.expression.begin.tle.arm",
+		"scope-expression-end": "keyword.other.expression.end.tle.arm",
+		"scope-builtin": "support.function.builtin.tle.arm",
+		"scope-parameters": "variable.language.parameters.tle.arm",
+		"scope-runtime": "support.class.function.runtime.builtin.tle.arm",
+		"scope-variables": "variable.language.variables.tle.arm",
+		"scope-unknownfunction": "meta.unrecognized-identifier.tle.arm",
+		"scope-usernamespaceandfunction": "entity.name.tag.userfunction.tle.arm",
+		"scope-usernamespaceandfunction-dot": "punctuation.accessor.userfunction.tle.arm",
+		"scope-parentheses-funccall": "meta.brace.round.tle.arm",
+		"scope-escapedapostrophe": "constant.character.escape.single.tle.arm",
+		"scope-json-escape-chars": "constant.character.escape.backslash.tle.arm",
+		"scope-string-contents": "string.quoted.single.tle.arm",
+		"scope-string-start": "punctuation.definition.string.begin.tle.arm",
+		"scope-string-end": "punctuation.definition.string.end.tle.arm",
+		"scope-funcargs-separator": "punctuation.separator.comma.tle.arm",
+		"scope-number": "constant.numeric.tle.arm",
+		"scope-propaccess-dot": "punctuation.accessor.property.tle.arm",
+		"scope-propaccess-propname": "entity.name.tag.property.tle.arm",
+		"scope-arrayaccess-brackets": "meta.brace.square.tle.arm"
+	},
+	"patterns": [
+		{
+			"include": "#expressionstring"
+		}
+	],
+	"repository": {
+		"expressionstring": {
+			"name": "meta.expression.tle.arm",
+			"begin": "\"\\[(?!\\[)",
+			"$beginComment": "A string that starts with [[ is not an expression",
+			"end": "\\]\"",
+			"beginCaptures": {
+				"0": {
+					"name": "{{scope-expression-start}}"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "{{scope-expression-end}}"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#expression"
+				},
+				{
+					"name": "invalid.illegal.expected-expression.tle.arm",
+					"match": "[^\\s]"
+				}
+			]
+		},
+		"expression": {
+			"patterns": [
+				{
+					"include": "#string"
+				},
+				{
+					"include": "#number"
+				},
+				{
+					"include": "#functioncall"
+				},
+				{
+					"include": "#propertyaccess"
+				},
+				{
+					"include": "#arrayaccess"
+				}
+			]
+		},
+		"number": {
+			"name": "{{scope-number}}",
+			"match": "[+-]?[0-9]+(\\.[0-9]+)?([Ee][+-]?[0-9]+)?"
+		},
+		"string": {
+			"name": "{{scope-string-contents}}",
+			"begin": "[']",
+			"beginCaptures": {
+				"0": {
+					"$comment": "Apostrophe that starts a string",
+					"name": "{{scope-string-start}}"
+				}
+			},
+			"end": "['](?!['])",
+			"endCaptures": {
+				"0": {
+					"$comment": "Apostrophe that ends a string",
+					"name": "{{scope-string-end}}"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#stringcontent"
+				}
+			]
+		},
+		"stringcontent": {
+			"patterns": [
+				{
+					"$comment": "Escaped JSON string characters",
+					"match": "(?x)                # turn on extended mode\n  \\\\                # a literal backslash\n  (?:               # ...followed by...\n    [\"\\\\/bfnrt]     # one of these characters\n    |               # ...or...\n    u               # a u\n    [0-9a-fA-F]{4}) # and four hex digits",
+					"name": "{{scope-json-escape-chars}}"
+				},
+				{
+					"$comment": "Escaped apostrophe (interpreted by ARM backend)",
+					"name": "{{scope-escapedapostrophe}}",
+					"match": "['][']"
+				},
+				{
+					"match": "\\\\.",
+					"name": "invalid.illegal.unrecognized-string-escape.tle.arm"
+				}
+			]
+		},
+		"functioncall": {
+			"name": "meta.function-call.tle.arm",
+			"begin": "(?x)(?i) \\s* (?: ({{ns-userfunc}}) | (parameters) | (variables) | ({{runtime}}) | ({{builtin}}) | ({{id}}) ) \\s*([(])",
+			"end": "\\)",
+			"beginCaptures": {
+				"1": {
+					"$comment": "namespace + user function name",
+					"name": "{{scope-usernamespaceandfunction}}"
+				},
+				"2": {
+					"$comment": "dot from capturing group inside ns-userfunc",
+					"name": "{{scope-usernamespaceandfunction-dot}}"
+				},
+				"3": {
+					"$comment": "parameters",
+					"name": "{{scope-parameters}}"
+				},
+				"4": {
+					"$comment": "variables",
+					"name": "{{scope-variables}}"
+				},
+				"5": {
+					"$comment": "runtime functions",
+					"name": "{{scope-runtime}}"
+				},
+				"6": {
+					"$comment": "built-in function name",
+					"name": "{{scope-builtin}}"
+				},
+				"7": {
+					"$comment": "other function name",
+					"name": "{{scope-unknownfunction}}"
+				},
+				"8": {
+					"$comment": "open paren",
+					"name": "{{scope-parentheses-funccall}}"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"$comment": "closing paren",
+					"name": "{{scope-parentheses-funccall}}"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#functionargs"
+				}
+			]
+		},
+		"functionargs": {
+			"name": "meta.function-arguments.tle.arm",
+			"begin": "\\G\\s*",
+			"end": "\\s*(?=\\))",
+			"patterns": [
+				{
+					"include": "#expression"
+				},
+				{
+					"name": "{{scope-funcargs-separator}}",
+					"match": ","
+				},
+				{
+					"match": "[^\\s,)]",
+					"name": "invalid.illegal.expected-comma.tle.arm"
+				}
+			]
+		},
+		"propertyaccess": {
+			"name": "meta.property-access.tle.arm",
+			"match": "(?x) \\s* (?<=[)\\][:alnum:]_$]) (?# if preceded by end paren/bracket/word)  \\s*  (?<dot>\\.) \\s* (?<propertyname>{{id}})",
+			"captures": {
+				"1": {
+					"name": "{{scope-propaccess-dot}}"
+				},
+				"2": {
+					"name": "{{scope-propaccess-propname}}"
+				}
+			}
+		},
+		"arrayaccess": {
+			"patterns": [
+				{
+					"match": "\\s*\\[\\s*\\]",
+					"name": "invalid.illegal.empty-array-access.tle.arm"
+				},
+				{
+					"name": "meta.array-access.tle.arm",
+					"begin": "(?x) \\s* (?<=[)\\][:alnum:]_$]) (?# if preceded by end paren/bracket/word)  \\s*  (?<openbracket>\\[)",
+					"end": "\\s*(])",
+					"beginCaptures": {
+						"1": {
+							"name": "{{scope-arrayaccess-brackets}}"
+						}
+					},
+					"endCaptures": {
+						"1": {
+							"name": "{{scope-arrayaccess-brackets}}"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#expression"
+						}
+					]
+				}
+			]
+		}
+	}
+}

@@ -1,0 +1,6 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    // These are escaped JSON strings, nothing to do with ARM expressions
+    "$TEST": "['Hi, \"Mom\"']",
+    "$TEST": "['\\ \r \n \b \t \f']"
+}

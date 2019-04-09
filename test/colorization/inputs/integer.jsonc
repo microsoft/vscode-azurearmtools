@@ -1,0 +1,9 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "$TEST": "[1]",
+    "$TEST": "[0]",
+    "$TEST": "[0123]",
+    "$TEST": "[-123]",
+    "$TEST": "[+1]",
+    "$TEST": "[ 1 ]"
+}

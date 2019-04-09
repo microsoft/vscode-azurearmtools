@@ -1661,12 +1661,12 @@ suite("TLE", () => {
             });
 
             test("with several invalid literals", () => {
-                let tt = TLE.Tokenizer.fromString("\".[]82348923asdflih   asl .,'\"");
+                let tt = TLE.Tokenizer.fromString("\".[]82348923asdglih   asl .,'\"");
                 assert.deepStrictEqual(TLE.Token.createPeriod(1), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(2), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(3), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createNumber(4, "82348923"), tt.readToken());
-                assert.deepStrictEqual(TLE.Token.createLiteral(12, "asdflih"), tt.readToken());
+                assert.deepStrictEqual(TLE.Token.createLiteral(12, "asdglih"), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createWhitespace(19, "   "), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createLiteral(22, "asl"), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createWhitespace(25, " "), tt.readToken());

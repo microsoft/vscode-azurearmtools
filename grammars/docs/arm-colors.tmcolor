@@ -1,0 +1,39 @@
+NOTE: To see the actual colors, install the VS Code extension sleutho.tmcolor ("Theme Mapper")
+
+comment
+constant.character -> escaped apostrophes and JSON string escapes
+constant.escape
+constant.language
+constant.numeric -> number
+constant.other.symbol
+entity.name.function
+entity.name.tag -> user namespaces and function names, plus property names
+entity.other.inherited-class
+invalid.illegal -> invalid
+keyword -> Start and end of an expression string "[ and ]"
+markup.bold
+markup.bold
+markup.changed
+markup.deleted
+markup.heading
+markup.inserted
+markup.italic
+markup.italic
+markup.quote
+markup.underline
+meta.separator
+meta.tag
+punctuation -> apostrophes for strings, commas, apostrophes, dot in user ns/func, dot in property access, etc.
+punctuation.definition.comment
+punctuation.definition.tag.begin.html
+punctuation.definition.tag.end.html
+punctuation.definition.tag.html
+storage.type
+string -> strings inside expressions
+string.regexp
+support.class -> built-in runtime functions (e.g. reference, list*)
+support.constant
+support.function -> built-in functions
+support.type
+variable
+variable.language -> variables and parameters

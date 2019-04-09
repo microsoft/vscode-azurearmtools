@@ -1,0 +1,7 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "$note": "Can't actually find any valid uses of a float literal",
+    "$TEST": "[1.]",
+    "$TEST": "[-.2]",
+    "$TEST": "[2e]"
+}

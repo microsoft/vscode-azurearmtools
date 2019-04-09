@@ -613,34 +613,34 @@ suite("JSON", () => {
                     Json.RightSquareBracket(2),
                     parseNumber("82348923", 3)
                 ]);
-            nextTest(".[]82348923asdflih",
+            nextTest(".[]82348923asdglih",
                 [
                     parseUnrecognized(".", 0),
                     Json.LeftSquareBracket(1),
                     Json.RightSquareBracket(2),
                     parseNumber("82348923", 3),
-                    parseLiteral("asdflih", 11)
+                    parseLiteral("asdglih", 11)
                 ]);
-            nextTest(".[]82348923asdflih   asl .,",
+            nextTest(".[]82348923asdglih   asl .,",
                 [
                     parseUnrecognized(".", 0),
                     Json.LeftSquareBracket(1),
                     Json.RightSquareBracket(2),
                     parseNumber("82348923", 3),
-                    parseLiteral("asdflih", 11),
+                    parseLiteral("asdglih", 11),
                     parseWhitespace("   ", 18),
                     parseLiteral("asl", 21),
                     parseWhitespace(" ", 24),
                     parseUnrecognized(".", 25),
                     Json.Comma(26)
                 ]);
-            nextTest(".[]82348923asdflih   asl .,'",
+            nextTest(".[]82348923asdglih   asl .,'",
                 [
                     parseUnrecognized(".", 0),
                     Json.LeftSquareBracket(1),
                     Json.RightSquareBracket(2),
                     parseNumber("82348923", 3),
-                    parseLiteral("asdflih", 11),
+                    parseLiteral("asdglih", 11),
                     parseWhitespace("   ", 18),
                     parseLiteral("asl", 21),
                     parseWhitespace(" ", 24),

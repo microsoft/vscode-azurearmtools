@@ -40,7 +40,8 @@
             "env": {
                 "DEBUGTELEMETRY": "1",
                 "NODE_DEBUG": ""
-            }
+            },
+            "preLaunchTask": "npm: build-grammars"
         },
         {
             "name": "Launch Tests",

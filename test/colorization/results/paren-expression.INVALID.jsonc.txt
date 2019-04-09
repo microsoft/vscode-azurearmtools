@@ -1,0 +1,6 @@
+TEST STRING: "[((1))]"
+"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
+((                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm invalid.illegal.expected-expression.tle.arm
+1                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-number}}
+))                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm invalid.illegal.expected-expression.tle.arm
+]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}

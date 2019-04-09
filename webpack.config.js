@@ -16,8 +16,7 @@ let DEBUG_WEBPACK = !!process.env.DEBUG_WEBPACK;
 
 let config = dev.getDefaultWebpackConfig({
     projectRoot: __dirname,
-    verbosity: DEBUG_WEBPACK ? 'debug' : 'normal',
-
+    verbosity: DEBUG_WEBPACK ? 'debug' : 'normal'
 });
 
 if (DEBUG_WEBPACK) {

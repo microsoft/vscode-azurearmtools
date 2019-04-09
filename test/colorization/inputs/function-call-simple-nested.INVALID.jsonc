@@ -1,0 +1,7 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "$TEST": "[a)]",
+    // NOTE: Not very important exactly how this fails as long as it does (currently it says expecting expression, then matches a.b as a property access)
+    "$TEST": "[a.b]",
+    "$TEST": "[b())]"
+}
