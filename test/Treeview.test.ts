@@ -7,8 +7,8 @@
 import * as assert from "assert";
 import * as path from "path";
 import * as vscode from "vscode";
-import { ext, JsonOutlineProvider, shortenTreeLabel, Span } from "../extension.bundle";
 import { parseError } from "vscode-azureextensionui";
+import { ext, JsonOutlineProvider, shortenTreeLabel, Span } from "../extension.bundle";
 
 suite("TreeView", async (): Promise<void> => {
     suite("shortenTreeLabel", async (): Promise<void> => {
