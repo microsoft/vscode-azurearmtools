@@ -7,6 +7,7 @@
 import * as assert from "assert";
 import * as path from "path";
 import * as vscode from "vscode";
+import { parseError } from "vscode-azureextensionui";
 import { ext, JsonOutlineProvider, shortenTreeLabel, Span } from "../extension.bundle";
 
 suite("TreeView", async (): Promise<void> => {
@@ -53,8 +54,8 @@ suite("TreeView", async (): Promise<void> => {
                 assert.equal(!!provider, true, "JSON outline provider not found");
             }
 
-            mySetup().then(done, () => {
-                assert.fail("Setup failed");
+            mySetup().then(done, (err) => {
+                assert.fail(`Setup failed: ${parseError(err).message}`);
             });
         });
 

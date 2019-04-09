@@ -9,10 +9,11 @@
 // tslint:disable:no-increment-decrement
 
 import * as assert from "assert";
+import * as path from 'path';
 import * as vscode from "vscode";
+import { iconsPath } from "./constants";
 import * as Json from "./JSON";
 import { isLanguageIdSupported } from "./supported";
-import { Parser } from "./TLE";
 import * as Utilities from "./Utilities";
 
 const topLevelIcons: [string, string][] = [
@@ -329,7 +330,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         }
 
         if (icon) {
-            return (`${__dirname}/../icons/${icon}`);
+            return path.join(iconsPath, icon);
         }
 
         return undefined;
