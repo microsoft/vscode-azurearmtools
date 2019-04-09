@@ -1,6 +1,0 @@
-{
-    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
-    "$TEST": "[max()]",
-    "$TEST": "[$max()]",
-    "$TEST": "[ _$max12$_$_ ( ) ]"
-}

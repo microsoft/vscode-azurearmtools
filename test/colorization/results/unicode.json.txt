@@ -1,8 +1,8 @@
 TEST STRING: "[Flüsse.Bäche('array0')[1]]"
 "[                  source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-Flüsse              source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-usernamespaceandfunction}}
-.                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-usernamespaceandfunction}} {{scope-usernamespaceandfunction-dot}}
-Bäche               source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-usernamespaceandfunction}}
+Flüsse              source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-usernamespaceandfunction}}
+.                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-usernamespaceandfunction}} {{scope-usernamespaceandfunction-dot}}
+Bäche               source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-usernamespaceandfunction}}
 (                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
 '                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}} {{scope-string-start}}
 array0              source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}}
@@ -15,7 +15,7 @@ array0              source.json meta.structure.dictionary.json meta.arm-deployme
 
 TEST STRING: "[γνῶθι().σεαυτόν]"
 "[                  source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-γνῶθι               source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-unknownfunction}}
+γνῶθι               source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-unknownfunction}}
 ()                  source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
 .                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.property-access.tle.arm {{scope-propaccess-dot}}
 σεαυτόν             source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.property-access.tle.arm {{scope-propaccess-propname}}
@@ -23,6 +23,6 @@ TEST STRING: "[γνῶθι().σεαυτόν]"
 
 TEST STRING: "[ᠠᠪᠴᠳᠡᠸ()]"
 "[                  source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-ᠠᠪᠴᠳᠡᠸ              source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-unknownfunction}}
+ᠠᠪᠴᠳᠡᠸ              source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-unknownfunction}}
 ()                  source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
 ]"                  source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}

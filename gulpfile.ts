@@ -9,6 +9,7 @@ import * as cp from 'child_process';
 import * as fs from 'fs';
 import * as gulp from 'gulp';
 import * as path from 'path';
+import * as process from 'process';
 
 import { gulp_installAzureAccount, gulp_webpack } from 'vscode-azureextensiondev';
 
@@ -86,6 +87,10 @@ function buildTLEGrammar(): void {
     }
 }
 
+function build(): cp.ChildProcess {
+    return cp.spawn('npm', ['run build'], { shell: true });
+}
+
 async function buildGrammars(): Promise<void> {
     if (!fs.existsSync('dist')) {
         fs.mkdirSync('dist');
@@ -97,10 +102,18 @@ async function buildGrammars(): Promise<void> {
     buildTLEGrammar();
 
     fs.copyFileSync(jsonArmGrammarSourcePath, jsonArmGrammarDestPath);
+    console.log(`Copied ${jsonArmGrammarDestPath}`);
     fs.copyFileSync(detectionGrammarSourcePath, detectionGrammarDestPath);
+    console.log(`Copied ${detectionGrammarDestPath}`);
 }
+
+let buildAll = gulp.series(buildGrammars, build);
 
 exports['webpack-dev'] = gulp.series(() => gulp_webpack('development'), buildGrammars);
 exports['webpack-prod'] = gulp.series(() => gulp_webpack('production'), buildGrammars);
 exports.test = gulp.series(gulp_installAzureAccount, test);
 exports['build-grammars'] = buildGrammars;
+exports.watch = () => {
+    buildAll();
+    return gulp.watch('grammars/**', buildAll);
+};
