@@ -5,7 +5,7 @@
 	"$preprocessComment1": "Items in the preprocess section get replaced during gulp build-grammars",
 	"$preprocessComment2": "The 'builtin' key/value are special - they're created during build from our function metadata",
 	"preprocess": {
-		"idchar": "(?:[_$[:alnum:]])",
+		"idchar": "[_$[:alnum:]]",
 		"id": "(?:[_$[:alpha:]]{{idchar}}*)",
 		"ns-userfunc": "(?:{{id}}\\s*(\\.)\\s*{{id}})",
 		"runtime": "(?i)(?:reference|list[a-z]+)",
@@ -202,7 +202,7 @@
 		},
 		"propertyaccess": {
 			"name": "meta.property-access.tle.arm",
-			"match": "(?x) \\s* (?<=[)\\][:alnum:]_$]) (?# if preceded by end paren/bracket/word)  \\s*  (?<dot>\\.) \\s* (?<propertyname>{{id}})",
+			"match": "(?x) (?<= ^ | (?: [_$[:alnum:])\\]] )) (?# if preceded by end paren/bracket/word or beginning of line)  \\s*  (?<dot>\\.) \\s* (?<propertyname>{{id}})",
 			"captures": {
 				"1": {
 					"name": "{{scope-propaccess-dot}}"
@@ -220,7 +220,7 @@
 				},
 				{
 					"name": "meta.array-access.tle.arm",
-					"begin": "(?x) \\s* (?<=[)\\][:alnum:]_$]) (?# if preceded by end paren/bracket/word)  \\s*  (?<openbracket>\\[)",
+					"begin": "(?x) (?<= ^ | (?: [_$[:alnum:])\\]] )) (?# if preceded by end paren/bracket/word or beginning of line)  \\s*  (?<openbracket>\\[)",
 					"end": "\\s*(])",
 					"beginCaptures": {
 						"1": {
