@@ -8,7 +8,7 @@ import * as assert from "assert";
 import * as path from "path";
 import * as vscode from "vscode";
 import { parseError } from "vscode-azureextensionui";
-import { ext, JsonOutlineProvider, shortenTreeLabel, Span } from "../extension.bundle";
+import { ext, JsonOutlineProvider, shortenTreeLabel } from "../extension.bundle";
 
 suite("TreeView", async (): Promise<void> => {
     suite("shortenTreeLabel", async (): Promise<void> => {
@@ -60,7 +60,7 @@ suite("TreeView", async (): Promise<void> => {
         });
 
         async function testChildren(template: string, expected: ITestTreeItem[]): Promise<void> {
-            let editor = await showNewTextDocument(template);
+            await showNewTextDocument(template);
             let rawTree = provider.getChildren(null);
             let tree = rawTree.map(child => {
                 let treeItem = provider.getTreeItem(child);
@@ -72,7 +72,7 @@ suite("TreeView", async (): Promise<void> => {
 
         // Tests the tree against only the given properties
         async function testTree(template: string, expected: ITestTreeItem[], selectProperties?: string[]): Promise<void> {
-            let editor = await showNewTextDocument(template);
+            await showNewTextDocument(template);
             let rawTree = getTree(null);
 
             function select(node: ITestTreeItem): Partial<ITestTreeItem> {
@@ -3067,27 +3067,12 @@ function toTestTreeItem(item: vscode.TreeItem): ITestTreeItem {
     return testItem;
 }
 
-function getTextAtSpan(span: Span): string {
-    return templateAllParamDefaultTypes.substr(span.startIndex, span.length);
-}
-
 async function showNewTextDocument(text: string): Promise<vscode.TextEditor> {
     let textDocument = await vscode.workspace.openTextDocument({
         language: "jsonc",
         content: text
     });
     return await vscode.window.showTextDocument(textDocument);
-}
-
-async function writeToEditor(editor: vscode.TextEditor, data: string): Promise<void> {
-    await editor.edit((editBuilder: vscode.TextEditorEdit) => {
-        if (editor.document.lineCount > 0) {
-            const lastLine = editor.document.lineAt(editor.document.lineCount - 1);
-            editBuilder.delete(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(lastLine.range.start.line, lastLine.range.end.character)));
-        }
-
-        editBuilder.insert(new vscode.Position(0, 0), data);
-    });
 }
 
 const templateAllParamDefaultTypes: string = `

@@ -77,7 +77,6 @@ export class FunctionsMetadata {
     }
 
     public filterByPrefix(functionNamePrefix: string): FunctionMetadata[] {
-        const result: FunctionMetadata[] = [];
         const lowerCasedPrefix: string = functionNamePrefix.toLowerCase();
         return this.functionMetadata.filter(func => func.lowerCaseName.startsWith(lowerCasedPrefix));
     }

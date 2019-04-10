@@ -198,7 +198,8 @@ export class AzureRMTools {
         const me = this;
 
         // Don't wait
-        let dontWait = callWithTelemetryAndErrorHandling('reportDeploymentTemplateErrors', async function (this: IActionContext): Promise<void> {
+        // tslint:disable-next-line: no-floating-promises
+        callWithTelemetryAndErrorHandling('reportDeploymentTemplateErrors', async function (this: IActionContext): Promise<void> {
             this.suppressTelemetry = true;
 
             let parseErrors: language.Issue[] = await deploymentTemplate.errors;
@@ -295,7 +296,8 @@ export class AzureRMTools {
      */
     private logFunctionCounts(deploymentTemplate: DeploymentTemplate): void {
         // Don't wait for promise
-        let dummyPromise = callWithTelemetryAndErrorHandling("tle.stats", async function (this: IActionContext): Promise<void> {
+        // tslint:disable-next-line: no-floating-promises
+        callWithTelemetryAndErrorHandling("tle.stats", async function (this: IActionContext): Promise<void> {
             this.suppressErrorDisplay = true;
             let properties: {
                 functionCounts?: string;

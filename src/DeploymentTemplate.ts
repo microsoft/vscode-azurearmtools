@@ -12,11 +12,10 @@ import * as Reference from "./Reference";
 import * as TLE from "./TLE";
 import * as Utilities from "./Utilities";
 
-import { AzureRMAssets, FunctionMetadata, FunctionsMetadata } from "./AzureRMAssets";
+import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { Histogram } from "./Histogram";
 import { ParameterDefinition } from "./ParameterDefinition";
 import { PositionContext } from "./PositionContext";
-import { Stopwatch } from "./Stopwatch";
 
 export class DeploymentTemplate {
     private _jsonParseResult: Json.ParseResult;

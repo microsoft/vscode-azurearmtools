@@ -11,7 +11,7 @@ const OVERWRITE = true;
 
 import * as assert from 'assert';
 import * as fs from 'fs';
-import { ISuite, ISuiteCallbackContext } from 'mocha';
+import { ISuiteCallbackContext } from 'mocha';
 import * as os from 'os';
 import * as path from 'path';
 import { commands, Uri } from 'vscode';
@@ -69,7 +69,6 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     let data: ITokenInfo[] = rawData.map(d => <ITokenInfo>{ text: d.c.trim(), scopes: d.t, colors: d.r })
         .filter(d => d.text !== "");
     let testCases: ITestcase[];
-    let allDataAsString = data.map((d, i) => `${i}: ${d.text} => ${d.scopes}`).join(os.EOL);
 
     // If the test filename contains ".invalid.", then all testcases in it should have at least one "invalid" token.
     // Otherwise they should contain none.

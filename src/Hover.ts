@@ -24,7 +24,7 @@ export abstract class Info {
  * The information that will be displayed when the cursor hovers over a TLE function.
  */
 export class FunctionInfo extends Info {
-    constructor(private _name: string, private _usage: string, private _description: string, private _functionNameSpan: language.Span) {
+    constructor(private _name: string, private _usage: string, private _description: string, _functionNameSpan: language.Span) {
         super(_functionNameSpan);
     }
 
@@ -41,7 +41,7 @@ export class FunctionInfo extends Info {
  * The information that will be displayed when the cursor hovers over a TLE parameter reference.
  */
 export class ParameterReferenceInfo extends Info {
-    constructor(private _name: string, private _description: string, private _parameterNameSpan: language.Span) {
+    constructor(private _name: string, private _description: string, _parameterNameSpan: language.Span) {
         super(_parameterNameSpan);
     }
 
@@ -54,7 +54,7 @@ export class ParameterReferenceInfo extends Info {
  * The information that will be displayed when the cursor hovers over a TLE variable reference.
  */
 export class VariableReferenceInfo extends Info {
-    constructor(private _name: string, private _variableNameSpan: language.Span) {
+    constructor(private _name: string, _variableNameSpan: language.Span) {
         super(_variableNameSpan);
     }
 
