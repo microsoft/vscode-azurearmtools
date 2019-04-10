@@ -59,13 +59,7 @@
     "configuration": {
       "type": "object",
       "title": "Azure Resource Manager Tools Configuration Settings",
-      "properties": {
-        "azurermtools.enableTelemetry": {
-          "type": "boolean",
-          "default": true,
-          "description": "Allow anonymous telemetry for the Azure Resource Manager Tools extension."
-        }
-      }
+      "properties": {}
     },
     "views": {
       "explorer": [

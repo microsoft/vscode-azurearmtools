@@ -51,9 +51,6 @@ export class AzureRMTools {
 
     private _diagnosticsCollection: vscode.DiagnosticCollection;
 
-    private _azureRMToolsConfiguration: AzureRMToolsConfiguration;
-    private _autoSave: string;
-
     private _deploymentTemplates: { [key: string]: DeploymentTemplate } = {};
 
     // More information can be found about this definition at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
@@ -72,8 +69,6 @@ export class AzureRMTools {
     });
 
     constructor(context: vscode.ExtensionContext) {
-        this.loadConfiguration();
-
         const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
         ext.jsonOutlineProvider = jsonOutline;
         context.subscriptions.push(vscode.window.registerTreeDataProvider("json-outline", jsonOutline));
@@ -83,11 +78,8 @@ export class AzureRMTools {
 
         vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, jsonFileSubscriptionArray);
 
-        vscode.workspace.onDidChangeConfiguration(this.loadConfiguration, this, jsonFileSubscriptionArray);
-
         vscode.workspace.onDidOpenTextDocument(this.onDocumentOpened, this, jsonFileSubscriptionArray);
         vscode.workspace.onDidChangeTextDocument(this.onDocumentChanged, this, jsonFileSubscriptionArray);
-        vscode.workspace.onDidSaveTextDocument(this.onDocumentSaved, this, jsonFileSubscriptionArray);
 
         this._jsonFileSubscriptions = vscode.Disposable.from(...jsonFileSubscriptionArray);
 
@@ -651,22 +643,6 @@ export class AzureRMTools {
         this.updateDeploymentTemplate(openedDocument);
     }
 
-    private onDocumentSaved(savedDocument: vscode.TextDocument): void {
-        const me = this;
-        callWithTelemetryAndErrorHandlingSync('onDocumentSaved', function (this: IActionContext): void {
-            this.properties.isActivationEvent = 'true';
-            this.suppressTelemetry = true;
-
-            // The saved document is a deployment template if it shows up in our deployment
-            // templates dictionary.
-            if (me._deploymentTemplates[savedDocument.uri.toString()]) {
-                ext.reporter.sendTelemetryEvent("Deployment Template Saved", {
-                    autoSave: me._autoSave
-                });
-            }
-        });
-    }
-
     private onDocumentClosed(closedDocument: vscode.TextDocument): void {
         const me = this;
         callWithTelemetryAndErrorHandlingSync('onDocumentClosed', function (this: IActionContext): void {
@@ -675,19 +651,6 @@ export class AzureRMTools {
             this.suppressErrorDisplay = true;
 
             me.closeDeploymentTemplate(closedDocument);
-        });
-    }
-
-    private loadConfiguration(): void {
-        callWithTelemetryAndErrorHandlingSync('loadConfiguration', () => {
-            const configuration = vscode.workspace.getConfiguration("azurermtools");
-            this._azureRMToolsConfiguration = {
-                debug: configuration.get("debug", false),
-                enableTelemetry: configuration.get("enableTelemetry", false)
-            };
-
-            const filesConfiguration = vscode.workspace.getConfiguration("files");
-            this._autoSave = filesConfiguration.get("autoSave", "off");
         });
     }
 
@@ -703,10 +666,4 @@ export class AzureRMTools {
 
         return new vscode.Range(vscodeStartPosition, vscodeEndPosition);
     }
-}
-
-interface AzureRMToolsConfiguration {
-    debug: boolean;
-
-    enableTelemetry: boolean;
 }
