@@ -93,10 +93,6 @@ export class StringValue extends Value {
         return this.toString()[0];
     }
 
-    private get lastCharacter(): string {
-        return this.toString()[this.length - 1];
-    }
-
     public getSpan(): language.Span {
         return this._token.span;
     }
@@ -389,8 +385,6 @@ export class PropertyAccess extends ParentValue {
      */
     public get sourcesNameStack(): string[] {
         const result: string[] = [];
-
-        const propertyAccesses: PropertyAccess[] = [];
 
         let propertyAccessSource: PropertyAccess = asPropertyAccessValue(this._source);
         while (propertyAccessSource) {
@@ -817,7 +811,7 @@ export class FindReferencesVisitor extends Visitor {
     private _references: Reference.List;
     private _lowerCasedName: string;
 
-    constructor(private _kind: Reference.ReferenceKind, private _name: string) {
+    constructor(private _kind: Reference.ReferenceKind, _name: string) {
         super();
 
         this._references = new Reference.List(_kind);

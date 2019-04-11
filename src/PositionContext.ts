@@ -25,7 +25,6 @@ export class PositionContext {
     private _jsonToken: Json.Token;
     private _jsonValue: Json.Value;
     private _tleParseResult: TLE.ParseResult;
-    private _tleToken: TLE.Token;
     private _tleValue: TLE.Value;
     private _hoverInfo: Promise<Hover.Info>;
     private _completionItems: Promise<Completion.Item[]>;
@@ -381,16 +380,6 @@ export class PositionContext {
             }
         }
         return this._signatureHelp;
-    }
-
-    private getParametersOrVariablesReplaceSpanInEmptyArgumentList(tleValue: TLE.FunctionValue): language.Span {
-        let replaceSpan: language.Span;
-        if (tleValue.rightParenthesisToken) {
-            replaceSpan = new language.Span(this.documentCharacterIndex, tleValue.rightParenthesisToken.span.startIndex - this.tleCharacterIndex + 1);
-        } else {
-            replaceSpan = this.emptySpanAtDocumentCharacterIndex;
-        }
-        return replaceSpan;
     }
 
     /**
