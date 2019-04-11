@@ -1,0 +1,5 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    // add, reference and listCredentials should not match as function names, but as property access
+    "$TEST": "[variables('a').add.reference.listCredentials]"
+}

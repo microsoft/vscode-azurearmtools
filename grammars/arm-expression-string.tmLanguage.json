@@ -3,9 +3,10 @@
 	"scopeName": "source.tle.arm",
 	"uuid": "3ADA43CD-2258-4907-8477-169A7FDDF216",
 	"$preprocessComment1": "Items in the preprocess section get replaced during gulp build-grammars",
-	"$preprocessComment2": "The {{builtin}} key/value are special - they're created during build from our function metadata",
+	"$preprocessComment2": "The 'builtin' key/value are special - they're created during build from our function metadata",
 	"preprocess": {
-		"id": "(?:[_$[:alpha:]][_$[:alnum:]]*)",
+		"idchar": "(?:[_$[:alnum:]])",
+		"id": "(?:[_$[:alpha:]]{{idchar}}*)",
 		"ns-userfunc": "(?:{{id}}\\s*(\\.)\\s*{{id}})",
 		"runtime": "(?i)(?:reference|list[a-z]+)",
 		"scope-expression-start": "keyword.other.expression.begin.tle.arm",
@@ -69,6 +70,9 @@
 					"include": "#number"
 				},
 				{
+					"include": "#functionname"
+				},
+				{
 					"include": "#functioncall"
 				},
 				{
@@ -123,11 +127,9 @@
 				}
 			]
 		},
-		"functioncall": {
-			"name": "meta.function-call.tle.arm",
-			"begin": "(?x)(?i) \\s* (?: ({{ns-userfunc}}) | (parameters) | (variables) | ({{runtime}}) | ({{builtin}}) | ({{id}}) ) \\s*([(])",
-			"end": "\\)",
-			"beginCaptures": {
+		"functionname": {
+			"match": "(?x) \\s* (?: ({{ns-userfunc}}) | (parameters) | (variables) | ({{runtime}}) | ({{builtin}}) | ({{id}}) ) (?!{{idchar}} (?# Make sure we don't match a well-known name like 'add' inside something like 'add2'))",
+			"captures": {
 				"1": {
 					"$comment": "namespace + user function name",
 					"name": "{{scope-usernamespaceandfunction}}"
@@ -155,9 +157,16 @@
 				"7": {
 					"$comment": "other function name",
 					"name": "{{scope-unknownfunction}}"
-				},
-				"8": {
-					"$comment": "open paren",
+				}
+			}
+		},
+		"functioncall": {
+			"$comment": "This matches just the parentheses and arguments of a function call",
+			"name": "meta.function-call.tle.arm",
+			"begin": "(?x) \\s* (\\() \\s*",
+			"end": "\\s*\\)",
+			"beginCaptures": {
+				"1": {
 					"name": "{{scope-parentheses-funccall}}"
 				}
 			},

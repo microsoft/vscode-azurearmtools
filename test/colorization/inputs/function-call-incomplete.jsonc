@@ -1,0 +1,9 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    // These should not show colorization errors (they will cause syntax errors), because that would be
+    // extremely annoying as a user types and they see red (literally :-) before they've had a chance to
+    // enter the parentheses
+    "$TEST": "[sum]",
+    "$TEST": "[reference]",
+    "$TEST": "[user.func]"
+}
