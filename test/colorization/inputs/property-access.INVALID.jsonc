@@ -1,8 +1,6 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
-    //"$TEST": "[a.b]",
     "$TEST": "[a().]",
-    //"$TEST": "[a.b()d]",
     "$TEST": "[a.b().d.]",
     "$TEST": "[a().1]",
 }
