@@ -301,6 +301,18 @@
             "maximumArguments": 2
         },
         {
+            "name": "listConnectionStrings",
+            "expectedUsage": "listConnectionStrings(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Lists the connection strings for the specified Azure Cosmos DB database account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "connectionStrings"
+                }
+            ]
+        },
+        {
             "name": "listCallbackUrl",
             "expectedUsage": "listCallbackUrl(resourceName\/resourceIdentifier, apiVersion)",
             "description": "Get callback URL for a trigger of a workflow version. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. See https://docs.microsoft.com/en-us/rest/api/logic/WorkflowVersions/ListCallbackUrl#workflowtriggercallbackurl for more information.",
