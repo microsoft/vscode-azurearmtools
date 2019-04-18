@@ -16,7 +16,7 @@
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ],
-            "preLaunchTask": "npm: watch",
+            "preLaunchTask": "npm: compile",
             "env": {
                 "AZCODE_IGNORE_BUNDLE": "1",
                 "DEBUGTELEMETRY": "1",
@@ -57,7 +57,7 @@
             "outFiles": [
                 "${workspaceFolder}/out/**/*.js"
             ],
-            "preLaunchTask": "npm: watch",
+            "preLaunchTask": "npm: compile",
             "env": {
                 "AZCODE_IGNORE_BUNDLE": "1",
                 "MOCHA_grep": "color", // RegExp of tests to run (empty for all)
