@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## 0.5.1 (2019-04-19)
+### Fixed
+- Extension does not load in older vscode versions:
+    - https://github.com/Microsoft/vscode-azurearmtools/issues/206
+
 ## Version 0.5.0 (2019-02-26)
 ### Changed
 - Changed view title from "JSON OUTLINE" to "ARM TEMPLATE OUTLINE" [#145](https://github.com/Microsoft/vscode-azurearmtools/issues/145)
