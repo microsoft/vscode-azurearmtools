@@ -313,6 +313,21 @@
             ]
         },
         {
+            "name": "listCredentials",
+            "expectedUsage": "listCredentials(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Lists the login credentials for the specified container registry. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "username"
+                },
+                {
+                    "name": "passwords"
+                }
+            ]
+        },
+        {
             "name": "listCallbackUrl",
             "expectedUsage": "listCallbackUrl(resourceName\/resourceIdentifier, apiVersion)",
             "description": "Get callback URL for a trigger of a workflow version. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. See https://docs.microsoft.com/en-us/rest/api/logic/WorkflowVersions/ListCallbackUrl#workflowtriggercallbackurl for more information.",
