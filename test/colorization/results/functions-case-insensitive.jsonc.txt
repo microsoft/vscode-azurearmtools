@@ -20,9 +20,9 @@ b                   source.json.comments meta.structure.dictionary.json.comments
 
 TEST STRING: "[my.Parameters('c')]"
 "[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-my                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-usernamespaceandfunction}}
-.                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-usernamespaceandfunction}} {{scope-usernamespaceandfunction-dot}}
-Parameters          source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-usernamespaceandfunction}}
+my                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-usernamespace}}
+.                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-usernamespaceandfunction-dot}}
+Parameters          source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-userfunction}}
 (                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
 '                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}} {{scope-string-start}}
 c                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}}
