@@ -7,7 +7,7 @@
 	"preprocess": {
 		"idchar": "[_$[:alnum:]]",
 		"id": "(?:[_$[:alpha:]]{{idchar}}*)",
-		"ns-userfunc": "(?:{{id}}\\s*(\\.)\\s*{{id}})",
+		"ns-userfunc": "(?:({{id}})\\s*(\\.)\\s*({{id}}))",
 		"runtime": "(?i)(?:reference|list[a-z]+)",
 		"scope-expression-start": "keyword.other.expression.begin.tle.arm",
 		"scope-expression-end": "keyword.other.expression.end.tle.arm",
@@ -16,8 +16,9 @@
 		"scope-runtime": "support.class.function.runtime.builtin.tle.arm",
 		"scope-variables": "variable.language.variables.tle.arm",
 		"scope-unknownfunction": "meta.unrecognized-identifier.tle.arm",
-		"scope-usernamespaceandfunction": "entity.name.tag.userfunction.tle.arm",
+		"scope-usernamespace": "entity.name.tag.usernamespace.tle.arm",
 		"scope-usernamespaceandfunction-dot": "punctuation.accessor.userfunction.tle.arm",
+		"scope-userfunction": "entity.name.tag.userfunction.tle.arm",
 		"scope-parentheses-funccall": "meta.brace.round.tle.arm",
 		"scope-escapedapostrophe": "constant.character.escape.single.tle.arm",
 		"scope-json-escape-chars": "constant.character.escape.backslash.tle.arm",
@@ -128,33 +129,37 @@
 			]
 		},
 		"functionname": {
-			"match": "(?x) \\s* (?: ({{ns-userfunc}}) | (parameters) | (variables) | ({{runtime}}) | ({{builtin}}) | ({{id}}) ) (?!{{idchar}} (?# Make sure we don't match a well-known name like 'add' inside something like 'add2'))",
+			"match": "(?x) \\s* (?: {{ns-userfunc}} | (parameters) | (variables) | ({{runtime}}) | ({{builtin}}) | ({{id}}) ) (?!{{idchar}} (?# Make sure we don't match a well-known name like 'add' inside something like 'add2'))",
 			"captures": {
 				"1": {
-					"$comment": "namespace + user function name",
-					"name": "{{scope-usernamespaceandfunction}}"
+					"$comment": "user namespace (capturing group inside ns-userfunc)",
+					"name": "{{scope-usernamespace}}"
 				},
 				"2": {
-					"$comment": "dot from capturing group inside ns-userfunc",
+					"$comment": "dot (capturing group inside ns-userfunc)",
 					"name": "{{scope-usernamespaceandfunction-dot}}"
 				},
 				"3": {
+					"$comment": "user function name (capturing group inside ns-userfunc)",
+					"name": "{{scope-userfunction}}"
+				},
+				"4": {
 					"$comment": "parameters",
 					"name": "{{scope-parameters}}"
 				},
-				"4": {
+				"5": {
 					"$comment": "variables",
 					"name": "{{scope-variables}}"
 				},
-				"5": {
+				"6": {
 					"$comment": "runtime functions",
 					"name": "{{scope-runtime}}"
 				},
-				"6": {
+				"7": {
 					"$comment": "built-in function name",
 					"name": "{{scope-builtin}}"
 				},
-				"7": {
+				"8": {
 					"$comment": "other function name",
 					"name": "{{scope-unknownfunction}}"
 				}
