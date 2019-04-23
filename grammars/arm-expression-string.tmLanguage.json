@@ -4,17 +4,20 @@
 	"uuid": "3ADA43CD-2258-4907-8477-169A7FDDF216",
 	"$preprocessComment1": "Items in the preprocess section get replaced during gulp build-grammars",
 	"$preprocessComment2": "The 'builtin' key/value are special - they're created during build from our function metadata",
+	"$preprocessComment3": "Currently you need to run 'build grammars' after changing this file",
 	"preprocess": {
 		"idchar": "[_$[:alnum:]]",
 		"id": "(?:[_$[:alpha:]]{{idchar}}*)",
 		"ns-userfunc": "(?:({{id}})\\s*(\\.)\\s*({{id}}))",
-		"runtime": "(?i)(?:reference|list[a-z]+)",
-		"scope-expression-start": "keyword.other.expression.begin.tle.arm",
-		"scope-expression-end": "keyword.other.expression.end.tle.arm",
+		"logical": "(?:if|and|or|not)",
+		"scope-expression-start": "support.function.expression.begin.tle.arm",
+		"scope-expression-end": "support.function.expression.end.tle.arm",
 		"scope-builtin": "support.function.builtin.tle.arm",
-		"scope-parameters": "variable.language.parameters.tle.arm",
-		"scope-runtime": "support.class.function.runtime.builtin.tle.arm",
+		"scope-logical": "keyword.control.logical.tle.arm",
+		"scope-parameters": "support.type.parameters.tle.arm",
+		"scope-parameter": "support.type.parameters.parameter-name.tle.arm",
 		"scope-variables": "variable.language.variables.tle.arm",
+		"scope-variable": "variable.language.variables.variable-name.tle.arm",
 		"scope-unknownfunction": "meta.unrecognized-identifier.tle.arm",
 		"scope-usernamespace": "entity.name.tag.usernamespace.tle.arm",
 		"scope-usernamespaceandfunction-dot": "punctuation.accessor.userfunction.tle.arm",
@@ -28,7 +31,7 @@
 		"scope-funcargs-separator": "punctuation.separator.comma.tle.arm",
 		"scope-number": "constant.numeric.tle.arm",
 		"scope-propaccess-dot": "punctuation.accessor.property.tle.arm",
-		"scope-propaccess-propname": "entity.name.tag.property.tle.arm",
+		"scope-propaccess-propname": "variable.entity.property.tle.arm",
 		"scope-arrayaccess-brackets": "meta.brace.square.tle.arm"
 	},
 	"patterns": [
@@ -69,6 +72,12 @@
 				},
 				{
 					"include": "#number"
+				},
+				{
+					"include": "#parameters-ref-with-string-literal"
+				},
+				{
+					"include": "#variables-ref-with-string-literal"
 				},
 				{
 					"include": "#functionname"
@@ -128,8 +137,56 @@
 				}
 			]
 		},
+		"parameters-ref-with-string-literal": {
+			"$comment1": "When we have 'parameters' with a string literal (instead of an expression), we want to colorize the parameter name along with 'parameters'",
+			"$comment2": "When its parameter is an expression, it will be handled by functionname/functioncall",
+			"name": "meta.parameters-reference.tle.arm",
+			"match": "(?x) \\s* (parameters) \\s* (\\() (' [^']* ') (\\))",
+			"captures": {
+				"1": {
+					"$comment": "parameters",
+					"name": "{{scope-parameters}}"
+				},
+				"2": {
+					"$comment": "Opening paren",
+					"name": "{{scope-parentheses-funccall}}"
+				},
+				"3": {
+					"$comment": "Parameter name in single quotes",
+					"name": "{{scope-parameter}}"
+				},
+				"4": {
+					"$comment": "Closing paren",
+					"name": "{{scope-parentheses-funccall}}"
+				}
+			}
+		},
+		"variables-ref-with-string-literal": {
+			"$comment1": "When we have 'variables' with a string literal (instead of an expression), we want to colorize the variable name along with 'variables'",
+			"$comment2": "When its parameter is an expression, it will be handled by functionname/functioncall",
+			"name": "meta.variables-reference.tle.arm",
+			"match": "(?x) \\s* (variables) \\s* (\\() (' [^']* ') (\\))",
+			"captures": {
+				"1": {
+					"$comment": "variables",
+					"name": "{{scope-variables}}"
+				},
+				"2": {
+					"$comment": "Opening paren",
+					"name": "{{scope-parentheses-funccall}}"
+				},
+				"3": {
+					"$comment": "variable name in single quotes",
+					"name": "{{scope-variable}}"
+				},
+				"4": {
+					"$comment": "Closing paren",
+					"name": "{{scope-parentheses-funccall}}"
+				}
+			}
+		},
 		"functionname": {
-			"match": "(?x) \\s* (?: {{ns-userfunc}} | (parameters) | (variables) | ({{runtime}}) | ({{builtin}}) | ({{id}}) ) (?!{{idchar}} (?# Make sure we don't match a well-known name like 'add' inside something like 'add2'))",
+			"match": "(?x) \\s* (?: {{ns-userfunc}} | (parameters) | (variables) | ({{logical}}) | ({{builtin}}) | ({{id}}) ) (?!{{idchar}} (?# Make sure we don't match a well-known name like 'add' inside something like 'add2'))",
 			"captures": {
 				"1": {
 					"$comment": "user namespace (capturing group inside ns-userfunc)",
@@ -152,8 +209,8 @@
 					"name": "{{scope-variables}}"
 				},
 				"6": {
-					"$comment": "runtime functions",
-					"name": "{{scope-runtime}}"
+					"$comment": "logical functions",
+					"name": "{{scope-logical}}"
 				},
 				"7": {
 					"$comment": "built-in function name",

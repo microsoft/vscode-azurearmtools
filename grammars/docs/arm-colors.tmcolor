@@ -37,3 +37,5 @@ support.function -> built-in functions
 support.type
 variable
 variable.language -> variables and parameters
+
+keyword.control -> Start and end of an expression string "[ and ]" (not common to all themes)
