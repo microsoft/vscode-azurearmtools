@@ -2,9 +2,10 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length
+// tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length insecure-random
 
 import * as assert from "assert";
+import { randomBytes } from "crypto";
 import { DeploymentTemplate, Histogram, IncorrectArgumentsCountIssue, Json, Language, ParameterDefinition, Reference, ReferenceInVariableDefinitionJSONVisitor, UnrecognizedFunctionIssue } from "../extension.bundle";
 
 suite("DeploymentTemplate", () => {
@@ -947,5 +948,103 @@ suite("ReferenceInVariableDefinitionJSONVisitor", () => {
             visitor.visitStringValue(tle);
             assert.deepStrictEqual(visitor.referenceSpans, [new Language.Span(31, 9)]);
         });
+    });
+});
+
+suite("Incomplete JSON shouldn't crash parse", () => {
+    const template: string =
+        `{
+        "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+        "contentVersion": "1.0.0.0",
+        "parameters": {
+            "location": { "type": "string" },
+            "networkInterfaceName": {
+                "type": "string"
+            },
+        },
+        "variables": {
+            "vnetId": "[resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+        },
+        "resources": [
+            {
+                "name": "[parameters('networkInterfaceName')]",
+                "type": "Microsoft.Network/networkInterfaces",
+                "apiVersion": "2018-10-01",
+                "location": "[parameters('location')]",
+                "dependsOn": [
+                    "[concat('Microsoft.Network/networkSecurityGroups/', parameters('networkSecurityGroupName'))]",
+                    "[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]",
+                    "[concat('Microsoft.Network/publicIpAddresses/', parameters('publicIpAddressName'))]"
+                ],
+                "properties": {
+                    "$test-commandToExecute": "[concat('cd /hub*/docker-compose; sudo docker-compose down -t 60; sudo -s source /set_hub_url.sh ', reference(parameters('publicIpName')).dnsSettings.fqdn, ';  sudo docker volume rm ''dockercompose_cert-volume''; sudo docker-compose up')]",
+                    "ipConfigurations": [
+                        {
+                            "name": "ipconfig1",
+                            "properties": {
+                                "subnet": {
+                                    "id": "[variables('subnetRef')]"
+                                },
+                                "privateIPAllocationMethod": "Dynamic",
+                                "publicIpAddress": {
+                                    "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', parameters('publicIpAddressName'))]"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "tags": {}
+            }
+        ],
+        "outputs": {
+            "adminUsername": {
+                "type": "string",
+                "value": "[parameters('adminUsername')]"
+            }
+        }
+    }
+    `;
+
+    test("https://github.com/Microsoft/vscode-azurearmtools/issues/193", () => {
+        let modifiedTemplate = template.replace('"type": "string"', '"type": string');
+        new DeploymentTemplate(modifiedTemplate, "id");
+    });
+
+    test("typing character by character", async () => {
+        for (let i = 0; i < template.length; ++i) {
+            let partialTemplate = template.slice(0, i);
+            let dt = new DeploymentTemplate(partialTemplate, "id");
+            await dt.errors;
+        }
+    });
+
+    test("typing backwards character by character", async () => {
+        for (let i = 0; i < template.length; ++i) {
+            let partialTemplate = template.slice(i);
+            let dt = new DeploymentTemplate(partialTemplate, "id");
+            await dt.errors;
+        }
+    });
+
+    test("Random modifications", async () => {
+        let modifiedTemplate: string = template;
+
+        for (let i = 0; i < 1000; ++i) {
+            if (modifiedTemplate.length > 0 && Math.random() < 0.5) {
+                // Delete some characters
+                let position = Math.random() * (modifiedTemplate.length - 1);
+                let length = Math.random() * Math.max(25, modifiedTemplate.length);
+                modifiedTemplate = modifiedTemplate.slice(position, position + length);
+            } else {
+                // Insert some characters
+                let position = Math.random() * modifiedTemplate.length;
+                let length = Math.random() * 25;
+                let s = randomBytes(length).toString();
+                modifiedTemplate = modifiedTemplate.slice(0, position) + s + modifiedTemplate.slice(position);
+            }
+
+            let dt = new DeploymentTemplate(modifiedTemplate, "id");
+            await dt.errors;
+        }
     });
 });

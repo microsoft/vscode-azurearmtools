@@ -1067,8 +1067,10 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
             }
         } else {
             const propertyValue: Value = parseValue(tokenizer, tokens);
-            propertySpan = propertySpan.union(propertyValue.span);
-            objectSpan = objectSpan.union(propertyValue.span);
+            if (propertyValue) {
+                propertySpan = propertySpan.union(propertyValue.span);
+                objectSpan = objectSpan.union(propertyValue.span);
+            }
 
             properties.push(new Property(propertySpan, propertyName, propertyValue));
 
