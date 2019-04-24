@@ -603,7 +603,7 @@ export class ObjectValue extends Value {
  * A property in a JSON ObjectValue.
  */
 export class Property extends Value {
-    constructor(span: language.Span, private _name: StringValue, private _value: Value) {
+    constructor(span: language.Span, private _name: StringValue, private _value: Value | null) {
         super(span);
     }
 
@@ -621,7 +621,7 @@ export class Property extends Value {
     /**
      * The value of the property.
      */
-    public get value(): Value {
+    public get value(): Value | null {
         return this._value;
     }
 
@@ -992,7 +992,7 @@ export function parse(stringValue: string): ParseResult {
  * All of the Tokens that are read will be placed into the provided
  * tokens array.
  */
-function parseValue(tokenizer: Tokenizer, tokens: Token[]): Value {
+function parseValue(tokenizer: Tokenizer, tokens: Token[]): Value | null {
     let value: Value = null;
 
     if (!tokenizer.hasStarted()) {
@@ -1066,9 +1066,11 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
                 propertyName = null;
             }
         } else {
-            const propertyValue: Value = parseValue(tokenizer, tokens);
-            propertySpan = propertySpan.union(propertyValue.span);
-            objectSpan = objectSpan.union(propertyValue.span);
+            const propertyValue: Value | null = parseValue(tokenizer, tokens);
+            if (propertyValue) {
+                propertySpan = propertySpan.union(propertyValue.span);
+                objectSpan = objectSpan.union(propertyValue.span);
+            }
 
             properties.push(new Property(propertySpan, propertyName, propertyValue));
 
