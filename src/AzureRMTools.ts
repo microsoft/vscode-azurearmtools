@@ -377,6 +377,7 @@ export class AzureRMTools {
         if (deploymentTemplate) {
             const me = this;
             return await callWithTelemetryAndErrorHandling('Hover', async function (this: IActionContext): Promise<vscode.Hover> {
+                this.suppressErrorDisplay = true;
                 let properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>this.properties;
 
                 const context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
@@ -410,6 +411,7 @@ export class AzureRMTools {
             return await callWithTelemetryAndErrorHandling('provideCompletionItems', async function (this: IActionContext): Promise<vscode.CompletionList | undefined> {
                 let properties = <TelemetryProperties & { completionKind?: string }>this.properties;
                 this.suppressTelemetry = true;
+                this.suppressErrorDisplay = true;
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
                 if (context.completionItems) {
@@ -458,6 +460,7 @@ export class AzureRMTools {
             const me = this;
             return callWithTelemetryAndErrorHandlingSync('Go To Definition', function (this: IActionContext): vscode.Location {
                 let properties = <TelemetryProperties & { definitionType?: string }>this.properties;
+                this.suppressErrorDisplay = true;
                 let result: vscode.Location = null;
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
@@ -524,7 +527,9 @@ export class AzureRMTools {
     private async onProvideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp | undefined> {
         const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
         if (deploymentTemplate) {
-            return await callWithTelemetryAndErrorHandling('provideSignatureHelp', async () => {
+            return await callWithTelemetryAndErrorHandling('provideSignatureHelp', async function (this: IActionContext): Promise<vscode.SignatureHelp | undefined> {
+                this.suppressErrorDisplay = true;
+
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
                 let functionSignatureHelp: TLE.FunctionSignatureHelp = await context.signatureHelp;
