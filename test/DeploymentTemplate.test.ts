@@ -1005,12 +1005,15 @@ suite("Incomplete JSON shouldn't crash parse", () => {
     }
     `;
 
-    test("https://github.com/Microsoft/vscode-azurearmtools/issues/193", () => {
+    test("https://github.com/Microsoft/vscode-azurearmtools/issues/193", async () => {
+        // Just make sure nothing throws
         let modifiedTemplate = template.replace('"type": "string"', '"type": string');
-        new DeploymentTemplate(modifiedTemplate, "id");
+        let dt = new DeploymentTemplate(modifiedTemplate, "id");
+        await dt.errors;
     });
 
     test("typing character by character", async () => {
+        // Just make sure nothing throws
         for (let i = 0; i < template.length; ++i) {
             let partialTemplate = template.slice(0, i);
             let dt = new DeploymentTemplate(partialTemplate, "id");
@@ -1019,6 +1022,7 @@ suite("Incomplete JSON shouldn't crash parse", () => {
     });
 
     test("typing backwards character by character", async () => {
+        // Just make sure nothing throws
         for (let i = 0; i < template.length; ++i) {
             let partialTemplate = template.slice(i);
             let dt = new DeploymentTemplate(partialTemplate, "id");
@@ -1027,6 +1031,7 @@ suite("Incomplete JSON shouldn't crash parse", () => {
     });
 
     test("Random modifications", async () => {
+        // Just make sure nothing throws
         let modifiedTemplate: string = template;
 
         for (let i = 0; i < 1000; ++i) {
