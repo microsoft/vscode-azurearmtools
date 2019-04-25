@@ -164,6 +164,13 @@
             "maximumArguments": 1
         },
         {
+            "name": "format",
+            "expectedUsage": "format(formatString, arg1, arg2, ...)",
+            "description": "Creates a formatted string from input values. It uses the same formatting options as the System.String.Format method in .NET.",
+            "minimumArguments": 1,
+            "maximumArguments": null
+        },
+        {
             "name": "greater",
             "expectedUsage": "greater(arg1, arg2)",
             "description": "Checks whether the first value is greater than the second value.",
