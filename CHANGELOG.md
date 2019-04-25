@@ -1,5 +1,5 @@
 # Change Log
-All notable changes to the "vscode-azurearmtools" extension will be documented in this file
+All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
 ## Version 0.6.0 (2019-04-25)
 ### Added
