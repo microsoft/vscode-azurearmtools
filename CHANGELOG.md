@@ -1,6 +1,26 @@
 # Change Log
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.6.0 (2019-04-25)
+### Added
+- Expressions inside strings are now colorized
+- Support subscription deployment templates [#188](https://github.com/Microsoft/vscode-azurearmtools/pull/188)
+### Fixed
+- Random notifications with "documentColumnIndex cannot be greater than the line's maximum index" [#193](https://github.com/Microsoft/vscode-azurearmtools/issues/193)
+- Missing functions added:
+  - newGuid, dateTime (may only be used as a defaultValue on a parameter) (thanks @sanjaiganesh!) [#183](https://github.com/Microsoft/vscode-azurearmtools/pull/183)
+  - listConnectionStrings [#192](https://github.com/Microsoft/vscode-azurearmtools/issues/192)
+  - listCredentials [#187](https://github.com/Microsoft/vscode-azurearmtools/issues/187)
+  - format [#190](https://github.com/Microsoft/vscode-azurearmtools/issues/190)
+- Support escaped apostrophe in strings [#199](https://github.com/Microsoft/vscode-azurearmtools/issues/34)
+- Extension 'msazurermtools.azurerm-vscode-tools' uses a document selector without scheme [#94](https://github.com/Microsoft/vscode-azurearmtools/issues/94)
+- Update dev readme [#220](https://github.com/Microsoft/vscode-azurearmtools/pull/220)
+
+## 0.5.1 (2019-04-19)
+### Fixed
+- Extension does not load in older vscode versions:
+    - https://github.com/Microsoft/vscode-azurearmtools/issues/206
+
 ## Version 0.5.0 (2019-02-26)
 ### Changed
 - Changed view title from "JSON OUTLINE" to "ARM TEMPLATE OUTLINE" [#145](https://github.com/Microsoft/vscode-azurearmtools/issues/145)
