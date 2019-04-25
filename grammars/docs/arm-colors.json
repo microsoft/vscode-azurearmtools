@@ -1,0 +1,113 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "networkSecurityGroupName": {
+            "type": "string"
+        },
+        "roleAssignmentName": {
+            "type": "string"
+        },
+        "rgName": {
+            "type": "string"
+        },
+        "principalId": {
+            "type": "string"
+        },
+        "greeting": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "numberToFormat": {
+            "type": "string"
+        }
+        //"roleDefinitionId": { "type": string}
+    },
+    "variables": {
+        // Comments
+        "regular string": "Look, Ma, no hands!",
+        "string in expression": "[concat('Look, Ma, no hands!')]",
+        "builtinfunc": "[concat('a', 'b')]",
+        "runtime": "[reference('a', 'b')]",
+        "userfunc": "[contoso.uniqueName()]",
+        "list": "[listA()]",
+        "unknownfunc": "[unknownFunction()]",
+        "parameters": "[parameters('networkSecurityGroupName')]",
+        "variables": "[variables('variables')[0].property]",
+        "array access": "[variables('array')[123]]",
+        "property access": "[variables('object').property1]",
+        "escapedapostrophe": "[concat('What''s up, Doc?')]",
+        "invalid": "[whatever, dude!]",
+        "use-variables-to-get-rid-of-warnings": "[concat(variables('regular string'),variables('builtinfunc'),variables('escapedapostrophe'),variables('invalid'),variables('parameters'),variables('regular string'),variables('unknownfunc'),variables('userfunc'),variables('string in expression'),variables('use-variables-to-get-rid-of-warnings'),variables('array access'),variables('property access'))]",
+        "array": [
+            1,
+            2,
+            3
+        ],
+        "object": {
+            "property1": 1
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-01-01",
+            "name": "applyLock",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[parameters('rgName')]",
+            "dependsOn": [
+                "[parameters('rgName')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "resources": [
+                        {
+                            "name": "DontDelete",
+                            "type": "Microsoft.Authorization/locks",
+                            "apiVersion": "2017-04-01",
+                            "properties": {
+                                "level": "CanNotDelete",
+                                "notes": "Prevent deletion of the resourceGroup"
+                            }
+                        },
+                        {
+                            "name": "[guid(parameters('roleAssignmentName'))]",
+                            "type": "Microsoft.Authorization/roleAssignments",
+                            "apiVersion": "2017-05-01",
+                            "properties": {
+                                "roleDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/roleDefinitions/', parameters('roleDefinitionId'))]",
+                                "principalId": "[parameters('principalId')]",
+                                "scope": "[concat(subscription().id, '/resourceGroups/', parameters('rgName'))]"
+                            }
+                        }
+                    ]
+                },
+                "parameters": {}
+            }
+        }
+    ],
+    "functions": [
+        {
+            "namespace": "contoso",
+            "members": {
+                "uniqueName": {
+                    "output": {
+                        "type": "string",
+                        "value": "[concat(uniqueString(resourceGroup().id))]"
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "formatTest": {
+            "type": "string",
+            "value": "[format('{0}, {1}. Formatted number: {2:N0}', parameters('greeting'), parameters('name'), parameters('numberToFormat'))]"
+        }
+    }
+}
