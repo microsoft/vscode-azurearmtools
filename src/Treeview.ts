@@ -127,7 +127,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             iconPath: this.getIconPath(elementInfo),
             command: {
                 arguments: [new vscode.Range(start, end)],
-                command: "extension.treeview.goto",
+                command: "azurerm-vscode-tools.treeview.goto",
                 title: "",
             }
         };
