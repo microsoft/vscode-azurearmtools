@@ -98,7 +98,7 @@
         ],
         "no-unnecessary-local-variable": false,
         "no-unnecessary-type-assertion": false,
-        "no-unsafe-any": false, // TODO
+        "no-unsafe-any": true,
         "no-void-expression": [
             true,
             "ignore-arrow-function-shorthand"

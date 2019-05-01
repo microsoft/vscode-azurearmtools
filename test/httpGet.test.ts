@@ -41,7 +41,7 @@ suite("HttpClient", () => {
                     assert(false, "Expected the catch function to be called.");
                 })
                 // tslint:disable-next-line:no-any
-                .catch((reason: any) => {
+                .catch((reason: { code?: string; errno?: number; hostname?: string; syscall?: string }) => {
                     assert(reason);
                     assert.deepStrictEqual(reason.code, "ENOTFOUND");
                     assert.deepStrictEqual(reason.errno, "ENOTFOUND");
