@@ -3,8 +3,9 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// tslint:disable:max-func-body-length no-console cyclomatic-complexity
 'use strict';
+
+// tslint:disable:max-func-body-length no-console cyclomatic-complexity max-line-length
 
 // Turn on to overwrite results files rather than creating new ".txt.actual" files when there are differences.
 const OVERWRITE = true;
@@ -14,7 +15,7 @@ import * as fs from 'fs';
 import { ISuiteCallbackContext } from 'mocha';
 import * as os from 'os';
 import * as path from 'path';
-import { commands, Uri } from 'vscode';
+import { commands, Uri, workspace } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
 
 const tleGrammarSourcePath: string = path.join(__dirname, '../../../grammars/arm-expression-string.tmLanguage.json');
@@ -64,11 +65,21 @@ function unpreprocessScopes(scopes: string): string {
 }
 
 async function assertUnchangedTokens(testPath: string, resultPath: string): Promise<void> {
+    let doc = await workspace.openTextDocument(testPath);
+    let languageId = doc.languageId;
+
     let rawData = <{ c: string; t: string; r: unknown[] }[]>await commands.executeCommand('_workbench.captureSyntaxTokens', Uri.file(testPath));
 
     // Let's use more reasonable property names in our data
     let data: ITokenInfo[] = rawData.map(d => <ITokenInfo>{ text: d.c.trim(), scopes: d.t, colors: d.r })
         .filter(d => d.text !== "");
+
+    let expectedLanguageId = testPath.endsWith('.json') ? 'json' : 'jsonc';
+    if (languageId !== expectedLanguageId) {
+        throw new Error(`File ${testPath} is getting opened in vscode using language ID '${languageId}' instead of the expected ID '${expectedLanguageId}'.`
+            + ' Check if your user settings have modified the default file.associations setting.');
+    }
+
     let testCases: ITestcase[];
 
     // If the test filename contains ".invalid.", then all testcases in it should have at least one "invalid" token.

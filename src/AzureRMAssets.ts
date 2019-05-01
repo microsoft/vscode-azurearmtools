@@ -97,6 +97,7 @@ export class FunctionMetadata {
         private _maximumArguments: number,
         private _returnValueMembers: string[]
     ) {
+        // tslint:disable-next-line: strict-boolean-expressions
         this._name = name || '';
         this._lowerCaseName = this._name.toLowerCase();
     }

@@ -5,6 +5,7 @@
 
 import * as path from 'path';
 
+// tslint:disable-next-line: strict-boolean-expressions
 export const isWebpack: boolean = /^(false|0)?$/i.test(process.env.AZCODE_IGNORE_BUNDLE || '');
 
 export const assetsPath = path.join(__dirname, isWebpack ? "" : "..", "..", "assets");
