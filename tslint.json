@@ -111,10 +111,11 @@
         "prefer-type-cast": false,
         "quotemark": false,
         "strict-boolean-expressions": [
-            false, // TODO
+            true,
             "allow-string",
             "allow-undefined-union",
-            "allow-mix"
+            "allow-mix",
+            "allow-number"
         ],
         "switch-final-break": false,
         "trailing-comma": false,
