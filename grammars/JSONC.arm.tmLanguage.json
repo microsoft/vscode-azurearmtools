@@ -98,6 +98,10 @@
             "name": "meta.structure.dictionary.json.arm",
             "patterns": [
                 {
+                    "comment": "the JSON object key as an expression",
+                    "include": "source.tle.arm"
+                },
+                {
                     "comment": "the JSON object key",
                     "include": "#objectkey"
                 },

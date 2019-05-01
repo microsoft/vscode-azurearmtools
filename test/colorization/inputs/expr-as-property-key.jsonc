@@ -1,0 +1,14 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/deploymentTemplate.json#",
+    "resources": [
+        {
+            "apiVersion": "2018-05-01",
+            "name": "pid-c2d704c2-409b-401c-bd3e-3b0703bf255e",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                // Expression as key
+                "['mode']": "Incremental"
+            }
+        }
+    ]
+}
