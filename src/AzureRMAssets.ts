@@ -149,7 +149,7 @@ export class FunctionMetadata {
     public static fromString(metadataString: string): FunctionMetadata[] {
         let metadataJSON: FunctionMetadataContract;
         try {
-            metadataJSON = JSON.parse(metadataString);
+            metadataJSON = <FunctionMetadataContract>JSON.parse(metadataString);
         } catch (e) {
             metadataJSON = {};
         }

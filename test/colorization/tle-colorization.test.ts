@@ -16,6 +16,7 @@ import { ISuiteCallbackContext } from 'mocha';
 import * as os from 'os';
 import * as path from 'path';
 import { commands, Uri, workspace } from 'vscode';
+import { parseError } from 'vscode-azureextensionui';
 
 const tleGrammarSourcePath: string = path.join(__dirname, '../../../grammars/arm-expression-string.tmLanguage.json');
 export interface IGrammar {
@@ -45,7 +46,7 @@ function unpreprocessScopes(scopes: string): string {
     if (!unpreprocess) {
         let source: string = fs.readFileSync(tleGrammarSourcePath).toString();
         let grammar = <IGrammar>JSON.parse(source);
-        let preprocess = grammar.preprocess || {};
+        let preprocess = grammar.preprocess || <{ [key: string]: string }>{};
         unpreprocess = [];
         for (let key of Object.getOwnPropertyNames(preprocess)) {
             if (key.startsWith("scope-")) {
@@ -200,7 +201,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
             assert.equal(resultsFullString, previousResult);
             removeActualResultPath = true;
         } catch (e) {
-            let nonDiffError = isJustDiff ? "" : `${e.message}${os.EOL}`;
+            let nonDiffError = isJustDiff ? "" : `${parseError(e).message}${os.EOL}`;
             fs.writeFileSync(resultPathToWriteTo, resultsFullString, { flag: 'w' });
 
             if (OVERWRITE) {
