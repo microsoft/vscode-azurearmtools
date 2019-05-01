@@ -7,6 +7,7 @@
 import * as assert from "assert";
 import { randomBytes } from "crypto";
 import { DeploymentTemplate, Histogram, IncorrectArgumentsCountIssue, Json, Language, ParameterDefinition, Reference, ReferenceInVariableDefinitionJSONVisitor, UnrecognizedFunctionIssue } from "../extension.bundle";
+import { ISuiteCallbackContext } from "mocha";
 
 suite("DeploymentTemplate", () => {
     suite("constructor(string)", () => {
@@ -951,7 +952,9 @@ suite("ReferenceInVariableDefinitionJSONVisitor", () => {
     });
 });
 
-suite("Incomplete JSON shouldn't crash parse", () => {
+suite("Incomplete JSON shouldn't crash parse", function (this: ISuiteCallbackContext): void {
+    this.timeout(10000);
+
     const template: string =
         `{
         "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
