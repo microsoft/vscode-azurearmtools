@@ -414,8 +414,8 @@ export class AzureRMTools {
                 this.suppressErrorDisplay = true;
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                if (context.completionItems) {
-                    let completionItemArray: Completion.Item[] = await context.completionItems;
+                if (context.getCompletionItems()) {
+                    let completionItemArray: Completion.Item[] = await context.getCompletionItems();
                     const completionItems: vscode.CompletionItem[] = [];
                     for (const completion of completionItemArray) {
                         const insertRange: vscode.Range = me.getVSCodeRangeFromSpan(deploymentTemplate, completion.insertSpan);

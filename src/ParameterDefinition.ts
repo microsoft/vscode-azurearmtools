@@ -11,7 +11,8 @@ import * as language from "./Language";
  * This class represents the definition of a parameter in a deployment template.
  */
 export class ParameterDefinition {
-    private _description: string;
+    private _description: string | undefined | null;
+    private _defaultValue: Json.Value | undefined | null;
 
     constructor(private _property: Json.Property) {
         assert(_property);
@@ -41,5 +42,17 @@ export class ParameterDefinition {
             }
         }
         return this._description;
+    }
+
+    public get defaultValue(): Json.Value {
+        if (this._defaultValue === undefined) {
+            this._defaultValue = null;
+
+            const parameterDefinition: Json.ObjectValue = Json.asObjectValue(this._property.value);
+            if (parameterDefinition) {
+                this._defaultValue = parameterDefinition.getPropertyValue("defaultValue");
+            }
+        }
+        return this._defaultValue;
     }
 }

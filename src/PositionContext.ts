@@ -172,8 +172,8 @@ export class PositionContext {
         return this._hoverInfo;
     }
 
-    // tslint:disable-next-line:cyclomatic-complexity // Grandfathered in
-    public get completionItems(): Promise<Completion.Item[]> {
+    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length // Grandfathered in asdf
+    public async getCompletionItems(): Promise<Completion.Item[]> {
         if (this._completionItems === undefined) {
             this._completionItems = Promise.resolve([]);
 
@@ -225,6 +225,7 @@ export class PositionContext {
                         this._completionItems = Promise.resolve(this.getVariableCompletions(prefix, tleValue));
                     }
                 } else if (tleValue instanceof TLE.PropertyAccess) {
+                    // Handle completions for property accesses, e.g. "resourceGroup().prop1.prop2"
                     const functionSource: TLE.FunctionValue = tleValue.functionSource;
                     if (functionSource) {
 
@@ -237,9 +238,10 @@ export class PositionContext {
                         }
 
                         const variableProperty: Json.Property = this._deploymentTemplate.getVariableDefinitionFromFunction(functionSource);
+                        const parameterProperty: ParameterDefinition = this._deploymentTemplate.getParameterDefinitionFromFunction(functionSource);
                         const sourcesNameStack: string[] = tleValue.sourcesNameStack;
                         if (variableProperty) {
-
+                            // If the variable's value is an object...
                             const variableDefinition: Json.ObjectValue = Json.asObjectValue(variableProperty.value);
                             if (variableDefinition) {
 
@@ -266,25 +268,50 @@ export class PositionContext {
                                     this._completionItems = Promise.resolve(result);
                                 }
                             }
-                        } else if (sourcesNameStack.length === 0) {
-                            // We don't allow multiple levels of property access
-                            // (resourceGroup().prop1.prop2) on functions other than variables.
-                            const functionName: string = functionSource.nameToken.stringValue;
-                            this._completionItems = AzureRMAssets.getFunctionMetadataFromPrefix(functionName)
-                                .then((functionMetadataMatches: FunctionMetadata[]) => {
-                                    const result: Completion.Item[] = [];
+                        } else if (parameterProperty) {
+                            // If the parameters's default value is an object...
+                            const parameterDefValue: Json.ObjectValue = parameterProperty.defaultValue ? Json.asObjectValue(parameterProperty.defaultValue) : null;
+                            if (parameterDefValue) {
+                                const sourcePropertyDefinition: Json.ObjectValue = Json.asObjectValue(parameterDefValue.getPropertyValueFromStack(sourcesNameStack));
+                                if (sourcePropertyDefinition) {
 
-                                    if (functionMetadataMatches && functionMetadataMatches.length === 1) {
-                                        const functionMetadata: FunctionMetadata = functionMetadataMatches[0];
-                                        for (const returnValueMember of functionMetadata.returnValueMembers) {
-                                            if (propertyPrefix === "" || returnValueMember.toLowerCase().startsWith(propertyPrefix)) {
-                                                result.push(PositionContext.createPropertyCompletionItem(returnValueMember, replaceSpan));
+                                    let matchingPropertyNames: string[];
+                                    if (!propertyPrefix) {
+                                        matchingPropertyNames = sourcePropertyDefinition.propertyNames;
+                                    } else {
+                                        matchingPropertyNames = [];
+                                        for (const propertyName of sourcePropertyDefinition.propertyNames) {
+                                            if (propertyName.startsWith(propertyPrefix)) {
+                                                matchingPropertyNames.push(propertyName);
                                             }
                                         }
                                     }
 
-                                    return result;
-                                });
+                                    const result: Completion.Item[] = [];
+                                    for (const matchingPropertyName of matchingPropertyNames) {
+                                        result.push(PositionContext.createPropertyCompletionItem(matchingPropertyName, replaceSpan));
+                                    }
+
+                                    this._completionItems = Promise.resolve(result);
+                                }
+                            }
+                        } else if (sourcesNameStack.length === 0) {
+                            // We don't allow multiple levels of property access
+                            // (resourceGroup().prop1.prop2) on functions other than variables/parameters,
+                            // therefore checking that sourcesNameStack.length === 0
+                            const functionName: string = functionSource.nameToken.stringValue;
+                            let functionMetadataMatches: FunctionMetadata[] = await AzureRMAssets.getFunctionMetadataFromPrefix(functionName);
+                            const result: Completion.Item[] = [];
+                            if (functionMetadataMatches && functionMetadataMatches.length === 1) {
+                                const functionMetadata: FunctionMetadata = functionMetadataMatches[0];
+                                for (const returnValueMember of functionMetadata.returnValueMembers) {
+                                    if (propertyPrefix === "" || returnValueMember.toLowerCase().startsWith(propertyPrefix)) {
+                                        result.push(PositionContext.createPropertyCompletionItem(returnValueMember, replaceSpan));
+                                    }
+                                }
+                            }
+
+                            this._completionItems = Promise.resolve(result);
                         }
                     }
                 }

@@ -339,6 +339,19 @@ export class DeploymentTemplate {
         return result;
     }
 
+    public getParameterDefinitionFromFunction(tleFunction: TLE.FunctionValue): ParameterDefinition {
+        let result: ParameterDefinition = null;
+
+        if (tleFunction && tleFunction.nameToken.stringValue === "parameters") {
+            const propertyName: TLE.StringValue = TLE.asStringValue(tleFunction.argumentExpressions[0]);
+            if (propertyName) {
+                result = this.getParameterDefinition(propertyName.toString());
+            }
+        }
+
+        return result;
+    }
+
     public findParameterDefinitionsWithPrefix(parameterNamePrefix: string): ParameterDefinition[] {
         assert(parameterNamePrefix !== null, "parameterNamePrefix cannot be null");
         assert(parameterNamePrefix !== undefined, "parameterNamePrefix cannot be undefined");

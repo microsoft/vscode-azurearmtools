@@ -456,7 +456,7 @@ suite("PositionContext", () => {
             test(`with ${Utilities.escapeAndQuote(documentText)} at index ${index}`, () => {
                 const dt = new DeploymentTemplate(documentText, "id");
                 const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(index);
-                return pc.completionItems.then((completionItems: Completion.Item[]) => {
+                return pc.getCompletionItems().then((completionItems: Completion.Item[]) => {
                     compareTestableCompletionItems(completionItems, expectedCompletionItems);
                 });
             });
