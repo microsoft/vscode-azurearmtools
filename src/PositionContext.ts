@@ -172,7 +172,7 @@ export class PositionContext {
         return this._hoverInfo;
     }
 
-    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length // Grandfathered in asdf
+    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length // Grandfathered in
     public async getCompletionItems(): Promise<Completion.Item[]> {
         if (this._completionItems === undefined) {
             this._completionItems = Promise.resolve([]);
@@ -242,31 +242,13 @@ export class PositionContext {
                         const sourcesNameStack: string[] = tleValue.sourcesNameStack;
                         if (variableProperty) {
                             // If the variable's value is an object...
-                            const variableDefinition: Json.ObjectValue = Json.asObjectValue(variableProperty.value);
-                            if (variableDefinition) {
-
-                                const sourcePropertyDefinition: Json.ObjectValue = Json.asObjectValue(variableDefinition.getPropertyValueFromStack(sourcesNameStack));
-                                if (sourcePropertyDefinition) {
-
-                                    let matchingPropertyNames: string[];
-                                    if (!propertyPrefix) {
-                                        matchingPropertyNames = sourcePropertyDefinition.propertyNames;
-                                    } else {
-                                        matchingPropertyNames = [];
-                                        for (const propertyName of sourcePropertyDefinition.propertyNames) {
-                                            if (propertyName.startsWith(propertyPrefix)) {
-                                                matchingPropertyNames.push(propertyName);
-                                            }
-                                        }
-                                    }
-
-                                    const result: Completion.Item[] = [];
-                                    for (const matchingPropertyName of matchingPropertyNames) {
-                                        result.push(PositionContext.createPropertyCompletionItem(matchingPropertyName, replaceSpan));
-                                    }
-
-                                    this._completionItems = Promise.resolve(result);
-                                }
+                            const sourceVariableDefinition: Json.ObjectValue = Json.asObjectValue(variableProperty.value);
+                            if (sourceVariableDefinition) {
+                                this._completionItems = Promise.resolve(this.getDeepPropertyAccessCompletions(
+                                    propertyPrefix,
+                                    sourceVariableDefinition,
+                                    sourcesNameStack,
+                                    replaceSpan));
                             }
                         } else if (parameterProperty) {
                             // If the parameters's default value is an object...
@@ -274,25 +256,11 @@ export class PositionContext {
                             if (parameterDefValue) {
                                 const sourcePropertyDefinition: Json.ObjectValue = Json.asObjectValue(parameterDefValue.getPropertyValueFromStack(sourcesNameStack));
                                 if (sourcePropertyDefinition) {
-
-                                    let matchingPropertyNames: string[];
-                                    if (!propertyPrefix) {
-                                        matchingPropertyNames = sourcePropertyDefinition.propertyNames;
-                                    } else {
-                                        matchingPropertyNames = [];
-                                        for (const propertyName of sourcePropertyDefinition.propertyNames) {
-                                            if (propertyName.startsWith(propertyPrefix)) {
-                                                matchingPropertyNames.push(propertyName);
-                                            }
-                                        }
-                                    }
-
-                                    const result: Completion.Item[] = [];
-                                    for (const matchingPropertyName of matchingPropertyNames) {
-                                        result.push(PositionContext.createPropertyCompletionItem(matchingPropertyName, replaceSpan));
-                                    }
-
-                                    this._completionItems = Promise.resolve(result);
+                                    this._completionItems = Promise.resolve(this.getDeepPropertyAccessCompletions(
+                                        propertyPrefix,
+                                        sourcePropertyDefinition,
+                                        sourcesNameStack,
+                                        replaceSpan));
                                 }
                             }
                         } else if (sourcesNameStack.length === 0) {
@@ -301,6 +269,7 @@ export class PositionContext {
                             // therefore checking that sourcesNameStack.length === 0
                             const functionName: string = functionSource.nameToken.stringValue;
                             let functionMetadataMatches: FunctionMetadata[] = await AzureRMAssets.getFunctionMetadataFromPrefix(functionName);
+
                             const result: Completion.Item[] = [];
                             if (functionMetadataMatches && functionMetadataMatches.length === 1) {
                                 const functionMetadata: FunctionMetadata = functionMetadataMatches[0];
@@ -319,6 +288,32 @@ export class PositionContext {
         }
 
         return this._completionItems;
+    }
+
+    private getDeepPropertyAccessCompletions(propertyPrefix: string, variableOrParameterDefinition: Json.ObjectValue, sourcesNameStack: string[], replaceSpan: language.Span): Completion.Item[] {
+        const result: Completion.Item[] = [];
+
+        const sourcePropertyDefinition: Json.ObjectValue = Json.asObjectValue(variableOrParameterDefinition.getPropertyValueFromStack(sourcesNameStack));
+        if (sourcePropertyDefinition) {
+
+            let matchingPropertyNames: string[];
+            if (!propertyPrefix) {
+                matchingPropertyNames = sourcePropertyDefinition.propertyNames;
+            } else {
+                matchingPropertyNames = [];
+                for (const propertyName of sourcePropertyDefinition.propertyNames) {
+                    if (propertyName.startsWith(propertyPrefix)) {
+                        matchingPropertyNames.push(propertyName);
+                    }
+                }
+            }
+
+            for (const matchingPropertyName of matchingPropertyNames) {
+                result.push(PositionContext.createPropertyCompletionItem(matchingPropertyName, replaceSpan));
+            }
+        }
+
+        return result;
     }
 
     private static createPropertyCompletionItem(propertyName: string, replaceSpan: language.Span): Completion.Item {
