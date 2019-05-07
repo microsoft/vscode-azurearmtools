@@ -2,8 +2,6 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:no-use-before-declare
-
 import * as assert from "assert";
 
 import * as Json from "./JSON";

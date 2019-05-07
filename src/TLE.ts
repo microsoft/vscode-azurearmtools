@@ -7,7 +7,6 @@
 // tslint:disable:no-unnecessary-class // Grandfathered in
 // tslint:disable:switch-default // Grandfathered in
 // tslint:disable:max-classes-per-file // Grandfathered in
-// tslint:disable:no-use-before-declare
 
 import * as assert from "assert";
 

@@ -35,7 +35,6 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
         this.properties.isActivationEvent = 'true';
         this.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
 
-        // tslint:disable-next-line: no-use-before-declare
         context.subscriptions.push(new AzureRMTools(context));
     });
 }

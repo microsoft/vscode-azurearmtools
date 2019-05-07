@@ -6,7 +6,6 @@
 // tslint:disable max-classes-per-file // Grandfathered in
 // tslint:disable:function-name // Grandfathered in
 // tslint:disable:cyclomatic-complexity // Grandfathered in
-// tslint:disable:no-use-before-declare
 
 import * as assert from "assert";
 
