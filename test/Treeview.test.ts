@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:max-func-body-length align no-use-before-declare max-line-length
+// tslint:disable:max-func-body-length align max-line-length
 
 import * as assert from "assert";
 import * as path from "path";

@@ -99,6 +99,7 @@
         "no-unnecessary-local-variable": false,
         "no-unnecessary-type-assertion": false,
         "no-unsafe-any": true,
+        "no-use-before-declare": false, // recommended disabled, see https://palantir.github.io/tslint/rules/no-use-before-declare/
         "no-void-expression": [
             true,
             "ignore-arrow-function-shorthand"
