@@ -414,42 +414,40 @@ export class AzureRMTools {
                 this.suppressErrorDisplay = true;
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                if (context.getCompletionItems()) {
-                    let completionItemArray: Completion.Item[] = await context.getCompletionItems();
-                    const completionItems: vscode.CompletionItem[] = [];
-                    for (const completion of completionItemArray) {
-                        const insertRange: vscode.Range = me.getVSCodeRangeFromSpan(deploymentTemplate, completion.insertSpan);
+                let completionItemArray: Completion.Item[] = await context.getCompletionItems();
+                const completionItems: vscode.CompletionItem[] = [];
+                for (const completion of completionItemArray) {
+                    const insertRange: vscode.Range = me.getVSCodeRangeFromSpan(deploymentTemplate, completion.insertSpan);
 
-                        const completionToAdd = new vscode.CompletionItem(completion.name);
-                        completionToAdd.range = insertRange;
-                        completionToAdd.insertText = new vscode.SnippetString(completion.insertText);
-                        completionToAdd.detail = completion.detail;
-                        completionToAdd.documentation = completion.description;
+                    const completionToAdd = new vscode.CompletionItem(completion.name);
+                    completionToAdd.range = insertRange;
+                    completionToAdd.insertText = new vscode.SnippetString(completion.insertText);
+                    completionToAdd.detail = completion.detail;
+                    completionToAdd.documentation = completion.description;
 
-                        switch (completion.kind) {
-                            case Completion.CompletionKind.Function:
-                                completionToAdd.kind = vscode.CompletionItemKind.Function;
-                                break;
+                    switch (completion.kind) {
+                        case Completion.CompletionKind.Function:
+                            completionToAdd.kind = vscode.CompletionItemKind.Function;
+                            break;
 
-                            case Completion.CompletionKind.Parameter:
-                            case Completion.CompletionKind.Variable:
-                                completionToAdd.kind = vscode.CompletionItemKind.Variable;
-                                break;
+                        case Completion.CompletionKind.Parameter:
+                        case Completion.CompletionKind.Variable:
+                            completionToAdd.kind = vscode.CompletionItemKind.Variable;
+                            break;
 
-                            case Completion.CompletionKind.Property:
-                                completionToAdd.kind = vscode.CompletionItemKind.Field;
-                                break;
+                        case Completion.CompletionKind.Property:
+                            completionToAdd.kind = vscode.CompletionItemKind.Field;
+                            break;
 
-                            default:
-                                assert.fail(`Unrecognized Completion.Type: ${completion.kind}`);
-                                break;
-                        }
-                        properties.completionKind = vscode.CompletionItemKind[completionToAdd.kind];
-
-                        completionItems.push(completionToAdd);
+                        default:
+                            assert.fail(`Unrecognized Completion.Type: ${completion.kind}`);
+                            break;
                     }
-                    return new vscode.CompletionList(completionItems, true);
+                    properties.completionKind = vscode.CompletionItemKind[completionToAdd.kind];
+
+                    completionItems.push(completionToAdd);
                 }
+                return new vscode.CompletionList(completionItems, true);
             });
         }
     }
