@@ -41,6 +41,7 @@ interface IExpressionMetadata {
 function test(): cp.ChildProcess {
     env.DEBUGTELEMETRY = '1';
     env.CODE_TESTS_PATH = path.join(__dirname, 'dist/test');
+    env.MOCHA_enableTimeouts = "4000";
     return cp.spawn('node', ['./node_modules/vscode/bin/test'], { stdio: 'inherit', env });
 }
 
