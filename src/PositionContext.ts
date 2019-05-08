@@ -27,7 +27,7 @@ export class PositionContext {
     private _tleParseResult: TLE.ParseResult;
     private _tleValue: TLE.Value;
     private _hoverInfo: Promise<Hover.Info>;
-    private _completionItems: Promise<Completion.Item[]>;
+    private _completionItemsPromise: Promise<Completion.Item[]> | undefined;
     private _parameterDefinition: ParameterDefinition;
     private _variableDefinition: Json.Property;
     private _references: Reference.List;
@@ -172,126 +172,152 @@ export class PositionContext {
         return this._hoverInfo;
     }
 
-    // tslint:disable-next-line:cyclomatic-complexity // Grandfathered in
-    public get completionItems(): Promise<Completion.Item[]> {
-        if (this._completionItems === undefined) {
-            this._completionItems = Promise.resolve([]);
+    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length // Grandfathered in
+    // CONSIDER: Needs refactoring
+    public async getCompletionItems(): Promise<Completion.Item[]> {
+        if (!this._completionItemsPromise) {
+            // tslint:disable-next-line:cyclomatic-complexity max-func-body-length // Grandfathered in
+            this._completionItemsPromise = (async () => {
+                if (this.tleParseResult) {
+                    const tleValue: TLE.Value = this.tleValue;
 
-            if (this.tleParseResult) {
-                const tleValue: TLE.Value = this.tleValue;
+                    if (!tleValue || !tleValue.contains(this.tleCharacterIndex)) {
+                        const leftSquareBracketToken: TLE.Token = this.tleParseResult.leftSquareBracketToken;
+                        const rightSquareBracketToken: TLE.Token = this.tleParseResult.rightSquareBracketToken;
 
-                if (!tleValue || !tleValue.contains(this.tleCharacterIndex)) {
-                    const leftSquareBracketToken: TLE.Token = this.tleParseResult.leftSquareBracketToken;
-                    const rightSquareBracketToken: TLE.Token = this.tleParseResult.rightSquareBracketToken;
+                        if (leftSquareBracketToken && leftSquareBracketToken.span.afterEndIndex <= this.tleCharacterIndex &&
+                            (!rightSquareBracketToken || this.tleCharacterIndex <= rightSquareBracketToken.span.startIndex)) {
 
-                    if (leftSquareBracketToken && leftSquareBracketToken.span.afterEndIndex <= this.tleCharacterIndex &&
-                        (!rightSquareBracketToken || this.tleCharacterIndex <= rightSquareBracketToken.span.startIndex)) {
-
-                        this._completionItems = PositionContext.getFunctionCompletions("", this.emptySpanAtDocumentCharacterIndex);
-                    }
-                } else if (tleValue instanceof TLE.FunctionValue) {
-                    if (tleValue.nameToken.span.contains(this.tleCharacterIndex, true)) {
-                        // If the caret is inside the TLE function's name
-                        const functionNameStartIndex: number = tleValue.nameToken.span.startIndex;
-                        const functionNamePrefix: string = tleValue.nameToken.stringValue.substring(0, this.tleCharacterIndex - functionNameStartIndex);
-
-                        let replaceSpan: language.Span;
-                        if (functionNamePrefix.length === 0) {
-                            replaceSpan = this.emptySpanAtDocumentCharacterIndex;
-                        } else {
-                            replaceSpan = tleValue.nameToken.span.translate(this.jsonTokenStartIndex);
+                            return await PositionContext.getFunctionCompletions("", this.emptySpanAtDocumentCharacterIndex);
                         }
+                    } else if (tleValue instanceof TLE.FunctionValue) {
+                        if (tleValue.nameToken.span.contains(this.tleCharacterIndex, true)) {
+                            // If the caret is inside the TLE function's name
+                            const functionNameStartIndex: number = tleValue.nameToken.span.startIndex;
+                            const functionNamePrefix: string = tleValue.nameToken.stringValue.substring(0, this.tleCharacterIndex - functionNameStartIndex);
 
-                        this._completionItems = PositionContext.getFunctionCompletions(functionNamePrefix, replaceSpan);
-                    } else if (tleValue.leftParenthesisToken && this.tleCharacterIndex <= tleValue.leftParenthesisToken.span.startIndex) {
-                        // The caret is between the function name and the left parenthesis
-                        this._completionItems = PositionContext.getFunctionCompletions("", this.emptySpanAtDocumentCharacterIndex);
-                    } else {
-                        if (tleValue.nameToken.stringValue === "parameters" && tleValue.argumentExpressions.length === 0) {
-                            this._completionItems = Promise.resolve(this.getParameterCompletions("", tleValue));
-                        } else if (tleValue.nameToken.stringValue === "variables" && tleValue.argumentExpressions.length === 0) {
-                            this._completionItems = Promise.resolve(this.getVariableCompletions("", tleValue));
-                        } else {
-                            this._completionItems = PositionContext.getFunctionCompletions("", this.emptySpanAtDocumentCharacterIndex);
-                        }
-                    }
-                } else if (tleValue instanceof TLE.StringValue) {
-                    // Start at index 1 to skip past the opening single-quote.
-                    const prefix: string = tleValue.toString().substring(1, this.tleCharacterIndex - tleValue.getSpan().startIndex);
-
-                    if (tleValue.isParametersArgument()) {
-                        this._completionItems = Promise.resolve(this.getParameterCompletions(prefix, tleValue));
-                    } else if (tleValue.isVariablesArgument()) {
-                        this._completionItems = Promise.resolve(this.getVariableCompletions(prefix, tleValue));
-                    }
-                } else if (tleValue instanceof TLE.PropertyAccess) {
-                    const functionSource: TLE.FunctionValue = tleValue.functionSource;
-                    if (functionSource) {
-
-                        let propertyPrefix: string = "";
-                        let replaceSpan: language.Span = this.emptySpanAtDocumentCharacterIndex;
-                        const propertyNameToken: TLE.Token = tleValue.nameToken;
-                        if (propertyNameToken) {
-                            replaceSpan = propertyNameToken.span.translate(this.jsonTokenStartIndex);
-                            propertyPrefix = propertyNameToken.stringValue.substring(0, this.tleCharacterIndex - propertyNameToken.span.startIndex).toLowerCase();
-                        }
-
-                        const variableProperty: Json.Property = this._deploymentTemplate.getVariableDefinitionFromFunction(functionSource);
-                        const sourcesNameStack: string[] = tleValue.sourcesNameStack;
-                        if (variableProperty) {
-
-                            const variableDefinition: Json.ObjectValue = Json.asObjectValue(variableProperty.value);
-                            if (variableDefinition) {
-
-                                const sourcePropertyDefinition: Json.ObjectValue = Json.asObjectValue(variableDefinition.getPropertyValueFromStack(sourcesNameStack));
-                                if (sourcePropertyDefinition) {
-
-                                    let matchingPropertyNames: string[];
-                                    if (!propertyPrefix) {
-                                        matchingPropertyNames = sourcePropertyDefinition.propertyNames;
-                                    } else {
-                                        matchingPropertyNames = [];
-                                        for (const propertyName of sourcePropertyDefinition.propertyNames) {
-                                            if (propertyName.startsWith(propertyPrefix)) {
-                                                matchingPropertyNames.push(propertyName);
-                                            }
-                                        }
-                                    }
-
-                                    const result: Completion.Item[] = [];
-                                    for (const matchingPropertyName of matchingPropertyNames) {
-                                        result.push(PositionContext.createPropertyCompletionItem(matchingPropertyName, replaceSpan));
-                                    }
-
-                                    this._completionItems = Promise.resolve(result);
-                                }
+                            let replaceSpan: language.Span;
+                            if (functionNamePrefix.length === 0) {
+                                replaceSpan = this.emptySpanAtDocumentCharacterIndex;
+                            } else {
+                                replaceSpan = tleValue.nameToken.span.translate(this.jsonTokenStartIndex);
                             }
-                        } else if (sourcesNameStack.length === 0) {
-                            // We don't allow multiple levels of property access
-                            // (resourceGroup().prop1.prop2) on functions other than variables.
-                            const functionName: string = functionSource.nameToken.stringValue;
-                            this._completionItems = AzureRMAssets.getFunctionMetadataFromPrefix(functionName)
-                                .then((functionMetadataMatches: FunctionMetadata[]) => {
-                                    const result: Completion.Item[] = [];
 
-                                    if (functionMetadataMatches && functionMetadataMatches.length === 1) {
-                                        const functionMetadata: FunctionMetadata = functionMetadataMatches[0];
-                                        for (const returnValueMember of functionMetadata.returnValueMembers) {
-                                            if (propertyPrefix === "" || returnValueMember.toLowerCase().startsWith(propertyPrefix)) {
-                                                result.push(PositionContext.createPropertyCompletionItem(returnValueMember, replaceSpan));
-                                            }
+                            return await PositionContext.getFunctionCompletions(functionNamePrefix, replaceSpan);
+                        } else if (tleValue.leftParenthesisToken && this.tleCharacterIndex <= tleValue.leftParenthesisToken.span.startIndex) {
+                            // The caret is between the function name and the left parenthesis (with whitespace between them)
+                            return await PositionContext.getFunctionCompletions("", this.emptySpanAtDocumentCharacterIndex);
+                        } else {
+                            if (tleValue.nameToken.stringValue === "parameters" && tleValue.argumentExpressions.length === 0) {
+                                return this.getParameterCompletions("", tleValue);
+                            } else if (tleValue.nameToken.stringValue === "variables" && tleValue.argumentExpressions.length === 0) {
+                                return this.getVariableCompletions("", tleValue);
+                            } else {
+                                return await PositionContext.getFunctionCompletions("", this.emptySpanAtDocumentCharacterIndex);
+                            }
+                        }
+                    } else if (tleValue instanceof TLE.StringValue) {
+                        // Start at index 1 to skip past the opening single-quote.
+                        const prefix: string = tleValue.toString().substring(1, this.tleCharacterIndex - tleValue.getSpan().startIndex);
+
+                        if (tleValue.isParametersArgument()) {
+                            return this.getParameterCompletions(prefix, tleValue);
+                        } else if (tleValue.isVariablesArgument()) {
+                            return this.getVariableCompletions(prefix, tleValue);
+                        }
+                    } else if (tleValue instanceof TLE.PropertyAccess) {
+                        // Handle completions for property accesses, e.g. "resourceGroup().prop1.prop2"
+                        const functionSource: TLE.FunctionValue = tleValue.functionSource;
+                        if (functionSource) {
+
+                            let propertyPrefix: string = "";
+                            let replaceSpan: language.Span = this.emptySpanAtDocumentCharacterIndex;
+                            const propertyNameToken: TLE.Token = tleValue.nameToken;
+                            if (propertyNameToken) {
+                                replaceSpan = propertyNameToken.span.translate(this.jsonTokenStartIndex);
+                                propertyPrefix = propertyNameToken.stringValue.substring(0, this.tleCharacterIndex - propertyNameToken.span.startIndex).toLowerCase();
+                            }
+
+                            const variableProperty: Json.Property = this._deploymentTemplate.getVariableDefinitionFromFunction(functionSource);
+                            const parameterProperty: ParameterDefinition = this._deploymentTemplate.getParameterDefinitionFromFunction(functionSource);
+                            const sourcesNameStack: string[] = tleValue.sourcesNameStack;
+                            if (variableProperty) {
+                                // If the variable's value is an object...
+                                const sourceVariableDefinition: Json.ObjectValue = Json.asObjectValue(variableProperty.value);
+                                if (sourceVariableDefinition) {
+                                    return this.getDeepPropertyAccessCompletions(
+                                        propertyPrefix,
+                                        sourceVariableDefinition,
+                                        sourcesNameStack,
+                                        replaceSpan);
+                                }
+                            } else if (parameterProperty) {
+                                // If the parameters's default value is an object...
+                                const parameterDefValue: Json.ObjectValue = parameterProperty.defaultValue ? Json.asObjectValue(parameterProperty.defaultValue) : null;
+                                if (parameterDefValue) {
+                                    const sourcePropertyDefinition: Json.ObjectValue = Json.asObjectValue(parameterDefValue.getPropertyValueFromStack(sourcesNameStack));
+                                    if (sourcePropertyDefinition) {
+                                        return this.getDeepPropertyAccessCompletions(
+                                            propertyPrefix,
+                                            sourcePropertyDefinition,
+                                            sourcesNameStack,
+                                            replaceSpan);
+                                    }
+                                }
+                            } else if (sourcesNameStack.length === 0) {
+                                // We don't allow multiple levels of property access
+                                // (resourceGroup().prop1.prop2) on functions other than variables/parameters,
+                                // therefore checking that sourcesNameStack.length === 0
+                                const functionName: string = functionSource.nameToken.stringValue;
+                                let functionMetadataMatches: FunctionMetadata[] = await AzureRMAssets.getFunctionMetadataFromPrefix(functionName);
+
+                                const result: Completion.Item[] = [];
+                                if (functionMetadataMatches && functionMetadataMatches.length === 1) {
+                                    const functionMetadata: FunctionMetadata = functionMetadataMatches[0];
+                                    for (const returnValueMember of functionMetadata.returnValueMembers) {
+                                        if (propertyPrefix === "" || returnValueMember.toLowerCase().startsWith(propertyPrefix)) {
+                                            result.push(PositionContext.createPropertyCompletionItem(returnValueMember, replaceSpan));
                                         }
                                     }
+                                }
 
-                                    return result;
-                                });
+                                return result;
+                            }
                         }
                     }
                 }
+
+                return [];
+            })();
+        }
+
+        return this._completionItemsPromise;
+    }
+
+    private getDeepPropertyAccessCompletions(propertyPrefix: string, variableOrParameterDefinition: Json.ObjectValue, sourcesNameStack: string[], replaceSpan: language.Span): Completion.Item[] {
+        const result: Completion.Item[] = [];
+
+        const sourcePropertyDefinition: Json.ObjectValue = Json.asObjectValue(variableOrParameterDefinition.getPropertyValueFromStack(sourcesNameStack));
+        if (sourcePropertyDefinition) {
+
+            let matchingPropertyNames: string[];
+            if (!propertyPrefix) {
+                matchingPropertyNames = sourcePropertyDefinition.propertyNames;
+            } else {
+                matchingPropertyNames = [];
+                for (const propertyName of sourcePropertyDefinition.propertyNames) {
+                    if (propertyName.startsWith(propertyPrefix)) {
+                        matchingPropertyNames.push(propertyName);
+                    }
+                }
+            }
+
+            for (const matchingPropertyName of matchingPropertyNames) {
+                result.push(PositionContext.createPropertyCompletionItem(matchingPropertyName, replaceSpan));
             }
         }
 
-        return this._completionItems;
+        return result;
     }
 
     private static createPropertyCompletionItem(propertyName: string, replaceSpan: language.Span): Completion.Item {

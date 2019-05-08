@@ -451,14 +451,30 @@ suite("PositionContext", () => {
         });
     });
 
-    suite("completionItems", () => {
+    suite("completionItems", async () => {
+        function addCursor(documentText: string, markerIndex: number): string {
+            return `${documentText.slice(0, markerIndex)}<CURSOR>${documentText.slice(markerIndex)}`;
+        }
+
         function completionItemsTest(documentText: string, index: number, expectedCompletionItems: Completion.Item[]): void {
-            test(`with ${Utilities.escapeAndQuote(documentText)} at index ${index}`, () => {
+            const testName = `with ${Utilities.escapeAndQuote(addCursor(documentText, index))} at index ${index}`;
+            test(testName, async () => {
+                let keepInClosureForEasierDebugging = testName;
+                keepInClosureForEasierDebugging = keepInClosureForEasierDebugging;
+
                 const dt = new DeploymentTemplate(documentText, "id");
                 const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(index);
-                return pc.completionItems.then((completionItems: Completion.Item[]) => {
-                    compareTestableCompletionItems(completionItems, expectedCompletionItems);
-                });
+
+                // Verify no race conditions - call twice before awaiting
+                const completionItemsPromise: Promise<Completion.Item[]> = pc.getCompletionItems();
+                const completionItems2Promise: Promise<Completion.Item[]> = pc.getCompletionItems();
+
+                let completionItems: Completion.Item[] = await completionItemsPromise;
+                const completionItems2: Completion.Item[] = await completionItems2Promise;
+                assert(!!completionItems);
+                assert.deepStrictEqual(completionItems, completionItems2, "Race condition? Got different results");
+
+                compareTestableCompletionItems(completionItems, expectedCompletionItems);
             });
         }
 
@@ -1084,97 +1100,154 @@ suite("PositionContext", () => {
                                             []);
             }
 
-            for (let i = 0; i <= 28; ++i) {
-                completionItemsTest(`{ "b": "[variables('a').]" }`, i,
-                    (i === 9) ? allCompletions(9, 0) :
-                        (10 <= i && i <= 18) ? [variablesCompletion(9, 9)] :
-                            []);
-            }
-
-            for (let i = 0; i <= 55; ++i) {
-                completionItemsTest(`{ "variables": { "a": "A" }, "b": "[variables('a').]" }`, i,
-                    (i === 36) ? allCompletions(36, 0) :
-                        (37 <= i && i <= 45) ? [variablesCompletion(36, 9)] :
-                            (47 <= i && i <= 48) ? [variableCompletion("a", 46, 4)] :
+            suite("Variable value deep completion for objects", () => {
+                for (let i = 0; i <= 28; ++i) {
+                    completionItemsTest(`{ "b": "[variables('a').]" }`, i,
+                        (i === 9) ? allCompletions(9, 0) :
+                            (10 <= i && i <= 18) ? [variablesCompletion(9, 9)] :
                                 []);
-            }
+                }
 
-            for (let i = 0; i <= 55; ++i) {
-                completionItemsTest(`{ "variables": { "a": 123 }, "b": "[variables('a').]" }`, i,
-                    (i === 36) ? allCompletions(36, 0) :
-                        (37 <= i && i <= 45) ? [variablesCompletion(36, 9)] :
-                            (47 <= i && i <= 48) ? [variableCompletion("a", 46, 4)] :
-                                []);
-            }
-
-            for (let i = 0; i <= 56; ++i) {
-                completionItemsTest(`{ "variables": { "a": true }, "b": "[variables('a').]" }`, i,
-                    (i === 37) ? allCompletions(37, 0) :
-                        (38 <= i && i <= 46) ? [variablesCompletion(37, 9)] :
-                            (48 <= i && i <= 49) ? [variableCompletion("a", 47, 4)] :
-                                []);
-            }
-
-            for (let i = 0; i <= 56; ++i) {
-                completionItemsTest(`{ "variables": { "a": null }, "b": "[variables('a').]" }`, i,
-                    (i === 37) ? allCompletions(37, 0) :
-                        (38 <= i && i <= 46) ? [variablesCompletion(37, 9)] :
-                            (48 <= i && i <= 49) ? [variableCompletion("a", 47, 4)] :
-                                []);
-            }
-
-            for (let i = 0; i <= 54; ++i) {
-                completionItemsTest(`{ "variables": { "a": [] }, "b": "[variables('a').]" }`, i,
-                    (i === 35) ? allCompletions(35, 0) :
-                        (36 <= i && i <= 44) ? [variablesCompletion(35, 9)] :
-                            (46 <= i && i <= 47) ? [variableCompletion("a", 45, 4)] :
-                                []);
-            }
-
-            for (let i = 0; i <= 54; ++i) {
-                completionItemsTest(`{ "variables": { "a": {} }, "b": "[variables('a').]" }`, i,
-                    (i === 35) ? allCompletions(35, 0) :
-                        (36 <= i && i <= 44) ? [variablesCompletion(35, 9)] :
-                            (46 <= i && i <= 47) ? [variableCompletion("a", 45, 4)] :
-                                []);
-            }
-
-            for (let i = 0; i <= 67; ++i) {
-                completionItemsTest(`{ "variables": { "a": { "name": "A" } }, "b": "[variables('a').]" }`, i,
-                    (i === 48) ? allCompletions(48, 0) :
-                        (49 <= i && i <= 57) ? [variablesCompletion(48, 9)] :
-                            (59 <= i && i <= 60) ? [variableCompletion("a", 58, 4)] :
-                                (62 <= i && i <= 63) ? [propertyCompletion("name", i, 0)] :
+                for (let i = 0; i <= 55; ++i) {
+                    completionItemsTest(`{ "variables": { "a": "A" }, "b": "[variables('a').]" }`, i,
+                        (i === 36) ? allCompletions(36, 0) :
+                            (37 <= i && i <= 45) ? [variablesCompletion(36, 9)] :
+                                (47 <= i && i <= 48) ? [variableCompletion("a", 46, 4)] :
                                     []);
-            }
+                }
 
-            for (let i = 0; i <= 69; ++i) {
-                completionItemsTest(`{ "variables": { "a": { "name": "A" } }, "b": "[variables('a').na]" }`, i,
-                    (i === 48) ? allCompletions(48, 0) :
-                        (49 <= i && i <= 57) ? [variablesCompletion(48, 9)] :
-                            (59 <= i && i <= 60) ? [variableCompletion("a", 58, 4)] :
-                                (62 <= i && i <= 65) ? [propertyCompletion("name", 63, 2)] :
+                for (let i = 0; i <= 55; ++i) {
+                    completionItemsTest(`{ "variables": { "a": 123 }, "b": "[variables('a').]" }`, i,
+                        (i === 36) ? allCompletions(36, 0) :
+                            (37 <= i && i <= 45) ? [variablesCompletion(36, 9)] :
+                                (47 <= i && i <= 48) ? [variableCompletion("a", 46, 4)] :
                                     []);
-            }
+                }
 
-            for (let i = 0; i <= 69; ++i) {
-                completionItemsTest(`{ "variables": { "a": { "name": "A" } }, "b": "[variables('a').ab]" }`, i,
-                    (i === 48) ? allCompletions(48, 0) :
-                        (49 <= i && i <= 57) ? [variablesCompletion(48, 9)] :
-                            (59 <= i && i <= 60) ? [variableCompletion("a", 58, 4)] :
-                                (62 <= i && i <= 63) ? [propertyCompletion("name", 63, 2)] :
+                for (let i = 0; i <= 56; ++i) {
+                    completionItemsTest(`{ "variables": { "a": true }, "b": "[variables('a').]" }`, i,
+                        (i === 37) ? allCompletions(37, 0) :
+                            (38 <= i && i <= 46) ? [variablesCompletion(37, 9)] :
+                                (48 <= i && i <= 49) ? [variableCompletion("a", 47, 4)] :
                                     []);
-            }
+                }
 
-            for (let i = 0; i <= 78; ++i) {
-                completionItemsTest(`{ "variables": { "a": { "bb": { "cc": 200 } } }, "b": "[variables('a').bb.]" }`, i,
-                    (i === 56) ? allCompletions(56, 0) :
-                        (57 <= i && i <= 65) ? [variablesCompletion(56, 9)] :
-                            (67 <= i && i <= 68) ? [variableCompletion("a", 66, 4)] :
-                                (70 <= i && i <= 73) ? [propertyCompletion("bb", 71, 2)] :
-                                    (i === 74) ? [propertyCompletion("cc", 74, 0)] :
+                for (let i = 0; i <= 56; ++i) {
+                    completionItemsTest(`{ "variables": { "a": null }, "b": "[variables('a').]" }`, i,
+                        (i === 37) ? allCompletions(37, 0) :
+                            (38 <= i && i <= 46) ? [variablesCompletion(37, 9)] :
+                                (48 <= i && i <= 49) ? [variableCompletion("a", 47, 4)] :
+                                    []);
+                }
+
+                for (let i = 0; i <= 54; ++i) {
+                    completionItemsTest(`{ "variables": { "a": [] }, "b": "[variables('a').]" }`, i,
+                        (i === 35) ? allCompletions(35, 0) :
+                            (36 <= i && i <= 44) ? [variablesCompletion(35, 9)] :
+                                (46 <= i && i <= 47) ? [variableCompletion("a", 45, 4)] :
+                                    []);
+                }
+
+                for (let i = 0; i <= 54; ++i) {
+                    completionItemsTest(`{ "variables": { "a": {} }, "b": "[variables('a').]" }`, i,
+                        (i === 35) ? allCompletions(35, 0) :
+                            (36 <= i && i <= 44) ? [variablesCompletion(35, 9)] :
+                                (46 <= i && i <= 47) ? [variableCompletion("a", 45, 4)] :
+                                    []);
+                }
+
+                for (let i = 0; i <= 67; ++i) {
+                    completionItemsTest(`{ "variables": { "a": { "name": "A" } }, "b": "[variables('a').]" }`, i,
+                        (i === 48) ? allCompletions(48, 0) :
+                            (49 <= i && i <= 57) ? [variablesCompletion(48, 9)] :
+                                (59 <= i && i <= 60) ? [variableCompletion("a", 58, 4)] :
+                                    (62 <= i && i <= 63) ? [propertyCompletion("name", i, 0)] :
                                         []);
+                }
+
+                for (let i = 0; i <= 69; ++i) {
+                    completionItemsTest(`{ "variables": { "a": { "name": "A" } }, "b": "[variables('a').na]" }`, i,
+                        (i === 48) ? allCompletions(48, 0) :
+                            (49 <= i && i <= 57) ? [variablesCompletion(48, 9)] :
+                                (59 <= i && i <= 60) ? [variableCompletion("a", 58, 4)] :
+                                    (62 <= i && i <= 65) ? [propertyCompletion("name", 63, 2)] :
+                                        []);
+                }
+
+                for (let i = 0; i <= 69; ++i) {
+                    completionItemsTest(`{ "variables": { "a": { "name": "A" } }, "b": "[variables('a').ab]" }`, i,
+                        (i === 48) ? allCompletions(48, 0) :
+                            (49 <= i && i <= 57) ? [variablesCompletion(48, 9)] :
+                                (59 <= i && i <= 60) ? [variableCompletion("a", 58, 4)] :
+                                    (62 <= i && i <= 63) ? [propertyCompletion("name", 63, 2)] :
+                                        []);
+                }
+
+                for (let i = 0; i <= 78; ++i) {
+                    completionItemsTest(`{ "variables": { "a": { "bb": { "cc": 200 } } }, "b": "[variables('a').bb.]" }`, i,
+                        (i === 56) ? allCompletions(56, 0) :
+                            (57 <= i && i <= 65) ? [variablesCompletion(56, 9)] :
+                                (67 <= i && i <= 68) ? [variableCompletion("a", 66, 4)] :
+                                    (70 <= i && i <= 73) ? [propertyCompletion("bb", 71, 2)] :
+                                        (i === 74) ? [propertyCompletion("cc", 74, 0)] :
+                                            []);
+                }
+
+            });
+
+            function getDocumentAndMarkers(document: object | string): { documentText: string; tokens: number[] } {
+                let tokens: number[] = [];
+                document = typeof document === "string" ? document : JSON.stringify(document);
+
+                // tslint:disable-next-line:no-constant-condition
+                while (true) {
+                    let tokenPos = document.indexOf("!");
+                    if (tokenPos < 0) {
+                        break;
+                    }
+                    tokens.push(tokenPos);
+                    document = document.slice(0, tokenPos) + document.slice(tokenPos + 1);
+                }
+
+                return {
+                    documentText: document,
+                    tokens
+                };
             }
+
+            suite("Parameter defaultValue deep completion for objects", () => {
+                let { documentText, tokens } = getDocumentAndMarkers({
+                    parameters: {
+                        a: {
+                            type: "object",
+                            defaultValue: {
+                                aa: {
+                                    bb: {
+                                        cc: 200
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    variables: {
+                        b: "[parameters('a').!aa.!bb.!]"
+                    }
+                });
+                let [dotAa, dotBb, dot] = tokens;
+
+                completionItemsTest(
+                    documentText,
+                    dotAa,
+                    [propertyCompletion("aa", dotAa, 2)]);
+                completionItemsTest(
+                    documentText,
+                    dotBb,
+                    [propertyCompletion("bb", dotBb, 2)]);
+                completionItemsTest(
+                    documentText,
+                    dot,
+                    [propertyCompletion("cc", dot, 0)]);
+            });
         }
     });
 
