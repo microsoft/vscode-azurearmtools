@@ -474,13 +474,6 @@ suite("PositionContext", () => {
                 assert(!!completionItems);
                 assert.deepStrictEqual(completionItems, completionItems2, "Race condition? Got different results");
 
-                // // tslint:disable-next-line:no-console
-                // console.log("");
-                // // tslint:disable-next-line:no-console
-                // console.log(documentText.slice(index - 20, index));
-                // // tslint:disable-next-line:no-console
-                // console.log(completionItems);
-
                 compareTestableCompletionItems(completionItems, expectedCompletionItems);
             });
         }
