@@ -464,7 +464,14 @@ suite("PositionContext", () => {
 
                 const dt = new DeploymentTemplate(documentText, "id");
                 const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(index);
-                const completionItems: Completion.Item[] = await pc.getCompletionItems();
+
+                // Verify no race conditions - call twice before awaiting
+                const completionItemsPromise: Promise<Completion.Item[]> = pc.getCompletionItems();
+                const completionItems2Promise: Promise<Completion.Item[]> = pc.getCompletionItems();
+
+                let completionItems: Completion.Item[] = await completionItemsPromise;
+                const completionItems2: Completion.Item[] = await completionItems2Promise;
+                assert.deepStrictEqual(completionItems, completionItems2, "Race condition? Got different results");
 
                 // // tslint:disable-next-line:no-console
                 // console.log("");
