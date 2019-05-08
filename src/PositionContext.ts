@@ -286,6 +286,8 @@ export class PositionContext {
                         }
                     }
                 }
+
+                return [];
             })();
         }
 

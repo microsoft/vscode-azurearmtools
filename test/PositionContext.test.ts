@@ -471,6 +471,7 @@ suite("PositionContext", () => {
 
                 let completionItems: Completion.Item[] = await completionItemsPromise;
                 const completionItems2: Completion.Item[] = await completionItems2Promise;
+                assert(!!completionItems);
                 assert.deepStrictEqual(completionItems, completionItems2, "Race condition? Got different results");
 
                 // // tslint:disable-next-line:no-console
