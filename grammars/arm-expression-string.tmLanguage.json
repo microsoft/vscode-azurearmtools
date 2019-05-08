@@ -141,7 +141,7 @@
 			"$comment1": "When we have 'parameters' with a string literal (instead of an expression), we want to colorize the parameter name along with 'parameters'",
 			"$comment2": "When its parameter is an expression, it will be handled by functionname/functioncall",
 			"name": "meta.parameters-reference.tle.arm",
-			"match": "(?x) \\s* (parameters) \\s* (\\() (' [^']* ') (\\))",
+			"match": "(?x) \\s* (parameters) \\s* (\\() \\s* (' [^']* ') \\s* (\\))",
 			"captures": {
 				"1": {
 					"$comment": "parameters",
@@ -165,7 +165,7 @@
 			"$comment1": "When we have 'variables' with a string literal (instead of an expression), we want to colorize the variable name along with 'variables'",
 			"$comment2": "When its parameter is an expression, it will be handled by functionname/functioncall",
 			"name": "meta.variables-reference.tle.arm",
-			"match": "(?x) \\s* (variables) \\s* (\\() (' [^']* ') (\\))",
+			"match": "(?x) \\s* (variables) \\s* (\\() \\s* (' [^']* ') \\s* (\\))",
 			"captures": {
 				"1": {
 					"$comment": "variables",
