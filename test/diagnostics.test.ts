@@ -4,8 +4,7 @@
 
 import { testDiagnosticsDeferred, testDiagnosticsFromFile } from "./testDiagnostics";
 
-// Test general diagnostics functionality (not specific features)
-suite("General diagnostics functionality", () => {
+suite("Diagnostics functionality", () => {
     suite("ARM Tools", () => {
 
         testDiagnosticsFromFile(
