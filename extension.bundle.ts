@@ -47,3 +47,4 @@ import * as TLE from "./src/TLE";
 export { TLE };
 export { isLanguageIdSupported } from "./src/supported";
 export { JsonOutlineProvider, shortenTreeLabel } from "./src/Treeview";
+export { diagnosticsCompleteMessage, diagnosticsSource } from "./src/constants";

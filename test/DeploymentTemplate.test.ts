@@ -3,11 +3,13 @@
 // ----------------------------------------------------------------------------
 
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length insecure-random
+// tslint:disable:object-literal-key-quotes
 
 import * as assert from "assert";
 import { randomBytes } from "crypto";
 import { ISuiteCallbackContext } from "mocha";
 import { DeploymentTemplate, Histogram, IncorrectArgumentsCountIssue, Json, Language, ParameterDefinition, Reference, ReferenceInVariableDefinitionJSONVisitor, UnrecognizedFunctionIssue } from "../extension.bundle";
+import { testDiagnostics } from "./testDiagnostics";
 
 suite("DeploymentTemplate", () => {
     suite("constructor(string)", () => {
@@ -193,6 +195,14 @@ suite("DeploymentTemplate", () => {
                 assert.deepStrictEqual(errors, []);
             });
         });
+
+        testDiagnostics(
+            "no errors: empty",
+            {
+            },
+            {},
+            [
+            ]);
 
         test("with empty object deployment template", () => {
             const dt = new DeploymentTemplate("{}", "id");
@@ -905,6 +915,19 @@ suite("ReferenceInVariableDefinitionJSONVisitor", () => {
             const visitor = new ReferenceInVariableDefinitionJSONVisitor(dt);
             assert.deepStrictEqual(visitor.referenceSpans, []);
         });
+
+        testDiagnostics(
+            "error: reference in variable definition",
+            {
+                "variables": {
+                    "a": "[reference('test')]"
+                },
+            },
+            {},
+            [
+                "Error: reference() cannot be invoked inside of a variable definition. (ARM Tools)",
+                "Warning: The variable 'a' is never used. (ARM Tools)"
+            ]);
     });
 
     suite("visitStringValue(Json.StringValue)", () => {
@@ -1041,12 +1064,12 @@ suite("Incomplete JSON shouldn't crash parse", function (this: ISuiteCallbackCon
             if (modifiedTemplate.length > 0 && Math.random() < 0.5) {
                 // Delete some characters
                 let position = Math.random() * (modifiedTemplate.length - 1);
-                let length = Math.random() * Math.max(25, modifiedTemplate.length);
+                let length = Math.random() * Math.max(5, modifiedTemplate.length);
                 modifiedTemplate = modifiedTemplate.slice(position, position + length);
             } else {
                 // Insert some characters
                 let position = Math.random() * modifiedTemplate.length;
-                let length = Math.random() * 25;
+                let length = Math.random() * 5;
                 let s = randomBytes(length).toString();
                 modifiedTemplate = modifiedTemplate.slice(0, position) + s + modifiedTemplate.slice(position);
             }

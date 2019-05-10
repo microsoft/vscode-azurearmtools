@@ -80,6 +80,8 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
             + ' Check if your user settings have modified the default file.associations setting.');
     }
 
+    commands.executeCommand('workbench.action.closeActiveEditor');
+
     let testCases: ITestcase[];
 
     // If the test filename contains ".invalid.", then all testcases in it should have at least one "invalid" token.

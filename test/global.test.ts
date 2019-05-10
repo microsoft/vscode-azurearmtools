@@ -6,7 +6,7 @@
 import * as fs from "fs";
 import mocha = require("mocha");
 import * as path from "path";
-import { AzureRMAssets } from "../extension.bundle";
+import { AzureRMAssets, ext } from "../extension.bundle";
 
 // tslint:disable:no-console no-function-expression
 
@@ -14,10 +14,13 @@ import { AzureRMAssets } from "../extension.bundle";
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     let testMetadata = fs.readFileSync(path.join(__dirname, '..', '..', 'test', 'ExpressionMetadata.test.json'));
     AzureRMAssets.setFunctionsMetadata(testMetadata.toString());
-    console.log('global.test.ts: suiteSetup');
+
+    ext.addCompletionDiagnostic = true;
+
+    console.log('Done: global.test.ts: suiteSetup');
 });
 
 // Runs after all tests
 suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
-    console.log('global.test.ts: suiteTeardown');
+    console.log('Done: global.test.ts: suiteTeardown');
 });

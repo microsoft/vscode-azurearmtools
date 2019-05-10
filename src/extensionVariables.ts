@@ -18,4 +18,7 @@ export namespace ext {
     export let reporter: ITelemetryReporter;
     export let outputChannel: vscode.OutputChannel;
     export let ui: IAzureUserInput;
+
+    // Suite support - lets us know when diagnostics have been completely published for a file
+    export let addCompletionDiagnostic: boolean = false;
 }

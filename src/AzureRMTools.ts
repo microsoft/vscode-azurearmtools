@@ -8,6 +8,7 @@ import * as assert from "assert";
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createTelemetryReporter, IActionContext, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import * as Completion from "./Completion";
+import { diagnosticsCompleteMessage, diagnosticsSource } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
@@ -214,6 +215,15 @@ export class AzureRMTools {
                     diagnostics.push(me.getVSCodeDiagnosticFromIssue(deploymentTemplate, warning, vscode.DiagnosticSeverity.Warning));
                 }
 
+                if (ext.addCompletionDiagnostic) {
+                    diagnostics.push(<vscode.Diagnostic>{
+                        severity: vscode.DiagnosticSeverity.Hint,
+                        message: diagnosticsCompleteMessage,
+                        source: diagnosticsSource,
+                        code: ""
+                    });
+                }
+
                 me._diagnosticsCollection.set(document.uri, diagnostics);
             }
         });
@@ -350,7 +360,7 @@ export class AzureRMTools {
         const range: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, issue.span);
         const message: string = issue.message;
         let diagnostic = new vscode.Diagnostic(range, message, severity);
-        diagnostic.source = 'ARM Tools';
+        diagnostic.source = diagnosticsSource;
         return diagnostic;
     }
 
