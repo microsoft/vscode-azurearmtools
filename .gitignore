@@ -300,3 +300,5 @@ test-results.xml
 
 # Colorization test failure diffs
 test/*.actual
+
+LanguageServerBin/**

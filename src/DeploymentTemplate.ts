@@ -3,17 +3,17 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
-
+import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
+import { Histogram } from "./Histogram";
 import * as Json from "./JSON";
 import * as language from "./Language";
+import { ParameterDefinition } from "./ParameterDefinition";
+import { PositionContext } from "./PositionContext";
 import * as Reference from "./Reference";
 import * as TLE from "./TLE";
 import * as Utilities from "./Utilities";
 
-import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
-import { Histogram } from "./Histogram";
-import { ParameterDefinition } from "./ParameterDefinition";
-import { PositionContext } from "./PositionContext";
+
 
 export class DeploymentTemplate {
     private _jsonParseResult: Json.ParseResult;
@@ -22,6 +22,7 @@ export class DeploymentTemplate {
     private _tleParseResults: TLE.ParseResult[];
     private _parameterDefinitions: ParameterDefinition[];
     private _variableDefinitions: Json.Property[];
+    private _namespaceDefinitions: Json.Value[];
     private _errors: Promise<language.Issue[]>;
     private _warnings: language.Issue[];
     private _functionCounts: Histogram;
@@ -98,6 +99,9 @@ export class DeploymentTemplate {
         if (this._schemaUri === undefined) {
             this._schemaUri = null;
 
+            // tslint:disable-next-line: no-suspicious-comment
+            // TODO: We shouldn't be parsing the file to determine this - it happens on all opened JSON file
+            //       - once we have a language ID this won't really be an issue anyway
             const value: Json.ObjectValue = Json.asObjectValue(this._jsonParseResult.value);
             if (value) {
                 const schema: Json.Value = Json.asStringValue(value.getPropertyValue("$schema"));
@@ -109,9 +113,9 @@ export class DeploymentTemplate {
         return this._schemaUri;
     }
 
-    public hasValidSchemaUri(): boolean {
-        return Utilities.isValidSchemaUri(this.schemaUri);
-    }
+    // public hasArmDeploymentSchema(): boolean { asdf
+    //     return Utilities.isArmDeploymentSchemaUri(this.schemaUri);
+    // }
 
     public get errors(): Promise<language.Issue[]> {
         if (this._errors === undefined) {
@@ -269,6 +273,42 @@ export class DeploymentTemplate {
             }
         }
         return this._variableDefinitions;
+    }
+
+    // Example user-defined namespaces/functions:
+    //
+    // "functions": [
+    //     {
+    //       "namespace": "contoso",
+    //       "members": {
+    //         "uniqueName": {
+    //           "parameters": [
+    //             {
+    //               "name": "namePrefix",
+    //               "type": "string"
+    //             }
+    //           ],
+    //           "output": {
+    //             "type": "string",
+    //             "value": "[concat(toLower(parameters('namePrefix')), uniqueString(resourceGroup().id))]"
+    //           }
+    //         }
+    //       }
+    //     }
+    //   ],
+    public get namespaceDefinitions(): Json.Value[] {
+        if (this._namespaceDefinitions === undefined) {
+            this._namespaceDefinitions = [];
+
+            const value: Json.ObjectValue = Json.asObjectValue(this._jsonParseResult.value);
+            if (value) {
+                const namespaces: Json.ArrayValue = Json.asArrayValue(value.getPropertyValue("functions"));
+                if (namespaces) {
+                    this._namespaceDefinitions = namespaces.elements;
+                }
+            }
+        }
+        return this._namespaceDefinitions;
     }
 
     public getParameterDefinition(parameterName: string): ParameterDefinition {

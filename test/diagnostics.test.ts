@@ -2,9 +2,14 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { testDiagnosticsDeferred, testDiagnosticsFromFile } from "./testDiagnostics";
+// tslint:disable: object-literal-key-quotes
 
-suite("Diagnostics functionality", () => {
+import { ISuiteCallbackContext } from "mocha";
+import { armToolsSource, diagnosticsTimeout, testDiagnostics, testDiagnosticsDeferred, testDiagnosticsFromFile } from "./testDiagnostics";
+
+suite("Diagnostics", function (this: ISuiteCallbackContext): void {
+    this.timeout(diagnosticsTimeout);
+
     suite("ARM Tools", () => {
 
         testDiagnosticsFromFile(
@@ -29,4 +34,24 @@ suite("Diagnostics functionality", () => {
         testDiagnosticsDeferred('language-service-p2.template.json');
 
     }); // end suite ARM Tools
+
+    suite("Schema", () => {
+        suite("Capitalization", () => {
+            testDiagnostics(
+                'https://github.com/microsoft/vscode-azurearmtools/issues/238',
+                {
+                    "resources": [
+                        {
+                            "name": "example",
+                            "type": "Microsoft.Network/publicIpAddresses",
+                            "apiVersion": "2018-08-01",
+                            "location": "[parameters('location')]",
+                            "properties": {},
+                        }]
+                },
+                { ignoreSources: [armToolsSource] },
+                [
+                ]);
+        });
+    });
 });

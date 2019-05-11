@@ -10,13 +10,10 @@ import * as fs from 'fs';
 import * as gulp from 'gulp';
 import * as path from 'path';
 import * as process from 'process';
-
 import { gulp_installAzureAccount, gulp_webpack } from 'vscode-azureextensiondev';
 
-const env = process.env;
 
-export const detectionGrammarSourcePath: string = path.resolve('grammars/detect-arm.injection.tmLanguage.json');
-export const detectionGrammarDestPath: string = path.resolve('dist/grammars/detect-arm.injection.tmLanguage.json');
+const env = process.env;
 
 export const jsonArmGrammarSourcePath: string = path.resolve('grammars/JSONC.arm.tmLanguage.json');
 export const jsonArmGrammarDestPath: string = path.resolve('dist/grammars/JSONC.arm.tmLanguage.json');
@@ -99,8 +96,25 @@ async function buildGrammars(): Promise<void> {
 
     fs.copyFileSync(jsonArmGrammarSourcePath, jsonArmGrammarDestPath);
     console.log(`Copied ${jsonArmGrammarDestPath}`);
-    fs.copyFileSync(detectionGrammarSourcePath, detectionGrammarDestPath);
-    console.log(`Copied ${detectionGrammarDestPath}`);
+}
+
+async function updateLanguageServer(): Promise<void> {
+    // tslint:disable-next-line: max-line-length
+    // let armServerBin = path.join(env.ExtensionsBin, '..', '..', 'ARM-LanguageServer', 'Microsoft.ArmLanguageServer', 'bin', 'Debug', 'netcoreapp2.2', 'publish');
+    let armServerBin = '\\\\scratch2\\scratch\\stephwe\\ARM\\Dev Assemblies\\Current';
+    let updateDest = path.join(__dirname, 'LanguageServerBin');
+    if (!fs.existsSync(updateDest)) {
+        fs.mkdirSync(updateDest);
+    }
+
+    fs.readdirSync(armServerBin).forEach(fn => {
+        if (fs.statSync(path.join(armServerBin, fn)).isFile) {
+            let src = path.join(armServerBin, fn);
+            let dest = path.join(updateDest, fn);
+            console.log(`${src} -> ${dest}`);
+            fs.copyFileSync(src, dest);
+        }
+    });
 }
 
 exports['webpack-dev'] = gulp.series(() => gulp_webpack('development'), buildGrammars);
@@ -108,3 +122,4 @@ exports['webpack-prod'] = gulp.series(() => gulp_webpack('production'), buildGra
 exports.test = gulp.series(gulp_installAzureAccount, test);
 exports['build-grammars'] = buildGrammars;
 exports['watch-grammars'] = (): unknown => gulp.watch('grammars/**', buildGrammars);
+exports['update-language-server'] = updateLanguageServer;

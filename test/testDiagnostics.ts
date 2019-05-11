@@ -5,20 +5,22 @@
 // Support for testing diagnostics in vscode
 
 // tslint:disable:no-unused-expression no-console no-string-based-set-timeout
-// tslint:disable:insecure-random max-func-body-length radix prefer-template
+// tslint:disable:max-func-body-length radix prefer-template
 
 import * as assert from "assert";
 import * as fs from 'fs';
-import * as os from 'os';
 import * as path from 'path';
-import { commands, Diagnostic, DiagnosticSeverity, Disposable, languages, window, workspace } from "vscode";
+import { commands, Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument, window, workspace } from "vscode";
 import { diagnosticsCompleteMessage, diagnosticsSource } from "../extension.bundle";
+import { languageServerCompleteMessage } from "../src/constants";
+import { getTempFilePath } from "./getTempFilePath";
 
-const diagnosticsTimeout = 20000;
-const testFolder = path.join(__dirname, '..', '..', 'test', 'templates');
+export const diagnosticsTimeout = 30000; // CONSIDER: Use this long timeout only for first test, or for suite setup
+export const testFolder = path.join(__dirname, '..', '..', 'test', 'templates');
 
-const schemaSource = ''; // Built-in schema errors
-const jsonSource = 'json'; // Built-in JSON errors
+export const schemaSource = ''; // Built-in schema errors
+export const jsonSource = 'json'; // Built-in JSON errors
+export const languageServerSource = 'ARM Language Server'; // Language server errors
 export const armToolsSource = diagnosticsSource;
 
 interface ITestDiagnosticsOptions {
@@ -64,7 +66,57 @@ export function testDiagnostics(testName: string, json: string | object, options
     });
 }
 
-async function getDiagnosticsForTemplate(templateContentsOrFileName: string | { $schema?: string }): Promise<Diagnostic[]> {
+export async function getDiagnosticsForDocument(document: TextDocument): Promise<Diagnostic[]> {
+    let dispose: Disposable;
+    let timer: NodeJS.Timer;
+
+    let diagnosticsPromise = new Promise<Diagnostic[]>((resolve, reject) => {
+        let diagnostics: Diagnostic[] | undefined;
+        let complete: boolean;
+
+        function pollDiagnostics(): void {
+            diagnostics = languages.getDiagnostics(document.uri);
+            if (diagnostics.find(d => d.message === diagnosticsCompleteMessage)
+                && diagnostics.find(d => d.message === languageServerCompleteMessage)
+            ) {
+                complete = true;
+                resolve(diagnostics);
+            }
+        }
+
+        // Poll first in case the diagnostics are already in
+        pollDiagnostics();
+
+        // Now only poll on changed events
+        if (!complete) {
+            timer = setTimeout(
+                () => {
+                    reject(
+                        new Error('Waiting for diagnostics timed out. Last retrieved diagnostics: '
+                            + (diagnostics ? diagnostics.map(d => d.message).join('\n') : "None")));
+                },
+                diagnosticsTimeout);
+            dispose = languages.onDidChangeDiagnostics(e => {
+                pollDiagnostics();
+            });
+        }
+    });
+
+    let diagnostics = await diagnosticsPromise;
+    assert(!!diagnostics);
+
+    if (dispose) {
+        dispose.dispose();
+    }
+
+    if (timer) {
+        clearTimeout(timer);
+    }
+
+    return diagnostics.filter(d => d.message !== diagnosticsCompleteMessage);
+}
+
+export async function getDiagnosticsForTemplate(templateContentsOrFileName: string | { $schema?: string }): Promise<Diagnostic[]> {
     let templateContents: string | undefined;
     let filePath: string | undefined;
     let fileToDelete: string | undefined;
@@ -84,53 +136,20 @@ async function getDiagnosticsForTemplate(templateContentsOrFileName: string | { 
     }
 
     if (!filePath) {
-        assert(typeof templateContents === 'string');
-        let tempName = '';
-        for (let i = 0; i < 10; ++i) {
-            tempName += String.fromCharCode(64 + Math.random() * 26);
-        }
-        filePath = path.join(os.tmpdir(), `${tempName}.jsonc`);
+        filePath = getTempFilePath();
         fs.writeFileSync(filePath, templateContents);
         fileToDelete = filePath;
     }
 
-    let diagnostics: Diagnostic[] | undefined;
-    let dispose: Disposable;
-    let timer: NodeJS.Timer;
-    // tslint:disable-next-line:typedef
-    let diagnosticsPromise = new Promise((resolve, reject) => {
-        timer = setTimeout(
-            () => {
-                reject(
-                    new Error('Waiting for diagnostics timed out. Last retrieved diagnostics: '
-                        + (diagnostics ? diagnostics.map(d => d.message).join('\n') : "None")));
-            },
-            diagnosticsTimeout);
-        dispose = languages.onDidChangeDiagnostics(e => {
-            if (e.uris.find(uri => uri.fsPath === doc.uri.fsPath)) {
-                diagnostics = languages.getDiagnostics(doc.uri);
-                if (diagnostics.find(d => d.message === diagnosticsCompleteMessage)) {
-                    resolve();
-                }
-            }
-        });
-    });
-
     let doc = await workspace.openTextDocument(filePath);
     await window.showTextDocument(doc);
 
-    await diagnosticsPromise;
+    let diagnostics: Diagnostic[] = await getDiagnosticsForDocument(doc);
     assert(!!diagnostics);
-
-    if (dispose) {
-        dispose.dispose();
-    }
 
     if (fileToDelete) {
         fs.unlinkSync(fileToDelete);
     }
-
-    clearTimeout(timer);
 
     commands.executeCommand('workbench.action.closeActiveEditor');
 

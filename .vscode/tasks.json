@@ -10,7 +10,7 @@
             },
             "isBackground": true,
             "presentation": {
-                "reveal": "silent"
+                "reveal": "never"
             },
             "problemMatcher": "$tsc-watch"
         },
@@ -34,12 +34,6 @@
         {
             "type": "npm",
             "script": "watch-grammars",
-            "problemMatcher": [],
-            "isBackground": true
-        },
-        {
-            "type": "npm",
-            "script": "watch",
             "problemMatcher": [],
             "isBackground": true
         }
