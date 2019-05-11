@@ -29,11 +29,7 @@ import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
 // Your extension is activated the very first time the command is executed
 export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
     ext.context = context;
-    ext.reporter = createTelemetryReporter(
-        context,
-        {
-            autoDetectJsonTemplates: String(vscode.workspace.getConfiguration('armTools').get<boolean>(configKeys.autoDetectJsonTemplates))
-        });
+    ext.reporter = createTelemetryReporter(context);
     ext.outputChannel = vscode.window.createOutputChannel("ARM Tools");
     ext.ui = new AzureUserInput(context.globalState);
     registerUIExtensionVariables(ext);
@@ -41,6 +37,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     await callWithTelemetryAndErrorHandling('activate', async function (this: IActionContext): Promise<void> {
         this.properties.isActivationEvent = 'true';
         this.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
+        this.properties.autoDetectJsonTemplates = String(vscode.workspace.getConfiguration('armTools').get<boolean>(configKeys.autoDetectJsonTemplates));
 
         context.subscriptions.push(new AzureRMTools(context));
     });
