@@ -2,8 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:max-func-body-length
-// tslint:disable:align
+// tslint:disable:max-func-body-length align
 
 import * as assert from "assert";
 import { basic, Json, Language, Utilities } from "../extension.bundle";
@@ -440,7 +439,7 @@ suite("JSON", () => {
                 if (!expectedTokens) {
                     expectedTokens = [];
                 } else if (expectedTokens instanceof Json.Token) {
-                    expectedTokens = [expectedTokens] as Json.Token[];
+                    expectedTokens = [expectedTokens];
                 }
 
                 test(`with ${Utilities.escapeAndQuote(text)}`, () => {

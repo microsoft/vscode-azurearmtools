@@ -1,79 +1,33 @@
 {
     "extends": "tslint-microsoft-contrib",
-    "linterOptions": {
-        "exclude": []
-    },
     "rules": {
-        "align": [
-            true,
-            "parameters",
-            "arguments",
-            "statements"
-        ],
-        "array-type": [
-            true,
-            "array"
-        ],
         "await-promise": [
             true,
             "Thenable"
         ],
-        "binary-expression-operand-order": false,
-        "completed-docs": [
-            false,
-            "classes"
-        ],
+        "binary-expression-operand-order": false, //TODO
+        "completed-docs": false,
         "function-name": [
             true,
             {
-                "function-regex": "^[a-z][\\w\\d]+$",
-                "method-regex": "^[a-z][\\w\\d]+$",
-                "private-method-regex": "^[a-z][\\w\\d]+$",
-                "protected-method-regex": "^[a-z][\\w\\d]+$",
-                "static-method-regex": "^[a-z][\\w\\d]+$"
+                "static-method-regex": "^[a-z][\\w_]+$"
             }
         ],
-        "indent": [
-            true,
-            "spaces"
-        ],
-        "interface-name": false,
+        "import-name": false,
+        "interface-name": false, //TODO
         "linebreak-style": false,
-        "max-classes-per-file": [
-            true,
-            3
-        ],
-        "max-func-body-length": [
-            true,
-            100,
-            {
-                "ignore-parameters-to-function-regex": "describe"
-            }
-        ],
         "max-line-length": [
-            true,
-            150
-        ],
-        "member-ordering": [
             false,
-            {
-                "order": "fields-first"
-            }
+            140
         ],
+        "member-ordering": false,
         "missing-jsdoc": false,
         "newline-before-return": false,
-        "no-http-string": [
-            true,
-            "http://www.example.com/?.*",
-            "http://www.examples.com/?.*"
-        ],
+        "no-backbone-get-set-outside-model": false,
         "no-implicit-dependencies": [
-            true,
+            false, // TODO
             [
-                "vscode",
-                "gulp",
-                "mocha",
-                "vscode-azureextensiondev"
+                "vscode"
             ]
         ],
         "no-increment-decrement": false,
@@ -82,56 +36,59 @@
         "no-parameter-properties": false,
         "no-parameter-reassignment": false,
         "no-relative-imports": false,
-        "no-require-imports": false,
         "no-return-await": false,
-        "no-this-assignment": false,
+        "no-single-line-block-comment": false,
+        "no-this-assignment": false, //TODO
         "no-unexternalized-strings": [
             false,
             {
-                "keyIndex": 0,
-                "messageIndex": 1,
                 "signatures": [
                     "localize",
                     "nls.localize"
-                ]
+                ],
+                "keyIndex": 0,
+                "messageIndex": 1
             }
         ],
-        "no-unnecessary-local-variable": false,
-        "no-unnecessary-type-assertion": false,
-        "no-unsafe-any": true,
-        "no-use-before-declare": false, // recommended disabled, see https://palantir.github.io/tslint/rules/no-use-before-declare/
+        "no-unnecessary-local-variable": false, // TODO
+        "no-use-before-declare": false,
         "no-void-expression": [
             true,
             "ignore-arrow-function-shorthand"
         ],
-        "one-variable-per-declaration": [
-            true,
-            "ignore-for-loop"
-        ],
+        "one-variable-per-declaration": false, // todo
         "prefer-const": false,
+        "prefer-object-spread": false,
         "prefer-type-cast": false,
-        "quotemark": false,
+        "quotemark": [
+            false,
+            "single"
+        ],
+        "radix": false,
         "strict-boolean-expressions": [
-            true,
+            false, // TODO: true
             "allow-string",
             "allow-undefined-union",
             "allow-mix",
-            "allow-number"
+            "allow-null-union"
         ],
         "switch-final-break": false,
         "trailing-comma": false,
         "typedef": [
             true,
             "call-signature",
+            //TODO: "arrow-call-signature",
             "parameter",
+            // "arrow-parameter",
             "property-declaration",
+            // TODO: "variable-declaration",
             "member-variable-declaration"
         ],
         "variable-name": [
-            true,
-            "allow-leading-underscore",
-            "ban-keywords"
+            false, // TODO
+            "ban-keywords",
+            "check-format",
+            "allow-leading-underscore"
         ]
-    },
-    "rulesDirectory": "node_modules/tslint-microsoft-contrib/"
+    }
 }

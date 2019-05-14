@@ -68,7 +68,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     let doc = await workspace.openTextDocument(testPath);
     let languageId = doc.languageId;
 
-    let rawData = <{ c: string; t: string; r: unknown[] }[]>await commands.executeCommand('_workbench.captureSyntaxTokens', Uri.file(testPath));
+    let rawData: { c: string; t: string; r: unknown[] }[] = await commands.executeCommand('_workbench.captureSyntaxTokens', Uri.file(testPath));
 
     // Let's use more reasonable property names in our data
     let data: ITokenInfo[] = rawData.map(d => <ITokenInfo>{ text: d.c.trim(), scopes: d.t, colors: d.r })
