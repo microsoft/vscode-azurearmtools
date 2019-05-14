@@ -24,6 +24,7 @@ export class Histogram {
         } else if (key === undefined) {
             this._undefinedCounts += count;
         } else if (typeof key === "string") {
+            // tslint:disable-next-line: strict-boolean-expressions
             if (!this._counts[key]) {
                 this._counts[key] = count;
             } else {

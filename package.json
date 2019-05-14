@@ -74,7 +74,7 @@
   "main": "main",
   "scripts": {
     "vscode:prepublish": "npm run webpack-prod",
-    "compile": "tsc -watch -p ./",
+    "compile": "gulp watch",
     "build": "npm run build-grammars && tsc -p ./",
     "package": "vsce package",
     "lint": "tslint --project tsconfig.json -t verbose",
@@ -87,12 +87,11 @@
     "webpack": "gulp webpack-dev",
     "webpack-prod": "gulp webpack-prod",
     "webpack-profile": "webpack --profile --json --mode production > webpack-stats.json && echo Use http://webpack.github.io/analyse to analyze the stats",
-    "build-grammars": "gulp build-grammars",
-    "watch-grammars": "gulp watch-grammars",
-    "watch": "gulp watch"
+    "build-grammars": "gulp build-grammars"
   },
   "devDependencies": {
     "@types/fs-extra": "^5.0.5",
+    "@types/gulp": "^4.0.6",
     "@types/mocha": "^2.2.41",
     "@types/node": "^8.10.48",
     "@types/opn": "^5.5.0",

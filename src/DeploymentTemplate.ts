@@ -115,6 +115,7 @@ export class DeploymentTemplate {
 
     public get errors(): Promise<language.Issue[]> {
         if (this._errors === undefined) {
+            // tslint:disable-next-line:typedef
             this._errors = new Promise<language.Issue[]>(async (resolve, reject) => {
                 try {
                     let functions: FunctionsMetadata = await AzureRMAssets.getFunctionsMetadata();

@@ -15,6 +15,7 @@ export class AzureRMAssets {
 
     // For test dependency injection only
     public static setFunctionsMetadata(metadataString: string): void {
+        // tslint:disable-next-line:typedef
         AzureRMAssets._functionsMetadataPromise = new Promise<FunctionsMetadata>(async (resolve, reject) => {
             let array = FunctionMetadata.fromString(metadataString);
             resolve(new FunctionsMetadata(array));
@@ -23,6 +24,7 @@ export class AzureRMAssets {
 
     public static async getFunctionsMetadata(): Promise<FunctionsMetadata> {
         if (!AzureRMAssets._functionsMetadataPromise) {
+            // tslint:disable-next-line:typedef
             AzureRMAssets._functionsMetadataPromise = new Promise<FunctionsMetadata>(async (resolve, reject) => {
                 try {
                     let uri = AzureRMAssets.getFunctionMetadataUri();

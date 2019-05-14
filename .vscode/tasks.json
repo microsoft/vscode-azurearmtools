@@ -30,18 +30,6 @@
             "type": "npm",
             "script": "build-grammars",
             "problemMatcher": []
-        },
-        {
-            "type": "npm",
-            "script": "watch-grammars",
-            "problemMatcher": [],
-            "isBackground": true
-        },
-        {
-            "type": "npm",
-            "script": "watch",
-            "problemMatcher": [],
-            "isBackground": true
         }
     ]
 }

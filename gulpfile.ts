@@ -88,6 +88,7 @@ function buildTLEGrammar(): void {
 }
 
 function build(): cp.ChildProcess {
+    console.log("building...");
     return cp.spawn('npm', ['run build'], { shell: true });
 }
 
@@ -107,13 +108,9 @@ async function buildGrammars(): Promise<void> {
     console.log(`Copied ${detectionGrammarDestPath}`);
 }
 
-let buildAll = gulp.series(buildGrammars, build);
-
 exports['webpack-dev'] = gulp.series(() => gulp_webpack('development'), buildGrammars);
 exports['webpack-prod'] = gulp.series(() => gulp_webpack('production'), buildGrammars);
 exports.test = gulp.series(gulp_installAzureAccount, test);
 exports['build-grammars'] = buildGrammars;
-exports.watch = () => {
-    buildAll();
-    return gulp.watch('grammars/**', buildAll);
-};
+exports['build-all'] = gulp.parallel(buildGrammars, build);
+exports.watch = (): unknown => gulp.watch(['grammars/**/*.json', '**/*.ts'], exports['build-all']);

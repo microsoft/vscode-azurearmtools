@@ -177,7 +177,7 @@ export class PositionContext {
     public async getCompletionItems(): Promise<Completion.Item[]> {
         if (!this._completionItemsPromise) {
             // tslint:disable-next-line:cyclomatic-complexity max-func-body-length // Grandfathered in
-            this._completionItemsPromise = (async () => {
+            this._completionItemsPromise = (async (): Promise<Completion.Item[]> => {
                 if (this.tleParseResult) {
                     const tleValue: TLE.Value = this.tleValue;
 
