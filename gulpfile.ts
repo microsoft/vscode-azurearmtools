@@ -63,8 +63,7 @@ function buildTLEGrammar(): void {
         ...grammarAsObject
     };
     grammar = JSON.stringify(grammarAsObject, null, 4);
-    // tslint:disable-next-line: no-non-null-assertion // We just wrote to preprocess section, guaranteed to exist
-    const replacementKeys = Object.getOwnPropertyNames((<IGrammar>JSON.parse(grammar)).preprocess!);
+    const replacementKeys = Object.getOwnPropertyNames((<IGrammar>JSON.parse(grammar)).preprocess);
 
     // Build grammar: Make replacements specified
     for (let key of replacementKeys) {

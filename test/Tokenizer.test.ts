@@ -143,7 +143,7 @@ suite("Tokenizer", () => {
                 if (!expectedTokens) {
                     expectedTokens = [];
                 } else if (expectedTokens instanceof basic.Token) {
-                    expectedTokens = [expectedTokens] as basic.Token[];
+                    expectedTokens = [expectedTokens];
                 }
 
                 test(`with ${Utilities.escapeAndQuote(text)}`, () => {

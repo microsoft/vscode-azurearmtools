@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as fs from "fs";
-import mocha = require("mocha");
+import * as mocha from 'mocha';
 import * as path from "path";
 import { AzureRMAssets, ext } from "../extension.bundle";
 
