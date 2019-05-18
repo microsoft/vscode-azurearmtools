@@ -331,9 +331,9 @@ export class Tokenizer {
         // assign the functions to be "hasStarted: this.hasStarted", then the function get assigned
         // without a bound "this" pointer.
         return {
-            hasStarted: () => { return this.hasStarted(); },
-            current: () => { return this.currentBasicToken(); },
-            moveNext: () => { return this.moveNextBasicToken(); }
+            hasStarted: (): boolean => { return this.hasStarted(); },
+            current: (): basic.Token => { return this.currentBasicToken(); },
+            moveNext: (): boolean => { return this.moveNextBasicToken(); }
         };
     }
 
@@ -572,6 +572,7 @@ export class ObjectValue extends Value {
      * stack. If the provided property name stack is empty, then return this value.
      */
     public getPropertyValueFromStack(propertyNameStack: string[]): Value {
+        // tslint:disable-next-line:no-this-assignment
         let result: Value = this;
 
         while (result && propertyNameStack.length > 0) {

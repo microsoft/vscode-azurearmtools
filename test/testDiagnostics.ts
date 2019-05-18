@@ -97,6 +97,7 @@ async function getDiagnosticsForTemplate(templateContentsOrFileName: string | { 
     let diagnostics: Diagnostic[] | undefined;
     let dispose: Disposable;
     let timer: NodeJS.Timer;
+    // tslint:disable-next-line:typedef
     let diagnosticsPromise = new Promise((resolve, reject) => {
         timer = setTimeout(
             () => {
@@ -137,7 +138,7 @@ async function getDiagnosticsForTemplate(templateContentsOrFileName: string | { 
 }
 
 function diagnosticToString(diagnostic: Diagnostic, options: ITestDiagnosticsOptions): string {
-    assert(!diagnostic.code, 'Expecting empty code for all diagnostics');
+    assert(diagnostic.code === '', 'Expecting empty code for all diagnostics');
 
     let severity: string;
     switch (diagnostic.severity) {

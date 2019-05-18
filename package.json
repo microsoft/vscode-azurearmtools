@@ -74,8 +74,8 @@
   "main": "main",
   "scripts": {
     "vscode:prepublish": "npm run webpack-prod",
-    "compile": "tsc -watch -p ./",
-    "build": "npm run build-grammars && tsc -p ./",
+    "compile": "gulp build-grammars && tsc -watch -p ./",
+    "build": "gulp build-grammars && tsc -p ./",
     "package": "vsce package",
     "lint": "tslint --project tsconfig.json -t verbose",
     "lint-fix": "tslint --project tsconfig.json -t verbose --fix",

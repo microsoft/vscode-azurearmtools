@@ -4,6 +4,7 @@
 
 // tslint:disable:function-name // Grandfathered in
 // tslint:disable:cyclomatic-complexity // Grandfathered in
+// tslint:disable:variable-name
 
 import * as utilities from "./Utilities";
 

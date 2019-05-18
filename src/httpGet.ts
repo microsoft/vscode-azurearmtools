@@ -16,6 +16,7 @@ export function httpGet(url: string): Promise<string> {
         url = `http://${url}`;
     }
 
+    // tslint:disable-next-line:typedef
     return new Promise<string>((resolve, reject) => {
         let request: http.ClientRequest;
 
