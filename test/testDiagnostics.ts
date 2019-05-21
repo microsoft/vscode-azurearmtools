@@ -138,7 +138,7 @@ async function getDiagnosticsForTemplate(templateContentsOrFileName: string | { 
 }
 
 function diagnosticToString(diagnostic: Diagnostic, options: ITestDiagnosticsOptions): string {
-    assert(diagnostic.code === '', 'Expecting empty code for all diagnostics');
+    assert(diagnostic.code === '', `Expecting empty code for all diagnostics, instead found Code="${String(diagnostic.code)}" for "${diagnostic.message}"`);
 
     let severity: string;
     switch (diagnostic.severity) {

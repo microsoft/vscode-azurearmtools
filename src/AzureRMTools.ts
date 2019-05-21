@@ -362,6 +362,7 @@ export class AzureRMTools {
         const message: string = issue.message;
         let diagnostic = new vscode.Diagnostic(range, message, severity);
         diagnostic.source = diagnosticsSource;
+        diagnostic.code = "";
         return diagnostic;
     }
 
