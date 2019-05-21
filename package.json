@@ -7,10 +7,11 @@
   "categories": [
     "Azure",
     "Programming Languages",
-    "Linters"
+    "Linters",
+    "Formatters"
   ],
   "keywords": [
-    "ARM",
+    "ARM Tools",
     "Azure",
     "Resource Manager",
     "Template",
