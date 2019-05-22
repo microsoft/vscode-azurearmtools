@@ -13,7 +13,7 @@ const armSchemaRegex =
     /https?:\/\/schema\.management\.azure\.com\/schemas\/[^"\/]+\/(deploymentTemplate|subscriptionDeploymentTemplate)\.json/i;
 const maxLinesToDetectSchemaIn = 10;
 
-function isJsonOrJsonWithComments(textDocument: TextDocument): boolean {
+function isJsonOrJsoncLangId(textDocument: TextDocument): boolean {
     return textDocument.languageId === 'json' || textDocument.languageId === 'jsonc';
 }
 
@@ -32,7 +32,7 @@ export function shouldWatchDocument(textDocument: TextDocument): boolean {
         return false;
     }
 
-    return isJsonOrJsonWithComments(textDocument);
+    return isJsonOrJsoncLangId(textDocument);
 }
 
 export function isDeploymentTemplate(textDocument: TextDocument): boolean {
@@ -44,7 +44,7 @@ export function isDeploymentTemplate(textDocument: TextDocument): boolean {
         return true;
     }
 
-    if (isJsonOrJsonWithComments(textDocument)) {
+    if (isJsonOrJsoncLangId(textDocument)) {
         // TODO: restrict to characters as well?
         let startOfDocument = textDocument.getText(new Range(new Position(0, 0), new Position(maxLinesToDetectSchemaIn - 1, 0)));
         return startOfDocument && !!startOfDocument.match(armSchemaRegex);

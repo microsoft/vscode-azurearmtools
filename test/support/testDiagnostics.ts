@@ -11,12 +11,12 @@ import * as assert from "assert";
 import * as fs from 'fs';
 import * as path from 'path';
 import { commands, Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument, window, workspace } from "vscode";
-import { diagnosticsCompleteMessage, diagnosticsSource } from "../extension.bundle";
-import { languageServerCompleteMessage } from "../src/constants";
+import { diagnosticsCompleteMessage, diagnosticsSource } from "../../extension.bundle";
+import { languageServerCompleteMessage } from "../../src/constants";
 import { getTempFilePath } from "./getTempFilePath";
 
 export const diagnosticsTimeout = 30000; // CONSIDER: Use this long timeout only for first test, or for suite setup
-export const testFolder = path.join(__dirname, '..', '..', 'test', 'templates');
+export const testFolder = path.join(__dirname, '..', '..', '..', 'test', 'templates');
 
 export const schemaSource = ''; // Built-in schema errors
 export const jsonSource = 'json'; // Built-in JSON errors
@@ -34,7 +34,7 @@ export function testDiagnosticsDeferred(filePath: string, options?: ITestDiagnos
 
 export function testDiagnosticsFromFile(filePath: string | object, options: ITestDiagnosticsOptions, expected: string[]): void {
     test(`File ${filePath}`, async () => {
-        let actual: Diagnostic[] = await getDiagnosticsForTemplate(filePath);
+        let actual: Diagnostic[] = await getDiagnosticsForTemplate(filePath, false);
 
         let ignoreSources = options.ignoreSources || [];
 
@@ -113,10 +113,10 @@ export async function getDiagnosticsForDocument(document: TextDocument): Promise
         clearTimeout(timer);
     }
 
-    return diagnostics.filter(d => d.message !== diagnosticsCompleteMessage);
+    return diagnostics.filter(d => d.message !== diagnosticsCompleteMessage && d.message !== languageServerCompleteMessage);
 }
 
-export async function getDiagnosticsForTemplate(templateContentsOrFileName: string | { $schema?: string }): Promise<Diagnostic[]> {
+export async function getDiagnosticsForTemplate(templateContentsOrFileName: string | { $schema?: string }, addSchema = true): Promise<Diagnostic[]> {
     let templateContents: string | undefined;
     let filePath: string | undefined;
     let fileToDelete: string | undefined;
@@ -125,17 +125,24 @@ export async function getDiagnosticsForTemplate(templateContentsOrFileName: stri
         if (!!templateContentsOrFileName.match(/\.jsonc?$/)) {
             // It's a filename
             filePath = path.join(testFolder, templateContentsOrFileName);
+            assert(!addSchema, "addSchema not supported for filenames");
         } else {
+            // It's a string
             templateContents = templateContentsOrFileName;
         }
     } else {
-        if (!templateContentsOrFileName.$schema) {
-            templateContentsOrFileName.$schema = "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#";
-        }
-        templateContents = JSON.stringify(templateContentsOrFileName, null, 2);
+        // It's an object
+        let templateObject: { $schema?: string } = templateContentsOrFileName;
+        templateContents = JSON.stringify(templateObject, null, 2);
     }
 
     if (!filePath) {
+        if (addSchema) {
+            if (!templateContents.includes('$schema')) {
+                templateContents = templateContents.replace(/\s*{\s*/, '{\n"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",\n');
+            }
+        }
+
         filePath = getTempFilePath();
         fs.writeFileSync(filePath, templateContents);
         fileToDelete = filePath;
@@ -171,8 +178,12 @@ function diagnosticToString(diagnostic: Diagnostic, options: ITestDiagnosticsOpt
     let s = `${severity}: ${diagnostic.message} (${diagnostic.source})`;
 
     if (options.includeRange === true) {
-        s += ` [${diagnostic.range.start.line},${diagnostic.range.start.character}`
-            + `-${diagnostic.range.end.line},${diagnostic.range.end.character}]`;
+        if (!diagnostic.range) {
+            s += " []";
+        } else {
+            s += ` [${diagnostic.range.start.line},${diagnostic.range.start.character}`
+                + `-${diagnostic.range.end.line},${diagnostic.range.end.character}]`;
+        }
     }
 
     return s;

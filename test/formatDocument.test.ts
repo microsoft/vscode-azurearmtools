@@ -12,8 +12,8 @@ import * as fs from 'fs';
 import { ISuiteCallbackContext } from "mocha";
 import * as path from 'path';
 import { commands, window, workspace } from "vscode";
-import { getTempFilePath } from "./getTempFilePath";
-import { diagnosticsTimeout, getDiagnosticsForDocument, testFolder } from "./testDiagnostics";
+import { getTempFilePath } from "./support/getTempFilePath";
+import { diagnosticsTimeout, getDiagnosticsForDocument, testFolder } from "./support/testDiagnostics";
 
 suite("format document", function (this: ISuiteCallbackContext): void {
     this.timeout(diagnosticsTimeout);

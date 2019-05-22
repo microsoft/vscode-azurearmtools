@@ -20,12 +20,9 @@ const languageServerErrorTelemId = "Language Server Error";
 
 export function startArmLanguageServer(context: ExtensionContext): void {
     callWithTelemetryAndErrorHandlingSync('startArmLanguageClient', () => {
-        // The server is implemented in node // TODO:
-        // let serverExe = 'dotnet';
+        // The server is implemented in .NET Core. We run it by calling 'dotnet' with the dll as an argument
 
-        // let serverExe = 'C:\\Users\\stephwe\\Repos\\arm-language-server\\Microsoft.ArmLanguageServer\\bin\\Debug\\netcoreapp2.2\\win-x64\\Microsoft.ArmLanguageServer.exe';
-        // let serverDll = 'C:\\Users\\stephwe\\Repos\\arm-language-server\\Microsoft.ArmLanguageServer\\bin\\Debug\\netcoreapp2.2\\Microsoft.ArmLanguageServer.dll';
-        let serverExe = 'dotnet.exe'; // 'c:\\Users\\stephwe\\.dotnet\\x64\\dotnet.exe';
+        let serverExe = 'dotnet.exe'; // 'c:\\Users\\stephwe\\.dotnet\\x64\\dotnet.exe'; //asdf
 
         // asdf remove old setting
         let serverDllPath = workspace.getConfiguration('armTools').get<string | undefined>('languageServer.path');
@@ -72,6 +69,7 @@ export function startArmLanguageServer(context: ExtensionContext): void {
             commonArgs.push('--wait-for-debugger');
         }
         if (ext.addCompletionDiagnostic) {
+            // Forces the server to add a completion message to its diagnostics
             commonArgs.push('--test-diagnostics');
         }
 
