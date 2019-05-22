@@ -42,7 +42,7 @@ suite("Diagnostics", function (this: ISuiteCallbackContext): void {
         suite("Capitalization", () => {
             /* TODO: enable when fixed
             testDiagnostics(
-                'https://github.com/microsoft/vscode-azurearmtools/issues/238',
+                'Resource type miscapitalized (https://github.com/microsoft/vscode-azurearmtools/issues/238)',
                 {
                     "resources": [
                         {
