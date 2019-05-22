@@ -13,8 +13,6 @@ import * as Reference from "./Reference";
 import * as TLE from "./TLE";
 import * as Utilities from "./Utilities";
 
-
-
 export class DeploymentTemplate {
     private _jsonParseResult: Json.ParseResult;
     private _jsonQuotedStringTokens: Json.Token[];

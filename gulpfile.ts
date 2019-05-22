@@ -12,7 +12,6 @@ import * as path from 'path';
 import * as process from 'process';
 import { gulp_installAzureAccount, gulp_webpack } from 'vscode-azureextensiondev';
 
-
 const env = process.env;
 
 export const jsonArmGrammarSourcePath: string = path.resolve('grammars/JSONC.arm.tmLanguage.json');

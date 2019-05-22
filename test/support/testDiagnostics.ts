@@ -70,17 +70,18 @@ export async function getDiagnosticsForDocument(document: TextDocument): Promise
     let dispose: Disposable;
     let timer: NodeJS.Timer;
 
+    // tslint:disable-next-line:typedef
     let diagnosticsPromise = new Promise<Diagnostic[]>((resolve, reject) => {
-        let diagnostics: Diagnostic[] | undefined;
+        let currentDiagnostics: Diagnostic[] | undefined;
         let complete: boolean;
 
         function pollDiagnostics(): void {
-            diagnostics = languages.getDiagnostics(document.uri);
-            if (diagnostics.find(d => d.message === diagnosticsCompleteMessage)
-                && diagnostics.find(d => d.message === languageServerCompleteMessage)
+            currentDiagnostics = languages.getDiagnostics(document.uri);
+            if (currentDiagnostics.find(d => d.message === diagnosticsCompleteMessage)
+                && currentDiagnostics.find(d => d.message === languageServerCompleteMessage)
             ) {
                 complete = true;
-                resolve(diagnostics);
+                resolve(currentDiagnostics);
             }
         }
 
@@ -93,7 +94,7 @@ export async function getDiagnosticsForDocument(document: TextDocument): Promise
                 () => {
                     reject(
                         new Error('Waiting for diagnostics timed out. Last retrieved diagnostics: '
-                            + (diagnostics ? diagnostics.map(d => d.message).join('\n') : "None")));
+                            + (currentDiagnostics ? currentDiagnostics.map(d => d.message).join('\n') : "None")));
                 },
                 diagnosticsTimeout);
             dispose = languages.onDidChangeDiagnostics(e => {
@@ -116,7 +117,7 @@ export async function getDiagnosticsForDocument(document: TextDocument): Promise
     return diagnostics.filter(d => d.message !== diagnosticsCompleteMessage && d.message !== languageServerCompleteMessage);
 }
 
-export async function getDiagnosticsForTemplate(templateContentsOrFileName: string | { $schema?: string }, addSchema = true): Promise<Diagnostic[]> {
+export async function getDiagnosticsForTemplate(templateContentsOrFileName: string | { $schema?: string }, addSchema: boolean = true): Promise<Diagnostic[]> {
     let templateContents: string | undefined;
     let filePath: string | undefined;
     let fileToDelete: string | undefined;

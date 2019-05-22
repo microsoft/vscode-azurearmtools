@@ -22,7 +22,7 @@ const formatRangeCommand = 'editor.action.formatSelection';
 suite("Format document", function (this: ISuiteCallbackContext): void {
     this.timeout(diagnosticsTimeout);
 
-    async function testFormat(testName: string, source: string, expected: string, range?: Range | RegExp): Promise<void> {
+    function testFormat(testName: string, source: string, expected: string, range?: Range | RegExp): void {
         test(testName, async () => {
             let sourceIsFile = false;
             let jsonUnformatted: string = source;
