@@ -32,7 +32,7 @@ export function startArmLanguageServer(context: ExtensionContext): void {
             let serverFolderPath = context.asAbsolutePath('LanguageServerBin');
             serverDllPath = path.join(serverFolderPath, 'Microsoft.ArmLanguageServer.dll');
             if (!fs.existsSync(serverFolderPath) || !fs.existsSync(serverDllPath)) {
-                throw new Error(`Couldn't find the ARM language server at ${serverDllPath}.  Please reinstall the extension.`);
+                throw new Error(`Couldn't find the ARM language server at ${serverDllPath}, you may need to reinstall the extension.`);
             }
 
             serverDllPath = path.join(serverFolderPath, 'Microsoft.ArmLanguageServer.dll');
