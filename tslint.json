@@ -29,8 +29,7 @@
             [
                 "vscode",
                 "gulp",
-                "vscode-azureextensiondev",
-                "mocha"
+                "vscode-azureextensiondev"
             ]
         ],
         "no-increment-decrement": false,

@@ -8,8 +8,6 @@
         "out": true,
         "**/node_modules": true
     },
-    "tslint.autoFixOnSave": true,
-    "tslint.ignoreDefinitionFiles": true,
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,
@@ -18,5 +16,8 @@
         "**/.DS_Store": true,
         ".vscode-test": true,
         "out": true
+    },
+    "files.associations": {
+        "tslint.json": "jsonc"
     }
 }
