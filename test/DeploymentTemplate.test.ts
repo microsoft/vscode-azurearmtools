@@ -754,10 +754,10 @@ suite("DeploymentTemplate", () => {
             assert(APPLES);
             assert.deepStrictEqual(APPLES.name.toString(), "APPLES");
 
-            const APPLESvalue: Json.StringValue = Json.asStringValue(APPLES.value);
-            assert(APPLESvalue);
-            assert.deepStrictEqual(APPLESvalue.span, new Language.Span(44, 6));
-            assert.deepStrictEqual(APPLESvalue.toString(), "good");
+            const applesValue: Json.StringValue = Json.asStringValue(APPLES.value);
+            assert(applesValue);
+            assert.deepStrictEqual(applesValue.span, new Language.Span(44, 6));
+            assert.deepStrictEqual(applesValue.toString(), "good");
 
             const apples: Json.Property = dt.getVariableDefinition("'APPles'");
             assert(apples);
