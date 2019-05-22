@@ -16,7 +16,7 @@ import { languageServerCompleteMessage } from "../../src/constants";
 import { getTempFilePath } from "./getTempFilePath";
 
 export const diagnosticsTimeout = 30000; // CONSIDER: Use this long timeout only for first test, or for suite setup
-export const testFolder = path.join(__dirname, '..', '..', '..', 'test', 'templates');
+export const testFolder = path.join(__dirname, '..', '..', '..', 'test');
 
 export const schemaSource = ''; // Built-in schema errors
 export const jsonSource = 'json'; // Built-in JSON errors

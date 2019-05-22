@@ -11,37 +11,93 @@ import * as assert from "assert";
 import * as fs from 'fs';
 import { ISuiteCallbackContext } from "mocha";
 import * as path from 'path';
-import { commands, window, workspace } from "vscode";
+import { commands, languages, Range, Selection, TextDocument, TextEditor, window, workspace } from "vscode";
+import { armDeploymentLanguageId } from "../extension.bundle";
 import { getTempFilePath } from "./support/getTempFilePath";
 import { diagnosticsTimeout, getDiagnosticsForDocument, testFolder } from "./support/testDiagnostics";
 
-suite("format document", function (this: ISuiteCallbackContext): void {
+const formatDocumentCommand = 'editor.action.formatDocument';
+const formatRangeCommand = 'editor.action.formatSelection';
+
+suite("Format document", function (this: ISuiteCallbackContext): void {
     this.timeout(diagnosticsTimeout);
 
-    test("format entire document", async () => {
-        const jsonUnformmated = fs.readFileSync(path.join(testFolder, 'format-me.json')).toString().trim();
-        let jsonExpected = fs.readFileSync(path.join(testFolder, 'format-me.expected.json')).toString().trim();
+    async function testFormat(testName: string, source: string, expected: string, range?: Range | RegExp): Promise<void> {
+        test(testName, async () => {
+            let sourceIsFile = false;
+            let jsonUnformatted: string = source;
+            if (source.includes('.json')) {
+                sourceIsFile = true;
+                jsonUnformatted = fs.readFileSync(path.join(testFolder, source)).toString().trim();
+            }
+            let jsonExpected: string = expected;
+            if (jsonExpected.includes('.json')) {
+                jsonExpected = fs.readFileSync(path.join(testFolder, expected)).toString().trim();
+            }
 
-        assert(!jsonUnformmated.match(/[\n\r]/), "The input file to format should only be one line of JSON. Did it get corrupted?");
+            if (source === 'format-me.json') {
+                assert(!jsonUnformatted.match(/[\n\r]/), "The input file to format should only be one line of JSON. Did it get corrupted?");
+            }
 
-        let filePath = getTempFilePath();
-        fs.writeFileSync(filePath, jsonUnformmated);
-        let doc = await workspace.openTextDocument(filePath);
-        await window.showTextDocument(doc);
+            let filePath = getTempFilePath(sourceIsFile ? `temp.${path.basename(source)}` : undefined);
+            fs.writeFileSync(filePath, jsonUnformatted);
+            let doc = await workspace.openTextDocument(filePath);
+            let editor: TextEditor = await window.showTextDocument(doc);
+            if (!sourceIsFile && doc.languageId !== armDeploymentLanguageId) {
+                await languages.setTextDocumentLanguage(doc, armDeploymentLanguageId);
+            }
 
-        // Wait until we have diagnostics, which means the language server is definitely hooked up
-        // TODO: we have to wait for schema errors, too
-        await getDiagnosticsForDocument(doc);
+            // Wait until we have diagnostics, which means the language server is definitely hooked up
+            await getDiagnosticsForDocument(doc);
 
-        await commands.executeCommand('editor.action.formatDocument');
+            if (range) {
+                let foundRange: Range;
+                if (range instanceof RegExp) {
+                    foundRange = rangeFromMatch(doc, range);
+                } else {
+                    foundRange = range;
+                }
+                let selection: Selection = new Selection(foundRange.start, foundRange.end);
+                editor.selection = selection;
 
-        let output = doc.getText();
-        await commands.executeCommand('workbench.action.closeActiveEditor');
-        fs.unlinkSync(filePath);
+                await commands.executeCommand(formatRangeCommand);
+            } else {
+                await commands.executeCommand(formatDocumentCommand);
+            }
 
-        output = output.replace(/\r\n/g, '\n');
-        jsonExpected = jsonExpected.replace(/\r\n/g, '\n');
+            let output = doc.getText();
+            await commands.executeCommand('workbench.action.closeAllEditors');
+            fs.unlinkSync(filePath);
 
-        assert.equal(output, jsonExpected);
+            output = output.replace(/\r\n/g, '\n').trim();
+            jsonExpected = jsonExpected.replace(/\r\n/g, '\n');
+
+            if (sourceIsFile) {
+                assert.notEqual(jsonUnformatted, output, "The format command did not modify the editor.");
+            }
+
+            assert.equal(output, jsonExpected);
+        });
+    }
+
+    suite("Format entire document", () => {
+        testFormat('templates/format-me.json', 'templates/format-me.json', 'templates/format-me.expected.full.json');
+        testFormat('almost empty', 'almost empty', 'almost empty');
+
+        // TODO: Currently fails due to https://dev.azure.com/devdiv/DevDiv/_workitems/edit/892851
+        //testFormat('empty', '', '');
+    });
+
+    suite("Format range", () => {
+        testFormat('range: contentVersion', 'templates/format-me.json', 'templates/format-me.expected.range1.json', /contentVersion/);
     });
 });
+
+function rangeFromMatch(doc: TextDocument, regex: RegExp): Range {
+    let match = doc.getText().match(regex);
+    assert(!!match, "Could not find rangeFromMatch pattern");
+    return new Range(
+        doc.positionAt(match.index),
+        doc.positionAt(match.index + match[0].length)
+    );
+}

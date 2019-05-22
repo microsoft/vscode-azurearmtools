@@ -6,6 +6,7 @@
 import * as fs from "fs";
 import * as mocha from 'mocha';
 import * as path from "path";
+import * as vscode from 'vscode';
 import { AzureRMAssets, ext } from "../extension.bundle";
 
 // tslint:disable:no-console no-function-expression
@@ -16,6 +17,9 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     AzureRMAssets.setFunctionsMetadata(testMetadata.toString());
 
     ext.addCompletionDiagnostic = true;
+
+    // Just to make it easier to see what's going on
+    vscode.commands.executeCommand('workbench.actions.view.problems');
 
     console.log('Done: global.test.ts: suiteSetup');
 });

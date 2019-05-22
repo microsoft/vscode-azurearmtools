@@ -16,7 +16,7 @@ suite("Diagnostics", function (this: ISuiteCallbackContext): void {
             'new-vm.jsonc',
             {
                 includeRange: true,
-                ignoreSources: [languageServerSource] // TODO: currently getting false positives
+                ignoreSources: [languageServerSource] // TODO: currently getting false positives from schema validation
             },
             [
                 "Warning: The parameter 'backupVaultRGIsNew' is never used. (ARM Tools) [32,8-32,28]",
