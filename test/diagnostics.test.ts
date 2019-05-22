@@ -40,6 +40,7 @@ suite("Diagnostics", function (this: ISuiteCallbackContext): void {
 
     suite("Schema", () => {
         suite("Capitalization", () => {
+
             /* TODO: enable when fixed
             testDiagnostics(
                 'Resource type miscapitalized (https://github.com/microsoft/vscode-azurearmtools/issues/238)',
@@ -56,6 +57,7 @@ suite("Diagnostics", function (this: ISuiteCallbackContext): void {
                 { ignoreSources: [armToolsSource] },
                 [
                 ]);*/
+
         });
     });
 });
