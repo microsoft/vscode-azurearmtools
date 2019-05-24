@@ -22,16 +22,18 @@ const formatRangeCommand = 'editor.action.formatSelection';
 suite("Format document", function (this: ISuiteCallbackContext): void {
     this.timeout(diagnosticsTimeout);
 
+    let isFirstFormatTest = true;
+
     function testFormat(testName: string, source: string, expected: string, range?: Range | RegExp): void {
         test(testName, async () => {
             let sourceIsFile = false;
             let jsonUnformatted: string = source;
-            if (source.includes('.json')) {
+            if (source.match(/\.jsonc?$/)) {
                 sourceIsFile = true;
                 jsonUnformatted = fs.readFileSync(path.join(testFolder, source)).toString().trim();
             }
             let jsonExpected: string = expected;
-            if (jsonExpected.includes('.json')) {
+            if (jsonExpected.match(/\.jsonc?$/)) {
                 jsonExpected = fs.readFileSync(path.join(testFolder, expected)).toString().trim();
             }
 
@@ -47,8 +49,11 @@ suite("Format document", function (this: ISuiteCallbackContext): void {
                 await languages.setTextDocumentLanguage(doc, armDeploymentLanguageId);
             }
 
-            // Wait until we have diagnostics, which means the language server is definitely hooked up
-            await getDiagnosticsForDocument(doc);
+            if (isFirstFormatTest) {
+                // Wait until we have diagnostics, which means the language server is definitely hooked up
+                await getDiagnosticsForDocument(doc);
+                isFirstFormatTest = false;
+            }
 
             if (range) {
                 let foundRange: Range;
@@ -81,15 +86,64 @@ suite("Format document", function (this: ISuiteCallbackContext): void {
     }
 
     suite("Format entire document", () => {
-        testFormat('templates/format-me.json', 'templates/format-me.json', 'templates/format-me.expected.full.json');
-        testFormat('almost empty', 'almost empty', 'almost empty');
+        testFormat('templates/format-me.jsonc', 'templates/format-me.jsonc', 'templates/format-me.expected.full.jsonc');
+        testFormat('format twice', 'templates/format-me.expected.full.jsonc', 'templates/format-me.expected.full.jsonc');
+        testFormat('bad syntax', 'This is a bad json file', 'This is a bad json file');
+        testFormat('{}', '{}', '{\n}');
 
         // TODO: Currently fails due to https://dev.azure.com/devdiv/DevDiv/_workitems/edit/892851
         //testFormat('empty', '', '');
     });
 
     suite("Format range", () => {
-        testFormat('range: contentVersion', 'templates/format-me.json', 'templates/format-me.expected.range1.json', /contentVersion/);
+        testFormat('range: whole doc', 'templates/format-me.jsonc', 'templates/format-me.expected.full.jsonc', /.*/);
+
+        const unformattedJson =
+            `{ "$schema" :
+"http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#" ,
+             "contentVersion" : "1.0.0.0" ,
+               "parameters" :{"location":{
+                "type": "string"}}
+}`;
+
+        testFormat(
+            'dictionary value - only affects the line it\'s on',
+            unformattedJson,
+            `{ "$schema" :
+"http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#" ,
+  "contentVersion": "1.0.0.0",
+               "parameters" :{"location":{
+                "type": "string"}}
+}`,
+            /1.0.0.0/);
+
+        testFormat(
+            'final closing bracket - formats entire file',
+            unformattedJson,
+            `{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string"
+    }
+  }
+}`,
+            /}$/);
+
+        testFormat(
+            'Next to last brackets - doesn\'t affect first line',
+            unformattedJson,
+            `{ "$schema" :
+"http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#" ,
+             "contentVersion" : "1.0.0.0" ,
+  "parameters": {
+    "location": {
+      "type": "string"
+    }
+  }
+}`,
+            /}}/);
     });
 });
 

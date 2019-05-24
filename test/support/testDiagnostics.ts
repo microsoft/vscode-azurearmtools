@@ -89,6 +89,7 @@ export async function getDiagnosticsForDocument(document: TextDocument): Promise
         pollDiagnostics();
 
         // Now only poll on changed events
+        console.log("Waiting for diagnostics to complete...");
         if (!complete) {
             timer = setTimeout(
                 () => {

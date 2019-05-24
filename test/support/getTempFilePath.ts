@@ -7,19 +7,15 @@
 import * as os from 'os';
 import * as path from 'path';
 
-export function getTempFilePath(filename?: string): string {
-    let tempName = '';
+export function getTempFilePath(baseFilename?: string): string {
+    let randomName = '';
 
-    if (!filename) {
-        for (let i = 0; i < 10; ++i) {
-            // tslint:disable-next-line: insecure-random
-            tempName += String.fromCharCode(64 + Math.random() * 26);
-        }
-
-        tempName = `${tempName}.jsonc`;
-    } else {
-        tempName = filename;
+    for (let i = 0; i < 10; ++i) {
+        // tslint:disable-next-line: insecure-random
+        randomName += String.fromCharCode(64 + Math.random() * 26) ;
     }
+
+    let tempName = `${randomName}${baseFilename? '.'+baseFilename:''}.jsonc`;
 
     return path.join(os.tmpdir(), tempName);
 }
