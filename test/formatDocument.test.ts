@@ -13,16 +13,15 @@ import { ISuiteCallbackContext } from "mocha";
 import * as path from 'path';
 import { commands, languages, Range, Selection, TextDocument, TextEditor, window, workspace } from "vscode";
 import { armDeploymentLanguageId } from "../extension.bundle";
+import { diagnosticsTimeout, testFolder } from "./support/diagnostics";
+import { ensureLanguageServerAvailable } from "./support/ensureLanguageServerAvailable";
 import { getTempFilePath } from "./support/getTempFilePath";
-import { diagnosticsTimeout, getDiagnosticsForDocument, testFolder } from "./support/testDiagnostics";
 
 const formatDocumentCommand = 'editor.action.formatDocument';
 const formatRangeCommand = 'editor.action.formatSelection';
 
 suite("Format document", function (this: ISuiteCallbackContext): void {
     this.timeout(diagnosticsTimeout);
-
-    let isFirstFormatTest = true;
 
     function testFormat(testName: string, source: string, expected: string, range?: Range | RegExp): void {
         test(testName, async () => {
@@ -49,11 +48,7 @@ suite("Format document", function (this: ISuiteCallbackContext): void {
                 await languages.setTextDocumentLanguage(doc, armDeploymentLanguageId);
             }
 
-            if (isFirstFormatTest) {
-                // Wait until we have diagnostics, which means the language server is definitely hooked up
-                await getDiagnosticsForDocument(doc);
-                isFirstFormatTest = false;
-            }
+            await ensureLanguageServerAvailable();
 
             if (range) {
                 let foundRange: Range;
