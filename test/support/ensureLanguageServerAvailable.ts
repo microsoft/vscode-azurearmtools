@@ -9,7 +9,7 @@ let isLanguageServerAvailable = false;
 export async function ensureLanguageServerAvailable(): Promise<void> {
     if (!isLanguageServerAvailable) {
         // Wait until we get some diagnostics from the language server
-        await getDiagnosticsForTemplate('');
+        await getDiagnosticsForTemplate('{}');
         isLanguageServerAvailable = true;
     }
 }

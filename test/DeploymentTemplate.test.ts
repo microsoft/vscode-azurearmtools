@@ -9,7 +9,7 @@ import * as assert from "assert";
 import { randomBytes } from "crypto";
 import { ISuiteCallbackContext } from "mocha";
 import { DeploymentTemplate, Histogram, IncorrectArgumentsCountIssue, Json, Language, ParameterDefinition, Reference, ReferenceInVariableDefinitionJSONVisitor, UnrecognizedFunctionIssue } from "../extension.bundle";
-import { testDiagnostics } from "./support/testDiagnostics";
+import { testDiagnostics } from "./support/diagnostics";
 
 suite("DeploymentTemplate", () => {
     suite("constructor(string)", () => {

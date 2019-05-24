@@ -5,7 +5,7 @@
 // tslint:disable: object-literal-key-quotes
 
 import { ISuiteCallbackContext } from "mocha";
-import { diagnosticsTimeout, languageServerSource, testDiagnosticsDeferred, testDiagnosticsFromFile } from "./support/testDiagnostics";
+import { diagnosticsTimeout, languageServerSource, testDiagnosticsDeferred, testDiagnosticsFromFile } from "./support/diagnostics";
 
 suite("Diagnostics", function (this: ISuiteCallbackContext): void {
     this.timeout(diagnosticsTimeout);

@@ -25,6 +25,8 @@ suite("Format document", function (this: ISuiteCallbackContext): void {
 
     function testFormat(testName: string, source: string, expected: string, range?: Range | RegExp): void {
         test(testName, async () => {
+            await ensureLanguageServerAvailable();
+
             let sourceIsFile = false;
             let jsonUnformatted: string = source;
             if (source.match(/\.jsonc?$/)) {
@@ -47,8 +49,6 @@ suite("Format document", function (this: ISuiteCallbackContext): void {
             if (!sourceIsFile && doc.languageId !== armDeploymentLanguageId) {
                 await languages.setTextDocumentLanguage(doc, armDeploymentLanguageId);
             }
-
-            await ensureLanguageServerAvailable();
 
             if (range) {
                 let foundRange: Range;
