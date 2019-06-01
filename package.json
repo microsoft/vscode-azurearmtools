@@ -63,7 +63,7 @@
         },
         "armTools.languageServer.path": {
           "type": "string",
-          "description": "Override the default location used to find the language server binaries (requires restart)"
+          "description": "Override the default location of the language server assembly folder or file path (requires restart)"
         },
         "armTools.languageServer.waitForDebugger": {
           "type": "boolean",

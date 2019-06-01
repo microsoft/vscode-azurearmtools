@@ -5,6 +5,7 @@
 // tslint:disable:no-suspicious-comment max-line-length // TODO:
 
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { ExtensionContext, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandlingSync, parseError, TelemetryProperties } from 'vscode-azureextensionui';
@@ -15,6 +16,7 @@ import { ext } from '../extensionVariables';
 import { armDeploymentDocumentSelector } from '../supported';
 
 const languageServerName = 'ARM Language Server';
+const languageServerDllName = 'Microsoft.ArmLanguageServer.dll';
 let serverStartMs: number;
 const languageServerErrorTelemId = "Language Server Error";
 
@@ -22,21 +24,25 @@ export function startArmLanguageServer(context: ExtensionContext): void {
     callWithTelemetryAndErrorHandlingSync('startArmLanguageClient', () => {
         // The server is implemented in .NET Core. We run it by calling 'dotnet' with the dll as an argument
 
-        let serverExe = 'dotnet.exe'; // 'c:\\Users\\stephwe\\.dotnet\\x64\\dotnet.exe'; //asdf
+        let serverExe = os.platform() === 'win32' ? 'dotnet.exe' : 'dotnet';
 
         // asdf remove old setting
         let serverDllPath = workspace.getConfiguration('armTools').get<string | undefined>('languageServer.path');
 
         if (typeof serverDllPath !== 'string' || serverDllPath === '') {
             // Check for the files under LanguageServerBin
-            let serverFolderPath = context.asAbsolutePath('LanguageServerBin');
-            serverDllPath = path.join(serverFolderPath, 'Microsoft.ArmLanguageServer.dll');
+            let serverFolderPath = context.asAbsolutePath(languageServerDllName);
+            serverDllPath = path.join(serverFolderPath, languageServerDllName);
             if (!fs.existsSync(serverFolderPath) || !fs.existsSync(serverDllPath)) {
                 throw new Error(`Couldn't find the ARM language server at ${serverDllPath}, you may need to reinstall the extension.`);
             }
 
-            serverDllPath = path.join(serverFolderPath, 'Microsoft.ArmLanguageServer.dll');
+            serverDllPath = path.join(serverFolderPath, languageServerDllName);
         } else {
+            if (fs.statSync(serverDllPath).isDirectory()) {
+                serverDllPath = path.join(serverDllPath, languageServerDllName);
+            }
+
             if (!fs.existsSync(serverDllPath)) {
                 throw new Error(`Couldn't find the ARM language server at ${serverDllPath}.  Please verify your 'armTools.languageServer.path' setting.`);
             }
@@ -45,9 +51,6 @@ export function startArmLanguageServer(context: ExtensionContext): void {
         // let serverExe = context.asAbsolutePath('D:/Development/Omnisharp/omnisharp-roslyn/artifacts/publish/OmniSharp.Stdio/win7-x64/OmniSharp.exe');
         // The debug options for the server
         // let debugOptions = { execArgv: ['-lsp', '-d' };
-
-        // If the extension is launched in debug mode then the debug server options are used
-        // Otherwise the run options are used
 
         // These trace levels are available in the server:
         //   Trace
@@ -73,9 +76,13 @@ export function startArmLanguageServer(context: ExtensionContext): void {
             commonArgs.push('--test-diagnostics');
         }
 
+        // If the extension is launched in debug mode then the debug server options are used
+        // Otherwise the run options are used
         let serverOptions: ServerOptions = {
-            run: { command: serverExe, args: commonArgs },
-            debug: { command: serverExe, args: commonArgs }
+            run: {
+                command: serverExe, args: commonArgs, options: { shell: true }
+            },
+            debug: { command: serverExe, args: commonArgs, options: { shell: true } },
         };
 
         // Options to control the language client
