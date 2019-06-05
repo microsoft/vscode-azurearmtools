@@ -581,7 +581,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual([], pr.errors);
             });
 
-            test("with two right square brackets, literal, and closing left square bracket", () => {
+            test("with two left square brackets, literal, and closing right square bracket", () => {
                 let pr = TLE.Parser.parse("\"[[two]\"");
                 assert.notEqual(null, pr);
                 assert.equal(null, pr.leftSquareBracketToken);
