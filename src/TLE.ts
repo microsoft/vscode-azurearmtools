@@ -874,65 +874,95 @@ export class Parser {
         assert(1 <= stringValue.length, "TLE strings must be at least 1 character.");
         assert(Utilities.isQuoteCharacter(stringValue[0]), "The first character in a TLE string must be a quote character.");
 
-        let leftSquareBracketToken: Token = null;
+        const leftSquareBracketToken: Token = null;
         let expression: Value = null;
-        let rightSquareBracketToken: Token = null;
-        let errors: language.Issue[] = [];
+        const rightSquareBracketToken: Token = null;
+        const errors: language.Issue[] = [];
+        let result: { stringValue: string; leftSquareBracketToken: Token; expression: Value; rightSquareBracketToken: Token; errors: language.Issue[] } = { stringValue, leftSquareBracketToken, expression, rightSquareBracketToken, errors };
 
         if (3 <= stringValue.length && stringValue.substr(1, 2) === "[[") {
-            expression = new StringValue(Token.createQuotedString(0, stringValue));
-        } else {
-            let tokenizer = Tokenizer.fromString(stringValue);
-            tokenizer.next();
-
-            if (!tokenizer.hasCurrent() || tokenizer.current.getType() !== TokenType.LeftSquareBracket) {
+            result.expression = new StringValue(Token.createQuotedString(0, stringValue));
+        } else if (stringValue[1] === '[' && stringValue[stringValue.length - 2] === ']') {
+            if (3 <= stringValue.length && stringValue.substr(1, 2) === "[[") {
                 expression = new StringValue(Token.createQuotedString(0, stringValue));
             } else {
-                leftSquareBracketToken = tokenizer.current;
-                tokenizer.next();
+                result = Parser.expressionValidation(stringValue, leftSquareBracketToken, expression, rightSquareBracketToken, errors);
+            }
+        } else {
+            let stringCase = false;
+            let index = 0;
+            if (stringValue[1] === '[') {
+                for (let rightBracket of stringValue) {
+                    ++index;
+                    if (rightBracket === ']') {
+                        for (index; index < stringValue.length; ++index) {
+                            if (stringValue[index] === '"') {
+                                result.expression = new StringValue(Token.createQuotedString(0, stringValue));
+                                stringCase = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (stringCase === false) {
+                result = Parser.expressionValidation(stringValue, leftSquareBracketToken, expression, rightSquareBracketToken, errors);
+            }
+        }
+        return new ParseResult(result.leftSquareBracketToken, result.expression, result.rightSquareBracketToken, result.errors);
+    }
 
-                while (
-                    tokenizer.hasCurrent()
-                    && tokenizer.current.getType() !== TokenType.Literal
-                    && tokenizer.current.getType() !== TokenType.RightSquareBracket
-                ) {
-                    errors.push(new language.Issue(tokenizer.current.span, "Expected a literal value."));
+    private static expressionValidation(stringValue: string, leftSquareBracketToken: Token, expression: Value, rightSquareBracketToken: Token, errors: language.Issue[]): { stringValue: string; leftSquareBracketToken: Token; expression: Value; rightSquareBracketToken: Token; errors: language.Issue[] } {
+        let tokenizer = Tokenizer.fromString(stringValue);
+        tokenizer.next();
+
+        if (!tokenizer.hasCurrent() || tokenizer.current.getType() !== TokenType.LeftSquareBracket) {
+            expression = new StringValue(Token.createQuotedString(0, stringValue));
+        } else {
+            leftSquareBracketToken = tokenizer.current;
+            tokenizer.next();
+
+            while (
+                tokenizer.hasCurrent()
+                && tokenizer.current.getType() !== TokenType.Literal
+                && tokenizer.current.getType() !== TokenType.RightSquareBracket
+            ) {
+                errors.push(new language.Issue(tokenizer.current.span, "Expected a literal value."));
+                tokenizer.next();
+            }
+
+            expression = Parser.parseExpression(tokenizer, errors);
+
+            while (tokenizer.hasCurrent()) {
+                if (tokenizer.current.getType() === TokenType.RightSquareBracket) {
+                    rightSquareBracketToken = tokenizer.current;
+                    tokenizer.next();
+                    break;
+                } else {
+                    errors.push(new language.Issue(tokenizer.current.span, "Expected the end of the string."));
                     tokenizer.next();
                 }
+            }
 
-                expression = Parser.parseExpression(tokenizer, errors);
-
+            if (rightSquareBracketToken !== null) {
                 while (tokenizer.hasCurrent()) {
-                    if (tokenizer.current.getType() === TokenType.RightSquareBracket) {
-                        rightSquareBracketToken = tokenizer.current;
-                        tokenizer.next();
-                        break;
-                    } else {
-                        errors.push(new language.Issue(tokenizer.current.span, "Expected the end of the string."));
-                        tokenizer.next();
-                    }
+                    errors.push(new language.Issue(tokenizer.current.span, "Nothing should exist after the closing ']' except for whitespace."));
+                    tokenizer.next();
                 }
+            } else {
+                errors.push(new language.Issue(new language.Span(stringValue.length - 1, 1), "Expected a right square bracket (']')."));
+            }
 
+            if (expression === null) {
+                let errorSpan: language.Span = leftSquareBracketToken.span;
                 if (rightSquareBracketToken !== null) {
-                    while (tokenizer.hasCurrent()) {
-                        errors.push(new language.Issue(tokenizer.current.span, "Nothing should exist after the closing ']' except for whitespace."));
-                        tokenizer.next();
-                    }
-                } else {
-                    errors.push(new language.Issue(new language.Span(stringValue.length - 1, 1), "Expected a right square bracket (']')."));
+                    errorSpan = errorSpan.union(rightSquareBracketToken.span);
                 }
-
-                if (expression === null) {
-                    let errorSpan: language.Span = leftSquareBracketToken.span;
-                    if (rightSquareBracketToken !== null) {
-                        errorSpan = errorSpan.union(rightSquareBracketToken.span);
-                    }
-                    errors.push(new language.Issue(errorSpan, "Expected a function or property expression."));
-                }
+                errors.push(new language.Issue(errorSpan, "Expected a function or property expression."));
             }
         }
 
-        return new ParseResult(leftSquareBracketToken, expression, rightSquareBracketToken, errors);
+        return { stringValue, leftSquareBracketToken, expression, rightSquareBracketToken, errors };
     }
 
     private static parseExpression(tokenizer: Tokenizer, errors: language.Issue[]): Value {

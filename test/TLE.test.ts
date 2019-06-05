@@ -581,6 +581,28 @@ suite("TLE", () => {
                 assert.deepStrictEqual([], pr.errors);
             });
 
+            test("with two right square brackets, literal, and closing left square bracket", () => {
+                let pr = TLE.Parser.parse("\"[[two]\"");
+                assert.notEqual(null, pr);
+                assert.equal(null, pr.leftSquareBracketToken);
+                assert.deepStrictEqual(
+                    new TLE.StringValue(TLE.Token.createQuotedString(0, "\"[[two]\"")),
+                    pr.expression);
+                assert.equal(null, pr.rightSquareBracketToken);
+                assert.deepStrictEqual([], pr.errors);
+            });
+
+            test("with literal enclosed in square brackets, string following", () => {
+                let pr = TLE.Parser.parse("\"[two]andthree\"");
+                assert.notEqual(null, pr);
+                assert.equal(null, pr.leftSquareBracketToken);
+                assert.deepStrictEqual(
+                    new TLE.StringValue(TLE.Token.createQuotedString(0, "\"[two]andthree\"")),
+                    pr.expression);
+                assert.equal(null, pr.rightSquareBracketToken);
+                assert.deepStrictEqual([], pr.errors);
+            });
+
             test("with function name without parentheses, arguments, or right square bracket", () => {
                 let pr = TLE.Parser.parse("\"[concat\"");
                 assert.notEqual(null, pr);
