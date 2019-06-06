@@ -46,5 +46,5 @@ export { PositionContext } from "./src/PositionContext";
 import * as TLE from "./src/TLE";
 export { TLE };
 export { isLanguageIdSupported } from "./src/supported";
-export { JsonOutlineProvider, shortenTreeLabel } from "./src/Treeview";
+export { TemplateOutlineProvider as JsonOutlineProvider, shortenTreeLabel } from "./src/TemplateOutlineProvider";
 export { diagnosticsCompleteMessage, diagnosticsSource } from "./src/constants";

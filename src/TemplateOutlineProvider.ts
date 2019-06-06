@@ -43,7 +43,7 @@ const resourceIcons: [string, string][] = [
     ["Microsoft.Network/publicIPAddresses", "publicip.svg"]
 ];
 
-export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
+export class TemplateOutlineProvider implements vscode.TreeDataProvider<string> {
     private tree: Json.ParseResult;
     private text: string;
 

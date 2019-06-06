@@ -10,7 +10,7 @@ import * as vscode from "vscode";
 import { parseError } from "vscode-azureextensionui";
 import { ext, JsonOutlineProvider, shortenTreeLabel } from "../extension.bundle";
 
-suite("TreeView", async (): Promise<void> => {
+suite("TemplateOutlineProvider", async (): Promise<void> => {
     suite("shortenTreeLabel", async (): Promise<void> => {
         test("shortenTreeLabel", () => {
             function testShorten(label: string, expected: string): void {
@@ -50,7 +50,7 @@ suite("TreeView", async (): Promise<void> => {
                 let extension = vscode.extensions.getExtension(ext.extensionId);
                 assert.equal(!!extension, true, "Extension not found");
                 await extension.activate();
-                provider = ext.jsonOutlineProvider;
+                provider = ext.templateOutlineProvider;
                 assert.equal(!!provider, true, "JSON outline provider not found");
             }
 

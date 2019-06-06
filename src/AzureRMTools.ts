@@ -20,7 +20,7 @@ import * as Reference from "./Reference";
 import { Stopwatch } from "./Stopwatch";
 import { isLanguageIdSupported, supportedDocumentSelector } from "./supported";
 import * as TLE from "./TLE";
-import { JsonOutlineProvider } from "./Treeview";
+import { TemplateOutlineProvider } from "./TemplateOutlineProvider";
 import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
 
 // This method is called when your extension is activated
@@ -69,8 +69,8 @@ export class AzureRMTools {
     });
 
     constructor(context: vscode.ExtensionContext) {
-        const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
-        ext.jsonOutlineProvider = jsonOutline;
+        const jsonOutline: TemplateOutlineProvider = new TemplateOutlineProvider(context);
+        ext.templateOutlineProvider = jsonOutline;
         context.subscriptions.push(vscode.window.registerTreeDataProvider("json-outline", jsonOutline));
         context.subscriptions.push(vscode.commands.registerCommand("azurerm-vscode-tools.treeview.goto", (range: vscode.Range) => jsonOutline.goToDefinition(range)));
 
