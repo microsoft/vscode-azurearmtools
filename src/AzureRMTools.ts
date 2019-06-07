@@ -9,7 +9,7 @@ import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createTelemetryReporter, IActionContext, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import * as Completion from "./Completion";
 import { diagnosticsCompleteMessage, diagnosticsSource } from "./constants";
-import { DeploymentTemplate } from "./DeploymentTemplate";
+import { DeploymentTemplate, ResourceTypeAndVersionInfo } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
 import * as Hover from "./Hover";
@@ -312,6 +312,7 @@ export class AzureRMTools {
                 functionCounts?: string;
                 unrecognized?: string;
                 incorrectArgs?: string;
+                resourceTypes?: string;
                 [key: string]: string;
             } = this.properties;
 
@@ -342,6 +343,14 @@ export class AzureRMTools {
             }
             properties.unrecognized = AzureRMTools.setToJson(unrecognized);
             properties.incorrectArgs = AzureRMTools.setToJson(incorrectArgCounts);
+
+            // Resource types used, and whether they have an icon
+            const resourceTypes: ResourceTypeAndVersionInfo[] = deploymentTemplate.getResourceTypesUsed();
+            const resourceTypesData = {};
+            resourceTypes.forEach(element => {
+                resourceTypesData[element.resourceTypeAndVersion] = element.icon ? "true" : "false";
+            });
+            properties.resourceTypes = JSON.stringify(resourceTypesData);
         });
     }
 

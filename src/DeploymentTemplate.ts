@@ -14,6 +14,14 @@ import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { Histogram } from "./Histogram";
 import { ParameterDefinition } from "./ParameterDefinition";
 import { PositionContext } from "./PositionContext";
+import { getIconForResourceType } from "./getIconForResourceType";
+
+export type ResourceTypeAndVersionInfo = {
+    resourceType: string;
+    apiVersion: string;
+    resourceTypeAndVersion: string; // Resource type + api version, separated by "@"
+    icon: string | undefined;
+};
 
 export class DeploymentTemplate {
     private _jsonParseResult: Json.ParseResult;
@@ -470,6 +478,18 @@ export class DeploymentTemplate {
 
         return result;
     }
+
+    public getResourceTypesUsed(): ResourceTypeAndVersionInfo[] {
+        const visitor = new EnumerateResourceTypesJSONVisitor();
+        visitor.visitObjectValue(Json.asObjectValue(this._jsonParseResult.value));
+
+        let array: ResourceTypeAndVersionInfo[] = [];
+        visitor.resourceTypes.forEach(element => {
+            array.push(element);
+        });
+
+        return array;
+    }
 }
 
 export class ReferenceInVariableDefinitionJSONVisitor extends Json.Visitor {
@@ -514,5 +534,57 @@ class ReferenceInVariableDefinitionTLEVisitor extends TLE.Visitor {
         }
 
         super.visitFunction(functionValue);
+    }
+}
+
+export class EnumerateResourceTypesJSONVisitor extends Json.Visitor {
+    private readonly _resourceTypes = new Map<string, ResourceTypeAndVersionInfo>();
+    private readonly _keySeparator = "@";
+
+    constructor() {
+        super();
+    }
+
+    public get resourceTypes(): Map<string, ResourceTypeAndVersionInfo> {
+        return this._resourceTypes;
+    }
+
+    public visitProperty(property: Json.Property): void {
+        assert(property, "Cannot visit a null or undefined Json.ObjectValue.");
+        if (property.name && property.name.toString() === "resources") {
+            const resourcesArray = Json.asArrayValue(property.value);
+            if (resourcesArray) {
+                for (let resource of resourcesArray.elements) {
+                    const resourceObject = Json.asObjectValue(resource);
+                    if (resourceObject) {
+                        const resourceType: Json.StringValue = Json.asStringValue(resourceObject.getPropertyValue("type"))
+                        const apiVersion: Json.StringValue = Json.asStringValue(resourceObject.getPropertyValue("apiVersion"));
+                        if (resourceType) {
+                            const resourceTypeValue = resourceType.toString();
+
+                            // apiVersion might not be there for profiles, so allow empty string for it
+                            const apiVersionValue = apiVersion ? apiVersion.toString() : "";
+
+                            if (resourceTypeValue && !resourceTypeValue.includes(this._keySeparator) && !apiVersionValue.includes(this._keySeparator)) {
+                                const key = `${resourceTypeValue}${this._keySeparator}${apiVersionValue}`;
+                                if (!this._resourceTypes.has(key)) {
+                                    let icon: string | undefined = getIconForResourceType(resourceTypeValue);
+                                    let resourceTypeInfo: ResourceTypeAndVersionInfo = {
+                                        apiVersion: apiVersionValue,
+                                        resourceType: resourceTypeValue,
+                                        resourceTypeAndVersion: key,
+                                        icon: icon
+                                    };
+
+                                    this._resourceTypes.set(key, resourceTypeInfo);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        super.visitProperty(property);
     }
 }

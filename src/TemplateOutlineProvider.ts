@@ -15,6 +15,9 @@ import { iconsPath } from "./constants";
 import * as Json from "./JSON";
 import { isLanguageIdSupported } from "./supported";
 import * as Utilities from "./Utilities";
+import { getIconForResourceType } from "./getIconForResourceType";
+
+const defaultResourceIcon = "resources.svg";
 
 const topLevelIcons: [string, string][] = [
     ["$schema", "label.svg"],
@@ -31,16 +34,6 @@ const topLevelChildIconsByRootNode: [string, string][] = [
     ["parameters", "parameters.svg"],
     ["variables", "variables.svg"],
     ["outputs", "outputs.svg"],
-];
-
-const resourceIcons: [string, string][] = [
-    ["Microsoft.Compute/virtualMachines", "virtualmachines.svg"],
-    ["Microsoft.Storage/storageAccounts", "storageaccounts.svg"],
-    ["Microsoft.Network/virtualNetworks", "virtualnetworks.svg"],
-    ["Microsoft.Compute/virtualMachines/extensions", "extensions.svg"],
-    ["Microsoft.Network/networkSecurityGroups", "nsg.svg"],
-    ["Microsoft.Network/networkInterfaces", "nic.svg"],
-    ["Microsoft.Network/publicIPAddresses", "publicip.svg"]
 ];
 
 export class TemplateOutlineProvider implements vscode.TreeDataProvider<string> {
@@ -320,14 +313,14 @@ export class TemplateOutlineProvider implements vscode.TreeDataProvider<string> 
 
         // If resourceType element is found on resource objects set to specific resourceType Icon or else a default resource icon
         if (elementInfo.current.level > 1 && elementInfo.current.key.kind === Json.ValueKind.ObjectValue) {
-            const rootNode = this.tree.getValueAtCharacterIndex(elementInfo.root.key.start);
+            const rootNode = this.tree.getValueAtCharacterIndex(elementInfo.root.key.start); //asdf
 
             if (rootNode.toString().toUpperCase() === "resources".toUpperCase() && keyOrResourceNode instanceof Json.ObjectValue) {
                 // tslint:disable-next-line:one-variable-per-declaration
                 for (var i = 0, il = keyOrResourceNode.properties.length; i < il; i++) {
                     if (keyOrResourceNode.properties[i].name.toString().toUpperCase() === "type".toUpperCase()) {
                         let resourceType = keyOrResourceNode.properties[i].value.toString().toUpperCase();
-                        icon = this.getIcon(resourceIcons, resourceType, "resources.svg");
+                        icon = getIconForResourceType(resourceType) || defaultResourceIcon;
                     }
                 }
             }
