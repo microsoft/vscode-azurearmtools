@@ -12,10 +12,10 @@ import * as assert from "assert";
 import * as path from 'path';
 import * as vscode from "vscode";
 import { iconsPath } from "./constants";
+import { getIconForResourceType } from "./getIconForResourceType";
 import * as Json from "./JSON";
 import { isLanguageIdSupported } from "./supported";
 import * as Utilities from "./Utilities";
-import { getIconForResourceType } from "./getIconForResourceType";
 
 const defaultResourceIcon = "resources.svg";
 

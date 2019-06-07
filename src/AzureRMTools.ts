@@ -19,8 +19,8 @@ import { PositionContext } from "./PositionContext";
 import * as Reference from "./Reference";
 import { Stopwatch } from "./Stopwatch";
 import { isLanguageIdSupported, supportedDocumentSelector } from "./supported";
-import * as TLE from "./TLE";
 import { TemplateOutlineProvider } from "./TemplateOutlineProvider";
+import * as TLE from "./TLE";
 import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
 
 // This method is called when your extension is activated

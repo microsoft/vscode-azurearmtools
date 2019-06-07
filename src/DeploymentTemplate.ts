@@ -2,19 +2,19 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import * as assert from "assert";
+// tslint:disable:max-classes-per-file // private classes
 
+import * as assert from "assert";
+import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
+import { getIconForResourceType } from "./getIconForResourceType";
+import { Histogram } from "./Histogram";
 import * as Json from "./JSON";
 import * as language from "./Language";
+import { ParameterDefinition } from "./ParameterDefinition";
+import { PositionContext } from "./PositionContext";
 import * as Reference from "./Reference";
 import * as TLE from "./TLE";
 import * as Utilities from "./Utilities";
-
-import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
-import { Histogram } from "./Histogram";
-import { ParameterDefinition } from "./ParameterDefinition";
-import { PositionContext } from "./PositionContext";
-import { getIconForResourceType } from "./getIconForResourceType";
 
 export type ResourceTypeAndVersionInfo = {
     resourceType: string;
@@ -538,8 +538,8 @@ class ReferenceInVariableDefinitionTLEVisitor extends TLE.Visitor {
 }
 
 export class EnumerateResourceTypesJSONVisitor extends Json.Visitor {
-    private readonly _resourceTypes = new Map<string, ResourceTypeAndVersionInfo>();
-    private readonly _keySeparator = "@";
+    private readonly _resourceTypes: Map<string, ResourceTypeAndVersionInfo> = new Map<string, ResourceTypeAndVersionInfo>();
+    private readonly _keySeparator: string = "@";
 
     constructor() {
         super();
@@ -557,7 +557,7 @@ export class EnumerateResourceTypesJSONVisitor extends Json.Visitor {
                 for (let resource of resourcesArray.elements) {
                     const resourceObject = Json.asObjectValue(resource);
                     if (resourceObject) {
-                        const resourceType: Json.StringValue = Json.asStringValue(resourceObject.getPropertyValue("type"))
+                        const resourceType: Json.StringValue = Json.asStringValue(resourceObject.getPropertyValue("type"));
                         const apiVersion: Json.StringValue = Json.asStringValue(resourceObject.getPropertyValue("apiVersion"));
                         if (resourceType) {
                             const resourceTypeValue = resourceType.toString();
