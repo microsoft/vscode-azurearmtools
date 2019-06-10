@@ -880,10 +880,16 @@ export class Parser {
         const errors: language.Issue[] = [];
         let result: { stringValue: string; leftSquareBracketToken: Token; expression: Value; rightSquareBracketToken: Token; errors: language.Issue[] } = { stringValue, leftSquareBracketToken, expression, rightSquareBracketToken, errors };
 
+        let closingBracketLocation = stringValue.length - 1;
+        for (closingBracketLocation; closingBracketLocation > 0; closingBracketLocation--) {
+            if (stringValue[closingBracketLocation] === '"' || stringValue[closingBracketLocation] === '\'') { continue; }
+            break;
+        }
+
         if (
             stringValue[1] !== "[" // Does not start with '['
             || stringValue.substr(1, 2) === "[[" // Starts with '[['
-            || (stringValue[1] === '[' && stringValue[stringValue.length - 1] === ']') // Starts with '[' but doesn't end with ']'
+            || (stringValue[1] === '[' && stringValue[closingBracketLocation] !== ']' && stringValue.indexOf(']') >= 0) // Starts with '[' but doesn't end with ']'
         ) {
             // This is considered a plain string
             result.expression = new StringValue(Token.createQuotedString(0, stringValue));
