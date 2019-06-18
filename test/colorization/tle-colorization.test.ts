@@ -247,7 +247,7 @@ function getTestcaseResults(testCases: ITestcase[]): { text: string; results: st
 }
 
 suite('TLE colorization', function (this: ISuiteCallbackContext): void {
-    this.timeout(4000);
+    this.timeout(20000);
 
     let testFolder = path.join(__dirname, '..', '..', '..', 'test', 'colorization', 'inputs');
     let resultsFolder = path.join(__dirname, '..', '..', '..', 'test', 'colorization', 'results');

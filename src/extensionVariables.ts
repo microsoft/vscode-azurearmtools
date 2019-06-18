@@ -11,7 +11,7 @@ import { JsonOutlineProvider } from "./Treeview";
  * Namespace for common variables used throughout the extension. They must be initialized in the activate() method of extension.ts
  */
 export namespace ext {
-    export const extensionId: string = "msazurermtools.azurerm-vscode-tools";
+    export const extensionId: string = "ms-azuretools.azurerm-vscode-tools";
 
     export let context: vscode.ExtensionContext;
     export let jsonOutlineProvider: JsonOutlineProvider;
