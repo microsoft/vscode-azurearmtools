@@ -15,8 +15,9 @@ let perfStats = {
 };
 
 Object.defineProperty(exports, "__esModule", { value: true });
-
+debugger;
 const ignoreBundle = !/^(false|0)?$/i.test(process.env.AZCODE_ARM_IGNORE_BUNDLE || '');
+console.log(`ignoreBundle = ${ignoreBundle}`);
 const extensionPath = ignoreBundle ? "./out/src/AzureRMTools.js" : "./dist/extension.bundle";
 const extension = require(extensionPath);
 

@@ -5,31 +5,29 @@
 // Support for testing diagnostics in vscode
 
 // tslint:disable:no-unused-expression no-console no-string-based-set-timeout
-// tslint:disable:max-func-body-length radix prefer-template
+// tslint:disable:insecure-random max-func-body-length radix prefer-template
 
 import * as assert from "assert";
 import * as fs from 'fs';
 import * as path from 'path';
 import { commands, Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument, window, workspace } from "vscode";
-import { diagnosticsCompleteMessage, diagnosticsSource } from "../../extension.bundle";
-import { languageServerCompleteMessage } from "../../src/constants";
+import { diagnosticsCompleteMessage, diagnosticsSource, languageServerCompleteMessage } from "../../extension.bundle";
 import { getTempFilePath } from "./getTempFilePath";
 
 export const diagnosticsTimeout = 30000; // CONSIDER: Use this long timeout only for first test, or for suite setup
 export const testFolder = path.join(__dirname, '..', '..', '..', 'test');
 
-export const schemaSource = ''; // Built-in schema errors
-export const jsonSource = 'json'; // Built-in JSON errors
-export const languageServerSource = 'ARM Language Server'; // Language server errors
+export type Source = '' | 'json';
+export const schemaSource: Source = ''; // Built-in schema errors
+export const jsonSource: Source = 'json'; // Built-in JSON errors
+
 export const armToolsSource = diagnosticsSource;
 
 interface ITestDiagnosticsOptions {
-    ignoreSources?: string[];
-    includeRange?: boolean; // defaults to false
-}
-
-export function testDiagnosticsDeferred(filePath: string, options?: ITestDiagnosticsOptions, expected?: string[]): void {
-    test(filePath);
+    ignoreSources?: Source[]; // Error sources to ignore in the comparison - defaults to ignoring none
+    includeRange?: boolean;   // defaults to false - whether to include the error range in the results for comparison
+    search?: RegExp;          // Run a replacement using this regex and replacement on the file/contents before testing for errors
+    replace?: string;         // Run a replacement using this regex and replacement on the file/contents before testing for errors
 }
 
 export function testDiagnosticsFromFile(filePath: string | object, options: ITestDiagnosticsOptions, expected: string[]): void {
@@ -42,7 +40,7 @@ export function testDiagnosticsFromFile(filePath: string | object, options: ITes
         ignoreSources = ignoreSources.concat([jsonSource, schemaSource]);
 
         if (options.ignoreSources) {
-            actual = actual.filter(d => !options.ignoreSources.includes(d.source));
+            actual = actual.filter(d => !(<string[]>options.ignoreSources).includes(d.source));
         }
 
         compareDiagnostics(actual, expected, options);
@@ -59,14 +57,18 @@ export function testDiagnostics(testName: string, json: string | object, options
         ignoreSources = ignoreSources.concat([jsonSource, schemaSource]);
 
         if (options.ignoreSources) {
-            actual = actual.filter(d => !options.ignoreSources.includes(d.source));
+            actual = actual.filter(d => !(<string[]>options.ignoreSources).includes(d.source));
         }
 
         compareDiagnostics(actual, expected, options);
     });
 }
 
-export async function getDiagnosticsForDocument(document: TextDocument): Promise<Diagnostic[]> {
+async function getDiagnosticsForDocument(
+    document: TextDocument,
+    search?: RegExp,          // Run a replacement using this regex and replacement on the file/contents before testing for errors
+    replace?: string         // Run a replacement using this regex and replacement on the file/contents before testing for errors
+): Promise<Diagnostic[]> {
     let dispose: Disposable;
     let timer: NodeJS.Timer;
 
