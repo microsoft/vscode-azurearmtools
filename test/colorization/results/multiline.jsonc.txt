@@ -1,42 +1,42 @@
 TEST STRING: "[1]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-1                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-number}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
+1                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-number}}
+]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}
 
 TEST STRING: "[parameters('array')[0].prop1]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-parameters          source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parameters}}
-(                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parentheses-funccall}}
-'array'             source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parameter}}
-)                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parentheses-funccall}}
-[                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.array-access.tle.arm {{scope-arrayaccess-brackets}}
-0                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.array-access.tle.arm {{scope-number}}
-]                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.array-access.tle.arm {{scope-arrayaccess-brackets}}
-.                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.property-access.tle.arm {{scope-propaccess-dot}}
-prop1               source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.property-access.tle.arm {{scope-propaccess-propname}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
+parameters          source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parameters}}
+(                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parentheses-funccall}}
+'array'             source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parameter}}
+)                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parentheses-funccall}}
+[                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.array-access.tle.arm {{scope-arrayaccess-brackets}}
+0                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.array-access.tle.arm {{scope-number}}
+]                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.array-access.tle.arm {{scope-arrayaccess-brackets}}
+.                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.property-access.tle.arm {{scope-propaccess-dot}}
+prop1               source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.property-access.tle.arm {{scope-propaccess-propname}}
+]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}
 
 TEST STRING: "[my.func('string',123.432)]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-my                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-usernamespace}}
-.                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-usernamespaceandfunction-dot}}
-func                source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-userfunction}}
-(                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-'                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}} {{scope-string-start}}
-string              source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}}
-'                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}} {{scope-string-end}}
-,                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-funcargs-separator}}
-123.432             source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-number}}
-)                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
+my                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-usernamespace}}
+.                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-usernamespaceandfunction-dot}}
+func                source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-userfunction}}
+(                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
+'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}} {{scope-string-start}}
+string              source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}}
+'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}} {{scope-string-end}}
+,                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-funcargs-separator}}
+123.432             source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-number}}
+)                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
+]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}
 
 TEST STRING: "[parameters('array')[0]]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-parameters          source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parameters}}
-(                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parentheses-funccall}}
-'array'             source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parameter}}
-)                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parentheses-funccall}}
-[                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.array-access.tle.arm {{scope-arrayaccess-brackets}}
-0                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.array-access.tle.arm {{scope-number}}
-]                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.array-access.tle.arm {{scope-arrayaccess-brackets}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
+parameters          source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parameters}}
+(                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parentheses-funccall}}
+'array'             source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parameter}}
+)                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parentheses-funccall}}
+[                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.array-access.tle.arm {{scope-arrayaccess-brackets}}
+0                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.array-access.tle.arm {{scope-number}}
+]                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.array-access.tle.arm {{scope-arrayaccess-brackets}}
+]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}

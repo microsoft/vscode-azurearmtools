@@ -1,15 +1,15 @@
 TEST STRING: "['That''s all, folks!']"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-'                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-string-start}}
-That                source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}}
-''                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-escapedapostrophe}}
-s all, folks!       source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}}
-'                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-string-end}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
+'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-string-start}}
+That                source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}}
+''                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-escapedapostrophe}}
+s all, folks!       source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}}
+'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-string-end}}
+]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}
 
 TEST STRING: "['''''']"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-'                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-string-start}}
-''''                source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-escapedapostrophe}}
-'                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-string-end}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
+'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-string-start}}
+''''                source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-escapedapostrophe}}
+'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-string-end}}
+]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}

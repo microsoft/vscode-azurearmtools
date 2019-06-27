@@ -1,4 +1,6 @@
 TEST STRING: "['[hello]']"
-"                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.comments punctuation.definition.string.begin.json.comments
-['[hello]']         source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.comments
-"                   source.json.comments meta.structure.dictionary.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.comments punctuation.definition.string.end.json.comments
+"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
+'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-string-start}}
+[hello]             source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}}
+'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-string-end}}
+]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}

@@ -1,4 +1,4 @@
 TEST STRING: "[[2]]"
-"                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json string.quoted.double.json punctuation.definition.string.begin.json
-[[2]]               source.json meta.structure.dictionary.json meta.structure.dictionary.value.json string.quoted.double.json
-"                   source.json meta.structure.dictionary.json meta.structure.dictionary.value.json string.quoted.double.json punctuation.definition.string.end.json
+"                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm string.quoted.double.json.arm punctuation.definition.string.begin.json.arm
+[[2]]               source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm string.quoted.double.json.arm
+"                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm string.quoted.double.json.arm punctuation.definition.string.end.json.arm

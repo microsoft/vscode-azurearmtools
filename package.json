@@ -101,7 +101,11 @@
         "aliases": [
           "ARM Deployment Template"
         ],
-        "configuration": "grammars/jsonc.arm.language-configuration.json"
+        "configuration": "grammars/jsonc.arm.language-configuration.json",
+        "extensions": [
+          ".arm"
+        ],
+        "$extensions.TODO": "asdf - need at least one explicit extension for tests"
       }
     ]
   },
