@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { armToolsSource, testDiagnostics, testDiagnosticsFromFile } from "./support/diagnostics";
+import { testDiagnosticsFromFile } from "./support/diagnostics";
 
 suite("Schema validation", () => {
     test(
@@ -30,21 +30,24 @@ suite("Schema validation", () => {
     );
 
     suite("Capitalization", async () => {
-        // TODO: enable when fixed
-        await testDiagnostics(
+        /* TODO: enable when fixed
+        test(
             'Resource type miscapitalized (https://github.com/microsoft/vscode-azurearmtools/issues/238)',
-            {
-                resources: [
+            async () =>
+                await testDiagnostics(
                     {
-                        name: "example",
-                        type: "Microsoft.Network/publicIpAddresses",
-                        apiVersion: "2018-08-01",
-                        location: "[parameters('location')]",
-                        properties: {},
-                    }]
-            },
-            { ignoreSources: [armToolsSource] },
-            [
-            ]);
+                        resources: [
+                            {
+                                name: "example",
+                                type: "Microsoft.Network/publicIpAddresses",
+                                apiVersion: "2018-08-01",
+                                location: "westus",
+                                properties: {},
+                            }]
+                    },
+                    {},
+                    [
+                    ])
+        );*/
     });
 });

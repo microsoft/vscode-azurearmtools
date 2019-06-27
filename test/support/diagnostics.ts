@@ -29,14 +29,15 @@ interface ITestDiagnosticsOptions {
 }
 
 export async function testDiagnosticsFromFile(filePath: string | object, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
-    await testDiagnosticsCore(filePath,  options, expected); }
+    await testDiagnosticsCore(filePath, options, expected);
+}
 
 export async function testDiagnostics(json: string | object, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
-     await testDiagnosticsCore(json,  options, expected);
+    await testDiagnosticsCore(json, options, expected);
 }
 
 export async function testDiagnosticsCore(templateContentsOrFileName: string | { $schema?: string }, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
-    let actual: Diagnostic[] = await getDiagnosticsForTemplate(templateContentsOrFileName, false, options.search, options.replace);
+    let actual: Diagnostic[] = await getDiagnosticsForTemplate(templateContentsOrFileName, options.search, options.replace);
 
     if (options.ignoreSources) {
         actual = actual.filter(d => !(<string[]>options.ignoreSources).includes(d.source));
@@ -102,7 +103,7 @@ async function getDiagnosticsForDocument(
 }
 
 export async function getDiagnosticsForTemplate(
-    templateContentsOrFileName: string | { $schema?: string }, addSchema: boolean = true,
+    templateContentsOrFileName: string | { $schema?: string },
     search?: RegExp,          // Run a replacement using this regex and replacement on the file/contents before testing for errors
     replace?: string,         // Run a replacement using this regex and replacement on the file/contents before testing for errors
 ): Promise<Diagnostic[]> {
@@ -114,7 +115,6 @@ export async function getDiagnosticsForTemplate(
             // It's a filename
             let sourcePath = path.join(testFolder, templateContentsOrFileName);
             templateContents = fs.readFileSync(sourcePath).toString();
-            assert(!addSchema, "addSchema not supported for filenames");
         } else {
             // It's a string
             templateContents = templateContentsOrFileName;
@@ -125,10 +125,9 @@ export async function getDiagnosticsForTemplate(
         templateContents = JSON.stringify(templateObject, null, 2);
     }
 
-    if (addSchema) {
-        if (!templateContents.includes('$schema')) {
-            templateContents = templateContents.replace(/\s*{\s*/, '{\n"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",\n');
-        }
+    // Add schema if not already present (to make it easier to write tests)
+    if (!templateContents.includes('$schema')) {
+        templateContents = templateContents.replace(/\s*{\s*/, '{\n"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",\n');
     }
 
     if (search) {

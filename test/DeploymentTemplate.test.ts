@@ -197,13 +197,14 @@ suite("DeploymentTemplate", () => {
             });
         });
 
-        testDiagnostics(
-            "no errors: empty",
-            {
-            },
-            {},
-            [
-            ]);
+        test("no errors: empty", async () =>
+            await testDiagnostics(
+                {
+                    // Empty JSON
+                },
+                {},
+                [
+                ]));
 
         test("with empty object deployment template", () => {
             const dt = new DeploymentTemplate("{}", "id");
@@ -917,18 +918,19 @@ suite("ReferenceInVariableDefinitionJSONVisitor", () => {
             assert.deepStrictEqual(visitor.referenceSpans, []);
         });
 
-        testDiagnostics(
-            "error: reference in variable definition",
-            {
-                "variables": {
-                    "a": "[reference('test')]"
+        test("error: reference in variable definition", async () =>
+            await testDiagnostics(
+                {
+                    "variables": {
+                        "a": "[reference('test')]"
+                    },
                 },
-            },
-            {},
-            [
-                "Error: reference() cannot be invoked inside of a variable definition. (ARM Tools)",
-                "Warning: The variable 'a' is never used. (ARM Tools)"
-            ]);
+                {},
+                [
+                    "Error: reference() cannot be invoked inside of a variable definition. (ARM Tools)",
+                    "Warning: The variable 'a' is never used. (ARM Tools)"
+                ])
+        );
     });
 
     suite("visitStringValue(Json.StringValue)", () => {
