@@ -2,14 +2,14 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { testDiagnosticsFromFile } from "./support/diagnostics";
+import { armToolsSource, testDiagnostics, testDiagnosticsFromFile } from "./support/diagnostics";
 
 suite("Schema validation", () => {
     test(
         "networkInterfaces 2018-10-01",
         async () =>
-            testDiagnosticsFromFile(
-                'networkInterfaces.json',
+            await testDiagnosticsFromFile(
+                'templates/networkInterfaces.json',
                 {
                     search: /{{apiVersion}}/,
                     replace: "2018-10-01"
@@ -20,8 +20,8 @@ suite("Schema validation", () => {
     test(
         "https://github.com/Azure/azure-resource-manager-schemas/issues/627",
         async () =>
-            testDiagnosticsFromFile(
-                'networkInterfaces.json',
+            await testDiagnosticsFromFile(
+                'templates/networkInterfaces.json',
                 {
                     search: /{{apiVersion}}/,
                     replace: "2018-11-01"
@@ -29,22 +29,22 @@ suite("Schema validation", () => {
                 [])
     );
 
-    suite("Capitalization", () => {
-        /* TODO: enable when fixed
-        testDiagnostics(
+    suite("Capitalization", async () => {
+        // TODO: enable when fixed
+        await testDiagnostics(
             'Resource type miscapitalized (https://github.com/microsoft/vscode-azurearmtools/issues/238)',
             {
-                "resources": [
+                resources: [
                     {
-                        "name": "example",
-                        "type": "Microsoft.Network/publicIpAddresses",
-                        "apiVersion": "2018-08-01",
-                        "location": "[parameters('location')]",
-                        "properties": {},
+                        name: "example",
+                        type: "Microsoft.Network/publicIpAddresses",
+                        apiVersion: "2018-08-01",
+                        location: "[parameters('location')]",
+                        properties: {},
                     }]
             },
             { ignoreSources: [armToolsSource] },
             [
-            ]);*/
+            ]);
     });
 });

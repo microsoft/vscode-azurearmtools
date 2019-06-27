@@ -17,11 +17,9 @@ import { getTempFilePath } from "./getTempFilePath";
 export const diagnosticsTimeout = 30000; // CONSIDER: Use this long timeout only for first test, or for suite setup
 export const testFolder = path.join(__dirname, '..', '..', '..', 'test');
 
-export type Source = '' | 'json';
-export const schemaSource: Source = ''; // Built-in schema errors
-export const jsonSource: Source = 'json'; // Built-in JSON errors
-
-export const armToolsSource = diagnosticsSource;
+export type Source = 'ARM Language Server' | 'json';
+export const schemaSource: Source = 'ARM Language Server'; // Schema errors
+export const armToolsSource: Source = <Source>diagnosticsSource;
 
 interface ITestDiagnosticsOptions {
     ignoreSources?: Source[]; // Error sources to ignore in the comparison - defaults to ignoring none
@@ -30,38 +28,21 @@ interface ITestDiagnosticsOptions {
     replace?: string;         // Run a replacement using this regex and replacement on the file/contents before testing for errors
 }
 
-export function testDiagnosticsFromFile(filePath: string | object, options: ITestDiagnosticsOptions, expected: string[]): void {
-    test(`File ${filePath}`, async () => {
-        let actual: Diagnostic[] = await getDiagnosticsForTemplate(filePath, false);
+export async function testDiagnosticsFromFile(filePath: string | object, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
+    await testDiagnosticsCore(filePath,  options, expected); }
 
-        let ignoreSources = options.ignoreSources || [];
-
-        // For now, always ignore schema and JSON diagnostics because we don't know when they're fully published
-        ignoreSources = ignoreSources.concat([jsonSource, schemaSource]);
-
-        if (options.ignoreSources) {
-            actual = actual.filter(d => !(<string[]>options.ignoreSources).includes(d.source));
-        }
-
-        compareDiagnostics(actual, expected, options);
-    });
+export async function testDiagnostics(json: string | object, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
+     await testDiagnosticsCore(json,  options, expected);
 }
 
-export function testDiagnostics(testName: string, json: string | object, options: ITestDiagnosticsOptions, expected: string[]): void {
-    test(testName, async () => {
-        let actual: Diagnostic[] = await getDiagnosticsForTemplate(json);
+export async function testDiagnosticsCore(templateContentsOrFileName: string | { $schema?: string }, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
+    let actual: Diagnostic[] = await getDiagnosticsForTemplate(templateContentsOrFileName, false, options.search, options.replace);
 
-        let ignoreSources = options.ignoreSources || [];
+    if (options.ignoreSources) {
+        actual = actual.filter(d => !(<string[]>options.ignoreSources).includes(d.source));
+    }
 
-        // For now, always ignore schema and JSON diagnostics because we don't know when they're fully published
-        ignoreSources = ignoreSources.concat([jsonSource, schemaSource]);
-
-        if (options.ignoreSources) {
-            actual = actual.filter(d => !(<string[]>options.ignoreSources).includes(d.source));
-        }
-
-        compareDiagnostics(actual, expected, options);
-    });
+    compareDiagnostics(actual, expected, options);
 }
 
 async function getDiagnosticsForDocument(
@@ -120,15 +101,19 @@ async function getDiagnosticsForDocument(
     return diagnostics.filter(d => d.message !== diagnosticsCompleteMessage && d.message !== languageServerCompleteMessage);
 }
 
-export async function getDiagnosticsForTemplate(templateContentsOrFileName: string | { $schema?: string }, addSchema: boolean = true): Promise<Diagnostic[]> {
+export async function getDiagnosticsForTemplate(
+    templateContentsOrFileName: string | { $schema?: string }, addSchema: boolean = true,
+    search?: RegExp,          // Run a replacement using this regex and replacement on the file/contents before testing for errors
+    replace?: string,         // Run a replacement using this regex and replacement on the file/contents before testing for errors
+): Promise<Diagnostic[]> {
     let templateContents: string | undefined;
-    let filePath: string | undefined;
     let fileToDelete: string | undefined;
 
     if (typeof templateContentsOrFileName === 'string') {
         if (!!templateContentsOrFileName.match(/\.jsonc?$/)) {
             // It's a filename
-            filePath = path.join(testFolder, templateContentsOrFileName);
+            let sourcePath = path.join(testFolder, templateContentsOrFileName);
+            templateContents = fs.readFileSync(sourcePath).toString();
             assert(!addSchema, "addSchema not supported for filenames");
         } else {
             // It's a string
@@ -140,19 +125,23 @@ export async function getDiagnosticsForTemplate(templateContentsOrFileName: stri
         templateContents = JSON.stringify(templateObject, null, 2);
     }
 
-    if (!filePath) {
-        if (addSchema) {
-            if (!templateContents.includes('$schema')) {
-                templateContents = templateContents.replace(/\s*{\s*/, '{\n"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",\n');
-            }
+    if (addSchema) {
+        if (!templateContents.includes('$schema')) {
+            templateContents = templateContents.replace(/\s*{\s*/, '{\n"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",\n');
         }
-
-        filePath = getTempFilePath();
-        fs.writeFileSync(filePath, templateContents);
-        fileToDelete = filePath;
     }
 
-    let doc = await workspace.openTextDocument(filePath);
+    if (search) {
+        let newContents = templateContents.replace(search, replace);
+        templateContents = newContents;
+    }
+
+    // Write to temp file
+    let tempPath = getTempFilePath();
+    fs.writeFileSync(tempPath, templateContents);
+    fileToDelete = tempPath;
+
+    let doc = await workspace.openTextDocument(tempPath);
     await window.showTextDocument(doc);
 
     let diagnostics: Diagnostic[] = await getDiagnosticsForDocument(doc);
