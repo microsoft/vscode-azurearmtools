@@ -27,7 +27,7 @@ import * as Utilities from "./src/Utilities";
 export * from './src/AzureRMAssets';
 export { activateInternal, deactivateInternal } from './src/AzureRMTools'; // Export activate/deactivate for main.js
 export * from "./src/Completion";
-export { armDeploymentLanguageId, diagnosticsCompleteMessage, diagnosticsSource, languageServerCompleteMessage } from "./src/constants";
+export { armDeploymentLanguageId, configKeys, diagnosticsCompleteMessage, diagnosticsSource, languageServerCompleteMessage } from "./src/constants";
 export { DeploymentTemplate, ReferenceInVariableDefinitionJSONVisitor } from "./src/DeploymentTemplate";
 export { Duration } from './src/Duration';
 export { ext } from './src/extensionVariables';
@@ -47,3 +47,4 @@ export { Hover };
 export { basic };
 export { Utilities };
 export { TLE };
+

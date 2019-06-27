@@ -197,15 +197,6 @@ suite("DeploymentTemplate", () => {
             });
         });
 
-        test("no errors: empty", async () =>
-            await testDiagnostics(
-                {
-                    // Empty JSON
-                },
-                {},
-                [
-                ]));
-
         test("with empty object deployment template", () => {
             const dt = new DeploymentTemplate("{}", "id");
             return dt.errors.then((errors: Language.Issue[]) => {

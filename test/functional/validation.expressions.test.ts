@@ -1,10 +1,8 @@
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-// Copyright (c) Microsoft Corporation.  All rights reserved.
-// ----------------------------------------------------------------------------
-import { schemaSource, testDiagnosticsFromFile } from "./support/diagnostics";
+
+import { schemaSource, testDiagnosticsFromFile } from "../support/diagnostics";
 
 suite("Expression validation", () => {
     test(
