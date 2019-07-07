@@ -6,6 +6,7 @@
 
 // tslint:disable:no-unused-expression no-console no-string-based-set-timeout
 // tslint:disable:insecure-random max-func-body-length radix prefer-template
+// tslint:disable:object-literal-key-quotes no-http-string
 
 import * as assert from "assert";
 import * as fs from 'fs';
@@ -21,6 +22,55 @@ export type Source = 'ARM Language Server' | 'json';
 export const schemaSource: Source = 'ARM Language Server'; // Schema errors
 export const armToolsSource: Source = <Source>diagnosticsSource;
 
+export interface IDeploymentTemplate {
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#" | "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#";
+    contentVersion: string;
+    parameters?: {
+        [key: string]: unknown;
+        // tslint:disable-next-line:no-reserved-keywords
+        type: string;
+        metadata?: {
+            [key: string]: string;
+            description?: string;
+        };
+        maxLength?: number;
+        defaultValue?: unknown;
+        allowedValues: unknown[];
+    };
+    variables?: {
+        [key: string]: unknown;
+    };
+    resources: IDeploymentTemplateResource[];
+    outputs?: {
+        [key: string]: {
+            // tslint:disable-next-line:no-reserved-keywords
+            type: string;
+            value: unknown;
+        };
+    };
+}
+
+export const defaultArmSchema = "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#";
+
+export const minimalDeploymentTemplate: IDeploymentTemplate = {
+    "$schema": defaultArmSchema,
+    "contentVersion": "1.0.0.0",
+    "resources": [
+    ]
+};
+
+export interface IDeploymentTemplateResource {
+    // tslint:disable-next-line:no-reserved-keywords
+    type: string;
+    name: string;
+    apiVersion: string;
+    location: string;
+    dependsOn?: string[];
+    tags?: { [key: string]: string };
+    properties?: { [key: string]: unknown };
+    resources?: IDeploymentTemplateResource[];
+}
+
 // tslint:disable-next-line:no-empty-interface
 interface ITestDiagnosticsOptions extends IGetDiagnosticsOptions {
 }
@@ -34,15 +84,15 @@ interface IGetDiagnosticsOptions {
     doNotAddSchema?: boolean;  // Don't add schema (testDiagnostics only) automatically
 }
 
-export async function testDiagnosticsFromFile(filePath: string | object, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
+export async function testDiagnosticsFromFile(filePath: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
     await testDiagnosticsCore(filePath, options, expected);
 }
 
-export async function testDiagnostics(json: string | object, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
+export async function testDiagnostics(json: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
     await testDiagnosticsCore(json, options, expected);
 }
 
-async function testDiagnosticsCore(templateContentsOrFileName: string | { $schema?: string }, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
+async function testDiagnosticsCore(templateContentsOrFileName: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
     let actual: Diagnostic[] = await getDiagnosticsForTemplate(templateContentsOrFileName, options);
     compareDiagnostics(actual, expected, options);
 }
@@ -54,6 +104,17 @@ async function getDiagnosticsForDocument(
     let dispose: Disposable;
     let timer: NodeJS.Timer;
 
+    let filterSources = [ // TODO
+        armToolsSource,
+        schemaSource
+    ];
+    if (options.includeSources) {
+        filterSources = filterSources.filter(s => (<string[]>options.includeSources).includes(s));
+    }
+    if (options.ignoreSources) {
+        filterSources = filterSources.filter(s => !(<string[]>options.ignoreSources).includes(s));
+    }
+
     // tslint:disable-next-line:typedef
     let diagnosticsPromise = new Promise<Diagnostic[]>((resolve, reject) => {
         let currentDiagnostics: Diagnostic[] | undefined;
@@ -61,8 +122,19 @@ async function getDiagnosticsForDocument(
 
         function pollDiagnostics(): void {
             currentDiagnostics = languages.getDiagnostics(document.uri);
-            if (currentDiagnostics.find(d => d.message === diagnosticsCompleteMessage)
-                && currentDiagnostics.find(d => d.message === languageServerCompleteMessage)
+            let armToolsDiagnosticsComplete = !!currentDiagnostics.find(d => d.message === diagnosticsCompleteMessage);
+            let langaugeServerDiagnosticsComplete =  !!currentDiagnostics.find(d => d.message === languageServerCompleteMessage);
+            let needsArmToolsComplete = filterSources.includes(armToolsSource) ;
+            let needsServerComplete = !!filterSources.find(s => s !== armToolsSource) ;
+
+            // Filter diagnostics according to options
+            currentDiagnostics = currentDiagnostics.filter(d => (<string[]>filterSources).includes(d.source));
+
+            // Remove completion messages
+            currentDiagnostics = currentDiagnostics.filter(d => d.message !== diagnosticsCompleteMessage && d.message !== languageServerCompleteMessage);
+
+            if ((!needsArmToolsComplete || armToolsDiagnosticsComplete) &&
+                (!needsServerComplete || langaugeServerDiagnosticsComplete)
             ) {
                 complete = true;
                 resolve(currentDiagnostics);
@@ -99,21 +171,11 @@ async function getDiagnosticsForDocument(
         clearTimeout(timer);
     }
 
-    if (options.includeSources) {
-        diagnostics = diagnostics.filter(d => (<string[]>options.includeSources).includes(d.source));
-    }
-
-    if (options.ignoreSources) {
-        diagnostics = diagnostics.filter(d => !(<string[]>options.ignoreSources).includes(d.source));
-    }
-
-    diagnostics = diagnostics.filter(d => d.message !== diagnosticsCompleteMessage && d.message !== languageServerCompleteMessage);
-
     return diagnostics;
 }
 
 export async function getDiagnosticsForTemplate(
-    templateContentsOrFileName: string | { $schema?: string },
+    templateContentsOrFileName: string | Partial<IDeploymentTemplate>,
     options?: IGetDiagnosticsOptions
 ): Promise<Diagnostic[]> {
     let templateContents: string | undefined;
@@ -131,7 +193,7 @@ export async function getDiagnosticsForTemplate(
         }
     } else {
         // It's an object
-        let templateObject: { $schema?: string } = templateContentsOrFileName;
+        let templateObject: Partial<IDeploymentTemplate> = templateContentsOrFileName;
         templateContents = JSON.stringify(templateObject, null, 2);
     }
 
