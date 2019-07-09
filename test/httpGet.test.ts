@@ -15,7 +15,7 @@ suite("HttpClient", () => {
             return httpGet("http://www.bing.com")
                 .then((content: string) => {
                     assert(content, "Content was undefined, null, or empty");
-                    assert(content.includes("Word Online"), "Content did not include the phrase 'Word Online'");
+                    assert(content.includes("Bing"), "Content did not include the phrase 'Bing'");
                 });
         });
 
@@ -23,7 +23,7 @@ suite("HttpClient", () => {
             return httpGet("www.bing.com")
                 .then((content: string) => {
                     assert(content, "Content was undefined, null, or empty");
-                    assert(content.includes("Word Online"), "Content did not include the phrase 'Word Online'");
+                    assert(content.includes("Bing"), "Content did not include the phrase 'Bing'");
                 });
         });
 
@@ -31,7 +31,7 @@ suite("HttpClient", () => {
             return httpGet("https://storageexplorer.com")
                 .then((content: string) => {
                     assert(content, "No content");
-                    assert(content.includes("Azure Storage Explorer"), "Doesn't include");
+                    assert(content.includes("Azure Storage Explorer"), "Doesn't include 'Azure Storage Explorer'");
                 });
         });
 
