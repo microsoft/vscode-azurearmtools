@@ -78,7 +78,7 @@ interface ITestDiagnosticsOptions extends IGetDiagnosticsOptions {
 interface IGetDiagnosticsOptions {
     includeSources?: Source[]; // Error sources to include in the comparison - defaults to all
     ignoreSources?: Source[];  // Error sources to ignore in the comparison - defaults to ignoring none
-    includeRange?: boolean;    // defaults to false - whether to include the error range in the results for comparison
+    includeRange?: boolean;    // defaults to false - whether to include the error range in the results for comparison (if true, ignored when expected messages don't have ranges)
     search?: RegExp;           // Run a replacement using this regex and replacement on the file/contents before testing for errors
     replace?: string;          // Run a replacement using this regex and replacement on the file/contents before testing for errors
     doNotAddSchema?: boolean;  // Don't add schema (testDiagnostics only) automatically
@@ -123,9 +123,9 @@ async function getDiagnosticsForDocument(
         function pollDiagnostics(): void {
             currentDiagnostics = languages.getDiagnostics(document.uri);
             let armToolsDiagnosticsComplete = !!currentDiagnostics.find(d => d.message === diagnosticsCompleteMessage);
-            let langaugeServerDiagnosticsComplete =  !!currentDiagnostics.find(d => d.message === languageServerCompleteMessage);
-            let needsArmToolsComplete = filterSources.includes(armToolsSource) ;
-            let needsServerComplete = !!filterSources.find(s => s !== armToolsSource) ;
+            let langaugeServerDiagnosticsComplete = !!currentDiagnostics.find(d => d.message === languageServerCompleteMessage);
+            let needsArmToolsComplete = filterSources.includes(armToolsSource);
+            let needsServerComplete = !!filterSources.find(s => s !== armToolsSource);
 
             // Filter diagnostics according to options
             currentDiagnostics = currentDiagnostics.filter(d => (<string[]>filterSources).includes(d.source));
@@ -212,22 +212,28 @@ export async function getDiagnosticsForTemplate(
     fs.writeFileSync(tempPath, templateContents);
     fileToDelete = tempPath;
 
+    // NOTE: Even though we request the editor to be closed,
+    // there's no way to request the document actually be closed,
+    //   and when you open it via an API, it doesn't close for a while,
+    //   so the diagnostics won't go away
+    // See https://github.com/Microsoft/vscode/issues/43056
+
     let doc = await workspace.openTextDocument(tempPath);
     await window.showTextDocument(doc);
 
     let diagnostics: Diagnostic[] = await getDiagnosticsForDocument(doc, options);
     assert(!!diagnostics);
 
+    await commands.executeCommand('workbench.action.closeAllEditors');
+
     if (fileToDelete) {
         fs.unlinkSync(fileToDelete);
     }
 
-    commands.executeCommand('workbench.action.closeActiveEditor');
-
     return diagnostics.filter(d => d.message !== diagnosticsCompleteMessage);
 }
 
-function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOptions): string {
+function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOptions, includeRange: boolean): string {
     assert(diagnostic.code === '', `Expecting empty code for all diagnostics, instead found Code="${String(diagnostic.code)}" for "${diagnostic.message}"`);
 
     let severity: string;
@@ -241,7 +247,8 @@ function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOpti
 
     let s = `${severity}: ${diagnostic.message} (${diagnostic.source})`;
 
-    if (options.includeRange === true) {
+    // Do the expected messages include ranges?
+    if (includeRange) {
         if (!diagnostic.range) {
             s += " []";
         } else {
@@ -254,6 +261,10 @@ function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOpti
 }
 
 function compareDiagnostics(actual: Diagnostic[], expected: string[], options: ITestDiagnosticsOptions): void {
-    let actualAsStrings = actual.map(d => diagnosticToString(d, options));
+    // Do the expected messages include ranges?
+    let expectedHasRanges = expected.length == 0 || !!expected[0].match(/[0-9]+,[0-9]+-[0-9]+,[0-9]+/);
+    let includeRanges = options.includeRange && expectedHasRanges;
+
+    let actualAsStrings = actual.map(d => diagnosticToString(d, options, includeRanges));
     assert.deepStrictEqual(actualAsStrings, expected);
 }

@@ -9,7 +9,7 @@ import * as assert from "assert";
 import { randomBytes } from "crypto";
 import { ISuiteCallbackContext } from "mocha";
 import { DeploymentTemplate, Histogram, IncorrectArgumentsCountIssue, Json, Language, ParameterDefinition, Reference, ReferenceInVariableDefinitionJSONVisitor, UnrecognizedFunctionIssue } from "../extension.bundle";
-import { testDiagnostics } from "./support/diagnostics";
+import { armToolsSource, testDiagnostics } from "./support/diagnostics";
 
 suite("DeploymentTemplate", () => {
     suite("constructor(string)", () => {
@@ -916,7 +916,9 @@ suite("ReferenceInVariableDefinitionJSONVisitor", () => {
                         "a": "[reference('test')]"
                     },
                 },
-                {},
+                {
+                    includeSources: [armToolsSource]
+                },
                 [
                     "Error: reference() cannot be invoked inside of a variable definition. (ARM Tools)",
                     "Warning: The variable 'a' is never used. (ARM Tools)"
