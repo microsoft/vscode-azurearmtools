@@ -97,6 +97,7 @@ suite("Expressions functional tests", () => {
         ]);
 
         testExpression("string after function", "[deployment()'world']", [
+            "Error: Expected the end of the string. (ARM Tools) [10,30-10,37]"
         ]);
 
 
@@ -105,7 +106,10 @@ suite("Expressions functional tests", () => {
 
         testExpression("https://github.com/Microsoft/vscode-azurearmtools/issues/34",
             "[concat(reference(parameters('publicIpName')).dnsSettings.fqdn, ';  sudo docker volume rm ''dockercompose_cert-volume''; sudo docker-compose up')]",
-            []);
+            [
+                // This should be the only error we get.  In particular, no errors with the escaped apostrophes
+                "Error: Undefined parameter reference: 'publicIpName' (ARM Tools) [10,46-10,60]"
+            ]);
     });
 
     suite("Plain strings vs expressions", () => {
@@ -167,7 +171,7 @@ suite("Expressions functional tests", () => {
             testLiteralExpression("'That''s it!'", []);
             testLiteralExpression("''''", []);
             testLiteralExpression("  ' '' '  ", []);
-            testLiteralExpression("['''That is all, folks!''']", []);
+            testLiteralExpression("'''That''s all, \"folks\"!'''", []);
 
         });
 
@@ -176,27 +180,6 @@ suite("Expressions functional tests", () => {
             "Error: Expected a comma (','). (ARM Tools)",
             "Error: Expected a right square bracket (']'). (ARM Tools)",
         ]);
-
-        suite("numeric literals", async () => {
-            testLiteralExpression("123", []);
-            testLiteralExpression("0", []);
-            testLiteralExpression("-0", []);
-            testLiteralExpression("+0", []);
-            testLiteralExpression("1", []);
-            testLiteralExpression("-1", []);
-            testLiteralExpression("-1234", []);
-            testLiteralExpression("1234", []);
-            testLiteralExpression("+1234", []);
-            testLiteralExpression("7.8", []);
-            testLiteralExpression("-3.14159265", []);
-
-            testLiteralExpression(".14159265", [
-
-            ]);
-            testLiteralExpression("-.14159265", [
-
-            ]);
-        });
 
         suite("Escaped apostrophes", () => {
             testLiteralExpression("''", []);
@@ -210,17 +193,48 @@ suite("Expressions functional tests", () => {
         ]);
     });
 
-    suite("Functions", () => {
+    suite("numeric literals", async () => {
+        testLiteralExpression("123", []);
+        testLiteralExpression("0", []);
+        testLiteralExpression("-0", []);
+        testLiteralExpression("1", []);
+        testLiteralExpression("-1", []);
+        testLiteralExpression("-1234", []);
+        testLiteralExpression("1234", []);
+        testLiteralExpression("7.8", []);
+        testLiteralExpression("-3.14159265", []);
+
+        /* CONSIDER: Should this be accepted?
+        testLiteralExpression("+1234", []);
+        testLiteralExpression("+0", []);
+        */
+
+        /* CONSIDER: I don't think this is valid, but it is accepted (colorization rejects it)
+        testLiteralExpression("-.14159265", [
+        ]);
+        */
+    });
+
+    suite("Function calls", () => {
         suite("Missing left paren", () => {
             testExpression("", "[concat'abc')]", [
+                "Error: Expected the end of the string. (ARM Tools) [10,24-10,29]",
+                "Error: Expected the end of the string. (ARM Tools) [10,29-10,30]",
+                "Error: Missing function argument list. (ARM Tools) [10,18-10,24]"
             ]);
 
             testExpression("", "[concat 1,2)]", [
+                'Error: Expected the end of the string. (ARM Tools) [10,25-10,26]',
+                'Error: Expected the end of the string. (ARM Tools) [10,26-10,27]',
+                'Error: Expected the end of the string. (ARM Tools) [10,27-10,28]',
+                'Error: Expected the end of the string. (ARM Tools) [10,28-10,29]',
+                'Error: Missing function argument list. (ARM Tools) [10,18-10,24]'
             ]);
         });
 
         suite("Missing right paren", () => {
             testExpression("", "[concat('abc']", [
+                "Error: Expected a right parenthesis (')'). (ARM Tools) [10,30-10,31]"
             ]);
         });
 
@@ -236,24 +250,28 @@ suite("Expressions functional tests", () => {
 
         // Missing comma
         testExpression("", "[endsWith('abc' 'bc')]", [
-
+            "Error: Expected a comma (','). (ARM Tools) [10,33-10,37]",
+            "Error: The function 'endsWith' takes 2 arguments. (ARM Tools) [10,18-10,38]"
         ]);
 
         // Expected 2 args, has zero
         testExpression("", "[endsWith()]", [
+            "Error: The function 'endsWith' takes 2 arguments. (ARM Tools) [10,18-10,28]"
         ]);
 
         // Expected 2 args, has one
         testExpression("", "[endsWith('a')]", [
+            "Error: The function 'endsWith' takes 2 arguments. (ARM Tools) [10,18-10,31]"
         ]);
 
         // Expected 2 args, has three
         testExpression("", "[endsWith('a', 'b', 'c')]", [
+            "Error: The function 'endsWith' takes 2 arguments. (ARM Tools) [10,18-10,41]"
         ]);
 
         // Unrecognized function name with arg
         testExpression("", "[parameter('arrayParam')]", [
-
+            "Error: Unrecognized function name 'parameter'. (ARM Tools) [10,18-10,27]"
         ]);
     });
 
@@ -284,10 +302,14 @@ suite("Expressions functional tests", () => {
             ]); */
 
             // No errors should be reported for a property access to an undefined variable, because the top priority error for the developer to address is the undefined variable reference.
-            testExpression("with child property access from undefined variable reference", "[variables('undefVar').apples]", []);
+            testExpression("with child property access from undefined variable reference", "[variables('undefVar').apples]", [
+                "Error: Undefined variable reference: 'undefVar' (ARM Tools) [10,28-10,38]"
+            ]);
 
             // No errors should be reported for a property access to an undefined variable, because the top priority error for the developer to address is the undefined variable reference.
-            testExpression("with grandchild property access from undefined variable reference", "[variables('undefVar').apples.bananas]", []);
+            testExpression("with grandchild property access from undefined variable reference", "[variables('undefVar').apples.bananas]", [
+                "Error: Undefined variable reference: 'undefVar' (ARM Tools) [10,28-10,38]"
+            ]);
 
             testExpression("with child property access from variable reference to non-object variable", "[variables('intVar').apples]", [
                 `Error: Property "apples" is not a defined property of "variables('intVar')". (ARM Tools)`]);

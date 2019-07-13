@@ -168,6 +168,9 @@ async function getDiagnosticsForDocument(
     assert(!!diagnostics);
 
     // ************* BREAKPOINT HERE TO INSPECT THE TEST FILE WITH DIAGNOSTICS IN THE VSCODE EDITOR
+    //
+    // But note: If you edit the template in the experimental instance, it won't update errors because
+    //   the debugger is paused.
 
     if (dispose) {
         dispose.dispose();
