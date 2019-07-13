@@ -22,30 +22,34 @@ export type Source = 'ARM Language Server' | 'json';
 export const schemaSource: Source = 'ARM Language Server'; // Schema errors
 export const armToolsSource: Source = <Source>diagnosticsSource;
 
+export type IDeploymentExpressionType = "string" | "securestring" | "int" | "bool" | "object" | "secureObject" | "array";
+export interface IDeploymentParameterDefinition {
+    // tslint:disable-next-line:no-reserved-keywords
+    type: IDeploymentExpressionType;
+    metadata?: {
+        [key: string]: string;
+        description?: string;
+    };
+    maxLength?: number;
+    defaultValue?: number | unknown[] | string | {};
+    allowedValues?: (number | unknown[] | string | {})[];
+};
+
 export interface IDeploymentTemplate {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#" | "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#";
     contentVersion: string;
     parameters?: {
-        [key: string]: unknown;
-        // tslint:disable-next-line:no-reserved-keywords
-        type: string;
-        metadata?: {
-            [key: string]: string;
-            description?: string;
-        };
-        maxLength?: number;
-        defaultValue?: unknown;
-        allowedValues: unknown[];
+        [key: string]: IDeploymentParameterDefinition
     };
     variables?: {
-        [key: string]: unknown;
+        [key: string]: number | unknown[] | string | {};
     };
     resources: IDeploymentTemplateResource[];
     outputs?: {
         [key: string]: {
             // tslint:disable-next-line:no-reserved-keywords
-            type: string;
-            value: unknown;
+            type: IDeploymentExpressionType;
+            value: number | unknown[] | string | {};
         };
     };
 }
@@ -162,6 +166,8 @@ async function getDiagnosticsForDocument(
 
     let diagnostics = await diagnosticsPromise;
     assert(!!diagnostics);
+
+    // ************* BREAKPOINT HERE TO INSPECT THE TEST FILE WITH DIAGNOSTICS IN THE VSCODE EDITOR
 
     if (dispose) {
         dispose.dispose();
