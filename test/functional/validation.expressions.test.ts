@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable:no-suspicious-comment
+
 import { schemaSource, testDiagnosticsFromFile } from "../support/diagnostics";
 
 suite("Expression validation", () => {

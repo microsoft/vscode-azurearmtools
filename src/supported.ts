@@ -45,6 +45,7 @@ export function isDeploymentTemplate(textDocument: TextDocument): boolean {
     }
 
     if (isJsonOrJsoncLangId(textDocument)) {
+        // tslint:disable-next-line: no-suspicious-comment
         // TODO: restrict to characters as well?
         let startOfDocument = textDocument.getText(new Range(new Position(0, 0), new Position(maxLinesToDetectSchemaIn - 1, 0)));
         return startOfDocument && !!startOfDocument.match(armSchemaRegex);

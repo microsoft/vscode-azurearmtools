@@ -7,6 +7,7 @@
 import { minimalDeploymentTemplate, testDiagnostics } from "../support/diagnostics";
 
 suite("Backend validation", () => {
+    // tslint:disable-next-line: no-suspicious-comment
     // TODO: ignore non-backend errors
     test("missing required property 'resources'", async () =>
         await testDiagnostics(

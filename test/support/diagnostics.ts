@@ -33,13 +33,13 @@ export interface IDeploymentParameterDefinition {
     maxLength?: number;
     defaultValue?: number | unknown[] | string | {};
     allowedValues?: (number | unknown[] | string | {})[];
-};
+}
 
 export interface IDeploymentTemplate {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#" | "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#";
     contentVersion: string;
     parameters?: {
-        [key: string]: IDeploymentParameterDefinition
+        [key: string]: IDeploymentParameterDefinition;
     };
     variables?: {
         [key: string]: number | unknown[] | string | {};
@@ -73,6 +73,7 @@ export interface IDeploymentTemplateResource {
     tags?: { [key: string]: string };
     properties?: { [key: string]: unknown };
     resources?: IDeploymentTemplateResource[];
+    [key: string]: unknown;
 }
 
 // tslint:disable-next-line:no-empty-interface
@@ -108,6 +109,7 @@ async function getDiagnosticsForDocument(
     let dispose: Disposable;
     let timer: NodeJS.Timer;
 
+    // tslint:disable-next-line:no-suspicious-comment
     let filterSources = [ // TODO
         armToolsSource,
         schemaSource
@@ -271,7 +273,7 @@ function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOpti
 
 function compareDiagnostics(actual: Diagnostic[], expected: string[], options: ITestDiagnosticsOptions): void {
     // Do the expected messages include ranges?
-    let expectedHasRanges = expected.length == 0 || !!expected[0].match(/[0-9]+,[0-9]+-[0-9]+,[0-9]+/);
+    let expectedHasRanges = expected.length === 0 || !!expected[0].match(/[0-9]+,[0-9]+-[0-9]+,[0-9]+/);
     let includeRanges = options.includeRange && expectedHasRanges;
 
     let actualAsStrings = actual.map(d => diagnosticToString(d, options, includeRanges));

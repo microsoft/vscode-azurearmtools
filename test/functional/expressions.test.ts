@@ -2,14 +2,14 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length no-http-string
+// tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length no-http-string no-suspicious-comment
 
 import { armToolsSource, IDeploymentParameterDefinition, IDeploymentTemplate, testDiagnostics } from "../support/diagnostics";
 
 // Note: a lot of these come from TLE.test.ts, but this version goes through the vscode diagnostics and thus tests the language server
 suite("Expressions functional tests", () => {
     // testName defaults to expression if left blank
-    async function testExpression(testName: string, expression: string, expected: string[]): Promise<void> {
+    function testExpression(testName: string, expression: string, expected: string[]): void {
         test(testName || expression, async () => {
             let template: IDeploymentTemplate = {
                 $schema: "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
@@ -30,15 +30,15 @@ suite("Expressions functional tests", () => {
                 }
             };
 
-            function addVarIfUsed(varName: string, value: unknown) {
+            function addVarIfUsed(varName: string, value: number | unknown[] | string | {}): void {
                 if (expression.match(new RegExp(`variables\\s*\\(\\s*'${varName}'\\s*\\)`, "i"))) {
                     template.variables[varName] = value;
                 }
             }
 
-            function addParamIfUsed(paramName: string, definition: IDeploymentParameterDefinition) {
+            function addParamIfUsed(paramName: string, definition: IDeploymentParameterDefinition): void {
                 if (expression.match(new RegExp(`parameters\\s*\\(\\s*'${paramName}'\\s*\\)`, "i"))) {
-                    template.parameters[paramName] = definition
+                    template.parameters[paramName] = definition;
                 }
             }
 
@@ -76,13 +76,13 @@ suite("Expressions functional tests", () => {
         });
     }
 
-    async function testLiteralExpression(literalExpression: string, expected: string[]): Promise<void> {
+    function testLiteralExpression(literalExpression: string, expected: string[]): void {
         // Wrap the literal in 'concat' because the extension doesn't currently allow just literals
         // (https://github.com/microsoft/vscode-azurearmtools/issues/216)
         testExpression(`testLiteralExpression("${literalExpression}")`, `[concat(${literalExpression})]`, expected);
     }
 
-    suite("general issues", async () => {
+    suite("general issues", () => {
         testExpression("Empty expression", "[]", [
             "Error: Expected a function or property expression. (ARM Tools)"
         ]);
@@ -100,11 +100,11 @@ suite("Expressions functional tests", () => {
             "Error: Expected the end of the string. (ARM Tools) [10,30-10,37]"
         ]);
 
-
         testExpression("with several invalid literals", ".[]82348923asdglih   asl .,'", [
         ]);
 
-        testExpression("https://github.com/Microsoft/vscode-azurearmtools/issues/34",
+        testExpression(
+            "https://github.com/Microsoft/vscode-azurearmtools/issues/34",
             "[concat(reference(parameters('publicIpName')).dnsSettings.fqdn, ';  sudo docker volume rm ''dockercompose_cert-volume''; sudo docker-compose up')]",
             [
                 // This should be the only error we get.  In particular, no errors with the escaped apostrophes
@@ -133,7 +133,7 @@ suite("Expressions functional tests", () => {
         suite("2: Starts with [[ -> replace first [[ with [, consider a string", () => {
             // "[[one]" // -> string: "[one]"
             testExpression("", "[[one]", []);
-            "[[one]two]" // -> string: "[one]two]"
+            // "[[one]two]" // -> string: "[one]two]"
             testExpression("", "[[one]two]", []);
             // "[[[one]two]" // -> string: "[[one]two]"
             testExpression("", "[[[one]two]", []);
@@ -158,11 +158,10 @@ suite("Expressions functional tests", () => {
             */
         });
 
-
         testExpression("", "]", []);
     });
 
-    suite("string literals", async () => {
+    suite("string literals", () => {
         testLiteralExpression("''", []);
         testLiteralExpression("'hello'", []);
         testLiteralExpression(" '123' ", []);
@@ -193,7 +192,7 @@ suite("Expressions functional tests", () => {
         ]);
     });
 
-    suite("numeric literals", async () => {
+    suite("numeric literals", () => {
         testLiteralExpression("123", []);
         testLiteralExpression("0", []);
         testLiteralExpression("-0", []);
