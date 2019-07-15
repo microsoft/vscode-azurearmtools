@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import * as assert from "assert";
+import { assert } from "./fixed_assert";
 
 import * as language from "./Language";
 

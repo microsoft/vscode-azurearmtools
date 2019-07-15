@@ -8,7 +8,7 @@
 // tslint:disable:switch-default // Grandfathered in
 // tslint:disable:max-classes-per-file // Grandfathered in
 
-import * as assert from "assert";
+import { assert } from "./fixed_assert";
 
 import * as assets from "./AzureRMAssets";
 import * as Json from "./JSON";

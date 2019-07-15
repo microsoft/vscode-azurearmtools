@@ -7,7 +7,7 @@
 // tslint:disable:function-name // Grandfathered in
 // tslint:disable:cyclomatic-complexity // Grandfathered in
 
-import * as assert from "assert";
+import { assert } from "./fixed_assert";
 
 import * as language from "./Language";
 import * as basic from "./Tokenizer";
