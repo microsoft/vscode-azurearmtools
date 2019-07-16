@@ -1,4 +1,0 @@
-TEST STRING: "[[2]]"
-"                   punctuation.definition.string.begin.json.arm
-[[2]]               string.quoted.double.json.arm
-"                   punctuation.definition.string.end.json.arm

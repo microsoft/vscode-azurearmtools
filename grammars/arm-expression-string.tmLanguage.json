@@ -2,14 +2,21 @@
 	"name": "ARM Template",
 	"scopeName": "source.tle.arm",
 	"uuid": "3ADA43CD-2258-4907-8477-169A7FDDF216",
-	"$preprocessComment1": "Items in the preprocess section get replaced during gulp build-grammars",
-	"$preprocessComment2": "The 'builtin' key/value are special - they're created during build from our function metadata",
-	"$preprocessComment3": "Currently you need to run 'build grammars' after changing this file",
 	"preprocess": {
+		"$preprocessComment1": "Items in the preprocess section get replaced during gulp build-grammars",
+		"$preprocessComment2": "Items beginning with $ are ignored",
+		"$preprocessComment3": "---",
+		"$preprocessComment4": "A preprocess item with the key 'builtin-functions' is automatically created during build from our function metadata",
+		"$preprocessComment6": "---",
+		"$preprocessComment7": "IMPORTANT!  You need to run 'build grammars' after changing this file, F5 currently doesn't handle that",
+		"$1": "--------------- Regular expressions ---------------",
+		"escaped-json-character": "(?:\\\\(?:[\"\\\\/bfnrt]|u[0-9a-fA-F]{4}))",
+		"escaped-apostrophe": "''",
 		"idchar": "[_$[:alnum:]]",
 		"id": "(?:[_$[:alpha:]]{{idchar}}*)",
 		"ns-userfunc": "(?:({{id}})\\s*(\\.)\\s*({{id}}))",
 		"logical": "(?:if|and|or|not)",
+		"$2": "--------------- Scope Names ---------------",
 		"scope-expression-start": "support.function.expression.begin.tle.arm",
 		"scope-expression-end": "support.function.expression.end.tle.arm",
 		"scope-builtin": "support.function.builtin.tle.arm",
@@ -42,8 +49,10 @@
 	"repository": {
 		"expressionstring": {
 			"name": "meta.expression.tle.arm",
-			"begin": "\"\\[(?!\\[)",
-			"$beginComment": "A string that starts with [[ is not an expression",
+			"begin": "(?x)  \"\\[(?!\\[)  (?= (?:{{escaped-apostrophe}}|{{escaped-json-character}}|[^\"])* ( \\]\"|$ ) )",
+			"$beginComment": "An expression must start with '[' (no whitespace before), not start with '[[', and end with ']' (no whitespace after)",
+			"$beginComment2": "Since we can't check if an expression ends with ']' for multi-line strings, we also assume a string which starts with '[' and",
+			"$beginComment3": "   isn't terminated on the first line is an expression",
 			"end": "\\]\"",
 			"beginCaptures": {
 				"0": {
@@ -123,13 +132,13 @@
 			"patterns": [
 				{
 					"$comment": "Escaped JSON string characters",
-					"match": "(?x)                # turn on extended mode\n  \\\\                # a literal backslash\n  (?:               # ...followed by...\n    [\"\\\\/bfnrt]     # one of these characters\n    |               # ...or...\n    u               # a u\n    [0-9a-fA-F]{4}) # and four hex digits",
+					"match": "{{escaped-json-character}}",
 					"name": "{{scope-json-escape-chars}}"
 				},
 				{
 					"$comment": "Escaped apostrophe (interpreted by ARM backend)",
 					"name": "{{scope-escapedapostrophe}}",
-					"match": "['][']"
+					"match": "{{escaped-apostrophe}}"
 				},
 				{
 					"match": "\\\\.",
@@ -186,7 +195,7 @@
 			}
 		},
 		"functionname": {
-			"match": "(?x) \\s* (?: {{ns-userfunc}} | (parameters) | (variables) | ({{logical}}) | ({{builtin}}) | ({{id}}) ) (?!{{idchar}} (?# Make sure we don't match a well-known name like 'add' inside something like 'add2'))",
+			"match": "(?x) \\s* (?: {{ns-userfunc}} | (parameters) | (variables) | ({{logical}}) | ({{builtin-functions}}) | ({{id}}) ) (?!{{idchar}} (?# Make sure we don't match a well-known name like 'add' inside something like 'add2'))",
 			"captures": {
 				"1": {
 					"$comment": "user namespace (capturing group inside ns-userfunc)",
