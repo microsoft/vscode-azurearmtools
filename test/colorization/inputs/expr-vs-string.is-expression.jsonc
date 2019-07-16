@@ -1,0 +1,16 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    //
+    // Handle escaped characters - this should be an expression with a literal string inside it
+    //
+    "$TEST1": "['I said Hi! He''s here']",
+    "$TEST2": "['I said \"Hi! He''s here!\"']",
+    //
+    // Multi-line expressions - the colorization can't peek onto another line to determine whether the
+    // string ends with "]" (and therefore know it's an expression and not a string), so assume it is an expression
+    // if a multi-line string starts with "["
+    "$TEST10": "[concat('This is a ', 1, '-line ', 'expression ', 4, 'you!')]", //asdf
+    "$TEST11": "[concat('This is a ',
+        3, '-line ',
+        'expression ', 4, ' you!')]"
+}

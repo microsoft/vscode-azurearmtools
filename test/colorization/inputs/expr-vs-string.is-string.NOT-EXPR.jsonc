@@ -1,0 +1,23 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    //
+    // Not an expression if it starts with [[
+    //
+    "$TEST1": "[[2]]",
+    "$TEST2": "[[[four]five]",
+    "$TEST3": "[['I said \"Hi! He''s here!\"]",
+    //
+    // Not an expression if it doesn't end with ]
+    //
+    "$TEST10": "[pre]post",
+    "$TEST11": "[[three]four",
+    //
+    // Not an expression if it doesn't start immediately with [ or the very last character is not ] (even if it's whitespace)
+    //
+    "$TEST20": " [starts with whitespace]",
+    "$TEST21": "[ends with whitespace] ",
+    //
+    // Real examples
+    //
+    "$TEST100": "[ChefInSpec]InstalledApplicationLinuxResource1;AttributesYmlContent"
+}
