@@ -1,16 +1,16 @@
 TEST STRING: "[sum]"
-"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
-sum                 source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-unknownfunction}}
-]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+sum                 {{scope-unknownfunction}}
+]"                  {{scope-expression-end}}
 
 TEST STRING: "[reference]"
-"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
-reference           source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-builtin}}
-]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+reference           {{scope-builtin}}
+]"                  {{scope-expression-end}}
 
 TEST STRING: "[user.func]"
-"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
-user                source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-usernamespace}}
-.                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-usernamespaceandfunction-dot}}
-func                source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-userfunction}}
-]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+user                {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+func                {{scope-userfunction}}
+]"                  {{scope-expression-end}}

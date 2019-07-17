@@ -1,28 +1,28 @@
 TEST STRING: "[Flüsse.Bäche('array0')[1]]"
-"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
-Flüsse              source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-usernamespace}}
-.                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-usernamespaceandfunction-dot}}
-Bäche               source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-userfunction}}
-(                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}} {{scope-string-start}}
-array0              source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}}
-'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}} {{scope-string-end}}
-)                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-[                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.array-access.tle.arm {{scope-arrayaccess-brackets}}
-1                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.array-access.tle.arm {{scope-number}}
-]                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.array-access.tle.arm {{scope-arrayaccess-brackets}}
-]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+Flüsse              {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+Bäche               {{scope-userfunction}}
+(                   {{scope-parentheses-funccall}}
+'                   {{scope-string-start}}
+array0              {{scope-string-contents}}
+'                   {{scope-string-end}}
+)                   {{scope-parentheses-funccall}}
+[                   {{scope-arrayaccess-brackets}}
+1                   {{scope-number}}
+]                   {{scope-arrayaccess-brackets}}
+]"                  {{scope-expression-end}}
 
 TEST STRING: "[γνῶθι().σεαυτόν]"
-"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
-γνῶθι               source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-unknownfunction}}
-()                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-.                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.property-access.tle.arm {{scope-propaccess-dot}}
-σεαυτόν             source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.property-access.tle.arm {{scope-propaccess-propname}}
-]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+γνῶθι               {{scope-unknownfunction}}
+()                  {{scope-parentheses-funccall}}
+.                   {{scope-propaccess-dot}}
+σεαυτόν             {{scope-propaccess-propname}}
+]"                  {{scope-expression-end}}
 
 TEST STRING: "[ᠠᠪᠴᠳᠡᠸ()]"
-"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
-ᠠᠪᠴᠳᠡᠸ              source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-unknownfunction}}
-()                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+ᠠᠪᠴᠳᠡᠸ              {{scope-unknownfunction}}
+()                  {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}

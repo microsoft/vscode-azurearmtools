@@ -1,4 +1,4 @@
 TEST STRING: "[?]"
-"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
-?                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm invalid.illegal.expected-expression.tle.arm
-]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+?                   invalid.illegal.expected-expression.tle.arm
+]"                  {{scope-expression-end}}

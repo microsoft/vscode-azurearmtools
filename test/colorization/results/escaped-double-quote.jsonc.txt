@@ -1,21 +1,21 @@
 TEST STRING: "['Hi,\"Mom\"']"
-"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
-'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-string-start}}
-Hi,                 source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}}
-\"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-Mom                 source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}}
-\"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-string-end}}
-]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+'                   {{scope-string-start}}
+Hi,                 {{scope-string-contents}}
+\"                  {{scope-json-escape-chars}}
+Mom                 {{scope-string-contents}}
+\"                  {{scope-json-escape-chars}}
+'                   {{scope-string-end}}
+]"                  {{scope-expression-end}}
 
 TEST STRING: "['\\\r\n\b\t\f']"
-"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
-'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-string-start}}
-\\                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-\r                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-\n                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-\b                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-\t                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-\f                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-string-end}}
-]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+'                   {{scope-string-start}}
+\\                  {{scope-json-escape-chars}}
+\r                  {{scope-json-escape-chars}}
+\n                  {{scope-json-escape-chars}}
+\b                  {{scope-json-escape-chars}}
+\t                  {{scope-json-escape-chars}}
+\f                  {{scope-json-escape-chars}}
+'                   {{scope-string-end}}
+]"                  {{scope-expression-end}}

@@ -1,17 +1,17 @@
 TEST STRING: "['abc123']"
-"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
-'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-string-start}}
-abc123              source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}}
-'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-string-end}}
-]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+'                   {{scope-string-start}}
+abc123              {{scope-string-contents}}
+'                   {{scope-string-end}}
+]"                  {{scope-expression-end}}
 
 TEST STRING: "['Say\"hello\"!']"
-"[                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
-'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-string-start}}
-Say                 source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}}
-\"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-hello               source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}}
-\"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-!                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}}
-'                   source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-string-contents}} {{scope-string-end}}
-]"                  source.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+'                   {{scope-string-start}}
+Say                 {{scope-string-contents}}
+\"                  {{scope-json-escape-chars}}
+hello               {{scope-string-contents}}
+\"                  {{scope-json-escape-chars}}
+!                   {{scope-string-contents}}
+'                   {{scope-string-end}}
+]"                  {{scope-expression-end}}
