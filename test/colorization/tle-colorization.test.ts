@@ -244,10 +244,10 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
         }
     }
 
-    function writeToResultsFile(resultPathToWriteTo: string, resultsString: string, shouldCompareFullScope: boolean, resultsFullString: string) {
+    function writeToResultsFile(resultPathToWriteTo: string, resultsString: string, shouldCompareFullScope: boolean, resultsFullString: string): void {
         fs.writeFileSync(resultPathToWriteTo, resultsString);
         if (!shouldCompareFullScope) {
-            fs.writeFileSync(resultPathToWriteTo + ".full-scope-result.txt", resultsFullString);
+            fs.writeFileSync(`${resultPathToWriteTo}.full-scope-result.txt`, resultsFullString);
         }
     }
 }
@@ -261,7 +261,7 @@ function normalize(s: string): string {
     return s.replace(/(\r\n)|\r/g, os.EOL);
 }
 
-function getTestcaseResults(testCases: ITestcase[]): { text: string; results: string[]; fullScopeString: string; shortScopeString: string; } {
+function getTestcaseResults(testCases: ITestcase[]): { text: string; results: string[]; fullScopeString: string; shortScopeString: string } {
     let results = testCases.map((testcase: ITestcase): { short: string; full: string } => {
         let prefix = testcase.testString ? `${testcase.testString}${os.EOL}` : "";
 
@@ -270,7 +270,7 @@ function getTestcaseResults(testCases: ITestcase[]): { text: string; results: st
             return lastSpaceIndex > 0 ? scopes.slice(lastSpaceIndex + 1) : scopes;
         }
 
-        function getTestCaseString(full: boolean) {
+        function getTestCaseString(full: boolean): string {
             return testcase.data.map(td => {
                 let theText = td.text.trim();
                 let padding = tabSize - theText.length;
