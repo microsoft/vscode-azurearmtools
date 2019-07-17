@@ -1,24 +1,24 @@
 TEST STRING: "[a.max()]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-a                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-usernamespace}}
-.                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-usernamespaceandfunction-dot}}
-max                 source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-userfunction}}
-()                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+a                   {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+max                 {{scope-userfunction}}
+()                  {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
 
 TEST STRING: "[$a.$max()]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-$a                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-usernamespace}}
-.                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-usernamespaceandfunction-dot}}
-$max                source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-userfunction}}
-()                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+$a                  {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+$max                {{scope-userfunction}}
+()                  {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
 
 TEST STRING: "[_$_123._$max12$_$_()]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-_$_123              source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-usernamespace}}
-.                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-usernamespaceandfunction-dot}}
-_$max12$_$_         source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-userfunction}}
-(                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-)                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+_$_123              {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+_$max12$_$_         {{scope-userfunction}}
+(                   {{scope-parentheses-funccall}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}

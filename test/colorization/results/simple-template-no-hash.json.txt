@@ -1,39 +1,39 @@
-{                   source.json meta.structure.dictionary.json punctuation.definition.dictionary.begin.json
-"                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments support.type.property-name punctuation.support.type.property-name.begin.json.comments
-$schema             source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments support.type.property-name
-"                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments support.type.property-name punctuation.support.type.property-name.end.json.comments
-:                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments punctuation.separator.dictionary.key-value.json.comments
-"                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments string.quoted.double.json.comments punctuation.definition.string.begin.json.arm
+{                   punctuation.definition.dictionary.begin.json
+"                   punctuation.support.type.property-name.begin.json.comments
+$schema             support.type.property-name
+"                   punctuation.support.type.property-name.end.json.comments
+:                   punctuation.separator.dictionary.key-value.json.comments
+"                   punctuation.definition.string.begin.json.arm
 https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json
-                    source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments string.quoted.double.json.comments
-"                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments string.quoted.double.json.comments punctuation.definition.string.end.json.arm
-,                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments punctuation.separator.dictionary.pair.json.comments
-"                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments string.json.comments support.type.property-name.json.comments punctuation.support.type.property-name.begin.json.comments
-parameters          source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments string.json.comments support.type.property-name.json.comments
-"                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments string.json.comments support.type.property-name.json.comments punctuation.support.type.property-name.end.json.comments
-:                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments punctuation.separator.dictionary.key-value.json.comments
-{                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm punctuation.definition.dictionary.begin.json.arm
-"                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm string.json.arm support.type.property-name.json.arm punctuation.support.type.property-name.begin.json.arm
-guid                source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm string.json.arm support.type.property-name.json.arm
-"                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm string.json.arm support.type.property-name.json.arm punctuation.support.type.property-name.end.json.arm
-:                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm punctuation.separator.dictionary.key-value.json.arm
-{                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm punctuation.definition.dictionary.begin.json.arm
-"                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm string.json.arm support.type.property-name.json.arm punctuation.support.type.property-name.begin.json.arm
-type                source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm string.json.arm support.type.property-name.json.arm
-"                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm string.json.arm support.type.property-name.json.arm punctuation.support.type.property-name.end.json.arm
-:                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm punctuation.separator.dictionary.key-value.json.arm
-"                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm string.quoted.double.json.arm punctuation.definition.string.begin.json.arm
-string              source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm string.quoted.double.json.arm
-"                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm string.quoted.double.json.arm punctuation.definition.string.end.json.arm
-,                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm punctuation.separator.dictionary.pair.json.arm
-"                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm string.json.arm support.type.property-name.json.arm punctuation.support.type.property-name.begin.json.arm
-defaultValue        source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm string.json.arm support.type.property-name.json.arm
-"                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm string.json.arm support.type.property-name.json.arm punctuation.support.type.property-name.end.json.arm
-:                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm punctuation.separator.dictionary.key-value.json.arm
-"[                  source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-start}}
-subscription        source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-builtin}}
-()                  source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-]"                  source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.expression.tle.arm {{scope-expression-end}}
-}                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm meta.structure.dictionary.value.json.arm meta.structure.dictionary.json.arm punctuation.definition.dictionary.end.json.arm
-}                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.structure.dictionary.json.arm punctuation.definition.dictionary.end.json.arm
-}                   source.json meta.structure.dictionary.json meta.arm-deployment-template.json.comments
+                    string.quoted.double.json.comments
+"                   punctuation.definition.string.end.json.arm
+,                   punctuation.separator.dictionary.pair.json.comments
+"                   punctuation.support.type.property-name.begin.json.comments
+parameters          support.type.property-name.json.comments
+"                   punctuation.support.type.property-name.end.json.comments
+:                   punctuation.separator.dictionary.key-value.json.comments
+{                   punctuation.definition.dictionary.begin.json.arm
+"                   punctuation.support.type.property-name.begin.json.arm
+guid                support.type.property-name.json.arm
+"                   punctuation.support.type.property-name.end.json.arm
+:                   punctuation.separator.dictionary.key-value.json.arm
+{                   punctuation.definition.dictionary.begin.json.arm
+"                   punctuation.support.type.property-name.begin.json.arm
+type                support.type.property-name.json.arm
+"                   punctuation.support.type.property-name.end.json.arm
+:                   punctuation.separator.dictionary.key-value.json.arm
+"                   punctuation.definition.string.begin.json.arm
+string              string.quoted.double.json.arm
+"                   punctuation.definition.string.end.json.arm
+,                   punctuation.separator.dictionary.pair.json.arm
+"                   punctuation.support.type.property-name.begin.json.arm
+defaultValue        support.type.property-name.json.arm
+"                   punctuation.support.type.property-name.end.json.arm
+:                   punctuation.separator.dictionary.key-value.json.arm
+"[                  {{scope-expression-start}}
+subscription        {{scope-builtin}}
+()                  {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+}                   punctuation.definition.dictionary.end.json.arm
+}                   punctuation.definition.dictionary.end.json.arm
+}                   meta.arm-deployment-template.json.comments

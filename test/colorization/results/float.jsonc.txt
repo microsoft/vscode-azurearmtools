@@ -1,29 +1,29 @@
 TEST STRING: "[1.1]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-1.1                 source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-number}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+1.1                 {{scope-number}}
+]"                  {{scope-expression-end}}
 
 TEST STRING: "[-0.2]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
--0.2                source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-number}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+-0.2                {{scope-number}}
+]"                  {{scope-expression-end}}
 
 TEST STRING: "[-1.2e34]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
--1.2e34             source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-number}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+-1.2e34             {{scope-number}}
+]"                  {{scope-expression-end}}
 
 TEST STRING: "[1E2]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-1E2                 source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-number}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+1E2                 {{scope-number}}
+]"                  {{scope-expression-end}}
 
 TEST STRING: "[1E+2]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-1E+2                source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-number}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+1E+2                {{scope-number}}
+]"                  {{scope-expression-end}}
 
 TEST STRING: "[1E-2]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-1E-2                source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-number}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+1E-2                {{scope-number}}
+]"                  {{scope-expression-end}}

@@ -1,12 +1,12 @@
 TEST STRING: "[a)]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-a                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-unknownfunction}}
-)                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm invalid.illegal.expected-expression.tle.arm
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+a                   {{scope-unknownfunction}}
+)                   invalid.illegal.expected-expression.tle.arm
+]"                  {{scope-expression-end}}
 
 TEST STRING: "[b())]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-b                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-unknownfunction}}
-()                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-)                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm invalid.illegal.expected-expression.tle.arm
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+b                   {{scope-unknownfunction}}
+()                  {{scope-parentheses-funccall}}
+)                   invalid.illegal.expected-expression.tle.arm
+]"                  {{scope-expression-end}}

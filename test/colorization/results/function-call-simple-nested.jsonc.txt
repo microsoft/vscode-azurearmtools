@@ -1,21 +1,21 @@
 TEST STRING: "[a(b())]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-a                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-unknownfunction}}
-(                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-b                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-unknownfunction}}
-()                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-)                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+a                   {{scope-unknownfunction}}
+(                   {{scope-parentheses-funccall}}
+b                   {{scope-unknownfunction}}
+()                  {{scope-parentheses-funccall}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
 
 TEST STRING: "[max1(max2(max3()))]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-max1                source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-unknownfunction}}
-(                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-max2                source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-unknownfunction}}
-(                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-max3                source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-unknownfunction}}
-(                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-)                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-)                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-)                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+max1                {{scope-unknownfunction}}
+(                   {{scope-parentheses-funccall}}
+max2                {{scope-unknownfunction}}
+(                   {{scope-parentheses-funccall}}
+max3                {{scope-unknownfunction}}
+(                   {{scope-parentheses-funccall}}
+)                   {{scope-parentheses-funccall}}
+)                   {{scope-parentheses-funccall}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}

@@ -1,11 +1,11 @@
 TEST STRING: "[reference2()]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-reference2          source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-unknownfunction}}
-()                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+reference2          {{scope-unknownfunction}}
+()                  {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
 
 TEST STRING: "[addme()]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-addme               source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-unknownfunction}}
-()                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+addme               {{scope-unknownfunction}}
+()                  {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}

@@ -87,16 +87,24 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
 
         let testCases: ITestcase[];
 
+        // ------------- USAGE TIP ------------
         // If the test filename contains ".invalid.", then all testcases in it should have at least one "invalid" token.
         // Otherwise they should contain none.
         let shouldHaveInvalidTokens = !!testPath.match(/\.INVALID\./i);
 
+        // ------------- USAGE TIP ------------
         // If the test filename contains ".not-arm.", then all testcases in it should not contain any arm-deployment tokens.
         // Otherwise they should have at least one.
         let shouldBeArmTemplate = !testPath.match(/\.NOT-ARM\./i);
 
         let shouldBeExpression = shouldBeArmTemplate && !testPath.match(/\.NOT-EXPR\./i);
 
+        // ------------- USAGE TIP ------------
+        // If the test filename contains '.full-scope.', then the full scope will be output for each test, otherwise
+        //   only the top of the scope stack will be output and compared (easier to compare changes that way).
+        let shouldCompareFullScope = !!testPath.match(/\.FULL-SCOPE\./i);
+
+        // ------------- USAGE TIP ------------
         // If the test contains code like this:
         //
         //   "$TEST{xxx}": <test1-text>",
@@ -130,8 +138,8 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
                 // end of the dictionary value item
                 getDictionaryNestingLevel(t.scopes) === dictionaryNestingLevel);
             if (nEnd < 0) {
-                let { fullString, text } = getTestcaseResults([{ testString: '', data: data.slice(nBegin) }]);
-                assert(false, `Couldn't find end of test string starting here:\\n${text}\n${fullString}`);
+                let { fullScopeString, text } = getTestcaseResults([{ testString: '', data: data.slice(nBegin) }]);
+                assert(false, `Couldn't find end of test string starting here:\\n${text}\n${fullScopeString}`);
             }
             nEnd -= 1;
 
@@ -156,8 +164,8 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
         // If no individual testcases found, the whole file is a single testcase
         testCases = testCases || [<ITestcase>{ data }];
 
-        let { results: testcaseResults, fullString: resultsFullString } = getTestcaseResults(testCases);
-        resultsFullString = normalize(resultsFullString.trim());
+        let { results: testcaseResults, fullScopeString: resultsFullString, shortScopeString: resultsShortString } = getTestcaseResults(testCases);
+        let resultsString = shouldCompareFullScope ? resultsFullString : resultsShortString;
 
         let actualResultPath = `${resultPath}.actual`;
         let resultPathToWriteTo = OVERWRITE ? resultPath : actualResultPath;
@@ -203,23 +211,23 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
                 }
 
                 isJustDiff = true;
-                assert.equal(resultsFullString, previousResult);
+                assert.equal(resultsString, previousResult);
                 removeActualResultPath = true;
             } catch (e) {
                 let nonDiffError = isJustDiff ? "" : `${parseError(e).message}${os.EOL}`;
-                fs.writeFileSync(resultPathToWriteTo, resultsFullString, { flag: 'w' });
+                writeToResultsFile(resultPathToWriteTo, resultsString, shouldCompareFullScope, resultsFullString);
 
                 if (OVERWRITE) {
                     removeActualResultPath = true;
                     // tslint:disable-next-line: max-line-length
                     throw new Error(`${nonDiffError}*** MODIFIED THE RESULTS FILE (${resultPathToWriteTo}). VERIFY THE CHANGES BEFORE CHECKING IN!`);
                 } else {
-                    fs.writeFileSync(resultPathToWriteTo, resultsFullString, { flag: 'w' });
+                    fs.writeFileSync(resultPathToWriteTo, resultsString);
                     throw new Error(`${nonDiffError}*** ACTUAL RESULTS ARE IN (${resultPathToWriteTo}).`);
                 }
             }
         } else {
-            fs.writeFileSync(resultPathToWriteTo, resultsFullString);
+            writeToResultsFile(resultPathToWriteTo, resultsString, shouldCompareFullScope, resultsFullString);
             removeActualResultPath = true;
             throw new Error(`*** NEW RESULTS FILE ${resultPathToWriteTo}`);
         }
@@ -235,6 +243,13 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
             longestTestDuration = duration;
         }
     }
+
+    function writeToResultsFile(resultPathToWriteTo: string, resultsString: string, shouldCompareFullScope: boolean, resultsFullString: string) {
+        fs.writeFileSync(resultPathToWriteTo, resultsString);
+        if (!shouldCompareFullScope) {
+            fs.writeFileSync(resultPathToWriteTo + ".full-scope-result.txt", resultsFullString);
+        }
+    }
 }
 
 function getDictionaryNestingLevel(scopes: string): number {
@@ -246,29 +261,43 @@ function normalize(s: string): string {
     return s.replace(/(\r\n)|\r/g, os.EOL);
 }
 
-function getTestcaseResults(testCases: ITestcase[]): { text: string; results: string[]; fullString: string } {
-    let results = testCases.map((testcase: ITestcase) => {
+function getTestcaseResults(testCases: ITestcase[]): { text: string; results: string[]; fullScopeString: string; shortScopeString: string; } {
+    let results = testCases.map((testcase: ITestcase): { short: string; full: string } => {
         let prefix = testcase.testString ? `${testcase.testString}${os.EOL}` : "";
 
-        let testCaseString = testcase.data.map(td => {
-            let theText = td.text.trim();
-            let padding = tabSize - theText.length;
-            let scopes = unpreprocessScopes(td.scopes);
-            if (padding > 0) {
-                return `${theText}${" ".repeat(padding)}${scopes}`;
-            } else {
-                return `${theText}${os.EOL}${" ".repeat(tabSize)}${scopes}`;
-            }
-        }).join(os.EOL);
-        return prefix + testCaseString;
+        function getLastScope(scopes: string): string {
+            let lastSpaceIndex = scopes.lastIndexOf(" ");
+            return lastSpaceIndex > 0 ? scopes.slice(lastSpaceIndex + 1) : scopes;
+        }
+
+        function getTestCaseString(full: boolean) {
+            return testcase.data.map(td => {
+                let theText = td.text.trim();
+                let padding = tabSize - theText.length;
+                let scopes = unpreprocessScopes(full ? td.scopes : getLastScope(td.scopes));
+                if (padding > 0) {
+                    return `${theText}${" ".repeat(padding)}${scopes}`;
+                } else {
+                    return `${theText}${os.EOL}${" ".repeat(tabSize)}${scopes}`;
+                }
+            }).join(os.EOL);
+        }
+
+        let fullTestCaseString = getTestCaseString(true);
+        let shortTestCaseString = getTestCaseString(false);
+
+        return { short: prefix + shortTestCaseString, full: prefix + fullTestCaseString };
     });
 
-    let fullString = results.join(`${os.EOL}${os.EOL}`);
-    fullString = normalize(`${fullString.trim()}${os.EOL}`);
+    let fullScopeString = results.map(r => r.full).join(`${os.EOL}${os.EOL}`);
+    fullScopeString = normalize(fullScopeString.trim());
+
+    let shortScopeString = results.map(r => r.short).join(`${os.EOL}${os.EOL}`);
+    shortScopeString = normalize(shortScopeString.trim());
 
     let text = normalize(testCases.map(tc => tc.data).map((tis: ITokenInfo[]) => tis.map(ti => ti.text).join('')).join(''));
 
-    return { text, results, fullString };
+    return { text, results: results.map(r => r.full), fullScopeString, shortScopeString };
 }
 
 suite('TLE colorization', function (this: ISuiteCallbackContext): void {
@@ -292,7 +321,7 @@ suite('TLE colorization', function (this: ISuiteCallbackContext): void {
 
     resultFiles = fs.readdirSync(resultsFolder);
     for (let resultFile of resultFiles) {
-        if (resultFile.endsWith('.actual')) {
+        if (resultFile.endsWith('.actual') || resultFile.endsWith('.full-scope.txt')) {
             fs.unlinkSync(path.join(resultsFolder, resultFile));
         }
     }

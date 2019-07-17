@@ -1,46 +1,46 @@
 TEST STRING: "[[2]]"
-"                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.begin.json.arm
-[[2]]               source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm
-"                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.end.json.arm
+"                   punctuation.definition.string.begin.json.arm
+[[2]]               string.quoted.double.json.arm
+"                   punctuation.definition.string.end.json.arm
 
 TEST STRING: "[[[four]five]"
-"                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.begin.json.arm
-[[[four]five]       source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm
-"                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.end.json.arm
+"                   punctuation.definition.string.begin.json.arm
+[[[four]five]       string.quoted.double.json.arm
+"                   punctuation.definition.string.end.json.arm
 
 TEST STRING: "[['I said\"Hi! He''s here!\"]"
-"                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.begin.json.arm
-[['I said           source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm
-\"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm constant.character.escape.json.arm
-Hi! He''s here!     source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm
-\"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm constant.character.escape.json.arm
-]                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm
-"                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.end.json.arm
+"                   punctuation.definition.string.begin.json.arm
+[['I said           string.quoted.double.json.arm
+\"                  constant.character.escape.json.arm
+Hi! He''s here!     string.quoted.double.json.arm
+\"                  constant.character.escape.json.arm
+]                   string.quoted.double.json.arm
+"                   punctuation.definition.string.end.json.arm
 
 TEST STRING: "[pre]post"
-"                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.begin.json.arm
-[pre]post           source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm
-"                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.end.json.arm
+"                   punctuation.definition.string.begin.json.arm
+[pre]post           string.quoted.double.json.arm
+"                   punctuation.definition.string.end.json.arm
 
 TEST STRING: "[[three]four"
-"                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.begin.json.arm
-[[three]four        source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm
-"                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.end.json.arm
+"                   punctuation.definition.string.begin.json.arm
+[[three]four        string.quoted.double.json.arm
+"                   punctuation.definition.string.end.json.arm
 
 TEST STRING: "[starts with whitespace]"
-"                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.begin.json.arm
+"                   punctuation.definition.string.begin.json.arm
 [starts with whitespace]
-                    source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm
-"                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.end.json.arm
+                    string.quoted.double.json.arm
+"                   punctuation.definition.string.end.json.arm
 
 TEST STRING: "[ends with whitespace]"
-"                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.begin.json.arm
+"                   punctuation.definition.string.begin.json.arm
 [ends with whitespace]
-                    source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm
-"                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.end.json.arm
+                    string.quoted.double.json.arm
+"                   punctuation.definition.string.end.json.arm
 
 TEST STRING: "[ChefInSpec]InstalledApplicationLinuxResource1;AttributesYmlContent"
-"                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.begin.json.arm
+"                   punctuation.definition.string.begin.json.arm
 [ChefInSpec]InstalledApplicationLinuxResource1;AttributesYmlContent
-                    source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm
-"                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments string.quoted.double.json.arm punctuation.definition.string.end.json.arm
+                    string.quoted.double.json.arm
+"                   punctuation.definition.string.end.json.arm
