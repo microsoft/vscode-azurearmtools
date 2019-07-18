@@ -1,21 +1,21 @@
 TEST STRING: "['Hi,\"Mom\"']"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-'                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-string-start}}
-Hi,                 source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}}
-\"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-Mom                 source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}}
-\"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-'                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-string-end}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+'                   {{scope-string-start}}
+Hi,                 {{scope-string-contents}}
+\"                  {{scope-json-escape-chars}}
+Mom                 {{scope-string-contents}}
+\"                  {{scope-json-escape-chars}}
+'                   {{scope-string-end}}
+]"                  {{scope-expression-end}}
 
 TEST STRING: "['\\\r\n\b\t\f']"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-'                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-string-start}}
-\\                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-\r                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-\n                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-\b                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-\t                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-\f                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-json-escape-chars}}
-'                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-string-contents}} {{scope-string-end}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+'                   {{scope-string-start}}
+\\                  {{scope-json-escape-chars}}
+\r                  {{scope-json-escape-chars}}
+\n                  {{scope-json-escape-chars}}
+\b                  {{scope-json-escape-chars}}
+\t                  {{scope-json-escape-chars}}
+\f                  {{scope-json-escape-chars}}
+'                   {{scope-string-end}}
+]"                  {{scope-expression-end}}

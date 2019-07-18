@@ -1,24 +1,24 @@
 TEST STRING: "[parameters('myparam')]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-parameters          source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parameters}}
-(                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parentheses-funccall}}
-'myparam'           source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parameter}}
-)                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.parameters-reference.tle.arm {{scope-parentheses-funccall}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+parameters          {{scope-parameters}}
+(                   {{scope-parentheses-funccall}}
+'myparam'           {{scope-parameter}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
 
 TEST STRING: "[parameters(concat('myparam','a'))]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-parameters          source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-parameters}}
-(                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-concat              source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-builtin}}
-(                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-'                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}} {{scope-string-start}}
-myparam             source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}}
-'                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}} {{scope-string-end}}
-,                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-funcargs-separator}}
-'                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}} {{scope-string-start}}
-a                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}}
-'                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm {{scope-string-contents}} {{scope-string-end}}
-)                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm meta.function-arguments.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-)                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.function-call.tle.arm {{scope-parentheses-funccall}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+parameters          {{scope-parameters}}
+(                   {{scope-parentheses-funccall}}
+concat              {{scope-builtin}}
+(                   {{scope-parentheses-funccall}}
+'                   {{scope-string-start}}
+myparam             {{scope-string-contents}}
+'                   {{scope-string-end}}
+,                   {{scope-funcargs-separator}}
+'                   {{scope-string-start}}
+a                   {{scope-string-contents}}
+'                   {{scope-string-end}}
+)                   {{scope-parentheses-funccall}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}

@@ -1,13 +1,13 @@
 TEST STRING: "[variables('a').add.reference.listCredentials]"
-"[                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-start}}
-variables           source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.variables-reference.tle.arm {{scope-variables}}
-(                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.variables-reference.tle.arm {{scope-parentheses-funccall}}
-'a'                 source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.variables-reference.tle.arm {{scope-variable}}
-)                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.variables-reference.tle.arm {{scope-parentheses-funccall}}
-.                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.property-access.tle.arm {{scope-propaccess-dot}}
-add                 source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.property-access.tle.arm {{scope-propaccess-propname}}
-.                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.property-access.tle.arm {{scope-propaccess-dot}}
-reference           source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.property-access.tle.arm {{scope-propaccess-propname}}
-.                   source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.property-access.tle.arm {{scope-propaccess-dot}}
-listCredentials     source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm meta.property-access.tle.arm {{scope-propaccess-propname}}
-]"                  source.json.comments meta.structure.dictionary.json.comments meta.arm-deployment-template.json.comments meta.structure.dictionary.value.json.comments meta.expression.tle.arm {{scope-expression-end}}
+"[                  {{scope-expression-start}}
+variables           {{scope-variables}}
+(                   {{scope-parentheses-funccall}}
+'a'                 {{scope-variable}}
+)                   {{scope-parentheses-funccall}}
+.                   {{scope-propaccess-dot}}
+add                 {{scope-propaccess-propname}}
+.                   {{scope-propaccess-dot}}
+reference           {{scope-propaccess-propname}}
+.                   {{scope-propaccess-dot}}
+listCredentials     {{scope-propaccess-propname}}
+]"                  {{scope-expression-end}}
