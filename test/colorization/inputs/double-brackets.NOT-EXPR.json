@@ -1,5 +1,0 @@
-{
-    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
-    // Not an expression if it starts with [[
-    "$TEST": "[[2]]"
-}

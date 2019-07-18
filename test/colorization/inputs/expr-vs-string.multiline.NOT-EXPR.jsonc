@@ -1,0 +1,15 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    //
+    // Not an expression if it starts with [[
+    //
+    "$TEST1": "[[2
+        ]]",
+    "$TEST2": "[[[four]
+        five]",
+    //
+    // Not an expression if it doesn't start immediately with [ or the very last character is not ] (even if it's whitespace)
+    //
+    "$TEST20": "
+[starts with whitespace]"
+}

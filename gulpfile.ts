@@ -26,7 +26,7 @@ export const tleGrammarBuiltPath: string = path.resolve('dist/grammars/arm-expre
 
 export interface IGrammar {
     preprocess?: {
-        builtin: string;
+        "builtin-functions": string;
         [key: string]: string;
     };
     [key: string]: unknown;
@@ -55,15 +55,19 @@ function buildTLEGrammar(): void {
     let builtinFunctions: string[] = expressionMetadata.functionSignatures.map(sig => sig.name);
     let grammarAsObject = <IGrammar>JSON.parse(grammar);
     grammarAsObject.preprocess = {
-        builtin: `(?:(?i)${builtinFunctions.join('|')})`,
+        "builtin-functions": `(?:(?i)${builtinFunctions.join('|')})`,
         ... (grammarAsObject.preprocess || {})
     };
+
     grammarAsObject = {
-        $comment: `DO NOT EDIT - This file was built from ${path.relative(__dirname, tleGrammarBuiltPath)}`,
+        $comment: `DO NOT EDIT - This file was built from ${path.relative(__dirname, tleGrammarSourcePath)}`,
         ...grammarAsObject
     };
+
     grammar = JSON.stringify(grammarAsObject, null, 4);
-    const replacementKeys = Object.getOwnPropertyNames((<IGrammar>JSON.parse(grammar)).preprocess);
+
+    // Get the replacement keys from the preprocess section (ignore those that start with "$")
+    const replacementKeys = Object.getOwnPropertyNames((<IGrammar>JSON.parse(grammar)).preprocess).filter(key => !key.startsWith("$"));
 
     // Build grammar: Make replacements specified
     for (let key of replacementKeys) {
@@ -74,10 +78,15 @@ function buildTLEGrammar(): void {
         // remove quotes
         valueString = valueString.slice(1, valueString.length - 1);
         if (!sourceGrammar.includes(replacementKey)) {
-            console.log(`WARNING: Preprocess key ${replacementKey} not found in ${tleGrammarSourcePath}`);
+            console.log(`WARNING: Preprocess key ${replacementKey} is never referenced in ${tleGrammarSourcePath}`);
         }
         grammar = grammar.replace(new RegExp(replacementKey, "g"), valueString);
     }
+
+    // Remove preprocess section from the output grammar file
+    let outputGrammarAsObject = (<IGrammar>JSON.parse(grammar));
+    delete outputGrammarAsObject.preprocess;
+    grammar = JSON.stringify(outputGrammarAsObject, null, 4);
 
     fs.writeFileSync(tleGrammarBuiltPath, grammar);
     console.log(`Built ${tleGrammarBuiltPath}`);
