@@ -301,7 +301,7 @@ function getTestcaseResults(testCases: ITestcase[]): { text: string; results: st
 }
 
 suite('TLE colorization', function (this: ISuiteCallbackContext): void {
-    this.timeout(20000); // I've seen as high as 13s on server, although most are much shorter
+    this.timeout(50000); // I've seen as high as 32s on server (esp the first ARM one), although most are no more than a second or two
 
     let testFolder = path.join(__dirname, '..', '..', '..', 'test', 'colorization', 'inputs');
     let resultsFolder = path.join(__dirname, '..', '..', '..', 'test', 'colorization', 'results');
