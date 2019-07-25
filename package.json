@@ -109,7 +109,7 @@
     "typescript": "^3.4.5",
     "vsce": "^1.59.0",
     "vscode": "^1.1.33",
-    "vscode-azureextensiondev": "0.1.8",
+    "vscode-azureextensiondev": "0.1.11",
     "webpack": "4.28.1",
     "webpack-cli": "^3.3.1"
   },
@@ -117,6 +117,6 @@
     "fs-extra": "^7.0.1",
     "moment": "^2.24.0",
     "opn": "^5.5.0",
-    "vscode-azureextensionui": "^0.23.2"
+    "vscode-azureextensionui": "^0.26.1"
   }
 }
