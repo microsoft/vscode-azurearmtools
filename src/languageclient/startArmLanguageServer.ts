@@ -16,6 +16,7 @@ import { ext } from '../extensionVariables';
 import { armDeploymentDocumentSelector } from '../supported';
 
 const languageServerName = 'ARM Language Server';
+const languageServerFolderName = 'LanguageServerBin';
 const languageServerDllName = 'Microsoft.ArmLanguageServer.dll';
 let serverStartMs: number;
 const languageServerErrorTelemId = "Language Server Error";
@@ -26,12 +27,11 @@ export function startArmLanguageServer(context: ExtensionContext): void {
 
         let serverExe = os.platform() === 'win32' ? 'dotnet.exe' : 'dotnet';
 
-        // asdf remove old setting
         let serverDllPath = workspace.getConfiguration('armTools').get<string | undefined>('languageServer.path');
 
         if (typeof serverDllPath !== 'string' || serverDllPath === '') {
             // Check for the files under LanguageServerBin
-            let serverFolderPath = context.asAbsolutePath(languageServerDllName);
+            let serverFolderPath = context.asAbsolutePath(languageServerFolderName);
             serverDllPath = path.join(serverFolderPath, languageServerDllName);
             if (!fs.existsSync(serverFolderPath) || !fs.existsSync(serverDllPath)) {
                 throw new Error(`Couldn't find the ARM language server at ${serverDllPath}, you may need to reinstall the extension.`);
