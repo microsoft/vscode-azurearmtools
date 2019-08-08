@@ -9,7 +9,7 @@ import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createTelemetryReporter, IActionContext, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import * as Completion from "./Completion";
-import { armDeploymentLanguageId, configKeys, diagnosticsCompleteMessage, diagnosticsSource } from "./constants";
+import { armDeploymentLanguageId, configKeys, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
@@ -34,10 +34,10 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     ext.ui = new AzureUserInput(context.globalState);
     registerUIExtensionVariables(ext);
 
-    await callWithTelemetryAndErrorHandling('activate', async function (this: IActionContext): Promise<void> {
-        this.properties.isActivationEvent = 'true';
-        this.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
-        this.properties.autoDetectJsonTemplates = String(vscode.workspace.getConfiguration('armTools').get<boolean>(configKeys.autoDetectJsonTemplates));
+    await callWithTelemetryAndErrorHandling('activate', async function (actionContext: IActionContext): Promise<void> {
+        actionContext.telemetry.properties.isActivationEvent = 'true';
+        actionContext.telemetry.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
+        actionContext.telemetry.properties.autoDetectJsonTemplates = String(vscode.workspace.getConfiguration('armTools').get<boolean>(configKeys.autoDetectJsonTemplates));
 
         context.subscriptions.push(new AzureRMTools(context));
     });
@@ -89,9 +89,9 @@ export class AzureRMTools {
     }
 
     public dispose(): void {
-        callWithTelemetryAndErrorHandlingSync('dispose', function (this: IActionContext): void {
-            this.properties.isActivationEvent = 'true';
-            this.suppressErrorDisplay = true;
+        callWithTelemetryAndErrorHandlingSync('dispose', function (actionContext: IActionContext): void {
+            actionContext.telemetry.properties.isActivationEvent = 'true';
+            actionContext.errorHandling.suppressDisplay = true;
         });
     }
 
@@ -112,11 +112,11 @@ export class AzureRMTools {
 
         // tslint:disable-next-line: no-this-assignment
         const me = this;
-        callWithTelemetryAndErrorHandlingSync('updateDeploymentTemplate', function (this: IActionContext): void {
-            this.suppressErrorDisplay = true;
-            this.suppressTelemetry = true;
-            this.properties.isActivationEvent = 'true';
-            this.properties.fileExt = path.extname(document.fileName);
+        callWithTelemetryAndErrorHandlingSync('updateDeploymentTemplate', function (actionContext: IActionContext): void {
+            actionContext.errorHandling.suppressDisplay = true;
+            actionContext.telemetry.suppressIfSuccessful = true;
+            actionContext.telemetry.properties.isActivationEvent = 'true';
+            actionContext.telemetry.properties.fileExt = path.extname(document.fileName);
 
             let foundDeploymentTemplate = false;
 
@@ -151,10 +151,10 @@ export class AzureRMTools {
                             vscode.languages.setTextDocumentLanguage(document, armDeploymentLanguageId);
 
                             // The document will be reloaded, firing this event again with the new langid
-                            this.properties.switchedToArm = 'true';
-                            this.properties.docLangId = document.languageId;
-                            this.properties.docExtension = path.extname(document.fileName);
-                            this.suppressTelemetry = false;
+                            actionContext.telemetry.properties.switchedToArm = 'true';
+                            actionContext.telemetry.properties.docLangId = document.languageId;
+                            actionContext.telemetry.properties.docExtension = path.extname(document.fileName);
+                            actionContext.telemetry.suppressIfSuccessful = false;
                             return;
                         }
 
@@ -200,8 +200,8 @@ export class AzureRMTools {
 
         // Don't wait
         // tslint:disable-next-line: no-floating-promises
-        callWithTelemetryAndErrorHandling('reportDeploymentTemplateErrors', async function (this: IActionContext): Promise<void> {
-            this.suppressTelemetry = true;
+        callWithTelemetryAndErrorHandling('reportDeploymentTemplateErrors', async function (actionContext: IActionContext): Promise<void> {
+            actionContext.telemetry.suppressIfSuccessful = true;
 
             let parseErrors: language.Issue[] = await deploymentTemplate.errors;
             const diagnostics: vscode.Diagnostic[] = [];
@@ -217,8 +217,8 @@ export class AzureRMTools {
             if (ext.addCompletionDiagnostic) {
                 diagnostics.push(<vscode.Diagnostic>{
                     severity: vscode.DiagnosticSeverity.Information,
-                    message: diagnosticsCompleteMessage,
-                    source: diagnosticsSource,
+                    message: expressionsDiagnosticsCompletionMessage,
+                    source: expressionsDiagnosticsSource,
                     code: ""
                 });
             }
@@ -295,14 +295,14 @@ export class AzureRMTools {
     private logFunctionCounts(deploymentTemplate: DeploymentTemplate): void {
         // Don't wait for promise
         // tslint:disable-next-line: no-floating-promises
-        callWithTelemetryAndErrorHandling("tle.stats", async function (this: IActionContext): Promise<void> {
-            this.suppressErrorDisplay = true;
+        callWithTelemetryAndErrorHandling("tle.stats", async function (actionContext: IActionContext): Promise<void> {
+            actionContext.errorHandling.suppressDisplay = true;
             let properties: {
                 functionCounts?: string;
                 unrecognized?: string;
                 incorrectArgs?: string;
                 [key: string]: string;
-            } = this.properties;
+            } = actionContext.telemetry.properties;
 
             // Full function counts
             //
@@ -350,7 +350,7 @@ export class AzureRMTools {
         const range: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, issue.span);
         const message: string = issue.message;
         let diagnostic = new vscode.Diagnostic(range, message, severity);
-        diagnostic.source = diagnosticsSource;
+        diagnostic.source = expressionsDiagnosticsSource;
         diagnostic.code = "";
         return diagnostic;
     }
@@ -369,9 +369,9 @@ export class AzureRMTools {
         if (deploymentTemplate) {
             // tslint:disable-next-line:no-this-assignment
             const me = this;
-            return await callWithTelemetryAndErrorHandling('Hover', async function (this: IActionContext): Promise<vscode.Hover> {
-                this.suppressErrorDisplay = true;
-                let properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>this.properties;
+            return await callWithTelemetryAndErrorHandling('Hover', async function (actionContext: IActionContext): Promise<vscode.Hover> {
+                this.errorHandling.suppressDisplay = true;
+                let properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>actionContext.telemetry.properties;
 
                 const context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
                 if (context.hoverInfo) {
@@ -402,10 +402,10 @@ export class AzureRMTools {
         if (deploymentTemplate) {
             // tslint:disable-next-line:no-this-assignment
             const me = this;
-            return await callWithTelemetryAndErrorHandling('provideCompletionItems', async function (this: IActionContext): Promise<vscode.CompletionList | undefined> {
-                let properties = <TelemetryProperties & { completionKind?: string }>this.properties;
-                this.suppressTelemetry = true;
-                this.suppressErrorDisplay = true;
+            return await callWithTelemetryAndErrorHandling('provideCompletionItems', async function (actionContext: IActionContext): Promise<vscode.CompletionList | undefined> {
+                let properties = <TelemetryProperties & { completionKind?: string }>actionContext.telemetry.properties;
+                actionContext.telemetry.suppressIfSuccessful = true;
+                actionContext.errorHandling.suppressDisplay = true;
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
                 let completionItemArray: Completion.Item[] = await context.getCompletionItems();
@@ -451,9 +451,9 @@ export class AzureRMTools {
         if (deploymentTemplate) {
             // tslint:disable-next-line:no-this-assignment
             const me = this;
-            return callWithTelemetryAndErrorHandlingSync('Go To Definition', function (this: IActionContext): vscode.Location {
-                let properties = <TelemetryProperties & { definitionType?: string }>this.properties;
-                this.suppressErrorDisplay = true;
+            return callWithTelemetryAndErrorHandlingSync('Go To Definition', function (actionContext: IActionContext): vscode.Location {
+                let properties = <TelemetryProperties & { definitionType?: string }>actionContext.telemetry.properties;
+                actionContext.errorHandling.suppressDisplay = true;
                 let result: vscode.Location = null;
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
@@ -482,7 +482,7 @@ export class AzureRMTools {
         if (deploymentTemplate) {
             // tslint:disable-next-line:no-this-assignment
             const me = this;
-            return callWithTelemetryAndErrorHandlingSync('Find References', function (this: IActionContext): vscode.Location[] {
+            return callWithTelemetryAndErrorHandlingSync('Find References', function (actionContext: IActionContext): vscode.Location[] {
                 const results: vscode.Location[] = [];
                 const locationUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
                 const positionContext: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
@@ -505,7 +505,7 @@ export class AzureRMTools {
                             break;
                     }
 
-                    this.properties.referenceType = referenceType;
+                    actionContext.telemetry.properties.referenceType = referenceType;
 
                     for (const span of references.spans) {
                         const referenceRange: vscode.Range = me.getVSCodeRangeFromSpan(deploymentTemplate, span);
@@ -521,8 +521,8 @@ export class AzureRMTools {
     private async onProvideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp | undefined> {
         const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
         if (deploymentTemplate) {
-            return await callWithTelemetryAndErrorHandling('provideSignatureHelp', async function (this: IActionContext): Promise<vscode.SignatureHelp | undefined> {
-                this.suppressErrorDisplay = true;
+            return await callWithTelemetryAndErrorHandling('provideSignatureHelp', async function (actionContext: IActionContext): Promise<vscode.SignatureHelp | undefined> {
+                actionContext.errorHandling.suppressDisplay = true;
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
@@ -597,10 +597,10 @@ export class AzureRMTools {
     private onActiveTextEditorChanged(): void {
         // tslint:disable-next-line:no-this-assignment
         const me = this;
-        callWithTelemetryAndErrorHandlingSync('onActiveTextEditorChanged', function (this: IActionContext): void {
-            this.properties.isActivationEvent = 'true';
-            this.suppressErrorDisplay = true;
-            this.suppressTelemetry = true;
+        callWithTelemetryAndErrorHandlingSync('onActiveTextEditorChanged', function (actionContext: IActionContext): void {
+            actionContext.telemetry.properties.isActivationEvent = 'true';
+            actionContext.errorHandling.suppressDisplay = true;
+            actionContext.telemetry.suppressIfSuccessful = true;
 
             let activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
             if (activeEditor) {
@@ -614,10 +614,10 @@ export class AzureRMTools {
     private onTextSelectionChanged(): void {
         // tslint:disable-next-line:no-this-assignment
         const me = this;
-        callWithTelemetryAndErrorHandlingSync('onTextSelectionChanged', function (this: IActionContext): void {
-            this.properties.isActivationEvent = 'true';
-            this.suppressErrorDisplay = true;
-            this.suppressTelemetry = true;
+        callWithTelemetryAndErrorHandlingSync('onTextSelectionChanged', function (actionContext: IActionContext): void {
+            actionContext.telemetry.properties.isActivationEvent = 'true';
+            actionContext.errorHandling.suppressDisplay = true;
+            actionContext.telemetry.suppressIfSuccessful = true;
 
             let editor: vscode.TextEditor = vscode.window.activeTextEditor;
             if (editor) {
@@ -650,10 +650,10 @@ export class AzureRMTools {
     private onDocumentClosed(closedDocument: vscode.TextDocument): void {
         // tslint:disable-next-line:no-this-assignment
         const me = this;
-        callWithTelemetryAndErrorHandlingSync('onDocumentClosed', function (this: IActionContext): void {
-            this.properties.isActivationEvent = 'true';
-            this.suppressTelemetry = true;
-            this.suppressErrorDisplay = true;
+        callWithTelemetryAndErrorHandlingSync('onDocumentClosed', function (actionContext: IActionContext): void {
+            actionContext.telemetry.properties.isActivationEvent = 'true';
+            actionContext.telemetry.suppressIfSuccessful = true;
+            actionContext.errorHandling.suppressDisplay = true;
 
             me.closeDeploymentTemplate(closedDocument);
         });

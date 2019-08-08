@@ -14,11 +14,11 @@ export const iconsPath = path.join(__dirname, isWebpack ? "" : "..", "..", "icon
 export const armDeploymentLanguageId = 'arm-deployment';
 
 // String that shows up in our errors as the source in parentheses
-export const diagnosticsSource = "ARM (Expressions)";
+export const expressionsDiagnosticsSource = "ARM (Expressions)";
 
 // For testing
-export const diagnosticsCompleteMessage = "ARM Tools diagnostics complete";
-export const languageServerCompleteMessage = "ARM Language Server diagnostics complete";
+export const diagnosticsCompletePrefix = "Diagnostics complete: ";
+export const expressionsDiagnosticsCompletionMessage = diagnosticsCompletePrefix + expressionsDiagnosticsSource;
 
 export namespace configKeys {
     export const autoDetectJsonTemplates = "autoDetectJsonTemplates";

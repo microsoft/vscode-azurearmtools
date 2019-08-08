@@ -4,7 +4,7 @@
 
 // tslint:disable:object-literal-key-quotes no-http-string
 
-import { minimalDeploymentTemplate, testDiagnostics } from "../support/diagnostics";
+import { sources, testDiagnostics } from "../support/diagnostics";
 
 suite("Backend validation", () => {
     // tslint:disable-next-line: no-suspicious-comment
@@ -15,17 +15,11 @@ suite("Backend validation", () => {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 contentVersion: "1.2.3.4"
             },
-            {},
+            {
+                includeSources: [sources.template]
+            },
             [
-                "Warning: Missing required property resources (ARM Language Server)",
-                "Error: Template validation failed: Required property 'resources' not found in JSON. Path '', line 4, position 1. (ARM Language Server)"
+                "Error: Template validation failed: Required property 'resources' not found in JSON. Path '', line 4, position 1. (ARM (Template))"
             ])
     );
-
-    test("minimal deployment template - no errors", async () => {
-        await testDiagnostics(
-            minimalDeploymentTemplate,
-            {},
-            []);
-    });
 });

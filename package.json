@@ -155,7 +155,7 @@
     "fs-extra": "^7.0.1",
     "moment": "^2.24.0",
     "opn": "^5.5.0",
-    "vscode-azureextensionui": "^0.23.3",
+    "vscode-azureextensionui": "^0.26.4",
     "vscode-jsonrpc": "^4.0.0",
     "vscode-languageclient": "^4.4.0"
   }

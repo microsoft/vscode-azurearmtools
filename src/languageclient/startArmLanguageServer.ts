@@ -73,7 +73,7 @@ export function startArmLanguageServer(context: ExtensionContext): void {
         }
         if (ext.addCompletionDiagnostic) {
             // Forces the server to add a completion message to its diagnostics
-            commonArgs.push('--test-diagnostics');
+            commonArgs.push('--verbose-diagnostics');
         }
 
         // If the extension is launched in debug mode then the debug server options are used

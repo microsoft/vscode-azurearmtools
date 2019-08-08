@@ -12,15 +12,21 @@ import * as assert from "assert";
 import * as fs from 'fs';
 import * as path from 'path';
 import { commands, Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument, window, workspace } from "vscode";
-import { diagnosticsCompleteMessage, diagnosticsSource, languageServerCompleteMessage } from "../../extension.bundle";
+import { diagnosticsCompletePrefix, expressionsDiagnosticsSource } from "../../extension.bundle";
 import { getTempFilePath } from "./getTempFilePath";
 
 export const diagnosticsTimeout = 30000; // CONSIDER: Use this long timeout only for first test, or for suite setup
 export const testFolder = path.join(__dirname, '..', '..', '..', 'test');
 
-export type Source = 'ARM Language Server' | 'json';
-export const schemaSource: Source = 'ARM Language Server'; // Schema errors
-export const armToolsSource: Source = <Source>diagnosticsSource;
+export interface Source {
+    name: string;
+}
+export const sources = {
+    expressions: { name: expressionsDiagnosticsSource },
+    schema: { name: 'ARM (Schema)' },
+    syntax: { name: 'ARM (Syntax)' },
+    template: { name: 'ARM (Template)' },
+};
 
 export type IDeploymentExpressionType = "string" | "securestring" | "int" | "bool" | "object" | "secureObject" | "array";
 export interface IDeploymentParameterDefinition {
@@ -109,16 +115,14 @@ async function getDiagnosticsForDocument(
     let dispose: Disposable;
     let timer: NodeJS.Timer;
 
-    // tslint:disable-next-line:no-suspicious-comment
-    let filterSources = [ // TODO
-        armToolsSource,
-        schemaSource
-    ];
+    // Default to all sources
+    let filterSources: Source[] = Array.from(Object.values(sources));
+
     if (options.includeSources) {
-        filterSources = filterSources.filter(s => (<string[]>options.includeSources).includes(s));
+        filterSources = filterSources.filter(s => options.includeSources.find(s2 => s2.name == s.name));
     }
     if (options.ignoreSources) {
-        filterSources = filterSources.filter(s => !(<string[]>options.ignoreSources).includes(s));
+        filterSources = filterSources.filter(s => !(options.ignoreSources).includes(s));
     }
 
     // tslint:disable-next-line:typedef
@@ -128,22 +132,19 @@ async function getDiagnosticsForDocument(
 
         function pollDiagnostics(): void {
             currentDiagnostics = languages.getDiagnostics(document.uri);
-            let armToolsDiagnosticsComplete = !!currentDiagnostics.find(d => d.message === diagnosticsCompleteMessage);
-            let langaugeServerDiagnosticsComplete = !!currentDiagnostics.find(d => d.message === languageServerCompleteMessage);
-            let needsArmToolsComplete = filterSources.includes(armToolsSource);
-            let needsServerComplete = !!filterSources.find(s => s !== armToolsSource);
 
-            // Filter diagnostics according to options
-            currentDiagnostics = currentDiagnostics.filter(d => (<string[]>filterSources).includes(d.source));
+            // Filter diagnostics according to sources filter
+            let filteredDiagnostics = currentDiagnostics.filter(d => filterSources.find(s => d.source === s.name));
+
+            // Find completion messages
+            let completedSources:string[] = filteredDiagnostics.filter(d => d.message.startsWith(diagnosticsCompletePrefix)).map(d => d.source);
 
             // Remove completion messages
-            currentDiagnostics = currentDiagnostics.filter(d => d.message !== diagnosticsCompleteMessage && d.message !== languageServerCompleteMessage);
+            filteredDiagnostics = filteredDiagnostics.filter(d => !d.message.startsWith(diagnosticsCompletePrefix));
 
-            if ((!needsArmToolsComplete || armToolsDiagnosticsComplete) &&
-                (!needsServerComplete || langaugeServerDiagnosticsComplete)
-            ) {
+            if (filterSources.every(s => completedSources.includes(s.name))) {
                 complete = true;
-                resolve(currentDiagnostics);
+                resolve(filteredDiagnostics);
             }
         }
 
@@ -156,7 +157,7 @@ async function getDiagnosticsForDocument(
             timer = setTimeout(
                 () => {
                     reject(
-                        new Error('Waiting for diagnostics timed out. Last retrieved diagnostics: '
+                        new Error('Timed out waiting for diagnostics. Last retrieved diagnostics: '
                             + (currentDiagnostics ? currentDiagnostics.map(d => d.message).join('\n') : "None")));
                 },
                 diagnosticsTimeout);
@@ -223,25 +224,24 @@ export async function getDiagnosticsForTemplate(
     fs.writeFileSync(tempPath, templateContents);
     fileToDelete = tempPath;
 
-    // NOTE: Even though we request the editor to be closed,
-    // there's no way to request the document actually be closed,
-    //   and when you open it via an API, it doesn't close for a while,
-    //   so the diagnostics won't go away
-    // See https://github.com/Microsoft/vscode/issues/43056
-
     let doc = await workspace.openTextDocument(tempPath);
     await window.showTextDocument(doc);
 
     let diagnostics: Diagnostic[] = await getDiagnosticsForDocument(doc, options);
     assert(!!diagnostics);
 
+    // NOTE: Even though we request the editor to be closed,
+    // there's no way to request the document actually be closed,
+    //   and when you open it via an API, it doesn't close for a while,
+    //   so the diagnostics won't go away
+    // See https://github.com/Microsoft/vscode/issues/43056
     await commands.executeCommand('workbench.action.closeAllEditors');
 
     if (fileToDelete) {
         fs.unlinkSync(fileToDelete);
     }
 
-    return diagnostics.filter(d => d.message !== diagnosticsCompleteMessage);
+    return diagnostics;
 }
 
 function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOptions, includeRange: boolean): string {
