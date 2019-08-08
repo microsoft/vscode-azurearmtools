@@ -1,17 +1,17 @@
-{                   punctuation.definition.dictionary.begin.json
-"                   punctuation.support.type.property-name.begin.json.comments
-$schema             support.type.property-name
-"                   punctuation.support.type.property-name.end.json.comments
-:                   punctuation.separator.dictionary.key-value.json.comments
+{                   punctuation.definition.dictionary.begin.json.arm
+"                   punctuation.support.type.property-name.begin.json.arm
+$schema             support.type.property-name.json.arm
+"                   punctuation.support.type.property-name.end.json.arm
+:                   punctuation.separator.dictionary.key-value.json.arm
 "                   punctuation.definition.string.begin.json.arm
 http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#
-                    string.quoted.double.json.comments
+                    string.quoted.double.json.arm
 "                   punctuation.definition.string.end.json.arm
-,                   punctuation.separator.dictionary.pair.json.comments
-"                   punctuation.support.type.property-name.begin.json.comments
-parameters          support.type.property-name.json.comments
-"                   punctuation.support.type.property-name.end.json.comments
-:                   punctuation.separator.dictionary.key-value.json.comments
+,                   punctuation.separator.dictionary.pair.json.arm
+"                   punctuation.support.type.property-name.begin.json.arm
+parameters          support.type.property-name.json.arm
+"                   punctuation.support.type.property-name.end.json.arm
+:                   punctuation.separator.dictionary.key-value.json.arm
 {                   punctuation.definition.dictionary.begin.json.arm
 "                   punctuation.support.type.property-name.begin.json.arm
 guid                support.type.property-name.json.arm
@@ -33,4 +33,4 @@ defaultValue        support.type.property-name.json.arm
 1.23                constant.numeric.json.arm
 }                   punctuation.definition.dictionary.end.json.arm
 }                   punctuation.definition.dictionary.end.json.arm
-}                   meta.arm-deployment-template.json.comments
+}                   punctuation.definition.dictionary.end.json.arm
