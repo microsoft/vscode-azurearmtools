@@ -8,7 +8,7 @@
 // tslint:disable:max-func-body-length no-console cyclomatic-complexity max-line-length
 
 // Turn on to overwrite results files rather than creating new ".txt.actual" files when there are differences.
-const OVERWRITE = true;
+const OVERWRITE = false;
 
 import * as assert from 'assert';
 import * as fs from 'fs';
