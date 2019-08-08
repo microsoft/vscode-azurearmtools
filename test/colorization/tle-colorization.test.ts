@@ -332,7 +332,7 @@ suite('TLE colorization', function (this: ISuiteCallbackContext): void {
 
     resultFiles = fs.readdirSync(resultsFolder);
     for (let resultFile of resultFiles) {
-        if (resultFile.endsWith('.actual') || resultFile.endsWith('.full-scope.txt')) {
+        if (resultFile.endsWith('.actual') || resultFile.endsWith('.full-scope-result.txt')) {
             fs.unlinkSync(path.join(resultsFolder, resultFile));
         }
     }
