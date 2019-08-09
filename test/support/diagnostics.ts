@@ -6,7 +6,7 @@
 
 // tslint:disable:no-unused-expression no-console no-string-based-set-timeout
 // tslint:disable:insecure-random max-func-body-length radix prefer-template
-// tslint:disable:object-literal-key-quotes no-http-string
+// tslint:disable:object-literal-key-quotes no-http-string non-literal-fs-path
 
 import * as assert from "assert";
 import * as fs from 'fs';
@@ -206,7 +206,7 @@ export async function getDiagnosticsForTemplate(
     } else {
         // It's an object
         let templateObject: Partial<IDeploymentTemplate> = templateContentsOrFileName;
-        templateContents = JSON.stringify(templateObject, null, 2);
+        templateContents = JSON.stringify(templateObject, undefined, 2);
     }
 
     // Add schema if not already present (to make it easier to write tests)

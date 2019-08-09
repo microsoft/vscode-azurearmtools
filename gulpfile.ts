@@ -112,7 +112,7 @@ async function updateLanguageServer(): Promise<void> {
     // tslint:disable-next-line: max-line-length
     // let armServerBin = path.join(env.ExtensionsBin, '..', '..', 'ARM-LanguageServer', 'Microsoft.ArmLanguageServer', 'bin', 'Debug', 'netcoreapp2.2', 'publish');
     let armServerBin = '\\\\scratch2\\scratch\\stephwe\\ARM\\Dev Assemblies\\Current';
-    let updateDest = path.join(__dirname, 'LanguageServerBin');
+    let updateDest = path.join(__dirname, 'languageServer');
     if (!fs.existsSync(updateDest)) {
         fs.mkdirSync(updateDest);
     }

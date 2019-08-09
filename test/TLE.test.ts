@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length
+// tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length no-null-keyword
 
 import * as assert from "assert";
 import { AzureRMAssets, DeploymentTemplate, FunctionMetadata, FunctionsMetadata, IncorrectArgumentsCountIssue, Language, PositionContext, Reference, TLE, UnrecognizedFunctionIssue } from "../extension.bundle";
