@@ -71,7 +71,7 @@ export class AzureRMTools {
     constructor(context: vscode.ExtensionContext) {
         const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
         ext.jsonOutlineProvider = jsonOutline;
-        context.subscriptions.push(vscode.window.registerTreeDataProvider("arm-deployment-outline", jsonOutline));
+        context.subscriptions.push(vscode.window.registerTreeDataProvider("azurerm-vscode-tools.template-outline", jsonOutline));
         context.subscriptions.push(vscode.commands.registerCommand("azurerm-vscode-tools.treeview.goto", (range: vscode.Range) => jsonOutline.goToDefinition(range)));
 
         vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
@@ -79,7 +79,7 @@ export class AzureRMTools {
         vscode.workspace.onDidOpenTextDocument(this.onDocumentOpened, this, context.subscriptions);
         vscode.workspace.onDidChangeTextDocument(this.onDocumentChanged, this, context.subscriptions);
 
-        this._diagnosticsCollection = vscode.languages.createDiagnosticCollection("azurermtle");
+        this._diagnosticsCollection = vscode.languages.createDiagnosticCollection("arm-tools-expressions");
         context.subscriptions.push(this._diagnosticsCollection);
 
         const activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
@@ -121,7 +121,7 @@ export class AzureRMTools {
             if (shouldWatchDocument(document)) {
                 if (isDeploymentTemplate(document)) {
                     // If the documentUri is not in our dictionary of deployment templates, then we
-                    // know that this document was opened (as opposed to changed/updated).
+                    // know that this document was just opened (as opposed to changed/updated).
                     let stopwatch: Stopwatch;
                     const documentUri: string = document.uri.toString();
                     if (!this._deploymentTemplates[documentUri]) {
@@ -210,6 +210,7 @@ export class AzureRMTools {
             }
 
             if (ext.addCompletionDiagnostic) {
+                // Add a diagnostic to indicate expression validation is done (for testing)
                 diagnostics.push(<vscode.Diagnostic>{
                     severity: vscode.DiagnosticSeverity.Information,
                     message: expressionsDiagnosticsCompletionMessage,

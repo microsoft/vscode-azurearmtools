@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable:object-literal-key-quotes no-http-string max-func-body-length
+
 import { sources, testDiagnostics, testDiagnosticsFromFile } from "../support/diagnostics";
 
 suite("Schema validation", () => {
@@ -91,6 +93,7 @@ suite("Schema validation", () => {
     });
 
     suite("More specific error messages for schema problems", async () => {
+        // tslint:disable-next-line: no-suspicious-comment
         /* TODO: not yet fixed
         test('Resource type miscapitalized (https://github.com/microsoft/vscode-azurearmtools/issues/238)',
             async () =>

@@ -2,8 +2,6 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:no-suspicious-comment max-line-length // TODO:
-
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -48,7 +46,6 @@ export function startArmLanguageServer(context: ExtensionContext): void {
             }
         }
 
-        // let serverExe = context.asAbsolutePath('D:/Development/Omnisharp/omnisharp-roslyn/artifacts/publish/OmniSharp.Stdio/win7-x64/OmniSharp.exe');
         // The debug options for the server
         // let debugOptions = { execArgv: ['-lsp', '-d' };
 
@@ -88,12 +85,6 @@ export function startArmLanguageServer(context: ExtensionContext): void {
         // Options to control the language client
         let clientOptions: LanguageClientOptions = {
             documentSelector: armDeploymentDocumentSelector,
-            // synchronize: {
-            //     // Synchronize the setting section 'languageServerExample' to the server
-            //     // TODO: configurationSection: 'languageServerExampleTODO',
-            //     fileEvents: workspace.createFileSystemWatcher('**/*.json')
-            // },
-            //asdf initializationFailedHandler
         };
 
         // Create the language client and start the client.
@@ -108,8 +99,6 @@ export function startArmLanguageServer(context: ExtensionContext): void {
         try {
             serverStartMs = Date.now();
             let disposable = client.start();
-            // Push the disposable to the context's subscriptions so that the
-            // client can be deactivated on extension deactivation
             context.subscriptions.push(disposable);
         } catch (error) {
             throw new Error(
@@ -120,6 +109,8 @@ export function startArmLanguageServer(context: ExtensionContext): void {
     });
 }
 
+// tslint:disable-next-line:no-suspicious-comment
+// TODO: Verify error handling
 class WrappedErrorHandler implements ErrorHandler {
     constructor(private _handler: ErrorHandler) {
     }

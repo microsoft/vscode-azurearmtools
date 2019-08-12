@@ -26,7 +26,6 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual("", dt.documentText);
             assert.deepStrictEqual("id", dt.documentId);
             assert.deepStrictEqual([], dt.parameterDefinitions);
-            assert.equal(null, dt.schemaUri);
         });
 
         test("Non-JSON stringValue", () => {
@@ -34,7 +33,6 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual("I'm not a JSON file", dt.documentText);
             assert.deepStrictEqual("id", dt.documentId);
             assert.deepStrictEqual([], dt.parameterDefinitions);
-            assert.equal(null, dt.schemaUri);
         });
 
         test("JSON stringValue with number parameters definition", () => {
@@ -42,7 +40,6 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual("{ 'parameters': 21 }", dt.documentText);
             assert.deepStrictEqual("id", dt.documentId);
             assert.deepStrictEqual([], dt.parameterDefinitions);
-            assert.equal(null, dt.schemaUri);
         });
 
         test("JSON stringValue with empty object parameters definition", () => {
@@ -50,7 +47,6 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual("{ 'parameters': {} }", dt.documentText);
             assert.deepStrictEqual("id", dt.documentId);
             assert.deepStrictEqual([], dt.parameterDefinitions);
-            assert.equal(null, dt.schemaUri);
         });
 
         test("JSON stringValue with one parameter definition", () => {
@@ -65,7 +61,6 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual(pd0.name.toString(), "num");
             assert.deepStrictEqual(pd0.description, null);
             assert.deepStrictEqual(pd0.span, new Language.Span(18, 27));
-            assert.equal(null, dt.schemaUri);
         });
 
         test("JSON stringValue with one parameter definition with null description", () => {
@@ -79,7 +74,6 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual(pd0.name.toString(), "num");
             assert.deepStrictEqual(pd0.description, null);
             assert.deepStrictEqual(pd0.span, new Language.Span(18, 64));
-            assert.equal(null, dt.schemaUri);
         });
 
         test("JSON stringValue with one parameter definition with empty description", () => {
@@ -93,7 +87,6 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual(pd0.name.toString(), "num");
             assert.deepStrictEqual(pd0.description, "");
             assert.deepStrictEqual(pd0.span, new Language.Span(18, 62));
-            assert.equal(null, dt.schemaUri);
         });
 
         test("JSON stringValue with one parameter definition with non-empty description", () => {
@@ -107,7 +100,6 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual(pd0.name.toString(), "num");
             assert.deepStrictEqual(pd0.description, "num description");
             assert.deepStrictEqual(pd0.span, new Language.Span(18, 77));
-            assert.equal(null, dt.schemaUri);
         });
 
         test("JSON stringValue with number variable definitions", () => {
@@ -115,7 +107,6 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual("id", dt.documentId);
             assert.deepStrictEqual("{ 'variables': 12 }", dt.documentText);
             assert.deepStrictEqual([], dt.variableDefinitions);
-            assert.equal(null, dt.schemaUri);
         });
 
         test("JSON stringValue with one variable definition", () => {
@@ -129,8 +120,6 @@ suite("DeploymentTemplate", () => {
             assert(variableDefinition);
             assert.deepStrictEqual(variableDefinition.span, new Language.Span(22, 3));
             assert.deepStrictEqual(variableDefinition.toString(), "A");
-
-            assert.equal(null, dt.schemaUri);
         });
 
         test("JSON stringValue with two variable definitions", () => {
@@ -149,45 +138,8 @@ suite("DeploymentTemplate", () => {
             const b: Json.NumberValue = Json.asNumberValue(dt.variableDefinitions[1].value);
             assert(b);
             assert.deepStrictEqual(b.span, new Language.Span(32, 1));
-
-            assert.equal(null, dt.schemaUri);
-        });
-
-        test("JSON stringValue with $schema property", () => {
-            const dt = new DeploymentTemplate("{ '$schema': 'a' }", "id");
-            assert.deepStrictEqual("id", dt.documentId);
-            assert.deepStrictEqual("a", dt.schemaUri);
-            assert.deepStrictEqual("a", dt.schemaUri);
         });
     });
-
-    //asdf
-    // suite("hasArmDeploymentSchema()", () => {
-    //     test("with empty deployment template", () => {
-    //         const dt = new DeploymentTemplate("", "id");
-    //         assert.equal(false, dt.hasArmDeploymentSchema());
-    //     });
-
-    //     test("with empty object deployment template", () => {
-    //         const dt = new DeploymentTemplate("{}", "id");
-    //         assert.equal(false, dt.hasArmDeploymentSchema());
-    //     });
-
-    //     test("with empty schema", () => {
-    //         const dt = new DeploymentTemplate("{ '$schema': '' }", "id");
-    //         assert.equal(false, dt.hasArmDeploymentSchema());
-    //     });
-
-    //     test("with invalid schema uri", () => {
-    //         const dt = new DeploymentTemplate("{ '$schema': 'www.bing.com' }", "id");
-    //         assert.equal(false, dt.hasArmDeploymentSchema());
-    //     });
-
-    //     test("with valid schema uri", () => {
-    //         const dt = new DeploymentTemplate("{ '$schema': 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#' }", "id");
-    //         assert.equal(true, dt.hasArmDeploymentSchema());
-    //     });
-    // });
 
     suite("errors", () => {
         test("with empty deployment template", () => {

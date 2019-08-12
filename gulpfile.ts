@@ -106,6 +106,8 @@ async function buildGrammars(): Promise<void> {
     console.log(`Copied ${jsonArmGrammarDestPath}`);
 }
 
+// tslint:disable-next-line:no-suspicious-comment
+// TODO: This is temporary - retrieves binaries from an internal location to package with the extension
 async function updateLanguageServer(): Promise<void> {
     // tslint:disable-next-line: max-line-length
     // let armServerBin = path.join(env.ExtensionsBin, '..', '..', 'ARM-LanguageServer', 'Microsoft.ArmLanguageServer', 'bin', 'Debug', 'netcoreapp2.2', 'publish');

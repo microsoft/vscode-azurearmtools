@@ -24,7 +24,6 @@ export class DeploymentTemplate {
     private _errors: Promise<language.Issue[]>;
     private _warnings: language.Issue[];
     private _functionCounts: Histogram;
-    private _schemaUri: string;
 
     /**
      * Create a new DeploymentTemplate object.
@@ -92,28 +91,6 @@ export class DeploymentTemplate {
     public get documentId(): string {
         return this._documentId;
     }
-
-    public get schemaUri(): string {
-        if (this._schemaUri === undefined) {
-            this._schemaUri = null;
-
-            // tslint:disable-next-line: no-suspicious-comment
-            // TODO: We shouldn't be parsing the file to determine this - it happens on all opened JSON file
-            //       - once we have a language ID this won't really be an issue anyway
-            const value: Json.ObjectValue = Json.asObjectValue(this._jsonParseResult.value);
-            if (value) {
-                const schema: Json.Value = Json.asStringValue(value.getPropertyValue("$schema"));
-                if (schema) {
-                    this._schemaUri = schema.toString();
-                }
-            }
-        }
-        return this._schemaUri;
-    }
-
-    // public hasArmDeploymentSchema(): boolean { asdf
-    //     return Utilities.isArmDeploymentSchemaUri(this.schemaUri);
-    // }
 
     public get errors(): Promise<language.Issue[]> {
         if (this._errors === undefined) {

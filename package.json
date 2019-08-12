@@ -11,11 +11,11 @@
     "Formatters"
   ],
   "keywords": [
-    "ARM Tools",
+    "ARM Template",
+    "ARM",
     "Azure",
     "Resource Manager",
-    "Template",
-    "Deployment"
+    "Deployment Template"
   ],
   "repository": {
     "url": "https://github.com/Microsoft/vscode-azurearmtools.git"
@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/Microsoft/vscode-azurearmtools/blob/master/README.md",
   "license": "SEE LICENSE IN LICENSE.md",
-  "icon": "icon.png",
+  "icon": "AzureRMTools128x128.png",
   "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
   "engines": {
     "vscode": "^1.28.0"
@@ -89,7 +89,7 @@
     "views": {
       "explorer": [
         {
-          "id": "arm-deployment-outline",
+          "id": "azurerm-vscode-tools.template-outline",
           "name": "ARM Template Outline",
           "when": "showArmJsonView"
         }
@@ -104,8 +104,7 @@
         "configuration": "grammars/jsonc.arm.language-configuration.json",
         "extensions": [
           ".arm"
-        ],
-        "$extensions.TODO": "asdf - need at least one explicit extension for tests"
+        ]
       }
     ]
   },

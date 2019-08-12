@@ -59,8 +59,8 @@
             ],
             "preLaunchTask": "npm: compile",
             "env": {
-                "AZCODE_ARM_IGNORE_BUNDLE": "1",
                 "MOCHA_grep": "", // RegExp of tests to run (empty for all)
+                "AZCODE_ARM_IGNORE_BUNDLE": "1",
                 "MOCHA_enableTimeouts": "0", // Disable time-outs
                 "DEBUGTELEMETRY": "1", // Set to verbose to see telemetry in console
                 "NODE_DEBUG": ""

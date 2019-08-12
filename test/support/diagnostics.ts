@@ -119,7 +119,7 @@ async function getDiagnosticsForDocument(
     let filterSources: Source[] = Array.from(Object.values(sources));
 
     if (options.includeSources) {
-        filterSources = filterSources.filter(s => options.includeSources.find(s2 => s2.name == s.name));
+        filterSources = filterSources.filter(s => options.includeSources.find(s2 => s2.name === s.name));
     }
     if (options.ignoreSources) {
         filterSources = filterSources.filter(s => !(options.ignoreSources).includes(s));
@@ -137,7 +137,7 @@ async function getDiagnosticsForDocument(
             let filteredDiagnostics = currentDiagnostics.filter(d => filterSources.find(s => d.source === s.name));
 
             // Find completion messages
-            let completedSources:string[] = filteredDiagnostics.filter(d => d.message.startsWith(diagnosticsCompletePrefix)).map(d => d.source);
+            let completedSources: string[] = filteredDiagnostics.filter(d => d.message.startsWith(diagnosticsCompletePrefix)).map(d => d.source);
 
             // Remove completion messages
             filteredDiagnostics = filteredDiagnostics.filter(d => !d.message.startsWith(diagnosticsCompletePrefix));

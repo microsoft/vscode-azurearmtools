@@ -16,10 +16,10 @@ export const armDeploymentLanguageId = 'arm-deployment';
 // String that shows up in our errors as the source in parentheses
 export const expressionsDiagnosticsSource = "ARM (Expressions)";
 
-// For testing
-export const diagnosticsCompletePrefix = "Diagnostics complete: ";
-export const expressionsDiagnosticsCompletionMessage = diagnosticsCompletePrefix + expressionsDiagnosticsSource;
-
 export namespace configKeys {
     export const autoDetectJsonTemplates = "autoDetectJsonTemplates";
 }
+
+// For testing: We create a diagnostic with this message during testing to indicate when all (expression) diagnostics have been calculated
+export const diagnosticsCompletePrefix = "Diagnostics complete: ";
+export const expressionsDiagnosticsCompletionMessage = diagnosticsCompletePrefix + expressionsDiagnosticsSource;

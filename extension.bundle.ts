@@ -8,7 +8,8 @@
  * Anything needing to be exposed outside of the extension sources must be exported from here, because
  * everything else will be in private modules in extension.bundle.js.
  *
- * Exports for tests -
+ * EXPORTS FOR TESTS:
+ *
  * The tests are not packaged with the webpack bundle and therefore only have access to code exported from this file.
  *
  * The tests should import '../extension.bundle.ts'. At design-time they live in tests/ and so will pick up this file (extension.bundle.ts).
@@ -37,6 +38,7 @@ export { IncorrectArgumentsCountIssue } from "./src/IncorrectArgumentsCountIssue
 export * from "./src/Language";
 export { ParameterDefinition } from "./src/ParameterDefinition";
 export { PositionContext } from "./src/PositionContext";
+export { doesJsonContainArmSchema } from './src/supported';
 export { JsonOutlineProvider, shortenTreeLabel } from "./src/Treeview";
 export { UnrecognizedFunctionIssue } from "./src/UnrecognizedFunctionIssue";
 export { Completion };
@@ -47,4 +49,3 @@ export { Hover };
 export { basic };
 export { Utilities };
 export { TLE };
-

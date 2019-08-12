@@ -302,4 +302,4 @@ test-results.xml
 test/*.actual
 test/**/*.full-scope-result.txt
 
-LanguageServerBin/**
+languageServer/**

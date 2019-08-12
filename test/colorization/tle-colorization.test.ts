@@ -5,7 +5,7 @@
 
 'use strict';
 
-// tslint:disable:max-func-body-length no-console cyclomatic-complexity max-line-length
+// tslint:disable:max-func-body-length no-console cyclomatic-complexity max-line-length prefer-template
 
 // Turn on to overwrite results files rather than creating new ".txt.actual" files when there are differences.
 const OVERWRITE = false;
@@ -255,7 +255,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
         }
     }
 
-    function writeToResultsFile(resultPathToWriteTo: string, resultsString: string, shouldCompareFullScope: boolean, resultsFullString: string) {
+    function writeToResultsFile(resultPathToWriteTo: string, resultsString: string, shouldCompareFullScope: boolean, resultsFullString: string): void {
         fs.writeFileSync(resultPathToWriteTo, resultsString);
         if (!shouldCompareFullScope) {
             fs.writeFileSync(resultPathToWriteTo + ".full-scope-result.txt", resultsFullString);
@@ -272,7 +272,7 @@ function normalize(s: string): string {
     return s.replace(/(\r\n)|\r/g, os.EOL);
 }
 
-function getTestcaseResults(testCases: ITestcase[]): { text: string; results: string[]; fullScopeString: string; shortScopeString: string; } {
+function getTestcaseResults(testCases: ITestcase[]): { text: string; results: string[]; fullScopeString: string; shortScopeString: string } {
     let results = testCases.map((testcase: ITestcase): { short: string; full: string } => {
         let prefix = testcase.testString ? `${testcase.testString}${os.EOL}` : "";
 
@@ -281,7 +281,7 @@ function getTestcaseResults(testCases: ITestcase[]): { text: string; results: st
             return lastSpaceIndex > 0 ? scopes.slice(lastSpaceIndex + 1) : scopes;
         }
 
-        function getTestCaseString(full: boolean) {
+        function getTestCaseString(full: boolean): string {
             return testcase.data.map(td => {
                 let theText = td.text.trim();
                 let padding = tabSize - theText.length;
@@ -351,6 +351,7 @@ suite('TLE colorization', function (this: ISuiteCallbackContext): void {
     });
 
     testFiles.forEach(testFile => {
+        // tslint:disable-next-line: no-suspicious-comment
         if (testFile.startsWith('TODO')) {
             test(testFile);
         } else {
