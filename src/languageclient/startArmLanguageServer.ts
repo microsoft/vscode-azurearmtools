@@ -37,12 +37,12 @@ export function startArmLanguageServer(context: ExtensionContext): void {
 
             serverDllPath = path.join(serverFolderPath, languageServerDllName);
         } else {
-            if (fs.statSync(serverDllPath).isDirectory()) {
-                serverDllPath = path.join(serverDllPath, languageServerDllName);
-            }
-
             if (!fs.existsSync(serverDllPath)) {
                 throw new Error(`Couldn't find the ARM language server at ${serverDllPath}.  Please verify your 'armTools.languageServer.path' setting.`);
+            }
+
+            if (fs.statSync(serverDllPath).isDirectory()) {
+                serverDllPath = path.join(serverDllPath, languageServerDllName);
             }
         }
 
