@@ -79,7 +79,9 @@ export function startArmLanguageServer(context: ExtensionContext): void {
             run: {
                 command: serverExe, args: commonArgs, options: { shell: true }
             },
-            debug: { command: serverExe, args: commonArgs, options: { shell: true } },
+            debug: {
+                command: serverExe, args: commonArgs, options: { shell: true }
+            },
         };
 
         // Options to control the language client
