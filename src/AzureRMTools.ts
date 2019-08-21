@@ -28,7 +28,7 @@ import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
 export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
     ext.context = context;
     ext.reporter = createTelemetryReporter(context);
-    ext.outputChannel = vscode.window.createOutputChannel("Azure Resource Manager Tools");
+    ext.outputChannel = vscode.window.createOutputChannel("ARM Tools");
     ext.ui = new AzureUserInput(context.globalState);
     registerUIExtensionVariables(ext);
 

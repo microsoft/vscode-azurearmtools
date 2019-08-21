@@ -1,5 +1,5 @@
-# Azure Resource Manager Tools
-A JSON language extension to support Azure Resource Manager deployment templates and template language expressions.
+# Azure Resource Manager ("ARM") Tools
+A JSON language extension to support Azure Resource Manager ("ARM") deployment templates and template language expressions.
 
 ## Developing the Extension
 

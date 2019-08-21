@@ -1,6 +1,6 @@
 {
   "name": "azurerm-vscode-tools",
-  "displayName": "Azure Resource Manager Tools",
+  "displayName": "Azure Resource Manager (\"ARM\") Tools",
   "description": "Template language support for Azure Resource Manager JSON files.",
   "version": "0.6.1-alpha",
   "publisher": "msazurermtools",
@@ -58,7 +58,7 @@
     ],
     "configuration": {
       "type": "object",
-      "title": "Azure Resource Manager Tools Configuration Settings",
+      "title": "ARM Tools Configuration Settings",
       "properties": {}
     },
     "views": {
