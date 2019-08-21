@@ -14,11 +14,14 @@ import { gulp_installAzureAccount, gulp_webpack } from 'vscode-azureextensiondev
 
 const env = process.env;
 
-export const jsonArmGrammarSourcePath: string = path.resolve('grammars/JSONC.arm.tmLanguage.json');
-export const jsonArmGrammarDestPath: string = path.resolve('dist/grammars/JSONC.arm.tmLanguage.json');
+export const jsonArmGrammarSourcePath: string = path.resolve('grammars', 'JSONC.arm.tmLanguage.json');
+export const jsonArmGrammarDestPath: string = path.resolve('dist', 'grammars', 'JSONC.arm.tmLanguage.json');
 
-export const tleGrammarSourcePath: string = path.resolve('grammars/arm-expression-string.tmLanguage.json');
-export const tleGrammarBuiltPath: string = path.resolve('dist/grammars/arm-expression-string.tmLanguage.json');
+export const tleGrammarSourcePath: string = path.resolve('grammars', 'arm-expression-string.tmLanguage.json');
+export const tleGrammarBuiltPath: string = path.resolve('dist', 'grammars', 'arm-expression-string.tmLanguage.json');
+
+export const armConfigurationSourcePath: string = path.resolve('grammars', 'jsonc.arm.language-configuration.json');
+export const armConfigurationDestPath: string = path.resolve('dist', 'grammars', 'jsonc.arm.language-configuration.json');
 
 export interface IGrammar {
     preprocess?: {
@@ -104,6 +107,8 @@ async function buildGrammars(): Promise<void> {
 
     fs.copyFileSync(jsonArmGrammarSourcePath, jsonArmGrammarDestPath);
     console.log(`Copied ${jsonArmGrammarDestPath}`);
+    fs.copyFileSync(armConfigurationSourcePath, armConfigurationDestPath);
+    console.log(`Copied ${armConfigurationDestPath}`);
 }
 
 // tslint:disable-next-line:no-suspicious-comment
