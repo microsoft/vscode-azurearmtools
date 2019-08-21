@@ -20,7 +20,7 @@ import { startArmLanguageServer } from "./languageclient/startArmLanguageServer"
 import { PositionContext } from "./PositionContext";
 import * as Reference from "./Reference";
 import { Stopwatch } from "./Stopwatch";
-import { armDeploymentDocumentSelector, isDeploymentTemplate, shouldWatchDocument } from "./supported";
+import { armDeploymentDocumentSelector, mightBeDeploymentTemplate, shouldWatchDocument } from "./supported";
 import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
@@ -119,7 +119,7 @@ export class AzureRMTools {
             let foundDeploymentTemplate = false;
 
             if (shouldWatchDocument(document)) {
-                if (isDeploymentTemplate(document)) {
+                if (mightBeDeploymentTemplate(document)) {
                     // If the documentUri is not in our dictionary of deployment templates, then we
                     // know that this document was just opened (as opposed to changed/updated).
                     let stopwatch: Stopwatch;
@@ -129,52 +129,55 @@ export class AzureRMTools {
                         stopwatch.start();
                     }
 
-                    this.ensureDeploymentTemplateEventsHookedUp();
-
+                    // Might be a deployment template, need to do a full parse to make sure
                     let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(document.getText(), documentUri);
+                    if (deploymentTemplate.hasArmSchemaUri()) {
+                        foundDeploymentTemplate = true;
 
-                    this._deploymentTemplates[documentUri] = deploymentTemplate;
-                    foundDeploymentTemplate = true;
+                        this.ensureDeploymentTemplateEventsHookedUp();
 
-                    // We only initialized the stopwatch if the deployment template was being
-                    // opened. The stopwatch variable will not be initialized if the deployment
-                    // template is being edited.
-                    if (stopwatch) {
-                        // A deployment template has been opened (as opposed to having been tabbed to)
+                        this._deploymentTemplates[documentUri] = deploymentTemplate;
 
-                        stopwatch.stop();
+                        // We only initialized the stopwatch if the deployment template was being
+                        // opened. The stopwatch variable will not be initialized if the deployment
+                        // template is being edited.
+                        if (stopwatch) {
+                            // A deployment template has been opened (as opposed to having been tabbed to)
 
-                        // Set the language ID to ARM deployment template
-                        if (document.languageId !== armDeploymentLanguageId) {
-                            vscode.languages.setTextDocumentLanguage(document, armDeploymentLanguageId);
+                            stopwatch.stop();
 
-                            // The document will be reloaded, firing this event again with the new langid
-                            actionContext.telemetry.properties.switchedToArm = 'true';
-                            actionContext.telemetry.properties.docLangId = document.languageId;
-                            actionContext.telemetry.properties.docExtension = path.extname(document.fileName);
-                            actionContext.telemetry.suppressIfSuccessful = false;
-                            return;
+                            // Set the language ID to ARM deployment template
+                            if (document.languageId !== armDeploymentLanguageId) {
+                                vscode.languages.setTextDocumentLanguage(document, armDeploymentLanguageId);
+
+                                // The document will be reloaded, firing this event again with the new langid
+                                actionContext.telemetry.properties.switchedToArm = 'true';
+                                actionContext.telemetry.properties.docLangId = document.languageId;
+                                actionContext.telemetry.properties.docExtension = path.extname(document.fileName);
+                                actionContext.telemetry.suppressIfSuccessful = false;
+                                return;
+                            }
+
+                            ext.reporter.sendTelemetryEvent(
+                                "Deployment Template Opened",
+                                {
+                                    docLangId: document.languageId,
+                                    docExtension: path.extname(document.fileName),
+                                },
+                                {
+                                    documentSizeInCharacters: document.getText().length,
+                                    parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds,
+                                    lineCount: deploymentTemplate.lineCount,
+                                    paramsCount: deploymentTemplate.parameterDefinitions.length,
+                                    varsCount: deploymentTemplate.variableDefinitions.length,
+                                    namespacesCount: deploymentTemplate.namespaceDefinitions.length
+                                });
+
+                            this.logFunctionCounts(deploymentTemplate);
                         }
 
-                        ext.reporter.sendTelemetryEvent(
-                            "Deployment Template Opened",
-                            {
-                                docLangId: document.languageId,
-                                docExtension: path.extname(document.fileName),
-                            },
-                            {
-                                documentSizeInCharacters: document.getText().length,
-                                parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds,
-                                lineCount: deploymentTemplate.lineCount,
-                                paramsCount: deploymentTemplate.parameterDefinitions.length,
-                                varsCount: deploymentTemplate.variableDefinitions.length,
-                                namespacesCount: deploymentTemplate.namespaceDefinitions.length
-                            });
-
-                        this.logFunctionCounts(deploymentTemplate);
+                        this.reportDeploymentTemplateErrors(document, deploymentTemplate);
                     }
-
-                    this.reportDeploymentTemplateErrors(document, deploymentTemplate);
                 }
             }
 

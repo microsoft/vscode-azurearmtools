@@ -11,9 +11,8 @@
 import * as assert from "assert";
 import * as path from 'path';
 import * as vscode from "vscode";
-import { iconsPath } from "./constants";
+import { armDeploymentLanguageId, iconsPath } from "./constants";
 import * as Json from "./JSON";
-import { isDeploymentTemplate } from "./supported";
 
 const topLevelIcons: [string, string][] = [
     ["$schema", "label.svg"],
@@ -353,7 +352,8 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     }
 
     private isArmTemplateDocument(document?: vscode.TextDocument): boolean {
-        return !!document && isDeploymentTemplate(document);
+        // Only show view if the language is set to ARM Deployment Template
+        return !!document && document.languageId === armDeploymentLanguageId;
     }
 
     private setTreeViewContext(visible: boolean): void {

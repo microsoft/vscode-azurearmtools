@@ -10,6 +10,7 @@ import * as language from "./Language";
 import { ParameterDefinition } from "./ParameterDefinition";
 import { PositionContext } from "./PositionContext";
 import * as Reference from "./Reference";
+import { isArmSchema } from "./supported";
 import * as TLE from "./TLE";
 import * as Utilities from "./Utilities";
 
@@ -24,6 +25,7 @@ export class DeploymentTemplate {
     private _errors: Promise<language.Issue[]>;
     private _warnings: language.Issue[];
     private _functionCounts: Histogram;
+    private _schemaUri: string;
 
     /**
      * Create a new DeploymentTemplate object.
@@ -37,6 +39,10 @@ export class DeploymentTemplate {
         assert(_documentId);
 
         this._jsonParseResult = Json.parse(_documentText);
+    }
+
+    public hasArmSchemaUri(): boolean {
+        return isArmSchema(this.schemaUri);
     }
 
     private get jsonQuotedStringTokens(): Json.Token[] {
@@ -90,6 +96,21 @@ export class DeploymentTemplate {
      */
     public get documentId(): string {
         return this._documentId;
+    }
+
+    public get schemaUri(): string {
+        if (this._schemaUri === undefined) {
+            this._schemaUri = null;
+
+            const value: Json.ObjectValue = Json.asObjectValue(this._jsonParseResult.value);
+            if (value) {
+                const schema: Json.Value = Json.asStringValue(value.getPropertyValue("$schema"));
+                if (schema) {
+                    this._schemaUri = schema.toString();
+                }
+            }
+        }
+        return this._schemaUri;
     }
 
     public get errors(): Promise<language.Issue[]> {

@@ -9,11 +9,11 @@ export const armDeploymentDocumentSelector = [
     { language: armDeploymentLanguageId, scheme: 'file' }
 ];
 
-// tslint:disable-next-line: no-suspicious-comment
-// TODO: This doesn't take comments into consideration
-const armSchemaRegex =
-    /https?:\/\/schema\.management\.azure\.com\/schemas\/[^"\/]+\/(deploymentTemplate|subscriptionDeploymentTemplate)\.json/i;
-const maxLinesToDetectSchemaIn = 10;
+const containsArmSchemaRegexString =
+    `https?:\/\/schema\.management\.azure\.com\/schemas\/[^"\/]+\/(deploymentTemplate|subscriptionDeploymentTemplate)\.json#?`;
+const containsArmSchemaRegex = new RegExp(containsArmSchemaRegexString, 'i');
+const isArmSchemaRegex = new RegExp(`^${containsArmSchemaRegexString}$`, 'i');
+const maxLinesToDetectSchemaIn = 500;
 
 function isJsonOrJsoncLangId(textDocument: TextDocument): boolean {
     return textDocument.languageId === 'json' || textDocument.languageId === 'jsonc';
@@ -38,7 +38,7 @@ export function shouldWatchDocument(textDocument: TextDocument): boolean {
     return isJsonOrJsoncLangId(textDocument);
 }
 
-export function isDeploymentTemplate(textDocument: TextDocument): boolean {
+export function mightBeDeploymentTemplate(textDocument: TextDocument): boolean {
     if (!shouldWatchDocument(textDocument)) {
         return false;
     }
@@ -49,12 +49,19 @@ export function isDeploymentTemplate(textDocument: TextDocument): boolean {
 
     if (isJsonOrJsoncLangId(textDocument)) {
         let startOfDocument = textDocument.getText(new Range(new Position(0, 0), new Position(maxLinesToDetectSchemaIn - 1, 0)));
-        return startOfDocument && doesJsonContainArmSchema(startOfDocument);
+
+        // Do a quick dirty check if the first portion of the JSON contains a schema string that we're interested in
+        // (might not actually be in a $schema property, though)
+        return startOfDocument && containsArmSchema(startOfDocument);
     }
 
     return false;
 }
 
-export function doesJsonContainArmSchema(json: string): boolean {
-    return json && !!json.match(armSchemaRegex);
+export function containsArmSchema(json: string): boolean {
+    return json && containsArmSchemaRegex.test(json);
+}
+
+export function isArmSchema(json: string | undefined | null): boolean {
+    return json && isArmSchemaRegex.test(json);
 }
