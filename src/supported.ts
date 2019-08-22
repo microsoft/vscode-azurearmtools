@@ -10,7 +10,7 @@ export const armDeploymentDocumentSelector = [
 ];
 
 const containsArmSchemaRegexString =
-    `https?:\/\/schema\.management\.azure\.com\/schemas\/[^"\/]+\/(deploymentTemplate|subscriptionDeploymentTemplate)\.json#?`;
+    `https?:\/\/schema\.management\.azure\.com\/schemas\/[^"\/]+\/[a-zA-Z]*[dD]eploymentTemplate\.json#?`;
 const containsArmSchemaRegex = new RegExp(containsArmSchemaRegexString, 'i');
 const isArmSchemaRegex = new RegExp(`^${containsArmSchemaRegexString}$`, 'i');
 const maxLinesToDetectSchemaIn = 500;

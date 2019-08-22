@@ -76,6 +76,17 @@ suite("supported", () => {
                     assert(isArmSchema("https://schema.management.azure.com/schemas/xxxxx/deploymentTemplate.json"));
                 });
 
+                test("new subscription deployment template: 'https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#'", () => {
+                    assert(isArmSchema("https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#"));
+                });
+
+                test("managementGroupDeploymentTemplate", () => {
+                    assert(isArmSchema("https://schema.management.azure.com/schemas/2018-05-01/managementGroupDeploymentTemplate.json#"));
+                });
+
+                test("tenantDeploymentTemplate", () => {
+                    assert(isArmSchema("https://schema.management.azure.com/schemas/2018-05-01/tenantDeploymentTemplate.json#"));
+                });
             });
 
             suite("full template", () => {
