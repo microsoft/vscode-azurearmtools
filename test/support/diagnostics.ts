@@ -12,9 +12,7 @@ import * as assert from "assert";
 import * as fs from 'fs';
 import * as path from 'path';
 import { commands, Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument, window, workspace } from "vscode";
-import { diagnosticsCompletePrefix, expressionsDiagnosticsSource } from "../../extension.bundle";
-import { languageServerStateSource } from "../../src/constants";
-import { LanguageServerState, languageServerState } from "../../src/languageclient/startArmLanguageServer";
+import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, LanguageServerState, languageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
 import { getTempFilePath } from "./getTempFilePath";
 

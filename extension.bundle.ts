@@ -28,7 +28,7 @@ import * as Utilities from "./src/Utilities";
 export * from './src/AzureRMAssets';
 export { activateInternal, deactivateInternal } from './src/AzureRMTools'; // Export activate/deactivate for main.js
 export * from "./src/Completion";
-export { armDeploymentLanguageId, configKeys, diagnosticsCompletePrefix, expressionsDiagnosticsSource } from "./src/constants";
+export { armDeploymentLanguageId, configKeys, diagnosticsCompletePrefix, expressionsDiagnosticsSource, languageServerStateSource } from "./src/constants";
 export { DeploymentTemplate, ReferenceInVariableDefinitionJSONVisitor } from "./src/DeploymentTemplate";
 export { Duration } from './src/Duration';
 export { ext } from './src/extensionVariables';
@@ -36,6 +36,7 @@ export { Histogram } from "./src/Histogram";
 export { httpGet } from './src/httpGet';
 export { IncorrectArgumentsCountIssue } from "./src/IncorrectArgumentsCountIssue";
 export * from "./src/Language";
+export { LanguageServerState, languageServerState } from "./src/languageclient/startArmLanguageServer";
 export { ParameterDefinition } from "./src/ParameterDefinition";
 export { PositionContext } from "./src/PositionContext";
 export { doesJsonContainArmSchema } from './src/supported';
@@ -49,3 +50,4 @@ export { Hover };
 export { basic };
 export { Utilities };
 export { TLE };
+
