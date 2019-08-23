@@ -38,7 +38,7 @@ export { IncorrectArgumentsCountIssue } from "./src/IncorrectArgumentsCountIssue
 export * from "./src/Language";
 export { ParameterDefinition } from "./src/ParameterDefinition";
 export { PositionContext } from "./src/PositionContext";
-export { containsArmSchema } from './src/supported';
+export { containsArmSchema, isArmSchema } from './src/supported';
 export { JsonOutlineProvider, shortenTreeLabel } from "./src/Treeview";
 export { UnrecognizedFunctionIssue } from "./src/UnrecognizedFunctionIssue";
 export { Completion };

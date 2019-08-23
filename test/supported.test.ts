@@ -6,9 +6,7 @@
 
 import * as assert from 'assert';
 import * as os from 'os';
-import { containsArmSchema } from "../extension.bundle";
-import { DeploymentTemplate } from '../src/DeploymentTemplate';
-import { isArmSchema } from '../src/supported';
+import { containsArmSchema, DeploymentTemplate, isArmSchema } from "../extension.bundle";
 
 suite("supported", () => {
     suite("doesJsonContainArmSchema(string)", () => {
