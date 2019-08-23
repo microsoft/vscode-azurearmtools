@@ -58,7 +58,7 @@
     ],
     "configuration": {
       "type": "object",
-      "title": "ARM Tools Configuration Settings",
+      "title": "ARM Tools",
       "properties": {}
     },
     "views": {
