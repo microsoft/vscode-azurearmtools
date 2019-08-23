@@ -5,8 +5,13 @@
 // tslint:disable:object-literal-key-quotes no-http-string
 
 import { sources, testDiagnostics } from "../support/diagnostics";
+import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
 
 suite("Backend validation", () => {
+    if (DISABLE_LANGUAGE_SERVER_TESTS) {
+        return;
+    }
+
     // tslint:disable-next-line: no-suspicious-comment
     test("missing required property 'resources'", async () =>
         await testDiagnostics(

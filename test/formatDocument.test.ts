@@ -16,12 +16,17 @@ import { armDeploymentLanguageId } from "../extension.bundle";
 import { diagnosticsTimeout, testFolder } from "./support/diagnostics";
 import { ensureLanguageServerAvailable } from "./support/ensureLanguageServerAvailable";
 import { getTempFilePath } from "./support/getTempFilePath";
+import { DISABLE_LANGUAGE_SERVER_TESTS } from "./testConstants";
 
 const formatDocumentCommand = 'editor.action.formatDocument';
 const formatRangeCommand = 'editor.action.formatSelection';
 
 suite("Format document", function (this: ISuiteCallbackContext): void {
     this.timeout(diagnosticsTimeout);
+
+    if (DISABLE_LANGUAGE_SERVER_TESTS) {
+        return;
+    }
 
     function testFormat(testName: string, source: string, expected: string, range?: Range | RegExp): void {
         test(testName, async () => {

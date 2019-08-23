@@ -5,8 +5,13 @@
 // tslint:disable:object-literal-key-quotes no-http-string max-func-body-length
 
 import { sources, testDiagnostics, testDiagnosticsFromFile } from "../support/diagnostics";
+import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
 
 suite("Schema validation", () => {
+    if (DISABLE_LANGUAGE_SERVER_TESTS) {
+        return;
+    }
+
     test("missing required property 'resources'", async () =>
         await testDiagnostics(
             {

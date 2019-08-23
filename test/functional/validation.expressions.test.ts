@@ -5,8 +5,13 @@
 // tslint:disable:no-suspicious-comment
 
 import { sources, testDiagnosticsFromFile } from "../support/diagnostics";
+import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
 
 suite("Expression validation", () => {
+    if (DISABLE_LANGUAGE_SERVER_TESTS) {
+        return;
+    }
+
     test(
         'templates/new-vm.jsonc',
         async () =>

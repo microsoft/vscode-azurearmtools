@@ -5,9 +5,14 @@
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length no-http-string no-suspicious-comment
 
 import { IDeploymentParameterDefinition, IDeploymentTemplate, sources, testDiagnostics } from "../support/diagnostics";
+import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
 
 // Note: a lot of these come from TLE.test.ts, but this version goes through the vscode diagnostics and thus tests the language server
 suite("Expressions functional tests", () => {
+    if (DISABLE_LANGUAGE_SERVER_TESTS) {
+        return;
+    }
+
     // testName defaults to expression if left blank
     function testExpression(testName: string, expression: string, expected: string[]): void {
         test(testName || expression, async () => {
