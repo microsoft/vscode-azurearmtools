@@ -25,6 +25,7 @@ function initializeDotnetAcquire(): void { //asdf no reg commands, asdf no new o
     if (initialized) {
         return;
     }
+    initialized = true;
 
     // tslint:disable-next-line:no-console
     console.log("Initializing dotnet acquire...");
