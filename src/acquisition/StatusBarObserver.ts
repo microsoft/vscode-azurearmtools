@@ -20,13 +20,13 @@ export class StatusBarObserver implements IEventStreamObserver {
     public post(event: IEvent): void {
         switch (event.eventType) {
             case EventType.DotnetAcquisitionStart:
-                this.setAndShowStatusBar('$(cloud-download) Downloading .NET Core tooling...', 'dotnet.showAcquisitionLog', '', 'Downloading .NET Core tooling...'); //asdf
+                this.setAndShowStatusBar('$(cloud-download) Downloading .NET Core tooling...', 'dotnet.showAcquisitionLog', '', 'Downloading .NET Core tooling...');
                 break;
             case EventType.DotnetAcquisitionCompleted:
                 this.resetAndHideStatusBar();
                 break;
             case EventType.DotnetAcquisitionError:
-                this.setAndShowStatusBar('$(alert) Error acquiring .NET Core tooling!', 'dotnet.showAcquisitionLog', StatusBarColors.Red, 'Error acquiring .NET Core tooling');  //asdf
+                this.setAndShowStatusBar('$(alert) Error acquiring .NET Core tooling!', 'dotnet.showAcquisitionLog', StatusBarColors.Red, 'Error acquiring .NET Core tooling');
                 break;
             default:
                 // tslint:disable-next-line: no-console

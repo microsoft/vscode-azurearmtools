@@ -21,7 +21,7 @@ import { StatusBarObserver } from './StatusBarObserver';
 let acquisitionWorker: DotnetCoreAcquisitionWorker;
 let initialized = false;
 
-function initializeDotnetAcquire(): void { //asdf no reg commands, asdf no new output channel
+function initializeDotnetAcquire(): void {
     if (initialized) {
         return;
     }
