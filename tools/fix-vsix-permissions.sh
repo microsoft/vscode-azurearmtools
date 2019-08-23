@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # Fixes a .vsix built on Windows to have the correct executable bit set for the scripts inside the vsix
+# (not necessary if built on Mac/Linux)
 
 rm -r fixed
 rm -r vsix.tmp

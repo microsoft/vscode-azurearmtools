@@ -253,7 +253,7 @@ export class AzureRMTools {
                 stateMessage = `${languageServerName} is starting.`;
                 break;
             case LanguageServerState.Failed:
-                stateMessage = `${languageServerName} failed to start. Unable to perform some validations.`;
+                stateMessage = `${languageServerName} failed to start. See output windows for more information.`;
                 severity = vscode.DiagnosticSeverity.Error;
                 break;
             case LanguageServerState.Started:

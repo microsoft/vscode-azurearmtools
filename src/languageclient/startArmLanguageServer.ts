@@ -31,12 +31,15 @@ export enum LanguageServerState {
 export let languageServerState: LanguageServerState = LanguageServerState.NotStarted;
 
 export async function startArmLanguageServer(): Promise<void> {
+    languageServerState = LanguageServerState.Starting;
     try {
         // The server is implemented in .NET Core. We run it by calling 'dotnet' with the dll as an argument
         let serverDllPath: string = findLanguageServer(ext.context);
         let dotnetExePath: string = await acquireDotnet(serverDllPath);
         await ensureDependencies(dotnetExePath, serverDllPath);
         startLanguageClient(serverDllPath, dotnetExePath);
+
+        languageServerState = LanguageServerState.Started;
     } catch (error) {
         languageServerState = LanguageServerState.Failed;
         throw error;
@@ -46,7 +49,6 @@ export async function startArmLanguageServer(): Promise<void> {
 function startLanguageClient(serverDllPath: string, dotnetExePath: string): void {
     callWithTelemetryAndErrorHandlingSync('startArmLanguageClient', (actionContext: IActionContext) => {
         actionContext.errorHandling.rethrow = true;
-        languageServerState = LanguageServerState.Starting;
 
         // These trace levels are available in the server:
         //   Trace
@@ -56,8 +58,7 @@ function startLanguageClient(serverDllPath: string, dotnetExePath: string): void
         //   Error
         //   Critical
         //   None
-        let trace: string = workspace.getConfiguration('armTools')
-            .get<string>("languageServer.traceLevel") || defaultTraceLevel;
+        let trace: string = workspace.getConfiguration('armTools').get<string>("languageServer.traceLevel") || defaultTraceLevel;
 
         let commonArgs = [
             serverDllPath,
@@ -65,8 +66,7 @@ function startLanguageClient(serverDllPath: string, dotnetExePath: string): void
             trace
         ];
 
-        if (workspace.getConfiguration('armTools')
-            .get<boolean>('languageServer.waitForDebugger', false) === true) {
+        if (workspace.getConfiguration('armTools').get<boolean>('languageServer.waitForDebugger', false) === true) {
             commonArgs.push('--wait-for-debugger');
         }
         if (ext.addCompletionDiagnostic) {
@@ -103,8 +103,6 @@ function startLanguageClient(serverDllPath: string, dotnetExePath: string): void
             throw new Error(
                 `${languageServerName}: unexpectedly failed to start.\n\n${parseError(error).message}`);
         }
-
-        languageServerState = LanguageServerState.Started;
     });
 }
 async function acquireDotnet(dotnetExePath: string): Promise<string> {
@@ -115,7 +113,7 @@ async function acquireDotnet(dotnetExePath: string): Promise<string> {
         if (!(await fse.pathExists(dotnetExePath)) || !(await fse.stat(dotnetExePath)).isFile) {
             throw new Error(`Unexpected path returned for .net core: ${dotnetExePath}`);
         }
-        ext.outputChannel.appendLine(`Dotnet core path: ${dotnetExePath}`);
+        ext.outputChannel.appendLine(`Using dotnet core from ${dotnetExePath}`);
 
         // Telemetry: dotnet version actually used
         try {
@@ -140,7 +138,7 @@ function findLanguageServer(context: ExtensionContext): string {
         if (typeof serverDllPathSetting !== 'string' || serverDllPathSetting === '') {
             actionContext.telemetry.properties.customServerDllPath = 'false';
 
-            // armTools.languageServer.path not set - look for the files in their normal installed location under languageServerFolderName
+            // Default behavior: armTools.languageServer.path is not set - look for the files in their normal installed location under languageServerFolderName
             let serverFolderPath = context.asAbsolutePath(languageServerFolderName);
             serverDllPath = path.join(serverFolderPath, languageServerDllName);
             if (!fse.existsSync(serverFolderPath) || !fse.existsSync(serverDllPath)) {
@@ -151,7 +149,6 @@ function findLanguageServer(context: ExtensionContext): string {
             actionContext.telemetry.properties.customServerDllPath = 'true';
 
             serverDllPath = serverDllPathSetting;
-            actionContext.telemetry.properties.isCustomLanguageServerPath = 'true';
             if (fse.statSync(serverDllPathSetting).isDirectory()) {
                 serverDllPath = path.join(serverDllPathSetting, languageServerDllName);
             }
@@ -166,8 +163,10 @@ function findLanguageServer(context: ExtensionContext): string {
 
 async function ensureDependencies(dotnetExePath: string, serverDllPath: string): Promise<void> {
     await callWithTelemetryAndErrorHandling('ensureDotnetDependencies', async (actionContext: IActionContext) => {
+        actionContext.errorHandling.rethrow = true;
+
         // Attempt to determine by running a .net app whether additional runtime dependencies are missing on the machine (Linux only),
-        // and if necessary prompts the user whether to install them.
+        // and if necessary prompt the user whether to install them.
         await ensureDotnetDependencies(
             dotnetExePath,
             [
