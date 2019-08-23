@@ -11,7 +11,7 @@ import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import * as Completion from "./Completion";
-import { armDeploymentLanguageId, configKeys, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource } from "./constants";
+import { armDeploymentLanguageId, configKeys, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, languageServerStateSource } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
@@ -266,7 +266,7 @@ export class AzureRMTools {
             return {
                 severity,
                 message: stateMessage,
-                source: expressionsDiagnosticsSource,
+                source: languageServerStateSource,
                 code: "",
                 range: new vscode.Range(0, 0, 0, 0)
             };

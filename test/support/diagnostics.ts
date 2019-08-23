@@ -13,6 +13,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { commands, Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument, window, workspace } from "vscode";
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource } from "../../extension.bundle";
+import { languageServerStateSource } from "../../src/constants";
+import { LanguageServerState, languageServerState } from "../../src/languageclient/startArmLanguageServer";
+import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
 import { getTempFilePath } from "./getTempFilePath";
 
 export const diagnosticsTimeout = 30000; // CONSIDER: Use this long timeout only for first test, or for suite setup
@@ -27,6 +30,10 @@ export const sources = {
     syntax: { name: 'ARM (Syntax)' },
     template: { name: 'ARM (Template)' },
 };
+
+function isSourceFromLanguageServer(source: Source): boolean {
+    return source.name !== sources.expressions.name;
+}
 
 export type IDeploymentExpressionType = "string" | "securestring" | "int" | "bool" | "object" | "secureObject" | "array";
 export interface IDeploymentParameterDefinition {
@@ -125,13 +132,21 @@ async function getDiagnosticsForDocument(
         filterSources = filterSources.filter(s => !(options.ignoreSources).includes(s));
     }
 
-    // tslint:disable-next-line:typedef
+    const includesLanguageServerSource = filterSources.some(isSourceFromLanguageServer);
+    if (includesLanguageServerSource && DISABLE_LANGUAGE_SERVER_TESTS) {
+        throw new Error("DISABLE_LANGUAGE_SERVER_TESTS is set, but this test is trying to include a non-expressions diagnostic source");
+    }
+
+    // tslint:disable-next-line:typedef promise-must-complete // (false positive for promise-must-complete)
     let diagnosticsPromise = new Promise<Diagnostic[]>((resolve, reject) => {
         let currentDiagnostics: Diagnostic[] | undefined;
         let complete: boolean;
 
         function pollDiagnostics(): void {
             currentDiagnostics = languages.getDiagnostics(document.uri);
+
+            // Filter out any language server state diagnostics
+            currentDiagnostics = currentDiagnostics.filter(d => d.source !== languageServerStateSource);
 
             // Filter diagnostics according to sources filter
             let filteredDiagnostics = currentDiagnostics.filter(d => filterSources.find(s => d.source === s.name));
@@ -145,6 +160,12 @@ async function getDiagnosticsForDocument(
             if (filterSources.every(s => completedSources.includes(s.name))) {
                 complete = true;
                 resolve(filteredDiagnostics);
+            }
+
+            if (includesLanguageServerSource) {
+                if (languageServerState === LanguageServerState.Failed) {
+                    throw new Error("Language server failed to start");
+                }
             }
         }
 
