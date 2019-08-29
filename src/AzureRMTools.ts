@@ -4,6 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 // tslint:disable:promise-function-async max-line-length // Grandfathered in
+// tslint:disable: no-console
+// tslint:disable: prefer-template
 
 import * as assert from "assert";
 import * as path from 'path';
@@ -26,6 +28,10 @@ import { armDeploymentDocumentSelector, isDeploymentTemplate, shouldWatchDocumen
 import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
+
+let hasTextEditorChangedSinceLastClose = false;
+let lastDocClosed: vscode.Uri;
+let changingAutomaticallyToArm: vscode.Uri;
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -52,7 +58,8 @@ export function deactivateInternal(): void {
 
 export class AzureRMTools {
     private readonly _diagnosticsCollection: vscode.DiagnosticCollection;
-    private readonly _deploymentTemplates: { [key: string]: DeploymentTemplate } = {};
+    private readonly _deploymentTemplates: { [key: string]: DeploymentTemplate } = {}; // TODO asdf
+    private readonly _lastLangId: { [key: string]: string } = {};
     private _areDeploymentTemplateEventsHookedUp: boolean = false;
 
     // More information can be found about this definition at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
@@ -88,7 +95,8 @@ export class AzureRMTools {
 
         const activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
         if (activeEditor) {
-            this.updateDeploymentTemplate(activeEditor.document);
+            console.log("Activated, checking active editor");
+            this.updateDeploymentTemplate(activeEditor.document, false, true); //asdf
         }
     }
 
@@ -109,11 +117,15 @@ export class AzureRMTools {
         return result;
     }
 
-    private updateDeploymentTemplate(document: vscode.TextDocument): void {
+    // tslint:disable-next-line: max-func-body-length
+    private updateDeploymentTemplate(document: vscode.TextDocument, userChangedLangId: boolean = false, setLanguageIdIfArm = false): void {
+        changingAutomaticallyToArm = undefined;
         if (!document) {
             return;
         }
 
+        console.log(`updateDeploymentTemplate: ${path.basename(document.uri.fsPath)}`);
+        // tslint:disable-next-line: max-func-body-length
         callWithTelemetryAndErrorHandlingSync('updateDeploymentTemplate', (actionContext: IActionContext): void => {
             actionContext.errorHandling.suppressDisplay = true;
             actionContext.telemetry.suppressIfSuccessful = true;
@@ -122,15 +134,31 @@ export class AzureRMTools {
 
             let foundDeploymentTemplate = false;
 
+            let lastLangId = this._lastLangId[document.uri.toString()];
+            let langIdChanged = false;
+            if (lastLangId && document.languageId !== lastLangId) {
+                langIdChanged = true;
+                // if (lastLangId === armDeploymentLanguageId) {
+                //     console.log("USER CHANGED LANGID");
+                // }
+            }
+
             if (shouldWatchDocument(document)) {
                 if (isDeploymentTemplate(document)) {
+                    console.log(`langid=${document.languageId}`);
+
                     // If the documentUri is not in our dictionary of deployment templates, then we
                     // know that this document was just opened (as opposed to changed/updated).
                     let stopwatch: Stopwatch;
                     const documentUri: string = document.uri.toString();
-                    if (!this._deploymentTemplates[documentUri]) {
+                    let currentTemplate = this._deploymentTemplates[documentUri];
+                    if (!currentTemplate) {
                         stopwatch = new Stopwatch();
                         stopwatch.start();
+                    } else {
+                        if (document.languageId !== armDeploymentLanguageId) {
+                            //console.log("SWITCHED BY USER!");
+                        }
                     }
 
                     this.ensureDeploymentTemplateEventsHookedUp();
@@ -138,6 +166,8 @@ export class AzureRMTools {
                     let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(document.getText(), documentUri);
 
                     this._deploymentTemplates[documentUri] = deploymentTemplate;
+                    this._lastLangId[documentUri] = document.languageId;
+                    console.log(`lastLangId:${path.basename(documentUri)}: ${document.languageId}`);
                     foundDeploymentTemplate = true;
 
                     // We only initialized the stopwatch if the deployment template was being
@@ -148,16 +178,12 @@ export class AzureRMTools {
 
                         stopwatch.stop();
 
-                        // Set the language ID to ARM deployment template
-                        if (document.languageId !== armDeploymentLanguageId) {
-                            vscode.languages.setTextDocumentLanguage(document, armDeploymentLanguageId);
+                        let currentLangId = document.languageId;
+                        let lastLangIdKey = `last-lang-id:${document.uri.toString}`;
+                        let lastLangId: string | undefined = ext.context.workspaceState.get<string>(lastLangIdKey);
 
-                            // The document will be reloaded, firing this event again with the new langid
-                            actionContext.telemetry.properties.switchedToArm = 'true';
-                            actionContext.telemetry.properties.docLangId = document.languageId;
-                            actionContext.telemetry.properties.docExtension = path.extname(document.fileName);
-                            actionContext.telemetry.suppressIfSuccessful = false;
-                            return;
+                        if (setLanguageIdIfArm) {
+                            this.setLanguageIdToArm(document, actionContext); //asdf
                         }
 
                         ext.reporter.sendTelemetryEvent(
@@ -194,6 +220,31 @@ export class AzureRMTools {
                 this.closeDeploymentTemplate(document);
             }
         });
+    }
+
+    private setLanguageIdToArm(document: vscode.TextDocument, actionContext: IActionContext): void {
+        // Set the language ID to ARM deployment template
+        if (document.languageId !== armDeploymentLanguageId) {
+            console.log(`Change to ARM`);
+            //changingAutomaticallyToArm = document.uri;
+            vscode.languages.setTextDocumentLanguage(document, armDeploymentLanguageId);
+
+            // console.log(`langid=${document.languageId}`);
+            // const key = `changed-to-arm:${document.uri.toString()}`;
+            // let current = ext.context.workspaceState.get<boolean>(key);
+            // ext.context.workspaceState.update(lastLangIdKey, armDeploymentLanguageId);
+            // // tslint:disable-next-line: no-console
+            // //console.log(`${key}: ${current}`);
+            // ext.context.workspaceState.update(key, true);
+
+            // The document will be reloaded, firing this event again with the new langid
+            actionContext.telemetry.properties.switchedToArm = 'true';
+            actionContext.telemetry.properties.docLangId = document.languageId;
+            actionContext.telemetry.properties.docExtension = path.extname(document.fileName);
+            actionContext.telemetry.suppressIfSuccessful = false;
+            return;
+        }
+
     }
 
     private reportDeploymentTemplateErrors(document: vscode.TextDocument, deploymentTemplate: DeploymentTemplate): void {
@@ -408,6 +459,8 @@ export class AzureRMTools {
                 this._diagnosticsCollection.delete(document.uri);
             }
             // tslint:disable-next-line: no-dynamic-delete // grandfathered in
+            this._lastLangId[document.uri.toString()] = document.languageId;
+            console.log(`lastLangId:${path.basename(document.uri.fsPath)}: ${document.languageId}`);
             delete this._deploymentTemplates[document.uri.toString()];
         }
     }
@@ -633,6 +686,9 @@ export class AzureRMTools {
     }
 
     private onActiveTextEditorChanged(): void {
+        hasTextEditorChangedSinceLastClose = true;
+
+        console.log('onActiveTextEditorChanged: new editor: ' + (!!vscode.window.activeTextEditor ? path.basename(vscode.window.activeTextEditor.document.uri.fsPath) : "(none)"));
         callWithTelemetryAndErrorHandlingSync('onActiveTextEditorChanged', (actionContext: IActionContext): void => {
             actionContext.telemetry.properties.isActivationEvent = 'true';
             actionContext.errorHandling.suppressDisplay = true;
@@ -640,14 +696,27 @@ export class AzureRMTools {
 
             let activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
             if (activeEditor) {
-                if (this.getDeploymentTemplate(activeEditor.document) === undefined) {
-                    this.updateDeploymentTemplate(activeEditor.document);
+                let activeDocument = activeEditor.document;
+                if (this.getDeploymentTemplate(activeDocument) === undefined) {
+                    // We don't currently have a template for this file (or it's not an ARM template)
+                    this.updateDeploymentTemplate(activeDocument); //asdf
+                } else {
+                    // This file is already open, and there's a template for it.  Therefore it is an ARM
+                    //   template and we should set the language ID to arm-deployment.
+                    // Note that if the user manually changes the language ID of an ARM deployment file,
+                    // we get closed and open events for that file, but we do not get onActiveTextEditorChanged,
+                    //   which is good, since we don't want to set the language ID if the user sets it manually.
+                    another; option:
+                    just; remember; the; last; languageID; for each file opened { since } the; extension; started.Only; check; for new language id when { first }
+                    opened;
+                    this.setLanguageIdToArm(activeDocument, actionContext); //asdf
                 }
             }
         });
     }
 
     private onTextSelectionChanged(): void {
+        console.log('onTextSelectionChanged');
         callWithTelemetryAndErrorHandlingSync('onTextSelectionChanged', (actionContext: IActionContext): void => {
             actionContext.telemetry.properties.isActivationEvent = 'true';
             actionContext.errorHandling.suppressDisplay = true;
@@ -674,14 +743,31 @@ export class AzureRMTools {
     }
 
     private onDocumentChanged(event: vscode.TextDocumentChangeEvent): void {
+        // tslint:disable-next-line: no-console
+        console.log('onTextSelectionChanged: ' + path.basename(event.document.uri.fsPath));
+
         this.updateDeploymentTemplate(event.document);
     }
 
     private onDocumentOpened(openedDocument: vscode.TextDocument): void {
-        this.updateDeploymentTemplate(openedDocument);
+        console.log('onDocumentOpened: ' + path.basename(openedDocument.uri.fsPath));
+
+        let userChangedLangId = false;
+        if (!changingAutomaticallyToArm && lastDocClosed && openedDocument.uri.toString() === lastDocClosed.toString() && !hasTextEditorChangedSinceLastClose) {
+            console.log("USER CHANGED LANGID");
+            userChangedLangId = true;
+        }
+
+        lastDocClosed = undefined;
+        this.updateDeploymentTemplate(openedDocument, userChangedLangId);
     }
 
     private onDocumentClosed(closedDocument: vscode.TextDocument): void {
+        console.log('onDocumentClosed: ' + path.basename(closedDocument.uri.fsPath));
+
+        hasTextEditorChangedSinceLastClose = false;
+        lastDocClosed = closedDocument.uri;
+
         callWithTelemetryAndErrorHandlingSync('onDocumentClosed', (actionContext: IActionContext): void => {
             actionContext.telemetry.properties.isActivationEvent = 'true';
             actionContext.telemetry.suppressIfSuccessful = true;

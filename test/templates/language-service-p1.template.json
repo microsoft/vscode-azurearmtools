@@ -1,20 +1,3 @@
-/*
-    P1s - GA
-    ETA for Release - September
-
-    0. features parity with current extension (i.e. recongizing unused params)
-    1. function signature intellisense
-        a. including UDFs
-        b. hopefully things like resourceId and reference function can be contextual
-    2. intellisense for language constructs like copy loop
-        a. are there others? or is copy the only/main one?
-    3. portal and SDKs can deploy this new template
-    4. Expression evaluation using parameter file --> need to think this through more
-    - need "full" ARM validation for this
-        * mini-F5 to evaluate only with defaultValues?
-    - [OPEN QUESTION] will there be value in validation with round-trip to Azure?
-*/
-
 {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
