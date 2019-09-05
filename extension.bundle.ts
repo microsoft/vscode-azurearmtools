@@ -39,7 +39,7 @@ export * from "./src/Language";
 export { LanguageServerState, languageServerState } from "./src/languageclient/startArmLanguageServer";
 export { ParameterDefinition } from "./src/ParameterDefinition";
 export { PositionContext } from "./src/PositionContext";
-export { doesJsonContainArmSchema } from './src/supported';
+export { containsArmSchema, isArmSchema } from './src/supported';
 export { JsonOutlineProvider, shortenTreeLabel } from "./src/Treeview";
 export { UnrecognizedFunctionIssue } from "./src/UnrecognizedFunctionIssue";
 export { Completion };
