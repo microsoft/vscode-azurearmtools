@@ -101,7 +101,7 @@
         "aliases": [
           "ARM Deployment Template"
         ],
-        "configuration": "grammars/jsonc.arm.language-configuration.json",
+        "configuration": "dist/grammars/jsonc.arm.language-configuration.json",
         "extensions": [
           ".arm"
         ]
