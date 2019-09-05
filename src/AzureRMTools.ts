@@ -1,26 +1,28 @@
-// ----------------------------------------------------------------------------
-// Copyright (c) Microsoft Corporation.  All rights reserved.
-// ----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.md in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
 // tslint:disable:promise-function-async max-line-length // Grandfathered in
 
 import * as assert from "assert";
 import * as path from 'path';
 import * as vscode from "vscode";
-import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createTelemetryReporter, IActionContext, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
+import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
+import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import * as Completion from "./Completion";
-import { armDeploymentLanguageId, configKeys, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource } from "./constants";
+import { armDeploymentLanguageId, configKeys, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, languageServerStateSource } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
 import * as Hover from "./Hover";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 import * as language from "./Language";
-import { startArmLanguageServer } from "./languageclient/startArmLanguageServer";
+import { languageServerName, languageServerState, LanguageServerState, startArmLanguageServer } from "./languageclient/startArmLanguageServer";
 import { PositionContext } from "./PositionContext";
 import * as Reference from "./Reference";
 import { Stopwatch } from "./Stopwatch";
-import { armDeploymentDocumentSelector, isDeploymentTemplate, shouldWatchDocument } from "./supported";
+import { armDeploymentDocumentSelector, mightBeDeploymentTemplate, shouldWatchDocument } from "./supported";
 import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
@@ -49,13 +51,13 @@ export function deactivateInternal(): void {
 }
 
 export class AzureRMTools {
-    private _diagnosticsCollection: vscode.DiagnosticCollection;
-    private _deploymentTemplates: { [key: string]: DeploymentTemplate } = {};
+    private readonly _diagnosticsCollection: vscode.DiagnosticCollection;
+    private readonly _deploymentTemplates: { [key: string]: DeploymentTemplate } = {};
     private _areDeploymentTemplateEventsHookedUp: boolean = false;
 
     // More information can be found about this definition at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
     // Several of these properties are CSS properties. More information about those can be found at https://www.w3.org/wiki/CSS/Properties
-    private _braceHighlightDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
+    private readonly _braceHighlightDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         borderWidth: "1px",
         borderStyle: "solid",
         light: {
@@ -72,7 +74,9 @@ export class AzureRMTools {
         const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
         ext.jsonOutlineProvider = jsonOutline;
         context.subscriptions.push(vscode.window.registerTreeDataProvider("azurerm-vscode-tools.template-outline", jsonOutline));
-        context.subscriptions.push(vscode.commands.registerCommand("azurerm-vscode-tools.treeview.goto", (range: vscode.Range) => jsonOutline.goToDefinition(range)));
+
+        registerCommand("azurerm-vscode-tools.treeview.goto", (_actionContext: IActionContext, range: vscode.Range) => jsonOutline.goToDefinition(range));
+        registerCommand('azurerm-vscode-tools.uninstallDotnet', async () => await uninstallDotnet());
 
         vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
 
@@ -95,8 +99,8 @@ export class AzureRMTools {
         });
     }
 
-    private getDeploymentTemplate(document: vscode.TextDocument): DeploymentTemplate {
-        let result: DeploymentTemplate = null;
+    private getDeploymentTemplate(document: vscode.TextDocument): DeploymentTemplate | undefined {
+        let result: DeploymentTemplate;
 
         if (document) {
             result = this._deploymentTemplates[document.uri.toString()];
@@ -119,7 +123,7 @@ export class AzureRMTools {
             let foundDeploymentTemplate = false;
 
             if (shouldWatchDocument(document)) {
-                if (isDeploymentTemplate(document)) {
+                if (mightBeDeploymentTemplate(document)) {
                     // If the documentUri is not in our dictionary of deployment templates, then we
                     // know that this document was just opened (as opposed to changed/updated).
                     let stopwatch: Stopwatch;
@@ -129,52 +133,55 @@ export class AzureRMTools {
                         stopwatch.start();
                     }
 
-                    this.ensureDeploymentTemplateEventsHookedUp();
-
+                    // Might be a deployment template, need to do a full parse to make sure
                     let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(document.getText(), documentUri);
+                    if (deploymentTemplate.hasArmSchemaUri()) {
+                        foundDeploymentTemplate = true;
 
-                    this._deploymentTemplates[documentUri] = deploymentTemplate;
-                    foundDeploymentTemplate = true;
+                        this.ensureDeploymentTemplateEventsHookedUp();
 
-                    // We only initialized the stopwatch if the deployment template was being
-                    // opened. The stopwatch variable will not be initialized if the deployment
-                    // template is being edited.
-                    if (stopwatch) {
-                        // A deployment template has been opened (as opposed to having been tabbed to)
+                        this._deploymentTemplates[documentUri] = deploymentTemplate;
 
-                        stopwatch.stop();
+                        // We only initialized the stopwatch if the deployment template was being
+                        // opened. The stopwatch variable will not be initialized if the deployment
+                        // template is being edited.
+                        if (stopwatch) {
+                            // A deployment template has been opened (as opposed to having been tabbed to)
 
-                        // Set the language ID to ARM deployment template
-                        if (document.languageId !== armDeploymentLanguageId) {
-                            vscode.languages.setTextDocumentLanguage(document, armDeploymentLanguageId);
+                            stopwatch.stop();
 
-                            // The document will be reloaded, firing this event again with the new langid
-                            actionContext.telemetry.properties.switchedToArm = 'true';
-                            actionContext.telemetry.properties.docLangId = document.languageId;
-                            actionContext.telemetry.properties.docExtension = path.extname(document.fileName);
-                            actionContext.telemetry.suppressIfSuccessful = false;
-                            return;
+                            // Set the language ID to ARM deployment template
+                            if (document.languageId !== armDeploymentLanguageId) {
+                                vscode.languages.setTextDocumentLanguage(document, armDeploymentLanguageId);
+
+                                // The document will be reloaded, firing this event again with the new langid
+                                actionContext.telemetry.properties.switchedToArm = 'true';
+                                actionContext.telemetry.properties.docLangId = document.languageId;
+                                actionContext.telemetry.properties.docExtension = path.extname(document.fileName);
+                                actionContext.telemetry.suppressIfSuccessful = false;
+                                return;
+                            }
+
+                            ext.reporter.sendTelemetryEvent(
+                                "Deployment Template Opened",
+                                {
+                                    docLangId: document.languageId,
+                                    docExtension: path.extname(document.fileName),
+                                },
+                                {
+                                    documentSizeInCharacters: document.getText().length,
+                                    parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds,
+                                    lineCount: deploymentTemplate.lineCount,
+                                    paramsCount: deploymentTemplate.parameterDefinitions.length,
+                                    varsCount: deploymentTemplate.variableDefinitions.length,
+                                    namespacesCount: deploymentTemplate.namespaceDefinitions.length
+                                });
+
+                            this.logFunctionCounts(deploymentTemplate);
                         }
 
-                        ext.reporter.sendTelemetryEvent(
-                            "Deployment Template Opened",
-                            {
-                                docLangId: document.languageId,
-                                docExtension: path.extname(document.fileName),
-                            },
-                            {
-                                documentSizeInCharacters: document.getText().length,
-                                parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds,
-                                lineCount: deploymentTemplate.lineCount,
-                                paramsCount: deploymentTemplate.parameterDefinitions.length,
-                                varsCount: deploymentTemplate.variableDefinitions.length,
-                                namespacesCount: deploymentTemplate.namespaceDefinitions.length
-                            });
-
-                        this.logFunctionCounts(deploymentTemplate);
+                        this.reportDeploymentTemplateErrors(document, deploymentTemplate);
                     }
-
-                    this.reportDeploymentTemplateErrors(document, deploymentTemplate);
                 }
             }
 
@@ -209,18 +216,66 @@ export class AzureRMTools {
                 diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentTemplate, warning, vscode.DiagnosticSeverity.Warning));
             }
 
-            if (ext.addCompletionDiagnostic) {
-                // Add a diagnostic to indicate expression validation is done (for testing)
-                diagnostics.push(<vscode.Diagnostic>{
-                    severity: vscode.DiagnosticSeverity.Information,
-                    message: expressionsDiagnosticsCompletionMessage,
-                    source: expressionsDiagnosticsSource,
-                    code: ""
-                });
+            let languageServerLanguageDiagnostic = this.getLanguageServerStateDiagnostic();
+            if (languageServerLanguageDiagnostic) {
+                diagnostics.push(languageServerLanguageDiagnostic);
+            }
+
+            let completionDiagnostic = this.getCompletionDiagnostic();
+            if (completionDiagnostic) {
+                diagnostics.push(completionDiagnostic);
             }
 
             this._diagnosticsCollection.set(document.uri, diagnostics);
         });
+    }
+
+    private getCompletionDiagnostic(): vscode.Diagnostic | undefined {
+        if (ext.addCompletionDiagnostic) {
+            // Add a diagnostic to indicate expression validation is done (for testing)
+            return {
+                severity: vscode.DiagnosticSeverity.Information,
+                message: expressionsDiagnosticsCompletionMessage,
+                source: expressionsDiagnosticsSource,
+                code: "",
+                range: new vscode.Range(0, 0, 0, 0)
+            };
+        } else {
+            return undefined;
+        }
+    }
+
+    private getLanguageServerStateDiagnostic(): vscode.Diagnostic | undefined {
+        let stateMessage = "";
+        let severity = vscode.DiagnosticSeverity.Information;
+        switch (languageServerState) {
+            case LanguageServerState.NotStarted:
+                stateMessage = `${languageServerName} not started.`;
+                break;
+            case LanguageServerState.Starting:
+                stateMessage = `${languageServerName} is starting.`;
+                break;
+            case LanguageServerState.Failed:
+                stateMessage = `${languageServerName} failed to start. See output windows for more information.`;
+                severity = vscode.DiagnosticSeverity.Error;
+                break;
+            case LanguageServerState.Started:
+                break;
+            default:
+                assert(false, `Unexpected LanguageServerState ${LanguageServerState[languageServerState]}`);
+                break;
+        }
+        if (stateMessage) {
+            return {
+                severity,
+                message: stateMessage,
+                source: languageServerStateSource,
+                code: "",
+                range: new vscode.Range(0, 0, 0, 0)
+            };
+        } else {
+            return undefined;
+        }
     }
 
     /**
@@ -279,7 +334,8 @@ export class AzureRMTools {
         };
         ext.context.subscriptions.push(vscode.languages.registerRenameProvider(armDeploymentDocumentSelector, renameProvider));
 
-        startArmLanguageServer(ext.context);
+        // tslint:disable-next-line:no-floating-promises // Don't wait
+        startArmLanguageServer();
     }
 
     /**
@@ -354,6 +410,7 @@ export class AzureRMTools {
             if (this._diagnosticsCollection) {
                 this._diagnosticsCollection.delete(document.uri);
             }
+            // tslint:disable-next-line: no-dynamic-delete // grandfathered in
             delete this._deploymentTemplates[document.uri.toString()];
         }
     }
@@ -368,7 +425,7 @@ export class AzureRMTools {
                 const context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
                 if (context.hoverInfo) {
                     let hoverInfo: Hover.Info = await context.hoverInfo;
-                    let hover: vscode.Hover = null;
+                    let hover: vscode.Hover;
 
                     if (hoverInfo) {
                         if (hoverInfo instanceof Hover.FunctionInfo) {
@@ -442,7 +499,7 @@ export class AzureRMTools {
             return callWithTelemetryAndErrorHandlingSync('Go To Definition', (actionContext: IActionContext): vscode.Location => {
                 let properties = <TelemetryProperties & { definitionType?: string }>actionContext.telemetry.properties;
                 actionContext.errorHandling.suppressDisplay = true;
-                let result: vscode.Location = null;
+                let result: vscode.Location;
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 

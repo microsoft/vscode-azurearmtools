@@ -5,7 +5,7 @@
 
 'use strict';
 
-// tslint:disable:max-func-body-length no-console cyclomatic-complexity max-line-length prefer-template
+// tslint:disable:max-func-body-length no-console cyclomatic-complexity max-line-length prefer-template non-literal-fs-path
 
 // Turn on to overwrite results files rather than creating new ".txt.actual" files when there are differences.
 const OVERWRITE = false;

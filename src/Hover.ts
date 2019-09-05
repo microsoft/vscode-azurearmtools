@@ -10,7 +10,7 @@ import * as language from "./Language";
  * The information that will be displayed when the cursor hovers over parts of a document.
  */
 export abstract class Info {
-    constructor(private _span: language.Span) {
+    constructor(private readonly _span: language.Span) {
     }
 
     public abstract getHoverText(): string;

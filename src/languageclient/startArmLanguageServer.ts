@@ -1,53 +1,54 @@
-// ----------------------------------------------------------------------------
-// Copyright (c) Microsoft Corporation.  All rights reserved.
-// ----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
-import * as fs from 'fs';
-import * as os from 'os';
+import * as fse from 'fs-extra';
 import * as path from 'path';
 import { ExtensionContext, workspace } from 'vscode';
-import { callWithTelemetryAndErrorHandlingSync, parseError, TelemetryProperties } from 'vscode-azureextensionui';
-import { Message } from 'vscode-jsonrpc';
-import { CloseAction, ErrorAction, ErrorHandler, LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient';
-import { armDeploymentLanguageId } from '../constants';
+import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
+import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient';
+import { dotnetAcquire, ensureDotnetDependencies } from '../acquisition/dotnetAcquisition';
+import { armDeploymentLanguageId, languageServerFolderName } from '../constants';
 import { ext } from '../extensionVariables';
 import { armDeploymentDocumentSelector } from '../supported';
+import { WrappedErrorHandler } from './WrappedErrorHandler';
 
 const languageServerName = 'ARM Language Server';
 const languageServerFolderName = 'LanguageServerBin';
 const languageServerDllName = 'Microsoft.ArmLanguageServer.dll';
-let serverStartMs: number;
-const languageServerErrorTelemId = "Language Server Error";
+export let serverStartMs: number;
+export const languageServerErrorTelemId = 'Language Server Error';
+const defaultTraceLevel = 'Warning';
+const dotnetVersion = '2.2';
 
-export function startArmLanguageServer(context: ExtensionContext): void {
-    callWithTelemetryAndErrorHandlingSync('startArmLanguageClient', () => {
+export enum LanguageServerState {
+    NotStarted,
+    Starting,
+    Failed,
+    Started,
+}
+export let languageServerState: LanguageServerState = LanguageServerState.NotStarted;
+
+export async function startArmLanguageServer(): Promise<void> {
+    languageServerState = LanguageServerState.Starting;
+    try {
         // The server is implemented in .NET Core. We run it by calling 'dotnet' with the dll as an argument
+        let serverDllPath: string = findLanguageServer(ext.context);
+        let dotnetExePath: string = await acquireDotnet(serverDllPath);
+        await ensureDependencies(dotnetExePath, serverDllPath);
+        startLanguageClient(serverDllPath, dotnetExePath);
 
-        let serverExe = os.platform() === 'win32' ? 'dotnet.exe' : 'dotnet';
+        languageServerState = LanguageServerState.Started;
+    } catch (error) {
+        languageServerState = LanguageServerState.Failed;
+        throw error;
+    }
+}
 
-        let serverDllPath = workspace.getConfiguration('armTools').get<string | undefined>('languageServer.path');
-
-        if (typeof serverDllPath !== 'string' || serverDllPath === '') {
-            // Check for the files under LanguageServerBin
-            let serverFolderPath = context.asAbsolutePath(languageServerFolderName);
-            serverDllPath = path.join(serverFolderPath, languageServerDllName);
-            if (!fs.existsSync(serverFolderPath) || !fs.existsSync(serverDllPath)) {
-                throw new Error(`Couldn't find the ARM language server at ${serverDllPath}, you may need to reinstall the extension.`);
-            }
-
-            serverDllPath = path.join(serverFolderPath, languageServerDllName);
-        } else {
-            if (!fs.existsSync(serverDllPath)) {
-                throw new Error(`Couldn't find the ARM language server at ${serverDllPath}.  Please verify your 'armTools.languageServer.path' setting.`);
-            }
-
-            if (fs.statSync(serverDllPath).isDirectory()) {
-                serverDllPath = path.join(serverDllPath, languageServerDllName);
-            }
-        }
-
-        // The debug options for the server
-        // let debugOptions = { execArgv: ['-lsp', '-d' };
+function startLanguageClient(serverDllPath: string, dotnetExePath: string): void {
+    callWithTelemetryAndErrorHandlingSync('startArmLanguageClient', (actionContext: IActionContext) => {
+        actionContext.errorHandling.rethrow = true;
 
         // These trace levels are available in the server:
         //   Trace
@@ -57,7 +58,7 @@ export function startArmLanguageServer(context: ExtensionContext): void {
         //   Error
         //   Critical
         //   None
-        let trace: string = workspace.getConfiguration('armTools').get<string>("languageServer.traceLevel");
+        let trace: string = workspace.getConfiguration('armTools').get<string>("languageServer.traceLevel") || defaultTraceLevel;
 
         let commonArgs = [
             serverDllPath,
@@ -76,12 +77,8 @@ export function startArmLanguageServer(context: ExtensionContext): void {
         // If the extension is launched in debug mode then the debug server options are used
         // Otherwise the run options are used
         let serverOptions: ServerOptions = {
-            run: {
-                command: serverExe, args: commonArgs, options: { shell: true }
-            },
-            debug: {
-                command: serverExe, args: commonArgs, options: { shell: true }
-            },
+            run: { command: dotnetExePath, args: commonArgs, options: { shell: false } },
+            debug: { command: dotnetExePath, args: commonArgs, options: { shell: false } },
         };
 
         // Options to control the language client
@@ -91,8 +88,8 @@ export function startArmLanguageServer(context: ExtensionContext): void {
 
         // Create the language client and start the client.
         ext.outputChannel.appendLine(`Starting ARM Language Server at ${serverDllPath}`);
-        ext.outputChannel.appendLine(`Client options:\n${JSON.stringify(clientOptions, null, 2)}`);
-        ext.outputChannel.appendLine(`Server options:\n${JSON.stringify(serverOptions, null, 2)}`);
+        ext.outputChannel.appendLine(`Client options:\n${JSON.stringify(clientOptions, undefined, 2)}`);
+        ext.outputChannel.appendLine(`Server options:\n${JSON.stringify(serverOptions, undefined, 2)}`);
         const client = new LanguageClient(armDeploymentLanguageId, languageServerName, serverOptions, clientOptions);
 
         let defaultHandler = client.createDefaultErrorHandler();
@@ -101,64 +98,81 @@ export function startArmLanguageServer(context: ExtensionContext): void {
         try {
             serverStartMs = Date.now();
             let disposable = client.start();
-            context.subscriptions.push(disposable);
+            ext.context.subscriptions.push(disposable);
         } catch (error) {
             throw new Error(
-                // tslint:disable-next-line: prefer-template
-                `${languageServerName}: unexpectedly failed to start.\n\n` +
-                parseError(error).message);
+                `${languageServerName}: unexpectedly failed to start.\n\n${parseError(error).message}`);
         }
     });
 }
+async function acquireDotnet(dotnetExePath: string): Promise<string> {
+    return await callWithTelemetryAndErrorHandling('acquireDotnet', async (actionContext: IActionContext) => {
+        actionContext.errorHandling.rethrow = true;
 
-// tslint:disable-next-line:no-suspicious-comment
-// TODO: Verify error handling
-class WrappedErrorHandler implements ErrorHandler {
-    constructor(private _handler: ErrorHandler) {
-    }
+        dotnetExePath = await dotnetAcquire(dotnetVersion, actionContext.telemetry.properties);
+        if (!(await fse.pathExists(dotnetExePath)) || !(await fse.stat(dotnetExePath)).isFile) {
+            throw new Error(`Unexpected path returned for .net core: ${dotnetExePath}`);
+        }
+        ext.outputChannel.appendLine(`Using dotnet core from ${dotnetExePath}`);
 
-    /**
-     * An error has occurred while writing or reading from the connection.
-     *
-     * @param error - the error received
-     * @param message - the message to be delivered to the server if known.
-     * @param count - a count indicating how often an error is received. Will
-     *  be reset if a message got successfully send or received.
-     */
-    public error(error: Error, message: Message | undefined, count: number): ErrorAction {
-        let parsed = parseError(error);
-        ext.reporter.sendTelemetryEvent(
-            languageServerErrorTelemId,
-            <TelemetryProperties>{
-                error: parsed.errorType,
-                errorMessage: parsed.message,
-                result: "Failed",
-                jsonrpcMessage: message ? message.jsonrpc : "",
-                count: String(count),
-                stack: parsed.stack
-            },
-            {
-                secondsSinceStart: (Date.now() - serverStartMs) / 1000
-            });
+        // Telemetry: dotnet version actually used
+        try {
+            // E.g. "c:\Users\<user>\AppData\Roaming\Code - Insiders\User\globalStorage\msazurermtools.azurerm-vscode-tools\.dotnet\2.2.5\dotnet.exe"
+            let actualVersion = dotnetExePath.match(/dotnet[\\/]([^\\/]+)[\\/]/)[1];
+            actionContext.telemetry.properties.dotnetVersionInstalled = actualVersion;
+        } catch (error) {
+            // ignore (telemetry only)
+        }
 
-        return this._handler.error(error, message, count);
-    }
+        return dotnetExePath;
+    });
+}
 
-    /**
-     * The connection to the server got closed.
-     */
-    public closed(): CloseAction {
-        ext.reporter.sendTelemetryEvent(
-            languageServerErrorTelemId,
-            <TelemetryProperties>{
-                error: "Crashed",
-                errorMessage: '(Language server crashed)',
-                result: "Failed"
-            },
-            {
-                secondsSinceStart: (Date.now() - serverStartMs) / 1000
-            });
+function findLanguageServer(context: ExtensionContext): string {
+    let serverDllPath: string;
 
-        return this._handler.closed();
-    }
+    return callWithTelemetryAndErrorHandlingSync('findLanguageServer', (actionContext: IActionContext) => {
+        actionContext.errorHandling.rethrow = true;
+
+        let serverDllPathSetting: string | undefined = workspace.getConfiguration('armTools').get<string | undefined>('languageServer.path');
+        if (typeof serverDllPathSetting !== 'string' || serverDllPathSetting === '') {
+            actionContext.telemetry.properties.customServerDllPath = 'false';
+
+            // Default behavior: armTools.languageServer.path is not set - look for the files in their normal installed location under languageServerFolderName
+            let serverFolderPath = context.asAbsolutePath(languageServerFolderName);
+            serverDllPath = path.join(serverFolderPath, languageServerDllName);
+            if (!fse.existsSync(serverFolderPath) || !fse.existsSync(serverDllPath)) {
+                throw new Error(`Couldn't find the ARM language server at ${serverDllPath}, you may need to reinstall the extension.`);
+            }
+            serverDllPath = path.join(serverFolderPath, languageServerDllName);
+        } else {
+            actionContext.telemetry.properties.customServerDllPath = 'true';
+
+            serverDllPath = serverDllPathSetting;
+            if (fse.statSync(serverDllPathSetting).isDirectory()) {
+                serverDllPath = path.join(serverDllPathSetting, languageServerDllName);
+            }
+            if (!fse.existsSync(serverDllPath)) {
+                throw new Error(`Couldn't find the ARM language server at ${serverDllPath}.  Please verify or remove your 'armTools.languageServer.path' setting.`);
+            }
+        }
+
+        return serverDllPath;
+    });
+}
+
+async function ensureDependencies(dotnetExePath: string, serverDllPath: string): Promise<void> {
+    await callWithTelemetryAndErrorHandling('ensureDotnetDependencies', async (actionContext: IActionContext) => {
+        actionContext.errorHandling.rethrow = true;
+
+        // Attempt to determine by running a .net app whether additional runtime dependencies are missing on the machine (Linux only),
+        // and if necessary prompt the user whether to install them.
+        await ensureDotnetDependencies(
+            dotnetExePath,
+            [
+                serverDllPath,
+                '--help'
+            ],
+            actionContext.telemetry.properties);
+    });
 }

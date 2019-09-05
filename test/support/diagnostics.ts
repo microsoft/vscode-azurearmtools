@@ -6,13 +6,14 @@
 
 // tslint:disable:no-unused-expression no-console no-string-based-set-timeout
 // tslint:disable:insecure-random max-func-body-length radix prefer-template
-// tslint:disable:object-literal-key-quotes no-http-string
+// tslint:disable:object-literal-key-quotes no-http-string non-literal-fs-path
 
 import * as assert from "assert";
 import * as fs from 'fs';
 import * as path from 'path';
 import { commands, Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument, window, workspace } from "vscode";
-import { diagnosticsCompletePrefix, expressionsDiagnosticsSource } from "../../extension.bundle";
+import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, LanguageServerState, languageServerState, languageServerStateSource } from "../../extension.bundle";
+import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
 import { getTempFilePath } from "./getTempFilePath";
 
 export const diagnosticsTimeout = 30000; // CONSIDER: Use this long timeout only for first test, or for suite setup
@@ -27,6 +28,10 @@ export const sources = {
     syntax: { name: 'ARM (Syntax)' },
     template: { name: 'ARM (Template)' },
 };
+
+function isSourceFromLanguageServer(source: Source): boolean {
+    return source.name !== sources.expressions.name;
+}
 
 export type IDeploymentExpressionType = "string" | "securestring" | "int" | "bool" | "object" | "secureObject" | "array";
 export interface IDeploymentParameterDefinition {
@@ -125,13 +130,21 @@ async function getDiagnosticsForDocument(
         filterSources = filterSources.filter(s => !(options.ignoreSources).includes(s));
     }
 
-    // tslint:disable-next-line:typedef
+    const includesLanguageServerSource = filterSources.some(isSourceFromLanguageServer);
+    if (includesLanguageServerSource && DISABLE_LANGUAGE_SERVER_TESTS) {
+        throw new Error("DISABLE_LANGUAGE_SERVER_TESTS is set, but this test is trying to include a non-expressions diagnostic source");
+    }
+
+    // tslint:disable-next-line:typedef promise-must-complete // (false positive for promise-must-complete)
     let diagnosticsPromise = new Promise<Diagnostic[]>((resolve, reject) => {
         let currentDiagnostics: Diagnostic[] | undefined;
         let complete: boolean;
 
         function pollDiagnostics(): void {
             currentDiagnostics = languages.getDiagnostics(document.uri);
+
+            // Filter out any language server state diagnostics
+            currentDiagnostics = currentDiagnostics.filter(d => d.source !== languageServerStateSource);
 
             // Filter diagnostics according to sources filter
             let filteredDiagnostics = currentDiagnostics.filter(d => filterSources.find(s => d.source === s.name));
@@ -145,6 +158,12 @@ async function getDiagnosticsForDocument(
             if (filterSources.every(s => completedSources.includes(s.name))) {
                 complete = true;
                 resolve(filteredDiagnostics);
+            }
+
+            if (includesLanguageServerSource) {
+                if (languageServerState === LanguageServerState.Failed) {
+                    throw new Error("Language server failed to start");
+                }
             }
         }
 
@@ -206,7 +225,7 @@ export async function getDiagnosticsForTemplate(
     } else {
         // It's an object
         let templateObject: Partial<IDeploymentTemplate> = templateContentsOrFileName;
-        templateContents = JSON.stringify(templateObject, null, 2);
+        templateContents = JSON.stringify(templateObject, undefined, 2);
     }
 
     // Add schema if not already present (to make it easier to write tests)
