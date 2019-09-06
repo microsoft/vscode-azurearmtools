@@ -6,9 +6,7 @@
 // tslint:disable:max-func-body-length
 
 import * as assert from "assert";
-
-import * as language from "../src/Language";
-import * as Reference from "../src/Reference";
+import { Language, Reference } from "../extension.bundle";
 
 suite("Reference", () => {
     suite("List", () => {
@@ -40,9 +38,9 @@ suite("Reference", () => {
             });
 
             test("with non-empty spans", () => {
-                const list = new Reference.List(Reference.ReferenceKind.Parameter, [new language.Span(0, 1), new language.Span(2, 3)]);
+                const list = new Reference.List(Reference.ReferenceKind.Parameter, [new Language.Span(0, 1), new Language.Span(2, 3)]);
                 assert.deepStrictEqual(list.kind, Reference.ReferenceKind.Parameter);
-                assert.deepStrictEqual(list.spans, [new language.Span(0, 1), new language.Span(2, 3)]);
+                assert.deepStrictEqual(list.spans, [new Language.Span(0, 1), new Language.Span(2, 3)]);
                 assert.deepStrictEqual(list.length, 2);
             });
         });
@@ -84,8 +82,8 @@ suite("Reference", () => {
 
             test("with non-empty list", () => {
                 const list = new Reference.List(Reference.ReferenceKind.Variable);
-                list.addAll(new Reference.List(Reference.ReferenceKind.Variable, [new language.Span(10, 20)]));
-                assert.deepStrictEqual(list.spans, [new language.Span(10, 20)]);
+                list.addAll(new Reference.List(Reference.ReferenceKind.Variable, [new Language.Span(10, 20)]));
+                assert.deepStrictEqual(list.spans, [new Language.Span(10, 20)]);
             });
         });
 
@@ -97,18 +95,18 @@ suite("Reference", () => {
             });
 
             test("with non-empty list", () => {
-                const list = new Reference.List(Reference.ReferenceKind.Parameter, [new language.Span(10, 20)]);
+                const list = new Reference.List(Reference.ReferenceKind.Parameter, [new Language.Span(10, 20)]);
                 const list2 = list.translate(17);
-                assert.deepStrictEqual(list2, new Reference.List(Reference.ReferenceKind.Parameter, [new language.Span(27, 20)]));
+                assert.deepStrictEqual(list2, new Reference.List(Reference.ReferenceKind.Parameter, [new Language.Span(27, 20)]));
             });
 
             test("with null movement", () => {
-                const list = new Reference.List(Reference.ReferenceKind.Parameter, [new language.Span(10, 20)]);
+                const list = new Reference.List(Reference.ReferenceKind.Parameter, [new Language.Span(10, 20)]);
                 assert.throws(() => { list.translate(null); });
             });
 
             test("with undefined movement", () => {
-                const list = new Reference.List(Reference.ReferenceKind.Parameter, [new language.Span(10, 20)]);
+                const list = new Reference.List(Reference.ReferenceKind.Parameter, [new Language.Span(10, 20)]);
                 assert.throws(() => { list.translate(undefined); });
             });
         });

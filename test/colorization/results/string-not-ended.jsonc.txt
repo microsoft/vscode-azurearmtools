@@ -1,0 +1,18 @@
+{                   punctuation.definition.dictionary.begin.json.comments
+"                   punctuation.support.type.property-name.begin.json.comments
+$schema             support.type.property-name
+"                   punctuation.support.type.property-name.end.json.comments
+:                   punctuation.separator.dictionary.key-value.json.comments
+"                   punctuation.definition.string.begin.json.arm
+http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#
+                    string.quoted.double.json.comments
+"                   punctuation.definition.string.end.json.arm
+,                   punctuation.separator.dictionary.pair.json.comments
+"                   punctuation.support.type.property-name.begin.json.comments
+Test1               support.type.property-name.json.comments
+"                   punctuation.support.type.property-name.end.json.comments
+:                   punctuation.separator.dictionary.key-value.json.comments
+"[                  {{scope-expression-start}}
+'                   {{scope-string-start}}
+]"                  {{scope-string-contents}}
+}                   {{scope-string-contents}}

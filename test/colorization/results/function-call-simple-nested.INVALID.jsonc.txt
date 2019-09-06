@@ -1,0 +1,12 @@
+TEST STRING: "[a)]"
+"[                  {{scope-expression-start}}
+a                   {{scope-unknownfunction}}
+)                   invalid.illegal.expected-expression.tle.arm
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[b())]"
+"[                  {{scope-expression-start}}
+b                   {{scope-unknownfunction}}
+()                  {{scope-parentheses-funccall}}
+)                   invalid.illegal.expected-expression.tle.arm
+]"                  {{scope-expression-end}}

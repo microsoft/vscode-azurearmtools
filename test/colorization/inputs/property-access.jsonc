@@ -1,0 +1,9 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "$TEST": "[a().b$]",
+    "$TEST": "[a.b( ) . c . de1 ]",
+    "$TEST": "[max(a.b().c1$_, d().e.f)]",
+    "$TEST": "[a()[0].a.b]",
+    // Real example
+    "$TEST": "[concat('a/', my.param('b'))]"
+}

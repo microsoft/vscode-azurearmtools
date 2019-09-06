@@ -1,0 +1,24 @@
+TEST STRING: "[a.max()]"
+"[                  {{scope-expression-start}}
+a                   {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+max                 {{scope-userfunction}}
+()                  {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[$a.$max()]"
+"[                  {{scope-expression-start}}
+$a                  {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+$max                {{scope-userfunction}}
+()                  {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[_$_123._$max12$_$_()]"
+"[                  {{scope-expression-start}}
+_$_123              {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+_$max12$_$_         {{scope-userfunction}}
+(                   {{scope-parentheses-funccall}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}

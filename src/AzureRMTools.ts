@@ -2,69 +2,54 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:promise-function-async // Grandfathered in
+// tslint:disable:promise-function-async max-line-length // Grandfathered in
 
-// The module "vscode" contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as assert from "assert";
-import * as fs from "fs";
-import * as os from "os";
-import * as path from "path";
 import * as vscode from "vscode";
-
-import opn = require("opn");
-
+import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createTelemetryReporter, IActionContext, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import * as Completion from "./Completion";
-import { ext } from "./extensionVariables";
-import * as Hover from "./Hover";
-import * as Json from "./JSON";
-import * as language from "./Language";
-import * as Reference from "./Reference";
-import * as Telemetry from "./Telemetry";
-import * as TLE from "./TLE";
-
-import { callWithTelemetryAndErrorHandling, IActionContext } from "vscode-azureextensionui";
-import { AzureRMAssets } from "./AzureRMAssets";
+import { diagnosticsCompleteMessage, diagnosticsSource } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
+import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
+import * as Hover from "./Hover";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
+import * as language from "./Language";
 import { PositionContext } from "./PositionContext";
+import * as Reference from "./Reference";
 import { Stopwatch } from "./Stopwatch";
 import { isLanguageIdSupported, supportedDocumentSelector } from "./supported";
-import { SurveyMetadata } from "./SurveyMetadata";
-import { SurveySettings } from "./SurveySettings";
+import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
-import { Reporter, reporter } from "./VSCodeTelReporter";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext): void {
-    context.subscriptions.push(new Reporter(context));
-    context.subscriptions.push(new AzureRMTools(context));
+export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
+    ext.context = context;
+    ext.reporter = createTelemetryReporter(context);
+    ext.outputChannel = vscode.window.createOutputChannel("Azure Resource Manager Tools");
+    ext.ui = new AzureUserInput(context.globalState);
+    registerUIExtensionVariables(ext);
+
+    await callWithTelemetryAndErrorHandling('activate', async (actionContext: IActionContext) => {
+        actionContext.telemetry.properties.isActivationEvent = 'true';
+        actionContext.telemetry.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
+
+        context.subscriptions.push(new AzureRMTools(context));
+    });
 }
 
 // this method is called when your extension is deactivated
-export function deactivate(): void {
+export function deactivateInternal(): void {
     // Nothing to do
 }
-
-type SurveyInfo = {
-    settings: SurveySettings;
-    filePath: string;
-};
 
 export class AzureRMTools {
     private _jsonFileSubscriptions: vscode.Disposable;
     private _deploymentTemplateFileSubscriptions: vscode.Disposable;
 
     private _diagnosticsCollection: vscode.DiagnosticCollection;
-
-    private _azureRMToolsConfiguration: AzureRMToolsConfiguration;
-    private _autoSave: string;
-
-    private _debugTelemetry: Telemetry.Endpoint;
-    private _productionTelemetry: Telemetry.Endpoint;
 
     private _deploymentTemplates: { [key: string]: DeploymentTemplate } = {};
 
@@ -84,57 +69,37 @@ export class AzureRMTools {
     });
 
     constructor(context: vscode.ExtensionContext) {
-        ext.extensionContext = context;
-        this.loadConfiguration();
-
         const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
         ext.jsonOutlineProvider = jsonOutline;
         context.subscriptions.push(vscode.window.registerTreeDataProvider("json-outline", jsonOutline));
-        context.subscriptions.push(vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => jsonOutline.goToDefinition(range)));
+        context.subscriptions.push(vscode.commands.registerCommand("azurerm-vscode-tools.treeview.goto", (range: vscode.Range) => jsonOutline.goToDefinition(range)));
 
-        this.log({
-            eventName: "Extension Activated"
-        });
+        const jsonFileSubscriptionArray: vscode.Disposable[] = [];
 
-        this.logOnError(() => {
-            const jsonFileSubscriptionArray: vscode.Disposable[] = [];
+        vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, jsonFileSubscriptionArray);
 
-            vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, jsonFileSubscriptionArray);
+        vscode.workspace.onDidOpenTextDocument(this.onDocumentOpened, this, jsonFileSubscriptionArray);
+        vscode.workspace.onDidChangeTextDocument(this.onDocumentChanged, this, jsonFileSubscriptionArray);
 
-            vscode.workspace.onDidChangeConfiguration(this.loadConfiguration, this, jsonFileSubscriptionArray);
+        this._jsonFileSubscriptions = vscode.Disposable.from(...jsonFileSubscriptionArray);
 
-            vscode.workspace.onDidOpenTextDocument(this.onDocumentOpened, this, jsonFileSubscriptionArray);
-            vscode.workspace.onDidChangeTextDocument(this.onDocumentChanged, this, jsonFileSubscriptionArray);
-            vscode.workspace.onDidSaveTextDocument(this.onDocumentSaved, this, jsonFileSubscriptionArray);
-
-            this._jsonFileSubscriptions = vscode.Disposable.from(...jsonFileSubscriptionArray);
-
-            const activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
-            if (activeEditor) {
-                this.updateDeploymentTemplate(activeEditor.document);
-            }
-        });
+        const activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
+        if (activeEditor) {
+            this.updateDeploymentTemplate(activeEditor.document);
+        }
     }
 
     public dispose(): void {
-        this.logOnError(() => {
+        callWithTelemetryAndErrorHandlingSync('dispose', (actionContext: IActionContext) => {
+            actionContext.telemetry.properties.isActivationEvent = 'true';
+            actionContext.errorHandling.suppressDisplay = true;
+
             if (this._deploymentTemplateFileSubscriptions) {
                 this._deploymentTemplateFileSubscriptions.dispose();
             }
 
             this._jsonFileSubscriptions.dispose();
         });
-
-        this.log({
-            eventName: "Extension Deactivated"
-        });
-
-        if (this._debugTelemetry) {
-            this._debugTelemetry.close();
-        }
-        if (this._productionTelemetry) {
-            this._productionTelemetry.close();
-        }
     }
 
     private getDeploymentTemplate(document: vscode.TextDocument): DeploymentTemplate {
@@ -148,7 +113,15 @@ export class AzureRMTools {
     }
 
     private updateDeploymentTemplate(document: vscode.TextDocument): void {
-        if (document) {
+        if (!document) {
+            return;
+        }
+
+        callWithTelemetryAndErrorHandlingSync('updateDeploymentTemplate', (actionContext: IActionContext) => {
+            actionContext.errorHandling.suppressDisplay = true;
+            actionContext.telemetry.suppressIfSuccessful = true;
+            actionContext.telemetry.properties.isActivationEvent = 'true';
+
             let foundDeploymentTemplate = false;
 
             if (document.getText() &&
@@ -167,8 +140,6 @@ export class AzureRMTools {
 
                 let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(document.getText(), documentUri);
                 if (deploymentTemplate.hasValidSchemaUri()) {
-                    let surveyInfo: SurveyInfo = this.updateSurveySettingsFromOpeningTemplate();
-
                     // If this is the first deployment template to be opened,
                     // then we need to register all of our deployment template
                     // editing tools with the editor. We don't do this when the
@@ -177,7 +148,7 @@ export class AzureRMTools {
                     // are fired for all JSON files, not just deployment
                     // templates.
                     if (Object.keys(this._deploymentTemplates).length === 0) {
-                        this.initializeExtension(surveyInfo);
+                        this.hookDeploymentTemplateEvents();
                     }
 
                     this._deploymentTemplates[documentUri] = deploymentTemplate;
@@ -188,11 +159,14 @@ export class AzureRMTools {
                     // template is being edited.
                     if (stopwatch) {
                         stopwatch.stop();
-                        this.log({
-                            eventName: "Deployment Template Opened",
-                            documentSizeInCharacters: document.getText().length,
-                            parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds
-                        });
+                        ext.reporter.sendTelemetryEvent(
+                            "Deployment Template Opened",
+                            {
+                            },
+                            {
+                                documentSizeInCharacters: document.getText().length,
+                                parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds
+                            });
 
                         this.logFunctionCounts(deploymentTemplate);
                     }
@@ -212,14 +186,20 @@ export class AzureRMTools {
                 // remove the deployment template from our cache.
                 this.closeDeploymentTemplate(document);
             }
-        }
+        });
     }
 
     private reportDeploymentTemplateErrors(document: vscode.TextDocument, deploymentTemplate: DeploymentTemplate): void {
-        deploymentTemplate.errors
-            .then((parseErrors: language.Issue[]) => {
-                const diagnostics: vscode.Diagnostic[] = [];
+        // Don't wait
+        // tslint:disable-next-line: no-floating-promises
+        callWithTelemetryAndErrorHandling('reportDeploymentTemplateErrors', async (actionContext: IActionContext) => {
+            actionContext.telemetry.suppressIfSuccessful = true;
 
+            let parseErrors: language.Issue[] = await deploymentTemplate.errors;
+            const diagnostics: vscode.Diagnostic[] = [];
+
+            // It's possible the _diagnosticsCollection could have been disposed while we were waiting for errors to get processed
+            if (this._diagnosticsCollection) {
                 for (const error of parseErrors) {
                     diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentTemplate, error, vscode.DiagnosticSeverity.Error));
                 }
@@ -228,82 +208,69 @@ export class AzureRMTools {
                     diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentTemplate, warning, vscode.DiagnosticSeverity.Warning));
                 }
 
+                if (ext.addCompletionDiagnostic) {
+                    diagnostics.push(<vscode.Diagnostic>{
+                        severity: vscode.DiagnosticSeverity.Hint,
+                        message: diagnosticsCompleteMessage,
+                        source: diagnosticsSource,
+                        code: ""
+                    });
+                }
+
                 this._diagnosticsCollection.set(document.uri, diagnostics);
-            })
-            // tslint:disable-next-line:no-any
-            .catch((error: any) => {
-                this.logError("UnhandledError", error);
-            });
+            }
+        });
     }
 
     /**
-     * Update survey settings on disk and return the updated version
+     * Hook up events related to template files (as opposed to plain JSON files). This is only called when
+     * actual template files are open, to avoid slowing performance when just JSON files are opened.
      */
-    private updateSurveySettingsFromOpeningTemplate(): SurveyInfo {
-        const filePath: string = path.join(os.homedir(), ".vscode", "azurerm", "surveyMetadata.json");
-        const settings: SurveySettings = SurveySettings.fromFile(filePath);
-
-        settings.incrementDeploymentTemplatesOpenedOrCreated();
-
-        if (!settings.deploymentTemplateFirstOpenedOrCreatedDateAndTime) {
-            settings.deploymentTemplateFirstOpenedOrCreatedDateAndTime = Date.now();
-        }
-
-        if (settings.showSurveyPrompts === undefined || settings.showSurveyPrompts === null) {
-            settings.showSurveyPrompts = true;
-        }
-
-        settings.toFile(filePath);
-
-        return { settings, filePath };
-    }
-
-    private initializeExtension(surveyInfo: SurveyInfo): void {
+    private hookDeploymentTemplateEvents(): void {
         let deploymentTemplateFileSubscriptionsArray: vscode.Disposable[] = [];
 
         vscode.window.onDidChangeTextEditorSelection(this.onTextSelectionChanged, this, deploymentTemplateFileSubscriptionsArray);
 
         vscode.workspace.onDidCloseTextDocument(this.onDocumentClosed, this, deploymentTemplateFileSubscriptionsArray);
 
-        const self: AzureRMTools = this;
         const hoverProvider: vscode.HoverProvider = {
-            provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover> {
-                return self.onProvideHover(document, position, token);
+            provideHover: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover> => {
+                return this.onProvideHover(document, position, token);
             }
         };
         deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerHoverProvider(supportedDocumentSelector, hoverProvider));
 
         const completionProvider: vscode.CompletionItemProvider = {
-            provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList> {
-                return self.onProvideCompletionItems(document, position, token);
+            provideCompletionItems: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList> => {
+                return this.onProvideCompletionItems(document, position, token);
             }
         };
         deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerCompletionItemProvider(supportedDocumentSelector, completionProvider, "'", "[", "."));
 
         const definitionProvider: vscode.DefinitionProvider = {
-            provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Definition {
-                return self.onProvideDefinition(document, position, token);
+            provideDefinition: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Definition => {
+                return this.onProvideDefinition(document, position, token);
             }
         };
         deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerDefinitionProvider(supportedDocumentSelector, definitionProvider));
 
         const referenceProvider: vscode.ReferenceProvider = {
-            provideReferences(document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): vscode.Location[] {
-                return self.onProvideReferences(document, position, context, token);
+            provideReferences: (document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): vscode.Location[] => {
+                return this.onProvideReferences(document, position, context, token);
             }
         };
         deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerReferenceProvider(supportedDocumentSelector, referenceProvider));
 
         const signatureHelpProvider: vscode.SignatureHelpProvider = {
-            provideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp> {
-                return self.onProvideSignatureHelp(document, position, token);
+            provideSignatureHelp: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp> => {
+                return this.onProvideSignatureHelp(document, position, token);
             }
         };
         deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerSignatureHelpProvider(supportedDocumentSelector, signatureHelpProvider, ",", "(", "\n"));
 
         const renameProvider: vscode.RenameProvider = {
-            provideRenameEdits(document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): vscode.WorkspaceEdit {
-                return self.onProvideRename(document, position, newName, token);
+            provideRenameEdits: (document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): vscode.WorkspaceEdit => {
+                return this.onProvideRename(document, position, newName, token);
             }
         };
         deploymentTemplateFileSubscriptionsArray.push(vscode.languages.registerRenameProvider(supportedDocumentSelector, renameProvider));
@@ -312,37 +279,14 @@ export class AzureRMTools {
         deploymentTemplateFileSubscriptionsArray.push(this._diagnosticsCollection);
 
         this._deploymentTemplateFileSubscriptions = vscode.Disposable.from(...deploymentTemplateFileSubscriptionsArray);
+    }
 
-        if (surveyInfo.settings.showSurveyPrompts) {
-            AzureRMAssets.getSurveyMetadata()
-                .then((surveyMetadata: SurveyMetadata) => {
-                    if (surveyMetadata.shouldShowSurveyPrompt(surveyInfo.settings)) {
-                        const message: string = "We would like to collect your feedback on the Azure Resource Manager Tools extension. Please take a few minutes to fill out survey.";
-                        const options: string[] = ["Don't ask me again", "OK"]; // VS Code automatically inserts a "Close" option.
-
-                        vscode.window.showInformationMessage(message, ...options).then((selectedOption: string) => {
-                            surveyInfo.settings.previousSurveyPromptDateAndTime = Date.now();
-
-                            this.log({
-                                eventName: "Survey Prompt",
-                                selectedOption: selectedOption
-                            });
-
-                            if (selectedOption === "OK") {
-                                // tslint:disable-next-line:no-floating-promises
-                                opn(surveyMetadata.surveyLink);
-                            } else if (selectedOption === "Don't ask me again") {
-                                surveyInfo.settings.showSurveyPrompts = false;
-                            }
-
-                            surveyInfo.settings.toFile(surveyInfo.filePath);
-                        });
-                    }
-                })
-                // tslint:disable-next-line:no-any
-                .catch((error: any) => {
-                    this.logError("Failed To Get Survey Metadata", error);
-                });
+    private unhookDeploymentFileEvents(): void {
+        // Dispose all registered events and services, including this._diagnosticsCollection
+        if (this._deploymentTemplateFileSubscriptions) {
+            this._deploymentTemplateFileSubscriptions.dispose();
+            this._deploymentTemplateFileSubscriptions = null;
+            this._diagnosticsCollection = null;
         }
     }
 
@@ -351,18 +295,16 @@ export class AzureRMTools {
      * in a relatively stable state, such as after first opening
      */
     private logFunctionCounts(deploymentTemplate: DeploymentTemplate): void {
-        let me = this;
-        let outputChannelIgnoreForNow: vscode.OutputChannel;
-
         // Don't wait for promise
-        let dummyPromise = callWithTelemetryAndErrorHandling("tle.stats", reporter, outputChannelIgnoreForNow, async function (this: IActionContext) {
-            this.suppressErrorDisplay = true;
+        // tslint:disable-next-line: no-floating-promises
+        callWithTelemetryAndErrorHandling("tle.stats", async (actionContext: IActionContext) => {
+            actionContext.errorHandling.suppressDisplay = true;
             let properties: {
-                functionCounts?: string,
-                unrecognized?: string,
-                incorrectArgs?: string,
-                [key: string]: string
-            } = this.properties;
+                functionCounts?: string;
+                unrecognized?: string;
+                incorrectArgs?: string;
+                [key: string]: string;
+            } = actionContext.telemetry.properties;
 
             // Full function counts
             //
@@ -395,6 +337,7 @@ export class AzureRMTools {
     }
 
     private static setToJson(s: Set<string>): string {
+        // tslint:disable-next-line: strict-boolean-expressions
         if (!s.size) {
             return "";
         }
@@ -408,7 +351,10 @@ export class AzureRMTools {
     private getVSCodeDiagnosticFromIssue(deploymentTemplate: DeploymentTemplate, issue: language.Issue, severity: vscode.DiagnosticSeverity): vscode.Diagnostic {
         const range: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, issue.span);
         const message: string = issue.message;
-        return new vscode.Diagnostic(range, message, severity);
+        let diagnostic = new vscode.Diagnostic(range, message, severity);
+        diagnostic.source = diagnosticsSource;
+        diagnostic.code = "";
+        return diagnostic;
     }
 
     private closeDeploymentTemplate(document: vscode.TextDocument): void {
@@ -422,120 +368,98 @@ export class AzureRMTools {
             // unregister all of our deployment template events from the VS
             // Code editor. The events will be registered again when the next
             // deployment template is opened.
-            if (Object.keys(this._deploymentTemplates).length === 0 && this._deploymentTemplateFileSubscriptions) {
-                this._deploymentTemplateFileSubscriptions.dispose();
-                this._deploymentTemplateFileSubscriptions = null;
+            if (Object.keys(this._deploymentTemplates).length === 0) {
+                this.unhookDeploymentFileEvents();
             }
         }
     }
 
-    private onProvideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover> {
-        let result: Promise<vscode.Hover> = Promise.resolve(null);
+    private async onProvideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover> {
+        const deploymentTemplate = this.getDeploymentTemplate(document);
+        if (deploymentTemplate) {
+            return await callWithTelemetryAndErrorHandling('Hover', async (actionContext: IActionContext) => {
+                actionContext.errorHandling.suppressDisplay = true;
+                let properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>actionContext.telemetry.properties;
 
-        this.logOnError(() => {
-            const deploymentTemplate = this.getDeploymentTemplate(document);
-            if (deploymentTemplate) {
                 const context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
                 if (context.hoverInfo) {
-                    result = context.hoverInfo.then((hoverInfo: Hover.Info) => {
-                        let hover: vscode.Hover = null;
+                    let hoverInfo: Hover.Info = await context.hoverInfo;
+                    let hover: vscode.Hover = null;
 
-                        if (hoverInfo) {
-                            if (hoverInfo instanceof Hover.FunctionInfo) {
-                                this.log({
-                                    eventName: "Hover",
-                                    hoverType: "TLE Function",
-                                    tleFunctionName: hoverInfo.functionName
-                                });
-                            } else if (hoverInfo instanceof Hover.ParameterReferenceInfo) {
-                                this.log({
-                                    eventName: "Hover",
-                                    hoverType: "Parameter Reference"
-                                });
-                            } else if (hoverInfo instanceof Hover.VariableReferenceInfo) {
-                                this.log({
-                                    eventName: "Hover",
-                                    hoverType: "Variable Reference"
-                                });
-                            }
-
-                            const hoverRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, hoverInfo.span);
-                            hover = new vscode.Hover(hoverInfo.getHoverText(), hoverRange);
+                    if (hoverInfo) {
+                        if (hoverInfo instanceof Hover.FunctionInfo) {
+                            properties.hoverType = "TLE Function";
+                            properties.tleFunctionName = hoverInfo.functionName;
+                        } else if (hoverInfo instanceof Hover.ParameterReferenceInfo) {
+                            properties.hoverType = "Parameter Reference";
+                        } else if (hoverInfo instanceof Hover.VariableReferenceInfo) {
+                            properties.hoverType = "Variable Reference";
                         }
 
+                        const hoverRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, hoverInfo.span);
+                        hover = new vscode.Hover(hoverInfo.getHoverText(), hoverRange);
                         return hover;
-                    });
+                    }
                 }
-            }
-        });
-
-        // tslint:disable-next-line:no-any
-        return result.catch((error: any) => {
-            this.logError("UnhandledError", error);
-            return undefined;
-        });
+            });
+        }
     }
 
-    private onProvideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList> {
-        let result: Promise<vscode.CompletionList> = Promise.resolve(null);
+    private async onProvideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList> {
+        const deploymentTemplate = this.getDeploymentTemplate(document);
+        if (deploymentTemplate) {
+            return await callWithTelemetryAndErrorHandling('provideCompletionItems', async (actionContext: IActionContext) => {
+                let properties = <TelemetryProperties & { completionKind?: string }>actionContext.telemetry.properties;
+                actionContext.telemetry.suppressIfSuccessful = true;
+                actionContext.errorHandling.suppressDisplay = true;
 
-        this.logOnError(() => {
-            const deploymentTemplate = this.getDeploymentTemplate(document);
-            if (deploymentTemplate) {
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                if (context.completionItems) {
+                let completionItemArray: Completion.Item[] = await context.getCompletionItems();
+                const completionItems: vscode.CompletionItem[] = [];
+                for (const completion of completionItemArray) {
+                    const insertRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, completion.insertSpan);
 
-                    result = context.completionItems.then((completionItemArray: Completion.Item[]) => {
-                        const completionItems: vscode.CompletionItem[] = [];
-                        for (const completion of completionItemArray) {
-                            const insertRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, completion.insertSpan);
+                    const completionToAdd = new vscode.CompletionItem(completion.name);
+                    completionToAdd.range = insertRange;
+                    completionToAdd.insertText = new vscode.SnippetString(completion.insertText);
+                    completionToAdd.detail = completion.detail;
+                    completionToAdd.documentation = completion.description;
 
-                            const completionToAdd = new vscode.CompletionItem(completion.name);
-                            completionToAdd.range = insertRange;
-                            completionToAdd.insertText = new vscode.SnippetString(completion.insertText);
-                            completionToAdd.detail = completion.detail;
-                            completionToAdd.documentation = completion.description;
+                    switch (completion.kind) {
+                        case Completion.CompletionKind.Function:
+                            completionToAdd.kind = vscode.CompletionItemKind.Function;
+                            break;
 
-                            switch (completion.kind) {
-                                case Completion.CompletionKind.Function:
-                                    completionToAdd.kind = vscode.CompletionItemKind.Function;
-                                    break;
+                        case Completion.CompletionKind.Parameter:
+                        case Completion.CompletionKind.Variable:
+                            completionToAdd.kind = vscode.CompletionItemKind.Variable;
+                            break;
 
-                                case Completion.CompletionKind.Parameter:
-                                case Completion.CompletionKind.Variable:
-                                    completionToAdd.kind = vscode.CompletionItemKind.Variable;
-                                    break;
+                        case Completion.CompletionKind.Property:
+                            completionToAdd.kind = vscode.CompletionItemKind.Field;
+                            break;
 
-                                case Completion.CompletionKind.Property:
-                                    completionToAdd.kind = vscode.CompletionItemKind.Field;
-                                    break;
+                        default:
+                            assert.fail(`Unrecognized Completion.Type: ${completion.kind}`);
+                            break;
+                    }
+                    properties.completionKind = vscode.CompletionItemKind[completionToAdd.kind];
 
-                                default:
-                                    assert.fail(`Unrecognized Completion.Type: ${completion.kind}`);
-                                    break;
-                            }
-
-                            completionItems.push(completionToAdd);
-                        }
-                        return new vscode.CompletionList(completionItems, true);
-                    });
+                    completionItems.push(completionToAdd);
                 }
-            }
-        });
-
-        // tslint:disable-next-line:no-any
-        return result.catch((error: any) => {
-            this.logError("UnhandledError", error);
-            return undefined;
-        });
+                return new vscode.CompletionList(completionItems, true);
+            });
+        }
     }
 
     private onProvideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Location {
-        let result: vscode.Location = null;
+        const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
+        if (deploymentTemplate) {
+            return callWithTelemetryAndErrorHandlingSync('Go To Definition', (actionContext: IActionContext) => {
+                let properties = <TelemetryProperties & { definitionType?: string }>actionContext.telemetry.properties;
+                actionContext.errorHandling.suppressDisplay = true;
+                let result: vscode.Location = null;
 
-        this.logOnError(() => {
-            const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
-            if (deploymentTemplate) {
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
                 let definitionType: string = "no definition";
@@ -551,24 +475,18 @@ export class AzureRMTools {
                     definitionType = "variable";
                 }
 
-                this.log({
-                    eventName: "Go To Definition",
-                    definitionType: definitionType
-                });
-            }
-        });
-
-        return result;
+                properties.definitionType = definitionType;
+                return result;
+            });
+        }
     }
 
     private onProvideReferences(document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): vscode.Location[] {
-        const result: vscode.Location[] = [];
-
-        this.logOnError(() => {
-            const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
-            if (deploymentTemplate) {
+        const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
+        if (deploymentTemplate) {
+            return callWithTelemetryAndErrorHandlingSync('Find References', (actionContext: IActionContext) => {
+                const results: vscode.Location[] = [];
                 const locationUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
-
                 const positionContext: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
                 const references: Reference.List = positionContext.references;
@@ -589,65 +507,55 @@ export class AzureRMTools {
                             break;
                     }
 
-                    this.log({
-                        eventName: "Find References",
-                        referenceType: referenceType
-                    });
+                    actionContext.telemetry.properties.referenceType = referenceType;
 
                     for (const span of references.spans) {
                         const referenceRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, span);
-                        result.push(new vscode.Location(locationUri, referenceRange));
+                        results.push(new vscode.Location(locationUri, referenceRange));
                     }
                 }
-            }
-        });
 
-        return result;
+                return results;
+            });
+        }
     }
 
-    private onProvideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp> {
-        let result: Promise<vscode.SignatureHelp> = Promise.resolve(null);
+    private async onProvideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp | undefined> {
+        const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
+        if (deploymentTemplate) {
+            return await callWithTelemetryAndErrorHandling('provideSignatureHelp', async (actionContext: IActionContext) => {
+                actionContext.errorHandling.suppressDisplay = true;
 
-        this.logOnError(() => {
-            const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
-            if (deploymentTemplate) {
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
-                result = context.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
-                    let signatureHelp: vscode.SignatureHelp = null;
+                let functionSignatureHelp: TLE.FunctionSignatureHelp = await context.signatureHelp;
+                let signatureHelp: vscode.SignatureHelp;
 
-                    if (functionSignatureHelp) {
+                if (functionSignatureHelp) {
 
-                        const signatureInformation = new vscode.SignatureInformation(functionSignatureHelp.functionMetadata.usage, functionSignatureHelp.functionMetadata.description);
-                        signatureInformation.parameters = [];
-                        for (const parameterName of functionSignatureHelp.functionMetadata.parameters) {
-                            signatureInformation.parameters.push(new vscode.ParameterInformation(parameterName));
-                        }
-
-                        signatureHelp = new vscode.SignatureHelp();
-                        signatureHelp.activeParameter = functionSignatureHelp.activeParameterIndex;
-                        signatureHelp.activeSignature = 0;
-                        signatureHelp.signatures = [signatureInformation];
+                    const signatureInformation = new vscode.SignatureInformation(functionSignatureHelp.functionMetadata.usage, functionSignatureHelp.functionMetadata.description);
+                    signatureInformation.parameters = [];
+                    for (const parameterName of functionSignatureHelp.functionMetadata.parameters) {
+                        signatureInformation.parameters.push(new vscode.ParameterInformation(parameterName));
                     }
 
-                    return signatureHelp;
-                });
-            }
-        });
+                    signatureHelp = new vscode.SignatureHelp();
+                    signatureHelp.activeParameter = functionSignatureHelp.activeParameterIndex;
+                    signatureHelp.activeSignature = 0;
+                    signatureHelp.signatures = [signatureInformation];
+                }
 
-        // tslint:disable-next-line:no-any
-        return result.catch((error: any) => {
-            this.logError("UnhandledError", error);
-            return undefined;
-        });
+                return signatureHelp;
+            });
+        }
     }
 
     private onProvideRename(document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): vscode.WorkspaceEdit {
-        const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
+        const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
+        if (deploymentTemplate) {
+            return callWithTelemetryAndErrorHandlingSync('Rename', () => {
+                const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
 
-        this.logOnError(() => {
-            const deploymentTemplate: DeploymentTemplate = this.getDeploymentTemplate(document);
-            if (deploymentTemplate) {
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
                 const referenceList: Reference.List = context.references;
                 if (referenceList) {
@@ -655,15 +563,21 @@ export class AzureRMTools {
                     // textbox that pops up when you press F2 contains more than just the variable
                     // or parameter name. This next section of code parses out just the variable or
                     // parameter name.
-                    const firstSingleQuoteIndex: number = newName.indexOf(`'`);
+                    // For instance, it might provide the textbox with the value "[parameters('location')]"
+                    // We need to pull out the parameter name "location" (no quotes) from that
+                    const firstSingleQuoteIndex: number = newName.indexOf("'");
                     if (firstSingleQuoteIndex >= 0) {
-                        const secondSingleQuoteIndex: number = newName.indexOf(`'`, firstSingleQuoteIndex + 1);
+                        const secondSingleQuoteIndex: number = newName.indexOf("'", firstSingleQuoteIndex + 1);
                         if (secondSingleQuoteIndex >= 0) {
                             newName = newName.substring(firstSingleQuoteIndex + 1, secondSingleQuoteIndex);
                         } else {
                             newName = newName.substring(firstSingleQuoteIndex + 1);
                         }
                     }
+
+                    // When trying to rename a parameter or variable definition, the textbox provided by vscode to
+                    // the user is contained in double quotes.  Remove those.
+                    newName = newName.replace(/^"(.*)"$/, '$1');
 
                     const documentUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
 
@@ -672,16 +586,20 @@ export class AzureRMTools {
                         result.replace(documentUri, referenceRange, newName);
                     }
                 } else {
-                    vscode.window.showInformationMessage("You can only rename parameters and variables.");
+                    throw new Error('You can only rename parameters and variables.');
                 }
-            }
-        });
 
-        return result;
+                return result;
+            });
+        }
     }
 
     private onActiveTextEditorChanged(): void {
-        this.logOnError(() => {
+        callWithTelemetryAndErrorHandlingSync('onActiveTextEditorChanged', (actionContext: IActionContext) => {
+            actionContext.telemetry.properties.isActivationEvent = 'true';
+            actionContext.errorHandling.suppressDisplay = true;
+            actionContext.telemetry.suppressIfSuccessful = true;
+
             let activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
             if (activeEditor) {
                 if (this.getDeploymentTemplate(activeEditor.document) === undefined) {
@@ -692,7 +610,11 @@ export class AzureRMTools {
     }
 
     private onTextSelectionChanged(): void {
-        this.logOnError(() => {
+        callWithTelemetryAndErrorHandlingSync('onTextSelectionChanged', (actionContext: IActionContext) => {
+            actionContext.telemetry.properties.isActivationEvent = 'true';
+            actionContext.errorHandling.suppressDisplay = true;
+            actionContext.telemetry.suppressIfSuccessful = true;
+
             let editor: vscode.TextEditor = vscode.window.activeTextEditor;
             if (editor) {
                 let deploymentTemplate = this.getDeploymentTemplate(editor.document);
@@ -713,46 +635,22 @@ export class AzureRMTools {
         });
     }
 
-    private onDocumentChanged(event: vscode.TextDocumentChangeEvent) {
-        this.logOnError(() => {
-            this.updateDeploymentTemplate(event.document);
-        });
+    private onDocumentChanged(event: vscode.TextDocumentChangeEvent): void {
+        this.updateDeploymentTemplate(event.document);
     }
 
     private onDocumentOpened(openedDocument: vscode.TextDocument): void {
-        this.logOnError(() => {
-            this.updateDeploymentTemplate(openedDocument);
-        });
-    }
-
-    private onDocumentSaved(savedDocument: vscode.TextDocument): void {
-        this.logOnError(() => {
-            // The saved document is a deployment template if it shows up in our deployment
-            // templates dictionary.
-            if (this._deploymentTemplates[savedDocument.uri.toString()]) {
-                this.log({
-                    eventName: "Deployment Template Saved",
-                    autoSave: this._autoSave
-                });
-            }
-        });
+        this.updateDeploymentTemplate(openedDocument);
     }
 
     private onDocumentClosed(closedDocument: vscode.TextDocument): void {
-        this.logOnError(() => {
+        callWithTelemetryAndErrorHandlingSync('onDocumentClosed', (actionContext: IActionContext) => {
+            actionContext.telemetry.properties.isActivationEvent = 'true';
+            actionContext.telemetry.suppressIfSuccessful = true;
+            actionContext.errorHandling.suppressDisplay = true;
+
             this.closeDeploymentTemplate(closedDocument);
         });
-    }
-
-    private loadConfiguration(): void {
-        const configuration = vscode.workspace.getConfiguration("azurermtools");
-        this._azureRMToolsConfiguration = {
-            debug: configuration.get("debug", false),
-            enableTelemetry: configuration.get("enableTelemetry", false)
-        };
-
-        const filesConfiguration = vscode.workspace.getConfiguration("files");
-        this._autoSave = filesConfiguration.get("autoSave", "off");
     }
 
     private getVSCodeRangeFromSpan(deploymentTemplate: DeploymentTemplate, span: language.Span): vscode.Range {
@@ -767,52 +665,4 @@ export class AzureRMTools {
 
         return new vscode.Range(vscodeStartPosition, vscodeEndPosition);
     }
-
-    private log(event: Telemetry.Event): void {
-        if (this._azureRMToolsConfiguration.enableTelemetry) {
-            if (this._azureRMToolsConfiguration.debug) {
-                if (!this._debugTelemetry) {
-                    this._debugTelemetry = new Telemetry.Console();
-                }
-
-                this._debugTelemetry.log(event);
-            } else {
-                if (!this._productionTelemetry) {
-                    this._productionTelemetry = new Telemetry.PropertySetter(null, new Telemetry.VSCode());
-                }
-
-                this._productionTelemetry.log(event);
-            }
-        }
-    }
-
-    private logOnError(operation: () => void): void {
-        assert(operation);
-
-        try {
-            operation();
-        } catch (error) {
-            this.logError("UnhandledError", error);
-        }
-    }
-
-    // tslint:disable-next-line:no-any
-    private logError(eventName: string, error: any): void {
-        const event: Telemetry.Event = {
-            eventName: eventName,
-            errorType: (typeof error === "object" && error.constructor) ? error.constructor.name : typeof error,
-        };
-
-        for (const propertyName of Object.getOwnPropertyNames(error)) {
-            event[propertyName] = error[propertyName];
-        }
-
-        this.log(event);
-    }
-}
-
-interface AzureRMToolsConfiguration {
-    debug: boolean;
-
-    enableTelemetry: boolean;
 }

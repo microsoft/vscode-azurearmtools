@@ -6,20 +6,11 @@
 
 import * as assert from "assert";
 
-import { networkTest } from "./networkTest";
+import { networkTest } from "./networkTest.test";
 
-import { AzureRMAssets, FunctionMetadata, FunctionsMetadata, VersionRedirect } from "../src/AzureRMAssets";
-import { SurveyMetadata } from "../src/SurveyMetadata";
+import { AzureRMAssets, FunctionMetadata, FunctionsMetadata } from "../extension.bundle";
 
 suite("AzureRMAssets", () => {
-    // Re-enable as part of https://github.com/Microsoft/vscode-azurearmtools/issues/51
-    // networkTest("getSurveyMetadata()", () => {
-    //     return AzureRMAssets.getSurveyMetadata().then((surveyMetadata: SurveyMetadata) => {
-    //         assert(surveyMetadata, "Expected surveyMetadata to be defined and not-null");
-    //         assert(surveyMetadata.surveyLink);
-    //     });
-    // });
-
     networkTest("getFunctionMetadata()", async () => {
         const functionMetadataArray = (await AzureRMAssets.getFunctionsMetadata()).functionMetadata;
         assert(functionMetadataArray);
@@ -38,7 +29,8 @@ suite("AzureRMAssets", () => {
         });
 
         test("findByName", () => {
-            const metadata = new FunctionsMetadata([new FunctionMetadata("hi", "", "", 0, 0, []), new FunctionMetadata("MyFunction", "", "", 0, 0, [])]);
+            const metadata = new FunctionsMetadata(
+                [new FunctionMetadata("hi", "", "", 0, 0, []), new FunctionMetadata("MyFunction", "", "", 0, 0, [])]);
 
             assert.equal(metadata.findbyName("MyFunction").name, "MyFunction");
             assert.equal(metadata.findbyName("myfunction").name, "MyFunction");
@@ -116,6 +108,7 @@ suite("AzureRMAssets", () => {
 
             test("with two function signatures with only name property", () => {
                 assert.deepStrictEqual(
+                    // tslint:disable-next-line:max-line-length
                     FunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z" }, { "name": "b", "expectedUsage": "y", "description": "7" } ] }`),
                     [
                         new FunctionMetadata("a", "z", undefined, undefined, undefined, []),

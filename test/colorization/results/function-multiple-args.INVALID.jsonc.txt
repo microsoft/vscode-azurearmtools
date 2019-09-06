@@ -1,0 +1,21 @@
+TEST STRING: "[max(1;2)]"
+"[                  {{scope-expression-start}}
+max                 {{scope-builtin}}
+(                   {{scope-parentheses-funccall}}
+1                   {{scope-number}}
+;                   invalid.illegal.expected-comma.tle.arm
+2                   {{scope-number}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[max(1,min()))]"
+"[                  {{scope-expression-start}}
+max                 {{scope-builtin}}
+(                   {{scope-parentheses-funccall}}
+1                   {{scope-number}}
+,                   {{scope-funcargs-separator}}
+min                 {{scope-builtin}}
+()                  {{scope-parentheses-funccall}}
+)                   {{scope-parentheses-funccall}}
+)                   invalid.illegal.expected-expression.tle.arm
+]"                  {{scope-expression-end}}

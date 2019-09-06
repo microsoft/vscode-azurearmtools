@@ -8,7 +8,7 @@
 // tslint:disable:switch-default // Grandfathered in
 // tslint:disable:max-classes-per-file // Grandfathered in
 
-import * as assert from "assert";
+import { assert } from "./fixed_assert";
 
 import * as assets from "./AzureRMAssets";
 import * as Json from "./JSON";
@@ -90,10 +90,6 @@ export class StringValue extends Value {
 
     private get quoteCharacter(): string {
         return this.toString()[0];
-    }
-
-    private get lastCharacter(): string {
-        return this.toString()[this.length - 1];
     }
 
     public getSpan(): language.Span {
@@ -262,7 +258,13 @@ export class ArrayAccessValue extends ParentValue {
  * A TLE value that represents a function expression.
  */
 export class FunctionValue extends ParentValue {
-    constructor(private _nameToken: Token, private _leftParenthesisToken: Token, private _commaTokens: Token[], private _argumentExpressions: Value[], private _rightParenthesisToken: Token) {
+    constructor(
+        private _nameToken: Token,
+        private _leftParenthesisToken: Token,
+        private _commaTokens: Token[],
+        private _argumentExpressions: Value[],
+        private _rightParenthesisToken: Token
+    ) {
         super();
 
         assert.notEqual(null, _nameToken);
@@ -383,8 +385,6 @@ export class PropertyAccess extends ParentValue {
     public get sourcesNameStack(): string[] {
         const result: string[] = [];
 
-        const propertyAccesses: PropertyAccess[] = [];
-
         let propertyAccessSource: PropertyAccess = asPropertyAccessValue(this._source);
         while (propertyAccessSource) {
             result.push(propertyAccessSource.nameToken.stringValue);
@@ -446,7 +446,7 @@ export class PropertyAccess extends ParentValue {
  * A set of functions that pertain to getting highlight character indexes for a TLE string.
  */
 export class BraceHighlighter {
-    public static getHighlightCharacterIndexes(context: PositionContext) {
+    public static getHighlightCharacterIndexes(context: PositionContext): number[] {
         assert(context);
 
         let highlightCharacterIndexes: number[] = [];
@@ -471,7 +471,9 @@ export class BraceHighlighter {
             }
 
             let leftOfTLECharacterIndex = tleCharacterIndex - 1;
-            if (tleParseResult.rightSquareBracketToken !== null && tleParseResult.rightSquareBracketToken.span.startIndex === leftOfTLECharacterIndex) {
+            if (tleParseResult.rightSquareBracketToken !== null
+                && tleParseResult.rightSquareBracketToken.span.startIndex === leftOfTLECharacterIndex
+            ) {
                 BraceHighlighter.addTLEBracketHighlights(highlightCharacterIndexes, tleParseResult);
             } else if (0 <= leftOfTLECharacterIndex) {
                 let tleValue: Value = tleParseResult.getValueAtCharacterIndex(leftOfTLECharacterIndex);
@@ -693,6 +695,7 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
             const actualFunctionName: string = functionMetadata.name;
 
             const minimumArguments: number = functionMetadata.minimumArguments;
+            // tslint:disable-next-line:max-line-length
             assert(minimumArguments !== null && minimumArguments !== undefined, `TLE function metadata for '${actualFunctionName}' has a null or undefined minimum argument value.`);
 
             const maximumArguments: number = functionMetadata.maximumArguments;
@@ -710,6 +713,7 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
             } else {
                 assert(minimumArguments < maximumArguments);
                 if (functionCallArgumentCount < minimumArguments || maximumArguments < functionCallArgumentCount) {
+                    // tslint:disable-next-line:max-line-length
                     message = `The function '${actualFunctionName}' takes between ${minimumArguments} and ${maximumArguments} ${this.getArgumentsString(maximumArguments)}.`;
                 }
             }
@@ -767,7 +771,8 @@ export class UndefinedVariablePropertyVisitor extends Visitor {
                     const variableDefinition: Json.ObjectValue = Json.asObjectValue(variableProperty.value);
                     const sourcesNameStack: string[] = tlePropertyAccess.sourcesNameStack;
                     if (variableDefinition) {
-                        const sourcePropertyDefinition: Json.ObjectValue = Json.asObjectValue(variableDefinition.getPropertyValueFromStack(sourcesNameStack));
+                        const sourcePropertyDefinition: Json.ObjectValue =
+                            Json.asObjectValue(variableDefinition.getPropertyValueFromStack(sourcesNameStack));
                         if (sourcePropertyDefinition && !sourcePropertyDefinition.hasProperty(tlePropertyAccess.nameToken.stringValue)) {
                             this.addIssue(tlePropertyAccess);
                         }
@@ -784,7 +789,8 @@ export class UndefinedVariablePropertyVisitor extends Visitor {
     private addIssue(tlePropertyAccess: PropertyAccess): void {
         const propertyName: string = tlePropertyAccess.nameToken.stringValue;
         const sourceString: string = tlePropertyAccess.source.toString();
-        this._errors.push(new language.Issue(tlePropertyAccess.nameToken.span, `Property "${propertyName}" is not a defined property of "${sourceString}".`));
+        this._errors.push(
+            new language.Issue(tlePropertyAccess.nameToken.span, `Property "${propertyName}" is not a defined property of "${sourceString}".`));
     }
 
     public static visit(tleValue: Value, deploymentTemplate: DeploymentTemplate): UndefinedVariablePropertyVisitor {
@@ -804,7 +810,7 @@ export class FindReferencesVisitor extends Visitor {
     private _references: Reference.List;
     private _lowerCasedName: string;
 
-    constructor(private _kind: Reference.ReferenceKind, private _name: string) {
+    constructor(private _kind: Reference.ReferenceKind, _name: string) {
         super();
 
         this._references = new Reference.List(_kind);
@@ -885,7 +891,11 @@ export class Parser {
                 leftSquareBracketToken = tokenizer.current;
                 tokenizer.next();
 
-                while (tokenizer.hasCurrent() && tokenizer.current.getType() !== TokenType.Literal && tokenizer.current.getType() !== TokenType.RightSquareBracket) {
+                while (
+                    tokenizer.hasCurrent()
+                    && tokenizer.current.getType() !== TokenType.Literal
+                    && tokenizer.current.getType() !== TokenType.RightSquareBracket
+                ) {
                     errors.push(new language.Issue(tokenizer.current.span, "Expected a literal value."));
                     tokenizer.next();
                 }
@@ -965,7 +975,10 @@ export class Parser {
                             errorSpan = tokenizer.current.span;
 
                             let tokenType = tokenizer.current.getType();
-                            if (tokenType !== TokenType.RightParenthesis && tokenType !== TokenType.RightSquareBracket && tokenType !== TokenType.Comma) {
+                            if (tokenType !== TokenType.RightParenthesis
+                                && tokenType !== TokenType.RightSquareBracket
+                                && tokenType !== TokenType.Comma
+                            ) {
                                 tokenizer.next();
                             }
                         }
@@ -1091,7 +1104,12 @@ export class Parser {
         return new FunctionValue(nameToken, leftParenthesisToken, commaTokens, argumentExpressions, rightParenthesisToken);
     }
 
-    private static isMissingArgument(expectingArgument: boolean, leftParenthesisToken: Token, existingArguments: number, tokenizer: Tokenizer): boolean {
+    private static isMissingArgument(
+        expectingArgument: boolean,
+        leftParenthesisToken: Token,
+        existingArguments: number,
+        tokenizer: Tokenizer
+    ): boolean {
         let result = false;
 
         if (expectingArgument && leftParenthesisToken !== null && 0 < existingArguments) {
@@ -1111,7 +1129,12 @@ export class Parser {
  * The result of parsing a TLE string.
  */
 export class ParseResult {
-    constructor(private _leftSquareBracketToken: Token, private _expression: Value, private _rightSquareBracketToken: Token, private _errors: language.Issue[]) {
+    constructor(
+        private _leftSquareBracketToken: Token,
+        private _expression: Value,
+        private _rightSquareBracketToken: Token,
+        private _errors: language.Issue[]
+    ) {
         assert.notEqual(null, _errors);
     }
 
@@ -1266,17 +1289,27 @@ export class Tokenizer {
                 case basic.TokenType.CarriageReturn:
                 case basic.TokenType.NewLine:
                 case basic.TokenType.CarriageReturnNewLine:
-                    this._current = Token.createWhitespace(this._currentTokenStartIndex, Utilities.getCombinedText(Json.readWhitespace(this._basicTokenizer)));
+                    this._current = Token.createWhitespace(
+                        this._currentTokenStartIndex, Utilities.getCombinedText(Json.readWhitespace(this._basicTokenizer)));
+                    break;
+
+                case basic.TokenType.DoubleQuote:
+                    this._current = Token.createQuotedString(
+                        this._currentTokenStartIndex,
+                        Utilities.getCombinedText(Json.readQuotedString(this._basicTokenizer)));
                     break;
 
                 case basic.TokenType.SingleQuote:
-                case basic.TokenType.DoubleQuote:
-                    this._current = Token.createQuotedString(this._currentTokenStartIndex, Utilities.getCombinedText(Json.readQuotedString(this._basicTokenizer)));
+                    this._current = Token.createQuotedString(
+                        this._currentTokenStartIndex,
+                        Utilities.getCombinedText(readQuotedTLEString(this._basicTokenizer)));
                     break;
 
                 case basic.TokenType.Dash:
                 case basic.TokenType.Digits:
-                    this._current = Token.createNumber(this._currentTokenStartIndex, Utilities.getCombinedText(Json.readNumber(this._basicTokenizer)));
+                    this._current = Token.createNumber(
+                        this._currentTokenStartIndex,
+                        Utilities.getCombinedText(Json.readNumber(this._basicTokenizer)));
                     break;
 
                 default:
@@ -1305,7 +1338,7 @@ export class Tokenizer {
         return result;
     }
 
-    private skipWhitespace() {
+    private skipWhitespace(): void {
         while (this.hasCurrent() && this._current.getType() === TokenType.Whitespace) {
             this.next();
         }
@@ -1347,7 +1380,7 @@ export class Token {
         return this._stringValue;
     }
 
-    public static createLeftParenthesis(startIndex: number) {
+    public static createLeftParenthesis(startIndex: number): Token {
         return Token.create(TokenType.LeftParenthesis, startIndex, "(");
     }
 
@@ -1355,7 +1388,7 @@ export class Token {
         return Token.create(TokenType.RightParenthesis, startIndex, ")");
     }
 
-    public static createLeftSquareBracket(startIndex: number) {
+    public static createLeftSquareBracket(startIndex: number): Token {
         return Token.create(TokenType.LeftSquareBracket, startIndex, "[");
     }
 
@@ -1416,4 +1449,46 @@ export enum TokenType {
     Literal,
     Period,
     Number,
+}
+
+/**
+ * Handles reading a single-quoted string inside a JSON-encoded TLE string. Handles both JSON string
+ * escape characters (e.g. \n, \") and escaped single quotes in TLE style (two single quotes together,
+ * e.g. 'That''s all, folks!')
+ */
+export function readQuotedTLEString(iterator: Utilities.Iterator<basic.Token>): basic.Token[] {
+    assert(iterator.current().getType() === basic.TokenType.SingleQuote);
+    const quotedStringTokens: basic.Token[] = [iterator.current()];
+    iterator.moveNext();
+
+    let escaped: boolean = false;
+    while (iterator.current()) {
+        quotedStringTokens.push(iterator.current());
+
+        if (escaped) {
+            escaped = false;
+        } else {
+            if (iterator.current().getType() === basic.TokenType.Backslash) {
+                escaped = true;
+            } else if (iterator.current().getType() === basic.TokenType.SingleQuote) {
+                // If the next token is also a single quote, it's escaped, otherwise it's the
+                // end of the string.
+                iterator.moveNext();
+                if (!iterator.current()) {
+                    break;
+                }
+
+                if (iterator.current().getType() === basic.TokenType.SingleQuote) {
+                    escaped = true;
+                    continue;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        iterator.moveNext();
+    }
+
+    return quotedStringTokens;
 }

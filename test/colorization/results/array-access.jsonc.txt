@@ -1,0 +1,57 @@
+TEST STRING: "[my.var('array0')[1]]"
+"[                  {{scope-expression-start}}
+my                  {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+var                 {{scope-userfunction}}
+(                   {{scope-parentheses-funccall}}
+'                   {{scope-string-start}}
+array0              {{scope-string-contents}}
+'                   {{scope-string-end}}
+)                   {{scope-parentheses-funccall}}
+[                   {{scope-arrayaccess-brackets}}
+1                   {{scope-number}}
+]                   {{scope-arrayaccess-brackets}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[a()[1][2]]"
+"[                  {{scope-expression-start}}
+a                   {{scope-unknownfunction}}
+()                  {{scope-parentheses-funccall}}
+[                   {{scope-arrayaccess-brackets}}
+1                   {{scope-number}}
+]                   {{scope-arrayaccess-brackets}}
+[                   {{scope-arrayaccess-brackets}}
+2                   {{scope-number}}
+]                   {{scope-arrayaccess-brackets}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[my.func(1).array1[0]]"
+"[                  {{scope-expression-start}}
+my                  {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+func                {{scope-userfunction}}
+(                   {{scope-parentheses-funccall}}
+1                   {{scope-number}}
+)                   {{scope-parentheses-funccall}}
+.                   {{scope-propaccess-dot}}
+array1              {{scope-propaccess-propname}}
+[                   {{scope-arrayaccess-brackets}}
+0                   {{scope-number}}
+]                   {{scope-arrayaccess-brackets}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[my.var('array0')[copyIndex()]]"
+"[                  {{scope-expression-start}}
+my                  {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+var                 {{scope-userfunction}}
+(                   {{scope-parentheses-funccall}}
+'                   {{scope-string-start}}
+array0              {{scope-string-contents}}
+'                   {{scope-string-end}}
+)                   {{scope-parentheses-funccall}}
+[                   {{scope-arrayaccess-brackets}}
+copyIndex           {{scope-builtin}}
+()                  {{scope-parentheses-funccall}}
+]                   {{scope-arrayaccess-brackets}}
+]"                  {{scope-expression-end}}

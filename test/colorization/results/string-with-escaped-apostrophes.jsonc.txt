@@ -1,0 +1,15 @@
+TEST STRING: "['That''s all, folks!']"
+"[                  {{scope-expression-start}}
+'                   {{scope-string-start}}
+That                {{scope-string-contents}}
+''                  {{scope-escapedapostrophe}}
+s all, folks!       {{scope-string-contents}}
+'                   {{scope-string-end}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "['''''']"
+"[                  {{scope-expression-start}}
+'                   {{scope-string-start}}
+''''                {{scope-escapedapostrophe}}
+'                   {{scope-string-end}}
+]"                  {{scope-expression-end}}

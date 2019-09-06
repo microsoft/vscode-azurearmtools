@@ -6,7 +6,7 @@
  * Create a deep copy of the provided value.
  */
 export function clone<T>(value: T): T {
-    let result;
+    let result: unknown;
 
     if (value === null ||
         value === undefined ||
@@ -18,19 +18,19 @@ export function clone<T>(value: T): T {
         result = [];
         // tslint:disable-next-line:forin no-for-in // Grandfathered in
         for (let index in value) {
-            result[index] = clone(value[index]);
+            (<unknown[]>result)[index] = clone(value[index]);
         }
     } else {
         result = {};
         // tslint:disable-next-line:no-for-in // Grandfathered in
         for (let propertyName in value) {
             if (value.hasOwnProperty(propertyName)) {
-                result[propertyName] = clone(value[propertyName]);
+                (<{ [key: string]: unknown }>result)[propertyName] = clone(value[propertyName]);
             }
         }
     }
 
-    return result;
+    return <T>result;
 }
 
 export function isWhitespaceCharacter(character: string): boolean {
@@ -69,7 +69,8 @@ export function unquote(value: string): string {
 }
 
 export function quote(value: string): string {
-    let result;
+    let result: string;
+
     if (value === null) {
         result = "null";
     } else if (value === undefined) {
@@ -77,11 +78,13 @@ export function quote(value: string): string {
     } else {
         result = `"${value}"`;
     }
+
     return result;
 }
 
 export function escape(value: string): string {
-    let result;
+    let result: string;
+
     if (value) {
         result = "";
         for (const c of value) {
@@ -118,6 +121,7 @@ export function escape(value: string): string {
     } else {
         result = value;
     }
+
     return result;
 }
 
@@ -152,7 +156,10 @@ export function getCombinedText(values: { toString(): string }[]): string {
 }
 
 export function isValidSchemaUri(schema: string): boolean {
-    return schema ? schema.match(/https?:\/\/schema.management.azure.com\/schemas\/.*\/deploymentTemplate.json/) !== null : false;
+    return schema ?
+        // tslint:disable-next-line:max-line-length
+        schema.match(/https?:\/\/schema\.management\.azure\.com\/schemas\/[^"\/]+\/(deploymentTemplate|subscriptionDeploymentTemplate)\.json/) !== null :
+        false;
 }
 
 /**

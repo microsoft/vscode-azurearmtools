@@ -1,0 +1,72 @@
+TEST STRING: "[a().b$]"
+"[                  {{scope-expression-start}}
+a                   {{scope-unknownfunction}}
+()                  {{scope-parentheses-funccall}}
+.                   {{scope-propaccess-dot}}
+b$                  {{scope-propaccess-propname}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[a.b().c.de1]"
+"[                  {{scope-expression-start}}
+a                   {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+b                   {{scope-userfunction}}
+(                   {{scope-parentheses-funccall}}
+)                   {{scope-parentheses-funccall}}
+.                   {{scope-propaccess-dot}}
+c                   {{scope-propaccess-propname}}
+.                   {{scope-propaccess-dot}}
+de1                 {{scope-propaccess-propname}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[max(a.b().c1$_,d().e.f)]"
+"[                  {{scope-expression-start}}
+max                 {{scope-builtin}}
+(                   {{scope-parentheses-funccall}}
+a                   {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+b                   {{scope-userfunction}}
+()                  {{scope-parentheses-funccall}}
+.                   {{scope-propaccess-dot}}
+c1$_                {{scope-propaccess-propname}}
+,                   {{scope-funcargs-separator}}
+d                   {{scope-unknownfunction}}
+()                  {{scope-parentheses-funccall}}
+.                   {{scope-propaccess-dot}}
+e                   {{scope-propaccess-propname}}
+.                   {{scope-propaccess-dot}}
+f                   {{scope-propaccess-propname}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[a()[0].a.b]"
+"[                  {{scope-expression-start}}
+a                   {{scope-unknownfunction}}
+()                  {{scope-parentheses-funccall}}
+[                   {{scope-arrayaccess-brackets}}
+0                   {{scope-number}}
+]                   {{scope-arrayaccess-brackets}}
+.                   {{scope-propaccess-dot}}
+a                   {{scope-propaccess-propname}}
+.                   {{scope-propaccess-dot}}
+b                   {{scope-propaccess-propname}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[concat('a/',my.param('b'))]"
+"[                  {{scope-expression-start}}
+concat              {{scope-builtin}}
+(                   {{scope-parentheses-funccall}}
+'                   {{scope-string-start}}
+a/                  {{scope-string-contents}}
+'                   {{scope-string-end}}
+,                   {{scope-funcargs-separator}}
+my                  {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+param               {{scope-userfunction}}
+(                   {{scope-parentheses-funccall}}
+'                   {{scope-string-start}}
+b                   {{scope-string-contents}}
+'                   {{scope-string-end}}
+)                   {{scope-parentheses-funccall}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}

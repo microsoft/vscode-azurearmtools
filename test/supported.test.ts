@@ -3,10 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
-
-import * as Completion from "../src/Completion";
-import * as language from "../src/Language";
-import { isLanguageIdSupported } from "../src/supported";
+import { isLanguageIdSupported } from "../extension.bundle";
 
 suite("Supported", () => {
     test("isLanguageIdSupported", () => {

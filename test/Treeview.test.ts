@@ -2,21 +2,18 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:max-func-body-length
+// tslint:disable:max-func-body-length align max-line-length
 
 import * as assert from "assert";
 import * as path from "path";
 import * as vscode from "vscode";
-import * as Json from "../src/JSON";
-
-import { ext } from "../src/extensionVariables";
-import { Span } from "../src/Language";
-import { IElementInfo, JsonOutlineProvider, shortenTreeLabel } from "../src/Treeview";
+import { parseError } from "vscode-azureextensionui";
+import { ext, JsonOutlineProvider, shortenTreeLabel } from "../extension.bundle";
 
 suite("TreeView", async (): Promise<void> => {
     suite("shortenTreeLabel", async (): Promise<void> => {
         test("shortenTreeLabel", () => {
-            function testShorten(label: string, expected: string) {
+            function testShorten(label: string, expected: string): void {
                 let shortenedLabel = shortenTreeLabel(label);
                 assert.equal(shortenedLabel, expected);
             }
@@ -54,14 +51,16 @@ suite("TreeView", async (): Promise<void> => {
                 assert.equal(!!extension, true, "Extension not found");
                 await extension.activate();
                 provider = ext.jsonOutlineProvider;
-                assert.equal(!!provider, true, "JSON outlin provider not found");
+                assert.equal(!!provider, true, "JSON outline provider not found");
             }
 
-            mySetup().then(done, () => { assert.fail("Setup failed"); });
+            mySetup().then(done, (err) => {
+                assert.fail(`Setup failed: ${parseError(err).message}`);
+            });
         });
 
         async function testChildren(template: string, expected: ITestTreeItem[]): Promise<void> {
-            let editor = await showNewTextDocument(template);
+            await showNewTextDocument(template);
             let rawTree = provider.getChildren(null);
             let tree = rawTree.map(child => {
                 let treeItem = provider.getTreeItem(child);
@@ -73,7 +72,7 @@ suite("TreeView", async (): Promise<void> => {
 
         // Tests the tree against only the given properties
         async function testTree(template: string, expected: ITestTreeItem[], selectProperties?: string[]): Promise<void> {
-            let editor = await showNewTextDocument(template);
+            await showNewTextDocument(template);
             let rawTree = getTree(null);
 
             function select(node: ITestTreeItem): Partial<ITestTreeItem> {
@@ -1522,7 +1521,7 @@ suite("TreeView", async (): Promise<void> => {
                 }                        `;
 
             await testTree(templateNewVM,
-                           [
+                [
                     {
                         label: "$schema: http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                         collapsibleState: 0,
@@ -3014,7 +3013,7 @@ suite("TreeView", async (): Promise<void> => {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 true: false
             }`,
-                           [
+                [
                     {
                         label: "$schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                         collapsibleState: 0,
@@ -3033,7 +3032,7 @@ suite("TreeView", async (): Promise<void> => {
                     "true: false
                 }
             }`,
-                           [
+                [
                     {
                         label: "$schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                         collapsibleState: 0,
@@ -3068,27 +3067,12 @@ function toTestTreeItem(item: vscode.TreeItem): ITestTreeItem {
     return testItem;
 }
 
-function getTextAtSpan(span: Span): string {
-    return templateAllParamDefaultTypes.substr(span.startIndex, span.length);
-}
-
 async function showNewTextDocument(text: string): Promise<vscode.TextEditor> {
     let textDocument = await vscode.workspace.openTextDocument({
         language: "jsonc",
         content: text
     });
     return await vscode.window.showTextDocument(textDocument);
-}
-
-async function writeToEditor(editor: vscode.TextEditor, data: string): Promise<void> {
-    await editor.edit((editBuilder: vscode.TextEditorEdit) => {
-        if (editor.document.lineCount > 0) {
-            const lastLine = editor.document.lineAt(editor.document.lineCount - 1);
-            editBuilder.delete(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(lastLine.range.start.line, lastLine.range.end.character)));
-        }
-
-        editBuilder.insert(new vscode.Position(0, 0), data);
-    });
 }
 
 const templateAllParamDefaultTypes: string = `

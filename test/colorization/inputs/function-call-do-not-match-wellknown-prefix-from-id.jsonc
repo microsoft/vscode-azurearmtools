@@ -1,0 +1,6 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    // reference and add should not be recognized as well-known function names when part of a larger identifer
+    "$TEST": "[reference2()]",
+    "$TEST": "[addme()]",
+}

@@ -10,10 +10,10 @@
         },
         {
             "name": "and",
-            "expectedUsage": "and(arg1, arg2)",
-            "description": "Checks whether both parameter values are true.",
+            "expectedUsage": "and(arg1, arg2, ...)",
+            "description": "Checks whether all parameter values are true.",
             "minimumArguments": 2,
-            "maximumArguments": 2
+            "maximumArguments": null
         },
         {
             "name": "array",
@@ -100,6 +100,13 @@
             "maximumArguments": 1
         },
         {
+            "name": "utcNow",
+            "expectedUsage": "utcNow([format])",
+            "description": "Returns the current (UTC) datetime value in the format provided. If no format is provided the ISO 8601 (yyyyMMddTHH:mm:ssZ) format will be used. This function may only be used as a defaultValue on a parameter.",
+            "minimumArguments": 0,
+            "maximumArguments": 1
+        },
+        {
             "name": "deployment",
             "expectedUsage": "deployment()",
             "description": "Returns information about the current deployment operation. This function returns the object that is passed during deployment. The properties in the returned object will differ based on whether the deployment object is passed as a link or as an in-line object.",
@@ -155,6 +162,13 @@
             "description": "Converts the value to a floating point number. You only use this function when passing custom parameters to an application, such as a Logic App.",
             "minimumArguments": 1,
             "maximumArguments": 1
+        },
+        {
+            "name": "format",
+            "expectedUsage": "format(formatString, arg1, arg2, ...)",
+            "description": "Creates a formatted string from input values. It uses the same formatting options as the System.String.Format method in .NET.",
+            "minimumArguments": 1,
+            "maximumArguments": null
         },
         {
             "name": "greater",
@@ -294,6 +308,33 @@
             "maximumArguments": 2
         },
         {
+            "name": "listConnectionStrings",
+            "expectedUsage": "listConnectionStrings(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Lists the connection strings for the specified Azure Cosmos DB database account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "connectionStrings"
+                }
+            ]
+        },
+        {
+            "name": "listCredentials",
+            "expectedUsage": "listCredentials(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Lists the login credentials for the specified container registry. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "username"
+                },
+                {
+                    "name": "passwords"
+                }
+            ]
+        },
+        {
             "name": "listCallbackUrl",
             "expectedUsage": "listCallbackUrl(resourceName\/resourceIdentifier, apiVersion)",
             "description": "Get callback URL for a trigger of a workflow version. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. See https://docs.microsoft.com/en-us/rest/api/logic/WorkflowVersions/ListCallbackUrl#workflowtriggercallbackurl for more information.",
@@ -368,6 +409,13 @@
             "maximumArguments": 2
         },
         {
+            "name": "newGuid",
+            "expectedUsage": "newGuid()",
+            "description": "Returns a globally unique identifier (GUID). This function may only be used as a defaultValue on a parameter.",
+            "minimumArguments": 0,
+            "maximumArguments": 0
+        },
+        {
             "name": "not",
             "expectedUsage": "not(arg1)",
             "description": "Converts boolean value to its opposite value.",
@@ -376,10 +424,10 @@
         },
         {
             "name": "or",
-            "expectedUsage": "or(arg1, arg2)",
-            "description": "Checks whether either parameter value is true.",
+            "expectedUsage": "or(arg1, arg2, ...)",
+            "description": "Checks whether any parameter value is true.",
             "minimumArguments": 2,
-            "maximumArguments": 2
+            "maximumArguments": null
         },
         {
             "name": "padLeft",

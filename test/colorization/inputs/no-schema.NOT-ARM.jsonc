@@ -1,0 +1,18 @@
+/*
+    Should be colorized exactly as plain JSONC ("[]" strings should be colorized as regular strings)
+*/
+// Another comment
+{
+    "parameters": {
+        "guid": {
+            "type": "string",
+            "defaultValue": "[newGuid()]"
+        }
+    },
+    "variables": {
+        "defaultValue": "[reference('a')]",
+        "number": 1.23,
+        "emptyString": "",
+        "emptyFakeExpression": "[]"
+    }
+}

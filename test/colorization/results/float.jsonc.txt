@@ -1,0 +1,29 @@
+TEST STRING: "[1.1]"
+"[                  {{scope-expression-start}}
+1.1                 {{scope-number}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[-0.2]"
+"[                  {{scope-expression-start}}
+-0.2                {{scope-number}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[-1.2e34]"
+"[                  {{scope-expression-start}}
+-1.2e34             {{scope-number}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[1E2]"
+"[                  {{scope-expression-start}}
+1E2                 {{scope-number}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[1E+2]"
+"[                  {{scope-expression-start}}
+1E+2                {{scope-number}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[1E-2]"
+"[                  {{scope-expression-start}}
+1E-2                {{scope-number}}
+]"                  {{scope-expression-end}}

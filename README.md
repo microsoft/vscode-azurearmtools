@@ -5,9 +5,10 @@
 This extension provides language support for Azure Resource Manager deployment templates and template language expressions.
 
 ## Features
-- JSON outline for easy navigation through large templates
-- IntelliSense
-    - [Template Language Expression (TLE) function names](https://go.microsoft.com/fwlink/?LinkID=733958)
+- ARM Template Outline view for easy navigation through large templates
+- Colorization for Template Language Expressions (TLE)
+- IntelliSense for TLE expressions
+    - [Built-in function names](https://go.microsoft.com/fwlink/?LinkID=733958)
     - [Parameter references](https://go.microsoft.com/fwlink/?LinkID=733959)
     - [Variable references](https://go.microsoft.com/fwlink/?LinkID=733960)
     - [resourceGroup() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#resourcegroup)

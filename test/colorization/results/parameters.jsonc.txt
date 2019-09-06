@@ -1,0 +1,24 @@
+TEST STRING: "[parameters('myparam')]"
+"[                  {{scope-expression-start}}
+parameters          {{scope-parameters}}
+(                   {{scope-parentheses-funccall}}
+'myparam'           {{scope-parameter}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[parameters(concat('myparam','a'))]"
+"[                  {{scope-expression-start}}
+parameters          {{scope-parameters}}
+(                   {{scope-parentheses-funccall}}
+concat              {{scope-builtin}}
+(                   {{scope-parentheses-funccall}}
+'                   {{scope-string-start}}
+myparam             {{scope-string-contents}}
+'                   {{scope-string-end}}
+,                   {{scope-funcargs-separator}}
+'                   {{scope-string-start}}
+a                   {{scope-string-contents}}
+'                   {{scope-string-end}}
+)                   {{scope-parentheses-funccall}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}

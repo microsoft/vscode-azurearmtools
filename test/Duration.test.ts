@@ -5,8 +5,7 @@
 // tslint:disable:max-func-body-length
 
 import * as assert from "assert";
-
-import { Duration } from "../src/Duration";
+import { Duration } from "../extension.bundle";
 
 suite("Duration", () => {
     suite("totalMilliseconds(number)", () => {

@@ -7,15 +7,13 @@ import * as assert from "assert";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import * as Reference from "./Reference";
-import * as Telemetry from "./Telemetry";
 import * as TLE from "./TLE";
 import * as Utilities from "./Utilities";
 
-import { AzureRMAssets, FunctionMetadata, FunctionsMetadata } from "./AzureRMAssets";
+import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { Histogram } from "./Histogram";
 import { ParameterDefinition } from "./ParameterDefinition";
 import { PositionContext } from "./PositionContext";
-import { Stopwatch } from "./Stopwatch";
 
 export class DeploymentTemplate {
     private _jsonParseResult: Json.ParseResult;
@@ -117,8 +115,10 @@ export class DeploymentTemplate {
 
     public get errors(): Promise<language.Issue[]> {
         if (this._errors === undefined) {
-            this._errors = AzureRMAssets.getFunctionsMetadata()
-                .then((functions: FunctionsMetadata) => {
+            // tslint:disable-next-line:typedef
+            this._errors = new Promise<language.Issue[]>(async (resolve, reject) => {
+                try {
+                    let functions: FunctionsMetadata = await AzureRMAssets.getFunctionsMetadata();
                     const parseErrors: language.Issue[] = [];
                     for (const jsonQuotedStringToken of this.jsonQuotedStringTokens) {
                         const jsonTokenStartIndex: number = jsonQuotedStringToken.span.startIndex;
@@ -159,15 +159,20 @@ export class DeploymentTemplate {
                                 variablesObject.accept(referenceInVariablesFinder);
 
                                 for (const referenceSpan of referenceInVariablesFinder.referenceSpans) {
-                                    parseErrors.push(new language.Issue(referenceSpan, "reference() cannot be invoked inside of a variable definition."));
+                                    parseErrors.push(
+                                        new language.Issue(referenceSpan, "reference() cannot be invoked inside of a variable definition."));
                                 }
                             }
                         }
                     }
 
-                    return parseErrors;
-                });
+                    resolve(parseErrors);
+                } catch (err) {
+                    reject(err);
+                }
+            });
         }
+
         return this._errors;
     }
 
@@ -176,16 +181,19 @@ export class DeploymentTemplate {
             this._warnings = [];
 
             for (const parameterDefinition of this.parameterDefinitions) {
-                const parameterReferences: Reference.List = this.findReferences(Reference.ReferenceKind.Parameter, parameterDefinition.name.toString());
+                const parameterReferences: Reference.List =
+                    this.findReferences(Reference.ReferenceKind.Parameter, parameterDefinition.name.toString());
                 if (parameterReferences.length === 1) {
-                    this._warnings.push(new language.Issue(parameterDefinition.name.span, `The parameter '${parameterDefinition.name.toString()}' is never used.`));
+                    this._warnings.push(
+                        new language.Issue(parameterDefinition.name.span, `The parameter '${parameterDefinition.name.toString()}' is never used.`));
                 }
             }
 
             for (const variableDefinition of this.variableDefinitions) {
                 const variableReferences: Reference.List = this.findReferences(Reference.ReferenceKind.Variable, variableDefinition.name.toString());
                 if (variableReferences.length === 1) {
-                    this._warnings.push(new language.Issue(variableDefinition.name.span, `The variable '${variableDefinition.name.toString()}' is never used.`));
+                    this._warnings.push(
+                        new language.Issue(variableDefinition.name.span, `The variable '${variableDefinition.name.toString()}' is never used.`));
                 }
             }
         }
@@ -324,6 +332,19 @@ export class DeploymentTemplate {
             const variableName: TLE.StringValue = TLE.asStringValue(tleFunction.argumentExpressions[0]);
             if (variableName) {
                 result = this.getVariableDefinition(variableName.toString());
+            }
+        }
+
+        return result;
+    }
+
+    public getParameterDefinitionFromFunction(tleFunction: TLE.FunctionValue): ParameterDefinition {
+        let result: ParameterDefinition = null;
+
+        if (tleFunction && tleFunction.nameToken.stringValue === "parameters") {
+            const propertyName: TLE.StringValue = TLE.asStringValue(tleFunction.argumentExpressions[0]);
+            if (propertyName) {
+                result = this.getParameterDefinition(propertyName.toString());
             }
         }
 

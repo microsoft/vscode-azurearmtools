@@ -1,0 +1,28 @@
+TEST STRING: "[Flüsse.Bäche('array0')[1]]"
+"[                  {{scope-expression-start}}
+Flüsse              {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+Bäche               {{scope-userfunction}}
+(                   {{scope-parentheses-funccall}}
+'                   {{scope-string-start}}
+array0              {{scope-string-contents}}
+'                   {{scope-string-end}}
+)                   {{scope-parentheses-funccall}}
+[                   {{scope-arrayaccess-brackets}}
+1                   {{scope-number}}
+]                   {{scope-arrayaccess-brackets}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[γνῶθι().σεαυτόν]"
+"[                  {{scope-expression-start}}
+γνῶθι               {{scope-unknownfunction}}
+()                  {{scope-parentheses-funccall}}
+.                   {{scope-propaccess-dot}}
+σεαυτόν             {{scope-propaccess-propname}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[ᠠᠪᠴᠳᠡᠸ()]"
+"[                  {{scope-expression-start}}
+ᠠᠪᠴᠳᠡᠸ              {{scope-unknownfunction}}
+()                  {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}

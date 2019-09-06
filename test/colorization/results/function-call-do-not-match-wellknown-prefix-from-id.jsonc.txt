@@ -1,0 +1,11 @@
+TEST STRING: "[reference2()]"
+"[                  {{scope-expression-start}}
+reference2          {{scope-unknownfunction}}
+()                  {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[addme()]"
+"[                  {{scope-expression-start}}
+addme               {{scope-unknownfunction}}
+()                  {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}

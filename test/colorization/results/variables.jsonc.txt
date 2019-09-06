@@ -1,0 +1,24 @@
+TEST STRING: "[variables('myvar')]"
+"[                  {{scope-expression-start}}
+variables           {{scope-variables}}
+(                   {{scope-parentheses-funccall}}
+'myvar'             {{scope-variable}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[variables(concat('myvar','a'))]"
+"[                  {{scope-expression-start}}
+variables           {{scope-variables}}
+(                   {{scope-parentheses-funccall}}
+concat              {{scope-builtin}}
+(                   {{scope-parentheses-funccall}}
+'                   {{scope-string-start}}
+myvar               {{scope-string-contents}}
+'                   {{scope-string-end}}
+,                   {{scope-funcargs-separator}}
+'                   {{scope-string-start}}
+a                   {{scope-string-contents}}
+'                   {{scope-string-end}}
+)                   {{scope-parentheses-funccall}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}

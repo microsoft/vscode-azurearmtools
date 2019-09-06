@@ -2,7 +2,7 @@
   "name": "azurerm-vscode-tools",
   "displayName": "Azure Resource Manager Tools",
   "description": "Template language support for Azure Resource Manager JSON files.",
-  "version": "0.4.3-alpha",
+  "version": "0.6.1-alpha",
   "publisher": "msazurermtools",
   "categories": [
     "Azure",
@@ -31,7 +31,7 @@
   "icon": "images/AzureRMTools128x128.png",
   "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
   "engines": {
-    "vscode": "^1.20.0"
+    "vscode": "^1.26.0"
   },
   "preview": true,
   "activationEvents": [
@@ -39,60 +39,81 @@
     "onLanguage:jsonc"
   ],
   "contributes": {
+    "grammars": [
+      {
+        "injectTo": [
+          "source.json"
+        ],
+        "scopeName": "detect-arm.injection.json.comments",
+        "path": "dist/grammars/detect-arm.injection.tmLanguage.json"
+      },
+      {
+        "scopeName": "source.json.arm",
+        "path": "dist/grammars/JSONC.arm.tmLanguage.json"
+      },
+      {
+        "scopeName": "source.tle.arm",
+        "path": "dist/grammars/arm-expression-string.tmLanguage.json"
+      }
+    ],
     "configuration": {
       "type": "object",
       "title": "Azure Resource Manager Tools Configuration Settings",
-      "properties": {
-        "azurermtools.enableTelemetry": {
-          "type": "boolean",
-          "default": true,
-          "description": "Allow anonymous telemetry for the Azure Resource Manager Tools extension."
-        }
-      }
+      "properties": {}
     },
     "views": {
       "explorer": [
         {
           "id": "json-outline",
-          "name": "JSON Outline",
+          "name": "ARM Template Outline",
           "when": "showArmJsonView"
         }
       ]
     }
   },
-  "main": "./out/src/AzureRMTools",
+  "main": "main",
   "scripts": {
-    "compile": "tsc -watch -p ./",
-    "build": "tsc -p ./",
+    "vscode:prepublish": "npm run webpack-prod",
+    "compile": "gulp build-grammars && tsc -watch -p ./",
+    "build": "gulp build-grammars && tsc -p ./",
     "package": "vsce package",
     "lint": "tslint --project tsconfig.json -t verbose",
     "lint-fix": "tslint --project tsconfig.json -t verbose --fix",
     "postinstall": "node ./node_modules/vscode/bin/install",
+    "pretest": "npm run build && npm run webpack-prod",
+    "pretest-dev": "npm run build && npm run webpack",
     "test": "gulp test",
-    "all": "npm i && npm run lint && npm test"
+    "all": "npm i && npm run lint && npm test",
+    "webpack": "gulp webpack-dev",
+    "webpack-prod": "gulp webpack-prod",
+    "webpack-profile": "webpack --profile --json --mode production > webpack-stats.json && echo Use http://webpack.github.io/analyse to analyze the stats",
+    "build-grammars": "gulp build-grammars",
+    "watch-grammars": "gulp watch-grammars",
+    "watch": "gulp watch"
   },
   "devDependencies": {
-    "@types/applicationinsights": "^0.15.33",
+    "@types/fs-extra": "^5.0.5",
     "@types/mocha": "^2.2.41",
-    "@types/node": "^8.0.17",
-    "@types/opn": "^5.1.0",
-    "gulp": "^4.0.0",
-    "istanbul": "^0.4.5",
+    "@types/node": "^8.10.48",
+    "@types/opn": "^5.5.0",
+    "gulp": "^4.0.1",
     "mocha": "^5.2.0",
-    "mocha-junit-reporter": "^1.18.0",
-    "remap-istanbul": "^0.8.4",
+    "mocha-junit-reporter": "^1.22.0",
+    "mocha-multi-reporters": "^1.1.7",
     "ts-node": "^7.0.1",
-    "tslint": "^5.7.0",
+    "tslint": "^5.16.0",
     "tslint-microsoft-contrib": "5.0.3",
-    "typescript": "^2.0.3",
-    "vsce": "^1.37.5",
-    "vscode": "^1.1.5"
+    "typescript": "^3.4.5",
+    "vsce": "^1.59.0",
+    "vscode": "^1.1.33",
+    "vscode-azureextensiondev": "^0.2.1",
+    "webpack": "4.28.1",
+    "webpack-cli": "^3.3.1"
   },
   "dependencies": {
-    "applicationinsights": "0.21.0",
-    "moment": "^2.17.1",
-    "opn": "^5.4.0",
-    "vscode-azureextensionui": "~0.12.0",
-    "vscode-extension-telemetry": "^0.0.15"
+    "fs-extra": "^7.0.1",
+    "moment": "^2.24.0",
+    "opn": "^5.5.0",
+    "vscode-azureextensionui": "^0.26.3"
   }
 }

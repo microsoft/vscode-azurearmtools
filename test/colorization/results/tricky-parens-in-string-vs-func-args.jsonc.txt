@@ -1,0 +1,10 @@
+TEST STRING: "[max('abcdef)]\"')]"
+"[                  {{scope-expression-start}}
+max                 {{scope-builtin}}
+(                   {{scope-parentheses-funccall}}
+'                   {{scope-string-start}}
+abcdef)]            {{scope-string-contents}}
+\"                  {{scope-json-escape-chars}}
+'                   {{scope-string-end}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}

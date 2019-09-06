@@ -1,0 +1,3 @@
+TEST STRING: ""
+"                   punctuation.definition.string.begin.json.arm
+"                   punctuation.definition.string.end.json.arm

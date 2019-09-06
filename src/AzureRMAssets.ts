@@ -2,43 +2,42 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import * as fs from "fs";
+import * as fse from 'fs-extra';
 import * as path from "path";
-
-import { SurveyMetadata } from "./SurveyMetadata";
-
-// tslint:disable:promise-function-async // Grandfathered in
+import { assetsPath } from './constants';
 
 /**
  * An accessor class for the Azure RM storage account.
  */
 // tslint:disable-next-line:no-unnecessary-class // Grandfathered in
 export class AzureRMAssets {
-    private static _versionRedirects: Promise<VersionRedirect[]>;
-    private static _currentVersionRedirectUri: Promise<string>;
-    private static _surveyMetadataUri: Promise<string>;
-    private static _surveyMetadata: Promise<SurveyMetadata>;
-    private static _functionMetadataUri: Promise<string>;
-    private static _functionsMetadata: Promise<FunctionsMetadata>;
+    private static _functionsMetadataPromise: Promise<FunctionsMetadata>;
 
-    /**
-     * Indicates which version container in the storage account the extension will use for its
-     * metadata.
-     */
-    public static get currentPublishVersion(): string {
-        return "azuresdk-3.0.0";
+    // For test dependency injection only
+    public static setFunctionsMetadata(metadataString: string): void {
+        // tslint:disable-next-line:typedef
+        AzureRMAssets._functionsMetadataPromise = new Promise<FunctionsMetadata>(async (resolve, reject) => {
+            let array = FunctionMetadata.fromString(metadataString);
+            resolve(new FunctionsMetadata(array));
+        });
     }
 
-    public static getFunctionsMetadata(): Promise<FunctionsMetadata> {
-        if (!AzureRMAssets._functionsMetadata) {
-            AzureRMAssets._functionsMetadata = AzureRMAssets.getFunctionMetadataUri()
-                .then(AzureRMAssets.readFile)
-                .then(FunctionMetadata.fromString)
-                .then((array: FunctionMetadata[]) => new FunctionsMetadata(array));
-
+    public static async getFunctionsMetadata(): Promise<FunctionsMetadata> {
+        if (!AzureRMAssets._functionsMetadataPromise) {
+            // tslint:disable-next-line:typedef
+            AzureRMAssets._functionsMetadataPromise = new Promise<FunctionsMetadata>(async (resolve, reject) => {
+                try {
+                    let uri = AzureRMAssets.getFunctionMetadataUri();
+                    let contents = await AzureRMAssets.readFile(uri);
+                    let array: FunctionMetadata[] = FunctionMetadata.fromString(contents);
+                    resolve(new FunctionsMetadata(array));
+                } catch (err) {
+                    reject(err);
+                }
+            });
         }
 
-        return AzureRMAssets._functionsMetadata;
+        return await AzureRMAssets._functionsMetadataPromise;
     }
 
     public static async getFunctionMetadataFromName(functionName: string): Promise<FunctionMetadata> {
@@ -52,48 +51,17 @@ export class AzureRMAssets {
     /**
      * Get the URI to the file where the function metadata is stored.
      */
-    public static getFunctionMetadataUri(): Promise<string> {
-        if (AzureRMAssets._functionMetadataUri === undefined) {
-            AzureRMAssets._functionMetadataUri = AzureRMAssets.getLocalAssetUri("ExpressionMetadata.json");
-        }
-        return AzureRMAssets._functionMetadataUri;
+    private static getFunctionMetadataUri(): string {
+        return AzureRMAssets.getLocalAssetUri("ExpressionMetadata.json");
     }
 
-    private static getLocalAssetUri(assetFileName: string): Promise<string> {
-        return Promise.resolve<string>(path.join(__filename, "..", "..", "..", "assets", assetFileName));
+    private static getLocalAssetUri(assetFileName: string): string {
+        return path.join(assetsPath, assetFileName);
     }
 
-    private static readFile(filePath: string): Promise<string> {
-        return new Promise<string>((resolve, reject) => fs.readFile(filePath, "utf8", (err, data) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-
-            resolve(data);
-        }));
+    private static async readFile(filePath: string): Promise<string> {
+        return await fse.readFile(filePath, "utf8");
     }
-
-    public static getSurveyMetadata(): Promise<SurveyMetadata> {
-        if (AzureRMAssets._surveyMetadata === undefined) {
-            AzureRMAssets._surveyMetadata = AzureRMAssets.getSurveyMetadataUri()
-                .then(AzureRMAssets.readFile)
-                .then(SurveyMetadata.fromString);
-        }
-        return AzureRMAssets._surveyMetadata;
-    }
-
-    public static getSurveyMetadataUri(): Promise<string> {
-        if (AzureRMAssets._surveyMetadataUri === undefined) {
-            AzureRMAssets._surveyMetadataUri = AzureRMAssets.getLocalAssetUri("SurveyMetadata.json");
-        }
-        return AzureRMAssets._surveyMetadataUri;
-    }
-}
-
-export interface VersionRedirect {
-    Version: string;
-    StorageContainerUri: string;
 }
 
 /**
@@ -109,7 +77,6 @@ export class FunctionsMetadata {
     }
 
     public filterByPrefix(functionNamePrefix: string): FunctionMetadata[] {
-        const result: FunctionMetadata[] = [];
         const lowerCasedPrefix: string = functionNamePrefix.toLowerCase();
         return this.functionMetadata.filter(func => func.lowerCaseName.startsWith(lowerCasedPrefix));
     }
@@ -130,6 +97,7 @@ export class FunctionMetadata {
         private _maximumArguments: number,
         private _returnValueMembers: string[]
     ) {
+        // tslint:disable-next-line: strict-boolean-expressions
         this._name = name || '';
         this._lowerCaseName = this._name.toLowerCase();
     }
@@ -181,7 +149,7 @@ export class FunctionMetadata {
     public static fromString(metadataString: string): FunctionMetadata[] {
         let metadataJSON: FunctionMetadataContract;
         try {
-            metadataJSON = JSON.parse(metadataString);
+            metadataJSON = <FunctionMetadataContract>JSON.parse(metadataString);
         } catch (e) {
             metadataJSON = {};
         }

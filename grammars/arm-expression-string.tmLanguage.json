@@ -1,0 +1,315 @@
+{
+	"name": "ARM Template",
+	"scopeName": "source.tle.arm",
+	"uuid": "3ADA43CD-2258-4907-8477-169A7FDDF216",
+	"preprocess": {
+		"$preprocessComment1": "Items in the preprocess section get replaced during gulp build-grammars",
+		"$preprocessComment2": "Items beginning with $ are ignored",
+		"$preprocessComment3": "---",
+		"$preprocessComment4": "A preprocess item with the key 'builtin-functions' is automatically created during build from our function metadata",
+		"$preprocessComment6": "---",
+		"$preprocessComment7": "IMPORTANT!  You need to run 'build grammars' after changing this file, F5 currently doesn't handle that",
+		"$1": "--------------- Regular expressions ---------------",
+		"escaped-json-character": "(?:\\\\(?:[\"\\\\/bfnrt]|u[0-9a-fA-F]{4}))",
+		"escaped-apostrophe": "''",
+		"idchar": "[_$[:alnum:]]",
+		"id": "(?:[_$[:alpha:]]{{idchar}}*)",
+		"ns-userfunc": "(?:({{id}})\\s*(\\.)\\s*({{id}}))",
+		"logical": "(?:if|and|or|not)",
+		"$2": "--------------- Scope Names ---------------",
+		"scope-expression-start": "support.function.expression.begin.tle.arm",
+		"scope-expression-end": "support.function.expression.end.tle.arm",
+		"scope-builtin": "support.function.builtin.tle.arm",
+		"scope-logical": "keyword.control.logical.tle.arm",
+		"scope-parameters": "support.type.parameters.tle.arm",
+		"scope-parameter": "support.type.parameters.parameter-name.tle.arm",
+		"scope-variables": "variable.language.variables.tle.arm",
+		"scope-variable": "variable.language.variables.variable-name.tle.arm",
+		"scope-unknownfunction": "meta.unrecognized-identifier.tle.arm",
+		"scope-usernamespace": "entity.name.tag.usernamespace.tle.arm",
+		"scope-usernamespaceandfunction-dot": "punctuation.accessor.userfunction.tle.arm",
+		"scope-userfunction": "entity.name.tag.userfunction.tle.arm",
+		"scope-parentheses-funccall": "meta.brace.round.tle.arm",
+		"scope-escapedapostrophe": "constant.character.escape.single.tle.arm",
+		"scope-json-escape-chars": "constant.character.escape.backslash.tle.arm",
+		"scope-string-contents": "string.quoted.single.tle.arm",
+		"scope-string-start": "punctuation.definition.string.begin.tle.arm",
+		"scope-string-end": "punctuation.definition.string.end.tle.arm",
+		"scope-funcargs-separator": "punctuation.separator.comma.tle.arm",
+		"scope-number": "constant.numeric.tle.arm",
+		"scope-propaccess-dot": "punctuation.accessor.property.tle.arm",
+		"scope-propaccess-propname": "variable.entity.property.tle.arm",
+		"scope-arrayaccess-brackets": "meta.brace.square.tle.arm"
+	},
+	"patterns": [
+		{
+			"include": "#expressionstring"
+		}
+	],
+	"repository": {
+		"expressionstring": {
+			"name": "meta.expression.tle.arm",
+			"begin": "(?x)  \"\\[(?!\\[)  (?= (?:{{escaped-apostrophe}}|{{escaped-json-character}}|[^\"])* ( \\]\"|$ ) )",
+			"$beginComment": "An expression must start with '[' (no whitespace before), not start with '[[', and end with ']' (no whitespace after)",
+			"$beginComment2": "Since we can't check if an expression ends with ']' for multi-line strings, we also assume a string which starts with '[' and",
+			"$beginComment3": "   isn't terminated on the first line is an expression",
+			"end": "\\]\"",
+			"beginCaptures": {
+				"0": {
+					"name": "{{scope-expression-start}}"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "{{scope-expression-end}}"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#expression"
+				},
+				{
+					"name": "invalid.illegal.expected-expression.tle.arm",
+					"match": "[^\\s]"
+				}
+			]
+		},
+		"expression": {
+			"patterns": [
+				{
+					"include": "#string"
+				},
+				{
+					"include": "#number"
+				},
+				{
+					"include": "#parameters-ref-with-string-literal"
+				},
+				{
+					"include": "#variables-ref-with-string-literal"
+				},
+				{
+					"include": "#functionname"
+				},
+				{
+					"include": "#functioncall"
+				},
+				{
+					"include": "#propertyaccess"
+				},
+				{
+					"include": "#arrayaccess"
+				}
+			]
+		},
+		"number": {
+			"name": "{{scope-number}}",
+			"match": "[+-]?[0-9]+(\\.[0-9]+)?([Ee][+-]?[0-9]+)?"
+		},
+		"string": {
+			"name": "{{scope-string-contents}}",
+			"begin": "[']",
+			"beginCaptures": {
+				"0": {
+					"$comment": "Apostrophe that starts a string",
+					"name": "{{scope-string-start}}"
+				}
+			},
+			"end": "['](?!['])",
+			"endCaptures": {
+				"0": {
+					"$comment": "Apostrophe that ends a string",
+					"name": "{{scope-string-end}}"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#stringcontent"
+				}
+			]
+		},
+		"stringcontent": {
+			"patterns": [
+				{
+					"$comment": "Escaped JSON string characters",
+					"match": "{{escaped-json-character}}",
+					"name": "{{scope-json-escape-chars}}"
+				},
+				{
+					"$comment": "Escaped apostrophe (interpreted by ARM backend)",
+					"name": "{{scope-escapedapostrophe}}",
+					"match": "{{escaped-apostrophe}}"
+				},
+				{
+					"match": "\\\\.",
+					"name": "invalid.illegal.unrecognized-string-escape.tle.arm"
+				}
+			]
+		},
+		"parameters-ref-with-string-literal": {
+			"$comment1": "When we have 'parameters' with a string literal (instead of an expression), we want to colorize the parameter name along with 'parameters'",
+			"$comment2": "When its parameter is an expression, it will be handled by functionname/functioncall",
+			"name": "meta.parameters-reference.tle.arm",
+			"match": "(?x) \\s* (parameters) \\s* (\\() \\s* (' [^']* ') \\s* (\\))",
+			"captures": {
+				"1": {
+					"$comment": "parameters",
+					"name": "{{scope-parameters}}"
+				},
+				"2": {
+					"$comment": "Opening paren",
+					"name": "{{scope-parentheses-funccall}}"
+				},
+				"3": {
+					"$comment": "Parameter name in single quotes",
+					"name": "{{scope-parameter}}"
+				},
+				"4": {
+					"$comment": "Closing paren",
+					"name": "{{scope-parentheses-funccall}}"
+				}
+			}
+		},
+		"variables-ref-with-string-literal": {
+			"$comment1": "When we have 'variables' with a string literal (instead of an expression), we want to colorize the variable name along with 'variables'",
+			"$comment2": "When its parameter is an expression, it will be handled by functionname/functioncall",
+			"name": "meta.variables-reference.tle.arm",
+			"match": "(?x) \\s* (variables) \\s* (\\() \\s* (' [^']* ') \\s* (\\))",
+			"captures": {
+				"1": {
+					"$comment": "variables",
+					"name": "{{scope-variables}}"
+				},
+				"2": {
+					"$comment": "Opening paren",
+					"name": "{{scope-parentheses-funccall}}"
+				},
+				"3": {
+					"$comment": "variable name in single quotes",
+					"name": "{{scope-variable}}"
+				},
+				"4": {
+					"$comment": "Closing paren",
+					"name": "{{scope-parentheses-funccall}}"
+				}
+			}
+		},
+		"functionname": {
+			"match": "(?x) \\s* (?: {{ns-userfunc}} | (parameters) | (variables) | ({{logical}}) | ({{builtin-functions}}) | ({{id}}) ) (?!{{idchar}} (?# Make sure we don't match a well-known name like 'add' inside something like 'add2'))",
+			"captures": {
+				"1": {
+					"$comment": "user namespace (capturing group inside ns-userfunc)",
+					"name": "{{scope-usernamespace}}"
+				},
+				"2": {
+					"$comment": "dot (capturing group inside ns-userfunc)",
+					"name": "{{scope-usernamespaceandfunction-dot}}"
+				},
+				"3": {
+					"$comment": "user function name (capturing group inside ns-userfunc)",
+					"name": "{{scope-userfunction}}"
+				},
+				"4": {
+					"$comment": "parameters",
+					"name": "{{scope-parameters}}"
+				},
+				"5": {
+					"$comment": "variables",
+					"name": "{{scope-variables}}"
+				},
+				"6": {
+					"$comment": "logical functions",
+					"name": "{{scope-logical}}"
+				},
+				"7": {
+					"$comment": "built-in function name",
+					"name": "{{scope-builtin}}"
+				},
+				"8": {
+					"$comment": "other function name",
+					"name": "{{scope-unknownfunction}}"
+				}
+			}
+		},
+		"functioncall": {
+			"$comment": "This matches just the parentheses and arguments of a function call",
+			"name": "meta.function-call.tle.arm",
+			"begin": "(?x) \\s* (\\() \\s*",
+			"end": "\\s*\\)",
+			"beginCaptures": {
+				"1": {
+					"name": "{{scope-parentheses-funccall}}"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"$comment": "closing paren",
+					"name": "{{scope-parentheses-funccall}}"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#functionargs"
+				}
+			]
+		},
+		"functionargs": {
+			"name": "meta.function-arguments.tle.arm",
+			"begin": "\\G\\s*",
+			"end": "\\s*(?=\\))",
+			"patterns": [
+				{
+					"include": "#expression"
+				},
+				{
+					"name": "{{scope-funcargs-separator}}",
+					"match": ","
+				},
+				{
+					"match": "[^\\s,)]",
+					"name": "invalid.illegal.expected-comma.tle.arm"
+				}
+			]
+		},
+		"propertyaccess": {
+			"name": "meta.property-access.tle.arm",
+			"match": "(?x) (?<= ^ | (?: [_$[:alnum:])\\]] )) (?# if preceded by end paren/bracket/word or beginning of line)  \\s*  (?<dot>\\.) \\s* (?<propertyname>{{id}})",
+			"captures": {
+				"1": {
+					"name": "{{scope-propaccess-dot}}"
+				},
+				"2": {
+					"name": "{{scope-propaccess-propname}}"
+				}
+			}
+		},
+		"arrayaccess": {
+			"patterns": [
+				{
+					"match": "\\s*\\[\\s*\\]",
+					"name": "invalid.illegal.empty-array-access.tle.arm"
+				},
+				{
+					"name": "meta.array-access.tle.arm",
+					"begin": "(?x) (?<= ^ | (?: [_$[:alnum:])\\]] )) (?# if preceded by end paren/bracket/word or beginning of line)  \\s*  (?<openbracket>\\[)",
+					"end": "\\s*(])",
+					"beginCaptures": {
+						"1": {
+							"name": "{{scope-arrayaccess-brackets}}"
+						}
+					},
+					"endCaptures": {
+						"1": {
+							"name": "{{scope-arrayaccess-brackets}}"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#expression"
+						}
+					]
+				}
+			]
+		}
+	}
+}

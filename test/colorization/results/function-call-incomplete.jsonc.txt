@@ -1,0 +1,16 @@
+TEST STRING: "[sum]"
+"[                  {{scope-expression-start}}
+sum                 {{scope-unknownfunction}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[reference]"
+"[                  {{scope-expression-start}}
+reference           {{scope-builtin}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[user.func]"
+"[                  {{scope-expression-start}}
+user                {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+func                {{scope-userfunction}}
+]"                  {{scope-expression-end}}

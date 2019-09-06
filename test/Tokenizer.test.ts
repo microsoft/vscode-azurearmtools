@@ -5,14 +5,12 @@
 // tslint:disable:max-func-body-length
 
 import * as assert from "assert";
-
-import * as basic from "../src/Tokenizer";
-import * as utilities from "../src/Utilities";
+import { basic, Utilities } from "../extension.bundle";
 
 suite("Tokenizer", () => {
     suite("Token", () => {
         function constructorTest(text: string, tokenType: basic.TokenType): void {
-            test(`with ${utilities.escapeAndQuote(text)}`, () => {
+            test(`with ${Utilities.escapeAndQuote(text)}`, () => {
                 const token = new basic.Token(text, tokenType);
                 assert.deepStrictEqual(token.toString(), text);
                 assert.deepStrictEqual(token.length(), text.length);
@@ -127,7 +125,7 @@ suite("Tokenizer", () => {
     suite("Tokenizer", () => {
         suite("constructor()", () => {
             function constructorTest(text: string): void {
-                test(`with ${utilities.escapeAndQuote(text)}`, () => {
+                test(`with ${Utilities.escapeAndQuote(text)}`, () => {
                     const tokenizer = new basic.Tokenizer(text);
                     assert.deepStrictEqual(tokenizer.hasStarted(), false);
                     assert.deepStrictEqual(tokenizer.current(), undefined);
@@ -145,10 +143,10 @@ suite("Tokenizer", () => {
                 if (!expectedTokens) {
                     expectedTokens = [];
                 } else if (expectedTokens instanceof basic.Token) {
-                    expectedTokens = [expectedTokens] as basic.Token[];
+                    expectedTokens = [expectedTokens];
                 }
 
-                test(`with ${utilities.escapeAndQuote(text)}`, () => {
+                test(`with ${Utilities.escapeAndQuote(text)}`, () => {
                     const tokenizer = new basic.Tokenizer(text);
 
                     for (const expectedToken of expectedTokens as basic.Token[]) {

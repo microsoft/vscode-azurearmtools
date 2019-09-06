@@ -1,0 +1,43 @@
+TEST STRING: "[max(1.2)]"
+"[                  {{scope-expression-start}}
+max                 {{scope-builtin}}
+(                   {{scope-parentheses-funccall}}
+1.2                 {{scope-number}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[me.say('hello')]"
+"[                  {{scope-expression-start}}
+me                  {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+say                 {{scope-userfunction}}
+(                   {{scope-parentheses-funccall}}
+'                   {{scope-string-start}}
+hello               {{scope-string-contents}}
+'                   {{scope-string-end}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[a(b())]"
+"[                  {{scope-expression-start}}
+a                   {{scope-unknownfunction}}
+(                   {{scope-parentheses-funccall}}
+b                   {{scope-unknownfunction}}
+()                  {{scope-parentheses-funccall}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[a.b(c('string'))]"
+"[                  {{scope-expression-start}}
+a                   {{scope-usernamespace}}
+.                   {{scope-usernamespaceandfunction-dot}}
+b                   {{scope-userfunction}}
+(                   {{scope-parentheses-funccall}}
+c                   {{scope-unknownfunction}}
+(                   {{scope-parentheses-funccall}}
+'                   {{scope-string-start}}
+string              {{scope-string-contents}}
+'                   {{scope-string-end}}
+)                   {{scope-parentheses-funccall}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}

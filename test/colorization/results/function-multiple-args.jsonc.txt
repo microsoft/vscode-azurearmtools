@@ -1,0 +1,23 @@
+TEST STRING: "[max(1.2,-3,'a()')]"
+"[                  {{scope-expression-start}}
+max                 {{scope-builtin}}
+(                   {{scope-parentheses-funccall}}
+1.2                 {{scope-number}}
+,                   {{scope-funcargs-separator}}
+-3                  {{scope-number}}
+,                   {{scope-funcargs-separator}}
+'                   {{scope-string-start}}
+a()                 {{scope-string-contents}}
+'                   {{scope-string-end}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[max(1,2)]"
+"[                  {{scope-expression-start}}
+max                 {{scope-builtin}}
+(                   {{scope-parentheses-funccall}}
+1                   {{scope-number}}
+,                   {{scope-funcargs-separator}}
+2                   {{scope-number}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}

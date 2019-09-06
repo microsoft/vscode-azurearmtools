@@ -1,0 +1,9 @@
+TEST STRING: "[-]"
+"[                  {{scope-expression-start}}
+-                   invalid.illegal.expected-expression.tle.arm
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[+]"
+"[                  {{scope-expression-start}}
++                   invalid.illegal.expected-expression.tle.arm
+]"                  {{scope-expression-end}}

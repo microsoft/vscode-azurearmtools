@@ -5,8 +5,7 @@
 // tslint:disable:max-func-body-length
 
 import * as assert from "assert";
-
-import { Histogram } from "../src/Histogram";
+import { Histogram } from "../extension.bundle";
 
 suite("Histogram", () => {
     suite("keys", () => {

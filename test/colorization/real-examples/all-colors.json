@@ -1,0 +1,50 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "networkSecurityGroupName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "regular string": "Look, Ma, no hands!",
+    "string in expression": "['Look, Ma, no hands!']",
+    "builtin function": "[concat('a', 'b')]",
+    "builtin runtime function": "[reference('resourceId')]",
+    "user namespace+function": "[contoso.myFunction()]",
+    "unknown function": "[unknownFunction()]",
+    "parameters": "[parameters('networkSecurityGroupName')]",
+    "variables": "[variables('networkSecurityGroupName')]",
+    "array access": "[array()[123]]",
+    "property access": "[variables('object').property1]",
+    "escapedapostrophe": "['What''s up, Doc?']",
+    "JSON string escapes": "['He said, \"Hi\"']",
+    "invalid": "[whatever, dude!]",
+    //
+    //
+    //
+    "use-variables-to-get-rid-of-warnings": "[concat(variables('array'), variables('JSON string escapes'),variables('builtin runtime function'),  variables('regular string'),variables('builtin function'),variables('escapedapostrophe'),variables('invalid'),variables('parameters'),variables('regular string'),variables('unknown function'),variables('user namespace+function'),variables('string in expression'),variables('use-variables-to-get-rid-of-warnings'),variables('array access'),variables('property access'), variables('variables'))]",
+    "array": [
+      1,
+      2,
+      3
+    ],
+    "object": {
+      "property1": 1
+    }
+  },
+  "resources": [],
+  "functions": [
+    {
+      "namespace": "contoso",
+      "members": {
+        "uniqueName": {
+          "output": {
+            "type": "string",
+            "value": "[concat(uniqueString(resourceGroup().id))]"
+          }
+        }
+      }
+    }
+  ]
+}

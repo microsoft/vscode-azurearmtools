@@ -4,14 +4,16 @@
 
 // tslint:disable:no-var-keyword // Grandfathered in
 // tslint:disable:no-duplicate-variable // Grandfathered in
+// tslint:disable: no-parameter-reassignment // Grandfathered in
 
-import { ContextTagKeys } from "applicationinsights/out/Declarations/Contracts";
+// tslint:disable:no-increment-decrement
+
 import * as assert from "assert";
+import * as path from 'path';
 import * as vscode from "vscode";
-import { TreeItem } from "vscode";
+import { iconsPath } from "./constants";
 import * as Json from "./JSON";
 import { isLanguageIdSupported } from "./supported";
-import { Parser } from "./TLE";
 import * as Utilities from "./Utilities";
 
 const topLevelIcons: [string, string][] = [
@@ -44,13 +46,12 @@ const resourceIcons: [string, string][] = [
 export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     private tree: Json.ParseResult;
     private text: string;
-    private editor: vscode.TextEditor;
 
     public readonly onDidChangeTreeDataEmitter: vscode.EventEmitter<string | null> =
         new vscode.EventEmitter<string | null>();
     public readonly onDidChangeTreeData: vscode.Event<string | null> = this.onDidChangeTreeDataEmitter.event;
 
-    constructor(private context: vscode.ExtensionContext) {
+    constructor(context: vscode.ExtensionContext) {
         context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(() => this.updateTreeState()));
         context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(() => this.updateTreeState()));
 
@@ -62,7 +63,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             500);
     }
 
-    public refresh() {
+    public refresh(): void {
         this.onDidChangeTreeDataEmitter.fire(void 0);
     }
 
@@ -79,6 +80,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                 let result = [];
                 if (!element) {
                     if (this.tree.value instanceof Json.ObjectValue) {
+                        // tslint:disable-next-line:one-variable-per-declaration
                         for (let i = 0, il = this.tree.value.properties.length; i < il; i++) {
                             let item = this.getElementInfo(this.tree.value.properties[i]);
                             result.push(item);
@@ -92,6 +94,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     // Value is an object and is collapsible
                     if (valueNode instanceof Json.ObjectValue && elementInfo.current.collapsible) {
 
+                        // tslint:disable-next-line:one-variable-per-declaration
                         for (let i = 0, il = valueNode.properties.length; i < il; i++) {
                             let item = this.getElementInfo(valueNode.properties[i], elementInfo);
                             result.push(item);
@@ -99,6 +102,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                         }
                     } else if (valueNode instanceof Json.ArrayValue && elementInfo.current.collapsible) {
                         // Array with objects
+                        // tslint:disable-next-line:one-variable-per-declaration
                         for (let i = 0, il = valueNode.length; i < il; i++) {
                             let valueElement = valueNode.elements[i];
                             if (valueElement instanceof Json.ObjectValue) {
@@ -108,6 +112,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                         }
                     }
                 }
+
                 return result;
             }
         }
@@ -115,7 +120,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
 
     public getTreeItem(element: string): vscode.TreeItem {
 
-        const elementInfo: IElementInfo = JSON.parse(element);
+        const elementInfo: IElementInfo = <IElementInfo>JSON.parse(element);
         const start = vscode.window.activeTextEditor.document.positionAt(elementInfo.current.key.start);
         const end = vscode.window.activeTextEditor.document.positionAt(elementInfo.current.value.end);
 
@@ -125,14 +130,15 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             iconPath: this.getIconPath(elementInfo),
             command: {
                 arguments: [new vscode.Range(start, end)],
-                command: "extension.treeview.goto",
+                command: "azurerm-vscode-tools.treeview.goto",
                 title: "",
             }
         };
+
         return treeItem;
     }
 
-    public goToDefinition(range: vscode.Range) {
+    public goToDefinition(range: vscode.Range): void {
         const editor: vscode.TextEditor = vscode.window.activeTextEditor;
 
         // Center the method in the document
@@ -173,11 +179,13 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                 }
 
                 // Look for name element
+                // tslint:disable-next-line:one-variable-per-declaration
                 for (var i = 0, l = keyNode.properties.length; i < l; i++) {
                     let props = keyNode.properties[i];
                     // If name element is found
                     if (props.name instanceof Json.StringValue && props.name.toString().toUpperCase() === "name".toUpperCase()) {
                         let name = props.value.toFriendlyString();
+
                         return shortenTreeLabel(name);
                     }
                 }
@@ -194,6 +202,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         } else {
             // For other value types, display key and value since they won't be expandable
             const valueNode = this.tree.getValueAtCharacterIndex(elementInfo.current.value.start);
+
             return `${keyNode instanceof Json.StringValue ? keyNode.toFriendlyString() : "?"}: ${valueNode.toFriendlyString()}`;
         }
     }
@@ -201,7 +210,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     /**
      * Returns an IElementInfo that describes either an array element or an object element (a property)
      */
-    private getElementInfo(childElement: Json.Property | Json.ObjectValue, elementInfo?: IElementInfo) {
+    private getElementInfo(childElement: Json.Property | Json.ObjectValue, elementInfo?: IElementInfo): string {
         let collapsible = false;
 
         // Is childElement an Object (thus an array element, e.g. a top-level element of "resources")
@@ -285,9 +294,11 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         return JSON.stringify(result);
     }
 
-    private getIcon(icons: [string, string][], itemName: string, defaultIcon: string) {
+    private getIcon(icons: [string, string][], itemName: string, defaultIcon: string): string {
+        // tslint:disable-next-line: strict-boolean-expressions
         itemName = (itemName || "").toLowerCase();
         let iconItem = icons.find(item => item[0].toLowerCase() === itemName);
+
         return iconItem ? iconItem[1] : defaultIcon;
     }
 
@@ -312,6 +323,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             const rootNode = this.tree.getValueAtCharacterIndex(elementInfo.root.key.start);
 
             if (rootNode.toString().toUpperCase() === "resources".toUpperCase() && keyOrResourceNode instanceof Json.ObjectValue) {
+                // tslint:disable-next-line:one-variable-per-declaration
                 for (var i = 0, il = keyOrResourceNode.properties.length; i < il; i++) {
                     if (keyOrResourceNode.properties[i].name.toString().toUpperCase() === "type".toUpperCase()) {
                         let resourceType = keyOrResourceNode.properties[i].value.toString().toUpperCase();
@@ -322,13 +334,13 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         }
 
         if (icon) {
-            return (`${__dirname}/../../icons/${icon}`);
+            return path.join(iconsPath, icon);
         }
 
         return undefined;
     }
 
-    private updateTreeState() {
+    private updateTreeState(): void {
         const activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
         const document: vscode.TextDocument = !!activeEditor ? activeEditor.document : null;
         this.parseTree(document);
@@ -345,7 +357,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         return !!document && isLanguageIdSupported(document.languageId) && Utilities.isValidSchemaUri(this.getSchemaUri());
     }
 
-    private setTreeViewContext(visible: boolean) {
+    private setTreeViewContext(visible: boolean): void {
         vscode.commands.executeCommand('setContext', 'showArmJsonView', visible);
     }
 
@@ -359,6 +371,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                 }
             }
         }
+
         return null;
     }
 }
@@ -369,12 +382,12 @@ export interface IElementInfo {
             start: number;
             end: number;
             kind: Json.ValueKind;
-        },
+        };
         value: {
             start: number;
             end: number;
             kind: Json.ValueKind;
-        },
+        };
         level: number;
         collapsible: boolean;
     };
@@ -383,22 +396,23 @@ export interface IElementInfo {
             start: number;
             end: number;
             kind: Json.ValueKind;
-        },
+        };
         value: {
             start: number;
             end: number;
             kind: Json.ValueKind;
-        }
+        };
     };
     root: {
         key: {
             start: number;
-        }
+        };
     };
 }
 
 /**
- * Shortens a label in a way intended to keep the important information but make it easier to read and shorter (so you can read more in the limited horizontal space)
+ * Shortens a label in a way intended to keep the important information but make it easier to read
+ * and shorter (so you can read more in the limited horizontal space)
  */
 export function shortenTreeLabel(label: string): string {
     let originalLabel = label;

@@ -1,0 +1,17 @@
+TEST STRING: "['abc123']"
+"[                  {{scope-expression-start}}
+'                   {{scope-string-start}}
+abc123              {{scope-string-contents}}
+'                   {{scope-string-end}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "['Say\"hello\"!']"
+"[                  {{scope-expression-start}}
+'                   {{scope-string-start}}
+Say                 {{scope-string-contents}}
+\"                  {{scope-json-escape-chars}}
+hello               {{scope-string-contents}}
+\"                  {{scope-json-escape-chars}}
+!                   {{scope-string-contents}}
+'                   {{scope-string-end}}
+]"                  {{scope-expression-end}}

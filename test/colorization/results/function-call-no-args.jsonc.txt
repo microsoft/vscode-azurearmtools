@@ -1,0 +1,4 @@
+TEST STRING: "[max]"
+"[                  {{scope-expression-start}}
+max                 {{scope-builtin}}
+]"                  {{scope-expression-end}}

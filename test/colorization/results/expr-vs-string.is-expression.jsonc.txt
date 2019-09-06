@@ -1,0 +1,72 @@
+TEST STRING: "['I said Hi! He''s here']"
+"[                  {{scope-expression-start}}
+'                   {{scope-string-start}}
+I said Hi! He       {{scope-string-contents}}
+''                  {{scope-escapedapostrophe}}
+s here              {{scope-string-contents}}
+'                   {{scope-string-end}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "['I said\"Hi! He''s here!\"']"
+"[                  {{scope-expression-start}}
+'                   {{scope-string-start}}
+I said              {{scope-string-contents}}
+\"                  {{scope-json-escape-chars}}
+Hi! He              {{scope-string-contents}}
+''                  {{scope-escapedapostrophe}}
+s here!             {{scope-string-contents}}
+\"                  {{scope-json-escape-chars}}
+'                   {{scope-string-end}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[concat('This is a',1,'-line','expression',4,'you!')]"
+"[                  {{scope-expression-start}}
+concat              {{scope-builtin}}
+(                   {{scope-parentheses-funccall}}
+'                   {{scope-string-start}}
+This is a           {{scope-string-contents}}
+'                   {{scope-string-end}}
+,                   {{scope-funcargs-separator}}
+1                   {{scope-number}}
+,                   {{scope-funcargs-separator}}
+'                   {{scope-string-start}}
+-line               {{scope-string-contents}}
+'                   {{scope-string-end}}
+,                   {{scope-funcargs-separator}}
+'                   {{scope-string-start}}
+expression          {{scope-string-contents}}
+'                   {{scope-string-end}}
+,                   {{scope-funcargs-separator}}
+4                   {{scope-number}}
+,                   {{scope-funcargs-separator}}
+'                   {{scope-string-start}}
+you!                {{scope-string-contents}}
+'                   {{scope-string-end}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[concat('This is a',3,'-line','expression',4,'you!')]"
+"[                  {{scope-expression-start}}
+concat              {{scope-builtin}}
+(                   {{scope-parentheses-funccall}}
+'                   {{scope-string-start}}
+This is a           {{scope-string-contents}}
+'                   {{scope-string-end}}
+,                   {{scope-funcargs-separator}}
+3                   {{scope-number}}
+,                   {{scope-funcargs-separator}}
+'                   {{scope-string-start}}
+-line               {{scope-string-contents}}
+'                   {{scope-string-end}}
+,                   {{scope-funcargs-separator}}
+'                   {{scope-string-start}}
+expression          {{scope-string-contents}}
+'                   {{scope-string-end}}
+,                   {{scope-funcargs-separator}}
+4                   {{scope-number}}
+,                   {{scope-funcargs-separator}}
+'                   {{scope-string-start}}
+you!                {{scope-string-contents}}
+'                   {{scope-string-end}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}

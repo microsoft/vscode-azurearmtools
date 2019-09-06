@@ -1,0 +1,27 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "$TEST1": "[
+        1
+    ]",
+
+    // Property access on new line
+    "$TEST2": "[parameters('array')[0]
+        . prop1
+        ]",
+
+    // Arguments on separate lines
+        "$TEST3": "[
+            my.func(
+                'string'
+                ,
+                123.432
+            )
+        ]",
+
+    // Array access on new line
+    "$TEST3": "[parameters('array')
+        [
+            0
+        ]
+    ]"
+}

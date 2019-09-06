@@ -1,0 +1,6 @@
+TEST STRING: "[']']"
+"[                  {{scope-expression-start}}
+'                   {{scope-string-start}}
+]                   {{scope-string-contents}}
+'                   {{scope-string-end}}
+]"                  {{scope-expression-end}}

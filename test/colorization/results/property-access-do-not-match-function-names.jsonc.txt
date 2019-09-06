@@ -1,0 +1,13 @@
+TEST STRING: "[variables('a').add.reference.listCredentials]"
+"[                  {{scope-expression-start}}
+variables           {{scope-variables}}
+(                   {{scope-parentheses-funccall}}
+'a'                 {{scope-variable}}
+)                   {{scope-parentheses-funccall}}
+.                   {{scope-propaccess-dot}}
+add                 {{scope-propaccess-propname}}
+.                   {{scope-propaccess-dot}}
+reference           {{scope-propaccess-propname}}
+.                   {{scope-propaccess-dot}}
+listCredentials     {{scope-propaccess-propname}}
+]"                  {{scope-expression-end}}

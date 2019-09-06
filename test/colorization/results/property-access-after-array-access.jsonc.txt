@@ -1,0 +1,14 @@
+TEST STRING: "[properties('array')[0].prop1]"
+"[                  {{scope-expression-start}}
+properties          {{scope-unknownfunction}}
+(                   {{scope-parentheses-funccall}}
+'                   {{scope-string-start}}
+array               {{scope-string-contents}}
+'                   {{scope-string-end}}
+)                   {{scope-parentheses-funccall}}
+[                   {{scope-arrayaccess-brackets}}
+0                   {{scope-number}}
+]                   {{scope-arrayaccess-brackets}}
+.                   {{scope-propaccess-dot}}
+prop1               {{scope-propaccess-propname}}
+]"                  {{scope-expression-end}}

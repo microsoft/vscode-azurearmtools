@@ -1,0 +1,29 @@
+TEST STRING: "[1]"
+"[                  {{scope-expression-start}}
+1                   {{scope-number}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[0]"
+"[                  {{scope-expression-start}}
+0                   {{scope-number}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[0123]"
+"[                  {{scope-expression-start}}
+0123                {{scope-number}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[-123]"
+"[                  {{scope-expression-start}}
+-123                {{scope-number}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[+1]"
+"[                  {{scope-expression-start}}
++1                  {{scope-number}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[1]"
+"[                  {{scope-expression-start}}
+1                   {{scope-number}}
+]"                  {{scope-expression-end}}
