@@ -11,14 +11,14 @@ import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import * as Completion from "./Completion";
-import { armDeploymentLanguageId, configKeys, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, languageServerName, languageServerStateSource } from "./constants";
+import { armDeploymentLanguageId, configKeys, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
 import * as Hover from "./Hover";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 import * as language from "./Language";
-import { languageServerState, LanguageServerState, startArmLanguageServer } from "./languageclient/startArmLanguageServer";
+import { startArmLanguageServer, stopArmLanguageServer } from "./languageclient/startArmLanguageServer";
 import { PositionContext } from "./PositionContext";
 import * as Reference from "./Reference";
 import { Stopwatch } from "./Stopwatch";
@@ -76,8 +76,10 @@ export class AzureRMTools {
         context.subscriptions.push(vscode.window.registerTreeDataProvider("azurerm-vscode-tools.template-outline", jsonOutline));
 
         registerCommand("azurerm-vscode-tools.treeview.goto", (_actionContext: IActionContext, range: vscode.Range) => jsonOutline.goToDefinition(range));
-        registerCommand('azurerm-vscode-tools.uninstallDotnet', async () => await uninstallDotnet());
-
+        registerCommand('azurerm-vscode-tools.uninstallDotnet', async () => {
+            await stopArmLanguageServer();
+            await uninstallDotnet();
+        });
         vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
 
         vscode.workspace.onDidOpenTextDocument(this.onDocumentOpened, this, context.subscriptions);
@@ -216,11 +218,6 @@ export class AzureRMTools {
                 diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentTemplate, warning, vscode.DiagnosticSeverity.Warning));
             }
 
-            let languageServerLanguageDiagnostic = this.getLanguageServerStateDiagnostic();
-            if (languageServerLanguageDiagnostic) {
-                diagnostics.push(languageServerLanguageDiagnostic);
-            }
-
             let completionDiagnostic = this.getCompletionDiagnostic();
             if (completionDiagnostic) {
                 diagnostics.push(completionDiagnostic);
@@ -237,39 +234,6 @@ export class AzureRMTools {
                 severity: vscode.DiagnosticSeverity.Information,
                 message: expressionsDiagnosticsCompletionMessage,
                 source: expressionsDiagnosticsSource,
-                code: "",
-                range: new vscode.Range(0, 0, 0, 0)
-            };
-        } else {
-            return undefined;
-        }
-    }
-
-    private getLanguageServerStateDiagnostic(): vscode.Diagnostic | undefined {
-        let stateMessage = "";
-        let severity = vscode.DiagnosticSeverity.Information;
-        switch (languageServerState) {
-            case LanguageServerState.NotStarted:
-                stateMessage = `${languageServerName} not started.`;
-                break;
-            case LanguageServerState.Starting:
-                stateMessage = `${languageServerName} is starting.`;
-                break;
-            case LanguageServerState.Failed:
-                stateMessage = `${languageServerName} failed to start. See output windows for more information.`;
-                severity = vscode.DiagnosticSeverity.Error;
-                break;
-            case LanguageServerState.Started:
-                break;
-            default:
-                assert(false, `Unexpected LanguageServerState ${LanguageServerState[languageServerState]}`);
-                break;
-        }
-        if (stateMessage) {
-            return {
-                severity,
-                message: stateMessage,
-                source: languageServerStateSource,
                 code: "",
                 range: new vscode.Range(0, 0, 0, 0)
             };
