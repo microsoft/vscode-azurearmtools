@@ -1,6 +1,24 @@
 # Change Log
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.7.0 (2019-09-16)
+### Added
+- 0.7.0 contains the first release of a new language service that we are creating specifically for Azure Resource Manager deployment template files.  Up to this point, the extension has been built on top of the built-in VS Code JSON language server.  This has caused some problems:
+  a) Deployment templates allow comments, unlike standard JSON files
+  b) Deployment templates allow multi-line strings
+  c) Deployment templates use case-insensitive properties
+  d) Deployment templates have looser type rules, allowing substitutions such as "true" and "false" instead of true and false
+  e) The large schema files published for Azure resources cause poor validation performance
+  f) The errors provided by standard JSON validation frequently provide poor suggestions for fixing (due to lack of knowledge of Azure Resource Manager-specific properties such as resource name and apiVersion)
+
+The new language server aims to provide a better experience for deployment template creation and editing by alleviating many of the problems above. This version addresses points (a)-(c) above. We intend to alleviate more of these problems in upcoming versions.
+
+### Fixed
+- Expressions in property names are not colorized [#225](https://github.com/microsoft/vscode-azurearmtools/issues/225)
+- Intellisense completion for parameter object properties defined inside a defaultValue [#124](https://github.com/microsoft/vscode-azurearmtools/issues/124)
+- Parameters color not correct if whitespace separates param name from parentheses [#239](https://github.com/microsoft/vscode-azurearmtools/issues/239)
+- Does not correctly handle colorization when a string starts with a bracket but does not end with a bracket [#250](https://github.com/microsoft/vscode-azurearmtools/issues/250)
+
 ## Version 0.6.0 (2019-04-25)
 ### Added
 - Expressions inside strings are now colorized
