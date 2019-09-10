@@ -303,3 +303,4 @@ test/*.actual
 test/**/*.full-scope-result.txt
 
 languageServer/**
+LanguageServerBin/**

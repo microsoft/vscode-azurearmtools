@@ -52,7 +52,7 @@ function initializeDotnetAcquire(): void {
     }
 
     // tslint:disable-next-line: non-literal-fs-path
-    if (!fs.existsSync(context.globalStoragePath)) {
+    if (!fs.existsSync(ext.context.globalStoragePath)) {
         // tslint:disable-next-line: non-literal-fs-path
         fs.mkdirSync(context.globalStoragePath);
     }
@@ -102,7 +102,7 @@ export async function uninstallDotnet(): Promise<void> {
     } catch (error) {
         let message = parseError(error).message;
         if (message.includes('EPERM')) {
-            error = new Error(`dotnet core may be in use, please restart VS Code and try again. ${message}`);
+            error = new Error(`dotnet core may be in use. Please close all deployment template files, then restart VS Code and try again. ${message}`);
         }
 
         throw error;

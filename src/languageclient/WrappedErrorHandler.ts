@@ -3,16 +3,23 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { parseError, TelemetryProperties } from 'vscode-azureextensionui';
+import { callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { Message } from 'vscode-jsonrpc';
 import { CloseAction, ErrorAction, ErrorHandler } from 'vscode-languageclient';
-import { ext } from '../extensionVariables';
-import { languageServerErrorTelemId, serverStartMs } from './startArmLanguageServer';
 
-// tslint:disable-next-line:no-suspicious-comment
-// TODO: manual testing (in a later PR focused on error handling)
+const languageServerErrorTelemId = 'Language Server Error';
+
+/**
+ * Wraps the default error handler for the language server client to send telemetry for the error
+ * events.
+ *
+ * (The default error handler causes the server to shut down after 3 errors or 5 crashes.)
+ */
 export class WrappedErrorHandler implements ErrorHandler {
+    private _serverStartTime: number;
+
     constructor(private _handler: ErrorHandler) {
+        this._serverStartTime = Date.now();
     }
 
     /**
@@ -24,20 +31,15 @@ export class WrappedErrorHandler implements ErrorHandler {
      *  be reset if a message got successfully send or received.
      */
     public error(error: Error, message: Message | undefined, count: number): ErrorAction {
-        let parsed = parseError(error);
-        ext.reporter.sendTelemetryEvent(
-            languageServerErrorTelemId,
-            <TelemetryProperties>{
-                error: parsed.errorType,
-                errorMessage: parsed.message,
-                result: "Failed",
-                jsonrpcMessage: message ? message.jsonrpc : "",
-                count: String(count),
-                stack: parsed.stack
-            },
-            {
-                secondsSinceStart: (Date.now() - serverStartMs) / 1000
-            });
+        // Use our shared error handling code to notification telemetry and user of the error
+        // in a standard way
+        callWithTelemetryAndErrorHandlingSync(languageServerErrorTelemId, (context: IActionContext) => {
+            context.telemetry.properties.jsonrpcMessage = message ? message.jsonrpc : "";
+            context.telemetry.measurements.secondsSinceStart = (Date.now() - this._serverStartTime) / 1000;
+
+            throw new Error(`An error occurred in the ARM language server.\n\n${parseError(error).message}`);
+        });
+
         return this._handler.error(error, message, count);
     }
 
@@ -45,16 +47,14 @@ export class WrappedErrorHandler implements ErrorHandler {
      * The connection to the server got closed.
      */
     public closed(): CloseAction {
-        ext.reporter.sendTelemetryEvent(
-            languageServerErrorTelemId,
-            <TelemetryProperties>{
-                error: "Crashed",
-                errorMessage: '(Language server crashed)',
-                result: "Failed"
-            },
-            {
-                secondsSinceStart: (Date.now() - serverStartMs) / 1000
-            });
+        // Use our shared error handling code to notification telemetry and user of the error
+        // in a standard way
+        callWithTelemetryAndErrorHandlingSync(languageServerErrorTelemId, (context: IActionContext) => {
+            context.telemetry.measurements.secondsSinceStart = (Date.now() - this._serverStartTime) / 1000;
+
+            throw new Error("The connection to the ARM language server got closed.");
+        });
+
         return this._handler.closed();
     }
 }
