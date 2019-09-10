@@ -156,31 +156,13 @@ export class AzureRMTools {
 
                         // Make sure the language ID is set to ARM deployment template
                         if (document.languageId !== armDeploymentLanguageId) {
-                            vscode.languages.setTextDocumentLanguage(document, armDeploymentLanguageId);
-
                             // The document will be reloaded, firing this event again with the new langid
-                            actionContext.telemetry.properties.switchedToArm = 'true';
-                            actionContext.telemetry.properties.docLangId = document.languageId;
-                            actionContext.telemetry.properties.docExtension = path.extname(document.fileName);
-                            actionContext.telemetry.suppressIfSuccessful = false;
+                            AzureRMTools.setLanguageToArm(document, actionContext);
                             return;
                         }
 
-                        ext.reporter.sendTelemetryEvent(
-                            "Deployment Template Opened",
-                            {
-                                docLangId: document.languageId,
-                                docExtension: path.extname(document.fileName),
-                            },
-                            {
-                                documentSizeInCharacters: document.getText().length,
-                                parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds,
-                                lineCount: deploymentTemplate.lineCount,
-                                paramsCount: deploymentTemplate.parameterDefinitions.length,
-                                varsCount: deploymentTemplate.variableDefinitions.length,
-                                namespacesCount: deploymentTemplate.namespaceDefinitions.length
-                            });
-                        this.logFunctionCounts(deploymentTemplate);
+                        // Template for template opened
+                        this.reportTemplateOpenedTelemetry(document, deploymentTemplate, stopwatch);
                     }
 
                     this.reportDeploymentTemplateErrors(document, deploymentTemplate);
@@ -199,6 +181,38 @@ export class AzureRMTools {
                 this.closeDeploymentTemplate(document);
             }
         });
+    }
+
+    private static setLanguageToArm(document: vscode.TextDocument, actionContext: IActionContext): void {
+        vscode.languages.setTextDocumentLanguage(document, armDeploymentLanguageId);
+
+        actionContext.telemetry.properties.switchedToArm = 'true';
+        actionContext.telemetry.properties.docLangId = document.languageId;
+        actionContext.telemetry.properties.docExtension = path.extname(document.fileName);
+        actionContext.telemetry.suppressIfSuccessful = false;
+    }
+
+    private reportTemplateOpenedTelemetry(
+        document: vscode.TextDocument,
+        deploymentTemplate: DeploymentTemplate,
+        stopwatch: Stopwatch
+    ): void {
+        ext.reporter.sendTelemetryEvent(
+            "Deployment Template Opened",
+            {
+                docLangId: document.languageId,
+                docExtension: path.extname(document.fileName),
+            },
+            {
+                documentSizeInCharacters: document.getText().length,
+                parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds,
+                lineCount: deploymentTemplate.lineCount,
+                paramsCount: deploymentTemplate.parameterDefinitions.length,
+                varsCount: deploymentTemplate.variableDefinitions.length,
+                namespacesCount: deploymentTemplate.namespaceDefinitions.length
+            });
+
+        this.logFunctionCounts(deploymentTemplate);
     }
 
     private reportDeploymentTemplateErrors(document: vscode.TextDocument, deploymentTemplate: DeploymentTemplate): void {
