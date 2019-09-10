@@ -21,7 +21,7 @@ function isJsonOrJsoncLangId(textDocument: TextDocument): boolean {
 
 // We keep track of arm-deployment files, of course,
 // but also JSON/JSONC (unless auto-detect is disabled) so we can check them for the ARM schema
-export function shouldWatchDocument(textDocument: TextDocument): boolean {
+function shouldWatchDocument(textDocument: TextDocument): boolean {
     if (textDocument.uri.scheme !== 'file') {
         return false;
     }

@@ -68,7 +68,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     public getChildren(element?: string): string[] {
         // check if there is a visible text editor
         if (vscode.window.visibleTextEditors.length > 0) {
-            if (vscode.window.activeTextEditor && this.isArmTemplateDocument(vscode.window.activeTextEditor.document)) {
+            if (vscode.window.activeTextEditor && this.shouldShowTreeForDocument(vscode.window.activeTextEditor.document)) {
 
                 if (!this.tree) {
                     this.refresh();
@@ -148,7 +148,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     }
 
     private parseTree(document?: vscode.TextDocument): void {
-        if (this.isArmTemplateDocument(document)) {
+        if (this.shouldShowTreeForDocument(document)) {
             this.text = document.getText();
             this.tree = Json.parse(this.text);
         }
@@ -342,7 +342,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         const activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
         const document: vscode.TextDocument = !!activeEditor ? activeEditor.document : null;
         this.parseTree(document);
-        const showTreeView = this.isArmTemplateDocument(document);
+        const showTreeView = this.shouldShowTreeForDocument(document);
 
         if (showTreeView) {
             this.refresh();
@@ -351,7 +351,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         this.setTreeViewContext(showTreeView);
     }
 
-    private isArmTemplateDocument(document?: vscode.TextDocument): boolean {
+    private shouldShowTreeForDocument(document?: vscode.TextDocument): boolean {
         // Only show view if the language is set to ARM Deployment Template
         return !!document && document.languageId === armDeploymentLanguageId;
     }
