@@ -22,7 +22,7 @@ import { languageServerState, LanguageServerState, startArmLanguageServer } from
 import { PositionContext } from "./PositionContext";
 import * as Reference from "./Reference";
 import { Stopwatch } from "./Stopwatch";
-import { armDeploymentDocumentSelector, mightBeDeploymentTemplate, shouldWatchDocument } from "./supported";
+import { armDeploymentDocumentSelector, mightBeDeploymentTemplate } from "./supported";
 import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
@@ -120,72 +120,74 @@ export class AzureRMTools {
             actionContext.telemetry.properties.isActivationEvent = 'true';
             actionContext.telemetry.properties.fileExt = path.extname(document.fileName);
 
-            let foundDeploymentTemplate = false;
+            const stopwatch = new Stopwatch();
+            stopwatch.start();
 
-            if (shouldWatchDocument(document)) {
-                if (mightBeDeploymentTemplate(document)) {
-                    // If the documentUri is not in our dictionary of deployment templates, then we
-                    // know that this document was just opened (as opposed to changed/updated).
-                    let stopwatch: Stopwatch;
-                    const documentUri: string = document.uri.toString();
-                    if (!this._deploymentTemplates[documentUri]) {
-                        stopwatch = new Stopwatch();
-                        stopwatch.start();
-                    }
+            let treatAsDeploymentTemplate = false;
+            let isNewlyOpened = false; // As opposed to already opened and being activated
 
-                    // Might be a deployment template, need to do a full parse to make sure
-                    let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(document.getText(), documentUri);
-                    if (deploymentTemplate.hasArmSchemaUri()) {
-                        foundDeploymentTemplate = true;
+            if (document.languageId === armDeploymentLanguageId) {
+                // Lang ID is set to ARM, whether auto or manual, respect the setting
+                treatAsDeploymentTemplate = true;
+            }
 
-                        this.ensureDeploymentTemplateEventsHookedUp();
+            let shouldParseFile = treatAsDeploymentTemplate || mightBeDeploymentTemplate(document);
+            if (shouldParseFile) {
+                // If the documentUri is not in our dictionary of deployment templates, then we
+                // know that this document was just opened (as opposed to changed/updated).
+                const documentUri: string = document.uri.toString();
+                if (!this._deploymentTemplates[documentUri]) {
+                    isNewlyOpened = true;
+                }
 
-                        this._deploymentTemplates[documentUri] = deploymentTemplate;
+                // Do a full parse
+                let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(document.getText(), documentUri);
+                if (deploymentTemplate.hasArmSchemaUri()) {
+                    treatAsDeploymentTemplate = true;
+                }
+                actionContext.telemetry.measurements.parseDurationInMilliseconds = stopwatch.duration.totalMilliseconds;
 
-                        // We only initialized the stopwatch if the deployment template was being
-                        // opened. The stopwatch variable will not be initialized if the deployment
-                        // template is being edited.
-                        if (stopwatch) {
-                            // A deployment template has been opened (as opposed to having been tabbed to)
+                if (treatAsDeploymentTemplate) {
+                    this.ensureDeploymentTemplateEventsHookedUp();
+                    this._deploymentTemplates[documentUri] = deploymentTemplate;
 
-                            stopwatch.stop();
+                    if (isNewlyOpened) {
+                        // A deployment template has been opened (as opposed to having been tabbed to)
 
-                            // Set the language ID to ARM deployment template
-                            if (document.languageId !== armDeploymentLanguageId) {
-                                vscode.languages.setTextDocumentLanguage(document, armDeploymentLanguageId);
+                        // Make sure the language ID is set to ARM deployment template
+                        if (document.languageId !== armDeploymentLanguageId) {
+                            vscode.languages.setTextDocumentLanguage(document, armDeploymentLanguageId);
 
-                                // The document will be reloaded, firing this event again with the new langid
-                                actionContext.telemetry.properties.switchedToArm = 'true';
-                                actionContext.telemetry.properties.docLangId = document.languageId;
-                                actionContext.telemetry.properties.docExtension = path.extname(document.fileName);
-                                actionContext.telemetry.suppressIfSuccessful = false;
-                                return;
-                            }
-
-                            ext.reporter.sendTelemetryEvent(
-                                "Deployment Template Opened",
-                                {
-                                    docLangId: document.languageId,
-                                    docExtension: path.extname(document.fileName),
-                                },
-                                {
-                                    documentSizeInCharacters: document.getText().length,
-                                    parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds,
-                                    lineCount: deploymentTemplate.lineCount,
-                                    paramsCount: deploymentTemplate.parameterDefinitions.length,
-                                    varsCount: deploymentTemplate.variableDefinitions.length,
-                                    namespacesCount: deploymentTemplate.namespaceDefinitions.length
-                                });
-
-                            this.logFunctionCounts(deploymentTemplate);
+                            // The document will be reloaded, firing this event again with the new langid
+                            actionContext.telemetry.properties.switchedToArm = 'true';
+                            actionContext.telemetry.properties.docLangId = document.languageId;
+                            actionContext.telemetry.properties.docExtension = path.extname(document.fileName);
+                            actionContext.telemetry.suppressIfSuccessful = false;
+                            return;
                         }
 
-                        this.reportDeploymentTemplateErrors(document, deploymentTemplate);
+                        ext.reporter.sendTelemetryEvent(
+                            "Deployment Template Opened",
+                            {
+                                docLangId: document.languageId,
+                                docExtension: path.extname(document.fileName),
+                            },
+                            {
+                                documentSizeInCharacters: document.getText().length,
+                                parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds,
+                                lineCount: deploymentTemplate.lineCount,
+                                paramsCount: deploymentTemplate.parameterDefinitions.length,
+                                varsCount: deploymentTemplate.variableDefinitions.length,
+                                namespacesCount: deploymentTemplate.namespaceDefinitions.length
+                            });
+                        this.logFunctionCounts(deploymentTemplate);
                     }
+
+                    this.reportDeploymentTemplateErrors(document, deploymentTemplate);
                 }
             }
 
-            if (!foundDeploymentTemplate) {
+            if (!treatAsDeploymentTemplate) {
                 // If the document is not a deployment template, then we need
                 // to remove it from our deployment template cache. It doesn't
                 // matter if the document is a JSON file and was never a
