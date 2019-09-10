@@ -9,13 +9,11 @@ import { ExtensionContext, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient';
 import { dotnetAcquire, ensureDotnetDependencies } from '../acquisition/dotnetAcquisition';
-import { armDeploymentLanguageId, languageServerFolderName } from '../constants';
+import { armDeploymentLanguageId, languageServerFolderName, languageServerName } from '../constants';
 import { ext } from '../extensionVariables';
 import { armDeploymentDocumentSelector } from '../supported';
 import { WrappedErrorHandler } from './WrappedErrorHandler';
 
-const languageServerName = 'ARM Language Server';
-const languageServerFolderName = 'LanguageServerBin';
 const languageServerDllName = 'Microsoft.ArmLanguageServer.dll';
 export let serverStartMs: number;
 export const languageServerErrorTelemId = 'Language Server Error';

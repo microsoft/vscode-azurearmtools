@@ -11,6 +11,8 @@ export const isWebpack: boolean = /^(false|0)?$/i.test(process.env.AZCODE_ARM_IG
 export const assetsPath = path.join(__dirname, isWebpack ? "" : "..", "..", "assets");
 export const iconsPath = path.join(__dirname, isWebpack ? "" : "..", "..", "icons");
 
+export const languageServerName = 'ARM Language Server';
+export const languageServerFolderName = 'LanguageServerBin';
 export const armDeploymentLanguageId = 'arm-deployment';
 
 // String that shows up in our errors as the source in parentheses

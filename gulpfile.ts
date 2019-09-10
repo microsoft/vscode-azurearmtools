@@ -11,7 +11,7 @@ import * as gulp from 'gulp';
 import * as path from 'path';
 import * as process from 'process';
 import { gulp_installAzureAccount, gulp_webpack } from 'vscode-azureextensiondev';
-import { assert } from './src/fixed_assert';
+import { languageServerFolderName } from './src/constants';
 
 const env = process.env;
 
@@ -118,40 +118,9 @@ async function updateLanguageServer(): Promise<void> {
     // tslint:disable-next-line: max-line-length
     // let armServerBin = path.join(env.ExtensionsBin, '..', '..', 'ARM-LanguageServer', 'Microsoft.ArmLanguageServer', 'bin', 'Debug', 'netcoreapp2.2', 'publish');
     let armServerBin = '\\\\scratch2\\scratch\\stephwe\\ARM\\Dev Assemblies\\Current';
-    let updateDest = path.join(__dirname, 'languageServer');
+    let updateDest = path.join(__dirname, languageServerFolderName);
     if (!fs.existsSync(updateDest)) {
         fs.mkdirSync(updateDest);
-    }
-
-    copyFolder(sourcePath, destPath);
-
-    function copyFolder(sourceFolder: string, destFolder: string): void {
-        if (!fse.existsSync(destFolder)) {
-            fse.mkdirSync(destFolder);
-        }
-
-        fse.readdirSync(sourceFolder).forEach(fn => {
-            let src = path.join(sourceFolder, fn);
-            let dest = path.join(destFolder, fn);
-            if (fse.statSync(src).isFile()) {
-                console.log(`${src} -> ${dest}`);
-                fse.copyFileSync(src, dest);
-            } else if (fse.statSync(src).isDirectory()) {
-                console.error("folder", src, dest);
-                copyFolder(src, dest);
-            } else {
-                assert("Unexpected path type");
-            }
-        });
-    }
-} else {
-    console.warn(`Environment variable ${languageServerSourceEnv} not set, skipping packaging of language server binaries.`);
-}
-}
-
-function copyFolder(sourceFolder: string, destFolder: string, sourceRoot: string = sourceFolder): void {
-    if (!fse.existsSync(destFolder)) {
-        fse.mkdirSync(destFolder);
     }
 
     fs.readdirSync(armServerBin).forEach(fn => {
