@@ -5,31 +5,25 @@
 This extension provides language support for Azure Resource Manager deployment templates and template language expressions.
 
 ## Features
+- Provides a language server that understands Azure Resource Manager deployment template files
 - ARM Template Outline view for easy navigation through large templates
 - Colorization for Template Language Expressions (TLE)
-- IntelliSense for TLE expressions
+- Analyze and validate JSON syntax, JSON schema conformance for Azure resources, string expressions and deployment issues
+- IntelliSense for string expressions
     - [Built-in function names](https://go.microsoft.com/fwlink/?LinkID=733958)
     - [Parameter references](https://go.microsoft.com/fwlink/?LinkID=733959)
     - [Variable references](https://go.microsoft.com/fwlink/?LinkID=733960)
     - [resourceGroup() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#resourcegroup)
     - [subscription() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#subscription)
     - Properties of references to variables that are objects
-- [Signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
-- [Go To Definition](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-definition) for variable and parameter references
-- [Peek](https://code.visualstudio.com/docs/editor/editingevolved#_peek) for variable and parameter definitions
-- Find all references (Shift + F12) for variables and parameters
-- Rename all references (F2) for variables and parameters
-- [Hover](https://code.visualstudio.com/docs/editor/editingevolved#_hover) for parameter description
-- [TLE brace matching](https://code.visualstudio.com/docs/editor/editingevolved#_bracket-matching)
-- [Errors](https://code.visualstudio.com/docs/editor/editingevolved#_errors-warnings) for:
-    - Undefined parameter references
-    - Undefined variable references
-    - Unrecognized TLE function names
-    - [reference() function usage in variable definition](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#reference)
-    - Incorrect number of arguments in TLE functions
-- [Warnings](https://code.visualstudio.com/docs/editor/editingevolved#_errors-warnings) for:
-    - Unused parameters
-    - Unused variables
+    - [Signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
+    - [Go To Definition](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-definition) for variable and parameter references
+    - [Peek](https://code.visualstudio.com/docs/editor/editingevolved#_peek) for variable and parameter definitions
+    - Find all references (Shift + F12) for variables and parameters
+    - Rename all references (F2) for variables and parameters
+    - [Hover](https://code.visualstudio.com/docs/editor/editingevolved#_hover) for parameter description
+    - [TLE brace matching](https://code.visualstudio.com/docs/editor/editingevolved#_bracket-matching)
+    - Rename parameters and variables
 
 ## Automatic Detection of deployment template files
 
@@ -71,4 +65,6 @@ VS Code collects usage data and sends it to Microsoft to help improve our produc
 
 ## License
 
-[MIT](LICENSE.md)
+The source code in our [public repository](https://github.com/Microsoft/vscode-azurearmtools) is licensed under the [MIT license](LICENSE.md). The public source code currently contains functionality related to the parsing and validation of template expression strings, but does not contain functionality related to JSON parsing and validation or backend template validation.
+
+The extension as it is built in Azure DevOps and [published](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) to the VS Code Marketplace is a distribution of the public repository and is bundled with the Azure Resource Manager language service binaries. The published extension and language service binaries are licensed under a traditional Microsoft product license.

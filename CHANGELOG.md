@@ -1,6 +1,44 @@
 # Change Log
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.7.0 (2019-09-16)
+### Added
+- 0.7.0 contains the first release of a new language service that we are creating specifically for Azure Resource Manager deployment template files.  Up to this point, the extension has been built on top of the built-in VS Code JSON language server.  This has caused some problems, including:
+  1. Deployment templates allow comments, unlike standard JSON files
+  1. Deployment templates allow multi-line strings
+  1. Deployment templates use case-insensitive properties
+  1. Deployment templates have looser type rules, allowing substitutions such as "true" and "false" instead of true and false
+  1. The large schema files published for Azure resources cause poor validation performance
+  1. The errors provided by standard JSON validation frequently provide poor suggestions for fixing (due to lack of knowledge of Azure Resource Manager-specific properties such as resource name and apiVersion)
+
+The new language server aims to provide a better experience for deployment template creation and editing by alleviating many of the problems above.
+This version addresses points 1-3 above (see [#fixed](#fixed-070) section). We intend to alleviate more of these problems in upcoming versions.
+In addition, we are considering other improvements to the experience, such as:
+1. Snippets
+2. User-defined functions support
+3. Copy loops support
+If you would like to suggest additional features, or for other comments or problems, please enter a new issue at our [public repo](https://github.com/microsoft/vscode-azurearmtools/issues).
+
+### Fixed<a id="fixed-070"></a>
+- Comments are now supported (`//` and `/* */` styles)
+- Multi-line strings are now supported
+- Schema validation no longer reports false positives because of incorrectly-cased properties
+Examples:
+```json
+  "parameters": {
+    "dnsLabelPrefix": {
+      "type": "String", << No longer flagged as incorrect
+```
+```json
+    "resources": [
+        {
+            "type": "microsoft.network/networkInterfaces", << No longer flagged as incorrect
+```
+- Expressions in property names are not colorized [#225](https://github.com/microsoft/vscode-azurearmtools/issues/225)
+- Intellisense completion for parameter object properties defined inside a defaultValue [#124](https://github.com/microsoft/vscode-azurearmtools/issues/124)
+- Parameters color not correct if whitespace separates param name from parentheses [#239](https://github.com/microsoft/vscode-azurearmtools/issues/239)
+- Does not correctly handle colorization when a string starts with a bracket but does not end with a bracket [#250](https://github.com/microsoft/vscode-azurearmtools/issues/250)
+
 ## Version 0.6.0 (2019-04-25)
 ### Added
 - Expressions inside strings are now colorized
