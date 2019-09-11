@@ -11,7 +11,7 @@ import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import * as Completion from "./Completion";
-import { armDeploymentLanguageId, configKeys, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource } from "./constants";
+import { armDeploymentLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
@@ -39,7 +39,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     await callWithTelemetryAndErrorHandling('activate', async (actionContext: IActionContext): Promise<void> => {
         actionContext.telemetry.properties.isActivationEvent = 'true';
         actionContext.telemetry.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
-        actionContext.telemetry.properties.autoDetectJsonTemplates = String(vscode.workspace.getConfiguration('armTools').get<boolean>(configKeys.autoDetectJsonTemplates));
+        actionContext.telemetry.properties.autoDetectJsonTemplates = String(vscode.workspace.getConfiguration(configPrefix).get<boolean>(configKeys.autoDetectJsonTemplates));
 
         context.subscriptions.push(new AzureRMTools(context));
     });

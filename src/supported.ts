@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { Position, Range, TextDocument, workspace } from "vscode";
-import { armDeploymentLanguageId, configKeys } from "./constants";
+import { armDeploymentLanguageId, configKeys, configPrefix } from "./constants";
 
 export const armDeploymentDocumentSelector = [
     { language: armDeploymentLanguageId, scheme: 'file' }
@@ -30,7 +30,7 @@ function shouldWatchDocument(textDocument: TextDocument): boolean {
         return true;
     }
 
-    let enableAutoDetection = workspace.getConfiguration('armTools').get<boolean>(configKeys.autoDetectJsonTemplates);
+    let enableAutoDetection = workspace.getConfiguration(configPrefix).get<boolean>(configKeys.autoDetectJsonTemplates);
     if (!enableAutoDetection) {
         return false;
     }

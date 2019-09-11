@@ -9,7 +9,7 @@ import { ProgressLocation, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
 import { dotnetAcquire, ensureDotnetDependencies } from '../acquisition/dotnetAcquisition';
-import { armDeploymentLanguageId, languageServerFolderName, languageServerName } from '../constants';
+import { armDeploymentLanguageId, configPrefix, languageServerFolderName, languageServerName } from '../constants';
 import { ext } from '../extensionVariables';
 import { armDeploymentDocumentSelector } from '../supported';
 import { WrappedErrorHandler } from './WrappedErrorHandler';
@@ -75,7 +75,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         //   Error
         //   Critical
         //   None
-        let trace: string = workspace.getConfiguration('armTools').get<string>("languageServer.traceLevel") || defaultTraceLevel;
+        let trace: string = workspace.getConfiguration(configPrefix).get<string>("languageServer.traceLevel") || defaultTraceLevel;
 
         let commonArgs = [
             serverDllPath,
@@ -83,7 +83,8 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
             trace
         ];
 
-        if (workspace.getConfiguration('armTools').get<boolean>('languageServer.waitForDebugger', false) === true) {
+        const waitForDebugger = workspace.getConfiguration(configPrefix).get<boolean>('languageServer.waitForDebugger', false) === true;
+        if (waitForDebugger) {
             commonArgs.push('--wait-for-debugger');
         }
         if (ext.addCompletionDiagnostic) {
@@ -114,6 +115,10 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         // Use an error handler that sends telemetry
         let defaultHandler = client.createDefaultErrorHandler();
         client.clientOptions.errorHandler = new WrappedErrorHandler(defaultHandler);
+
+        if (waitForDebugger) {
+            window.showWarningMessage(`The ${configPrefix}.languageServer.waitForDebugger option is set.  The language server will pause on startup until a debugger is attached.`);
+        }
 
         try {
             let disposable = client.start();
@@ -157,11 +162,11 @@ function findLanguageServer(): string {
     return callWithTelemetryAndErrorHandlingSync('findLanguageServer', (actionContext: IActionContext) => {
         actionContext.errorHandling.rethrow = true;
 
-        let serverDllPathSetting: string | undefined = workspace.getConfiguration('armTools').get<string | undefined>('languageServer.path');
+        let serverDllPathSetting: string | undefined = workspace.getConfiguration(configPrefix).get<string | undefined>('languageServer.path');
         if (typeof serverDllPathSetting !== 'string' || serverDllPathSetting === '') {
             actionContext.telemetry.properties.customServerDllPath = 'false';
 
-            // Default behavior: armTools.languageServer.path is not set - look for the files in their normal installed location under languageServerFolderName
+            // Default behavior: <configPrefix>.languageServer.path is not set - look for the files in their normal installed location under languageServerFolderName
             let serverFolderPath = ext.context.asAbsolutePath(languageServerFolderName);
             serverDllPath = path.join(serverFolderPath, languageServerDllName);
             if (!fse.existsSync(serverFolderPath) || !fse.existsSync(serverDllPath)) {
@@ -176,8 +181,10 @@ function findLanguageServer(): string {
                 serverDllPath = path.join(serverDllPath, languageServerDllName);
             }
             if (!fse.existsSync(serverDllPath)) {
-                throw new Error(`Couldn't find the ARM language server at ${serverDllPath}.  Please verify or remove your 'armTools.languageServer.path' setting.`);
+                throw new Error(`Couldn't find the ARM language server at ${serverDllPath}.  Please verify or remove your '${configPrefix}.languageServer.path' setting.`);
             }
+
+            window.showInformationMessage(`Using custom path for ${languageServerName}: ${serverDllPath}`);
         }
 
         return serverDllPath;
