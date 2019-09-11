@@ -8,7 +8,7 @@ import * as fs from "fs";
 import * as mocha from 'mocha';
 import * as path from "path";
 import * as vscode from 'vscode';
-import { AzureRMAssets, configKeys, ext } from "../extension.bundle";
+import { AzureRMAssets, configKeys, configPrefix, ext } from "../extension.bundle";
 
 // tslint:disable:no-console no-function-expression
 
@@ -22,7 +22,7 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     // Just to make it easier to see what's going on
     vscode.commands.executeCommand('workbench.actions.view.problems');
 
-    let autoDetectJsonTemplates = vscode.workspace.getConfiguration('armTools').get<boolean>(configKeys.autoDetectJsonTemplates);
+    let autoDetectJsonTemplates = vscode.workspace.getConfiguration(configPrefix).get<boolean>(configKeys.autoDetectJsonTemplates);
     assert(autoDetectJsonTemplates, "armTools.autoDetectJsonTemplates must be true (it's default value) when running the suites");
 
     console.log('Done: global.test.ts: suiteSetup');
