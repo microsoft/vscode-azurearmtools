@@ -29,3 +29,5 @@ typings/**
 webpack.config*
 *.vsix
 *.zip
+pkgs
+tools

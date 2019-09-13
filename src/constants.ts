@@ -12,8 +12,8 @@ export const assetsPath = path.join(__dirname, isWebpack ? "" : "..", "..", "ass
 export const iconsPath = path.join(__dirname, isWebpack ? "" : "..", "..", "icons");
 
 export const languageServerName = 'ARM Language Server';
-export const languageServerFolderName = 'LanguageServerBin';
 export const armDeploymentLanguageId = 'arm-deployment';
+export const languageServerFolderName = 'languageServer';
 export const configPrefix = 'armTools';
 
 // String that shows up in our errors as the source in parentheses

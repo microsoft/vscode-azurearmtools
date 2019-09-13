@@ -302,5 +302,8 @@ test-results.xml
 test/*.actual
 test/**/*.full-scope-result.txt
 
+# Nuget package downloads
+pkgs/**
+
+# Staged language server bits
 languageServer/**
-LanguageServerBin/**
