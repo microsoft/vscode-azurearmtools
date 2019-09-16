@@ -23,7 +23,7 @@ suite("Backend validation", () => {
                 includeSources: [sources.template]
             },
             [
-                "Error: Template validation failed: Required property 'resources' not found in JSON. Path '', line 4, position 1. (ARM (Template))"
+                "Error: Template validation failed: Required property 'resources' not found in JSON. Path '', line 4, position 1. (arm-template (template validation))"
             ])
     );
 });

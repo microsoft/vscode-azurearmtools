@@ -22,7 +22,7 @@ suite("Schema validation", () => {
                 includeSources: [sources.schema]
             },
             [
-                "Warning: Missing required property resources (ARM (Schema))"
+                "Warning: Missing required property resources (arm-template (schema))"
             ])
     );
 

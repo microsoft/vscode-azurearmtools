@@ -27,15 +27,17 @@ This extension provides language support for Azure Resource Manager deployment t
 
 ## Automatic Detection of deployment template files
 
-By default, the extension recognizes a .json or .jsonc file as a deployment template file based on the $schema specified in the file (for instance, ```https://schema.management.azure.com/schemas/2018-05-01/deploymentTemplate.json#```) and will switch the editor language to "ARM Deployment Template" automatically.  If you do not want that behavior, you can set the ```armTools.autoDetectJsonTemplates``` setting to false and use the below methods to determine which files to treat as deployment templates.
+By default, the extension recognizes a .json or .jsonc file as a deployment template file based on the $schema specified in the file (for instance, ```https://schema.management.azure.com/schemas/2018-05-01/deploymentTemplate.json#```) and will switch the editor language to "Azure Resource Manager Template" automatically.  If you do not want that behavior, you can set the ```azureResourceManagerTools.autoDetectJsonTemplates``` setting to false and use the below methods to determine which files to treat as deployment templates.
 
-Besides automatic detection, any file ending with the extension ```.arm``` will be considered a deployment template. You can also use the ```files.associations``` setting to set up your own specific mappings based on specific files paths or patterns to mark them as deployment templates, e.g.
+Besides automatic detection, you also use the ```files.associations``` setting to set up your own specific mappings based on specific files paths or patterns to mark them as deployment templates, e.g.
 
 ```json
     "files.associations": {
-        "*.arm.json": "arm-deployment" // Treat these files as deployment templates
+        "*.azrm.json": "arm-template" // Treat these files as deployment templates
     }
 ```
+
+Note: the extension ```.azrm``` is also currently recognized, but this is experimental and we don't recommend its use currently.
 
 ## Related Links
 

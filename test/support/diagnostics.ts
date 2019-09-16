@@ -24,9 +24,9 @@ export interface Source {
 }
 export const sources = {
     expressions: { name: expressionsDiagnosticsSource },
-    schema: { name: 'ARM (Schema)' },
-    syntax: { name: 'ARM (Syntax)' },
-    template: { name: 'ARM (Template)' },
+    schema: { name: 'arm-template (schema)' },
+    syntax: { name: 'arm-template (syntax)' },
+    template: { name: 'arm-template (validation)' },
 };
 
 function isSourceFromLanguageServer(source: Source): boolean {

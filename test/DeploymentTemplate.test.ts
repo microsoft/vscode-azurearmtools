@@ -872,8 +872,8 @@ suite("ReferenceInVariableDefinitionJSONVisitor", () => {
                     includeSources: [sources.expressions]
                 },
                 [
-                    "Error: reference() cannot be invoked inside of a variable definition. (ARM (Expressions))",
-                    "Warning: The variable 'a' is never used. (ARM (Expressions))"
+                    "Error: reference() cannot be invoked inside of a variable definition. (arm-template (expr))",
+                    "Warning: The variable 'a' is never used. (arm-template (expr))"
                 ])
         );
     });

@@ -1,9 +1,9 @@
 TEST STRING: "[-]"
 "[                  {{scope-expression-start}}
--                   invalid.illegal.expected-expression.tle.arm
+-                   invalid.illegal.expected-expression.tle.arm-template
 ]"                  {{scope-expression-end}}
 
 TEST STRING: "[+]"
 "[                  {{scope-expression-start}}
-+                   invalid.illegal.expected-expression.tle.arm
++                   invalid.illegal.expected-expression.tle.arm-template
 ]"                  {{scope-expression-end}}

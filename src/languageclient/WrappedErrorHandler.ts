@@ -6,6 +6,7 @@
 import { callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { Message } from 'vscode-jsonrpc';
 import { CloseAction, ErrorAction, ErrorHandler } from 'vscode-languageclient';
+import { languageServerName } from '../constants';
 
 const languageServerErrorTelemId = 'Language Server Error';
 
@@ -37,7 +38,7 @@ export class WrappedErrorHandler implements ErrorHandler {
             context.telemetry.properties.jsonrpcMessage = message ? message.jsonrpc : "";
             context.telemetry.measurements.secondsSinceStart = (Date.now() - this._serverStartTime) / 1000;
 
-            throw new Error(`An error occurred in the ARM language server.\n\n${parseError(error).message}`);
+            throw new Error(`An error occurred in the ${languageServerName}.\n\n${parseError(error).message}`);
         });
 
         return this._handler.error(error, message, count);
@@ -52,7 +53,7 @@ export class WrappedErrorHandler implements ErrorHandler {
         callWithTelemetryAndErrorHandlingSync(languageServerErrorTelemId, (context: IActionContext) => {
             context.telemetry.measurements.secondsSinceStart = (Date.now() - this._serverStartTime) / 1000;
 
-            throw new Error("The connection to the ARM language server got closed.");
+            throw new Error(`The connection to the ${languageServerName} got closed.`);
         });
 
         return this._handler.closed();

@@ -28,7 +28,7 @@ import * as Utilities from "./src/Utilities";
 export * from './src/AzureRMAssets';
 export { activateInternal, deactivateInternal } from './src/AzureRMTools'; // Export activate/deactivate for main.js
 export * from "./src/Completion";
-export { armDeploymentLanguageId, configKeys, configPrefix, diagnosticsCompletePrefix, expressionsDiagnosticsSource, languageServerStateSource } from "./src/constants";
+export { configKeys, configPrefix, diagnosticsCompletePrefix, expressionsDiagnosticsSource, languageId as armDeploymentLanguageId, languageServerStateSource } from "./src/constants";
 export { DeploymentTemplate, ReferenceInVariableDefinitionJSONVisitor } from "./src/DeploymentTemplate";
 export { Duration } from './src/Duration';
 export { ext } from './src/extensionVariables';

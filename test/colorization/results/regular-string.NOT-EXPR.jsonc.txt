@@ -1,4 +1,4 @@
 TEST STRING: "abc['hello']"
-"                   punctuation.definition.string.begin.json.arm
-abc['hello']        string.quoted.double.json.arm
-"                   punctuation.definition.string.end.json.arm
+"                   punctuation.definition.string.begin.json.arm-template
+abc['hello']        string.quoted.double.json.arm-template
+"                   punctuation.definition.string.end.json.arm-template

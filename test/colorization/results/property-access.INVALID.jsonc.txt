@@ -2,7 +2,7 @@ TEST STRING: "[a().]"
 "[                  {{scope-expression-start}}
 a                   {{scope-unknownfunction}}
 ()                  {{scope-parentheses-funccall}}
-.                   invalid.illegal.expected-expression.tle.arm
+.                   invalid.illegal.expected-expression.tle.arm-template
 ]"                  {{scope-expression-end}}
 
 TEST STRING: "[a.b().d.]"
@@ -13,13 +13,13 @@ b                   {{scope-userfunction}}
 ()                  {{scope-parentheses-funccall}}
 .                   {{scope-propaccess-dot}}
 d                   {{scope-propaccess-propname}}
-.                   invalid.illegal.expected-expression.tle.arm
+.                   invalid.illegal.expected-expression.tle.arm-template
 ]"                  {{scope-expression-end}}
 
 TEST STRING: "[a().1]"
 "[                  {{scope-expression-start}}
 a                   {{scope-unknownfunction}}
 ()                  {{scope-parentheses-funccall}}
-.                   invalid.illegal.expected-expression.tle.arm
+.                   invalid.illegal.expected-expression.tle.arm-template
 1                   {{scope-number}}
 ]"                  {{scope-expression-end}}
