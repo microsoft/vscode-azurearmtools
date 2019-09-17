@@ -23,7 +23,7 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     vscode.commands.executeCommand('workbench.actions.view.problems');
 
     let autoDetectJsonTemplates = vscode.workspace.getConfiguration(configPrefix).get<boolean>(configKeys.autoDetectJsonTemplates);
-    assert(autoDetectJsonTemplates, "armTools.autoDetectJsonTemplates must be true (it's default value) when running the suites");
+    assert(autoDetectJsonTemplates, "armTools.autoDetectJsonTemplates must be true (its default value) when running the suites");
 
     console.log('Done: global.test.ts: suiteSetup');
 });
