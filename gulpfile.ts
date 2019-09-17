@@ -277,7 +277,7 @@ async function packageVsix(): Promise<void> {
     let vsixName = fse.readdirSync(stagingFolder).find(fn => /\.vsix$/.test(fn));
     let vsixDestPath = path.join(__dirname, vsixName);
     if (!packageLanguageServer) {
-        vsixDestPath = vsixDestPath.replace('.vsix', '.noserver.vsix');
+        vsixDestPath = vsixDestPath.replace('.vsix', '-no-languageserver.vsix');
     }
     if (fse.existsSync(vsixDestPath)) {
         fse.unlinkSync(vsixDestPath);
