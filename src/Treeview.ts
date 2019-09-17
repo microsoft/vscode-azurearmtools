@@ -11,10 +11,8 @@
 import * as assert from "assert";
 import * as path from 'path';
 import * as vscode from "vscode";
-import { iconsPath } from "./constants";
+import { armDeploymentLanguageId, iconsPath } from "./constants";
 import * as Json from "./JSON";
-import { isLanguageIdSupported } from "./supported";
-import * as Utilities from "./Utilities";
 
 const topLevelIcons: [string, string][] = [
     ["$schema", "label.svg"],
@@ -70,7 +68,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     public getChildren(element?: string): string[] {
         // check if there is a visible text editor
         if (vscode.window.visibleTextEditors.length > 0) {
-            if (isLanguageIdSupported(vscode.window.activeTextEditor.document.languageId)) {
+            if (vscode.window.activeTextEditor && this.shouldShowTreeForDocument(vscode.window.activeTextEditor.document)) {
 
                 if (!this.tree) {
                     this.refresh();
@@ -150,7 +148,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     }
 
     private parseTree(document?: vscode.TextDocument): void {
-        if (!!document && isLanguageIdSupported(document.languageId)) {
+        if (this.shouldShowTreeForDocument(document)) {
             this.text = document.getText();
             this.tree = Json.parse(this.text);
         }
@@ -344,7 +342,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         const activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
         const document: vscode.TextDocument = !!activeEditor ? activeEditor.document : null;
         this.parseTree(document);
-        const showTreeView = this.isArmTemplate(document);
+        const showTreeView = this.shouldShowTreeForDocument(document);
 
         if (showTreeView) {
             this.refresh();
@@ -353,26 +351,13 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         this.setTreeViewContext(showTreeView);
     }
 
-    private isArmTemplate(document?: vscode.TextDocument): boolean {
-        return !!document && isLanguageIdSupported(document.languageId) && Utilities.isValidSchemaUri(this.getSchemaUri());
+    private shouldShowTreeForDocument(document?: vscode.TextDocument): boolean {
+        // Only show view if the language is set to ARM Deployment Template
+        return !!document && document.languageId === armDeploymentLanguageId;
     }
 
     private setTreeViewContext(visible: boolean): void {
         vscode.commands.executeCommand('setContext', 'showArmJsonView', visible);
-    }
-
-    private getSchemaUri(): string {
-        if (!!this.tree) {
-            const value: Json.ObjectValue = Json.asObjectValue(this.tree.value);
-            if (value) {
-                const schema: Json.Value = Json.asStringValue(value.getPropertyValue("$schema"));
-                if (schema) {
-                    return schema.toString();
-                }
-            }
-        }
-
-        return null;
     }
 }
 

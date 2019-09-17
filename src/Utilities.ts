@@ -155,13 +155,6 @@ export function getCombinedText(values: { toString(): string }[]): string {
     return result;
 }
 
-export function isValidSchemaUri(schema: string): boolean {
-    return schema ?
-        // tslint:disable-next-line:max-line-length
-        schema.match(/https?:\/\/schema\.management\.azure\.com\/schemas\/[^"\/]+\/(deploymentTemplate|subscriptionDeploymentTemplate)\.json/) !== null :
-        false;
-}
-
 /**
  * An interface for an object that iterates through a sequence of values.
  */

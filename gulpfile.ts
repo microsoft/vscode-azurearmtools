@@ -6,25 +6,56 @@
 // tslint:disable:no-unsafe-any no-console
 
 import * as cp from 'child_process';
-import * as fs from 'fs';
+import * as fse from 'fs-extra';
 import * as gulp from 'gulp';
+import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
-
+import * as shelljs from 'shelljs';
 import { gulp_installAzureAccount, gulp_webpack } from 'vscode-azureextensiondev';
+import { languageServerFolderName as languageServerRelativeFolderPath } from './src/constants';
+import { assert } from './src/fixed_assert';
+import { getTempFilePath } from './test/support/getTempFilePath';
+
+// tslint:disable-next-line:no-require-imports
+import rimraf = require('rimraf');
+
+const filesAndFoldersToPackage: string[] = [
+    'dist',
+    'assets',
+    'icons',
+    'AzureRMTools128x128.png',
+    'CHANGELOG.md',
+    'main.js',
+    'NOTICE.html', // License.{md,txt} is handled specially
+    'node_modules', // Must be present for vsce package to work, but will be ignored during packaging
+    'README.md',
+    '.vscodeignore'
+];
 
 const env = process.env;
 
-export const detectionGrammarSourcePath: string = path.resolve('grammars/detect-arm.injection.tmLanguage.json');
-export const detectionGrammarDestPath: string = path.resolve('dist/grammars/detect-arm.injection.tmLanguage.json');
+const preserveStagingFolder = !!env.ARMTOOLS_PRESERVE_STAGING_FOLDER;
 
-export const jsonArmGrammarSourcePath: string = path.resolve('grammars/JSONC.arm.tmLanguage.json');
-export const jsonArmGrammarDestPath: string = path.resolve('dist/grammars/JSONC.arm.tmLanguage.json');
+// Official builds will download and include the language server bits (which are licensed differently than the code in the public repo)
+const packageLanguageServer = !!env.LANGSERVER_NUGET_USERNAME && !!env.LANGSERVER_NUGET_PASSWORD;
 
-export const tleGrammarSourcePath: string = path.resolve('grammars/arm-expression-string.tmLanguage.json');
-export const tleGrammarBuiltPath: string = path.resolve('dist/grammars/arm-expression-string.tmLanguage.json');
+const publicLicenseFileName = 'LICENSE.md';
+const languageServerLicenseFileName = 'License.txt';
+const languageServerVersionEnv = 'npm_package_config_ARM_LANGUAGE_SERVER_NUGET_VERSION'; // Set the value in package.json's config section
+const languageServerVersion = env[languageServerVersionEnv];
+const languageServerNugetPackage = 'Microsoft.ArmLanguageServer';
 
-export interface IGrammar {
+const jsonArmGrammarSourcePath: string = path.resolve('grammars', 'JSONC.arm.tmLanguage.json');
+const jsonArmGrammarDestPath: string = path.resolve('dist', 'grammars', 'JSONC.arm.tmLanguage.json');
+
+const tleGrammarSourcePath: string = path.resolve('grammars', 'arm-expression-string.tmLanguage.json');
+const tleGrammarBuiltPath: string = path.resolve('dist', 'grammars', 'arm-expression-string.tmLanguage.json');
+
+const armConfigurationSourcePath: string = path.resolve('grammars', 'jsonc.arm.language-configuration.json');
+const armConfigurationDestPath: string = path.resolve('dist', 'grammars', 'jsonc.arm.language-configuration.json');
+
+interface IGrammar {
     preprocess?: {
         "builtin-functions": string;
         [key: string]: string;
@@ -46,10 +77,10 @@ function test(): cp.ChildProcess {
 }
 
 function buildTLEGrammar(): void {
-    const sourceGrammar: string = fs.readFileSync(tleGrammarSourcePath).toString();
+    const sourceGrammar: string = fse.readFileSync(tleGrammarSourcePath).toString();
     let grammar: string = sourceGrammar;
     const expressionMetadataPath: string = path.resolve("assets/ExpressionMetadata.json");
-    const expressionMetadata = <IExpressionMetadata>JSON.parse(fs.readFileSync(expressionMetadataPath).toString());
+    const expressionMetadata = <IExpressionMetadata>JSON.parse(fse.readFileSync(expressionMetadataPath).toString());
 
     // Add list of built-in functions from our metadata and place at beginning of grammar's preprocess section
     let builtinFunctions: string[] = expressionMetadata.functionSignatures.map(sig => sig.name);
@@ -88,7 +119,7 @@ function buildTLEGrammar(): void {
     delete outputGrammarAsObject.preprocess;
     grammar = JSON.stringify(outputGrammarAsObject, null, 4);
 
-    fs.writeFileSync(tleGrammarBuiltPath, grammar);
+    fse.writeFileSync(tleGrammarBuiltPath, grammar);
     console.log(`Built ${tleGrammarBuiltPath}`);
 
     if (grammar.includes('{{')) {
@@ -97,19 +128,168 @@ function buildTLEGrammar(): void {
 }
 
 async function buildGrammars(): Promise<void> {
-    if (!fs.existsSync('dist')) {
-        fs.mkdirSync('dist');
-    }
-    if (!fs.existsSync('dist/grammars')) {
-        fs.mkdirSync('dist/grammars');
-    }
+    fse.ensureDirSync('dist');
+    fse.ensureDirSync('dist/grammars');
 
     buildTLEGrammar();
 
-    fs.copyFileSync(jsonArmGrammarSourcePath, jsonArmGrammarDestPath);
+    fse.copyFileSync(jsonArmGrammarSourcePath, jsonArmGrammarDestPath);
     console.log(`Copied ${jsonArmGrammarDestPath}`);
-    fs.copyFileSync(detectionGrammarSourcePath, detectionGrammarDestPath);
-    console.log(`Copied ${detectionGrammarDestPath}`);
+    fse.copyFileSync(armConfigurationSourcePath, armConfigurationDestPath);
+    console.log(`Copied ${armConfigurationDestPath}`);
+}
+
+function executeInShell(command: string): void {
+    console.log(command);
+    const result = shelljs.exec(command);
+    console.log(result.stdout);
+    console.log(result.stderr);
+    if (result.code !== 0) {
+        throw new Error(`Error executing ${command}`);
+    }
+}
+
+async function getLanguageServer(): Promise<void> {
+    if (packageLanguageServer) {
+        console.log(`Retrieving language server ${languageServerNugetPackage}@${languageServerVersion}`);
+
+        // Create temporary config file with credentials
+        const config = fse.readFileSync(path.join(__dirname, 'NuGet.Config')).toString();
+        const withCreds = config.replace('$LANGSERVER_NUGET_USERNAME', env.LANGSERVER_NUGET_USERNAME).
+            replace('$LANGSERVER_NUGET_PASSWORD', env.LANGSERVER_NUGET_PASSWORD);
+        const configPath = getTempFilePath('nuget', '.config');
+        fse.writeFileSync(configPath, withCreds);
+
+        // Nuget install to pkgs folder
+        let app = 'nuget';
+        const args = [
+            'install',
+            languageServerNugetPackage,
+            '-Version', languageServerVersion,
+            '-Framework', 'netcoreapp2.2',
+            '-OutputDirectory', 'pkgs',
+            //'-Verbosity', 'detailed',
+            '-ExcludeVersion', // Keeps the package version from being included in the output folder name
+            '-NonInteractive',
+            '-ConfigFile', configPath
+        ];
+        if (os.platform() === 'linux') {
+            app = 'mono';
+            args.unshift('nuget.exe');
+        }
+        const command = `${app} ${args.join(' ')}`;
+        executeInShell(command);
+        fse.unlinkSync(configPath);
+
+        // Copy binaries and license into dist\languageServer
+        console.log(`Removing ${languageServerRelativeFolderPath}`);
+        rimraf.sync(languageServerRelativeFolderPath);
+        console.log(`Copying language server binaries to ${languageServerRelativeFolderPath}`);
+        const srcPath = path.join(__dirname, 'pkgs', languageServerNugetPackage, 'lib', 'netcoreapp2.2');
+        let destPath = path.join(__dirname, languageServerRelativeFolderPath);
+        fse.mkdirpSync(destPath);
+        copyFolder(srcPath, destPath);
+
+        if (packageLanguageServer) {
+            const licenseSrc = path.join(__dirname, 'pkgs', languageServerNugetPackage, languageServerLicenseFileName);
+            const licenseDest = path.join(languageServerRelativeFolderPath, languageServerLicenseFileName);
+            console.log(`Copying language server license ${licenseSrc} to ${licenseDest}`);
+            fse.copyFileSync(licenseSrc, licenseDest);
+        }
+
+        console.log(`Language server binaries and license are in ${languageServerRelativeFolderPath}`);
+    } else {
+        console.warn(`Language server not available, skipping packaging of language server binaries.`);
+        return null;
+    }
+}
+
+function copyFolder(sourceFolder: string, destFolder: string, sourceRoot: string = sourceFolder): void {
+    fse.ensureDirSync(destFolder);
+
+    fse.readdirSync(sourceFolder).forEach(fn => {
+        let src = path.join(sourceFolder, fn);
+        let dest = path.join(destFolder, fn);
+        if (fse.statSync(src).isFile()) {
+            fse.copyFileSync(src, dest);
+        } else if (fse.statSync(src).isDirectory()) {
+            copyFolder(src, dest, sourceRoot);
+        } else {
+            assert("Unexpected path type");
+        }
+    });
+}
+
+async function packageVsix(): Promise<void> {
+    // We use a staging folder so we have more control over exactly what goes into the .vsix
+    function copyToStagingFolder(relativeSource: string, relativeDest: string = relativeSource): void {
+        console.log(`Copying ${relativeSource} to staging folder`);
+        if (fse.statSync(relativeSource).isDirectory()) {
+            copyFolder(path.join(__dirname, relativeSource), path.join(stagingFolder, relativeDest));
+        } else {
+            fse.copyFileSync(path.join(__dirname, relativeSource), path.join(stagingFolder, relativeDest));
+        }
+    }
+
+    let stagingFolder = getTempFilePath('staging', '');
+    console.log(`Staging folder: ${stagingFolder}`);
+    fse.mkdirpSync(stagingFolder);
+
+    // Copy files/folders to staging
+    for (let p of filesAndFoldersToPackage) {
+        copyToStagingFolder(p);
+    }
+    let filesInStaging = fse.readdirSync(stagingFolder);
+    filesInStaging.forEach(fn => assert(!/license/i.test(fn), `Should not have copied the original license file into staging: ${fn}`));
+
+    let expectedLicenseFileName: string;
+    if (packageLanguageServer) {
+        // Copy language server bits
+        copyToStagingFolder(languageServerRelativeFolderPath);
+
+        // Copy license to staging main folder
+        copyToStagingFolder(path.join(languageServerRelativeFolderPath, languageServerLicenseFileName), languageServerLicenseFileName);
+        expectedLicenseFileName = languageServerLicenseFileName;
+    } else {
+        copyToStagingFolder(publicLicenseFileName);
+        expectedLicenseFileName = publicLicenseFileName;
+    }
+
+    // Copy package.json to staging
+    let packageContents = fse.readJsonSync(path.join(__dirname, 'package.json'));
+    assert(packageContents.license, "package.json doesn't contain a license field?");
+    // ... modify package.json to point to language server license
+    packageContents.license = `SEE LICENSE IN ${expectedLicenseFileName}`;
+    // ... remove vscode:prepublish script from package, since everything's already built
+    delete packageContents.scripts['vscode:prepublish'];
+    fse.writeFileSync(path.join(stagingFolder, 'package.json'), JSON.stringify(packageContents, null, 2));
+    assert(fse.readFileSync(path.join(stagingFolder, 'package.json')).toString().includes(`"license": "SEE LICENSE IN ${expectedLicenseFileName}"`), "Language server license not correctly installed into staged package.json");
+
+    try {
+        console.log(`Running vsce package in staging folder ${stagingFolder}`);
+        shelljs.cd(stagingFolder);
+        executeInShell('vsce package');
+    } finally {
+        shelljs.cd(__dirname);
+    }
+
+    // Copy vsix to current folder
+    let vsixName = fse.readdirSync(stagingFolder).find(fn => /\.vsix$/.test(fn));
+    let vsixDestPath = path.join(__dirname, vsixName);
+    if (!packageLanguageServer) {
+        vsixDestPath = vsixDestPath.replace('.vsix', '-no-languageserver.vsix');
+    }
+    if (fse.existsSync(vsixDestPath)) {
+        fse.unlinkSync(vsixDestPath);
+    }
+    fse.copyFileSync(path.join(stagingFolder, vsixName), vsixDestPath);
+
+    // Remove staging folder since packaging was a success
+    if (!preserveStagingFolder) {
+        rimraf.sync(stagingFolder);
+    }
+
+    console.log(`Packaged successfully to ${vsixDestPath}`);
 }
 
 exports['webpack-dev'] = gulp.series(() => gulp_webpack('development'), buildGrammars);
@@ -117,3 +297,6 @@ exports['webpack-prod'] = gulp.series(() => gulp_webpack('production'), buildGra
 exports.test = gulp.series(gulp_installAzureAccount, test);
 exports['build-grammars'] = buildGrammars;
 exports['watch-grammars'] = (): unknown => gulp.watch('grammars/**', buildGrammars);
+exports['get-language-server'] = getLanguageServer;
+exports.package = packageVsix;
+exports['error-vsce-package'] = (): never => { throw new Error(`Please do not run vsce package, instead use 'npm run package`); };

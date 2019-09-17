@@ -3,17 +3,16 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
-
-import * as Json from "./JSON";
-import * as language from "./Language";
-import * as Reference from "./Reference";
-import * as TLE from "./TLE";
-import * as Utilities from "./Utilities";
-
 import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { Histogram } from "./Histogram";
+import * as Json from "./JSON";
+import * as language from "./Language";
 import { ParameterDefinition } from "./ParameterDefinition";
 import { PositionContext } from "./PositionContext";
+import * as Reference from "./Reference";
+import { isArmSchema } from "./supported";
+import * as TLE from "./TLE";
+import * as Utilities from "./Utilities";
 
 export class DeploymentTemplate {
     private _jsonParseResult: Json.ParseResult;
@@ -22,6 +21,7 @@ export class DeploymentTemplate {
     private _tleParseResults: TLE.ParseResult[];
     private _parameterDefinitions: ParameterDefinition[];
     private _variableDefinitions: Json.Property[];
+    private _namespaceDefinitions: Json.Value[];
     private _errors: Promise<language.Issue[]>;
     private _warnings: language.Issue[];
     private _functionCounts: Histogram;
@@ -39,6 +39,10 @@ export class DeploymentTemplate {
         assert(_documentId);
 
         this._jsonParseResult = Json.parse(_documentText);
+    }
+
+    public hasArmSchemaUri(): boolean {
+        return isArmSchema(this.schemaUri);
     }
 
     private get jsonQuotedStringTokens(): Json.Token[] {
@@ -107,10 +111,6 @@ export class DeploymentTemplate {
             }
         }
         return this._schemaUri;
-    }
-
-    public hasValidSchemaUri(): boolean {
-        return Utilities.isValidSchemaUri(this.schemaUri);
     }
 
     public get errors(): Promise<language.Issue[]> {
@@ -269,6 +269,42 @@ export class DeploymentTemplate {
             }
         }
         return this._variableDefinitions;
+    }
+
+    // Example user-defined namespaces/functions:
+    //
+    // "functions": [
+    //     {
+    //       "namespace": "contoso",
+    //       "members": {
+    //         "uniqueName": {
+    //           "parameters": [
+    //             {
+    //               "name": "namePrefix",
+    //               "type": "string"
+    //             }
+    //           ],
+    //           "output": {
+    //             "type": "string",
+    //             "value": "[concat(toLower(parameters('namePrefix')), uniqueString(resourceGroup().id))]"
+    //           }
+    //         }
+    //       }
+    //     }
+    //   ],
+    public get namespaceDefinitions(): Json.Value[] {
+        if (this._namespaceDefinitions === undefined) {
+            this._namespaceDefinitions = [];
+
+            const value: Json.ObjectValue = Json.asObjectValue(this._jsonParseResult.value);
+            if (value) {
+                const namespaces: Json.ArrayValue = Json.asArrayValue(value.getPropertyValue("functions"));
+                if (namespaces) {
+                    this._namespaceDefinitions = namespaces.elements;
+                }
+            }
+        }
+        return this._namespaceDefinitions;
     }
 
     public getParameterDefinition(parameterName: string): ParameterDefinition {

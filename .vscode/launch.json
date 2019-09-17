@@ -14,12 +14,12 @@
             "sourceMaps": true,
             // outFiles is used for locating generated JavaScript files, see https://code.visualstudio.com/docs/nodejs/nodejs-debugging#_source-maps
             "outFiles": [
-                "${workspaceFolder}/**/*.js"
+                "${workspaceFolder}/out/**/*.js"
             ],
             "preLaunchTask": "npm: compile",
             "env": {
                 "AZCODE_ARM_IGNORE_BUNDLE": "1",
-                "DEBUGTELEMETRY": "1",
+                "DEBUGTELEMETRY": "1", // 1=quiet, verbose=see telemetry in console
                 "NODE_DEBUG": ""
             }
         },
@@ -34,12 +34,13 @@
             "stopOnEntry": false,
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceFolder}/**/*.js"
+                "${workspaceFolder}/dist/**/*.js"
             ],
             "preLaunchTask": "npm: webpack",
             "env": {
-                "DEBUGTELEMETRY": "1",
-                "NODE_DEBUG": ""
+                "DEBUGTELEMETRY": "1", // 1=quiet, verbose=see telemetry in console
+                "NODE_DEBUG": "",
+                "DEBUG_WEBPACK": ""
             }
         },
         {
@@ -59,10 +60,10 @@
             ],
             "preLaunchTask": "npm: compile",
             "env": {
-                "AZCODE_ARM_IGNORE_BUNDLE": "1",
                 "MOCHA_grep": "", // RegExp of tests to run (empty for all)
+                "AZCODE_ARM_IGNORE_BUNDLE": "1",
                 "MOCHA_enableTimeouts": "0", // Disable time-outs
-                "DEBUGTELEMETRY": "1",
+                "DEBUGTELEMETRY": "1", // 1=quiet, verbose=see telemetry in console
                 "NODE_DEBUG": ""
             }
         },
@@ -85,7 +86,7 @@
             "env": {
                 "MOCHA_grep": "", // RegExp of tests to run (empty for all)
                 "MOCHA_enableTimeouts": "0", // Disable time-outs
-                "DEBUGTELEMETRY": "1",
+                "DEBUGTELEMETRY": "",
                 "NODE_DEBUG": ""
             }
         }

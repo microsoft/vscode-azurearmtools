@@ -5,10 +5,12 @@
 // tslint:disable:max-func-body-length align max-line-length
 
 import * as assert from "assert";
+import * as fse from 'fs-extra';
 import * as path from "path";
 import * as vscode from "vscode";
 import { parseError } from "vscode-azureextensionui";
 import { ext, JsonOutlineProvider, shortenTreeLabel } from "../extension.bundle";
+import { getTempFilePath } from "./support/getTempFilePath";
 
 suite("TreeView", async (): Promise<void> => {
     suite("shortenTreeLabel", async (): Promise<void> => {
@@ -62,6 +64,7 @@ suite("TreeView", async (): Promise<void> => {
         async function testChildren(template: string, expected: ITestTreeItem[]): Promise<void> {
             await showNewTextDocument(template);
             let rawTree = provider.getChildren(null);
+            assert(!!rawTree);
             let tree = rawTree.map(child => {
                 let treeItem = provider.getTreeItem(child);
                 return toTestTreeItem(treeItem);
@@ -3068,10 +3071,9 @@ function toTestTreeItem(item: vscode.TreeItem): ITestTreeItem {
 }
 
 async function showNewTextDocument(text: string): Promise<vscode.TextEditor> {
-    let textDocument = await vscode.workspace.openTextDocument({
-        language: "jsonc",
-        content: text
-    });
+    let filePath = getTempFilePath("", ".jsonc");
+    fse.writeFileSync(filePath, text);
+    let textDocument = await vscode.workspace.openTextDocument(filePath);
     return await vscode.window.showTextDocument(textDocument);
 }
 

@@ -1,0 +1,80 @@
+{
+    "$comment1": "This was modified from the JSON/JSONC language configuration file at https://raw.githubusercontent.com/Microsoft/vscode/6850012cf41f74fc48bf025569c0ec383c341df9/extensions/json/language-configuration.json",
+    "$comment2": "Documentation: https://code.visualstudio.com/api/language-extensions/language-configuration-guide",
+    "comments": {
+        "lineComment": "//",
+        "blockComment": [
+            "/*",
+            "*/"
+        ]
+    },
+    "$brackets.comment": "Added parentheses and single quotes to JSON brackets",
+    "brackets": [
+        [
+            "{",
+            "}"
+        ],
+        [
+            "[",
+            "]"
+        ],
+        [
+            "(",
+            ")"
+        ],
+        [
+            "'",
+            "'"
+        ]
+    ],
+    "$autoCloseBefore.comment": "Added double quote to the default set of values, otherwise typing e.g. '[' inside a string expression won't auto close because the next character after it is the closing double quote",
+    "autoCloseBefore": ";:.,=}])> \n\t\"",
+    "$autoClosingPairs.comment": "Same as JSON, except allowing auto-closing inside strings for brackets, parentheses and single quotes",
+    "autoClosingPairs": [
+        {
+            "open": "{",
+            "close": "}",
+            "notIn": [
+                "string"
+            ]
+        },
+        {
+            "open": "[",
+            "close": "]",
+            "$comment": "We *do* want these to auto-close inside of strings"
+        },
+        {
+            "open": "(",
+            "close": ")",
+            "$comment": "We *do* want these to auto-close inside of strings"
+        },
+        {
+            "open": "'",
+            "close": "'",
+            "$comment": "We *do* want these to auto-close inside of strings"
+        },
+        {
+            "open": "/*",
+            "close": "*/",
+            "notIn": [
+                "string"
+            ]
+        },
+        {
+            "open": "\"",
+            "close": "\"",
+            "notIn": [
+                "string",
+                "comment"
+            ]
+        },
+        {
+            "open": "`",
+            "close": "`",
+            "notIn": [
+                "string",
+                "comment"
+            ]
+        }
+    ]
+}

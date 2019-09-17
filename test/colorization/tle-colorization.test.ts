@@ -5,18 +5,19 @@
 
 'use strict';
 
-// tslint:disable:max-func-body-length no-console cyclomatic-complexity max-line-length
+// tslint:disable:max-func-body-length no-console cyclomatic-complexity max-line-length prefer-template non-literal-fs-path
 
 // Turn on to overwrite results files rather than creating new ".txt.actual" files when there are differences.
-const OVERWRITE = true;
+const OVERWRITE = false;
 
 import * as assert from 'assert';
 import * as fs from 'fs';
 import { ISuiteCallbackContext } from 'mocha';
 import * as os from 'os';
 import * as path from 'path';
-import { commands, Uri, workspace } from 'vscode';
+import { commands, Uri } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
+import { getTempFilePath } from '../support/getTempFilePath';
 
 const tleGrammarSourcePath: string = path.join(__dirname, '../../../grammars/arm-expression-string.tmLanguage.json');
 export interface IGrammar {
@@ -67,37 +68,47 @@ let longestTestDuration = 0;
 async function assertUnchangedTokens(testPath: string, resultPath: string): Promise<void> {
     let start = Date.now();
     try {
-
-        let doc = await workspace.openTextDocument(testPath);
-        let languageId = doc.languageId;
-
-        let rawData: { c: string; t: string; r: unknown[] }[] = await commands.executeCommand('_workbench.captureSyntaxTokens', Uri.file(testPath));
-
-        // Let's use more reasonable property names in our data
-        let data: ITokenInfo[] = rawData.map(d => <ITokenInfo>{ text: d.c.trim(), scopes: d.t, colors: d.r })
-            .filter(d => d.text !== "");
-
-        let expectedLanguageId = testPath.endsWith('.json') ? 'json' : 'jsonc';
-        if (languageId !== expectedLanguageId) {
-            throw new Error(`File ${testPath} is getting opened in vscode using language ID '${languageId}' instead of the expected ID '${expectedLanguageId}'.`
-                + ' Check if your user settings have modified the default file.associations setting.');
-        }
-
-        commands.executeCommand('workbench.action.closeActiveEditor');
-
-        let testCases: ITestcase[];
-
-        // ------------- USAGE TIP ------------
         // If the test filename contains ".invalid.", then all testcases in it should have at least one "invalid" token.
         // Otherwise they should contain none.
         let shouldHaveInvalidTokens = !!testPath.match(/\.INVALID\./i);
 
-        // ------------- USAGE TIP ------------
         // If the test filename contains ".not-arm.", then all testcases in it should not contain any arm-deployment tokens.
         // Otherwise they should have at least one.
         let shouldBeArmTemplate = !testPath.match(/\.NOT-ARM\./i);
 
         let shouldBeExpression = shouldBeArmTemplate && !testPath.match(/\.NOT-EXPR\./i);
+
+        let filePathForReadingTokens = testPath;
+
+        if (shouldBeArmTemplate) {
+            // _workbench.captureSyntaxTokens always takes a URL (it can't use the current buffer).
+            // If we use the standard .json{,c} extension for the file, it will start out with the
+            // json{,c} language ID before we automatically switch it to arm-deployment. By the time
+            // we switch it, it's too late. So we need to use an extension that's actually mapped
+            // directly to arm-deployment.
+            filePathForReadingTokens = getTempFilePath(path.basename(testPath), '.arm');
+            fs.writeFileSync(filePathForReadingTokens, fs.readFileSync(testPath));
+        }
+
+        let rawData: { c: string; t: string; r: unknown[] }[] = await commands.executeCommand('_workbench.captureSyntaxTokens', Uri.file(filePathForReadingTokens));
+
+        // Let's use more reasonable property names in our data
+        let data: ITokenInfo[] = rawData.map(d => <ITokenInfo>{ text: d.c.trim(), scopes: d.t, colors: d.r })
+            .filter(d => d.text !== "");
+
+        // let doc = await workspace.openTextDocument(filePathForReadingTokens);
+        // let editor = await window.showTextDocument(doc);
+
+        // let languageId = doc.languageId;
+        // let expectedLanguageId = shouldBeArmTemplate ? 'arm-deployment' : testPath.endsWith('.json') ? 'json' : 'jsonc';
+        // if (languageId !== expectedLanguageId) {
+        //     throw new Error(`File ${testPath} is getting opened in vscode using language ID '${languageId}' instead of the expected ID '${expectedLanguageId}'.`
+        //         + ' Check if your user settings have modified the default file.associations setting.');
+        // }
+
+        //commands.executeCommand('workbench.action.closeActiveEditor');
+
+        let testCases: ITestcase[];
 
         // ------------- USAGE TIP ------------
         // If the test filename contains '.full-scope.', then the full scope will be output for each test, otherwise
@@ -183,18 +194,18 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
                     } else {
                         assert(
                             !testcaseResult.includes('invalid.illegal'),
-                            "This test's filename does not contain '.INVALID.', but at least one testcase in it contains an invalid token.");
+                            "This test's filename does not contain '.INVALID.', but at least one testcase in it contains an invalid token (but shouldn't).");
                     }
 
                     if (shouldBeArmTemplate) {
                         assert(
-                            testcaseResult.includes('arm-deployment'),
+                            testcaseResult.includes('source.json.arm'),
                             // tslint:disable-next-line: max-line-length
-                            "This test's filename does not contain '.NOT-ARM.', and so every testcase in it should contain at least one arm-deployment token.");
+                            "This test's filename does not contain '.NOT-ARM.', and so every testcase in it should contain at least one source.json.arm token.");
                     } else {
                         assert(
-                            !testcaseResult.includes('arm-deployment'),
-                            "This test's filename contains '.NOT-ARM.', but at least one testcase in it contains an arm-deployment token.");
+                            !testcaseResult.includes('source.json.arm'),
+                            "This test's filename contains '.NOT-ARM.', but at least one testcase in it contains an source.json.arm token (but shouldn't).");
                     }
 
                     let isExpression = testcaseResult.includes('meta.expression.tle.arm');
@@ -206,7 +217,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
                     } else {
                         assert(
                             !isExpression,
-                            "This test's filename contains '.NOT-EXPR.', but at least one testcase in it contains an ARM expression.");
+                            "This test's filename contains '.NOT-EXPR.', but at least one testcase in it contains an ARM expression (but shouldn't).");
                     }
                 }
 
@@ -247,7 +258,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     function writeToResultsFile(resultPathToWriteTo: string, resultsString: string, shouldCompareFullScope: boolean, resultsFullString: string): void {
         fs.writeFileSync(resultPathToWriteTo, resultsString);
         if (!shouldCompareFullScope) {
-            fs.writeFileSync(`${resultPathToWriteTo}.full-scope-result.txt`, resultsFullString);
+            fs.writeFileSync(resultPathToWriteTo + ".full-scope-result.txt", resultsFullString);
         }
     }
 }
@@ -321,7 +332,7 @@ suite('TLE colorization', function (this: ISuiteCallbackContext): void {
 
     resultFiles = fs.readdirSync(resultsFolder);
     for (let resultFile of resultFiles) {
-        if (resultFile.endsWith('.actual') || resultFile.endsWith('.full-scope.txt')) {
+        if (resultFile.endsWith('.actual') || resultFile.endsWith('.full-scope-result.txt')) {
             fs.unlinkSync(path.join(resultsFolder, resultFile));
         }
     }
@@ -340,6 +351,7 @@ suite('TLE colorization', function (this: ISuiteCallbackContext): void {
     });
 
     testFiles.forEach(testFile => {
+        // tslint:disable-next-line: no-suspicious-comment
         if (testFile.startsWith('TODO')) {
             test(testFile);
         } else {

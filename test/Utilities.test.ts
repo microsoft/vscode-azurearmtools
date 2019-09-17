@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:max-func-body-length no-http-string max-line-length
+// tslint:disable:max-func-body-length no-http-string max-line-length no-null-keyword
 
 import * as assert from "assert";
 import { Utilities } from "../extension.bundle";
@@ -277,60 +277,6 @@ suite("Utilities", () => {
 
         test(`with "\\very"`, () => {
             assert.deepStrictEqual(Utilities.escapeAndQuote("\very"), `"\\very"`);
-        });
-    });
-
-    suite("isValidSchemaUri(string)", () => {
-        test("with null", () => {
-            assert.equal(false, Utilities.isValidSchemaUri(null));
-        });
-
-        test("with undefined", () => {
-            assert.equal(false, Utilities.isValidSchemaUri(undefined));
-        });
-
-        test("with 'hello world'", () => {
-            assert.equal(false, Utilities.isValidSchemaUri("hello world"));
-        });
-
-        test("with 'www.bing.com'", () => {
-            assert.equal(false, Utilities.isValidSchemaUri("www.bing.com"));
-        });
-
-        test("with 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#'", () => {
-            assert.equal(true, Utilities.isValidSchemaUri("https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"));
-        });
-
-        test("with 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json'", () => {
-            assert.equal(true, Utilities.isValidSchemaUri("https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json"));
-        });
-
-        test("with 'http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json'", () => {
-            assert.equal(true, Utilities.isValidSchemaUri("http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json"));
-        });
-
-        test("with 'http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#'", () => {
-            assert.equal(true, Utilities.isValidSchemaUri("http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"));
-        });
-
-        test("with 'https://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#'", () => {
-            assert.equal(true, Utilities.isValidSchemaUri("https://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#"));
-        });
-
-        test("subscription deployment template: 'https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#'", () => {
-            assert.equal(true, Utilities.isValidSchemaUri("https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#"));
-        });
-
-        test("subscription deployment template: 'http://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#'", () => {
-            assert.equal(true, Utilities.isValidSchemaUri("http://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#"));
-        });
-
-        test("subscription deployment template: 'http://schema.management.azure.com/schemas/xxxx-yy-zz/subscriptionDeploymentTemplate.json#'", () => {
-            assert.equal(true, Utilities.isValidSchemaUri("http://schema.management.azure.com/schemas/xxxx-yy-zz/subscriptionDeploymentTemplate.json#"));
-        });
-
-        test("false: subscription deployment template: 'http://schema.management.azure.com/schemas/xxxx-yy-zz/SubscriptionDeploymentTemplate.json#'", () => {
-            assert.equal(false, Utilities.isValidSchemaUri("http://schema.management.azure.com/schemas/xxxx-yy-zz/SubscriptionDeploymentTemplate.json#"));
         });
     });
 });
