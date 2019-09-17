@@ -128,12 +128,8 @@ function buildTLEGrammar(): void {
 }
 
 async function buildGrammars(): Promise<void> {
-    if (!fse.existsSync('dist')) {
-        fse.mkdirSync('dist');
-    }
-    if (!fse.existsSync('dist/grammars')) {
-        fse.mkdirSync('dist/grammars');
-    }
+    fse.ensureDirSync('dist');
+    fse.ensureDirSync('dist/grammars');
 
     buildTLEGrammar();
 
@@ -209,9 +205,7 @@ async function getLanguageServer(): Promise<void> {
 }
 
 function copyFolder(sourceFolder: string, destFolder: string, sourceRoot: string = sourceFolder): void {
-    if (!fse.existsSync(destFolder)) {
-        fse.mkdirSync(destFolder);
-    }
+    fse.ensureDirSync(destFolder);
 
     fse.readdirSync(sourceFolder).forEach(fn => {
         let src = path.join(sourceFolder, fn);
