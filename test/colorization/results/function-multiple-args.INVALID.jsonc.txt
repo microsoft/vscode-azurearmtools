@@ -3,7 +3,7 @@ TEST STRING: "[max(1;2)]"
 max                 {{scope-builtin}}
 (                   {{scope-parentheses-funccall}}
 1                   {{scope-number}}
-;                   invalid.illegal.expected-comma.tle.arm
+;                   invalid.illegal.expected-comma.tle.arm-template
 2                   {{scope-number}}
 )                   {{scope-parentheses-funccall}}
 ]"                  {{scope-expression-end}}
@@ -17,5 +17,5 @@ max                 {{scope-builtin}}
 min                 {{scope-builtin}}
 ()                  {{scope-parentheses-funccall}}
 )                   {{scope-parentheses-funccall}}
-)                   invalid.illegal.expected-expression.tle.arm
+)                   invalid.illegal.expected-expression.tle.arm-template
 ]"                  {{scope-expression-end}}
