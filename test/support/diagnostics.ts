@@ -223,7 +223,7 @@ export async function getDiagnosticsForTemplate(
             templateContents = templateContentsOrFileName;
         }
     } else {
-        // It's an object
+        // It's a (flying?) object
         let templateObject: Partial<IDeploymentTemplate> = templateContentsOrFileName;
         templateContents = JSON.stringify(templateObject, undefined, 2);
     }

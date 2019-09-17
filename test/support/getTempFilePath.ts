@@ -9,7 +9,7 @@ import * as path from 'path';
 
 export function getTempFilePath(baseFilename?: string, extension?: string): string {
     let randomName = '';
-    extension = extension || '.jsonc';
+    extension = extension === undefined ? '.jsonc' : extension;
 
     for (let i = 0; i < 10; ++i) {
         // tslint:disable-next-line: insecure-random

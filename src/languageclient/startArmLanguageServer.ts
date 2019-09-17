@@ -170,7 +170,7 @@ function findLanguageServer(): string {
             let serverFolderPath = ext.context.asAbsolutePath(languageServerFolderName);
             serverDllPath = path.join(serverFolderPath, languageServerDllName);
             if (!fse.existsSync(serverFolderPath) || !fse.existsSync(serverDllPath)) {
-                throw new Error(`Couldn't find the ARM language server at ${serverDllPath}, you may need to reinstall the extension.`);
+                throw new Error(`Cannot find the ARM language server at ${serverDllPath}. Only template string expression functionality will be available.`);
             }
             serverDllPath = path.join(serverFolderPath, languageServerDllName);
         } else {
