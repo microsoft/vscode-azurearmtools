@@ -9,7 +9,7 @@ import { ProgressLocation, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
 import { dotnetAcquire, ensureDotnetDependencies } from '../acquisition/dotnetAcquisition';
-import { armDeploymentLanguageId, configPrefix, languageServerFolderName, languageServerName } from '../constants';
+import { configPrefix, languageFriendlyName, languageId, languageServerFolderName, languageServerName } from '../constants';
 import { ext } from '../extensionVariables';
 import { armDeploymentDocumentSelector } from '../supported';
 import { WrappedErrorHandler } from './WrappedErrorHandler';
@@ -30,7 +30,7 @@ export let languageServerState: LanguageServerState = LanguageServerState.NotSta
 let client: LanguageClient;
 
 export async function stopArmLanguageServer(): Promise<void> {
-    ext.outputChannel.appendLine("Stopping ARM language server...");
+    ext.outputChannel.appendLine(`Stopping ${languageServerName}...`);
     languageServerState = LanguageServerState.Stopped;
     if (client) {
         await client.stop();
@@ -44,7 +44,7 @@ export async function startArmLanguageServer(): Promise<void> {
     window.withProgress(
         {
             location: ProgressLocation.Window,
-            title: "Starting ARM language server"
+            title: `Starting ${languageServerName}`
         },
         async () => {
             languageServerState = LanguageServerState.Starting;
@@ -102,15 +102,20 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         // Options to control the language client
         let clientOptions: LanguageClientOptions = {
             documentSelector: armDeploymentDocumentSelector,
-            diagnosticCollectionName: "ARM Language Server diagnostics",
+            diagnosticCollectionName: `${languageServerName} diagnostics`,
             revealOutputChannelOn: RevealOutputChannelOn.Error
         };
 
         // Create the language client and start the client.
-        ext.outputChannel.appendLine(`Starting ARM Language Server at ${serverDllPath}`);
+        ext.outputChannel.appendLine(`Starting ${languageServerName} at ${serverDllPath}`);
         ext.outputChannel.appendLine(`Client options:\n${JSON.stringify(clientOptions, undefined, 2)}`);
         ext.outputChannel.appendLine(`Server options:\n${JSON.stringify(serverOptions, undefined, 2)}`);
-        client = new LanguageClient(armDeploymentLanguageId, languageServerName, serverOptions, clientOptions);
+        client = new LanguageClient(
+            languageId,
+            languageFriendlyName, // Used in the Output window combobox
+            serverOptions,
+            clientOptions
+        );
 
         // Use an error handler that sends telemetry
         let defaultHandler = client.createDefaultErrorHandler();
@@ -170,7 +175,7 @@ function findLanguageServer(): string {
             let serverFolderPath = ext.context.asAbsolutePath(languageServerFolderName);
             serverDllPath = path.join(serverFolderPath, languageServerDllName);
             if (!fse.existsSync(serverFolderPath) || !fse.existsSync(serverDllPath)) {
-                throw new Error(`Cannot find the ARM language server at ${serverDllPath}. Only template string expression functionality will be available.`);
+                throw new Error(`Cannot find the ${languageServerName} at ${serverDllPath}. Only template string expression functionality will be available.`);
             }
             serverDllPath = path.join(serverFolderPath, languageServerDllName);
         } else {
@@ -181,7 +186,7 @@ function findLanguageServer(): string {
                 serverDllPath = path.join(serverDllPath, languageServerDllName);
             }
             if (!fse.existsSync(serverDllPath)) {
-                throw new Error(`Couldn't find the ARM language server at ${serverDllPath}.  Please verify or remove your '${configPrefix}.languageServer.path' setting.`);
+                throw new Error(`Couldn't find the ${languageServerName} at ${serverDllPath}.  Please verify or remove your '${configPrefix}.languageServer.path' setting.`);
             }
 
             window.showInformationMessage(`Using custom path for ${languageServerName}: ${serverDllPath}`);

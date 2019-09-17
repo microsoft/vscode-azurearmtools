@@ -11,16 +11,18 @@ export const isWebpack: boolean = /^(false|0)?$/i.test(process.env.AZCODE_ARM_IG
 export const assetsPath = path.join(__dirname, isWebpack ? "" : "..", "..", "assets");
 export const iconsPath = path.join(__dirname, isWebpack ? "" : "..", "..", "icons");
 
-export const languageServerName = 'ARM Language Server';
-export const armDeploymentLanguageId = 'arm-deployment';
+export const languageServerName = 'ARM Template Language Server';
+export const languageFriendlyName = 'Azure Resource Manager Template';
+export const languageId = 'arm-template';
 export const languageServerFolderName = 'languageServer';
-export const configPrefix = 'armTools';
+export const configPrefix = 'azureResourceManagerTools'; // Prefix for user settings
+export const outputWindowName = 'Azure Resource Manager Tools';
 
 // String that shows up in our errors as the source in parentheses
-export const expressionsDiagnosticsSource = "ARM (Expressions)";
+export const expressionsDiagnosticsSource = "arm-template (expr)";
 
 // Source string for errors related to the language server starting up or failing
-export const languageServerStateSource = "ARM (Language Server)";
+export const languageServerStateSource = "arm-template";
 
 export namespace configKeys {
     export const autoDetectJsonTemplates = "autoDetectJsonTemplates";

@@ -2,11 +2,11 @@
     "$modified_from": "https://github.com/Microsoft/vscode/blob/6850012cf41f74fc48bf025569c0ec383c341df9/extensions/json/syntaxes/JSONC.tmLanguage.json",
     "version": "https://github.com/Microsoft/vscode-JSON.tmLanguage/commit/9bd83f1c252b375e957203f21793316203f61f70",
     "$comment0": "==================================================================================================",
-    "$comment1": "This is the same as the JSON/JSONC grammars except that it allows embedded ARM expressions in strings",
+    "$comment1": "This is the same as the JSON/JSONC grammars except that it allows embedded Azure template expressions in strings",
     "$comment2": "See MODIFICATION comment for changes from JSON/JSONC",
     "$commentZ": "==================================================================================================",
-    "name": "ARM Deployment Template",
-    "scopeName": "source.json.arm",
+    "name": "Azure Resource Manager Template",
+    "scopeName": "source.json.arm-template",
     "patterns": [
         {
             "include": "#value"
@@ -17,27 +17,27 @@
             "begin": "\\[",
             "beginCaptures": {
                 "0": {
-                    "name": "punctuation.definition.array.begin.json.arm"
+                    "name": "punctuation.definition.array.begin.json.arm-template"
                 }
             },
             "end": "\\]",
             "endCaptures": {
                 "0": {
-                    "name": "punctuation.definition.array.end.json.arm"
+                    "name": "punctuation.definition.array.end.json.arm-template"
                 }
             },
-            "name": "meta.structure.array.json.arm",
+            "name": "meta.structure.array.json.arm-template",
             "patterns": [
                 {
                     "include": "#value"
                 },
                 {
                     "match": ",",
-                    "name": "punctuation.separator.array.json.arm"
+                    "name": "punctuation.separator.array.json.arm-template"
                 },
                 {
                     "match": "[^\\s\\]]",
-                    "name": "invalid.illegal.expected-array-separator.json.arm"
+                    "name": "invalid.illegal.expected-array-separator.json.arm-template"
                 }
             ]
         },
@@ -47,26 +47,26 @@
                     "begin": "/\\*\\*(?!/)",
                     "captures": {
                         "0": {
-                            "name": "punctuation.definition.comment.json.arm"
+                            "name": "punctuation.definition.comment.json.arm-template"
                         }
                     },
                     "end": "\\*/",
-                    "name": "comment.block.documentation.json.arm"
+                    "name": "comment.block.documentation.json.arm-template"
                 },
                 {
                     "begin": "/\\*",
                     "captures": {
                         "0": {
-                            "name": "punctuation.definition.comment.json.arm"
+                            "name": "punctuation.definition.comment.json.arm-template"
                         }
                     },
                     "end": "\\*/",
-                    "name": "comment.block.json.arm"
+                    "name": "comment.block.json.arm-template"
                 },
                 {
                     "captures": {
                         "1": {
-                            "name": "punctuation.definition.comment.json.arm"
+                            "name": "punctuation.definition.comment.json.arm-template"
                         }
                     },
                     "match": "(//).*$\\n?",
@@ -76,30 +76,30 @@
         },
         "constant": {
             "match": "\\b(?:true|false|null)\\b",
-            "name": "constant.language.json.arm"
+            "name": "constant.language.json.arm-template"
         },
         "number": {
             "match": "(?x)        # turn on extended mode\n  -?        # an optional minus\n  (?:\n    0       # a zero\n    |       # ...or...\n    [1-9]   # a 1-9 character\n    \\d*     # followed by zero or more digits\n  )\n  (?:\n    (?:\n      \\.    # a period\n      \\d+   # followed by one or more digits\n    )?\n    (?:\n      [eE]  # an e character\n      [+-]? # followed by an option +/-\n      \\d+   # followed by one or more digits\n    )?      # make exponent optional\n  )?        # make decimal portion optional",
-            "name": "constant.numeric.json.arm"
+            "name": "constant.numeric.json.arm-template"
         },
         "object": {
             "begin": "\\{",
             "beginCaptures": {
                 "0": {
-                    "name": "punctuation.definition.dictionary.begin.json.arm"
+                    "name": "punctuation.definition.dictionary.begin.json.arm-template"
                 }
             },
             "end": "\\}",
             "endCaptures": {
                 "0": {
-                    "name": "punctuation.definition.dictionary.end.json.arm"
+                    "name": "punctuation.definition.dictionary.end.json.arm-template"
                 }
             },
-            "name": "meta.structure.dictionary.json.arm",
+            "name": "meta.structure.dictionary.json.arm-template",
             "patterns": [
                 {
                     "comment": "the JSON object key as an expression",
-                    "include": "source.tle.arm"
+                    "include": "source.tle.arm-template"
                 },
                 {
                     "comment": "the JSON object key",
@@ -112,16 +112,16 @@
                     "begin": ":",
                     "beginCaptures": {
                         "0": {
-                            "name": "punctuation.separator.dictionary.key-value.json.arm"
+                            "name": "punctuation.separator.dictionary.key-value.json.arm-template"
                         }
                     },
                     "end": "(,)|(?=\\})",
                     "endCaptures": {
                         "1": {
-                            "name": "punctuation.separator.dictionary.pair.json.arm"
+                            "name": "punctuation.separator.dictionary.pair.json.arm-template"
                         }
                     },
-                    "name": "meta.structure.dictionary.value.json.arm",
+                    "name": "meta.structure.dictionary.value.json.arm-template",
                     "patterns": [
                         {
                             "comment": "the JSON object value",
@@ -129,13 +129,13 @@
                         },
                         {
                             "match": "[^\\s,]",
-                            "name": "invalid.illegal.expected-dictionary-separator.json.arm"
+                            "name": "invalid.illegal.expected-dictionary-separator.json.arm-template"
                         }
                     ]
                 },
                 {
                     "match": "[^\\s\\}]",
-                    "name": "invalid.illegal.expected-dictionary-separator.json.arm"
+                    "name": "invalid.illegal.expected-dictionary-separator.json.arm-template"
                 }
             ]
         },
@@ -143,16 +143,16 @@
             "begin": "\"",
             "beginCaptures": {
                 "0": {
-                    "name": "punctuation.definition.string.begin.json.arm"
+                    "name": "punctuation.definition.string.begin.json.arm-template"
                 }
             },
             "end": "\"",
             "endCaptures": {
                 "0": {
-                    "name": "punctuation.definition.string.end.json.arm"
+                    "name": "punctuation.definition.string.end.json.arm-template"
                 }
             },
-            "name": "string.quoted.double.json.arm",
+            "name": "string.quoted.double.json.arm-template",
             "patterns": [
                 {
                     "include": "#stringcontent"
@@ -163,16 +163,16 @@
             "begin": "\"",
             "beginCaptures": {
                 "0": {
-                    "name": "punctuation.support.type.property-name.begin.json.arm"
+                    "name": "punctuation.support.type.property-name.begin.json.arm-template"
                 }
             },
             "end": "\"",
             "endCaptures": {
                 "0": {
-                    "name": "punctuation.support.type.property-name.end.json.arm"
+                    "name": "punctuation.support.type.property-name.end.json.arm-template"
                 }
             },
-            "name": "string.json.arm support.type.property-name.json.arm",
+            "name": "string.json.arm-template support.type.property-name.json.arm-template",
             "patterns": [
                 {
                     "include": "#stringcontent"
@@ -183,11 +183,11 @@
             "patterns": [
                 {
                     "match": "(?x)                # turn on extended mode\n  \\\\                # a literal backslash\n  (?:               # ...followed by...\n    [\"\\\\/bfnrt]     # one of these characters\n    |               # ...or...\n    u               # a u\n    [0-9a-fA-F]{4}) # and four hex digits",
-                    "name": "constant.character.escape.json.arm"
+                    "name": "constant.character.escape.json.arm-template"
                 },
                 {
                     "match": "\\\\.",
-                    "name": "invalid.illegal.unrecognized-string-escape.json.arm"
+                    "name": "invalid.illegal.unrecognized-string-escape.json.arm-template"
                 }
             ]
         },
@@ -195,7 +195,7 @@
             "patterns": [
                 {
                     "$comment": "========================== START OF MODIFICATION: ADDED ==========================",
-                    "include": "source.tle.arm",
+                    "include": "source.tle.arm-template",
                     "$commentEnd": "========================== END OF MODIFICATION =========================="
                 },
                 {

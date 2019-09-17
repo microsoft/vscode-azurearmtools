@@ -3,10 +3,10 @@
 // ----------------------------------------------------------------------------
 
 import { Position, Range, TextDocument, workspace } from "vscode";
-import { armDeploymentLanguageId, configKeys, configPrefix } from "./constants";
+import { configKeys, configPrefix, languageId } from "./constants";
 
 export const armDeploymentDocumentSelector = [
-    { language: armDeploymentLanguageId, scheme: 'file' }
+    { language: languageId, scheme: 'file' }
 ];
 
 const containsArmSchemaRegexString =
@@ -19,14 +19,14 @@ function isJsonOrJsoncLangId(textDocument: TextDocument): boolean {
     return textDocument.languageId === 'json' || textDocument.languageId === 'jsonc';
 }
 
-// We keep track of arm-deployment files, of course,
+// We keep track of arm-template files, of course,
 // but also JSON/JSONC (unless auto-detect is disabled) so we can check them for the ARM schema
 function shouldWatchDocument(textDocument: TextDocument): boolean {
     if (textDocument.uri.scheme !== 'file') {
         return false;
     }
 
-    if (textDocument.languageId === armDeploymentLanguageId) {
+    if (textDocument.languageId === languageId) {
         return true;
     }
 
@@ -43,7 +43,7 @@ export function mightBeDeploymentTemplate(textDocument: TextDocument): boolean {
         return false;
     }
 
-    if (textDocument.languageId === armDeploymentLanguageId) {
+    if (textDocument.languageId === languageId) {
         return true;
     }
 

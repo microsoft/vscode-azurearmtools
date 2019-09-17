@@ -11,7 +11,7 @@ import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import * as Completion from "./Completion";
-import { armDeploymentLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource } from "./constants";
+import { configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, languageId, outputWindowName } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
@@ -32,7 +32,7 @@ import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
 export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
     ext.context = context;
     ext.reporter = createTelemetryReporter(context);
-    ext.outputChannel = vscode.window.createOutputChannel("ARM Tools");
+    ext.outputChannel = vscode.window.createOutputChannel(outputWindowName);
     ext.ui = new AzureUserInput(context.globalState);
     registerUIExtensionVariables(ext);
 
@@ -85,7 +85,7 @@ export class AzureRMTools {
         vscode.workspace.onDidOpenTextDocument(this.onDocumentOpened, this, context.subscriptions);
         vscode.workspace.onDidChangeTextDocument(this.onDocumentChanged, this, context.subscriptions);
 
-        this._diagnosticsCollection = vscode.languages.createDiagnosticCollection("arm-tools-expressions");
+        this._diagnosticsCollection = vscode.languages.createDiagnosticCollection("azurerm-tools-expressions");
         context.subscriptions.push(this._diagnosticsCollection);
 
         const activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
@@ -128,8 +128,8 @@ export class AzureRMTools {
             let treatAsDeploymentTemplate = false;
             let isNewlyOpened = false; // As opposed to already opened and being activated
 
-            if (document.languageId === armDeploymentLanguageId) {
-                // Lang ID is set to ARM, whether auto or manual, respect the setting
+            if (document.languageId === languageId) {
+                // Lang ID is set to arm-template, whether auto or manual, respect the setting
                 treatAsDeploymentTemplate = true;
             }
 
@@ -156,8 +156,8 @@ export class AzureRMTools {
                     if (isNewlyOpened) {
                         // A deployment template has been opened (as opposed to having been tabbed to)
 
-                        // Make sure the language ID is set to ARM deployment template
-                        if (document.languageId !== armDeploymentLanguageId) {
+                        // Make sure the language ID is set to arm-template
+                        if (document.languageId !== languageId) {
                             // The document will be reloaded, firing this event again with the new langid
                             AzureRMTools.setLanguageToArm(document, actionContext);
                             return;
@@ -186,7 +186,7 @@ export class AzureRMTools {
     }
 
     private static setLanguageToArm(document: vscode.TextDocument, actionContext: IActionContext): void {
-        vscode.languages.setTextDocumentLanguage(document, armDeploymentLanguageId);
+        vscode.languages.setTextDocumentLanguage(document, languageId);
 
         actionContext.telemetry.properties.switchedToArm = 'true';
         actionContext.telemetry.properties.docLangId = document.languageId;

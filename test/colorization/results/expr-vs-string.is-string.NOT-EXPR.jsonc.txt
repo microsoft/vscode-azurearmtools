@@ -1,46 +1,46 @@
 TEST STRING: "[[2]]"
-"                   punctuation.definition.string.begin.json.arm
-[[2]]               string.quoted.double.json.arm
-"                   punctuation.definition.string.end.json.arm
+"                   punctuation.definition.string.begin.json.arm-template
+[[2]]               string.quoted.double.json.arm-template
+"                   punctuation.definition.string.end.json.arm-template
 
 TEST STRING: "[[[four]five]"
-"                   punctuation.definition.string.begin.json.arm
-[[[four]five]       string.quoted.double.json.arm
-"                   punctuation.definition.string.end.json.arm
+"                   punctuation.definition.string.begin.json.arm-template
+[[[four]five]       string.quoted.double.json.arm-template
+"                   punctuation.definition.string.end.json.arm-template
 
 TEST STRING: "[['I said\"Hi! He''s here!\"]"
-"                   punctuation.definition.string.begin.json.arm
-[['I said           string.quoted.double.json.arm
-\"                  constant.character.escape.json.arm
-Hi! He''s here!     string.quoted.double.json.arm
-\"                  constant.character.escape.json.arm
-]                   string.quoted.double.json.arm
-"                   punctuation.definition.string.end.json.arm
+"                   punctuation.definition.string.begin.json.arm-template
+[['I said           string.quoted.double.json.arm-template
+\"                  constant.character.escape.json.arm-template
+Hi! He''s here!     string.quoted.double.json.arm-template
+\"                  constant.character.escape.json.arm-template
+]                   string.quoted.double.json.arm-template
+"                   punctuation.definition.string.end.json.arm-template
 
 TEST STRING: "[pre]post"
-"                   punctuation.definition.string.begin.json.arm
-[pre]post           string.quoted.double.json.arm
-"                   punctuation.definition.string.end.json.arm
+"                   punctuation.definition.string.begin.json.arm-template
+[pre]post           string.quoted.double.json.arm-template
+"                   punctuation.definition.string.end.json.arm-template
 
 TEST STRING: "[[three]four"
-"                   punctuation.definition.string.begin.json.arm
-[[three]four        string.quoted.double.json.arm
-"                   punctuation.definition.string.end.json.arm
+"                   punctuation.definition.string.begin.json.arm-template
+[[three]four        string.quoted.double.json.arm-template
+"                   punctuation.definition.string.end.json.arm-template
 
 TEST STRING: "[starts with whitespace]"
-"                   punctuation.definition.string.begin.json.arm
+"                   punctuation.definition.string.begin.json.arm-template
 [starts with whitespace]
-                    string.quoted.double.json.arm
-"                   punctuation.definition.string.end.json.arm
+                    string.quoted.double.json.arm-template
+"                   punctuation.definition.string.end.json.arm-template
 
 TEST STRING: "[ends with whitespace]"
-"                   punctuation.definition.string.begin.json.arm
+"                   punctuation.definition.string.begin.json.arm-template
 [ends with whitespace]
-                    string.quoted.double.json.arm
-"                   punctuation.definition.string.end.json.arm
+                    string.quoted.double.json.arm-template
+"                   punctuation.definition.string.end.json.arm-template
 
 TEST STRING: "[ChefInSpec]InstalledApplicationLinuxResource1;AttributesYmlContent"
-"                   punctuation.definition.string.begin.json.arm
+"                   punctuation.definition.string.begin.json.arm-template
 [ChefInSpec]InstalledApplicationLinuxResource1;AttributesYmlContent
-                    string.quoted.double.json.arm
-"                   punctuation.definition.string.end.json.arm
+                    string.quoted.double.json.arm-template
+"                   punctuation.definition.string.end.json.arm-template

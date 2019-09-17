@@ -39,7 +39,7 @@ interface ITokenInfo {
     colors: { [key: string]: string }[];
 }
 
-// E.g., change keyword.other.expression.begin.arm-deployment => {{scope-expression-start}}, according to the preprocess section of the grammar
+// E.g., change keyword.other.expression.begin.tle.arm-template => {{scope-expression-start}}, according to the preprocess section of the grammar
 const tabSize = 20;
 let unpreprocess: [RegExp, string][];
 function unpreprocessScopes(scopes: string): string {
@@ -72,7 +72,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
         // Otherwise they should contain none.
         let shouldHaveInvalidTokens = !!testPath.match(/\.INVALID\./i);
 
-        // If the test filename contains ".not-arm.", then all testcases in it should not contain any arm-deployment tokens.
+        // If the test filename contains ".not-arm.", then all testcases in it should not contain any source.json.arm-template tokens.
         // Otherwise they should have at least one.
         let shouldBeArmTemplate = !testPath.match(/\.NOT-ARM\./i);
 
@@ -83,14 +83,17 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
         if (shouldBeArmTemplate) {
             // _workbench.captureSyntaxTokens always takes a URL (it can't use the current buffer).
             // If we use the standard .json{,c} extension for the file, it will start out with the
-            // json{,c} language ID before we automatically switch it to arm-deployment. By the time
+            // json{,c} language ID before we automatically switch it to arm-template. By the time
             // we switch it, it's too late. So we need to use an extension that's actually mapped
-            // directly to arm-deployment.
-            filePathForReadingTokens = getTempFilePath(path.basename(testPath), '.arm');
+            // directly to arm-template.
+            filePathForReadingTokens = getTempFilePath(path.basename(testPath), '.azrm');
             fs.writeFileSync(filePathForReadingTokens, fs.readFileSync(testPath));
         }
 
         let rawData: { c: string; t: string; r: unknown[] }[] = await commands.executeCommand('_workbench.captureSyntaxTokens', Uri.file(filePathForReadingTokens));
+        if (!rawData) {
+            throw new Error("_workbench.captureSyntaxTokens failed");
+        }
 
         // Let's use more reasonable property names in our data
         let data: ITokenInfo[] = rawData.map(d => <ITokenInfo>{ text: d.c.trim(), scopes: d.t, colors: d.r })
@@ -100,7 +103,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
         // let editor = await window.showTextDocument(doc);
 
         // let languageId = doc.languageId;
-        // let expectedLanguageId = shouldBeArmTemplate ? 'arm-deployment' : testPath.endsWith('.json') ? 'json' : 'jsonc';
+        // let expectedLanguageId = shouldBeArmTemplate ? 'arm-template' : testPath.endsWith('.json') ? 'json' : 'jsonc';
         // if (languageId !== expectedLanguageId) {
         //     throw new Error(`File ${testPath} is getting opened in vscode using language ID '${languageId}' instead of the expected ID '${expectedLanguageId}'.`
         //         + ' Check if your user settings have modified the default file.associations setting.');
@@ -199,16 +202,16 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
 
                     if (shouldBeArmTemplate) {
                         assert(
-                            testcaseResult.includes('source.json.arm'),
+                            testcaseResult.includes('source.json.arm-template'),
                             // tslint:disable-next-line: max-line-length
-                            "This test's filename does not contain '.NOT-ARM.', and so every testcase in it should contain at least one source.json.arm token.");
+                            "This test's filename does not contain '.NOT-ARM.', and so every testcase in it should contain at least one source.json.arm-template token.");
                     } else {
                         assert(
-                            !testcaseResult.includes('source.json.arm'),
-                            "This test's filename contains '.NOT-ARM.', but at least one testcase in it contains an source.json.arm token (but shouldn't).");
+                            !testcaseResult.includes('source.json.arm-template'),
+                            "This test's filename contains '.NOT-ARM.', but at least one testcase in it contains an source.json.arm-template token (but shouldn't).");
                     }
 
-                    let isExpression = testcaseResult.includes('meta.expression.tle.arm');
+                    let isExpression = testcaseResult.includes('meta.expression.tle.arm-template');
                     if (shouldBeExpression) {
                         assert(
                             isExpression,

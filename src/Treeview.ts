@@ -11,7 +11,7 @@
 import * as assert from "assert";
 import * as path from 'path';
 import * as vscode from "vscode";
-import { armDeploymentLanguageId, iconsPath } from "./constants";
+import { iconsPath, languageId } from "./constants";
 import * as Json from "./JSON";
 
 const topLevelIcons: [string, string][] = [
@@ -352,12 +352,12 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     }
 
     private shouldShowTreeForDocument(document?: vscode.TextDocument): boolean {
-        // Only show view if the language is set to ARM Deployment Template
-        return !!document && document.languageId === armDeploymentLanguageId;
+        // Only show view if the language is set to Azure Resource Manager Template
+        return !!document && document.languageId === languageId;
     }
 
     private setTreeViewContext(visible: boolean): void {
-        vscode.commands.executeCommand('setContext', 'showArmJsonView', visible);
+        vscode.commands.executeCommand('setContext', 'showAzureTemplateView', visible);
     }
 }
 

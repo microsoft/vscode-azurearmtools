@@ -39,6 +39,9 @@ Examples:
 - Parameters color not correct if whitespace separates param name from parentheses [#239](https://github.com/microsoft/vscode-azurearmtools/issues/239)
 - Does not correctly handle colorization when a string starts with a bracket but does not end with a bracket [#250](https://github.com/microsoft/vscode-azurearmtools/issues/250)
 
+## Changed
+- Changed grammar scopes from '.json.arm' to '.json.arm-template' and '.tle.arm' to '.tle.arm-template'
+
 ## Version 0.6.0 (2019-04-25)
 ### Added
 - Expressions inside strings are now colorized
