@@ -13,7 +13,7 @@ steps:
 - task: Npm@1
   displayName: 'npm install'
 
-# Do this to verify that packaging without language server bits works correctly (we don't publish it)
+# First package without language server bits (as a test, and if LANGSERVER_NUGET_USERNAME/PASSWORD are not available)
 - script: npm run package
   displayName: Package without language server (as a test)
 
