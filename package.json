@@ -105,10 +105,7 @@
         "aliases": [
           "Azure Resource Manager Template"
         ],
-        "configuration": "dist/grammars/jsonc.arm.language-configuration.json",
-        "extensions": [
-          ".azrm"
-        ]
+        "configuration": "dist/grammars/jsonc.arm.language-configuration.json"
       }
     ],
     "commands": [
@@ -122,8 +119,8 @@
   "main": "main",
   "scripts": {
     "vscode:prepublish": "gulp error-vsce-package",
-    "compile": "gulp build-grammars && tsc -watch -p ./",
-    "build": "gulp build-grammars && tsc -p ./",
+    "compile": "gulp build-grammars && npm run get-language-server && tsc -watch -p ./",
+    "build": "gulp build-grammars && npm run get-language-server && tsc -p ./",
     "get-language-server": "gulp get-language-server",
     "lint": "tslint --project tsconfig.json -t verbose",
     "lint-fix": "tslint --project tsconfig.json -t verbose --fix",
