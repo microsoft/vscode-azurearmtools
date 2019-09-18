@@ -3,6 +3,8 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+// tslint:disable: no-consecutive-blank-lines // Format-on-save tends to add an extra line to the end of this file
+
 /**
  * This is the external face of extension.bundle.js, the main webpack bundle for the extension.
  * Anything needing to be exposed outside of the extension sources must be exported from here, because
@@ -36,7 +38,7 @@ export { Histogram } from "./src/Histogram";
 export { httpGet } from './src/httpGet';
 export { IncorrectArgumentsCountIssue } from "./src/IncorrectArgumentsCountIssue";
 export * from "./src/Language";
-export { LanguageServerState, languageServerState } from "./src/languageclient/startArmLanguageServer";
+export { getLanguageServerState, LanguageServerState } from "./src/languageclient/startArmLanguageServer";
 export { ParameterDefinition } from "./src/ParameterDefinition";
 export { PositionContext } from "./src/PositionContext";
 export { containsArmSchema, isArmSchema } from './src/supported';
@@ -50,3 +52,4 @@ export { Hover };
 export { basic };
 export { Utilities };
 export { TLE };
+

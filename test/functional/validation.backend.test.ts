@@ -5,15 +5,10 @@
 // tslint:disable:object-literal-key-quotes no-http-string
 
 import { sources, testDiagnostics } from "../support/diagnostics";
-import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
+import { testWithLanguageServer } from "../support/testWithLanguageServer";
 
 suite("Backend validation", () => {
-    if (DISABLE_LANGUAGE_SERVER_TESTS) {
-        return;
-    }
-
-    // tslint:disable-next-line: no-suspicious-comment
-    test("missing required property 'resources'", async () =>
+    testWithLanguageServer("missing required property 'resources'", async () =>
         await testDiagnostics(
             {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",

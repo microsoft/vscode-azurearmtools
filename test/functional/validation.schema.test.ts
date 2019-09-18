@@ -5,14 +5,11 @@
 // tslint:disable:object-literal-key-quotes no-http-string max-func-body-length
 
 import { sources, testDiagnostics, testDiagnosticsFromFile } from "../support/diagnostics";
-import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
+import { testWithLanguageServer } from "../support/testWithLanguageServer";
 
 suite("Schema validation", () => {
-    if (DISABLE_LANGUAGE_SERVER_TESTS) {
-        return;
-    }
-
-    test("missing required property 'resources'", async () =>
+    // tslint:disable-next-line: no-unsafe-any
+    testWithLanguageServer("missing required property 'resources'", async () =>
         await testDiagnostics(
             {
                 $schema: "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
@@ -26,7 +23,7 @@ suite("Schema validation", () => {
             ])
     );
 
-    test(
+    testWithLanguageServer(
         "networkInterfaces 2018-10-01",
         async () =>
             await testDiagnosticsFromFile(
@@ -39,7 +36,7 @@ suite("Schema validation", () => {
                 [])
     );
 
-    test(
+    testWithLanguageServer(
         "https://github.com/Azure/azure-resource-manager-schemas/issues/627",
         async () =>
             await testDiagnosticsFromFile(
@@ -53,7 +50,7 @@ suite("Schema validation", () => {
     );
 
     suite("Case-insensitivity", async () => {
-        test(
+        testWithLanguageServer(
             'Resource type miscapitalized',
             async () =>
                 await testDiagnostics(
@@ -100,7 +97,7 @@ suite("Schema validation", () => {
     suite("More specific error messages for schema problems", async () => {
         // tslint:disable-next-line: no-suspicious-comment
         /* TODO: not yet fixed
-        test('Resource type miscapitalized (https://github.com/microsoft/vscode-azurearmtools/issues/238)',
+        testWithLanguageServer('Resource type miscapitalized (https://github.com/microsoft/vscode-azurearmtools/issues/238)',
             async () =>
                 await testDiagnostics(
                     {

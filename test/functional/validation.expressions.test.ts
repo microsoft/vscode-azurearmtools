@@ -5,14 +5,10 @@
 // tslint:disable:no-suspicious-comment
 
 import { sources, testDiagnosticsFromFile } from "../support/diagnostics";
-import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
+import { testWithLanguageServer } from "../support/testWithLanguageServer";
 
 suite("Expression validation", () => {
-    if (DISABLE_LANGUAGE_SERVER_TESTS) {
-        return;
-    }
-
-    test(
+    testWithLanguageServer(
         'templates/new-vm.jsonc',
         async () =>
             testDiagnosticsFromFile(
@@ -27,7 +23,7 @@ suite("Expression validation", () => {
                 ])
     );
 
-    test(
+    testWithLanguageServer(
         'templates/errors.json',
         async () => testDiagnosticsFromFile(
             'templates/errors.json',

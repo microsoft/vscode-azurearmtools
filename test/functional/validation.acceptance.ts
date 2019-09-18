@@ -5,14 +5,10 @@
 // tslint:disable:no-suspicious-comment
 
 import { minimalDeploymentTemplate, testDiagnostics, testDiagnosticsFromFile } from "../support/diagnostics";
-import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
+import { testWithLanguageServer } from "../support/testWithLanguageServer";
 
 suite("Acceptance validation tests (all sources)", () => {
-    if (DISABLE_LANGUAGE_SERVER_TESTS) {
-        return;
-    }
-
-    test("minimal deployment template - no errors", async () => {
+    testWithLanguageServer("minimal deployment template - no errors", async () => {
         await testDiagnostics(
             minimalDeploymentTemplate,
             {
