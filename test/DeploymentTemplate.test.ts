@@ -287,7 +287,7 @@ suite("DeploymentTemplate", () => {
         });
 
         test("with no unused parameters", () => {
-            const dt = new DeploymentTemplate(`{ "parameters": { "a": {} }, "b": "[parameters('a')] }`, "id");
+            const dt = new DeploymentTemplate(`{ "parameters": { "a": {} }, "b": "[parameters('a')]" }`, "id");
             assert.deepStrictEqual(dt.warnings, []);
             assert.deepStrictEqual(dt.warnings, []);
         });
@@ -300,7 +300,7 @@ suite("DeploymentTemplate", () => {
         });
 
         test("with no unused variables", () => {
-            const dt = new DeploymentTemplate(`{ "variables": { "a": "A" }, "b": "[variables('a')] }`, "id");
+            const dt = new DeploymentTemplate(`{ "variables": { "a": "A" }, "b": "[variables('a')]" }`, "id");
             assert.deepStrictEqual(dt.warnings, []);
             assert.deepStrictEqual(dt.warnings, []);
         });
