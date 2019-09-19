@@ -5,18 +5,18 @@
 // Support for testing diagnostics in vscode
 
 // tslint:disable:no-unused-expression no-console no-string-based-set-timeout max-line-length
-// tslint:disable:insecure-random max-func-body-length radix prefer-template
+// tslint:disable:insecure-random max-func-body-length radix prefer-template no-function-expression
 
 import * as assert from "assert";
 import * as fs from 'fs';
-import { ISuiteCallbackContext } from "mocha";
+import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
 import * as path from 'path';
 import { commands, languages, Range, Selection, TextDocument, TextEditor, window, workspace } from "vscode";
 import { armDeploymentLanguageId } from "../extension.bundle";
 import { diagnosticsTimeout, testFolder } from "./support/diagnostics";
 import { ensureLanguageServerAvailable } from "./support/ensureLanguageServerAvailable";
 import { getTempFilePath } from "./support/getTempFilePath";
-import { DISABLE_LANGUAGE_SERVER_TESTS } from "./testConstants";
+import { testWithLanguageServer } from "./support/testWithLanguageServer";
 
 const formatDocumentCommand = 'editor.action.formatDocument';
 const formatRangeCommand = 'editor.action.formatSelection';
@@ -24,14 +24,8 @@ const formatRangeCommand = 'editor.action.formatSelection';
 suite("Format document", function (this: ISuiteCallbackContext): void {
     this.timeout(diagnosticsTimeout);
 
-    if (DISABLE_LANGUAGE_SERVER_TESTS) {
-        return;
-    }
-
     function testFormat(testName: string, source: string, expected: string, range?: Range | RegExp): void {
-        test(testName, async () => {
-            await ensureLanguageServerAvailable();
-
+        testWithLanguageServer(testName, async function (this: ITestCallbackContext): Promise<void> {
             let sourceIsFile = false;
             let jsonUnformatted: string = source;
             if (source.match(/\.jsonc?$/)) {
@@ -54,6 +48,10 @@ suite("Format document", function (this: ISuiteCallbackContext): void {
             if (!sourceIsFile && doc.languageId !== armDeploymentLanguageId) {
                 await languages.setTextDocumentLanguage(doc, armDeploymentLanguageId);
             }
+
+            // Now that we've opened a document that should start up the server, wait until we know it's actually available before trying
+            // to format
+            await ensureLanguageServerAvailable();
 
             if (range) {
                 let foundRange: Range;

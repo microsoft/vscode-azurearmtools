@@ -25,9 +25,12 @@ export enum LanguageServerState {
     Started,
     Stopped,
 }
-export let languageServerState: LanguageServerState = LanguageServerState.NotStarted;
-
+let languageServerState: LanguageServerState = LanguageServerState.NotStarted;
 let client: LanguageClient;
+
+export function getLanguageServerState(): LanguageServerState {
+    return languageServerState;
+}
 
 export async function stopArmLanguageServer(): Promise<void> {
     ext.outputChannel.appendLine(`Stopping ${languageServerName}...`);

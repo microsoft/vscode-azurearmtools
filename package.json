@@ -105,10 +105,7 @@
         "aliases": [
           "Azure Resource Manager Template"
         ],
-        "configuration": "dist/grammars/jsonc.arm.language-configuration.json",
-        "extensions": [
-          ".azrm"
-        ]
+        "configuration": "dist/grammars/jsonc.arm.language-configuration.json"
       }
     ],
     "commands": [
@@ -122,8 +119,8 @@
   "main": "main",
   "scripts": {
     "vscode:prepublish": "gulp error-vsce-package",
-    "compile": "gulp build-grammars && tsc -watch -p ./",
-    "build": "gulp build-grammars && tsc -p ./",
+    "compile": "gulp build-grammars && npm run get-language-server && tsc -watch -p ./",
+    "build": "gulp build-grammars && npm run get-language-server && tsc -p ./",
     "get-language-server": "gulp get-language-server",
     "lint": "tslint --project tsconfig.json -t verbose",
     "lint-fix": "tslint --project tsconfig.json -t verbose --fix",
@@ -132,7 +129,7 @@
     "pretest": "npm run build && npm run webpack-prod",
     "pretest-dev": "npm run build && npm run webpack",
     "test": "gulp test",
-    "all": "npm i && npm run lint && npm test",
+    "all": "npm i && npm test && npm run lint",
     "webpack": "gulp webpack-dev",
     "webpack-prod": "gulp webpack-prod",
     "webpack-profile": "webpack --profile --json --mode production > webpack-stats.json && echo Use http://webpack.github.io/analyse to analyze the stats",
@@ -150,7 +147,6 @@
     "mocha": "^5.2.0",
     "mocha-junit-reporter": "^1.22.0",
     "mocha-multi-reporters": "^1.1.7",
-    "shelljs": "^0.8.3",
     "ts-node": "^7.0.1",
     "tslint": "^5.16.0",
     "tslint-microsoft-contrib": "5.0.3",
@@ -167,7 +163,7 @@
     "nuget": "^2.0.2",
     "opn": "^5.5.0",
     "rimraf": "2.6.3",
-    "shelljs": "0.8.3",
+    "shelljs": "^0.8.3",
     "vscode-azureextensionui": "^0.26.5",
     "vscode-jsonrpc": "^4.0.0",
     "vscode-languageclient": "^4.4.0"

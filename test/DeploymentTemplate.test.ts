@@ -3,13 +3,14 @@
 // ----------------------------------------------------------------------------
 
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length insecure-random
-// tslint:disable:object-literal-key-quotes
+// tslint:disable:object-literal-key-quotes no-function-expression
 
 import * as assert from "assert";
 import { randomBytes } from "crypto";
-import { ISuiteCallbackContext } from "mocha";
+import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
 import { DeploymentTemplate, Histogram, IncorrectArgumentsCountIssue, Json, Language, ParameterDefinition, Reference, ReferenceInVariableDefinitionJSONVisitor, UnrecognizedFunctionIssue } from "../extension.bundle";
 import { sources, testDiagnostics } from "./support/diagnostics";
+import { testWithLanguageServer } from "./support/testWithLanguageServer";
 
 suite("DeploymentTemplate", () => {
     suite("constructor(string)", () => {
@@ -861,7 +862,7 @@ suite("ReferenceInVariableDefinitionJSONVisitor", () => {
             assert.deepStrictEqual(visitor.referenceSpans, []);
         });
 
-        test("error: reference in variable definition", async () =>
+        testWithLanguageServer("expecting error: reference in variable definition", async function (this: ITestCallbackContext): Promise<void> {
             await testDiagnostics(
                 {
                     "variables": {
@@ -874,8 +875,8 @@ suite("ReferenceInVariableDefinitionJSONVisitor", () => {
                 [
                     "Error: reference() cannot be invoked inside of a variable definition. (arm-template (expr))",
                     "Warning: The variable 'a' is never used. (arm-template (expr))"
-                ])
-        );
+                ]);
+        });
     });
 
     suite("visitStringValue(Json.StringValue)", () => {

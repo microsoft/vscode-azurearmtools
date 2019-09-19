@@ -22,9 +22,3 @@ steps:
   env:
     LANGSERVER_NUGET_USERNAME: $(LANGSERVER_NUGET_USERNAME)
     LANGSERVER_NUGET_PASSWORD: $(LANGSERVER_NUGET_PASSWORD)
-
-- task: Npm@1
-  displayName: 'Build'
-  inputs:
-    command: custom
-    customCommand: run build
