@@ -1,9 +1,9 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
-    
     // With string literal - all same color (except parens)
     "$TEST1": "[variables('myvar')]",
-
+    "$TEST1": "[Variables('Myvar')]",
     // With expression - normal expression colors inside 'variables'
-    "$TEST2": "[variables(concat('myvar', 'a'))]"
+    "$TEST2": "[variables(concat('myvar', 'a'))]",
+    "$TEST2": "[Variables(concat('myvar', 'a'))]"
 }
