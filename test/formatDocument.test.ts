@@ -75,7 +75,7 @@ suite("Format document", function (this: ISuiteCallbackContext): void {
             output = output.replace(/\r\n/g, '\n').trim();
             jsonExpected = jsonExpected.replace(/\r\n/g, '\n');
 
-            if (sourceIsFile) {
+            if (sourceIsFile && jsonUnformatted !== jsonExpected) {
                 assert.notEqual(jsonUnformatted, output, "The format command did not modify the editor.");
             }
 
