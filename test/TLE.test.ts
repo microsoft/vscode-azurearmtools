@@ -123,7 +123,7 @@ suite("TLE", () => {
                 let arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, null, rightSquareBracket);
                 assert.deepStrictEqual(source, arrayAccess.source);
                 assert.deepStrictEqual(leftSquareBracket, arrayAccess.leftSquareBracketToken);
-                assert.deepStrictEqual(null, arrayAccess.index);
+                assert.deepStrictEqual(null, arrayAccess.indexValue);
                 assert.deepStrictEqual(rightSquareBracket, arrayAccess.rightSquareBracketToken);
             });
 
@@ -141,7 +141,7 @@ suite("TLE", () => {
                 let arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, index, null);
                 assert.deepStrictEqual(source, arrayAccess.source);
                 assert.deepStrictEqual(leftSquareBracket, arrayAccess.leftSquareBracketToken);
-                assert.deepStrictEqual(index, arrayAccess.index);
+                assert.deepStrictEqual(index, arrayAccess.indexValue);
                 assert.deepStrictEqual(null, arrayAccess.rightSquareBracketToken);
             });
 
@@ -1221,7 +1221,7 @@ suite("TLE", () => {
                 const arrayAccess: TLE.ArrayAccessValue = TLE.asArrayAccessValue(pr.expression);
                 assert(arrayAccess);
                 assert.deepStrictEqual(arrayAccess.rightSquareBracketToken, TLE.Token.createRightSquareBracket(19));
-                const index: TLE.NumberValue = TLE.asNumberValue(arrayAccess.index);
+                const index: TLE.NumberValue = TLE.asNumberValue(arrayAccess.indexValue);
                 assert(index);
                 assert.deepStrictEqual(index.parent, arrayAccess);
                 assert.deepStrictEqual(index.token, TLE.Token.createNumber(17, "15"));
@@ -1250,7 +1250,7 @@ suite("TLE", () => {
                 assert(arrayAccess1);
                 assert.deepStrictEqual(arrayAccess1.rightSquareBracketToken, TLE.Token.createRightSquareBracket(27));
                 assert.deepStrictEqual(arrayAccess1.leftSquareBracketToken, TLE.Token.createLeftSquareBracket(20));
-                const fido: TLE.StringValue = TLE.asStringValue(arrayAccess1.index);
+                const fido: TLE.StringValue = TLE.asStringValue(arrayAccess1.indexValue);
                 assert(fido);
                 assert.deepStrictEqual(fido.parent, arrayAccess1);
                 assert.deepStrictEqual(fido.token, TLE.Token.createQuotedString(21, "'fido'"));
@@ -1259,7 +1259,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(arrayAccess2.parent, arrayAccess1);
                 assert.deepStrictEqual(arrayAccess2.rightSquareBracketToken, TLE.Token.createRightSquareBracket(19));
                 assert.deepStrictEqual(arrayAccess2.leftSquareBracketToken, TLE.Token.createLeftSquareBracket(16));
-                const fifteen: TLE.NumberValue = TLE.asNumberValue(arrayAccess2.index);
+                const fifteen: TLE.NumberValue = TLE.asNumberValue(arrayAccess2.indexValue);
                 assert(fifteen);
                 assert.deepStrictEqual(fifteen.parent, arrayAccess2);
                 assert.deepStrictEqual(fifteen.token, TLE.Token.createNumber(17, "15"));
@@ -1289,7 +1289,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(arrayAccess.parent, undefined);
                 assert.deepStrictEqual(arrayAccess.rightSquareBracketToken, TLE.Token.createRightSquareBracket(26));
                 assert.deepStrictEqual(arrayAccess.leftSquareBracketToken, TLE.Token.createLeftSquareBracket(16));
-                const add: TLE.FunctionValue = TLE.asFunctionValue(arrayAccess.index);
+                const add: TLE.FunctionValue = TLE.asFunctionValue(arrayAccess.indexValue);
                 assert(add);
                 assert.deepStrictEqual(add.parent, arrayAccess);
                 assert.deepStrictEqual(add.nameToken, TLE.Token.createLiteral(17, "add"));
@@ -2093,21 +2093,21 @@ suite("TLE", () => {
             test("with child property access from undefined variable reference", () => {
                 const dt = new DeploymentTemplate(`{ "a": "[variables('v1').apples]" }`, "id");
                 const context: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[variables('v1').app`.length);
-                const visitor = TLE.UndefinedVariablePropertyVisitor.visit(context.tleValue, dt);
+                const visitor = TLE.UndefinedVariablePropertyVisitor.visit(context.tleInfo.tleValue, dt);
                 assert.deepStrictEqual(visitor.errors, [], "No errors should be reported for a property access to an undefined variable, because the top priority error for the developer to address is the undefined variable reference.");
             });
 
             test("with grandchild property access from undefined variable reference", () => {
                 const dt = new DeploymentTemplate(`{ "a": "[variables('v1').apples.bananas]" }`, "id");
                 const context: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[variables('v1').apples.ban`.length);
-                const visitor = TLE.UndefinedVariablePropertyVisitor.visit(context.tleValue, dt);
+                const visitor = TLE.UndefinedVariablePropertyVisitor.visit(context.tleInfo.tleValue, dt);
                 assert.deepStrictEqual(visitor.errors, [], "No errors should be reported for a property access to an undefined variable, because the top priority error for the developer to address is the undefined variable reference.");
             });
 
             test("with child property access from variable reference to non-object variable", () => {
                 const dt = new DeploymentTemplate(`{ "variables": { "v1": "blah" }, "a": "[variables('v1').apples]" }`, "id");
                 const context: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "variables": { "v1": "blah" }, "a": "[variables('v1').app`.length);
-                const visitor = TLE.UndefinedVariablePropertyVisitor.visit(context.tleValue, dt);
+                const visitor = TLE.UndefinedVariablePropertyVisitor.visit(context.tleInfo.tleValue, dt);
                 assert.deepStrictEqual(
                     visitor.errors,
                     [new Language.Issue(new Language.Span(18, 6), `Property "apples" is not a defined property of "variables('v1')".`)]);
@@ -2116,7 +2116,7 @@ suite("TLE", () => {
             test("with grandchild property access from variable reference to non-object variable", () => {
                 const dt = new DeploymentTemplate(`{ "variables": { "v1": "blah" }, "a": "[variables('v1').apples.bananas]" }`, "id");
                 const context: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "variables": { "v1": "blah" }, "a": "[variables('v1').apples.ban`.length);
-                const visitor = TLE.UndefinedVariablePropertyVisitor.visit(context.tleValue, dt);
+                const visitor = TLE.UndefinedVariablePropertyVisitor.visit(context.tleInfo.tleValue, dt);
                 assert.deepStrictEqual(
                     visitor.errors,
                     [new Language.Issue(new Language.Span(18, 6), `Property "apples" is not a defined property of "variables('v1')".`)]);

@@ -64,6 +64,7 @@ export function httpGet(url: string): Promise<string> {
             request = http.get(url, callback);
         } else {
             reject(`Unsupported url schema: '${url}`);
+            return;
         }
 
         request.on("error", (e) => {

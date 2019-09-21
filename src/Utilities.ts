@@ -167,7 +167,7 @@ export interface Iterator<T> {
     /**
      * Get the iterator's current value, or undefined if the iterator doesn't have a current value.
      */
-    current(): T;
+    current(): T | undefined;
 
     /**
      * Move this iterator to the next value in its sequnce. Return whether or not the iterator has a

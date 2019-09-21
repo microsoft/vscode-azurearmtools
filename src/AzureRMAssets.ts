@@ -40,7 +40,7 @@ export class AzureRMAssets {
         return await AzureRMAssets._functionsMetadataPromise;
     }
 
-    public static async getFunctionMetadataFromName(functionName: string): Promise<FunctionMetadata> {
+    public static async getFunctionMetadataFromName(functionName: string): Promise<FunctionMetadata | undefined> {
         return (await this.getFunctionsMetadata()).findbyName(functionName);
     }
 

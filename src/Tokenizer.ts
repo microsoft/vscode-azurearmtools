@@ -119,7 +119,7 @@ export class Tokenizer implements utilities.Iterator<Token> {
     private _textLength: number;
     private _textIndex: number = -1;
 
-    private _currentToken: Token;
+    private _currentToken: Token | undefined;
 
     constructor(private _text: string) {
         this._textLength = _text ? _text.length : 0;
@@ -137,14 +137,14 @@ export class Tokenizer implements utilities.Iterator<Token> {
      * hasn't started parsing the source text, or if it has parsed the entire source text, then this
      * will return undefined.
      */
-    public current(): Token {
+    public current(): Token | undefined {
         return this._currentToken;
     }
 
     /**
      * Get the current character that this Tokenizer is pointing at.
      */
-    private get currentCharacter(): string {
+    private get currentCharacter(): string | undefined {
         return 0 <= this._textIndex && this._textIndex < this._textLength ? this._text[this._textIndex] : undefined;
     }
 
@@ -260,6 +260,7 @@ export class Tokenizer implements utilities.Iterator<Token> {
 
                 case "\r":
                     this.nextCharacter();
+                    // tslint:disable-next-line: strict-boolean-expressions // false positive - nextCharacter modifies this.currentCharacter from "\r" value
                     if (this.currentCharacter && this.currentCharacter.toString() === "\n") {
                         this._currentToken = CarriageReturnNewLine;
                         this.nextCharacter();
@@ -299,7 +300,8 @@ export class Tokenizer implements utilities.Iterator<Token> {
      * condition function.
      */
     private readWhile(condition: (character: string) => boolean): string {
-        let result: string = this.currentCharacter;
+        // tslint:disable-next-line: strict-boolean-expressions
+        let result: string = this.currentCharacter || '';
         this.nextCharacter();
 
         while (this.currentCharacter && condition(this.currentCharacter)) {

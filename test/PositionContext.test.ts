@@ -173,32 +173,32 @@ suite("PositionContext", () => {
         test("with characterIndex in whitespace", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(1);
-            assert.deepStrictEqual(pc.tleParseResult, null);
+            assert.deepStrictEqual(pc.tleInfo, null);
         });
 
         test("with characterIndex at the start of a LeftCurlyBracket", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(0);
-            assert.deepStrictEqual(pc.tleParseResult, null);
+            assert.deepStrictEqual(pc.tleInfo, null);
         });
 
         test("with characterIndex at the start of a Colon", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(5);
-            assert.deepStrictEqual(null, pc.tleParseResult);
+            assert.deepStrictEqual(pc.tleInfo, null);
         });
 
         test("with characterIndex at the start of a non-TLE QuotedString", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(2);
-            assert.deepStrictEqual(TLE.Parser.parse("'a'"), pc.tleParseResult);
+            assert.deepStrictEqual(TLE.Parser.parse("'a'"), pc.tleInfo.tleParseResult);
         });
 
         test("with characterIndex at the start of a closed TLE QuotedString", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(17);
 
-            const tleParseResult: TLE.ParseResult = pc.tleParseResult;
+            const tleParseResult: TLE.ParseResult = pc.tleInfo.tleParseResult;
             assert(tleParseResult);
             assert.deepStrictEqual(tleParseResult.errors, []);
             assert.deepStrictEqual(tleParseResult.leftSquareBracketToken, TLE.Token.createLeftSquareBracket(1));
@@ -222,7 +222,7 @@ suite("PositionContext", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(17);
 
-            const tleParseResult: TLE.ParseResult = pc.tleParseResult;
+            const tleParseResult: TLE.ParseResult = pc.tleInfo.tleParseResult;
             assert(tleParseResult);
             assert.deepStrictEqual(
                 tleParseResult.errors,
@@ -251,43 +251,43 @@ suite("PositionContext", () => {
         test("with characterIndex at the start of a LeftCurlyBracket", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(0);
-            assert.deepStrictEqual(null, pc.tleCharacterIndex);
+            assert.deepStrictEqual(pc.tleInfo, null);
         });
 
         test("with characterIndex in whitespace", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(1);
-            assert.deepStrictEqual(null, pc.tleCharacterIndex);
+            assert.deepStrictEqual(null, pc.tleInfo);
         });
 
         test("with characterIndex at the start of a non-TLE QuotedString", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(2);
-            assert.deepStrictEqual(0, pc.tleCharacterIndex);
+            assert.deepStrictEqual(0, pc.tleInfo.tleCharacterIndex);
         });
 
         test("with characterIndex at the start of a TLE", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(17);
-            assert.deepStrictEqual(0, pc.tleCharacterIndex);
+            assert.deepStrictEqual(0, pc.tleInfo.tleCharacterIndex);
         });
 
         test("with characterIndex inside of a TLE", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(21);
-            assert.deepStrictEqual(pc.tleCharacterIndex, 4);
+            assert.deepStrictEqual(pc.tleInfo.tleCharacterIndex, 4);
         });
 
         test("with characterIndex after the end of a closed TLE", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(32);
-            assert.deepStrictEqual(null, pc.tleCharacterIndex);
+            assert.deepStrictEqual(pc.tleInfo, null);
         });
 
         test("with characterIndex after the end of an unclosed TLE", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(29);
-            assert.deepStrictEqual(12, pc.tleCharacterIndex);
+            assert.deepStrictEqual(12, pc.tleInfo.tleCharacterIndex);
         });
     });
 
@@ -295,34 +295,34 @@ suite("PositionContext", () => {
         test("with characterIndex at the start of a LeftCurlyBracket", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(0);
-            assert.deepStrictEqual(null, pc.tleValue);
+            assert.deepStrictEqual(pc.tleInfo, null);
         });
 
         test("with characterIndex in whitespace", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(1);
-            assert.deepStrictEqual(null, pc.tleValue);
+            assert.deepStrictEqual(pc.tleInfo, null);
         });
 
         test("with characterIndex at the start of a non-TLE QuotedString", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(2);
             assert.deepStrictEqual(
-                pc.tleValue,
+                pc.tleInfo.tleValue,
                 new TLE.StringValue(TLE.Token.createQuotedString(0, "'a'")));
         });
 
         test("with characterIndex at the start of a TLE", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': ".length);
-            assert.deepStrictEqual(pc.tleValue, null);
+            assert.deepStrictEqual(pc.tleInfo.tleValue, null);
         });
 
         test("with characterIndex inside of a TLE", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(21);
 
-            const concat: TLE.FunctionValue = TLE.asFunctionValue(pc.tleValue);
+            const concat: TLE.FunctionValue = TLE.asFunctionValue(pc.tleInfo.tleValue);
             assert(concat);
             assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
             assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
@@ -338,14 +338,14 @@ suite("PositionContext", () => {
         test("with characterIndex after the end of a closed TLE", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(32);
-            assert.deepStrictEqual(null, pc.tleValue);
+            assert.deepStrictEqual(pc.tleInfo, null);
         });
 
         test("with characterIndex after the end of an unclosed TLE", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[concat('B'".length);
 
-            const b: TLE.StringValue = TLE.asStringValue(pc.tleValue);
+            const b: TLE.StringValue = TLE.asStringValue(pc.tleInfo.tleValue);
             assert(b);
             assert.deepStrictEqual(b.token, TLE.Token.createQuotedString(9, "'B'"));
             const concat: TLE.FunctionValue = TLE.asFunctionValue(b.parent);

@@ -75,7 +75,8 @@ export class DotnetCoreDependencyInstaller {
                 'More Info',
                 'Install',
                 'Cancel');
-            telemetryProperties.response = response;
+            // tslint:disable-next-line: strict-boolean-expressions
+            telemetryProperties.response = response || '';
 
             if (response === 'More Info') {
                 // Don't return, user has to explicitly hit "cancel"

@@ -7,8 +7,8 @@ export class Histogram {
     private _undefinedCounts: number = 0;
     private _counts: { [key: string]: number } = {};
 
-    public get keys(): string[] {
-        let result: string[] = Object.getOwnPropertyNames(this._counts);
+    public get keys(): (string | undefined | null)[] {
+        let result: (string | undefined | null)[] = Object.getOwnPropertyNames(this._counts);
         if (this._nullCounts > 0) {
             result.push(null);
         }
@@ -18,7 +18,7 @@ export class Histogram {
         return result;
     }
 
-    public add(key: string | Histogram, count: number = 1): void {
+    public add(key: string | Histogram | undefined | null, count: number = 1): void {
         if (key === null) {
             this._nullCounts += count;
         } else if (key === undefined) {
@@ -37,7 +37,7 @@ export class Histogram {
         }
     }
 
-    public getCount(key: string): number {
+    public getCount(key: string | undefined | null): number {
         let result: number;
         if (key === null) {
             result = this._nullCounts;

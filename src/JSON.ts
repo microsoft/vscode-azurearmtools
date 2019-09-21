@@ -8,7 +8,6 @@
 // tslint:disable:cyclomatic-complexity // Grandfathered in
 
 import { assert } from "./fixed_assert";
-
 import * as language from "./Language";
 import * as basic from "./Tokenizer";
 import * as utilities from "./Utilities";
@@ -147,23 +146,23 @@ export function Unrecognized(startIndex: number, basicToken: basic.Token): Token
     return new Token(TokenType.Unrecognized, startIndex, [basicToken]);
 }
 
-export function asObjectValue(value: Value): ObjectValue {
+export function asObjectValue(value: Value): ObjectValue | null {
     return value instanceof ObjectValue ? value : null;
 }
 
-export function asArrayValue(value: Value): ArrayValue {
+export function asArrayValue(value: Value): ArrayValue | null {
     return value instanceof ArrayValue ? value : null;
 }
 
-export function asStringValue(value: Value): StringValue {
+export function asStringValue(value: Value): StringValue | null {
     return value instanceof StringValue ? value : null;
 }
 
-export function asNumberValue(value: Value): NumberValue {
+export function asNumberValue(value: Value): NumberValue | null {
     return value instanceof NumberValue ? value : null;
 }
 
-export function asBooleanValue(value: Value): BooleanValue {
+export function asBooleanValue(value: Value): BooleanValue | null {
     return value instanceof BooleanValue ? value : null;
 }
 
@@ -225,47 +224,55 @@ export function readWhitespace(iterator: utilities.Iterator<basic.Token>): basic
 export function readNumber(iterator: utilities.Iterator<basic.Token>): basic.Token[] {
     const numberBasicTokens: basic.Token[] = [];
 
-    if (iterator.current().getType() === basic.TokenType.Dash) {
+    // tslint:disable-next-line:no-non-null-assertion // Precondition is that current points to Dash or Digits
+    const dashOrDigitsToken = iterator.current()!;
+    if (dashOrDigitsToken.getType() === basic.TokenType.Dash) {
         // Negative sign
-        numberBasicTokens.push(iterator.current());
+        numberBasicTokens.push(dashOrDigitsToken);
         iterator.moveNext();
     }
 
-    if (iterator.current() && iterator.current().getType() === basic.TokenType.Digits) {
+    const digits = iterator.current();
+    if (digits && digits.getType() === basic.TokenType.Digits) {
         // Whole number digits
-        numberBasicTokens.push(iterator.current());
+        numberBasicTokens.push(digits);
         iterator.moveNext();
     }
 
-    if (iterator.current() && iterator.current().getType() === basic.TokenType.Period) {
+    const decimal = iterator.current();
+    if (decimal && decimal.getType() === basic.TokenType.Period) {
         // Decimal point
-        numberBasicTokens.push(iterator.current());
+        numberBasicTokens.push(decimal);
         iterator.moveNext();
 
-        if (iterator.current() && iterator.current().getType() === basic.TokenType.Digits) {
+        const fractionalDigits = iterator.current();
+        if (fractionalDigits && fractionalDigits.getType() === basic.TokenType.Digits) {
             // Fractional number digits
-            numberBasicTokens.push(iterator.current());
+            numberBasicTokens.push(fractionalDigits);
             iterator.moveNext();
         }
     }
 
-    if (iterator.current()) {
-        if (iterator.current().getType() === basic.TokenType.Letters && iterator.current().toString().toLowerCase() === "e") {
+    const exponentLetter = iterator.current();
+    if (exponentLetter) {
+        if (exponentLetter.getType() === basic.TokenType.Letters && exponentLetter.toString().toLowerCase() === "e") {
             // e
-            numberBasicTokens.push(iterator.current());
+            numberBasicTokens.push(exponentLetter);
             iterator.moveNext();
 
-            if (iterator.current()
-                && (iterator.current().getType() === basic.TokenType.Dash || iterator.current().getType() === basic.TokenType.Plus)
+            const exponentSign = iterator.current();
+            if (exponentSign
+                && (exponentSign.getType() === basic.TokenType.Dash || exponentSign.getType() === basic.TokenType.Plus)
             ) {
                 // Exponent number sign
-                numberBasicTokens.push(iterator.current());
+                numberBasicTokens.push(exponentSign);
                 iterator.moveNext();
             }
 
-            if (iterator.current() && iterator.current().getType() === basic.TokenType.Digits) {
+            const exponentDigits = iterator.current();
+            if (exponentDigits && exponentDigits.getType() === basic.TokenType.Digits) {
                 // Exponent number digits
-                numberBasicTokens.push(iterator.current());
+                numberBasicTokens.push(exponentDigits);
                 iterator.moveNext();
             }
         }
@@ -279,7 +286,7 @@ export function readNumber(iterator: utilities.Iterator<basic.Token>): basic.Tok
  */
 export class Tokenizer {
     private _innerTokenizer: basic.Tokenizer;
-    private _current: Token;
+    private _current: Token | null;
     private _currentTokenStartIndex: number;
     private _lineLengths: number[] = [0];
 
@@ -292,7 +299,7 @@ export class Tokenizer {
         return this._innerTokenizer.hasStarted();
     }
 
-    public get current(): Token {
+    public get current(): Token | null {
         return this._current;
     }
 
@@ -303,12 +310,12 @@ export class Tokenizer {
     /**
      * Get the current basic token that the basic Tokenizer is pointing at.
      */
-    private currentBasicToken(): basic.Token {
+    private currentBasicToken(): basic.Token | undefined {
         return this._innerTokenizer.current();
     }
 
-    private currentBasicTokenType(): basic.TokenType {
-        const currentBasicToken: basic.Token = this.currentBasicToken();
+    private currentBasicTokenType(): basic.TokenType | undefined {
+        const currentBasicToken: basic.Token | undefined = this.currentBasicToken();
         return currentBasicToken ? currentBasicToken.getType() : undefined;
     }
 
@@ -791,7 +798,7 @@ export class NullValue extends Value {
  * The result of parsing a JSON string.
  */
 export class ParseResult {
-    constructor(private _tokens: Token[], private _lineLengths: number[], private _value: Value) {
+    constructor(private _tokens: Token[], private _lineLengths: number[], private _value: Value | null) {
         assert(_tokens !== null);
         assert(_tokens !== undefined);
         assert(_lineLengths !== null);
@@ -977,7 +984,7 @@ export function parse(stringValue: string): ParseResult {
 
     const tokens: Token[] = [];
     const jt = new Tokenizer(stringValue);
-    const value: Value = parseValue(jt, tokens);
+    const value: Value | null = parseValue(jt, tokens);
 
     // Read the rest of the Tokens so that they will be put into the tokens array.
     while (jt.current) {
