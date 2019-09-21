@@ -30,8 +30,8 @@ export class PositionContext {
     private _jsonToken: CachedValue<Json.Token | null> = new CachedValue<Json.Token>();
     private _jsonValue: CachedValue<Json.Value> = new CachedValue<Json.Value>();
     private _tleInfo: CachedValue<TleInfo | null> = new CachedValue<TleInfo | null>();
-    private _hoverInfo: CachedPromise<Hover.Info> = new CachedPromise<Hover.Info>();
-    private _completionItems: CachedPromise<Completion.Item[] | null> = new CachedPromise<Completion.Item[] | null>();
+    private _hoverInfo: CachedPromise<Hover.Info | null> = new CachedPromise<Hover.Info | null>();
+    private _completionItems: CachedPromise<Completion.Item[]> = new CachedPromise<Completion.Item[]>();
     private _parameterDefinition: CachedValue<ParameterDefinition> = new CachedValue<ParameterDefinition>();
     private _variableDefinition: CachedValue<Json.Property> = new CachedValue<Json.Property>();
     private _references: CachedValue<Reference.List> = new CachedValue<Reference.List>();
@@ -120,12 +120,11 @@ export class PositionContext {
 
     public get jsonTokenStartIndex(): number {
         assert(!!this.jsonToken, "The jsonTokenStartIndex can only be requested when the PositionContext is inside a JSONToken.");
-
-        // tslint:disable-next-line:no-non-null-assertion
-        return this.jsonToken.span.startIndex;
+        // tslint:disable-next-line:no-non-null-assertion no-unnecessary-type-assertion // Asserted
+        return this.jsonToken!.span.startIndex;
     }
 
-    public get tleInfo(): TleInfo {
+    public get tleInfo(): TleInfo | null {
         return this._tleInfo.getOrCacheValue(() => {
             const tleParseResult = this._deploymentTemplate.getTLEParseResultFromJSONToken(this.jsonToken);
             if (tleParseResult) {
@@ -142,11 +141,11 @@ export class PositionContext {
         return new language.Span(this.documentCharacterIndex, 0);
     }
 
-    public get hoverInfo(): Promise<Hover.Info> {
+    public get hoverInfo(): Promise<Hover.Info | null> {
         return this._hoverInfo.getOrCachePromise(async () => {
             const tleInfo = this.tleInfo;
             if (tleInfo) {
-                const tleValue: TLE.Value = tleInfo.tleValue;
+                const tleValue: TLE.Value | null = tleInfo.tleValue;
                 if (tleValue instanceof TLE.FunctionValue) {
                     if (tleValue.nameToken.span.contains(tleInfo.tleCharacterIndex)) {
                         const functionMetadata: FunctionMetadata | undefined = await AzureRMAssets.getFunctionMetadataFromName(tleValue.nameToken.stringValue);
@@ -192,7 +191,7 @@ export class PositionContext {
 
             // The function/string/number/etc at the current position inside the string expression,
             // or else the JSON string itself even it's not an expression
-            const tleValue: TLE.Value = tleInfo.tleValue;
+            const tleValue: TLE.Value | null = tleInfo.tleValue;
 
             if (!tleValue || !tleValue.contains(tleInfo.tleCharacterIndex)) {
                 // No TLE value here. For instance, expression is empty, or before/after/on the square brackets
@@ -220,8 +219,8 @@ export class PositionContext {
      * *or* there is no square bracket yet
      */
     private static isInsideSquareBrackets(parseResult: TLE.ParseResult, characterIndex: number): boolean {
-        const leftSquareBracketToken: TLE.Token = parseResult.leftSquareBracketToken;
-        const rightSquareBracketToken: TLE.Token = parseResult.rightSquareBracketToken;
+        const leftSquareBracketToken: TLE.Token | null = parseResult.leftSquareBracketToken;
+        const rightSquareBracketToken: TLE.Token | null = parseResult.rightSquareBracketToken;
 
         if (leftSquareBracketToken && leftSquareBracketToken.span.afterEndIndex <= characterIndex &&
             (!rightSquareBracketToken || characterIndex <= rightSquareBracketToken.span.startIndex)) {
@@ -253,22 +252,22 @@ export class PositionContext {
      * Get completions when we're anywhere inside a property accesses, e.g. "resourceGroup().prop1.prop2"
      */
     private async getPropertyAccessCompletions(tleValue: TLE.PropertyAccess, tleCharacterIndex: number): Promise<Completion.Item[]> {
-        const functionSource: TLE.FunctionValue = tleValue.functionSource;
+        const functionSource: TLE.FunctionValue | null = tleValue.functionSource;
         if (functionSource) {
             let propertyPrefix: string = "";
             let replaceSpan: language.Span = this.emptySpanAtDocumentCharacterIndex;
-            const propertyNameToken: TLE.Token = tleValue.nameToken;
+            const propertyNameToken: TLE.Token | null = tleValue.nameToken;
             if (propertyNameToken) {
                 replaceSpan = propertyNameToken.span.translate(this.jsonTokenStartIndex);
                 propertyPrefix = propertyNameToken.stringValue.substring(0, tleCharacterIndex - propertyNameToken.span.startIndex).toLowerCase();
             }
 
-            const variableProperty: Json.Property = this._deploymentTemplate.getVariableDefinitionFromFunction(functionSource);
-            const parameterProperty: ParameterDefinition = this._deploymentTemplate.getParameterDefinitionFromFunction(functionSource);
+            const variableProperty: Json.Property | null = this._deploymentTemplate.getVariableDefinitionFromFunction(functionSource);
+            const parameterProperty: ParameterDefinition | null = this._deploymentTemplate.getParameterDefinitionFromFunction(functionSource);
             const sourcesNameStack: string[] = tleValue.sourcesNameStack;
             if (variableProperty) {
                 // If the variable's value is an object...
-                const sourceVariableDefinition: Json.ObjectValue = Json.asObjectValue(variableProperty.value);
+                const sourceVariableDefinition: Json.ObjectValue | null = Json.asObjectValue(variableProperty.value);
                 if (sourceVariableDefinition) {
                     return this.getDeepPropertyAccessCompletions(
                         propertyPrefix,

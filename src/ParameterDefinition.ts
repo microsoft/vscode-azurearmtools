@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
-
+import { CachedValue } from "./CachedValue";
 import * as Json from "./JSON";
 import * as language from "./Language";
 
@@ -11,8 +11,8 @@ import * as language from "./Language";
  * This class represents the definition of a parameter in a deployment template.
  */
 export class ParameterDefinition {
-    private _description: string | undefined | null;
-    private _defaultValue: Json.Value | undefined | null;
+    private _description: CachedValue<string | null> = new CachedValue<string | null>();
+    private _defaultValue: CachedValue<Json.Value | null> = new CachedValue<Json.Value | null>();
 
     constructor(private _property: Json.Property) {
         assert(_property);
@@ -26,33 +26,31 @@ export class ParameterDefinition {
         return this._property.span;
     }
 
-    public get description(): string {
-        if (this._description === undefined) {
-            this._description = null;
-
-            const parameterDefinition: Json.ObjectValue = Json.asObjectValue(this._property.value);
+    public get description(): string | null {
+        return this._description.getOrCacheValue(() => {
+            const parameterDefinition: Json.ObjectValue | null = Json.asObjectValue(this._property.value);
             if (parameterDefinition) {
-                const metadata: Json.ObjectValue = Json.asObjectValue(parameterDefinition.getPropertyValue("metadata"));
+                const metadata: Json.ObjectValue | null = Json.asObjectValue(parameterDefinition.getPropertyValue("metadata"));
                 if (metadata) {
-                    const description: Json.StringValue = Json.asStringValue(metadata.getPropertyValue("description"));
+                    const description: Json.StringValue | null = Json.asStringValue(metadata.getPropertyValue("description"));
                     if (description) {
-                        this._description = description.toString();
+                        return description.toString();
                     }
                 }
             }
-        }
-        return this._description;
+
+            return null;
+        });
     }
 
-    public get defaultValue(): Json.Value {
-        if (this._defaultValue === undefined) {
-            this._defaultValue = null;
-
-            const parameterDefinition: Json.ObjectValue = Json.asObjectValue(this._property.value);
+    public get defaultValue(): Json.Value | null {
+        return this._defaultValue.getOrCacheValue(() => {
+            const parameterDefinition: Json.ObjectValue | null = Json.asObjectValue(this._property.value);
             if (parameterDefinition) {
-                this._defaultValue = parameterDefinition.getPropertyValue("defaultValue");
+                return parameterDefinition.getPropertyValue("defaultValue");
             }
-        }
-        return this._defaultValue;
+
+            return null;
+        });
     }
 }

@@ -66,9 +66,7 @@ export class DeploymentTemplate {
 
             for (let jsonQuotedStringToken of this.jsonQuotedStringTokens) {
                 let tleParseResult: TLE.ParseResult = TLE.Parser.parse(jsonQuotedStringToken.toString());
-                if (tleParseResult) {
-                    this._quotedStringToTleParseResultMap[jsonQuotedStringToken.toString()] = tleParseResult;
-                }
+                this._quotedStringToTleParseResultMap[jsonQuotedStringToken.toString()] = tleParseResult;
             }
         }
         return this._quotedStringToTleParseResultMap;
@@ -132,7 +130,7 @@ export class DeploymentTemplate {
                                 parseErrors.push(error.translate(jsonTokenStartIndex));
                             }
 
-                            const tleExpression: TLE.Value = tleParseResult.expression;
+                            const tleExpression: TLE.Value | null = tleParseResult.expression;
                             const tleUndefinedParameterAndVariableVisitor = TLE.UndefinedParameterAndVariableVisitor.visit(tleExpression, this);
                             for (const error of tleUndefinedParameterAndVariableVisitor.errors) {
                                 parseErrors.push(error.translate(jsonTokenStartIndex));
@@ -520,7 +518,7 @@ export class ReferenceInVariableDefinitionJSONVisitor extends Json.Visitor {
     public visitStringValue(value: Json.StringValue): void {
         assert(value, "Cannot visit a null or undefined Json.StringValue.");
 
-        const tleParseResult: TLE.ParseResult = this._deploymentTemplate.getTLEParseResultFromJSONStringValue(value);
+        const tleParseResult: TLE.ParseResult | null = this._deploymentTemplate.getTLEParseResultFromJSONStringValue(value);
         if (tleParseResult && tleParseResult.expression) {
             const tleVisitor = new ReferenceInVariableDefinitionTLEVisitor();
             tleParseResult.expression.accept(tleVisitor);

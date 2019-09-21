@@ -87,6 +87,7 @@ function buildTLEGrammar(): void {
     let grammarAsObject = <IGrammar>JSON.parse(grammar);
     grammarAsObject.preprocess = {
         "builtin-functions": `(?:(?i)${builtinFunctions.join('|')})`,
+        // tslint:disable-next-line: strict-boolean-expressions
         ... (grammarAsObject.preprocess || {})
     };
 
@@ -155,8 +156,11 @@ async function getLanguageServer(): Promise<void> {
 
         // Create temporary config file with credentials
         const config = fse.readFileSync(path.join(__dirname, 'NuGet.Config')).toString();
-        const withCreds = config.replace('$LANGSERVER_NUGET_USERNAME', env.LANGSERVER_NUGET_USERNAME).
-            replace('$LANGSERVER_NUGET_PASSWORD', env.LANGSERVER_NUGET_PASSWORD);
+        const withCreds = config.
+            // tslint:disable-next-line: strict-boolean-expressions
+            replace('$LANGSERVER_NUGET_USERNAME', env.LANGSERVER_NUGET_USERNAME || '').
+            // tslint:disable-next-line: strict-boolean-expressions
+            replace('$LANGSERVER_NUGET_PASSWORD', env.LANGSERVER_NUGET_PASSWORD || '');
         const configPath = getTempFilePath('nuget', '.config');
         fse.writeFileSync(configPath, withCreds);
 
@@ -200,7 +204,6 @@ async function getLanguageServer(): Promise<void> {
         console.log(`Language server binaries and license are in ${languageServerRelativeFolderPath}`);
     } else {
         console.warn(`Language server not available, skipping packaging of language server binaries.`);
-        return null;
     }
 }
 
@@ -275,6 +278,9 @@ async function packageVsix(): Promise<void> {
 
     // Copy vsix to current folder
     let vsixName = fse.readdirSync(stagingFolder).find(fn => /\.vsix$/.test(fn));
+    if (!vsixName) {
+        throw new Error("Couldn't find a .vsix file");
+    }
     let vsixDestPath = path.join(__dirname, vsixName);
     if (!packageLanguageServer) {
         vsixDestPath = vsixDestPath.replace('.vsix', '-no-languageserver.vsix');

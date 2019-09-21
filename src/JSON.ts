@@ -146,23 +146,23 @@ export function Unrecognized(startIndex: number, basicToken: basic.Token): Token
     return new Token(TokenType.Unrecognized, startIndex, [basicToken]);
 }
 
-export function asObjectValue(value: Value): ObjectValue | null {
+export function asObjectValue(value: Value | null): ObjectValue | null {
     return value instanceof ObjectValue ? value : null;
 }
 
-export function asArrayValue(value: Value): ArrayValue | null {
+export function asArrayValue(value: Value | null): ArrayValue | null {
     return value instanceof ArrayValue ? value : null;
 }
 
-export function asStringValue(value: Value): StringValue | null {
+export function asStringValue(value: Value | null): StringValue | null {
     return value instanceof StringValue ? value : null;
 }
 
-export function asNumberValue(value: Value): NumberValue | null {
+export function asNumberValue(value: Value | null): NumberValue | null {
     return value instanceof NumberValue ? value : null;
 }
 
-export function asBooleanValue(value: Value): BooleanValue | null {
+export function asBooleanValue(value: Value | null): BooleanValue | null {
     return value instanceof BooleanValue ? value : null;
 }
 
@@ -224,7 +224,7 @@ export function readWhitespace(iterator: utilities.Iterator<basic.Token>): basic
 export function readNumber(iterator: utilities.Iterator<basic.Token>): basic.Token[] {
     const numberBasicTokens: basic.Token[] = [];
 
-    // tslint:disable-next-line:no-non-null-assertion // Precondition is that current points to Dash or Digits
+    // tslint:disable-next-line:no-non-null-assertion no-unnecessary-type-assertion // Precondition is that current points to Dash or Digits
     const dashOrDigitsToken = iterator.current()!;
     if (dashOrDigitsToken.getType() === basic.TokenType.Dash) {
         // Negative sign
