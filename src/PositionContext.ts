@@ -6,6 +6,8 @@
 
 import * as assert from "assert";
 import { AzureRMAssets, FunctionMetadata } from "./AzureRMAssets";
+import { CachedPromise } from "./CachedPromise";
+import { CachedValue } from "./CachedValue";
 import * as Completion from "./Completion";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import * as Hover from "./Hover";
@@ -21,20 +23,21 @@ import * as TLE from "./TLE";
  */
 export class PositionContext {
     private _deploymentTemplate: DeploymentTemplate;
-    private _documentPosition: language.Position;
-    private _documentCharacterIndex: number;
-    private _tleCharacterIndex: number;
-    private _jsonToken: Json.Token;
-    private _jsonValue: Json.Value;
-    private _tleParseResult: TLE.ParseResult;
-    private _tleValue: TLE.Value;
-    private _tleValueCached: boolean;
-    private _hoverInfo: Promise<Hover.Info>;
-    private _completionItemsPromise: Promise<Completion.Item[]> | undefined;
-    private _parameterDefinition: ParameterDefinition;
-    private _variableDefinition: Json.Property;
-    private _references: Reference.List;
-    private _signatureHelp: Promise<TLE.FunctionSignatureHelp>;
+    private _givenDocumentPosition: language.Position | undefined;
+    private _documentPosition: CachedValue<language.Position> = new CachedValue<language.Position>();
+    private _givenDocumentCharacterIndex: number | undefined;
+    private _documentCharacterIndex: CachedValue<number> = new CachedValue<number>();
+    private _tleCharacterIndex: CachedValue<number> = new CachedValue<number>();
+    private _jsonToken: CachedValue<Json.Token> = new CachedValue<Json.Token>();
+    private _jsonValue: CachedValue<Json.Value> = new CachedValue<Json.Value>();
+    private _tleParseResult: CachedValue<TLE.ParseResult> = new CachedValue<TLE.ParseResult>();
+    private _tleValue: CachedValue<TLE.Value> = new CachedValue<TLE.Value>();
+    private _hoverInfo: CachedPromise<Hover.Info> = new CachedPromise<Hover.Info>();
+    private _completionItems: CachedPromise<Completion.Item[] | null> = new CachedPromise<Completion.Item[] | null>();
+    private _parameterDefinition: CachedValue<ParameterDefinition> = new CachedValue<ParameterDefinition>();
+    private _variableDefinition: CachedValue<Json.Property> = new CachedValue<Json.Property>();
+    private _references: CachedValue<Reference.List> = new CachedValue<Reference.List>();
+    private _signatureHelp: CachedPromise<TLE.FunctionSignatureHelp> = new CachedPromise<TLE.FunctionSignatureHelp>();
 
     public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number): PositionContext {
         assert(deploymentTemplate !== null, "deploymentTemplate cannot be null");
@@ -50,7 +53,7 @@ export class PositionContext {
 
         let context = new PositionContext();
         context._deploymentTemplate = deploymentTemplate;
-        context._documentPosition = new language.Position(documentLineIndex, documentColumnIndex);
+        context._givenDocumentPosition = new language.Position(documentLineIndex, documentColumnIndex);
         return context;
     }
 
@@ -64,17 +67,18 @@ export class PositionContext {
 
         let context = new PositionContext();
         context._deploymentTemplate = deploymentTemplate;
-        context._documentCharacterIndex = documentCharacterIndex;
+        context._givenDocumentCharacterIndex = documentCharacterIndex;
         return context;
     }
 
     public get documentPosition(): language.Position {
-        if (this._documentPosition === undefined) {
-            assert(this._documentCharacterIndex, "The documentPosition can only be generated if the documentCharacterIndex exists.");
-
-            this._documentPosition = this._deploymentTemplate.getDocumentPosition(this.documentCharacterIndex);
-        }
-        return this._documentPosition;
+        return this._documentPosition.getOrCacheValue(() => {
+            if (this._givenDocumentPosition) {
+                return this._givenDocumentPosition;
+            } else {
+                return this._deploymentTemplate.getDocumentPosition(this.documentCharacterIndex);
+            }
+        });
     }
 
     public get documentLineIndex(): number {
@@ -86,44 +90,43 @@ export class PositionContext {
     }
 
     public get documentCharacterIndex(): number {
-        if (this._documentCharacterIndex === undefined) {
-            this._documentCharacterIndex = this._deploymentTemplate.getDocumentCharacterIndex(this.documentLineIndex, this.documentColumnIndex);
-        }
-        return this._documentCharacterIndex;
+        return this._documentCharacterIndex.getOrCacheValue(() => {
+            if (typeof this._givenDocumentCharacterIndex === "number") {
+                return this._givenDocumentCharacterIndex;
+            } else {
+                return this._deploymentTemplate.getDocumentCharacterIndex(this.documentLineIndex, this.documentColumnIndex);
+            }
+        });
     }
 
     public get jsonToken(): Json.Token {
-        if (this._jsonToken === undefined) {
-            this._jsonToken = this._deploymentTemplate.getJSONTokenAtDocumentCharacterIndex(this.documentCharacterIndex);
-        }
-        return this._jsonToken;
+        return this._jsonToken.getOrCacheValue(() => {
+            return this._deploymentTemplate.getJSONTokenAtDocumentCharacterIndex(this.documentCharacterIndex);
+        });
     }
 
     public get jsonValue(): Json.Value {
-        if (this._jsonValue === undefined) {
-            this._jsonValue = this._deploymentTemplate.getJSONValueAtDocumentCharacterIndex(this.documentCharacterIndex);
-        }
-        return this._jsonValue;
+        return this._jsonValue.getOrCacheValue(() => {
+            return this._deploymentTemplate.getJSONValueAtDocumentCharacterIndex(this.documentCharacterIndex);
+        });
     }
 
     public get jsonTokenStartIndex(): number {
-        assert(this.jsonToken !== null, "The jsonTokenStartIndex can only be requested when the PositionContext is inside a JSONToken.");
+        assert(!!this.jsonToken, "The jsonTokenStartIndex can only be requested when the PositionContext is inside a JSONToken.");
 
         return this.jsonToken.span.startIndex;
     }
 
     public get tleParseResult(): TLE.ParseResult {
-        if (this._tleParseResult === undefined) {
-            this._tleParseResult = this._deploymentTemplate.getTLEParseResultFromJSONToken(this.jsonToken);
-        }
-        return this._tleParseResult;
+        return this._tleParseResult.getOrCacheValue(() => {
+            return this._deploymentTemplate.getTLEParseResultFromJSONToken(this.jsonToken);
+        });
     }
 
     public get tleCharacterIndex(): number {
-        if (this._tleCharacterIndex === undefined) {
-            this._tleCharacterIndex = this.tleParseResult ? this.documentCharacterIndex - this.jsonTokenStartIndex : null;
-        }
-        return this._tleCharacterIndex;
+        return this._tleCharacterIndex.getOrCacheValue(() => {
+            return this.tleParseResult ? this.documentCharacterIndex - this.jsonTokenStartIndex : null;
+        });
     }
 
     public get emptySpanAtDocumentCharacterIndex(): language.Span {
@@ -131,22 +134,18 @@ export class PositionContext {
     }
 
     public get tleValue(): TLE.Value {
-        if (!this._tleValueCached) {
-            this._tleValue = this.tleParseResult ? this.tleParseResult.getValueAtCharacterIndex(this.tleCharacterIndex) : null;
-            this._tleValueCached = true;
-        }
-        return this._tleValue;
+        return this._tleValue.getOrCacheValue(() => {
+            return this.tleParseResult ? this.tleParseResult.getValueAtCharacterIndex(this.tleCharacterIndex) : null;
+        });
     }
 
     public get hoverInfo(): Promise<Hover.Info> {
-        if (this._hoverInfo === undefined) {
-            this._hoverInfo = Promise.resolve(null);
-
-            if (this.tleParseResult !== null) {
+        return this._hoverInfo.getOrCachePromise(async () => {
+            if (!!this.tleParseResult) {
                 const tleValue: TLE.Value = this.tleValue;
                 if (tleValue instanceof TLE.FunctionValue) {
                     if (tleValue.nameToken.span.contains(this.tleCharacterIndex)) {
-                        this._hoverInfo = AzureRMAssets.getFunctionMetadataFromName(tleValue.nameToken.stringValue)
+                        return AzureRMAssets.getFunctionMetadataFromName(tleValue.nameToken.stringValue)
                             .then((functionMetadata: FunctionMetadata) => {
                                 let result: Hover.FunctionInfo = null;
                                 if (functionMetadata) {
@@ -161,27 +160,27 @@ export class PositionContext {
                         const parameterDefinition: ParameterDefinition = this._deploymentTemplate.getParameterDefinition(this.tleValue.toString());
                         if (parameterDefinition) {
                             const hoverSpan: language.Span = tleValue.getSpan().translate(this.jsonTokenStartIndex);
-                            this._hoverInfo = Promise.resolve(new Hover.ParameterReferenceInfo(parameterDefinition.name.toString(), parameterDefinition.description, hoverSpan));
+                            return Promise.resolve(new Hover.ParameterReferenceInfo(parameterDefinition.name.toString(), parameterDefinition.description, hoverSpan));
                         }
                     } else if (tleValue.isVariablesArgument()) {
                         const variableDefinition: Json.Property = this._deploymentTemplate.getVariableDefinition(this.tleValue.toString());
                         if (variableDefinition) {
                             const hoverSpan: language.Span = tleValue.getSpan().translate(this.jsonTokenStartIndex);
-                            this._hoverInfo = Promise.resolve(new Hover.VariableReferenceInfo(variableDefinition.name.toString(), hoverSpan));
+                            return Promise.resolve(new Hover.VariableReferenceInfo(variableDefinition.name.toString(), hoverSpan));
                         }
                     }
                 }
             }
-        }
-        return this._hoverInfo;
+
+            return null;
+        });
     }
 
     /**
      * Get completion items for our position in the document
      */
     public async getCompletionItems(): Promise<Completion.Item[]> {
-        // Cache a promise so we handle reentrancy
-        const computeCompletionItems = async (): Promise<Completion.Item[]> => {
+        return this._completionItems.getOrCachePromise(async () => {
             if (!this.tleParseResult) {
                 // No string expression at this position
                 return [];
@@ -208,13 +207,7 @@ export class PositionContext {
             }
 
             return [];
-        };
-
-        if (!this._completionItemsPromise) {
-            this._completionItemsPromise = computeCompletionItems();
-        }
-
-        return this._completionItemsPromise;
+        });
     }
 
     /**
@@ -313,6 +306,7 @@ export class PositionContext {
 
             return [];
         }
+    }
 
     /**
      * Return completions when our position is anywhere inside a function call expression
@@ -375,10 +369,8 @@ export class PositionContext {
         return new Completion.Item(propertyName, `${propertyName}$0`, replaceSpan, "(property)", "", Completion.CompletionKind.Property);
     }
 
-    public get references(): Reference.List {
-        if (this._references === undefined) {
-            this._references = null;
-
+    public get references(): Reference.List | null {
+        return this._references.getOrCacheValue(() => {
             let referenceName: string = null;
             let referenceType: Reference.ReferenceKind = null;
 
@@ -411,16 +403,15 @@ export class PositionContext {
             }
 
             if (referenceName && referenceType !== null) {
-                this._references = this._deploymentTemplate.findReferences(referenceType, referenceName);
+                return this._deploymentTemplate.findReferences(referenceType, referenceName);
             }
-        }
-        return this._references;
+
+            return null;
+        });
     }
 
     public get signatureHelp(): Promise<TLE.FunctionSignatureHelp> {
-        if (this._signatureHelp === undefined) {
-            this._signatureHelp = Promise.resolve(null);
-
+        return this._signatureHelp.getOrCachePromise(async () => {
             const value: TLE.Value = this.tleValue;
             if (value) {
                 let functionToHelpWith: TLE.FunctionValue = TLE.asFunctionValue(value);
@@ -429,7 +420,7 @@ export class PositionContext {
                 }
 
                 if (functionToHelpWith) {
-                    this._signatureHelp = AzureRMAssets.getFunctionMetadataFromName(functionToHelpWith.nameToken.stringValue)
+                    return AzureRMAssets.getFunctionMetadataFromName(functionToHelpWith.nameToken.stringValue)
                         .then((functionMetadata: FunctionMetadata) => {
                             let result: TLE.FunctionSignatureHelp = null;
                             if (functionMetadata) {
@@ -455,40 +446,39 @@ export class PositionContext {
                         });
                 }
             }
-        }
-        return this._signatureHelp;
+
+            return null;
+        });
     }
 
     /**
      * If this PositionContext is currently at a parameter reference (inside 'parameterName' in
      * [parameters('parameterName')]), get the definition of the parameter that is being referenced.
      */
-    public get parameterDefinition(): ParameterDefinition {
-        if (this._parameterDefinition === undefined) {
-            this._parameterDefinition = null;
-
+    public get parameterDefinition(): ParameterDefinition | null {
+        return this._parameterDefinition.getOrCacheValue(() => {
             const tleValue: TLE.Value = this.tleValue;
             if (tleValue && tleValue instanceof TLE.StringValue && tleValue.isParametersArgument()) {
-                this._parameterDefinition = this._deploymentTemplate.getParameterDefinition(tleValue.toString());
+                return this._deploymentTemplate.getParameterDefinition(tleValue.toString());
             }
-        }
-        return this._parameterDefinition;
+
+            return null;
+        });
     }
 
     /**
      * If this PositionContext is currently at a variable reference (inside 'variableName' in
      * [variables('variableName')]), get the definition of the variable that is being referenced.
      */
-    public get variableDefinition(): Json.Property {
-        if (this._variableDefinition === undefined) {
-            this._variableDefinition = null;
-
+    public get variableDefinition(): Json.Property | null {
+        return this._variableDefinition.getOrCacheValue(() => {
             const tleValue: TLE.Value = this.tleValue;
             if (tleValue && tleValue instanceof TLE.StringValue && tleValue.isVariablesArgument()) {
-                this._variableDefinition = this._deploymentTemplate.getVariableDefinition(tleValue.toString());
+                return this._deploymentTemplate.getVariableDefinition(tleValue.toString());
             }
-        }
-        return this._variableDefinition;
+
+            return null;
+        });
     }
 
     /**

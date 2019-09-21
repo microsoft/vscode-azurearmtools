@@ -3,7 +3,6 @@
 // ----------------------------------------------------------------------------
 
 import { assert } from "./fixed_assert";
-
 import * as language from "./Language";
 
 /**
@@ -58,7 +57,6 @@ export class List {
 }
 
 export enum ReferenceKind {
-    Parameter,
-
+    Parameter = 1,
     Variable
 }
