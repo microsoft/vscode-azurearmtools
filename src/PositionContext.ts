@@ -145,28 +145,25 @@ export class PositionContext {
                 const tleValue: TLE.Value = this.tleValue;
                 if (tleValue instanceof TLE.FunctionValue) {
                     if (tleValue.nameToken.span.contains(this.tleCharacterIndex)) {
-                        return AzureRMAssets.getFunctionMetadataFromName(tleValue.nameToken.stringValue)
-                            .then((functionMetadata: FunctionMetadata) => {
-                                let result: Hover.FunctionInfo = null;
-                                if (functionMetadata) {
-                                    const hoverSpan: language.Span = tleValue.nameToken.span.translate(this.jsonTokenStartIndex);
-                                    result = new Hover.FunctionInfo(functionMetadata.name, functionMetadata.usage, functionMetadata.description, hoverSpan);
-                                }
-                                return result;
-                            });
+                        const functionMetadata: FunctionMetadata = await AzureRMAssets.getFunctionMetadataFromName(tleValue.nameToken.stringValue);
+                        if (functionMetadata) {
+                            const hoverSpan: language.Span = tleValue.nameToken.span.translate(this.jsonTokenStartIndex);
+                            return new Hover.FunctionInfo(functionMetadata.name, functionMetadata.usage, functionMetadata.description, hoverSpan);
+                        }
+                        return null;
                     }
                 } else if (tleValue instanceof TLE.StringValue) {
                     if (tleValue.isParametersArgument()) {
                         const parameterDefinition: ParameterDefinition = this._deploymentTemplate.getParameterDefinition(this.tleValue.toString());
                         if (parameterDefinition) {
                             const hoverSpan: language.Span = tleValue.getSpan().translate(this.jsonTokenStartIndex);
-                            return Promise.resolve(new Hover.ParameterReferenceInfo(parameterDefinition.name.toString(), parameterDefinition.description, hoverSpan));
+                            return new Hover.ParameterReferenceInfo(parameterDefinition.name.toString(), parameterDefinition.description, hoverSpan);
                         }
                     } else if (tleValue.isVariablesArgument()) {
                         const variableDefinition: Json.Property = this._deploymentTemplate.getVariableDefinition(this.tleValue.toString());
                         if (variableDefinition) {
                             const hoverSpan: language.Span = tleValue.getSpan().translate(this.jsonTokenStartIndex);
-                            return Promise.resolve(new Hover.VariableReferenceInfo(variableDefinition.name.toString(), hoverSpan));
+                            return new Hover.VariableReferenceInfo(variableDefinition.name.toString(), hoverSpan);
                         }
                     }
                 }
@@ -412,38 +409,34 @@ export class PositionContext {
 
     public get signatureHelp(): Promise<TLE.FunctionSignatureHelp> {
         return this._signatureHelp.getOrCachePromise(async () => {
-            const value: TLE.Value = this.tleValue;
-            if (value) {
-                let functionToHelpWith: TLE.FunctionValue = TLE.asFunctionValue(value);
+            const tleValue: TLE.Value = this.tleValue;
+            if (tleValue) {
+                let functionToHelpWith: TLE.FunctionValue = TLE.asFunctionValue(tleValue);
                 if (!functionToHelpWith) {
-                    functionToHelpWith = TLE.asFunctionValue(value.parent);
+                    functionToHelpWith = TLE.asFunctionValue(tleValue.parent);
                 }
 
                 if (functionToHelpWith) {
-                    return AzureRMAssets.getFunctionMetadataFromName(functionToHelpWith.nameToken.stringValue)
-                        .then((functionMetadata: FunctionMetadata) => {
-                            let result: TLE.FunctionSignatureHelp = null;
-                            if (functionMetadata) {
-                                let currentArgumentIndex: number = 0;
+                    const functionMetadata: FunctionMetadata = await AzureRMAssets.getFunctionMetadataFromName(functionToHelpWith.nameToken.stringValue);
+                    if (functionMetadata) {
+                        let currentArgumentIndex: number = 0;
 
-                                for (const commaToken of functionToHelpWith.commaTokens) {
-                                    if (commaToken.span.startIndex < this.tleCharacterIndex) {
-                                        ++currentArgumentIndex;
-                                    }
-                                }
-
-                                const functionMetadataParameters: string[] = functionMetadata.parameters;
-                                if (functionMetadataParameters.length > 0 &&
-                                    functionMetadataParameters.length <= currentArgumentIndex &&
-                                    functionMetadataParameters[functionMetadataParameters.length - 1].endsWith("...")) {
-
-                                    currentArgumentIndex = functionMetadataParameters.length - 1;
-                                }
-
-                                result = new TLE.FunctionSignatureHelp(currentArgumentIndex, functionMetadata);
+                        for (const commaToken of functionToHelpWith.commaTokens) {
+                            if (commaToken.span.startIndex < this.tleCharacterIndex) {
+                                ++currentArgumentIndex;
                             }
-                            return result;
-                        });
+                        }
+
+                        const functionMetadataParameters: string[] = functionMetadata.parameters;
+                        if (functionMetadataParameters.length > 0 &&
+                            functionMetadataParameters.length <= currentArgumentIndex &&
+                            functionMetadataParameters[functionMetadataParameters.length - 1].endsWith("...")) {
+
+                            currentArgumentIndex = functionMetadataParameters.length - 1;
+                        }
+
+                        return new TLE.FunctionSignatureHelp(currentArgumentIndex, functionMetadata);
+                    }
                 }
             }
 
