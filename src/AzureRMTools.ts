@@ -234,7 +234,7 @@ export class AzureRMTools {
                 diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentTemplate, warning, vscode.DiagnosticSeverity.Warning));
             }
 
-            let completionDiagnostic = this.getCompletionDiagnostic();
+            let completionDiagnostic = this.getCompletedDiagnostic();
             if (completionDiagnostic) {
                 diagnostics.push(completionDiagnostic);
             }
@@ -243,8 +243,8 @@ export class AzureRMTools {
         });
     }
 
-    private getCompletionDiagnostic(): vscode.Diagnostic | undefined {
-        if (ext.addCompletionDiagnostic) {
+    private getCompletedDiagnostic(): vscode.Diagnostic | undefined {
+        if (ext.addCompletedDiagnostic) {
             // Add a diagnostic to indicate expression validation is done (for testing)
             return {
                 severity: vscode.DiagnosticSeverity.Information,
