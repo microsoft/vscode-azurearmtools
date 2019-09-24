@@ -157,6 +157,7 @@ export class Tokenizer implements utilities.Iterator<Token> {
 
     /**
      * Move this Tokenizer to the next Token in the source text string.
+     * @returns True if there is a current token after moving
      */
     // tslint:disable-next-line:max-func-body-length
     public moveNext(): boolean {
