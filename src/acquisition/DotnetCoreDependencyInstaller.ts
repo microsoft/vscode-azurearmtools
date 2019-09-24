@@ -41,7 +41,7 @@ export class DotnetCoreDependencyInstaller {
     }
 
     public async installLinuxDependencies(additionalLibs: {} = {}, skipDotNetCore: boolean = false): Promise<Number> {
-        const scriptRoot = path.join(__dirname, '..', 'scripts');
+        const scriptRoot = path.join(__dirname, '..', 'install scripts');
         const shellCommand = this.getShellCommand();
 
         // Determine the distro

@@ -119,7 +119,7 @@ export class DotnetCoreAcquisitionWorker {
             '-Version', version,
         ];
 
-        const installCommand = `${this.scriptPath} ${args.join(' ')}`;
+        const installCommand = `"${this.scriptPath}" ${args.join(' ')}`;
 
         this.eventStream.post(new DotnetAcquisitionStarted(version));
         await this.installDotnet(installCommand, version, dotnetPath);

@@ -32,7 +32,7 @@ function initializeDotnetAcquire(): void {
 
     let context = ext.context;
     let parentExtensionId = ext.extensionId;
-    let scriptsPath = path.join(assetsPath, 'scripts');
+    let scriptsPath = path.join(assetsPath, 'install scripts');
 
     const extension = vscode.extensions.getExtension(parentExtensionId);
 
