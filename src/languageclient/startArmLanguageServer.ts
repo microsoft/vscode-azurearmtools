@@ -66,6 +66,17 @@ export async function startArmLanguageServer(): Promise<void> {
         });
 }
 
+async function getLangServerVersion(): Promise<string | undefined> {
+    return await callWithTelemetryAndErrorHandling('getLangServerVersion', async (actionContext: IActionContext) => {
+        actionContext.errorHandling.suppressDisplay = true;
+        actionContext.telemetry.suppressIfSuccessful = true;
+
+        const packagePath = ext.context.asAbsolutePath('package.json');
+        const packageContents = <{ config: { ARM_LANGUAGE_SERVER_NUGET_VERSION: string } }>await fse.readJson(packagePath);
+        return packageContents.config.ARM_LANGUAGE_SERVER_NUGET_VERSION;
+    });
+}
+
 export async function startLanguageClient(serverDllPath: string, dotnetExePath: string): Promise<void> {
     await callWithTelemetryAndErrorHandling('startArmLanguageClient', async (actionContext: IActionContext) => {
         actionContext.errorHandling.rethrow = true;
@@ -110,7 +121,10 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         };
 
         // Create the language client and start the client.
+        const langServerVersion = (await getLangServerVersion()) || "Unknown";
+        actionContext.telemetry.properties.langServerNugetVersion = langServerVersion;
         ext.outputChannel.appendLine(`Starting ${languageServerName} at ${serverDllPath}`);
+        ext.outputChannel.appendLine(`Language server nuget version: ${langServerVersion}`);
         ext.outputChannel.appendLine(`Client options:\n${JSON.stringify(clientOptions, undefined, 2)}`);
         ext.outputChannel.appendLine(`Server options:\n${JSON.stringify(serverOptions, undefined, 2)}`);
         client = new LanguageClient(
