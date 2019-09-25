@@ -386,7 +386,7 @@ export class PropertyAccess extends ParentValue {
         const result: string[] = [];
 
         let propertyAccessSource: PropertyAccess | null = asPropertyAccessValue(this._source);
-        while (propertyAccessSource) {
+        while (propertyAccessSource && propertyAccessSource.nameToken) {
             result.push(propertyAccessSource.nameToken.stringValue);
             propertyAccessSource = asPropertyAccessValue(propertyAccessSource.source);
         }
@@ -398,10 +398,12 @@ export class PropertyAccess extends ParentValue {
      * Get the root source value of this PropertyAccess as a FunctionValue.
      */
     public get functionSource(): FunctionValue | null {
-        let currentSource: Value | null = this._source;
+        let currentSource: Value = this._source;
         while (currentSource && currentSource instanceof PropertyAccess) {
-            // tslint:disable-next-line:no-non-null-assertion
-            currentSource = asPropertyAccessValue(currentSource).source;
+            const propertyAccess: PropertyAccess | null = asPropertyAccessValue(currentSource);
+            assert(propertyAccess);
+            // tslint:disable-next-line:no-non-null-assertion // Asserted
+            currentSource = propertyAccess!.source;
         }
         return asFunctionValue(currentSource);
     }
@@ -494,32 +496,31 @@ export class BraceHighlighter {
     }
 
     private static addTLEBracketHighlights(highlightCharacterIndexes: number[], tleParseResult: ParseResult): void {
-        assert.notEqual(null, highlightCharacterIndexes);
-        assert.notEqual(null, tleParseResult);
-        assert.notEqual(null, tleParseResult.leftSquareBracketToken);
+        assert(tleParseResult);
+        assert(tleParseResult.leftSquareBracketToken);
 
         // tslint:disable-next-line:no-non-null-assertion // Asserted above
-        highlightCharacterIndexes.push(tleParseResult.leftSquareBracketToken.span.startIndex);
+        highlightCharacterIndexes.push(tleParseResult.leftSquareBracketToken!.span.startIndex);
         if (tleParseResult.rightSquareBracketToken !== null) {
             highlightCharacterIndexes.push(tleParseResult.rightSquareBracketToken.span.startIndex);
         }
     }
 
     private static addTLEFunctionHighlights(highlightCharacterIndexes: number[], tleFunction: FunctionValue): void {
-        assert.notEqual(null, highlightCharacterIndexes);
-        assert.notEqual(null, tleFunction);
-        assert.notEqual(null, tleFunction.leftParenthesisToken);
+        assert(tleFunction);
+        assert(tleFunction.leftParenthesisToken);
 
-        highlightCharacterIndexes.push(tleFunction.leftParenthesisToken.span.startIndex);
+        // tslint:disable-next-line:no-non-null-assertion // Asserted
+        highlightCharacterIndexes.push(tleFunction.leftParenthesisToken!
+            .span.startIndex);
         if (tleFunction.rightParenthesisToken !== null) {
             highlightCharacterIndexes.push(tleFunction.rightParenthesisToken.span.startIndex);
         }
     }
 
     private static addTLEArrayHighlights(highlightCharacterIndexes: number[], tleArrayAccess: ArrayAccessValue): void {
-        assert.notEqual(null, highlightCharacterIndexes);
-        assert.notEqual(null, tleArrayAccess);
-        assert.notEqual(null, tleArrayAccess.leftSquareBracketToken);
+        assert(tleArrayAccess);
+        assert(tleArrayAccess.leftSquareBracketToken);
 
         highlightCharacterIndexes.push(tleArrayAccess.leftSquareBracketToken.span.startIndex);
         if (tleArrayAccess.rightSquareBracketToken !== null) {

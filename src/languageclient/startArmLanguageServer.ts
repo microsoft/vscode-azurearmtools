@@ -11,6 +11,7 @@ import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOpt
 import { dotnetAcquire, ensureDotnetDependencies } from '../acquisition/dotnetAcquisition';
 import { configPrefix, languageFriendlyName, languageId, languageServerFolderName, languageServerName } from '../constants';
 import { ext } from '../extensionVariables';
+import { assert } from '../fixed_assert';
 import { armDeploymentDocumentSelector } from '../supported';
 import { WrappedErrorHandler } from './WrappedErrorHandler';
 
@@ -26,7 +27,7 @@ export enum LanguageServerState {
     Stopped,
 }
 let languageServerState: LanguageServerState = LanguageServerState.NotStarted;
-let client: LanguageClient;
+let client: LanguageClient | undefined;
 
 export function getLanguageServerState(): LanguageServerState {
     return languageServerState;
@@ -89,7 +90,9 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         //   Error
         //   Critical
         //   None
-        let trace: string = workspace.getConfiguration(configPrefix).get<string>("languageServer.traceLevel") || defaultTraceLevel;
+        let trace: string = workspace.getConfiguration(configPrefix).get<string>("languageServer.traceLevel")
+            // tslint:disable-next-line: strict-boolean-expressions
+            || defaultTraceLevel;
 
         let commonArgs = [
             serverDllPath,
@@ -156,11 +159,11 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
 }
 
 async function acquireDotnet(dotnetExePath: string): Promise<string> {
-    return await callWithTelemetryAndErrorHandling('acquireDotnet', async (actionContext: IActionContext) => {
+    const resultPath = await callWithTelemetryAndErrorHandling('acquireDotnet', async (actionContext: IActionContext) => {
         actionContext.errorHandling.rethrow = true;
 
         dotnetExePath = await dotnetAcquire(dotnetVersion, actionContext.telemetry.properties);
-        if (!(await fse.pathExists(dotnetExePath)) || !(await fse.stat(dotnetExePath)).isFile) {
+        if (!(await fse.pathExists(dotnetExePath)) || !(await fse.stat(dotnetExePath)).isFile()) {
             throw new Error(`Unexpected path returned for .net core: ${dotnetExePath}`);
         }
         ext.outputChannel.appendLine(`Using dotnet core from ${dotnetExePath}`);
@@ -168,7 +171,9 @@ async function acquireDotnet(dotnetExePath: string): Promise<string> {
         // Telemetry: dotnet version actually used
         try {
             // E.g. "c:\Users\<user>\AppData\Roaming\Code - Insiders\User\globalStorage\msazurermtools.azurerm-vscode-tools\.dotnet\2.2.5\dotnet.exe"
-            let actualVersion = dotnetExePath.match(/dotnet[\\/]([^\\/]+)[\\/]/)[1];
+            const verionMatch = dotnetExePath.match(/dotnet[\\/]([^\\/]+)[\\/]/);
+            // tslint:disable-next-line: strict-boolean-expressions
+            const actualVersion = verionMatch && verionMatch[1] || 'unknown';
             actionContext.telemetry.properties.dotnetVersionInstalled = actualVersion;
         } catch (error) {
             // ignore (telemetry only)
@@ -176,12 +181,14 @@ async function acquireDotnet(dotnetExePath: string): Promise<string> {
 
         return dotnetExePath;
     });
+
+    assert(typeof resultPath === "string", "Should have thrown instead of returning undefined");
+    // tslint:disable-next-line:no-non-null-assertion // Asserted
+    return resultPath!;
 }
 
 function findLanguageServer(): string {
-    let serverDllPath: string;
-
-    return callWithTelemetryAndErrorHandlingSync('findLanguageServer', (actionContext: IActionContext) => {
+    const serverDllPath: string | undefined = callWithTelemetryAndErrorHandlingSync('findLanguageServer', (actionContext: IActionContext) => {
         actionContext.errorHandling.rethrow = true;
 
         let serverDllPathSetting: string | undefined = workspace.getConfiguration(configPrefix).get<string | undefined>('languageServer.path');
@@ -189,28 +196,31 @@ function findLanguageServer(): string {
             actionContext.telemetry.properties.customServerDllPath = 'false';
 
             // Default behavior: <configPrefix>.languageServer.path is not set - look for the files in their normal installed location under languageServerFolderName
-            let serverFolderPath = ext.context.asAbsolutePath(languageServerFolderName);
-            serverDllPath = path.join(serverFolderPath, languageServerDllName);
-            if (!fse.existsSync(serverFolderPath) || !fse.existsSync(serverDllPath)) {
-                throw new Error(`Cannot find the ${languageServerName} at ${serverDllPath}. Only template string expression functionality will be available.`);
+            const serverFolderPath = ext.context.asAbsolutePath(languageServerFolderName);
+            const fullPath = path.join(serverFolderPath, languageServerDllName);
+            if (!fse.existsSync(serverFolderPath) || !fse.existsSync(fullPath)) {
+                throw new Error(`Cannot find the ${languageServerName} at ${fullPath}. Only template string expression functionality will be available.`);
             }
-            serverDllPath = path.join(serverFolderPath, languageServerDllName);
+            return fullPath;
         } else {
             actionContext.telemetry.properties.customServerDllPath = 'true';
 
-            serverDllPath = serverDllPathSetting.trim();
-            if (fse.statSync(serverDllPath).isDirectory()) {
-                serverDllPath = path.join(serverDllPath, languageServerDllName);
+            let fullPath = serverDllPathSetting.trim();
+            if (fse.statSync(fullPath).isDirectory()) {
+                fullPath = path.join(fullPath, languageServerDllName);
             }
-            if (!fse.existsSync(serverDllPath)) {
-                throw new Error(`Couldn't find the ${languageServerName} at ${serverDllPath}.  Please verify or remove your '${configPrefix}.languageServer.path' setting.`);
+            if (!fse.existsSync(fullPath)) {
+                throw new Error(`Couldn't find the ${languageServerName} at ${fullPath}.  Please verify or remove your '${configPrefix}.languageServer.path' setting.`);
             }
 
-            window.showInformationMessage(`Using custom path for ${languageServerName}: ${serverDllPath}`);
+            window.showInformationMessage(`Using custom path for ${languageServerName}: ${fullPath}`);
+            return fullPath;
         }
-
-        return serverDllPath;
     });
+
+    assert(typeof serverDllPath === "string", "Should have thrown instead of returning undefined");
+    // tslint:disable-next-line:no-non-null-assertion // Asserted
+    return serverDllPath!;
 }
 
 async function ensureDependencies(dotnetExePath: string, serverDllPath: string): Promise<void> {

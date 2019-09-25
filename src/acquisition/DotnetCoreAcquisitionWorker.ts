@@ -57,7 +57,7 @@ export class DotnetCoreAcquisitionWorker {
     }
 
     // tslint:disable-next-line: promise-function-async
-    public acquire(version: string, telemetryProperties: { [key: string]: string }): Promise<string> {
+    public acquire(version: string, telemetryProperties: { [key: string]: string | undefined }): Promise<string> {
         telemetryProperties.requestedVersion = version;
 
         const resolvedVersion = this.latestVersionMap[version];
@@ -87,7 +87,7 @@ export class DotnetCoreAcquisitionWorker {
         }
     }
 
-    private async acquireCore(version: string, telemetryProperties: { [key: string]: string }): Promise<string> {
+    private async acquireCore(version: string, telemetryProperties: { [key: string]: string | undefined }): Promise<string> {
         const installingVersions = this.extensionState.get<string[]>(this.installingVersionsKey, []);
 
         telemetryProperties.partialInstallFound = "false";

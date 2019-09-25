@@ -158,13 +158,13 @@ export class PositionContext {
                 } else if (tleValue instanceof TLE.StringValue) {
                     if (tleValue.isParametersArgument()) {
                         const parameterDefinition: ParameterDefinition | null = this._deploymentTemplate.getParameterDefinition(tleValue.toString());
-                        if (parameterDefinition) {
+                        if (parameterDefinition && parameterDefinition.name) {
                             const hoverSpan: language.Span = tleValue.getSpan().translate(this.jsonTokenStartIndex);
                             return new Hover.ParameterReferenceInfo(parameterDefinition.name.toString(), parameterDefinition.description, hoverSpan);
                         }
                     } else if (tleValue.isVariablesArgument()) {
                         const variableDefinition: Json.Property | null = this._deploymentTemplate.getVariableDefinition(tleValue.toString());
-                        if (variableDefinition) {
+                        if (variableDefinition && variableDefinition.name) {
                             const hoverSpan: language.Span = tleValue.getSpan().translate(this.jsonTokenStartIndex);
                             return new Hover.VariableReferenceInfo(variableDefinition.name.toString(), hoverSpan);
                         }
@@ -379,6 +379,7 @@ export class PositionContext {
             let referenceName: string | null = null;
             let referenceType: Reference.ReferenceKind | null = null;
 
+            // Handle variable and parameter uses inside a string expression
             const tleStringValue: TLE.StringValue | null = TLE.asStringValue(this.tleInfo && this.tleInfo.tleValue);
             if (tleStringValue) {
                 referenceName = tleStringValue.toString();
@@ -391,6 +392,7 @@ export class PositionContext {
             }
 
             if (referenceType === null) {
+                // Handle parameter and variable definitions
                 const jsonStringValue: Json.StringValue | null = Json.asStringValue(this.jsonValue);
                 if (jsonStringValue) {
                     referenceName = jsonStringValue.toString();
@@ -536,8 +538,10 @@ export class PositionContext {
         const variableCompletions: Completion.Item[] = [];
         const variableDefinitionMatches: Json.Property[] = this._deploymentTemplate.findVariableDefinitionsWithPrefix(prefix);
         for (const variableDefinition of variableDefinitionMatches) {
-            const variableName: string = `'${variableDefinition.name.toString()}'`;
-            variableCompletions.push(new Completion.Item(variableName, `${variableName}${replaceSpanInfo.includeRightParenthesisInCompletion ? ")" : ""}$0`, replaceSpanInfo.replaceSpan, `(variable)`, "", Completion.CompletionKind.Variable));
+            if (variableDefinition.name) {
+                const variableName: string = `'${variableDefinition.name.toString()}'`;
+                variableCompletions.push(new Completion.Item(variableName, `${variableName}${replaceSpanInfo.includeRightParenthesisInCompletion ? ")" : ""}$0`, replaceSpanInfo.replaceSpan, `(variable)`, "", Completion.CompletionKind.Variable));
+            }
         }
         return variableCompletions;
     }

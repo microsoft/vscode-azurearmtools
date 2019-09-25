@@ -67,7 +67,7 @@ export class DotnetCoreDependencyInstaller {
                 moreInfoUrl]);
     }
 
-    public async promptLinuxDependencyInstall(telemetryProperties: { [key: string]: string }, failureMessage: string, additionalLibs: {} = {}, skipDotNetCore: boolean = false): Promise<boolean> {
+    public async promptLinuxDependencyInstall(telemetryProperties: { [key: string]: string | undefined }, failureMessage: string, additionalLibs: {} = {}, skipDotNetCore: boolean = false): Promise<boolean> {
         // tslint:disable-next-line:no-constant-condition
         while (true) {
             const response = await vscode.window.showErrorMessage(
