@@ -174,8 +174,8 @@ export function readQuotedString(iterator: utilities.Iterator<basic.Token>): bas
     const startingToken: basic.Token | undefined = iterator.current();
     assert(startingToken && (startingToken.getType() === basic.TokenType.SingleQuote || startingToken.getType() === basic.TokenType.DoubleQuote));
 
-    // tslint:disable-next-line: no-non-null-assertion
-    const startQuote: basic.Token = startingToken;
+    // tslint:disable-next-line: no-non-null-assertion // Asserted
+    const startQuote: basic.Token = startingToken!;
     const quotedStringTokens: basic.Token[] = [startQuote];
     iterator.moveNext();
 
@@ -575,7 +575,9 @@ export class ObjectValue extends Value {
 
             if (this._properties.length > 0) {
                 for (const property of this._properties) {
-                    this._propertyMap[property.name.toString()] = property.value;
+                    if (property.name) {
+                        this._propertyMap[property.name.toString()] = property.value;
+                    }
                 }
             }
         }
@@ -642,7 +644,7 @@ export class ObjectValue extends Value {
  * A property in a JSON ObjectValue.
  */
 export class Property extends Value {
-    constructor(span: language.Span, private _name: StringValue, private _value: Value | null) {
+    constructor(span: language.Span, private _name: StringValue | null, private _value: Value | null) {
         super(span);
     }
 
@@ -653,7 +655,7 @@ export class Property extends Value {
     /**
      * The name of the property.
      */
-    public get name(): StringValue {
+    public get name(): StringValue | null {
         return this._name;
     }
 
@@ -1032,7 +1034,7 @@ export function parse(stringValue: string): ParseResult {
  * tokens array.
  */
 function parseValue(tokenizer: Tokenizer, tokens: Token[]): Value | null {
-    let value: Value = null;
+    let value: Value | null = null;
 
     if (!tokenizer.hasStarted()) {
         next(tokenizer, tokens);
@@ -1086,6 +1088,7 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
     let propertySpan: language.Span | null = null;
     let propertyName: StringValue | null = null;
     let foundColon: boolean = false;
+    // tslint:disable-next-line: strict-boolean-expressions
     while (tokenizer.current) {
         objectSpan = objectSpan.union(tokenizer.current.span);
 
@@ -1101,7 +1104,7 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
                 next(tokenizer, tokens);
             }
         } else if (!foundColon) {
-            propertySpan = propertySpan.union(tokenizer.current.span);
+            propertySpan = propertySpan ? propertySpan.union(tokenizer.current.span) : tokenizer.current.span;
             if (tokenizer.current.type === TokenType.Colon) {
                 foundColon = true;
                 next(tokenizer, tokens);
@@ -1111,11 +1114,12 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
         } else {
             const propertyValue: Value | null = parseValue(tokenizer, tokens);
             if (propertyValue) {
-                propertySpan = propertySpan.union(propertyValue.span);
+                propertySpan = propertySpan ? propertySpan.union(propertyValue.span) : propertyValue.span;
                 objectSpan = objectSpan.union(propertyValue.span);
             }
 
-            properties.push(new Property(propertySpan, propertyName, propertyValue));
+            // tslint:disable-next-line: strict-boolean-expressions
+            properties.push(new Property(propertySpan || objectSpan, propertyName, propertyValue));
 
             propertySpan = null;
             propertyName = null;
@@ -1137,6 +1141,7 @@ function parseArray(tokenizer: Tokenizer, tokens: Token[]): ArrayValue {
     next(tokenizer, tokens);
 
     let expectElement: boolean = true;
+    // tslint:disable-next-line: strict-boolean-expressions
     while (tokenizer.current) {
         span = span.union(tokenizer.current.span);
 
@@ -1144,7 +1149,7 @@ function parseArray(tokenizer: Tokenizer, tokens: Token[]): ArrayValue {
             next(tokenizer, tokens);
             break;
         } else if (expectElement) {
-            const element: Value = parseValue(tokenizer, tokens);
+            const element: Value | null = parseValue(tokenizer, tokens);
             if (element) {
                 span = span.union(element.span);
 

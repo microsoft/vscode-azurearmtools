@@ -356,9 +356,11 @@ export class DeploymentTemplate {
     }
 
     public getVariableDefinitionFromFunction(tleFunction: TLE.FunctionValue): Json.Property | null {
+        assert(tleFunction);
+
         let result: Json.Property | null = null;
 
-        if (tleFunction && tleFunction.nameToken.stringValue === "variables") {
+        if (tleFunction.nameToken.stringValue === "variables") {
             const variableName: TLE.StringValue | null = TLE.asStringValue(tleFunction.argumentExpressions[0]);
             if (variableName) {
                 result = this.getVariableDefinition(variableName.toString());
@@ -369,9 +371,11 @@ export class DeploymentTemplate {
     }
 
     public getParameterDefinitionFromFunction(tleFunction: TLE.FunctionValue): ParameterDefinition | null {
+        assert(tleFunction);
+
         let result: ParameterDefinition | null = null;
 
-        if (tleFunction && tleFunction.nameToken.stringValue === "parameters") {
+        if (tleFunction.nameToken.stringValue === "parameters") {
             const propertyName: TLE.StringValue | null = TLE.asStringValue(tleFunction.argumentExpressions[0]);
             if (propertyName) {
                 result = this.getParameterDefinition(propertyName.toString());
@@ -430,11 +434,11 @@ export class DeploymentTemplate {
         return this._jsonParseResult.getPositionFromCharacterIndex(documentCharacterIndex);
     }
 
-    public getJSONTokenAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Token {
+    public getJSONTokenAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Token | null {
         return this._jsonParseResult.getTokenAtCharacterIndex(documentCharacterIndex);
     }
 
-    public getJSONValueAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Value {
+    public getJSONValueAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Value | null {
         return this._jsonParseResult.getValueAtCharacterIndex(documentCharacterIndex);
     }
 
@@ -538,7 +542,7 @@ class ReferenceInVariableDefinitionTLEVisitor extends TLE.Visitor {
         return this._referenceSpans;
     }
 
-    public visitFunction(functionValue: TLE.FunctionValue): void {
+    public visitFunction(functionValue: TLE.FunctionValue | null): void {
         if (functionValue && functionValue.nameToken.stringValue === "reference") {
             this._referenceSpans.push(functionValue.nameToken.span);
         }

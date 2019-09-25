@@ -764,7 +764,7 @@ export class UndefinedVariablePropertyVisitor extends Visitor {
 
     public visitPropertyAccess(tlePropertyAccess: PropertyAccess): void {
         if (tlePropertyAccess.nameToken) {
-            const functionSource: FunctionValue = tlePropertyAccess.functionSource;
+            const functionSource: FunctionValue | null = tlePropertyAccess.functionSource;
             if (functionSource) {
                 const variableProperty: Json.Property | null = this._deploymentTemplate.getVariableDefinitionFromFunction(functionSource);
                 if (variableProperty) {

@@ -151,7 +151,7 @@ export class FunctionMetadata {
         try {
             metadataJSON = <FunctionMetadataContract>JSON.parse(metadataString);
         } catch (e) {
-            metadataJSON = {};
+            metadataJSON = { functionSignatures: [] };
         }
         return FunctionMetadata.fromJSON(metadataJSON);
     }
@@ -159,8 +159,10 @@ export class FunctionMetadata {
     public static fromJSON(metadataJSON: FunctionMetadataContract): FunctionMetadata[] {
         const result: FunctionMetadata[] = [];
 
+        // tslint:disable-next-line: strict-boolean-expressions
         if (metadataJSON && metadataJSON.functionSignatures) {
             for (const functionMetadata of metadataJSON.functionSignatures) {
+                // tslint:disable-next-line: strict-boolean-expressions
                 if (functionMetadata) {
                     const returnValueMembers: string[] = [];
                     if (functionMetadata.returnValueMembers) {
@@ -186,14 +188,15 @@ export class FunctionMetadata {
 }
 
 interface FunctionMetadataContract {
-    functionSignatures?: {
-        name?: string;
-        expectedUsage?: string;
-        description?: string;
-        minimumArguments?: number;
-        maximumArguments?: number;
+    functionSignatures: {
+        // These are validated via the ExpressionMetadata.schema.json file when editing ExpressionMetadata.json
+        name: string;
+        expectedUsage: string;
+        description: string;
+        minimumArguments: number;
+        maximumArguments: number;
         returnValueMembers?: {
-            name?: string;
+            name: string;
         }[];
     }[];
 }

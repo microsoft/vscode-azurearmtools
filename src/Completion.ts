@@ -13,7 +13,7 @@ export class Item {
         private _insertText: string,
         private _insertSpan: language.Span,
         private _detail: string,
-        private _description: string,
+        private _description: string | null,
         private _type: CompletionKind
     ) {
     }
@@ -34,7 +34,7 @@ export class Item {
         return this._detail;
     }
 
-    public get description(): string {
+    public get description(): string | null {
         return this._description;
     }
 

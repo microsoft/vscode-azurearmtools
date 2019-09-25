@@ -2,13 +2,11 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:max-func-body-length
+// tslint:disable:max-func-body-length no-non-null-assertion
 
 import * as assert from "assert";
-
-import { networkTest } from "./networkTest.test";
-
 import { AzureRMAssets, FunctionMetadata, FunctionsMetadata } from "../extension.bundle";
+import { networkTest } from "./networkTest.test";
 
 suite("AzureRMAssets", () => {
     networkTest("getFunctionMetadata()", async () => {
@@ -32,9 +30,9 @@ suite("AzureRMAssets", () => {
             const metadata = new FunctionsMetadata(
                 [new FunctionMetadata("hi", "", "", 0, 0, []), new FunctionMetadata("MyFunction", "", "", 0, 0, [])]);
 
-            assert.equal(metadata.findbyName("MyFunction").name, "MyFunction");
-            assert.equal(metadata.findbyName("myfunction").name, "MyFunction");
-            assert.equal(metadata.findbyName("MYFUNCTION").name, "MyFunction");
+            assert.equal(metadata.findbyName("MyFunction")!.name, "MyFunction");
+            assert.equal(metadata.findbyName("myfunction")!.name, "MyFunction");
+            assert.equal(metadata.findbyName("MYFUNCTION")!.name, "MyFunction");
 
             assert.equal(metadata.findbyName("MyFunction2"), undefined);
         });

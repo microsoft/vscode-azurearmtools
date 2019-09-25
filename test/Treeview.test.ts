@@ -15,7 +15,7 @@ import { getTempFilePath } from "./support/getTempFilePath";
 suite("TreeView", async (): Promise<void> => {
     suite("shortenTreeLabel", async (): Promise<void> => {
         test("shortenTreeLabel", () => {
-            function testShorten(label: string, expected: string): void {
+            function testShorten(label: string | undefined, expected: string | undefined): void {
                 let shortenedLabel = shortenTreeLabel(label);
                 assert.equal(shortenedLabel, expected);
             }

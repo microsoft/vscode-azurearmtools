@@ -28,14 +28,14 @@ export class PositionContext {
     private _givenDocumentCharacterIndex?: number;
     private _documentCharacterIndex: CachedValue<number> = new CachedValue<number>();
     private _jsonToken: CachedValue<Json.Token | null> = new CachedValue<Json.Token>();
-    private _jsonValue: CachedValue<Json.Value> = new CachedValue<Json.Value>();
+    private _jsonValue: CachedValue<Json.Value | null> = new CachedValue<Json.Value | null>();
     private _tleInfo: CachedValue<TleInfo | null> = new CachedValue<TleInfo | null>();
     private _hoverInfo: CachedPromise<Hover.Info | null> = new CachedPromise<Hover.Info | null>();
     private _completionItems: CachedPromise<Completion.Item[]> = new CachedPromise<Completion.Item[]>();
-    private _parameterDefinition: CachedValue<ParameterDefinition> = new CachedValue<ParameterDefinition>();
-    private _variableDefinition: CachedValue<Json.Property> = new CachedValue<Json.Property>();
-    private _references: CachedValue<Reference.List> = new CachedValue<Reference.List>();
-    private _signatureHelp: CachedPromise<TLE.FunctionSignatureHelp> = new CachedPromise<TLE.FunctionSignatureHelp>();
+    private _parameterDefinition: CachedValue<ParameterDefinition | null> = new CachedValue<ParameterDefinition | null>();
+    private _variableDefinition: CachedValue<Json.Property | null> = new CachedValue<Json.Property | null>();
+    private _references: CachedValue<Reference.List | null> = new CachedValue<Reference.List | null>();
+    private _signatureHelp: CachedPromise<TLE.FunctionSignatureHelp | null> = new CachedPromise<TLE.FunctionSignatureHelp | null>();
 
     public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number): PositionContext {
         assert(deploymentTemplate !== null, "deploymentTemplate cannot be null");
@@ -112,7 +112,7 @@ export class PositionContext {
         });
     }
 
-    public get jsonValue(): Json.Value {
+    public get jsonValue(): Json.Value | null {
         return this._jsonValue.getOrCacheValue(() => {
             return this._deploymentTemplate.getJSONValueAtDocumentCharacterIndex(this.documentCharacterIndex);
         });
@@ -277,9 +277,9 @@ export class PositionContext {
                 }
             } else if (parameterProperty) {
                 // If the parameters's default value is an object...
-                const parameterDefValue: Json.ObjectValue = parameterProperty.defaultValue ? Json.asObjectValue(parameterProperty.defaultValue) : null;
+                const parameterDefValue: Json.ObjectValue | null = parameterProperty.defaultValue ? Json.asObjectValue(parameterProperty.defaultValue) : null;
                 if (parameterDefValue) {
-                    const sourcePropertyDefinition: Json.ObjectValue = Json.asObjectValue(parameterDefValue.getPropertyValueFromStack(sourcesNameStack));
+                    const sourcePropertyDefinition: Json.ObjectValue | null = Json.asObjectValue(parameterDefValue.getPropertyValueFromStack(sourcesNameStack));
                     if (sourcePropertyDefinition) {
                         return this.getDeepPropertyAccessCompletions(
                             propertyPrefix,
@@ -294,9 +294,10 @@ export class PositionContext {
                 // therefore checking that sourcesNameStack.length === 0
                 const functionName: string = functionSource.nameToken.stringValue;
                 let functionMetadataMatches: FunctionMetadata[] = await AzureRMAssets.getFunctionMetadataFromPrefix(functionName);
+                assert(functionMetadataMatches);
 
                 const result: Completion.Item[] = [];
-                if (functionMetadataMatches && functionMetadataMatches.length === 1) {
+                if (functionMetadataMatches.length === 1) {
                     const functionMetadata: FunctionMetadata = functionMetadataMatches[0];
                     for (const returnValueMember of functionMetadata.returnValueMembers) {
                         if (propertyPrefix === "" || returnValueMember.toLowerCase().startsWith(propertyPrefix)) {
@@ -307,9 +308,9 @@ export class PositionContext {
                     return result;
                 }
             }
-
-            return [];
         }
+
+        return [];
     }
 
     /**
@@ -346,7 +347,7 @@ export class PositionContext {
     private getDeepPropertyAccessCompletions(propertyPrefix: string, variableOrParameterDefinition: Json.ObjectValue, sourcesNameStack: string[], replaceSpan: language.Span): Completion.Item[] {
         const result: Completion.Item[] = [];
 
-        const sourcePropertyDefinition: Json.ObjectValue = Json.asObjectValue(variableOrParameterDefinition.getPropertyValueFromStack(sourcesNameStack));
+        const sourcePropertyDefinition: Json.ObjectValue | null = Json.asObjectValue(variableOrParameterDefinition.getPropertyValueFromStack(sourcesNameStack));
         if (sourcePropertyDefinition) {
 
             let matchingPropertyNames: string[];
@@ -375,10 +376,10 @@ export class PositionContext {
 
     public get references(): Reference.List | null {
         return this._references.getOrCacheValue(() => {
-            let referenceName: string = null;
-            let referenceType: Reference.ReferenceKind = null;
+            let referenceName: string | null = null;
+            let referenceType: Reference.ReferenceKind | null = null;
 
-            const tleStringValue: TLE.StringValue = TLE.asStringValue(this.tleInfo && this.tleInfo.tleValue);
+            const tleStringValue: TLE.StringValue | null = TLE.asStringValue(this.tleInfo && this.tleInfo.tleValue);
             if (tleStringValue) {
                 referenceName = tleStringValue.toString();
 
@@ -390,15 +391,15 @@ export class PositionContext {
             }
 
             if (referenceType === null) {
-                const jsonStringValue: Json.StringValue = Json.asStringValue(this.jsonValue);
+                const jsonStringValue: Json.StringValue | null = Json.asStringValue(this.jsonValue);
                 if (jsonStringValue) {
                     referenceName = jsonStringValue.toString();
 
-                    const parameterDefinition: ParameterDefinition = this._deploymentTemplate.getParameterDefinition(referenceName);
+                    const parameterDefinition: ParameterDefinition | null = this._deploymentTemplate.getParameterDefinition(referenceName);
                     if (parameterDefinition && parameterDefinition.name === jsonStringValue) {
                         referenceType = Reference.ReferenceKind.Parameter;
                     } else {
-                        const variableDefinition: Json.Property = this._deploymentTemplate.getVariableDefinition(referenceName);
+                        const variableDefinition: Json.Property | null = this._deploymentTemplate.getVariableDefinition(referenceName);
                         if (variableDefinition && variableDefinition.name === jsonStringValue) {
                             referenceType = Reference.ReferenceKind.Variable;
                         }
@@ -414,17 +415,17 @@ export class PositionContext {
         });
     }
 
-    public get signatureHelp(): Promise<TLE.FunctionSignatureHelp> {
+    public get signatureHelp(): Promise<TLE.FunctionSignatureHelp | null> {
         return this._signatureHelp.getOrCachePromise(async () => {
-            const tleValue: TLE.Value = this.tleInfo && this.tleInfo.tleValue;
-            if (tleValue) {
-                let functionToHelpWith: TLE.FunctionValue = TLE.asFunctionValue(tleValue);
+            const tleValue: TLE.Value | null = this.tleInfo && this.tleInfo.tleValue;
+            if (this.tleInfo && tleValue) {
+                let functionToHelpWith: TLE.FunctionValue | null = TLE.asFunctionValue(tleValue);
                 if (!functionToHelpWith) {
                     functionToHelpWith = TLE.asFunctionValue(tleValue.parent);
                 }
 
                 if (functionToHelpWith) {
-                    const functionMetadata: FunctionMetadata = await AzureRMAssets.getFunctionMetadataFromName(functionToHelpWith.nameToken.stringValue);
+                    const functionMetadata: FunctionMetadata | undefined = await AzureRMAssets.getFunctionMetadataFromName(functionToHelpWith.nameToken.stringValue);
                     if (functionMetadata) {
                         let currentArgumentIndex: number = 0;
 
@@ -457,7 +458,7 @@ export class PositionContext {
      */
     public get parameterDefinition(): ParameterDefinition | null {
         return this._parameterDefinition.getOrCacheValue(() => {
-            const tleValue: TLE.Value = this.tleInfo && this.tleInfo.tleValue;
+            const tleValue: TLE.Value | null = this.tleInfo && this.tleInfo.tleValue;
             if (tleValue && tleValue instanceof TLE.StringValue && tleValue.isParametersArgument()) {
                 return this._deploymentTemplate.getParameterDefinition(tleValue.toString());
             }
@@ -472,7 +473,7 @@ export class PositionContext {
      */
     public get variableDefinition(): Json.Property | null {
         return this._variableDefinition.getOrCacheValue(() => {
-            const tleValue: TLE.Value = this.tleInfo && this.tleInfo.tleValue;
+            const tleValue: TLE.Value | null = this.tleInfo && this.tleInfo.tleValue;
             if (tleValue && tleValue instanceof TLE.StringValue && tleValue.isVariablesArgument()) {
                 return this._deploymentTemplate.getVariableDefinition(tleValue.toString());
             }
@@ -516,7 +517,15 @@ export class PositionContext {
         const parameterDefinitionMatches: ParameterDefinition[] = this._deploymentTemplate.findParameterDefinitionsWithPrefix(prefix);
         for (const parameterDefinition of parameterDefinitionMatches) {
             const name: string = `'${parameterDefinition.name}'`;
-            parameterCompletions.push(new Completion.Item(name, `${name}${replaceSpanInfo.includeRightParenthesisInCompletion ? ")" : ""}$0`, replaceSpanInfo.replaceSpan, `(parameter)`, parameterDefinition.description, Completion.CompletionKind.Parameter));
+            parameterCompletions.push(
+                new Completion.Item(
+                    name,
+                    `${name}${replaceSpanInfo.includeRightParenthesisInCompletion ? ")" : ""}$0`,
+                    replaceSpanInfo.replaceSpan,
+                    `(parameter)`,
+                    // tslint:disable-next-line: strict-boolean-expressions
+                    parameterDefinition.description,
+                    Completion.CompletionKind.Parameter));
         }
         return parameterCompletions;
     }
@@ -539,7 +548,7 @@ export class PositionContext {
         if (tleValue instanceof TLE.StringValue) {
             const stringSpan: language.Span = tleValue.getSpan();
             const stringStartIndex: number = stringSpan.startIndex;
-            const functionValue: TLE.FunctionValue = TLE.asFunctionValue(tleValue.parent);
+            const functionValue: TLE.FunctionValue | null = TLE.asFunctionValue(tleValue.parent);
 
             const rightParenthesisIndex: number = tleValue.toString().indexOf(")");
             const rightSquareBracketIndex: number = tleValue.toString().indexOf("]");
@@ -547,10 +556,10 @@ export class PositionContext {
                 replaceSpan = new language.Span(stringStartIndex, rightParenthesisIndex + 1);
             } else if (rightSquareBracketIndex >= 0) {
                 replaceSpan = new language.Span(stringStartIndex, rightSquareBracketIndex);
-            } else if (functionValue.rightParenthesisToken && functionValue.argumentExpressions.length === 1) {
+            } else if (functionValue && functionValue.rightParenthesisToken && functionValue.argumentExpressions.length === 1) {
                 replaceSpan = new language.Span(stringStartIndex, functionValue.rightParenthesisToken.span.afterEndIndex - stringStartIndex);
             } else {
-                includeRightParenthesisInCompletion = functionValue.argumentExpressions.length <= 1;
+                includeRightParenthesisInCompletion = !!functionValue && functionValue.argumentExpressions.length <= 1;
                 replaceSpan = stringSpan;
             }
 
