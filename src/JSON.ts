@@ -644,7 +644,7 @@ export class ObjectValue extends Value {
  * A property in a JSON ObjectValue.
  */
 export class Property extends Value {
-    constructor(span: language.Span, private _name: StringValue | null, private _value: Value | null) {
+    constructor(span: language.Span, private _name: StringValue, private _value: Value | null) {
         super(span);
     }
 
@@ -655,7 +655,7 @@ export class Property extends Value {
     /**
      * The name of the property.
      */
-    public get name(): StringValue | null {
+    public get name(): StringValue {
         return this._name;
     }
 
@@ -1112,14 +1112,18 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
                 propertyName = null;
             }
         } else {
+            // Shouldn't be able to reach here without these two assertions being true
+            assert(foundColon);
+            assert(propertyName);
+
             const propertyValue: Value | null = parseValue(tokenizer, tokens);
             if (propertyValue) {
                 propertySpan = propertySpan ? propertySpan.union(propertyValue.span) : propertyValue.span;
                 objectSpan = objectSpan.union(propertyValue.span);
             }
 
-            // tslint:disable-next-line: strict-boolean-expressions
-            properties.push(new Property(propertySpan || objectSpan, propertyName, propertyValue));
+            // tslint:disable-next-line: strict-boolean-expressions no-non-null-assertion // Asserted propertyName
+            properties.push(new Property(propertySpan || objectSpan, propertyName!, propertyValue));
 
             propertySpan = null;
             propertyName = null;

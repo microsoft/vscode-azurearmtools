@@ -908,7 +908,7 @@ export class Parser {
 
                 expression = Parser.parseExpression(tokenizer, errors);
 
-                while (tokenizer.hasCurrent()) {
+                while (tokenizer.current) {
                     if (tokenizer.current.getType() === TokenType.RightSquareBracket) {
                         rightSquareBracketToken = tokenizer.current;
                         tokenizer.next();
@@ -920,7 +920,7 @@ export class Parser {
                 }
 
                 if (rightSquareBracketToken !== null) {
-                    while (tokenizer.hasCurrent()) {
+                    while (tokenizer.current) {
                         errors.push(new language.Issue(tokenizer.current.span, "Nothing should exist after the closing ']' except for whitespace."));
                         tokenizer.next();
                     }
@@ -1002,13 +1002,13 @@ export class Parser {
                 }
 
                 if (propertyNameToken === null) {
-                    assert.notEqual(null, errorSpan);
-                    // tslint:disable-next-line: no-non-null-assertion
-                    errors.push(new language.Issue(errorSpan, "Expected a literal value."));
+                    assert(errorSpan);
+                    // tslint:disable-next-line: no-non-null-assertion // Asserted
+                    errors.push(new language.Issue(errorSpan!, "Expected a literal value."));
                 }
 
                 // We go ahead and create a property access expresion whether the property name
-                //   was correctly given or note, so we can have proper intellisense/etc.
+                //   was correctly given or not, so we can have proper intellisense/etc.
                 expression = new PropertyAccess(expression, periodToken, propertyNameToken);
             } else if (tokenizer.current.getType() === TokenType.LeftSquareBracket) {
                 let leftSquareBracketToken: Token = tokenizer.current;
@@ -1017,7 +1017,7 @@ export class Parser {
                 let indexValue: Value | null = Parser.parseExpression(tokenizer, errors);
 
                 let rightSquareBracketToken: Token | null = null;
-                if (tokenizer.hasCurrent() && tokenizer.current.getType() === TokenType.RightSquareBracket) {
+                if (tokenizer.current && tokenizer.current.getType() === TokenType.RightSquareBracket) {
                     rightSquareBracketToken = tokenizer.current;
                     tokenizer.next();
                 }
@@ -1034,13 +1034,13 @@ export class Parser {
     // tslint:disable-next-line:cyclomatic-complexity // Grandfathered in
     private static parseFunction(tokenizer: Tokenizer, errors: language.Issue[]): FunctionValue {
         assert.notEqual(null, tokenizer);
-        assert(tokenizer.hasCurrent(), "tokenizer must have a current token.");
+        assert(tokenizer.current, "tokenizer must have a current token.");
         // tslint:disable-next-line:no-non-null-assertion // Asserted
-        assert.deepEqual(TokenType.Literal, tokenizer.current.getType(), "tokenizer's current token must be a literal.");
+        assert.deepEqual(TokenType.Literal, tokenizer.current!.getType(), "tokenizer's current token must be a literal.");
         assert.notEqual(null, errors);
 
         // tslint:disable-next-line:no-non-null-assertion // Asserted
-        let nameToken: Token = tokenizer.current;
+        let nameToken: Token = tokenizer.current!;
         tokenizer.next();
 
         let leftParenthesisToken: Token | null = null;
