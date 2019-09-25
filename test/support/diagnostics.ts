@@ -7,6 +7,7 @@
 // tslint:disable:no-unused-expression no-console no-string-based-set-timeout
 // tslint:disable:insecure-random max-func-body-length radix prefer-template
 // tslint:disable:object-literal-key-quotes no-http-string non-literal-fs-path
+// tslint:disable:no-non-null-assertion
 
 import * as assert from "assert";
 import * as fs from 'fs';
@@ -38,7 +39,7 @@ export interface IDeploymentParameterDefinition {
     // tslint:disable-next-line:no-reserved-keywords
     type: IDeploymentExpressionType;
     metadata?: {
-        [key: string]: string;
+        [key: string]: string | undefined;
         description?: string;
     };
     maxLength?: number;
@@ -117,17 +118,17 @@ async function getDiagnosticsForDocument(
     document: TextDocument,
     options: IGetDiagnosticsOptions
 ): Promise<Diagnostic[]> {
-    let dispose: Disposable;
-    let timer: NodeJS.Timer;
+    let dispose: Disposable | undefined;
+    let timer: NodeJS.Timer | undefined;
 
     // Default to all sources
     let filterSources: Source[] = Array.from(Object.values(sources));
 
     if (options.includeSources) {
-        filterSources = filterSources.filter(s => options.includeSources.find(s2 => s2.name === s.name));
+        filterSources = filterSources.filter(s => options.includeSources!.find(s2 => s2.name === s.name));
     }
     if (options.ignoreSources) {
-        filterSources = filterSources.filter(s => !(options.ignoreSources).includes(s));
+        filterSources = filterSources.filter(s => !(options.ignoreSources!).includes(s));
     }
 
     const includesLanguageServerSource = filterSources.some(isSourceFromLanguageServer);
@@ -138,7 +139,7 @@ async function getDiagnosticsForDocument(
     // tslint:disable-next-line:typedef promise-must-complete // (false positive for promise-must-complete)
     let diagnosticsPromise = new Promise<Diagnostic[]>((resolve, reject) => {
         let currentDiagnostics: Diagnostic[] | undefined;
-        let complete: boolean;
+        let complete: boolean = false;
 
         function pollDiagnostics(): void {
             currentDiagnostics = languages.getDiagnostics(document.uri);
@@ -150,7 +151,7 @@ async function getDiagnosticsForDocument(
             let filteredDiagnostics = currentDiagnostics.filter(d => filterSources.find(s => d.source === s.name));
 
             // Find completion messages
-            let completedSources: string[] = filteredDiagnostics.filter(d => d.message.startsWith(diagnosticsCompletePrefix)).map(d => d.source);
+            let completedSources: string[] = filteredDiagnostics.filter(d => d.message.startsWith(diagnosticsCompletePrefix)).map(d => d.source!);
 
             // Remove completion messages
             filteredDiagnostics = filteredDiagnostics.filter(d => !d.message.startsWith(diagnosticsCompletePrefix));
@@ -187,7 +188,7 @@ async function getDiagnosticsForDocument(
     });
 
     let diagnostics = await diagnosticsPromise;
-    assert(!!diagnostics);
+    assert(diagnostics);
 
     // ************* BREAKPOINT HERE TO INSPECT THE TEST FILE WITH DIAGNOSTICS IN THE VSCODE EDITOR
     //
@@ -211,6 +212,7 @@ export async function getDiagnosticsForTemplate(
 ): Promise<Diagnostic[]> {
     let templateContents: string | undefined;
     let fileToDelete: string | undefined;
+    // tslint:disable-next-line: strict-boolean-expressions
     options = options || {};
 
     if (typeof templateContentsOrFileName === 'string') {
@@ -234,7 +236,7 @@ export async function getDiagnosticsForTemplate(
     }
 
     if (options.search) {
-        let newContents = templateContents.replace(options.search, options.replace);
+        let newContents = templateContents.replace(options.search, options.replace!);
         templateContents = newContents;
     }
 
@@ -247,7 +249,7 @@ export async function getDiagnosticsForTemplate(
     await window.showTextDocument(doc);
 
     let diagnostics: Diagnostic[] = await getDiagnosticsForDocument(doc, options);
-    assert(!!diagnostics);
+    assert(diagnostics);
 
     // NOTE: Even though we request the editor to be closed,
     // there's no way to request the document actually be closed,
@@ -266,7 +268,7 @@ export async function getDiagnosticsForTemplate(
 function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOptions, includeRange: boolean): string {
     assert(diagnostic.code === '', `Expecting empty code for all diagnostics, instead found Code="${String(diagnostic.code)}" for "${diagnostic.message}"`);
 
-    let severity: string;
+    let severity: string = "";
     switch (diagnostic.severity) {
         case DiagnosticSeverity.Error: severity = "Error"; break;
         case DiagnosticSeverity.Warning: severity = "Warning"; break;
@@ -279,6 +281,7 @@ function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOpti
 
     // Do the expected messages include ranges?
     if (includeRange) {
+        // tslint:disable-next-line: strict-boolean-expressions
         if (!diagnostic.range) {
             s += " []";
         } else {
@@ -293,7 +296,7 @@ function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOpti
 function compareDiagnostics(actual: Diagnostic[], expected: string[], options: ITestDiagnosticsOptions): void {
     // Do the expected messages include ranges?
     let expectedHasRanges = expected.length === 0 || !!expected[0].match(/[0-9]+,[0-9]+-[0-9]+,[0-9]+/);
-    let includeRanges = options.includeRange && expectedHasRanges;
+    let includeRanges = !!options.includeRange && expectedHasRanges;
 
     let actualAsStrings = actual.map(d => diagnosticToString(d, options, includeRanges));
     assert.deepStrictEqual(actualAsStrings, expected);

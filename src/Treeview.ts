@@ -170,8 +170,10 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                 return "{}";
             } else {
                 // Object contains elements, look for displayName tag first
+                // tslint:disable-next-line: strict-boolean-expressions
                 let tags = keyNode.properties.find(p => p.name && p.name.toString().toLowerCase() === 'tags');
                 if (tags && tags.value instanceof Json.ObjectValue) {
+                    // tslint:disable-next-line: strict-boolean-expressions
                     let displayNameProp = tags.value.properties.find(p => p.name && p.name.toString().toLowerCase() === 'displayname');
                     if (displayNameProp) {
                         let displayName = displayNameProp.value && displayNameProp.value.toString();
@@ -338,7 +340,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                 // tslint:disable-next-line:one-variable-per-declaration
                 for (var i = 0, il = keyOrResourceNode.properties.length; i < il; i++) {
                     const name = keyOrResourceNode.properties[i].name;
-                    if (name && name.toString().toUpperCase() === "type".toUpperCase()) {
+                    if (name.toString().toUpperCase() === "type".toUpperCase()) {
                         const value = keyOrResourceNode.properties[i].value;
                         if (value) {
                             let resourceType = value.toString().toUpperCase();

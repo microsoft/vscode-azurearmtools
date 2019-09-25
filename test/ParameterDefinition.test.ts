@@ -10,11 +10,13 @@ import { Json, Language, ParameterDefinition } from "../extension.bundle";
 suite("ParameterDefinition", () => {
     suite("constructor(Json.Property)", () => {
         test("with null", () => {
-            assert.throws(() => { new ParameterDefinition(null); });
+            // tslint:disable-next-line:no-any
+            assert.throws(() => { new ParameterDefinition(<any>null); });
         });
 
         test("with undefined", () => {
-            assert.throws(() => { new ParameterDefinition(undefined); });
+            // tslint:disable-next-line:no-any
+            assert.throws(() => { new ParameterDefinition(<any>undefined); });
         });
 
         test("with property with no metadata", () => {

@@ -1,3 +1,5 @@
+import { assert } from "./fixed_assert";
+
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
@@ -5,7 +7,7 @@
 /**
  * Create a deep copy of the provided value.
  */
-export function clone<T>(value: T): T {
+export function clone<T extends {}>(value: T): T {
     let result: unknown;
 
     if (value === null ||
@@ -24,6 +26,7 @@ export function clone<T>(value: T): T {
         result = {};
         // tslint:disable-next-line:no-for-in // Grandfathered in
         for (let propertyName in value) {
+            // tslint:disable-next-line: no-unsafe-any no-any
             if (value.hasOwnProperty(propertyName)) {
                 (<{ [key: string]: unknown }>result)[propertyName] = clone(value[propertyName]);
             }
@@ -68,7 +71,7 @@ export function unquote(value: string): string {
     return result;
 }
 
-export function quote(value: string): string {
+export function quote(value: string | undefined | null): string {
     let result: string;
 
     if (value === null) {
@@ -82,8 +85,8 @@ export function quote(value: string): string {
     return result;
 }
 
-export function escape(value: string): string {
-    let result: string;
+export function escape(value: string | undefined | null): string | undefined | null {
+    let result: string | undefined | null;
 
     if (value) {
         result = "";
@@ -125,7 +128,7 @@ export function escape(value: string): string {
     return result;
 }
 
-export function escapeAndQuote(value: string): string {
+export function escapeAndQuote(value: string | undefined | null): string {
     return quote(escape(value));
 }
 
@@ -134,10 +137,9 @@ export function escapeAndQuote(value: string): string {
  */
 export function getCombinedLength(values: { length(): number }[]): number {
     let result: number = 0;
-    if (values) {
-        for (const value of values) {
-            result += value.length();
-        }
+    assert(values);
+    for (const value of values) {
+        result += value.length();
     }
     return result;
 }
@@ -147,10 +149,9 @@ export function getCombinedLength(values: { length(): number }[]): number {
  */
 export function getCombinedText(values: { toString(): string }[]): string {
     let result: string = "";
-    if (values) {
-        for (const value of values) {
-            result += value.toString();
-        }
+    assert(values);
+    for (const value of values) {
+        result += value.toString();
     }
     return result;
 }

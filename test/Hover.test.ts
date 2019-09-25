@@ -24,7 +24,8 @@ suite("Hover", () => {
             });
 
             test("with undefined description", () => {
-                const prhi = new Hover.ParameterReferenceInfo("a", undefined, new Language.Span(2, 3));
+                // tslint:disable-next-line:no-any
+                const prhi = new Hover.ParameterReferenceInfo("a", <any>undefined, new Language.Span(2, 3));
                 assert.deepEqual("**a** (parameter)", prhi.getHoverText());
                 assert.deepEqual(new Language.Span(2, 3), prhi.span);
             });

@@ -18,7 +18,7 @@ export class ParameterDefinition {
         assert(_property);
     }
 
-    public get name(): Json.StringValue | null {
+    public get name(): Json.StringValue {
         return this._property.name;
     }
 

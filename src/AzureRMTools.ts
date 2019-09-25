@@ -333,7 +333,7 @@ export class AzureRMTools {
             //   the same (e.g. 'prop1': '[add(1,2)]' and 'prop2': '[add(1,2)]') only get counted once, thus the functions inside them will only get
             //   counted once.
             const functionCounts: Histogram = deploymentTemplate.functionCounts;
-            const functionsData = {};
+            const functionsData: { [key: string]: number } = {};
             for (const functionName of functionCounts.keys) {
                 functionsData[<string>functionName] = functionCounts.getCount(functionName);
             }

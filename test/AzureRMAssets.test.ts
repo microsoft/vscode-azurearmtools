@@ -73,11 +73,13 @@ suite("AzureRMAssets", () => {
 
         suite("fromString(string)", () => {
             test("with null", () => {
-                assert.deepStrictEqual(FunctionMetadata.fromString(null), []);
+                // tslint:disable-next-line:no-any
+                assert.deepStrictEqual(FunctionMetadata.fromString(<any>null), []);
             });
 
             test("with undefined", () => {
-                assert.deepStrictEqual(FunctionMetadata.fromString(undefined), []);
+                // tslint:disable-next-line:no-any
+                assert.deepStrictEqual(FunctionMetadata.fromString(<any>undefined), []);
             });
 
             test("with empty string", () => {
@@ -100,7 +102,8 @@ suite("AzureRMAssets", () => {
                 assert.deepStrictEqual(
                     FunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z", "description": "1" } ] }`),
                     [
-                        new FunctionMetadata("a", "z", "1", undefined, undefined, [])
+                        // tslint:disable-next-line:no-any
+                        new FunctionMetadata("a", "z", "1", <any>undefined, <any>undefined, [])
                     ]);
             });
 
@@ -109,8 +112,10 @@ suite("AzureRMAssets", () => {
                     // tslint:disable-next-line:max-line-length
                     FunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z" }, { "name": "b", "expectedUsage": "y", "description": "7" } ] }`),
                     [
-                        new FunctionMetadata("a", "z", undefined, undefined, undefined, []),
-                        new FunctionMetadata("b", "y", "7", undefined, undefined, [])
+                        // tslint:disable-next-line:no-any
+                        new FunctionMetadata("a", "z", <any>undefined, <any>undefined, <any>undefined, []),
+                        // tslint:disable-next-line:no-any
+                        new FunctionMetadata("b", "y", "7", <any>undefined, <any>undefined, [])
                     ]);
             });
 

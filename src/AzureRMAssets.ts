@@ -11,7 +11,7 @@ import { assetsPath } from './constants';
  */
 // tslint:disable-next-line:no-unnecessary-class // Grandfathered in
 export class AzureRMAssets {
-    private static _functionsMetadataPromise: Promise<FunctionsMetadata>;
+    private static _functionsMetadataPromise: Promise<FunctionsMetadata> | undefined;
 
     // For test dependency injection only
     public static setFunctionsMetadata(metadataString: string): void {

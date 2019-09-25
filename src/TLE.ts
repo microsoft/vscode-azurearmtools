@@ -264,9 +264,9 @@ export class FunctionValue extends ParentValue {
     ) {
         super();
 
-        assert.notEqual(null, _nameToken);
-        assert.notEqual(null, _commaTokens);
-        assert.notEqual(null, _argumentExpressions);
+        assert(_nameToken);
+        assert(_commaTokens);
+        assert(_argumentExpressions);
 
         for (const argumentExpression of this._argumentExpressions) {
             if (argumentExpression) {
@@ -286,6 +286,7 @@ export class FunctionValue extends ParentValue {
         return this._commaTokens;
     }
 
+    // A null expression can indicate a missing parameter (e.g. concat('a', , 'c'))
     public get argumentExpressions(): (Value | null)[] {
         return this._argumentExpressions;
     }
@@ -343,10 +344,12 @@ export class FunctionValue extends ParentValue {
         }
 
         for (let i = 0; i < this._argumentExpressions.length; ++i) {
+            const argExpr = this._argumentExpressions[i];
+
             if (i > 0) {
                 result += ", ";
             }
-            result += this._argumentExpressions[i].toString();
+            result += argExpr ? argExpr.toString() : "";
         }
 
         if (this._rightParenthesisToken !== null) {
@@ -399,7 +402,7 @@ export class PropertyAccess extends ParentValue {
      */
     public get functionSource(): FunctionValue | null {
         let currentSource: Value = this._source;
-        while (currentSource && currentSource instanceof PropertyAccess) {
+        while (currentSource instanceof PropertyAccess) {
             const propertyAccess: PropertyAccess | null = asPropertyAccessValue(currentSource);
             assert(propertyAccess);
             // tslint:disable-next-line:no-non-null-assertion // Asserted
@@ -535,9 +538,8 @@ export class BraceHighlighter {
 export abstract class Visitor {
     public visitArrayAccess(tleArrayAccess: ArrayAccessValue | null): void {
         if (tleArrayAccess) {
-            if (tleArrayAccess.source) {
-                tleArrayAccess.source.accept(this);
-            }
+            assert(tleArrayAccess.source);
+            tleArrayAccess.source.accept(this);
             if (tleArrayAccess.indexValue) {
                 tleArrayAccess.indexValue.accept(this);
             }
@@ -545,7 +547,7 @@ export abstract class Visitor {
     }
 
     public visitFunction(tleFunction: FunctionValue | null): void {
-        if (tleFunction && tleFunction.argumentExpressions) {
+        if (tleFunction) {
             for (const argumentExpression of tleFunction.argumentExpressions) {
                 if (argumentExpression) {
                     argumentExpression.accept(this);
@@ -559,7 +561,8 @@ export abstract class Visitor {
     }
 
     public visitPropertyAccess(tlePropertyAccess: PropertyAccess | null): void {
-        if (tlePropertyAccess && tlePropertyAccess.source) {
+        if (tlePropertyAccess) {
+            assert(tlePropertyAccess.source);
             tlePropertyAccess.source.accept(this);
         }
     }
@@ -584,6 +587,8 @@ export class FunctionCountVisitor extends Visitor {
 
     public visitFunction(tleFunction: FunctionValue): void {
         // Log count for both "func" and "func(<args-count>)"
+        assert(tleFunction.argumentExpressions);
+        // tslint:disable-next-line: strict-boolean-expressions
         let args = tleFunction.argumentExpressions || [];
         let argsCount = args.length;
         let functionName = tleFunction.nameToken.stringValue;
@@ -702,7 +707,8 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
             assert(minimumArguments !== null && minimumArguments !== undefined, `TLE function metadata for '${actualFunctionName}' has a null or undefined minimum argument value.`);
 
             const maximumArguments: number = functionMetadata.maximumArguments;
-            const functionCallArgumentCount: number = tleFunction.argumentExpressions ? tleFunction.argumentExpressions.length : 0;
+            assert(tleFunction.argumentExpressions);
+            const functionCallArgumentCount: number = tleFunction.argumentExpressions.length;
 
             let message: string | undefined;
             if (minimumArguments === maximumArguments) {
@@ -788,10 +794,11 @@ export class UndefinedVariablePropertyVisitor extends Visitor {
     }
 
     private addIssue(tlePropertyAccess: PropertyAccess): void {
-        const propertyName: string = tlePropertyAccess.nameToken.stringValue;
+        const propertyName: string = tlePropertyAccess.nameToken ? tlePropertyAccess.nameToken.stringValue : "(unknown)";
         const sourceString: string = tlePropertyAccess.source.toString();
+        const span = tlePropertyAccess.nameToken ? tlePropertyAccess.nameToken.span : tlePropertyAccess.getSpan();
         this._errors.push(
-            new language.Issue(tlePropertyAccess.nameToken.span, `Property "${propertyName}" is not a defined property of "${sourceString}".`));
+            new language.Issue(span, `Property "${propertyName}" is not a defined property of "${sourceString}".`));
     }
 
     public static visit(tleValue: Value | null, deploymentTemplate: DeploymentTemplate): UndefinedVariablePropertyVisitor {
@@ -898,7 +905,7 @@ export class Parser {
                 tokenizer.next();
 
                 while (
-                    tokenizer.current
+                    <Token | null>tokenizer.current
                     && tokenizer.current.getType() !== TokenType.Literal
                     && tokenizer.current.getType() !== TokenType.RightSquareBracket
                 ) {
@@ -908,7 +915,7 @@ export class Parser {
 
                 expression = Parser.parseExpression(tokenizer, errors);
 
-                while (tokenizer.current) {
+                while (<Token | null>tokenizer.current) {
                     if (tokenizer.current.getType() === TokenType.RightSquareBracket) {
                         rightSquareBracketToken = tokenizer.current;
                         tokenizer.next();
@@ -920,7 +927,7 @@ export class Parser {
                 }
 
                 if (rightSquareBracketToken !== null) {
-                    while (tokenizer.current) {
+                    while (<Token | null>tokenizer.current) {
                         errors.push(new language.Issue(tokenizer.current.span, "Nothing should exist after the closing ']' except for whitespace."));
                         tokenizer.next();
                     }
@@ -974,7 +981,7 @@ export class Parser {
         }
 
         // Check for property or array accesses off of the root expression
-        while (tokenizer.current) {
+        while (<Token | null>tokenizer.current) {
             if (tokenizer.current.getType() === TokenType.Period) {
                 let periodToken = tokenizer.current;
                 tokenizer.next();
@@ -982,7 +989,7 @@ export class Parser {
                 let propertyNameToken: Token | null = null;
                 let errorSpan: language.Span | null = null;
 
-                if (tokenizer.current) {
+                if (<Token | null>tokenizer.current) {
                     if (tokenizer.current.getType() === TokenType.Literal) {
                         propertyNameToken = tokenizer.current;
                         tokenizer.next();
@@ -1017,7 +1024,7 @@ export class Parser {
                 let indexValue: Value | null = Parser.parseExpression(tokenizer, errors);
 
                 let rightSquareBracketToken: Token | null = null;
-                if (tokenizer.current && tokenizer.current.getType() === TokenType.RightSquareBracket) {
+                if (<Token | null>tokenizer.current && tokenizer.current.getType() === TokenType.RightSquareBracket) {
                     rightSquareBracketToken = tokenizer.current;
                     tokenizer.next();
                 }
@@ -1182,12 +1189,11 @@ export class ParseResult {
             while (!result) {
                 const currentValue: Value = current;
                 if (currentValue instanceof FunctionValue) {
-                    if (currentValue.argumentExpressions) {
-                        for (const argumentExpression of currentValue.argumentExpressions) {
-                            if (argumentExpression && argumentExpression.contains(characterIndex)) {
-                                current = argumentExpression;
-                                break;
-                            }
+                    assert(currentValue.argumentExpressions);
+                    for (const argumentExpression of currentValue.argumentExpressions) {
+                        if (argumentExpression && argumentExpression.contains(characterIndex)) {
+                            current = argumentExpression;
+                            break;
                         }
                     }
 
@@ -1197,7 +1203,7 @@ export class ParseResult {
                         result = current;
                     }
                 } else if (currentValue instanceof ArrayAccessValue) {
-                    if (currentValue.source && currentValue.source.contains(characterIndex)) {
+                    if (currentValue.source.contains(characterIndex)) {
                         current = currentValue.source;
                     } else if (currentValue.indexValue && currentValue.indexValue.contains(characterIndex)) {
                         current = currentValue.indexValue;
@@ -1480,15 +1486,15 @@ export enum TokenType {
 export function readQuotedTLEString(iterator: Utilities.Iterator<basic.Token>): basic.Token[] {
     assert(iterator.current());
     // tslint:disable-next-line:no-non-null-assertion // Asserted
-    assert(iterator.current().getType() === basic.TokenType.SingleQuote);
+    assert(iterator.current()!.getType() === basic.TokenType.SingleQuote);
     // tslint:disable-next-line:no-non-null-assertion // Asserted
-    const quotedStringTokens: basic.Token[] = [iterator.current()];
+    const quotedStringTokens: basic.Token[] = [iterator.current()!];
     iterator.moveNext();
 
     let escaped: boolean = false;
     while (iterator.current()) {
         // tslint:disable-next-line:no-non-null-assertion // guaranteed by while
-        const current = iterator.current();
+        const current = iterator.current()!;
         quotedStringTokens.push(current);
 
         if (escaped) {

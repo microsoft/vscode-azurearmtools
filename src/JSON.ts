@@ -575,9 +575,7 @@ export class ObjectValue extends Value {
 
             if (this._properties.length > 0) {
                 for (const property of this._properties) {
-                    if (property.name) {
-                        this._propertyMap[property.name.toString()] = property.value;
-                    }
+                    this._propertyMap[property.name.toString()] = property.value;
                 }
             }
         }
@@ -688,6 +686,7 @@ export interface Properties {
 export class ArrayValue extends Value {
     constructor(span: language.Span, private _elements: Value[]) {
         super(span);
+        assert(_elements);
     }
 
     public get valueKind(): ValueKind {
@@ -705,7 +704,7 @@ export class ArrayValue extends Value {
      * The number of elements in this Array.
      */
     public get length(): number {
-        return this._elements ? this._elements.length : 0;
+        return this._elements.length;
     }
 
     public accept(visitor: Visitor): void {
@@ -976,25 +975,25 @@ export class ParseResult {
                 const currentValue: Value = current;
 
                 if (currentValue instanceof Property) {
-                    if (currentValue.name && currentValue.name.span.contains(characterIndex, true)) {
+                    if (currentValue.name.span.contains(characterIndex, true)) {
                         current = currentValue.name;
                     } else if (currentValue.value && currentValue.value.span.contains(characterIndex, true)) {
                         current = currentValue.value;
                     }
                 } else if (currentValue instanceof ObjectValue) {
-                    if (currentValue.properties) {
-                        for (const property of currentValue.properties) {
-                            if (property && property.span.contains(characterIndex, true)) {
-                                current = property;
-                            }
+                    assert(currentValue.properties);
+                    for (const property of currentValue.properties) {
+                        assert(property);
+                        if (property.span.contains(characterIndex, true)) {
+                            current = property;
                         }
                     }
                 } else if (currentValue instanceof ArrayValue) {
-                    if (currentValue.elements) {
-                        for (const element of currentValue.elements) {
-                            if (element && element.span.contains(characterIndex, true)) {
-                                current = element;
-                            }
+                    assert(currentValue.elements);
+                    for (const element of currentValue.elements) {
+                        assert(element);
+                        if (element.span.contains(characterIndex, true)) {
+                            current = element;
                         }
                     }
                 }
@@ -1186,11 +1185,10 @@ function next(tokenizer: Tokenizer, tokens: Token[]): void {
 }
 
 export abstract class Visitor {
-    public visitProperty(property: Property): void {
+    public visitProperty(property: Property | null): void {
         if (property) {
-            if (property.name) {
-                property.name.accept(this);
-            }
+            assert(property.name);
+            property.name.accept(this);
 
             if (property.value) {
                 property.value.accept(this);
@@ -1210,7 +1208,7 @@ export abstract class Visitor {
         // Nothing to do
     }
 
-    public visitObjectValue(objectValue: ObjectValue): void {
+    public visitObjectValue(objectValue: ObjectValue | null): void {
         if (objectValue) {
             for (const property of objectValue.properties) {
                 property.accept(this);
@@ -1218,12 +1216,11 @@ export abstract class Visitor {
         }
     }
 
-    public visitArrayValue(arrayValue: ArrayValue): void {
+    public visitArrayValue(arrayValue: ArrayValue | null): void {
         if (arrayValue) {
             for (const element of arrayValue.elements) {
-                if (element) {
-                    element.accept(this);
-                }
+                assert(element);
+                element.accept(this);
             }
         }
     }

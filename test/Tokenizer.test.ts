@@ -132,8 +132,10 @@ suite("Tokenizer", () => {
                 });
             }
 
-            constructorTest(null);
-            constructorTest(undefined);
+            // tslint:disable-next-line:no-any
+            constructorTest(<any>null);
+            // tslint:disable-next-line:no-any
+            constructorTest(<any>undefined);
             constructorTest("");
             constructorTest("hello");
         });
@@ -163,8 +165,10 @@ suite("Tokenizer", () => {
                 });
             }
 
-            nextTest(null);
-            nextTest(undefined);
+            // tslint:disable-next-line:no-any
+            nextTest(<any>null);
+            // tslint:disable-next-line:no-any
+            nextTest(<any>undefined);
             nextTest("");
 
             nextTest("{", basic.LeftCurlyBracket);

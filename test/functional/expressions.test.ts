@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length no-http-string no-suspicious-comment
+// tslint:disable:no-non-null-assertion
 
 import { IDeploymentParameterDefinition, IDeploymentTemplate, sources, testDiagnostics } from "../support/diagnostics";
 import { testWithLanguageServer } from "../support/testWithLanguageServer";
@@ -33,13 +34,13 @@ suite("Expressions functional tests", () => {
 
             function addVarIfUsed(varName: string, value: number | unknown[] | string | {}): void {
                 if (expression.match(new RegExp(`variables\\s*\\(\\s*'${varName}'\\s*\\)`, "i"))) {
-                    template.variables[varName] = value;
+                    template.variables![varName] = value;
                 }
             }
 
             function addParamIfUsed(paramName: string, definition: IDeploymentParameterDefinition): void {
                 if (expression.match(new RegExp(`parameters\\s*\\(\\s*'${paramName}'\\s*\\)`, "i"))) {
-                    template.parameters[paramName] = definition;
+                    template.parameters![paramName] = definition;
                 }
             }
 
@@ -65,7 +66,7 @@ suite("Expressions functional tests", () => {
             });
 
             // Add a property with the expression as the value
-            template.resources[0].properties[`test`] = expression;
+            template.resources[0]!.properties![`test`] = expression;
 
             await testDiagnostics(
                 template,

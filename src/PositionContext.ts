@@ -158,13 +158,13 @@ export class PositionContext {
                 } else if (tleValue instanceof TLE.StringValue) {
                     if (tleValue.isParametersArgument()) {
                         const parameterDefinition: ParameterDefinition | null = this._deploymentTemplate.getParameterDefinition(tleValue.toString());
-                        if (parameterDefinition && parameterDefinition.name) {
+                        if (parameterDefinition) {
                             const hoverSpan: language.Span = tleValue.getSpan().translate(this.jsonTokenStartIndex);
                             return new Hover.ParameterReferenceInfo(parameterDefinition.name.toString(), parameterDefinition.description, hoverSpan);
                         }
                     } else if (tleValue.isVariablesArgument()) {
                         const variableDefinition: Json.Property | null = this._deploymentTemplate.getVariableDefinition(tleValue.toString());
-                        if (variableDefinition && variableDefinition.name) {
+                        if (variableDefinition) {
                             const hoverSpan: language.Span = tleValue.getSpan().translate(this.jsonTokenStartIndex);
                             return new Hover.VariableReferenceInfo(variableDefinition.name.toString(), hoverSpan);
                         }
@@ -538,10 +538,8 @@ export class PositionContext {
         const variableCompletions: Completion.Item[] = [];
         const variableDefinitionMatches: Json.Property[] = this._deploymentTemplate.findVariableDefinitionsWithPrefix(prefix);
         for (const variableDefinition of variableDefinitionMatches) {
-            if (variableDefinition.name) {
-                const variableName: string = `'${variableDefinition.name.toString()}'`;
-                variableCompletions.push(new Completion.Item(variableName, `${variableName}${replaceSpanInfo.includeRightParenthesisInCompletion ? ")" : ""}$0`, replaceSpanInfo.replaceSpan, `(variable)`, "", Completion.CompletionKind.Variable));
-            }
+            const variableName: string = `'${variableDefinition.name.toString()}'`;
+            variableCompletions.push(new Completion.Item(variableName, `${variableName}${replaceSpanInfo.includeRightParenthesisInCompletion ? ")" : ""}$0`, replaceSpanInfo.replaceSpan, `(variable)`, "", Completion.CompletionKind.Variable));
         }
         return variableCompletions;
     }

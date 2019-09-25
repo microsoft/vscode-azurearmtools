@@ -10,6 +10,7 @@ import * as orig_assert from "assert";
 
 function fixed_ok(value: unknown, message?: string): void {
     // The bug repros when assert fails and no message is supplied, so always supply a message
+    // tslint:disable-next-line: strict-boolean-expressions
     orig_assert.ok(value, message || "Assertion failed");
 }
 
