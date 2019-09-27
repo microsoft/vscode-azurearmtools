@@ -124,6 +124,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         };
 
         // Create the language client and start the client.
+        // tslint:disable-next-line: strict-boolean-expressions
         const langServerVersion = (await getLangServerVersion()) || "Unknown";
         actionContext.telemetry.properties.langServerNugetVersion = langServerVersion;
         ext.outputChannel.appendLine(`Starting ${languageServerName} at ${serverDllPath}`);
