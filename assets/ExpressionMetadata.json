@@ -623,8 +623,8 @@
         },
         {
             "name": "uniqueString",
-            "expectedUsage": "uniqueString(stringForCreatingUniqueString, ...)",
-            "description": "Performs a 64-bit hash of the provided strings to create a unique string. This function is helpful when you need to create a unique name for a resource. You provide parameter values that represent the level of uniqueness for the result. You can specify whether the name is unique for your subscription, resource group, or deployment.",
+            "expectedUsage": "uniqueString(baseString, ...)",
+            "description": "Creates a deterministic hash string based on the values provided as parameters.\n### Remarks\nThis function is helpful when you need to create a unique name for a resource. You provide parameter values that represent the level of uniqueness for the result. You can specify whether the name is unique for your subscription, resource group, or deployment.\nThe returned value isn't a random string, but rather the result of a hash function. The returned value is 13 characters long. It isn't globally unique. You may want to combine the value with a prefix from your naming convention to create a name that is meaningful.\n### Example\n`[concat('storage', uniqueString(resourceGroup().id))]`",
             "minimumArguments": 1,
             "maximumArguments": null
         },
