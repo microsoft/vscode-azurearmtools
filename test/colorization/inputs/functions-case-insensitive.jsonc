@@ -1,11 +1,17 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
     // Variables
+    "$TEST": "[variables('a')]",
     "$TEST": "[VARIables('a')]",
     // Parameters
+    "$TEST": "[ parameters ( 'b' ) ]",
     "$TEST": "[ paraMETErs ( 'b' ) ]",
     // User function
     "$TEST": "[my.Parameters('c')]",
-    // Built-in function
-    "$TEST": "[mAX(1)]"
+    // Built-in functions
+    "$TEST": "[max(1)]",
+    "$TEST": "[mAX(1)]",
+    // Logical functions
+    "$TEST": "[and(1,1)]",
+    "$TEST": "[aNd(1,1)]",
 }

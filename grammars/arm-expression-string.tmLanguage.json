@@ -22,8 +22,10 @@
 		"scope-builtin": "support.function.builtin.tle.arm-template",
 		"scope-logical": "keyword.control.logical.tle.arm-template",
 		"scope-parameters": "support.type.parameters.tle.arm-template",
+		"$scope-parameter": "The parameter name (including single quotes surrounding it) when it's the immediate argument of a parameters('xxx') expression",
 		"scope-parameter": "support.type.parameters.parameter-name.tle.arm-template",
 		"scope-variables": "variable.language.variables.tle.arm-template",
+		"$scope-variable": "The variable name (including single quotes surrounding it) when it's the immediate argument of a variables('xxx') expression",
 		"scope-variable": "variable.language.variables.variable-name.tle.arm-template",
 		"scope-unknownfunction": "meta.unrecognized-identifier.tle.arm-template",
 		"scope-usernamespace": "entity.name.tag.usernamespace.tle.arm-template",
@@ -150,7 +152,7 @@
 			"$comment1": "When we have 'parameters' with a string literal (instead of an expression), we want to colorize the parameter name along with 'parameters'",
 			"$comment2": "When its parameter is an expression, it will be handled by functionname/functioncall",
 			"name": "meta.parameters-reference.tle.arm-template",
-			"match": "(?x) \\s* (parameters) \\s* (\\() \\s* (' [^']* ') \\s* (\\))",
+			"match": "(?x) \\s* ((?i)parameters) \\s* (\\() \\s* (' [^']* ') \\s* (\\))",
 			"captures": {
 				"1": {
 					"$comment": "parameters",
@@ -174,7 +176,7 @@
 			"$comment1": "When we have 'variables' with a string literal (instead of an expression), we want to colorize the variable name along with 'variables'",
 			"$comment2": "When its parameter is an expression, it will be handled by functionname/functioncall",
 			"name": "meta.variables-reference.tle.arm-template",
-			"match": "(?x) \\s* (variables) \\s* (\\() \\s* (' [^']* ') \\s* (\\))",
+			"match": "(?x) \\s* ((?i)variables) \\s* (\\() \\s* (' [^']* ') \\s* (\\))",
 			"captures": {
 				"1": {
 					"$comment": "variables",
@@ -195,7 +197,7 @@
 			}
 		},
 		"functionname": {
-			"match": "(?x) \\s* (?: {{ns-userfunc}} | (parameters) | (variables) | ({{logical}}) | ({{builtin-functions}}) | ({{id}}) ) (?!{{idchar}} (?# Make sure we don't match a well-known name like 'add' inside something like 'add2'))",
+			"match": "(?x)(?i) \\s* (?: {{ns-userfunc}} | (parameters) | (variables) | ({{logical}}) | ({{builtin-functions}}) | ({{id}}) ) (?!{{idchar}} (?# Make sure we don't match a well-known name like 'add' inside something like 'add2'))",
 			"captures": {
 				"1": {
 					"$comment": "user namespace (capturing group inside ns-userfunc)",
