@@ -47,6 +47,12 @@ export interface IDeploymentParameterDefinition {
     allowedValues?: (number | unknown[] | string | {})[];
 }
 
+export interface IDeploymentOutput {
+    // tslint:disable-next-line:no-reserved-keywords
+    type: IDeploymentExpressionType;
+    value: number | unknown[] | string | {};
+}
+
 export interface IDeploymentTemplate {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#" | "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#";
     contentVersion: string;
@@ -58,12 +64,22 @@ export interface IDeploymentTemplate {
     };
     resources: IDeploymentTemplateResource[];
     outputs?: {
-        [key: string]: {
-            // tslint:disable-next-line:no-reserved-keywords
-            type: IDeploymentExpressionType;
-            value: number | unknown[] | string | {};
-        };
+        [key: string]: IDeploymentOutput;
     };
+    functions?: {
+        namespace: string;
+        members: {
+            [key: string]: {
+                parameters?:
+                {
+                    name: string;
+                    // tslint:disable-next-line: no-reserved-keywords
+                    type: string;
+                }[];
+                output?: IDeploymentOutput;
+            };
+        };
+    }[];
 }
 
 export const defaultArmSchema = "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#";

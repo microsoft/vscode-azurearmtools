@@ -1,20 +1,32 @@
+TEST STRING: "[variables('a')]"
+"[                  {{scope-expression-start}}
+variables           {{scope-variables}}
+(                   {{scope-parentheses-funccall}}
+'a'                 {{scope-variable}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
 TEST STRING: "[VARIables('a')]"
 "[                  {{scope-expression-start}}
-VARIables           {{scope-builtin}}
+VARIables           {{scope-variables}}
 (                   {{scope-parentheses-funccall}}
-'                   {{scope-string-start}}
-a                   {{scope-string-contents}}
-'                   {{scope-string-end}}
+'a'                 {{scope-variable}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[parameters('b')]"
+"[                  {{scope-expression-start}}
+parameters          {{scope-parameters}}
+(                   {{scope-parentheses-funccall}}
+'b'                 {{scope-parameter}}
 )                   {{scope-parentheses-funccall}}
 ]"                  {{scope-expression-end}}
 
 TEST STRING: "[paraMETErs('b')]"
 "[                  {{scope-expression-start}}
-paraMETErs          {{scope-builtin}}
+paraMETErs          {{scope-parameters}}
 (                   {{scope-parentheses-funccall}}
-'                   {{scope-string-start}}
-b                   {{scope-string-contents}}
-'                   {{scope-string-end}}
+'b'                 {{scope-parameter}}
 )                   {{scope-parentheses-funccall}}
 ]"                  {{scope-expression-end}}
 
@@ -30,10 +42,38 @@ c                   {{scope-string-contents}}
 )                   {{scope-parentheses-funccall}}
 ]"                  {{scope-expression-end}}
 
+TEST STRING: "[max(1)]"
+"[                  {{scope-expression-start}}
+max                 {{scope-builtin}}
+(                   {{scope-parentheses-funccall}}
+1                   {{scope-number}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
 TEST STRING: "[mAX(1)]"
 "[                  {{scope-expression-start}}
 mAX                 {{scope-builtin}}
 (                   {{scope-parentheses-funccall}}
+1                   {{scope-number}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[and(1,1)]"
+"[                  {{scope-expression-start}}
+and                 {{scope-logical}}
+(                   {{scope-parentheses-funccall}}
+1                   {{scope-number}}
+,                   {{scope-funcargs-separator}}
+1                   {{scope-number}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[aNd(1,1)]"
+"[                  {{scope-expression-start}}
+aNd                 {{scope-logical}}
+(                   {{scope-parentheses-funccall}}
+1                   {{scope-number}}
+,                   {{scope-funcargs-separator}}
 1                   {{scope-number}}
 )                   {{scope-parentheses-funccall}}
 ]"                  {{scope-expression-end}}

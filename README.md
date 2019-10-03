@@ -37,8 +37,6 @@ Besides automatic detection, you also use the ```files.associations``` setting t
     }
 ```
 
-Note: the extension ```.azrm``` is also currently recognized, but this is experimental and we don't recommend its use currently.
-
 ## Related Links
 
 - [VS Code Azure Resource Manager snippets and cross platform deployment scripts](https://go.microsoft.com/fwlink/?LinkID=733962)

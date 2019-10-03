@@ -1,6 +1,8 @@
 # Change Log
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.8.0 (2019-10-01)
+
 ## Version 0.7.0 (2019-09-16)
 ### Added
 - 0.7.0 contains the first release of a new language service that we are creating specifically for Azure Resource Manager deployment template files.  Up to this point, the extension has been built on top of the built-in VS Code JSON language server.  This has caused some problems, including:
