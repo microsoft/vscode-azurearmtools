@@ -139,6 +139,63 @@
                 }
             ]
         },
+        "top-level-object": {
+            "begin": "\\{",
+            "beginCaptures": {
+                "0": {
+                    "name": "punctuation.definition.dictionary.begin.json.arm-template"
+                }
+            },
+            "end": "\\}",
+            "endCaptures": {
+                "0": {
+                    "name": "punctuation.definition.dictionary.end.json.arm-template"
+                }
+            },
+            "name": "meta.structure.dictionary.json.arm-template",
+            "patterns": [
+                {
+                    "comment": "the JSON object key as an expression",
+                    "include": "source.tle.arm-template"
+                },
+                {
+                    "comment": "the JSON object key",
+                    "include": "#objectkey"
+                },
+                {
+                    "include": "#comments"
+                },
+                {
+                    "begin": ":",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.separator.dictionary.key-value.json.arm-template"
+                        }
+                    },
+                    "end": "(,)|(?=\\})",
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.separator.dictionary.pair.json.arm-template"
+                        }
+                    },
+                    "name": "meta.structure.dictionary.value.json.arm-template",
+                    "patterns": [
+                        {
+                            "comment": "the JSON object value",
+                            "include": "#value"
+                        },
+                        {
+                            "match": "[^\\s,]",
+                            "name": "invalid.illegal.expected-dictionary-separator.json.arm-template"
+                        }
+                    ]
+                },
+                {
+                    "match": "[^\\s\\}]",
+                    "name": "invalid.illegal.expected-dictionary-separator.json.arm-template"
+                }
+            ]
+        },
         "string": {
             "begin": "\"",
             "beginCaptures": {
@@ -174,6 +231,10 @@
             },
             "name": "string.json.arm-template support.type.property-name.json.arm-template",
             "patterns": [
+                {
+                    "match": "parameters",
+                    "name": "support.type.parameters"
+                },
                 {
                     "include": "#stringcontent"
                 }
