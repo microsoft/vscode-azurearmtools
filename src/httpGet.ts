@@ -21,9 +21,9 @@ export function httpGet(url: string): Promise<string> {
         let request: http.ClientRequest;
 
         function callback(response: http.IncomingMessage): void {
-            if (300 <= response.statusCode && response.statusCode < 400 && response.headers.location) {
+            if (typeof response.statusCode === "number" && 300 <= response.statusCode && response.statusCode < 400 && response.headers.location) {
                 resolve(httpGet(response.headers.location.toString()));
-            } else if (200 <= response.statusCode && response.statusCode < 400) {
+            } else if (typeof response.statusCode === "number" && 200 <= response.statusCode && response.statusCode < 400) {
                 let responseContent: string = "";
                 let encoding: string;
 
@@ -64,6 +64,7 @@ export function httpGet(url: string): Promise<string> {
             request = http.get(url, callback);
         } else {
             reject(`Unsupported url schema: '${url}`);
+            return;
         }
 
         request.on("error", (e) => {

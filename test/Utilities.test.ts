@@ -10,11 +10,13 @@ import { Utilities } from "../extension.bundle";
 suite("Utilities", () => {
     suite("clone(any)", () => {
         test("With null", () => {
-            assert.deepEqual(null, Utilities.clone(null));
+            // tslint:disable-next-line:no-any
+            assert.deepEqual(null, Utilities.clone(<any>null));
         });
 
         test("With undefined", () => {
-            assert.deepEqual(undefined, Utilities.clone(undefined));
+            // tslint:disable-next-line:no-any
+            assert.deepEqual(undefined, Utilities.clone(<any>undefined));
         });
 
         test("With number", () => {
@@ -36,7 +38,7 @@ suite("Utilities", () => {
         });
 
         test("With empty array", () => {
-            let emptyArray = [];
+            let emptyArray: string[] = [];
             let clone = Utilities.clone(emptyArray);
             assert.deepEqual(emptyArray, clone);
             clone.push("test");
@@ -77,7 +79,8 @@ suite("Utilities", () => {
 
     suite("isWhitespaceCharacter(string)", () => {
         test("With null", () => {
-            assert.equal(false, Utilities.isWhitespaceCharacter(null));
+            // tslint:disable-next-line:no-any
+            assert.equal(false, Utilities.isWhitespaceCharacter(<any>null));
         });
 
         test("With empty", () => {
@@ -111,7 +114,8 @@ suite("Utilities", () => {
 
     suite("isQuoteCharacter(string)", () => {
         test("With null", () => {
-            assert.equal(false, Utilities.isQuoteCharacter(null));
+            // tslint:disable-next-line:no-any
+            assert.equal(false, Utilities.isQuoteCharacter(<any>null));
         });
 
         test("With empty", () => {
@@ -145,7 +149,8 @@ suite("Utilities", () => {
 
     suite("isDigit(string)", () => {
         test("With null", () => {
-            assert.equal(false, Utilities.isDigit(null));
+            // tslint:disable-next-line:no-any
+            assert.equal(false, Utilities.isDigit(<any>null));
         });
 
         test("With empty", () => {

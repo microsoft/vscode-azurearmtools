@@ -6,7 +6,7 @@
  * Caches a promise on the first call and always returns the same promise after that
  */
 export class CachedPromise<T> {
-    private _promise: Promise<T>;
+    private _promise: Promise<T> | undefined;
 
     // tslint:disable-next-line: promise-function-async
     public getOrCachePromise(createPromise: () => Promise<T>): Promise<T> {

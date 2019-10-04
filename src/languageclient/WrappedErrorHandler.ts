@@ -31,10 +31,11 @@ export class WrappedErrorHandler implements ErrorHandler {
      * @param count - a count indicating how often an error is received. Will
      *  be reset if a message got successfully send or received.
      */
-    public error(error: Error, message: Message | undefined, count: number): ErrorAction {
+    public error(error: Error, message: Message, count: number): ErrorAction {
         // Use our shared error handling code to notification telemetry and user of the error
         // in a standard way
         callWithTelemetryAndErrorHandlingSync(languageServerErrorTelemId, (context: IActionContext) => {
+            // tslint:disable-next-line: strict-boolean-expressions
             context.telemetry.properties.jsonrpcMessage = message ? message.jsonrpc : "";
             context.telemetry.measurements.secondsSinceStart = (Date.now() - this._serverStartTime) / 1000;
 

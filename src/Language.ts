@@ -65,7 +65,7 @@ export class Span {
      * Create a new span that is a union of this Span and the provided Span.
      * If the provided Span is null, then this Span will be returned.
      */
-    public union(rhs: Span): Span {
+    public union(rhs: Span | null): Span {
         let result: Span;
         if (rhs !== null) {
             let minStart = Math.min(this.startIndex, rhs.startIndex);

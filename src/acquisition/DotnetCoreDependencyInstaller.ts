@@ -40,7 +40,7 @@ export class DotnetCoreDependencyInstaller {
         return false;
     }
 
-    public async installLinuxDependencies(additionalLibs: {} = {}, skipDotNetCore: boolean = false): Promise<Number> {
+    public async installLinuxDependencies(additionalLibs: { [key: string]: string } = {}, skipDotNetCore: boolean = false): Promise<Number> {
         const scriptRoot = path.join(__dirname, '..', 'install scripts');
         const shellCommand = this.getShellCommand();
 
@@ -67,7 +67,7 @@ export class DotnetCoreDependencyInstaller {
                 moreInfoUrl]);
     }
 
-    public async promptLinuxDependencyInstall(telemetryProperties: { [key: string]: string }, failureMessage: string, additionalLibs: {} = {}, skipDotNetCore: boolean = false): Promise<boolean> {
+    public async promptLinuxDependencyInstall(telemetryProperties: { [key: string]: string | undefined }, failureMessage: string, additionalLibs: { [key: string]: string } = {}, skipDotNetCore: boolean = false): Promise<boolean> {
         // tslint:disable-next-line:no-constant-condition
         while (true) {
             const response = await vscode.window.showErrorMessage(
@@ -75,7 +75,8 @@ export class DotnetCoreDependencyInstaller {
                 'More Info',
                 'Install',
                 'Cancel');
-            telemetryProperties.response = response;
+            // tslint:disable-next-line: strict-boolean-expressions
+            telemetryProperties.response = response || '';
 
             if (response === 'More Info') {
                 // Don't return, user has to explicitly hit "cancel"
@@ -119,6 +120,7 @@ export class DotnetCoreDependencyInstaller {
         // Test for existence of bash which won't exist on the base Alpine Linux container, use sh instead there
         const shellCommand = which('bash');
         // shellCommand will be null if bash is not found
+        // tslint:disable-next-line: strict-boolean-expressions
         return shellCommand ? shellCommand.toString() : which('sh').toString();
     }
 

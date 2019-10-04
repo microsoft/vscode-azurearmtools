@@ -42,7 +42,7 @@ const resourceIcons: [string, string][] = [
 ];
 
 export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
-    private tree: Json.ParseResult;
+    private tree: Json.ParseResult | undefined;
     private text: string;
 
     public readonly onDidChangeTreeDataEmitter: vscode.EventEmitter<string | null> =
@@ -72,10 +72,10 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
 
                 if (!this.tree) {
                     this.refresh();
-                    assert(this.tree, "No tree");
+                    throw new Error("No tree");
                 }
 
-                let result = [];
+                let result: string[] = [];
                 if (!element) {
                     if (this.tree.value instanceof Json.ObjectValue) {
                         // tslint:disable-next-line:one-variable-per-declaration
@@ -86,8 +86,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     }
                 } else {
                     let elementInfo = <IElementInfo>JSON.parse(element);
-                    assert(!!elementInfo.current, "elementInfo.current not defined");
-                    let valueNode = this.tree.getValueAtCharacterIndex(elementInfo.current.value.start);
+                    let valueNode = elementInfo.current.value.start !== undefined ? this.tree.getValueAtCharacterIndex(elementInfo.current.value.start) : undefined;
 
                     // Value is an object and is collapsible
                     if (valueNode instanceof Json.ObjectValue && elementInfo.current.collapsible) {
@@ -114,13 +113,18 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                 return result;
             }
         }
+
+        return [];
     }
 
     public getTreeItem(element: string): vscode.TreeItem {
-
         const elementInfo: IElementInfo = <IElementInfo>JSON.parse(element);
-        const start = vscode.window.activeTextEditor.document.positionAt(elementInfo.current.key.start);
-        const end = vscode.window.activeTextEditor.document.positionAt(elementInfo.current.value.end);
+        const activeTextEditor = vscode.window.activeTextEditor;
+        assert(activeTextEditor);
+        // tslint:disable-next-line: no-non-null-assertion // Asserted
+        const document = activeTextEditor!.document;
+        const start = document.positionAt(elementInfo.current.key.start);
+        const end = elementInfo.current.value.end !== undefined ? document.positionAt(elementInfo.current.value.end) : start;
 
         let treeItem: vscode.TreeItem = {
             label: this.getTreeNodeLabel(elementInfo),
@@ -137,25 +141,26 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     }
 
     public goToDefinition(range: vscode.Range): void {
-        const editor: vscode.TextEditor = vscode.window.activeTextEditor;
-
-        // Center the method in the document
-        editor.revealRange(range, vscode.TextEditorRevealType.Default);
-        // Select the method name
-        editor.selection = new vscode.Selection(range.start, range.end);
-        // Swap the focus to the editor
-        vscode.window.showTextDocument(editor.document, editor.viewColumn, false);
+        const editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+        if (editor) {
+            // Center the method in the document
+            editor.revealRange(range, vscode.TextEditorRevealType.Default);
+            // Select the method name
+            editor.selection = new vscode.Selection(range.start, range.end);
+            // Swap the focus to the editor
+            vscode.window.showTextDocument(editor.document, editor.viewColumn, false);
+        }
     }
 
     private parseTree(document?: vscode.TextDocument): void {
-        if (this.shouldShowTreeForDocument(document)) {
+        if (document && this.shouldShowTreeForDocument(document)) {
             this.text = document.getText();
             this.tree = Json.parse(this.text);
         }
     }
 
     private getTreeNodeLabel(elementInfo: IElementInfo): string {
-        const keyNode = this.tree.getValueAtCharacterIndex(elementInfo.current.key.start);
+        const keyNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.key.start);
 
         // Key is an object (e.g. a resource object)
         if (keyNode instanceof Json.ObjectValue) {
@@ -165,8 +170,10 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                 return "{}";
             } else {
                 // Object contains elements, look for displayName tag first
+                // tslint:disable-next-line: strict-boolean-expressions
                 let tags = keyNode.properties.find(p => p.name && p.name.toString().toLowerCase() === 'tags');
                 if (tags && tags.value instanceof Json.ObjectValue) {
+                    // tslint:disable-next-line: strict-boolean-expressions
                     let displayNameProp = tags.value.properties.find(p => p.name && p.name.toString().toLowerCase() === 'displayname');
                     if (displayNameProp) {
                         let displayName = displayNameProp.value && displayNameProp.value.toString();
@@ -182,7 +189,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     let props = keyNode.properties[i];
                     // If name element is found
                     if (props.name instanceof Json.StringValue && props.name.toString().toUpperCase() === "name".toUpperCase()) {
-                        let name = props.value.toFriendlyString();
+                        let name = toFriendlyString(props.value);
 
                         return shortenTreeLabel(name);
                     }
@@ -196,13 +203,15 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
 
         } else if (elementInfo.current.value.kind === Json.ValueKind.ArrayValue || elementInfo.current.value.kind === Json.ValueKind.ObjectValue) {
             // The value of the node is an array or object (e.g. properties or resources) - return key as the node label
-            return keyNode.toFriendlyString();
-        } else {
+            return toFriendlyString(keyNode);
+        } else if (elementInfo.current.value.start !== undefined) {
             // For other value types, display key and value since they won't be expandable
-            const valueNode = this.tree.getValueAtCharacterIndex(elementInfo.current.value.start);
+            const valueNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.value.start); //asdf
 
-            return `${keyNode instanceof Json.StringValue ? keyNode.toFriendlyString() : "?"}: ${valueNode.toFriendlyString()}`;
+            return `${keyNode instanceof Json.StringValue ? toFriendlyString(keyNode) : "?"}: ${toFriendlyString(valueNode)}`;
         }
+
+        return "";
     }
 
     /**
@@ -266,9 +275,10 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
 
         if (childElement instanceof Json.Property) {
             result.current.key.kind = childElement.valueKind;
-            result.current.value.start = childElement.value.startIndex;
-            result.current.value.end = childElement.value.span.afterEndIndex;
-            result.current.value.kind = childElement.value.valueKind;
+            // tslint:disable-next-line: strict-boolean-expressions
+            result.current.value.start = childElement.value ? childElement.value.startIndex : undefined;
+            result.current.value.end = childElement.value ? childElement.value.span.afterEndIndex : undefined;
+            result.current.value.kind = childElement.value ? childElement.value.valueKind : undefined;
         } else {
             result.current.key.kind = childElement.valueKind;
             result.current.value.start = childElement.startIndex;
@@ -284,7 +294,8 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             result.parent.value.start = elementInfo.current.value.start;
             result.parent.value.end = elementInfo.current.value.end;
             result.root.key.start = elementInfo.root.key.start;
-            result.current.level = elementInfo.current.level + 1;
+            // tslint:disable-next-line: strict-boolean-expressions
+            result.current.level = (elementInfo.current.level || 0) + 1;
         } else {
             result.current.level = 1;
         }
@@ -302,30 +313,39 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
 
     private getIconPath(elementInfo: IElementInfo): string | undefined {
 
-        let icon: string;
-        const keyOrResourceNode = this.tree.getValueAtCharacterIndex(elementInfo.current.key.start);
+        let icon: string | undefined;
+        const keyOrResourceNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.key.start);
 
         // Is current element a root element?
         if (elementInfo.current.level === 1) {
-            icon = this.getIcon(topLevelIcons, keyOrResourceNode.toString(), "");
+            if (keyOrResourceNode) {
+                icon = this.getIcon(topLevelIcons, keyOrResourceNode.toString(), "");
+            }
         } else if (elementInfo.current.level === 2) {
             // Is current element an element of a root element?
 
             // Get root value
-            const rootNode = this.tree.getValueAtCharacterIndex(elementInfo.root.key.start);
-            icon = this.getIcon(topLevelChildIconsByRootNode, rootNode.toString(), "");
+            const rootNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.root.key.start);
+            if (rootNode) {
+                icon = this.getIcon(topLevelChildIconsByRootNode, rootNode.toString(), "");
+            }
         }
 
         // If resourceType element is found on resource objects set to specific resourceType Icon or else a default resource icon
-        if (elementInfo.current.level > 1 && elementInfo.current.key.kind === Json.ValueKind.ObjectValue) {
-            const rootNode = this.tree.getValueAtCharacterIndex(elementInfo.root.key.start);
+        // tslint:disable-next-line: strict-boolean-expressions
+        if (elementInfo.current.level && elementInfo.current.level > 1 && elementInfo.current.key.kind === Json.ValueKind.ObjectValue) {
+            const rootNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.root.key.start);
 
-            if (rootNode.toString().toUpperCase() === "resources".toUpperCase() && keyOrResourceNode instanceof Json.ObjectValue) {
+            if (rootNode && rootNode.toString().toUpperCase() === "resources".toUpperCase() && keyOrResourceNode instanceof Json.ObjectValue) {
                 // tslint:disable-next-line:one-variable-per-declaration
                 for (var i = 0, il = keyOrResourceNode.properties.length; i < il; i++) {
-                    if (keyOrResourceNode.properties[i].name.toString().toUpperCase() === "type".toUpperCase()) {
-                        let resourceType = keyOrResourceNode.properties[i].value.toString().toUpperCase();
-                        icon = this.getIcon(resourceIcons, resourceType, "resources.svg");
+                    const name = keyOrResourceNode.properties[i].name;
+                    if (name.toString().toUpperCase() === "type".toUpperCase()) {
+                        const value = keyOrResourceNode.properties[i].value;
+                        if (value) {
+                            let resourceType = value.toString().toUpperCase();
+                            icon = this.getIcon(resourceIcons, resourceType, "resources.svg");
+                        }
                     }
                 }
             }
@@ -339,10 +359,10 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     }
 
     private updateTreeState(): void {
-        const activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
-        const document: vscode.TextDocument = !!activeEditor ? activeEditor.document : null;
+        const activeEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+        const document: vscode.TextDocument | undefined = !!activeEditor ? activeEditor.document : undefined;
         this.parseTree(document);
-        const showTreeView = this.shouldShowTreeForDocument(document);
+        const showTreeView = !!document && this.shouldShowTreeForDocument(document);
 
         if (showTreeView) {
             this.refresh();
@@ -351,9 +371,9 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         this.setTreeViewContext(showTreeView);
     }
 
-    private shouldShowTreeForDocument(document?: vscode.TextDocument): boolean {
+    private shouldShowTreeForDocument(document: vscode.TextDocument): boolean {
         // Only show view if the language is set to Azure Resource Manager Template
-        return !!document && document.languageId === languageId;
+        return document.languageId === languageId;
     }
 
     private setTreeViewContext(visible: boolean): void {
@@ -366,26 +386,26 @@ export interface IElementInfo {
         key: {
             start: number;
             end: number;
-            kind: Json.ValueKind;
+            kind?: Json.ValueKind;
         };
         value: {
-            start: number;
-            end: number;
-            kind: Json.ValueKind;
+            start?: number;
+            end?: number;
+            kind?: Json.ValueKind;
         };
-        level: number;
+        level?: number;
         collapsible: boolean;
     };
     parent: {
         key: {
-            start: number;
-            end: number;
-            kind: Json.ValueKind;
+            start?: number;
+            end?: number;
+            kind?: Json.ValueKind;
         };
         value: {
-            start: number;
-            end: number;
-            kind: Json.ValueKind;
+            start?: number;
+            end?: number;
+            kind?: Json.ValueKind;
         };
     };
     root: {
@@ -427,4 +447,12 @@ export function shortenTreeLabel(label: string): string {
     }
 
     return originalLabel;
+}
+
+function toFriendlyString(value: Json.Value | null | undefined): string {
+    if (value instanceof Json.Value) {
+        return value.toFriendlyString();
+    } else {
+        return String(value);
+    }
 }

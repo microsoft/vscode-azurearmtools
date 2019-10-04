@@ -20,5 +20,5 @@ export namespace ext {
     export let ui: IAzureUserInput;
 
     // Suite support - lets us know when diagnostics have been completely published for a file
-    export let addCompletionDiagnostic: boolean = false;
+    export let addCompletedDiagnostic: boolean = false;
 }

@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 // tslint:disable:max-func-body-length cyclomatic-complexity promise-function-async align max-line-length max-line-length no-null-keyword
+// tslint:disable:no-non-null-assertion
 
 import * as assert from "assert";
 import { Completion, DeploymentTemplate, Hover, Json, Language, ParameterDefinition, PositionContext, TLE, Utilities } from "../extension.bundle";
@@ -11,21 +12,25 @@ import * as jsonTest from "./JSON.test";
 suite("PositionContext", () => {
     suite("fromDocumentLineAndColumnIndexes(DeploymentTemplate,number,number)", () => {
         test("with null deploymentTemplate", () => {
-            assert.throws(() => { PositionContext.fromDocumentLineAndColumnIndexes(null, 1, 2); });
+            // tslint:disable-next-line:no-any
+            assert.throws(() => { PositionContext.fromDocumentLineAndColumnIndexes(<any>null, 1, 2); });
         });
 
         test("with undefined deploymentTemplate", () => {
-            assert.throws(() => { PositionContext.fromDocumentLineAndColumnIndexes(undefined, 1, 2); });
+            // tslint:disable-next-line:no-any
+            assert.throws(() => { PositionContext.fromDocumentLineAndColumnIndexes(<any>undefined, 1, 2); });
         });
 
         test("with null documentLineIndex", () => {
             let dt = new DeploymentTemplate("{}", "id");
-            assert.throws(() => { PositionContext.fromDocumentLineAndColumnIndexes(dt, null, 2); });
+            // tslint:disable-next-line:no-any
+            assert.throws(() => { PositionContext.fromDocumentLineAndColumnIndexes(dt, <any>null, 2); });
         });
 
         test("with undefined documentLineIndex", () => {
             let dt = new DeploymentTemplate("{}", "id");
-            assert.throws(() => { PositionContext.fromDocumentLineAndColumnIndexes(dt, undefined, 2); });
+            // tslint:disable-next-line:no-any
+            assert.throws(() => { PositionContext.fromDocumentLineAndColumnIndexes(dt, <any>undefined, 2); });
         });
 
         test("with negative documentLineIndex", () => {
@@ -41,12 +46,14 @@ suite("PositionContext", () => {
 
         test("with null documentColumnIndex", () => {
             let dt = new DeploymentTemplate("{}", "id");
-            assert.throws(() => { PositionContext.fromDocumentLineAndColumnIndexes(dt, 0, null); });
+            // tslint:disable-next-line:no-any
+            assert.throws(() => { PositionContext.fromDocumentLineAndColumnIndexes(dt, 0, <any>null); });
         });
 
         test("with undefined documentColumnIndex", () => {
             let dt = new DeploymentTemplate("{}", "id");
-            assert.throws(() => { PositionContext.fromDocumentLineAndColumnIndexes(dt, 0, undefined); });
+            // tslint:disable-next-line:no-any
+            assert.throws(() => { PositionContext.fromDocumentLineAndColumnIndexes(dt, 0, <any>undefined); });
         });
 
         test("with negative documentColumnIndex", () => {
@@ -72,21 +79,25 @@ suite("PositionContext", () => {
 
     suite("fromDocumentCharacterIndex(DeploymentTemplate,number)", () => {
         test("with null deploymentTemplate", () => {
-            assert.throws(() => { PositionContext.fromDocumentCharacterIndex(null, 1); });
+            // tslint:disable-next-line:no-any
+            assert.throws(() => { PositionContext.fromDocumentCharacterIndex(<any>null, 1); });
         });
 
         test("with undefined deploymentTemplate", () => {
-            assert.throws(() => { PositionContext.fromDocumentCharacterIndex(undefined, 1); });
+            // tslint:disable-next-line:no-any
+            assert.throws(() => { PositionContext.fromDocumentCharacterIndex(<any>undefined, 1); });
         });
 
         test("with null documentCharacterIndex", () => {
             let dt = new DeploymentTemplate("{}", "id");
-            assert.throws(() => { PositionContext.fromDocumentCharacterIndex(dt, null); });
+            // tslint:disable-next-line:no-any
+            assert.throws(() => { PositionContext.fromDocumentCharacterIndex(dt, <any>null); });
         });
 
         test("with undefined documentCharacterIndex", () => {
             let dt = new DeploymentTemplate("{}", "id");
-            assert.throws(() => { PositionContext.fromDocumentCharacterIndex(dt, undefined); });
+            // tslint:disable-next-line:no-any
+            assert.throws(() => { PositionContext.fromDocumentCharacterIndex(dt, <any>undefined); });
         });
 
         test("with negative documentCharacterIndex", () => {
@@ -173,47 +184,45 @@ suite("PositionContext", () => {
         test("with characterIndex in whitespace", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(1);
-            assert.deepStrictEqual(pc.tleParseResult, null);
+            assert.deepStrictEqual(pc.tleInfo, null);
         });
 
         test("with characterIndex at the start of a LeftCurlyBracket", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(0);
-            assert.deepStrictEqual(pc.tleParseResult, null);
+            assert.deepStrictEqual(pc.tleInfo, null);
         });
 
         test("with characterIndex at the start of a Colon", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(5);
-            assert.deepStrictEqual(null, pc.tleParseResult);
+            assert.deepStrictEqual(pc.tleInfo, null);
         });
 
         test("with characterIndex at the start of a non-TLE QuotedString", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(2);
-            assert.deepStrictEqual(TLE.Parser.parse("'a'"), pc.tleParseResult);
+            assert.deepStrictEqual(TLE.Parser.parse("'a'"), pc.tleInfo!.tleParseResult);
         });
 
         test("with characterIndex at the start of a closed TLE QuotedString", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(17);
 
-            const tleParseResult: TLE.ParseResult = pc.tleParseResult;
+            const tleParseResult: TLE.ParseResult = pc.tleInfo!.tleParseResult;
             assert(tleParseResult);
             assert.deepStrictEqual(tleParseResult.errors, []);
             assert.deepStrictEqual(tleParseResult.leftSquareBracketToken, TLE.Token.createLeftSquareBracket(1));
             assert.deepStrictEqual(tleParseResult.rightSquareBracketToken, TLE.Token.createRightSquareBracket(13));
 
-            const concat: TLE.FunctionValue = TLE.asFunctionValue(tleParseResult.expression);
-            assert(concat);
+            const concat: TLE.FunctionValue = assertNotNull(TLE.asFunctionValue(tleParseResult.expression));
             assert.deepStrictEqual(concat.parent, undefined);
             assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
             assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
             assert.deepStrictEqual(concat.rightParenthesisToken, TLE.Token.createRightParenthesis(12));
             assert.deepStrictEqual(concat.commaTokens, []);
             assert.deepStrictEqual(concat.argumentExpressions.length, 1);
-            const arg1: TLE.StringValue = TLE.asStringValue(concat.argumentExpressions[0]);
-            assert(arg1);
+            const arg1: TLE.StringValue = assertNotNull(TLE.asStringValue(concat.argumentExpressions[0]));
             assert.deepStrictEqual(arg1.parent, concat);
             assert.deepStrictEqual(arg1.token, TLE.Token.createQuotedString(9, "'B'"));
         });
@@ -222,7 +231,7 @@ suite("PositionContext", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(17);
 
-            const tleParseResult: TLE.ParseResult = pc.tleParseResult;
+            const tleParseResult: TLE.ParseResult = pc.tleInfo!.tleParseResult;
             assert(tleParseResult);
             assert.deepStrictEqual(
                 tleParseResult.errors,
@@ -232,16 +241,14 @@ suite("PositionContext", () => {
             assert.deepStrictEqual(tleParseResult.leftSquareBracketToken, TLE.Token.createLeftSquareBracket(1));
             assert.deepStrictEqual(tleParseResult.rightSquareBracketToken, null);
 
-            const concat: TLE.FunctionValue = TLE.asFunctionValue(tleParseResult.expression);
-            assert(concat);
+            const concat: TLE.FunctionValue = assertNotNull(TLE.asFunctionValue(tleParseResult.expression));
             assert.deepStrictEqual(concat.parent, undefined);
             assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
             assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
             assert.deepStrictEqual(concat.rightParenthesisToken, null);
             assert.deepStrictEqual(concat.commaTokens, []);
             assert.deepStrictEqual(concat.argumentExpressions.length, 1);
-            const arg1: TLE.StringValue = TLE.asStringValue(concat.argumentExpressions[0]);
-            assert(arg1);
+            const arg1: TLE.StringValue = assertNotNull(TLE.asStringValue(concat.argumentExpressions[0]));
             assert.deepStrictEqual(arg1.parent, concat);
             assert.deepStrictEqual(arg1.token, TLE.Token.createQuotedString(9, "'B'"));
         });
@@ -251,43 +258,43 @@ suite("PositionContext", () => {
         test("with characterIndex at the start of a LeftCurlyBracket", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(0);
-            assert.deepStrictEqual(null, pc.tleCharacterIndex);
+            assert.deepStrictEqual(pc.tleInfo, null);
         });
 
         test("with characterIndex in whitespace", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(1);
-            assert.deepStrictEqual(null, pc.tleCharacterIndex);
+            assert.deepStrictEqual(null, pc.tleInfo);
         });
 
         test("with characterIndex at the start of a non-TLE QuotedString", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(2);
-            assert.deepStrictEqual(0, pc.tleCharacterIndex);
+            assert.deepStrictEqual(0, pc.tleInfo!.tleCharacterIndex);
         });
 
         test("with characterIndex at the start of a TLE", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(17);
-            assert.deepStrictEqual(0, pc.tleCharacterIndex);
+            assert.deepStrictEqual(0, pc.tleInfo!.tleCharacterIndex);
         });
 
         test("with characterIndex inside of a TLE", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(21);
-            assert.deepStrictEqual(pc.tleCharacterIndex, 4);
+            assert.deepStrictEqual(pc.tleInfo!.tleCharacterIndex, 4);
         });
 
         test("with characterIndex after the end of a closed TLE", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(32);
-            assert.deepStrictEqual(null, pc.tleCharacterIndex);
+            assert.deepStrictEqual(pc.tleInfo, null);
         });
 
         test("with characterIndex after the end of an unclosed TLE", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(29);
-            assert.deepStrictEqual(12, pc.tleCharacterIndex);
+            assert.deepStrictEqual(12, pc.tleInfo!.tleCharacterIndex);
         });
     });
 
@@ -295,42 +302,40 @@ suite("PositionContext", () => {
         test("with characterIndex at the start of a LeftCurlyBracket", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(0);
-            assert.deepStrictEqual(null, pc.tleValue);
+            assert.deepStrictEqual(pc.tleInfo, null);
         });
 
         test("with characterIndex in whitespace", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(1);
-            assert.deepStrictEqual(null, pc.tleValue);
+            assert.deepStrictEqual(pc.tleInfo, null);
         });
 
         test("with characterIndex at the start of a non-TLE QuotedString", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(2);
             assert.deepStrictEqual(
-                pc.tleValue,
+                pc.tleInfo!.tleValue,
                 new TLE.StringValue(TLE.Token.createQuotedString(0, "'a'")));
         });
 
         test("with characterIndex at the start of a TLE", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': ".length);
-            assert.deepStrictEqual(pc.tleValue, null);
+            assert.deepStrictEqual(pc.tleInfo!.tleValue, null);
         });
 
         test("with characterIndex inside of a TLE", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(21);
 
-            const concat: TLE.FunctionValue = TLE.asFunctionValue(pc.tleValue);
-            assert(concat);
+            const concat: TLE.FunctionValue = assertNotNull(TLE.asFunctionValue(pc.tleInfo!.tleValue));
             assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
             assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
             assert.deepStrictEqual(concat.rightParenthesisToken, TLE.Token.createRightParenthesis(12));
             assert.deepStrictEqual(concat.commaTokens, []);
             assert.deepStrictEqual(concat.argumentExpressions.length, 1);
-            const arg1: TLE.StringValue = TLE.asStringValue(concat.argumentExpressions[0]);
-            assert(arg1);
+            const arg1: TLE.StringValue = assertNotNull(TLE.asStringValue(concat.argumentExpressions[0]));
             assert.deepStrictEqual(arg1.parent, concat);
             assert.deepStrictEqual(arg1.token, TLE.Token.createQuotedString(9, "'B'"));
         });
@@ -338,18 +343,16 @@ suite("PositionContext", () => {
         test("with characterIndex after the end of a closed TLE", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", "id");
             let pc = dt.getContextFromDocumentCharacterIndex(32);
-            assert.deepStrictEqual(null, pc.tleValue);
+            assert.deepStrictEqual(pc.tleInfo, null);
         });
 
         test("with characterIndex after the end of an unclosed TLE", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[concat('B'".length);
 
-            const b: TLE.StringValue = TLE.asStringValue(pc.tleValue);
-            assert(b);
+            const b: TLE.StringValue = assertNotNull(TLE.asStringValue(pc.tleInfo!.tleValue));
             assert.deepStrictEqual(b.token, TLE.Token.createQuotedString(9, "'B'"));
-            const concat: TLE.FunctionValue = TLE.asFunctionValue(b.parent);
-            assert(concat);
+            const concat: TLE.FunctionValue = assertNotNull(TLE.asFunctionValue(b.parent));
             assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
             assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
             assert.deepStrictEqual(concat.rightParenthesisToken, null);
@@ -471,7 +474,6 @@ suite("PositionContext", () => {
 
                 let completionItems: Completion.Item[] = await completionItemsPromise;
                 const completionItems2: Completion.Item[] = await completionItems2Promise;
-                assert(!!completionItems);
                 assert.deepStrictEqual(completionItems, completionItems2, "Race condition? Got different results");
 
                 compareTestableCompletionItems(completionItems, expectedCompletionItems);
@@ -1370,8 +1372,7 @@ suite("PositionContext", () => {
         test("with matching parameter definition", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\")]' }", "id");
             const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pNa".length);
-            const parameterDefinition: ParameterDefinition = context.parameterDefinition;
-            assert(parameterDefinition);
+            const parameterDefinition: ParameterDefinition = assertNotNull(context.parameterDefinition);
             assert.deepStrictEqual(parameterDefinition.name.toString(), "pName");
             assert.deepStrictEqual(parameterDefinition.description, null);
             assert.deepStrictEqual(parameterDefinition.span, new Language.Span(18, 11));
@@ -1380,8 +1381,7 @@ suite("PositionContext", () => {
         test("with cursor before parameter name start quote with matching parameter definition", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\")]' }", "id");
             const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': {} }, 'a': '[parameters(".length);
-            const parameterDefinition: ParameterDefinition = context.parameterDefinition;
-            assert(parameterDefinition);
+            const parameterDefinition: ParameterDefinition = assertNotNull(context.parameterDefinition);
             assert.deepStrictEqual(parameterDefinition.name.toString(), "pName");
             assert.deepStrictEqual(parameterDefinition.description, null);
             assert.deepStrictEqual(parameterDefinition.span, new Language.Span(18, 11));
@@ -1390,8 +1390,7 @@ suite("PositionContext", () => {
         test("with cursor after parameter name end quote with matching parameter definition", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\")]' }", "id");
             const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\"".length);
-            const parameterDefinition: ParameterDefinition = context.parameterDefinition;
-            assert(parameterDefinition);
+            const parameterDefinition: ParameterDefinition = assertNotNull(context.parameterDefinition);
             assert.deepStrictEqual(parameterDefinition.name.toString(), "pName");
             assert.deepStrictEqual(parameterDefinition.description, null);
             assert.deepStrictEqual(parameterDefinition.span, new Language.Span(18, 11));
@@ -1414,8 +1413,7 @@ suite("PositionContext", () => {
         test("with matching variable definition", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\")]' }", "id");
             const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vNa".length);
-            const vDef: Json.Property = context.variableDefinition;
-            assert(vDef);
+            const vDef: Json.Property = assertNotNull(context.variableDefinition);
             assert.deepStrictEqual(vDef.name.toString(), "vName");
             assert.deepStrictEqual(vDef.span, new Language.Span(17, 11));
         });
@@ -1423,8 +1421,7 @@ suite("PositionContext", () => {
         test("with cursor before variable name start quote with matching variable definition", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\")]' }", "id");
             const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(".length);
-            const vDef: Json.Property = context.variableDefinition;
-            assert(vDef);
+            const vDef: Json.Property = assertNotNull(context.variableDefinition);
             assert.deepStrictEqual(vDef.name.toString(), "vName");
             assert.deepStrictEqual(vDef.span, new Language.Span(17, 11));
         });
@@ -1432,10 +1429,17 @@ suite("PositionContext", () => {
         test("with cursor after parameter name end quote with matching parameter definition", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\")]' }", "id");
             const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\"".length);
-            const vDef: Json.Property = context.variableDefinition;
-            assert(vDef);
+            const vDef: Json.Property = assertNotNull(context.variableDefinition);
             assert.deepStrictEqual(vDef.name.toString(), "vName");
             assert.deepStrictEqual(vDef.span, new Language.Span(17, 11));
         });
     });
 });
+
+function assertNotNull<T>(v: T | undefined | null): T {
+    if (v === undefined || v === null) {
+        throw new Error("Expecting non-null/non-unknown value");
+    }
+
+    return v;
+}

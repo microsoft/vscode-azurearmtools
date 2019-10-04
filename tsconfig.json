@@ -6,7 +6,8 @@
         "noLib": false,
         "sourceMap": true,
         "noUnusedLocals": true,
-        "strictNullChecks": false // TODO
+        "strict": false, // TODO
+        "strictNullChecks": true
     },
     "exclude": [
         "node_modules"

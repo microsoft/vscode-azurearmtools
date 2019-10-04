@@ -11,15 +11,18 @@ suite("Reference", () => {
     suite("List", () => {
         suite("constructor(Reference.Type, Span[])", () => {
             test("with null type", () => {
-                assert.throws(() => { new Reference.List(null); });
+                // tslint:disable-next-line:no-any
+                assert.throws(() => { new Reference.List(<any>null); });
             });
 
             test("with undefined type", () => {
-                assert.throws(() => { new Reference.List(undefined); });
+                // tslint:disable-next-line:no-any
+                assert.throws(() => { new Reference.List(<any>undefined); });
             });
 
             test("with null spans", () => {
-                assert.throws(() => { new Reference.List(Reference.ReferenceKind.Parameter, null); });
+                // tslint:disable-next-line:no-any
+                assert.throws(() => { new Reference.List(Reference.ReferenceKind.Parameter, <any>null); });
             });
 
             test("with undefined spans", () => {
@@ -47,24 +50,28 @@ suite("Reference", () => {
         suite("add(Span)", () => {
             test("with null", () => {
                 const list = new Reference.List(Reference.ReferenceKind.Variable);
-                assert.throws(() => { list.add(null); });
+                // tslint:disable-next-line:no-any
+                assert.throws(() => { list.add(<any>null); });
             });
 
             test("with undefined", () => {
                 const list = new Reference.List(Reference.ReferenceKind.Variable);
-                assert.throws(() => { list.add(undefined); });
+                // tslint:disable-next-line:no-any
+                assert.throws(() => { list.add(<any>undefined); });
             });
         });
 
         suite("addAll(Reference.List)", () => {
             test("with null", () => {
                 const list = new Reference.List(Reference.ReferenceKind.Variable);
-                assert.throws(() => { list.addAll(null); });
+                // tslint:disable-next-line:no-any
+                assert.throws(() => { list.addAll(<any>null); });
             });
 
             test("with undefined", () => {
                 const list = new Reference.List(Reference.ReferenceKind.Variable);
-                assert.throws(() => { list.addAll(undefined); });
+                // tslint:disable-next-line:no-any
+                assert.throws(() => { list.addAll(<any>undefined); });
             });
 
             test("with empty list of the same type", () => {
@@ -101,12 +108,14 @@ suite("Reference", () => {
 
             test("with null movement", () => {
                 const list = new Reference.List(Reference.ReferenceKind.Parameter, [new Language.Span(10, 20)]);
-                assert.throws(() => { list.translate(null); });
+                // tslint:disable-next-line:no-any
+                assert.throws(() => { list.translate(<any>null); });
             });
 
             test("with undefined movement", () => {
                 const list = new Reference.List(Reference.ReferenceKind.Parameter, [new Language.Span(10, 20)]);
-                assert.throws(() => { list.translate(undefined); });
+                // tslint:disable-next-line:no-any
+                assert.throws(() => { list.translate(<any>undefined); });
             });
         });
     });

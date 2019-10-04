@@ -2,13 +2,11 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:max-func-body-length
+// tslint:disable:max-func-body-length no-non-null-assertion
 
 import * as assert from "assert";
-
-import { networkTest } from "./networkTest.test";
-
 import { AzureRMAssets, FunctionMetadata, FunctionsMetadata } from "../extension.bundle";
+import { networkTest } from "./networkTest.test";
 
 suite("AzureRMAssets", () => {
     networkTest("getFunctionMetadata()", async () => {
@@ -32,9 +30,9 @@ suite("AzureRMAssets", () => {
             const metadata = new FunctionsMetadata(
                 [new FunctionMetadata("hi", "", "", 0, 0, []), new FunctionMetadata("MyFunction", "", "", 0, 0, [])]);
 
-            assert.equal(metadata.findbyName("MyFunction").name, "MyFunction");
-            assert.equal(metadata.findbyName("myfunction").name, "MyFunction");
-            assert.equal(metadata.findbyName("MYFUNCTION").name, "MyFunction");
+            assert.equal(metadata.findbyName("MyFunction")!.name, "MyFunction");
+            assert.equal(metadata.findbyName("myfunction")!.name, "MyFunction");
+            assert.equal(metadata.findbyName("MYFUNCTION")!.name, "MyFunction");
 
             assert.equal(metadata.findbyName("MyFunction2"), undefined);
         });
@@ -75,11 +73,13 @@ suite("AzureRMAssets", () => {
 
         suite("fromString(string)", () => {
             test("with null", () => {
-                assert.deepStrictEqual(FunctionMetadata.fromString(null), []);
+                // tslint:disable-next-line:no-any
+                assert.deepStrictEqual(FunctionMetadata.fromString(<any>null), []);
             });
 
             test("with undefined", () => {
-                assert.deepStrictEqual(FunctionMetadata.fromString(undefined), []);
+                // tslint:disable-next-line:no-any
+                assert.deepStrictEqual(FunctionMetadata.fromString(<any>undefined), []);
             });
 
             test("with empty string", () => {
@@ -102,7 +102,8 @@ suite("AzureRMAssets", () => {
                 assert.deepStrictEqual(
                     FunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z", "description": "1" } ] }`),
                     [
-                        new FunctionMetadata("a", "z", "1", undefined, undefined, [])
+                        // tslint:disable-next-line:no-any
+                        new FunctionMetadata("a", "z", "1", <any>undefined, <any>undefined, [])
                     ]);
             });
 
@@ -111,8 +112,10 @@ suite("AzureRMAssets", () => {
                     // tslint:disable-next-line:max-line-length
                     FunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z" }, { "name": "b", "expectedUsage": "y", "description": "7" } ] }`),
                     [
-                        new FunctionMetadata("a", "z", undefined, undefined, undefined, []),
-                        new FunctionMetadata("b", "y", "7", undefined, undefined, [])
+                        // tslint:disable-next-line:no-any
+                        new FunctionMetadata("a", "z", <any>undefined, <any>undefined, <any>undefined, []),
+                        // tslint:disable-next-line:no-any
+                        new FunctionMetadata("b", "y", "7", <any>undefined, <any>undefined, [])
                     ]);
             });
 

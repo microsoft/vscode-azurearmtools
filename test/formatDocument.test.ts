@@ -6,6 +6,7 @@
 
 // tslint:disable:no-unused-expression no-console no-string-based-set-timeout max-line-length
 // tslint:disable:insecure-random max-func-body-length radix prefer-template no-function-expression
+// tslint:disable: no-non-null-assertion
 
 import * as assert from "assert";
 import * as fs from 'fs';
@@ -150,7 +151,7 @@ function rangeFromMatch(doc: TextDocument, regex: RegExp): Range {
     let match = doc.getText().match(regex);
     assert(!!match, "Could not find rangeFromMatch pattern");
     return new Range(
-        doc.positionAt(match.index),
-        doc.positionAt(match.index + match[0].length)
+        doc.positionAt(match!.index!),
+        doc.positionAt(match!.index! + match![0].length)
     );
 }

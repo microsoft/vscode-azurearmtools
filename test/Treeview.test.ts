@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 // tslint:disable:max-func-body-length align max-line-length
+// tslint:disable:no-non-null-assertion
 
 import * as assert from "assert";
 import * as fse from 'fs-extra';
@@ -15,13 +16,14 @@ import { getTempFilePath } from "./support/getTempFilePath";
 suite("TreeView", async (): Promise<void> => {
     suite("shortenTreeLabel", async (): Promise<void> => {
         test("shortenTreeLabel", () => {
-            function testShorten(label: string, expected: string): void {
-                let shortenedLabel = shortenTreeLabel(label);
+            function testShorten(label: string | undefined, expected: string | undefined): void {
+                let shortenedLabel = shortenTreeLabel(label!);
                 assert.equal(shortenedLabel, expected);
             }
 
             testShorten(undefined, undefined);
-            testShorten(null, null);
+            // tslint:disable-next-line:no-any
+            testShorten(<any>null, <any>null);
             testShorten("", "");
             testShorten("a", "a");
             testShorten("[]", "[]");
@@ -50,10 +52,10 @@ suite("TreeView", async (): Promise<void> => {
 
             async function mySetup(): Promise<void> {
                 let extension = vscode.extensions.getExtension(ext.extensionId);
-                assert.equal(!!extension, true, "Extension not found");
-                await extension.activate();
+                assert(extension, "Extension not found");
+                await extension!.activate();
                 provider = ext.jsonOutlineProvider;
-                assert.equal(!!provider, true, "JSON outline provider not found");
+                assert(provider, "JSON outline provider not found");
             }
 
             mySetup().then(done, (err) => {
@@ -63,7 +65,9 @@ suite("TreeView", async (): Promise<void> => {
 
         async function testChildren(template: string, expected: ITestTreeItem[]): Promise<void> {
             await showNewTextDocument(template);
-            let rawTree = provider.getChildren(null);
+            // tslint:disable-next-line:no-any
+            let rawTree = provider.getChildren(<any>null);
+            // tslint:disable-next-line: strict-boolean-expressions
             assert(!!rawTree);
             let tree = rawTree.map(child => {
                 let treeItem = provider.getTreeItem(child);
@@ -76,7 +80,8 @@ suite("TreeView", async (): Promise<void> => {
         // Tests the tree against only the given properties
         async function testTree(template: string, expected: ITestTreeItem[], selectProperties?: string[]): Promise<void> {
             await showNewTextDocument(template);
-            let rawTree = getTree(null);
+            // tslint:disable-next-line:no-any
+            let rawTree = getTree(<any>null);
 
             function select(node: ITestTreeItem): Partial<ITestTreeItem> {
                 if (selectProperties) {

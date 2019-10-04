@@ -63,7 +63,7 @@ function initializeDotnetAcquire(): void {
         eventStream);
 }
 
-export async function dotnetAcquire(version: string, telemetryProperties: { [key: string]: string }): Promise<string> {
+export async function dotnetAcquire(version: string, telemetryProperties: { [key: string]: string | undefined }): Promise<string> {
     initializeDotnetAcquire();
 
     if (!version || version === 'latest') {
@@ -72,7 +72,7 @@ export async function dotnetAcquire(version: string, telemetryProperties: { [key
     return acquisitionWorker.acquire(version, telemetryProperties);
 }
 
-export async function ensureDotnetDependencies(dotnetPath: string, args: string[], telemetryProperties: { [key: string]: string }): Promise<void> {
+export async function ensureDotnetDependencies(dotnetPath: string, args: string[], telemetryProperties: { [key: string]: string | undefined }): Promise<void> {
     initializeDotnetAcquire();
 
     if (os.platform() !== 'linux') {

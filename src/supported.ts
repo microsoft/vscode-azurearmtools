@@ -52,16 +52,16 @@ export function mightBeDeploymentTemplate(textDocument: TextDocument): boolean {
 
         // Do a quick dirty check if the first portion of the JSON contains a schema string that we're interested in
         // (might not actually be in a $schema property, though)
-        return startOfDocument && containsArmSchema(startOfDocument);
+        return !!startOfDocument && containsArmSchema(startOfDocument);
     }
 
     return false;
 }
 
 export function containsArmSchema(json: string): boolean {
-    return json && containsArmSchemaRegex.test(json);
+    return !!json && containsArmSchemaRegex.test(json);
 }
 
 export function isArmSchema(json: string | undefined | null): boolean {
-    return json && isArmSchemaRegex.test(json);
+    return !!json && isArmSchemaRegex.test(json);
 }

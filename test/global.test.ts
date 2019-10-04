@@ -22,7 +22,7 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     let testMetadata = fs.readFileSync(path.join(__dirname, '..', '..', 'test', 'ExpressionMetadata.test.json'));
     AzureRMAssets.setFunctionsMetadata(testMetadata.toString());
 
-    ext.addCompletionDiagnostic = true;
+    ext.addCompletedDiagnostic = true;
 
     // Just to make it easier to see what's going on
     vscode.commands.executeCommand('workbench.actions.view.problems');

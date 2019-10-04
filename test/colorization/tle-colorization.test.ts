@@ -41,11 +41,12 @@ interface ITokenInfo {
 
 // E.g., change keyword.other.expression.begin.tle.arm-template => {{scope-expression-start}}, according to the preprocess section of the grammar
 const tabSize = 20;
-let unpreprocess: [RegExp, string][];
+let unpreprocess: [RegExp, string][] | undefined;
 function unpreprocessScopes(scopes: string): string {
     if (!unpreprocess) {
         let source: string = fs.readFileSync(tleGrammarSourcePath).toString();
         let grammar = <IGrammar>JSON.parse(source);
+        // tslint:disable-next-line: strict-boolean-expressions
         let preprocess = grammar.preprocess || <{ [key: string]: string }>{};
         unpreprocess = [];
         for (let key of Object.getOwnPropertyNames(preprocess)) {
@@ -90,7 +91,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
             fs.writeFileSync(filePathForReadingTokens, fs.readFileSync(testPath));
         }
 
-        let rawData: { c: string; t: string; r: unknown[] }[] = await commands.executeCommand('_workbench.captureSyntaxTokens', Uri.file(filePathForReadingTokens));
+        let rawData: { c: string; t: string; r: unknown[] }[] | undefined = await commands.executeCommand('_workbench.captureSyntaxTokens', Uri.file(filePathForReadingTokens));
         if (!rawData) {
             throw new Error("_workbench.captureSyntaxTokens failed");
         }
@@ -111,7 +112,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
 
         //commands.executeCommand('workbench.action.closeActiveEditor');
 
-        let testCases: ITestcase[];
+        let testCases: ITestcase[] | undefined;
 
         // ------------- USAGE TIP ------------
         // If the test filename contains '.full-scope.', then the full scope will be output for each test, otherwise
@@ -176,6 +177,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
         }
 
         // If no individual testcases found, the whole file is a single testcase
+        // tslint:disable-next-line: strict-boolean-expressions
         testCases = testCases || [<ITestcase>{ data }];
 
         let { results: testcaseResults, fullScopeString: resultsFullString, shortScopeString: resultsShortString } = getTestcaseResults(testCases);
@@ -359,7 +361,8 @@ suite('TLE colorization', function (this: ISuiteCallbackContext): void {
             test(testFile);
         } else {
             test(testFile, async (): Promise<void> => {
-                await assertUnchangedTokens(path.join(testFolder, testFile), path.join(resultsFolder, testToResultFileMap.get(testFile)));
+                // tslint:disable-next-line:no-non-null-assertion
+                await assertUnchangedTokens(path.join(testFolder, testFile), path.join(resultsFolder, testToResultFileMap.get(testFile)!));
             });
         }
     });

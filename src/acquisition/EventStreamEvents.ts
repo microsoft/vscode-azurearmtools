@@ -31,6 +31,7 @@ export class DotnetAcquisitionUnexpectedError extends DotnetAcquisitionError {
     }
 
     public getErrorMessage(): string {
+        // tslint:disable-next-line: strict-boolean-expressions
         if (this.error) {
             let error = <{ toString?(): string }>this.error;
             return !!error.toString ? error.toString() : String(this.error);

@@ -41,7 +41,7 @@ export class FunctionInfo extends Info {
  * The information that will be displayed when the cursor hovers over a TLE parameter reference.
  */
 export class ParameterReferenceInfo extends Info {
-    constructor(private _name: string, private _description: string, _parameterNameSpan: language.Span) {
+    constructor(private _name: string, private _description: string | null, _parameterNameSpan: language.Span) {
         super(_parameterNameSpan);
     }
 
