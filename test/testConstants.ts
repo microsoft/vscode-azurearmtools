@@ -5,5 +5,7 @@
 
 // tslint:disable-next-line: no-suspicious-comment
 // TODO: Remove when language server available for build
-// tslint:disable-next-line: strict-boolean-expressions export-name
-export const DISABLE_LANGUAGE_SERVER_TESTS: boolean = !!/^(true|1)$/i.test(process.env.DISABLE_LANGUAGE_SERVER_TESTS || '');
+// tslint:disable-next-line: strict-boolean-expressions
+export const DISABLE_SLOW_TESTS = !!/^(true|1)$/i.test(process.env.DISABLE_SLOW_TESTS || '');
+// tslint:disable-next-line: strict-boolean-expressions
+export const DISABLE_LANGUAGE_SERVER_TESTS: boolean = !!/^(true|1)$/i.test(process.env.DISABLE_LANGUAGE_SERVER_TESTS || '') || DISABLE_SLOW_TESTS;

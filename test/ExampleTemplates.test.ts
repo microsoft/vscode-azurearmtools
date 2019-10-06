@@ -16,7 +16,7 @@ suite("Template tests", () => {
             const dt = new DeploymentTemplate(template, "id");
             const expectedErrors = [
             ];
-            let errors = await dt.errors;
+            let errors = await dt.errorsPromise;
             assert.deepStrictEqual(errors, expectedErrors, "Expected no errors in template");
         }
 

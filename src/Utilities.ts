@@ -1,8 +1,8 @@
-import { assert } from "./fixed_assert";
-
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
+
+import { assert } from "./fixed_assert";
 
 /**
  * Create a deep copy of the provided value.
@@ -57,18 +57,17 @@ export function isLetter(character: string): boolean {
 }
 
 export function unquote(value: string): string {
-    let result = value;
-
-    if (result) {
-        if (isQuoteCharacter(result[0])) {
-            result = result.substr(1);
-        }
-        if (result && isQuoteCharacter(result[result.length - 1])) {
-            result = result.substr(0, result.length - 1);
-        }
+    if (!value) {
+        return "";
     }
 
-    return result;
+    if (value.startsWith("\"")) {
+        return value.endsWith("\"") ? value.slice(1, value.length - 1) : value.slice(1);
+    } else if (value.startsWith("'")) {
+        return value.endsWith("'") ? value.slice(1, value.length - 1) : value.slice(1);
+    }
+
+    return value;
 }
 
 export function quote(value: string | undefined | null): string {

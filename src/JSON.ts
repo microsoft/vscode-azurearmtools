@@ -7,6 +7,13 @@
 // tslint:disable:function-name // Grandfathered in
 // tslint:disable:cyclomatic-complexity // Grandfathered in
 
+// CONSIDER: This parser makes the incorrect assumption that JSON strings can be enclosed by either
+//   single or double quotes.  JSON only allows double quotes.
+// Because the JSON/ARM parsers catch these errors, it doesn't make too much difference for the end user
+//   so might not be worth fixing.
+
+import { CachedValue } from "./CachedValue";
+import { CaseInsensitiveMap } from "./CaseInsensitiveMap";
 import { assert } from "./fixed_assert";
 import * as language from "./Language";
 import * as basic from "./Tokenizer";
@@ -69,7 +76,10 @@ export abstract class Segment {
 }
 
 /**
- * A JSON token from a JSON string.
+ * A JSON token from a JSON string. The JSON token is made up of one or more basic tokens (for instance,
+ * a JSON string literal would be composed of the basic token representing a double quote, followed
+ * by some group of basic tokens representing groups of letters, groups of numbers, punctuation, etc.,
+ * and possibly ending with a double quote basic token).
  */
 export class Token extends Segment {
     constructor(private _type: TokenType, _startIndex: number, private _basicTokens: basic.Token[]) {
@@ -85,8 +95,18 @@ export class Token extends Segment {
         return utilities.getCombinedLength(this._basicTokens);
     }
 
+    /**
+     * Gets the original string that this token was parsed from.
+     */
     public toString(): string {
         return utilities.getCombinedText(this._basicTokens);
+    }
+
+    /**
+     * Convenient way of seeing what this token represents in the debugger, shouldn't be used for production code
+     */
+    public get __debugDisplay(): string {
+        return this.toString();
     }
 }
 
@@ -169,6 +189,8 @@ export function asBooleanValue(value: Value | null): BooleanValue | null {
 /**
  * Read a JSON quoted string from the provided tokenizer. The tokenizer must be pointing at
  * either a SingleQuote or DoubleQuote Token.
+ *
+ * Note that the returned quoted string may not end with a quote (if EOD is reached)
  */
 export function readQuotedString(iterator: utilities.Iterator<basic.Token>): basic.Token[] {
     const startingToken: basic.Token | undefined = iterator.current();
@@ -548,13 +570,21 @@ export abstract class Value {
      * A user-friendly string that represents this value, suitable for display in a label, etc.
      */
     public abstract toFriendlyString(): string;
+
+    /**
+     * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
+     */
+    public get __debugDisplay(): string {
+        return this.toString();
+    }
 }
 
 /**
  * A JSON object that contains properties.
  */
 export class ObjectValue extends Value {
-    private _propertyMap: { [key: string]: Value | null } | undefined;
+    // Last set with the same (case-insensitive) key wins (just like in Azure template deployment)
+    private _caseInsensitivePropertyMap: CachedValue<CaseInsensitiveMap<string, Value | null>> = new CachedValue<CaseInsensitiveMap<string, Value | null>>();
 
     constructor(span: language.Span, private _properties: Property[]) {
         super(span);
@@ -569,17 +599,18 @@ export class ObjectValue extends Value {
      * Get the map of property names to property values for this ObjectValue. This mapping is
      * created lazily.
      */
-    private get propertyMap(): { [key: string]: Value | null } {
-        if (!this._propertyMap) {
-            this._propertyMap = {};
+    private get caseInsensitivePropertyMap(): CaseInsensitiveMap<string, Value | null> {
+        return this._caseInsensitivePropertyMap.getOrCacheValue(() => {
+            const caseInsensitivePropertyMap = new CaseInsensitiveMap<string, Value | null>();
 
             if (this._properties.length > 0) {
                 for (const property of this._properties) {
-                    this._propertyMap[property.name.toString()] = property.value;
+                    caseInsensitivePropertyMap.set(property.name.toString(), property.value);
                 }
             }
-        }
-        return this._propertyMap;
+
+            return caseInsensitivePropertyMap;
+        });
     }
 
     public get properties(): Property[] {
@@ -590,7 +621,7 @@ export class ObjectValue extends Value {
      * Get whether a property with the provided propertyName is defined or not on this ObjectValue.
      */
     public hasProperty(propertyName: string): boolean {
-        return this.getPropertyValue(propertyName) !== undefined;
+        return !!this.getPropertyValue(propertyName);
     }
 
     /**
@@ -598,7 +629,8 @@ export class ObjectValue extends Value {
      * provided name, then undefined will be returned.
      */
     public getPropertyValue(propertyName: string): Value | null {
-        return this.propertyMap[propertyName];
+        const result = this.caseInsensitivePropertyMap.get(propertyName);
+        return result ? result : null;
     }
 
     /**
@@ -626,7 +658,7 @@ export class ObjectValue extends Value {
      * Get the property names
      */
     public get propertyNames(): string[] {
-        return Object.keys(this.propertyMap);
+        return [...this.caseInsensitivePropertyMap.keys()];
     }
 
     public accept(visitor: Visitor): void {
@@ -635,6 +667,13 @@ export class ObjectValue extends Value {
 
     public toFriendlyString(): string {
         return "(object)";
+    }
+
+    public get __debugDisplay(): string {
+        // tslint:disable-next-line: prefer-template
+        return "{" +
+            this.properties.map(pv => pv.name.toString() + ':' + (pv.value instanceof Value ? pv.value.__debugDisplay : String(pv.value))).join(",")
+            + "}";
     }
 }
 
@@ -670,6 +709,11 @@ export class Property extends Value {
 
     public toFriendlyString(): string {
         return "(property)";
+    }
+
+    public get __debugDisplay(): string {
+        // tslint:disable-next-line: prefer-template
+        return this._name.toString() + ":" + (this.value instanceof Value ? this.value.__debugDisplay : String(this.value));
     }
 }
 
@@ -714,6 +758,13 @@ export class ArrayValue extends Value {
     public toFriendlyString(): string {
         return "(array)";
     }
+
+    public get __debugDisplay(): string {
+        // tslint:disable-next-line: prefer-template
+        return "[" +
+            this.elements.map(e => e.__debugDisplay).join(",")
+            + "]";
+    }
 }
 
 /**
@@ -752,8 +803,11 @@ export class BooleanValue extends Value {
  * A JSON quoted string.
  */
 export class StringValue extends Value {
-    constructor(span: language.Span, private _value: string) {
-        super(span);
+    private _unquotedValue: string;
+
+    constructor(quotedSpan: language.Span, private _quotedValue: string) {
+        super(quotedSpan);
+        this._unquotedValue = utilities.unquote(_quotedValue);
     }
 
     public get valueKind(): ValueKind {
@@ -761,11 +815,19 @@ export class StringValue extends Value {
     }
 
     public get unquotedSpan(): language.Span {
-        return new language.Span(this.startIndex + 1, this._value.length);
+        return new language.Span(this.startIndex + 1, this._unquotedValue.length);
     }
 
-    public toString(): string {
-        return this._value;
+    public get unquotedValue(): string {
+        return this._unquotedValue;
+    }
+
+    public get quotedValue(): string {
+        return this._quotedValue;
+    }
+
+    public toString(): string { // CONSIDER: remove in favor of unquotedValue
+        return this._unquotedValue;
     }
 
     public accept(visitor: Visitor): void {
@@ -862,6 +924,7 @@ export class ParseResult {
         return result;
     }
 
+    // The top-level value, if any
     public get value(): Value | null {
         return this._value;
     }
@@ -933,7 +996,7 @@ export class ParseResult {
     }
 
     /**
-     * Get the JSON Token that contains the provided characterIndex.
+     * Get the JSON Token that contains the provided characterIndex, if any (e.g. returns null if at whitespace)
      */
     public getTokenAtCharacterIndex(characterIndex: number): Token | null {
         assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);
@@ -968,6 +1031,7 @@ export class ParseResult {
 
         let result: Value | null = null;
 
+        // Find the Value at the given character index via a binary search through the value tree
         if (this.value && this.value.span.contains(characterIndex, true)) {
             let current: Value = this.value;
 
@@ -1042,7 +1106,7 @@ function parseValue(tokenizer: Tokenizer, tokens: Token[]): Value | null {
     if (tokenizer.current) {
         switch (tokenizer.current.type) {
             case TokenType.QuotedString:
-                value = new StringValue(tokenizer.current.span, utilities.unquote(tokenizer.current.toString()));
+                value = new StringValue(tokenizer.current.span, tokenizer.current.toString());
                 next(tokenizer, tokens);
                 break;
 
@@ -1097,7 +1161,7 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
         } else if (propertyName === null) {
             if (tokenizer.current.type === TokenType.QuotedString) {
                 propertySpan = tokenizer.current.span;
-                propertyName = new StringValue(propertySpan, utilities.unquote(tokenizer.current.toString()));
+                propertyName = new StringValue(propertySpan, tokenizer.current.toString());
                 next(tokenizer, tokens);
             } else {
                 next(tokenizer, tokens);
@@ -1184,6 +1248,9 @@ function next(tokenizer: Tokenizer, tokens: Token[]): void {
     }
 }
 
+/**
+ * Traverses every node in a given Value tree
+ */
 export abstract class Visitor {
     public visitProperty(property: Property | null): void {
         if (property) {

@@ -7,11 +7,17 @@
 // tslint:disable:variable-name
 
 import * as orig_assert from "assert";
+import { isWebpack } from "./constants";
 
 function fixed_ok(value: unknown, message?: string): void {
-    // The bug repros when assert fails and no message is supplied, so always supply a message
-    // tslint:disable-next-line: strict-boolean-expressions
-    orig_assert.ok(value, message || "Assertion failed");
+    if (isWebpack) {
+        // The bug repros when assert fails with webpack and no message is supplied, so always supply a message
+        // (this does mean that we won't see the original code for the condition, but that's where the bug is occurring)
+        // tslint:disable-next-line: strict-boolean-expressions
+        orig_assert.ok(value, message || "Assertion failed");
+    }
+
+    orig_assert.ok(value, message);
 }
 
 const fixed_assert: typeof orig_assert = <typeof orig_assert>fixed_ok;

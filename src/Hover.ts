@@ -4,7 +4,12 @@
 
 // tslint:disable max-classes-per-file // Grandfathered in
 
+import { IParameterDefinition } from "./IParameterDefinition";
+import * as Json from "./JSON";
 import * as language from "./Language";
+import { UserFunctionDefinition } from "./UserFunctionDefinition";
+import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
+import { UserFunctionParameterDefinition } from "./UserFunctionParameterDefinition";
 
 /**
  * The information that will be displayed when the cursor hovers over parts of a document.
@@ -17,6 +22,13 @@ export abstract class Info {
 
     public get span(): language.Span {
         return this._span;
+    }
+
+    /**
+     * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
+     */
+    public get __debugDisplay(): string {
+        return this.getHoverText();
     }
 }
 
@@ -38,11 +50,68 @@ export class FunctionInfo extends Info {
 }
 
 /**
+ * The information that will be displayed when the cursor hovers over a user-defined TLE function.
+ */
+export class UserFunctionInfo extends Info {
+    constructor(private _namespace: UserFunctionNamespaceDefinition, private _function: UserFunctionDefinition, _span: language.Span) {
+        super(_span);
+    }
+
+    public static getUsage(namespace: UserFunctionNamespaceDefinition | undefined, func: UserFunctionDefinition): string {
+        const ns: string = namespace ? namespace.namespaceName.unquotedValue : "";
+        const name = func.name.unquotedValue;
+        const params: UserFunctionParameterDefinition[] = func.parameterDefinitions;
+        const usage: string = `${ns ? `${ns}.` : ns}${name}(${params.map(getParamUsage).join(", ")})`;
+
+        return usage;
+
+        function getParamUsage(pd: UserFunctionParameterDefinition): string {
+            const paramName = pd.name.unquotedValue;
+            const paramTypeValue: Json.StringValue | null = Json.asStringValue(pd.type);
+            const paramType: string | null = paramTypeValue && paramTypeValue.unquotedValue;
+            const paramTypeLC: string | null = paramType && paramType.toLowerCase();
+
+            return paramTypeLC ? `${paramName} [${paramTypeLC}]` : paramName;
+        }
+    }
+
+    public getHoverText(): string {
+        const usage: string = UserFunctionInfo.getUsage(this._namespace, this._function);
+        return `**${usage}** User-defined function`;
+    }
+}
+
+/**
+ * The information that will be displayed when the cursor hovers over a user-defined namespace
+ */
+export class UserNamespaceInfo extends Info {
+    constructor(private _namespace: UserFunctionNamespaceDefinition, _span: language.Span) {
+        super(_span);
+    }
+
+    public getHoverText(): string {
+        const ns = this._namespace.namespaceName.unquotedValue;
+        const methodsUsage: string[] = this._namespace.members
+            .map(md => UserFunctionInfo.getUsage(undefined, md));
+        const summary = `**${ns}** User-defined namespace`;
+        if (methodsUsage.length > 0) {
+            return `${summary}\n\nMembers:\n${methodsUsage.map(mu => `* ${mu}`).join("\n")}`;
+        } else {
+            return `${summary}\n\nNo members`;
+        }
+    }
+}
+
+/**
  * The information that will be displayed when the cursor hovers over a TLE parameter reference.
  */
 export class ParameterReferenceInfo extends Info {
     constructor(private _name: string, private _description: string | null, _parameterNameSpan: language.Span) {
         super(_parameterNameSpan);
+    }
+
+    public static fromDefinition(definition: IParameterDefinition, parameterNameSpan: language.Span): ParameterReferenceInfo {
+        return new ParameterReferenceInfo(definition.name.unquotedValue, definition.description, parameterNameSpan);
     }
 
     public getHoverText(): string {
@@ -56,6 +125,10 @@ export class ParameterReferenceInfo extends Info {
 export class VariableReferenceInfo extends Info {
     constructor(private _name: string, _variableNameSpan: language.Span) {
         super(_variableNameSpan);
+    }
+
+    public static fromDefinition(definition: Json.Property, variableNameSpan: language.Span): VariableReferenceInfo {
+        return new VariableReferenceInfo(definition.name.unquotedValue, variableNameSpan);
     }
 
     public getHoverText(): string {

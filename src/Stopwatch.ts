@@ -2,8 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import * as assert from "assert";
 import { Duration } from "./Duration";
+import { assert } from './fixed_assert';
 
 export class Stopwatch {
     private _startTimeMilliseconds: number | undefined;

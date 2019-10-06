@@ -12,12 +12,13 @@ const OVERWRITE = false;
 
 import * as assert from 'assert';
 import * as fs from 'fs';
-import { ISuiteCallbackContext } from 'mocha';
+import { ISuiteCallbackContext, ITestCallbackContext } from 'mocha';
 import * as os from 'os';
 import * as path from 'path';
 import { commands, Uri } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
 import { getTempFilePath } from '../support/getTempFilePath';
+import { DISABLE_SLOW_TESTS } from '../testConstants';
 
 const tleGrammarSourcePath: string = path.join(__dirname, '../../../grammars/arm-expression-string.tmLanguage.json');
 export interface IGrammar {
@@ -360,7 +361,12 @@ suite('TLE colorization', function (this: ISuiteCallbackContext): void {
         if (testFile.startsWith('TODO')) {
             test(testFile);
         } else {
-            test(testFile, async (): Promise<void> => {
+            test(testFile, async function (this: ITestCallbackContext): Promise<void> {
+                if (DISABLE_SLOW_TESTS) {
+                    this.skip();
+                    return;
+                }
+
                 // tslint:disable-next-line:no-non-null-assertion
                 await assertUnchangedTokens(path.join(testFolder, testFile), path.join(resultsFolder, testToResultFileMap.get(testFile)!));
             });

@@ -36,6 +36,11 @@
             "script": "watch-grammars",
             "problemMatcher": [],
             "isBackground": true
+        },
+        {
+            "type": "npm",
+            "script": "verify-test-uses-extension-bundle",
+            "problemMatcher": []
         }
     ]
 }

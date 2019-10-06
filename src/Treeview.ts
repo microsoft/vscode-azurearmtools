@@ -8,10 +8,10 @@
 
 // tslint:disable:no-increment-decrement
 
-import * as assert from "assert";
 import * as path from 'path';
 import * as vscode from "vscode";
 import { iconsPath, languageId } from "./constants";
+import { assert } from './fixed_assert';
 import * as Json from "./JSON";
 
 const topLevelIcons: [string, string][] = [
@@ -206,7 +206,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             return toFriendlyString(keyNode);
         } else if (elementInfo.current.value.start !== undefined) {
             // For other value types, display key and value since they won't be expandable
-            const valueNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.value.start); //asdf
+            const valueNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.value.start);
 
             return `${keyNode instanceof Json.StringValue ? toFriendlyString(keyNode) : "?"}: ${toFriendlyString(valueNode)}`;
         }

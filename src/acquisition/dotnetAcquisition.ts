@@ -27,9 +27,6 @@ function initializeDotnetAcquire(): void {
     }
     initialized = true;
 
-    // tslint:disable-next-line:no-console
-    console.log("Initializing dotnet acquire...");
-
     let context = ext.context;
     let parentExtensionId = ext.extensionId;
     let scriptsPath = path.join(assetsPath, 'install scripts');
