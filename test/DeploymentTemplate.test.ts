@@ -1186,7 +1186,7 @@ suite("DeploymentTemplate", () => {
                     let dt = new DeploymentTemplate(json, "id");
                     let pc = dt.getContextFromDocumentCharacterIndex(index);
                     await pc.getReferences();
-                    pc.signatureHelp;
+                    await pc.getSignatureHelp();
                     pc.tleInfo;
                     await pc.getReferenceSiteInfo();
                     await pc.getHoverInfo();

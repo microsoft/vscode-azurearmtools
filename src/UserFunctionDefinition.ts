@@ -7,6 +7,7 @@ import { CachedValue } from "./CachedValue";
 import * as Json from "./JSON";
 import { OutputDefinition } from "./OutputDefinition";
 import { ScopeContext, TemplateScope } from "./TemplateScope";
+import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
 import { UserFunctionParameterDefinition } from "./UserFunctionParameterDefinition";
 
 /**
@@ -17,7 +18,11 @@ export class UserFunctionDefinition {
     private readonly _parameterDefinitions: CachedValue<UserFunctionParameterDefinition[]> = new CachedValue<UserFunctionParameterDefinition[]>();
     private readonly _scope: CachedValue<TemplateScope> = new CachedValue<TemplateScope>();
 
-    constructor(private _name: Json.StringValue, public readonly objectValue: Json.ObjectValue, public readonly namespaceName: string) {
+    constructor(
+        public readonly namespace: UserFunctionNamespaceDefinition,
+        private _name: Json.StringValue,
+        public readonly objectValue: Json.ObjectValue
+    ) {
         assert(_name);
         assert(objectValue);
     }
@@ -45,7 +50,7 @@ export class UserFunctionDefinition {
 
     public get fullName(): string {
         // tslint:disable-next-line: strict-boolean-expressions
-        return `${this.namespaceName || "(none)"}.${this.name.unquotedValue || "(none)"}`;
+        return `${this.namespace.namespaceName.unquotedValue || "(none)"}.${this.name.unquotedValue || "(none)"}`;
     }
 
     public get output(): OutputDefinition | null {

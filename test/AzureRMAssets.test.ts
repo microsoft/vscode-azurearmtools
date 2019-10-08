@@ -5,7 +5,7 @@
 // tslint:disable:max-func-body-length no-non-null-assertion
 
 import * as assert from "assert";
-import { AzureRMAssets, FunctionMetadata, FunctionsMetadata } from "../extension.bundle";
+import { AzureRMAssets, BuiltinFunctionMetadata, FunctionsMetadata } from "../extension.bundle";
 import { networkTest } from "./networkTest.test";
 
 suite("AzureRMAssets", () => {
@@ -17,7 +17,7 @@ suite("AzureRMAssets", () => {
 
     suite("FunctionMetadata", () => {
         test("constructor(string,string,string)", () => {
-            const metadata = new FunctionMetadata("a", "b", "c", 1, 2, []);
+            const metadata = new BuiltinFunctionMetadata("a", "b", "c", 1, 2, []);
             assert.deepStrictEqual(metadata.name, "a");
             assert.deepStrictEqual(metadata.usage, "b");
             assert.deepStrictEqual(metadata.description, "c");
@@ -28,7 +28,7 @@ suite("AzureRMAssets", () => {
 
         test("findByName", () => {
             const metadata = new FunctionsMetadata(
-                [new FunctionMetadata("hi", "", "", 0, 0, []), new FunctionMetadata("MyFunction", "", "", 0, 0, [])]);
+                [new BuiltinFunctionMetadata("hi", "", "", 0, 0, []), new BuiltinFunctionMetadata("MyFunction", "", "", 0, 0, [])]);
 
             assert.equal(metadata.findbyName("MyFunction")!.name, "MyFunction");
             assert.equal(metadata.findbyName("myfunction")!.name, "MyFunction");
@@ -39,9 +39,9 @@ suite("AzureRMAssets", () => {
 
         test("findByPrefix", () => {
             const metadata = new FunctionsMetadata([
-                new FunctionMetadata("One", "", "", 0, 0, []),
-                new FunctionMetadata("Onerous", "", "", 0, 0, []),
-                new FunctionMetadata("Two", "", "", 0, 0, [])
+                new BuiltinFunctionMetadata("One", "", "", 0, 0, []),
+                new BuiltinFunctionMetadata("Onerous", "", "", 0, 0, []),
+                new BuiltinFunctionMetadata("Two", "", "", 0, 0, [])
             ]);
 
             assert.deepStrictEqual(metadata.filterByPrefix("MyFunction"), []);
@@ -56,17 +56,17 @@ suite("AzureRMAssets", () => {
 
         suite("parameters", () => {
             test("with no parameters in usage", () => {
-                const metadata = new FunctionMetadata("a", "a()", "description", 1, 2, []);
+                const metadata = new BuiltinFunctionMetadata("a", "a()", "description", 1, 2, []);
                 assert.deepStrictEqual(metadata.parameters, []);
             });
 
             test("with one parameter in usage", () => {
-                const metadata = new FunctionMetadata("a", "a(b)", "description", 1, 2, []);
+                const metadata = new BuiltinFunctionMetadata("a", "a(b)", "description", 1, 2, []);
                 assert.deepStrictEqual(metadata.parameters, ["b"]);
             });
 
             test("with two parameters in usage", () => {
-                const metadata = new FunctionMetadata("a", "a(b, c )", "description", 1, 2, []);
+                const metadata = new BuiltinFunctionMetadata("a", "a(b, c )", "description", 1, 2, []);
                 assert.deepStrictEqual(metadata.parameters, ["b", "c"]);
             });
         });
@@ -74,48 +74,48 @@ suite("AzureRMAssets", () => {
         suite("fromString(string)", () => {
             test("with null", () => {
                 // tslint:disable-next-line:no-any
-                assert.deepStrictEqual(FunctionMetadata.fromString(<any>null), []);
+                assert.deepStrictEqual(BuiltinFunctionMetadata.fromString(<any>null), []);
             });
 
             test("with undefined", () => {
                 // tslint:disable-next-line:no-any
-                assert.deepStrictEqual(FunctionMetadata.fromString(<any>undefined), []);
+                assert.deepStrictEqual(BuiltinFunctionMetadata.fromString(<any>undefined), []);
             });
 
             test("with empty string", () => {
-                assert.deepStrictEqual(FunctionMetadata.fromString(""), []);
+                assert.deepStrictEqual(BuiltinFunctionMetadata.fromString(""), []);
             });
 
             test("with non-JSON string", () => {
-                assert.deepStrictEqual(FunctionMetadata.fromString("hello there"), []);
+                assert.deepStrictEqual(BuiltinFunctionMetadata.fromString("hello there"), []);
             });
 
             test("with empty object", () => {
-                assert.deepStrictEqual(FunctionMetadata.fromString("{}"), []);
+                assert.deepStrictEqual(BuiltinFunctionMetadata.fromString("{}"), []);
             });
 
             test("with empty functionSignatures property", () => {
-                assert.deepStrictEqual(FunctionMetadata.fromString("{ 'functionSignatures': [] }"), []);
+                assert.deepStrictEqual(BuiltinFunctionMetadata.fromString("{ 'functionSignatures': [] }"), []);
             });
 
             test("with one function signature with only name property", () => {
                 assert.deepStrictEqual(
-                    FunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z", "description": "1" } ] }`),
+                    BuiltinFunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z", "description": "1" } ] }`),
                     [
                         // tslint:disable-next-line:no-any
-                        new FunctionMetadata("a", "z", "1", <any>undefined, <any>undefined, [])
+                        new BuiltinFunctionMetadata("a", "z", "1", <any>undefined, <any>undefined, [])
                     ]);
             });
 
             test("with two function signatures with only name property", () => {
                 assert.deepStrictEqual(
                     // tslint:disable-next-line:max-line-length
-                    FunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z" }, { "name": "b", "expectedUsage": "y", "description": "7" } ] }`),
+                    BuiltinFunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z" }, { "name": "b", "expectedUsage": "y", "description": "7" } ] }`),
                     [
                         // tslint:disable-next-line:no-any
-                        new FunctionMetadata("a", "z", <any>undefined, <any>undefined, <any>undefined, []),
+                        new BuiltinFunctionMetadata("a", "z", <any>undefined, <any>undefined, <any>undefined, []),
                         // tslint:disable-next-line:no-any
-                        new FunctionMetadata("b", "y", "7", <any>undefined, <any>undefined, [])
+                        new BuiltinFunctionMetadata("b", "y", "7", <any>undefined, <any>undefined, [])
                     ]);
             });
 
@@ -317,7 +317,7 @@ suite("AzureRMAssets", () => {
                     }
                 ]
                 }`;
-                const functionMetadata: FunctionMetadata[] = FunctionMetadata.fromString(fileContents);
+                const functionMetadata: BuiltinFunctionMetadata[] = BuiltinFunctionMetadata.fromString(fileContents);
                 assert(functionMetadata);
                 assert(functionMetadata.length > 0);
             });

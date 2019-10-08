@@ -9,9 +9,9 @@
 // tslint:disable:switch-default // Grandfathered in
 // tslint:disable:max-classes-per-file // Grandfathered in
 
-import * as assets from "./AzureRMAssets";
 import { __debugMarkSubstring } from "./debugMarkStrings";
 import { assert } from "./fixed_assert";
+import { IFunctionMetadata } from "./IFunctionMetadata";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { PositionContext } from "./PositionContext";
@@ -636,14 +636,14 @@ export abstract class Visitor {
 }
 
 export class FunctionSignatureHelp {
-    constructor(private _activeParameterIndex: number, private _functionMetadata: assets.FunctionMetadata) {
+    constructor(private _activeParameterIndex: number, private _functionMetadata: IFunctionMetadata) {
     }
 
     public get activeParameterIndex(): number {
         return this._activeParameterIndex;
     }
 
-    public get functionMetadata(): assets.FunctionMetadata {
+    public get functionMetadata(): IFunctionMetadata {
         return this._functionMetadata;
     }
 }

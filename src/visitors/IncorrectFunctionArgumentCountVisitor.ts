@@ -49,7 +49,7 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
         } else {
             // Built-in function call
             const parsedFunctionName: string = tleFunction.nameToken.stringValue;
-            let functionMetadata: assets.FunctionMetadata | undefined = this._tleFunctions.findbyName(parsedFunctionName);
+            let functionMetadata: assets.BuiltinFunctionMetadata | undefined = this._tleFunctions.findbyName(parsedFunctionName);
             if (!functionMetadata) {
                 return;
             }

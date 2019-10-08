@@ -4,6 +4,7 @@
 
 // tslint:disable max-classes-per-file // Grandfathered in
 
+import { ExpressionType } from "./ExpressionType";
 import { IParameterDefinition } from "./IParameterDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
@@ -53,30 +54,30 @@ export class FunctionInfo extends Info {
  * The information that will be displayed when the cursor hovers over a user-defined TLE function.
  */
 export class UserFunctionInfo extends Info {
-    constructor(private _namespace: UserFunctionNamespaceDefinition, private _function: UserFunctionDefinition, _span: language.Span) {
+    constructor(private _function: UserFunctionDefinition, _span: language.Span) {
         super(_span);
     }
 
-    public static getUsage(namespace: UserFunctionNamespaceDefinition | undefined, func: UserFunctionDefinition): string {
-        const ns: string = namespace ? namespace.namespaceName.unquotedValue : "";
+    public static getUsage(func: UserFunctionDefinition, includeNamespaceName: boolean = true): string {
+        const ns: string | false = includeNamespaceName && func.namespace.namespaceName.unquotedValue;
         const name = func.name.unquotedValue;
         const params: UserFunctionParameterDefinition[] = func.parameterDefinitions;
-        const usage: string = `${ns ? `${ns}.` : ns}${name}(${params.map(getParamUsage).join(", ")})`;
-
-        return usage;
-
-        function getParamUsage(pd: UserFunctionParameterDefinition): string {
-            const paramName = pd.name.unquotedValue;
-            const paramTypeValue: Json.StringValue | null = Json.asStringValue(pd.type);
-            const paramType: string | null = paramTypeValue && paramTypeValue.unquotedValue;
-            const paramTypeLC: string | null = paramType && paramType.toLowerCase();
-
-            return paramTypeLC ? `${paramName} [${paramTypeLC}]` : paramName;
+        let usage: string = `${ns ? `${ns}.` : ""}${name}(${params.map(UserFunctionInfo.getParamUsage).join(", ")})`;
+        if (func.output && func.output.validOutputType) {
+            usage += ` [${func.output.validOutputType}]`;
         }
+        return usage;
+    }
+
+    public static getParamUsage(pd: UserFunctionParameterDefinition): string {
+        const paramName = pd.name.unquotedValue;
+        const paramType: ExpressionType | null = pd.validType;
+
+        return paramType ? `${paramName} [${paramType}]` : paramName;
     }
 
     public getHoverText(): string {
-        const usage: string = UserFunctionInfo.getUsage(this._namespace, this._function);
+        const usage: string = UserFunctionInfo.getUsage(this._function);
         return `**${usage}** User-defined function`;
     }
 }
@@ -92,7 +93,7 @@ export class UserNamespaceInfo extends Info {
     public getHoverText(): string {
         const ns = this._namespace.namespaceName.unquotedValue;
         const methodsUsage: string[] = this._namespace.members
-            .map(md => UserFunctionInfo.getUsage(undefined, md));
+            .map(md => UserFunctionInfo.getUsage(md, false));
         const summary = `**${ns}** User-defined namespace`;
         if (methodsUsage.length > 0) {
             return `${summary}\n\nMembers:\n${methodsUsage.map(mu => `* ${mu}`).join("\n")}`;

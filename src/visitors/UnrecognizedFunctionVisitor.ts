@@ -38,7 +38,7 @@ export class UnrecognizedFunctionVisitor extends Visitor {
             }
         } else {
             // Built-in function
-            const functionMetadata: assets.FunctionMetadata | undefined = this._tleFunctions.findbyName(functionName);
+            const functionMetadata: assets.BuiltinFunctionMetadata | undefined = this._tleFunctions.findbyName(functionName);
             if (!functionMetadata) {
                 this._errors.push(new UnrecognizedBuiltinFunctionIssue(tleFunction.nameToken.span, functionName));
             }

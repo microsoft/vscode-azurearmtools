@@ -6,7 +6,7 @@
 // tslint:disable:no-non-null-assertion
 
 import * as assert from "assert";
-import { AzureRMAssets, DeploymentTemplate, FindReferencesVisitor, FunctionMetadata, FunctionsMetadata, IncorrectArgumentsCountIssue, IncorrectFunctionArgumentCountVisitor, Language, PositionContext, Reference, ScopeContext, TemplateScope, TLE, UndefinedParameterAndVariableVisitor, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue, UnrecognizedFunctionVisitor } from "../extension.bundle";
+import { AzureRMAssets, BuiltinFunctionMetadata, DeploymentTemplate, FindReferencesVisitor, FunctionsMetadata, IncorrectArgumentsCountIssue, IncorrectFunctionArgumentCountVisitor, Language, PositionContext, Reference, ScopeContext, TemplateScope, TLE, UndefinedParameterAndVariableVisitor, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue, UnrecognizedFunctionVisitor } from "../extension.bundle";
 import { assertNotNull } from "./support/assertNotNull";
 
 suite("TLE", () => {
@@ -1934,7 +1934,7 @@ suite("TLE", () => {
 
     suite("UnrecognizedFunctionVisitor", () => {
         suite("visit(tle.Value)", () => {
-            const functionMetadata: FunctionsMetadata = new FunctionsMetadata([new FunctionMetadata("CONCAT", "", "", 1, 2, [])]);
+            const functionMetadata: FunctionsMetadata = new FunctionsMetadata([new BuiltinFunctionMetadata("CONCAT", "", "", 1, 2, [])]);
 
             test("with recognized function", () => {
                 const tleParseResult = parseExpressionWithScope("'[concat()]'");

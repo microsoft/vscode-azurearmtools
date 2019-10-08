@@ -37,6 +37,7 @@ export { configKeys, configPrefix, diagnosticsCompletePrefix, expressionsDiagnos
 export { __debugMarkPositionInString, __debugMarkSubstring } from "./src/debugMarkStrings";
 export { DeploymentTemplate } from "./src/DeploymentTemplate";
 export { Duration } from './src/Duration';
+export { ExpressionType } from "./src/ExpressionType";
 export { ext } from './src/extensionVariables';
 export { Histogram } from "./src/Histogram";
 export { httpGet } from './src/httpGet';

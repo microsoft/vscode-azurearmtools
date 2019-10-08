@@ -3,12 +3,19 @@
 // ----------------------------------------------------------------------------
 
 // tslint:disable:max-func-body-length cyclomatic-complexity promise-function-async align max-line-length max-line-length no-null-keyword
-// tslint:disable:no-non-null-assertion
+// tslint:disable:no-non-null-assertion object-literal-key-quotes
 
 import * as assert from "assert";
-import { Completion, DeploymentTemplate, Hover, IParameterDefinition, IReferenceSite, Json, Language, PositionContext, TLE, Utilities } from "../extension.bundle";
+import { Completion, DeploymentTemplate, Hover, Json, Language, PositionContext, TLE, Utilities } from "../extension.bundle";
+import { IParameterDefinition } from "../src/IParameterDefinition";
+import { IReferenceSite } from "../src/PositionContext";
+import { FunctionSignatureHelp } from "../src/TLE";
+import { UserFunctionMetadata } from "../src/UserFunctionMetadata";
 import * as jsonTest from "./JSON.test";
 import { assertNotNull } from "./support/assertNotNull";
+import { IDeploymentTemplate } from "./support/diagnostics";
+import { parseTemplateWithMarkers } from "./support/parseTemplate";
+import { stringify } from "./support/stringify";
 
 suite("PositionContext", () => {
     suite("fromDocumentLineAndColumnIndexes(DeploymentTemplate,number,number)", () => {
@@ -1258,7 +1265,7 @@ suite("PositionContext", () => {
         test("not in a TLE", () => {
             const dt = new DeploymentTemplate(`{ "a": "AA" }`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "A`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
+            return pc.getSignatureHelp().then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert.deepStrictEqual(functionSignatureHelp, null);
             });
         });
@@ -1266,7 +1273,7 @@ suite("PositionContext", () => {
         test("in empty TLE", () => {
             const dt = new DeploymentTemplate(`{ "a": "[]" }`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
+            return pc.getSignatureHelp().then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert.deepStrictEqual(functionSignatureHelp, null);
             });
         });
@@ -1274,7 +1281,7 @@ suite("PositionContext", () => {
         test("in TLE function name", () => {
             const dt = new DeploymentTemplate(`{ "a": "[con]" }`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[con`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
+            return pc.getSignatureHelp().then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert.deepStrictEqual(functionSignatureHelp, null);
             });
         });
@@ -1282,7 +1289,7 @@ suite("PositionContext", () => {
         test("after left parenthesis", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat(`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat(`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
+            return pc.getSignatureHelp().then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert(functionSignatureHelp);
                 assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 0);
                 assert(functionSignatureHelp.functionMetadata);
@@ -1293,7 +1300,7 @@ suite("PositionContext", () => {
         test("inside first parameter", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat('test`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('test`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
+            return pc.getSignatureHelp().then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert(functionSignatureHelp);
                 assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 0);
                 assert(functionSignatureHelp.functionMetadata);
@@ -1304,7 +1311,7 @@ suite("PositionContext", () => {
         test("inside second parameter", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat('t1', 't2`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('t1', 't2`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
+            return pc.getSignatureHelp().then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert(functionSignatureHelp);
                 assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 1);
                 assert(functionSignatureHelp.functionMetadata);
@@ -1315,7 +1322,7 @@ suite("PositionContext", () => {
         test("inside empty parameter", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat(,,,`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat(,,`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
+            return pc.getSignatureHelp().then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert(functionSignatureHelp);
                 assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 2);
                 assert(functionSignatureHelp.functionMetadata);
@@ -1326,7 +1333,7 @@ suite("PositionContext", () => {
         test("in variadic parameter when function signature has '...' parameter and the current argument is greater than the parameter count", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat('a', 'b', 'c', 'd', 'e', 'f'`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd', 'e', 'f'`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
+            return pc.getSignatureHelp().then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert(functionSignatureHelp);
                 assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 3);
                 assert(functionSignatureHelp.functionMetadata);
@@ -1337,7 +1344,7 @@ suite("PositionContext", () => {
         test("in variadic parameter when function signature has '...' parameter and the current argument is equal to the parameter count", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat('a', 'b', 'c', 'd'`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd'`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
+            return pc.getSignatureHelp().then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert(functionSignatureHelp);
                 assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 3);
                 assert(functionSignatureHelp.functionMetadata);
@@ -1348,11 +1355,222 @@ suite("PositionContext", () => {
         test("in variadic parameter when function signature has 'name...' parameter", () => {
             const dt = new DeploymentTemplate(`{ "a": "[resourceId('a', 'b', 'c', 'd', 'e', 'f', 'g'`, "id");
             const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd', 'e', 'f', 'g'`.length);
-            return pc.signatureHelp.then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
+            return pc.getSignatureHelp().then((functionSignatureHelp: TLE.FunctionSignatureHelp) => {
                 assert(functionSignatureHelp);
                 assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 4);
                 assert(functionSignatureHelp.functionMetadata);
                 assert.deepStrictEqual(functionSignatureHelp.functionMetadata.name, "resourceId");
+            });
+        });
+
+        suite("signatureHelp for UDFs", () => {
+            // const udfConcat: IDeploymentFunctionDefinition = {
+            //     parameters: [
+            //         {
+            //             name: "p1",
+            //             type: "string"
+            //         }
+            //     ],
+            //     output: {
+            //         type: "string",
+            //         value: "[concat('mystorage', uniqueString(parameters('p1')))]"
+            //     }
+            // };
+
+            const udfTemplate: IDeploymentTemplate = {
+                $schema: "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                contentVersion: "1.0.0.0",
+                functions: [{
+                    namespace: "udf",
+                    members: {
+                        "concat": {
+                            parameters: [
+                                {
+                                    name: "p1",
+                                    type: "string"
+                                },
+                                {
+                                    name: "p2",
+                                    type: "string"
+                                }
+                            ],
+                            output: {
+                                type: "string",
+                                value: "[concat(parameters('p1'), parameters('p2'))]"
+                            }
+                        },
+                        "random": {
+                            output: {
+                                type: "int",
+                                value: "123"
+                            }
+                        },
+                        "double": {
+                            output: {
+                                type: "int",
+                                value: "[mult(2, parameters('number'))]"
+                            },
+                            parameters: [
+                                {
+                                    name: "number",
+                                    type: "int"
+                                }
+                            ]
+                        },
+                        "mysterious": {
+                            output: {
+                                // tslint:disable-next-line: no-any
+                                type: <any>"INT",
+                                value: "[mult(2, parameters('number'))]"
+                            },
+                            parameters: [
+                                {
+                                    name: "p1",
+                                    type: "secureobject"
+                                },
+                                {
+                                    name: "p2",
+                                    // tslint:disable-next-line: no-any
+                                    type: <any>undefined
+                                }
+                            ]
+                        },
+                        "badreturn": {
+                            output: {
+                                // tslint:disable-next-line: no-any
+                                "type": <any>"whoseit",
+                                "value": "hi"
+                            }
+                        }
+                    }
+                }],
+                parameters: {
+                    p1: {
+                        type: "string",
+                        defaultValue: "[udf.storageUri('p1')]"
+                    }
+                },
+                resources: [],
+                outputs: {
+                    o1: {
+                        type: "string",
+                        value: "[<o1value>]"
+                    }
+                }
+            };
+
+            const expectedUdfConcatMetadata = new UserFunctionMetadata(
+                "udf.concat",
+                `udf.concat(p1 [string], p2 [string]) [string]`,
+                "User-defined function",
+                [
+                    { name: "p1", usage: "p1 [string]", "type": "string" }, //asdf refactor
+                    { name: "p2", usage: "p2 [string]", "type": "string" }
+                ],
+                "string",
+                []);
+
+            // A bang ("!") in the expression marks the position to test at
+            async function testUdfSignatureHelp(expressionWithBang: string, expected: TLE.FunctionSignatureHelp | null): Promise<void> {
+                const templateString = stringify(udfTemplate).replace('<o1value>', expressionWithBang);
+
+                const { dt, markers: { bang } } = await parseTemplateWithMarkers(templateString);
+                assert(bang, "You must place a bang ('!') in the expression string to indicate position");
+                const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(bang.index);
+                const functionSignatureHelp: TLE.FunctionSignatureHelp | null = await pc.getSignatureHelp();
+                assert.deepStrictEqual(functionSignatureHelp, expected);
+            }
+
+            test("in UDF function name", async () => {
+                await testUdfSignatureHelp("udf.!con", null);
+            });
+
+            test("in UDF namespace name", async () => {
+                await testUdfSignatureHelp("u!df.con", null);
+            });
+
+            test("in UDF call's period", async () => {
+                await testUdfSignatureHelp("udf!.con", null);
+            });
+
+            test("after UDF left parenthesis, with same name as built-in function and UDF function not defined", async () => {
+                await testUdfSignatureHelp("udf.add(!", null);
+            });
+
+            test("after UDF left parenthesis, with same name as built-in function, udf exists", async () => {
+                await testUdfSignatureHelp("udf.concat(!",
+                    new FunctionSignatureHelp(0, expectedUdfConcatMetadata));
+            });
+
+            test("inside first parameter", async () => {
+                await testUdfSignatureHelp("udf.concat('hello!', 'there')",
+                    new FunctionSignatureHelp(0, expectedUdfConcatMetadata));
+            });
+
+            test("inside second parameter", async () => {
+                await testUdfSignatureHelp("udf.concat('hello', 'th!ere')",
+                    new FunctionSignatureHelp(1, expectedUdfConcatMetadata));
+            });
+
+            test("no params", async () => {
+                await testUdfSignatureHelp("udf.random(!)",
+                    new FunctionSignatureHelp(
+                        0,
+                        new UserFunctionMetadata(
+                            "udf.random",
+                            `udf.random() [int]`,
+                            "User-defined function",
+                            [],
+                            "int",
+                            [])));
+            });
+
+            test("one param", async () => {
+                await testUdfSignatureHelp("udf.double(12!345) [int]",
+                    new FunctionSignatureHelp(
+                        0,
+                        new UserFunctionMetadata(
+                            "udf.double",
+                            `udf.double(number [int]) [int]`,
+                            "User-defined function",
+                            [
+                                { name: "number", usage: "number [int]", "type": "int" }
+                            ],
+                            "int",
+                            [])
+                    ));
+            });
+
+            test("param with no type", async () => {
+                await testUdfSignatureHelp("udf.mysterious(12!345, 2)",
+                    new FunctionSignatureHelp(
+                        0,
+                        new UserFunctionMetadata(
+                            "udf.mysterious",
+                            `udf.mysterious(p1 [secureobject], p2) [int]`,
+                            "User-defined function",
+                            [
+                                { name: "p1", usage: "p1 [secureobject]", "type": "secureobject" },
+                                { name: "p2", usage: "p2", "type": null }
+                            ],
+                            "int",
+                            [])
+                    ));
+            });
+
+            test("invalid return type", async () => {
+                await testUdfSignatureHelp("udf.badreturn(!)",
+                    new FunctionSignatureHelp(
+                        0,
+                        new UserFunctionMetadata(
+                            "udf.badreturn",
+                            `udf.badreturn()`,
+                            "User-defined function",
+                            [
+                            ],
+                            null,
+                            [])
+                    ));
             });
         });
     });

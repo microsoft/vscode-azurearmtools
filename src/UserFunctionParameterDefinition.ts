@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { ExpressionType, toValidExpressionType } from './ExpressionType';
 import { assert } from './fixed_assert';
 import { IParameterDefinition } from './IParameterDefinition';
 import * as Json from "./JSON";
@@ -29,10 +30,19 @@ export class UserFunctionParameterDefinition implements IParameterDefinition {
     }
 
     // tslint:disable-next-line:no-reserved-keywords
-    public get type(): Json.Value | null {
+    public get type(): Json.StringValue | null {
         const parameterDefinition: Json.ObjectValue | null = Json.asObjectValue(this._objectValue);
         if (parameterDefinition) {
-            return parameterDefinition.getPropertyValue("type");
+            return Json.asStringValue(parameterDefinition.getPropertyValue("type"));
+        }
+
+        return null;
+    }
+
+    // Returns null if not a valid expression type
+    public get validType(): ExpressionType | null {
+        if (this.type) {
+            return toValidExpressionType(this.type.toString());
         }
 
         return null;
