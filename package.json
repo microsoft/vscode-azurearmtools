@@ -1,7 +1,7 @@
 {
   "name": "azurerm-vscode-tools",
   "displayName": "Azure Resource Manager Tools",
-  "description": "Language server and editing tools for Azure Resource Manager template files.",
+  "description": "Language server, editing tools and snippets for Azure Resource Manager template files.",
   "version": "0.7.1-alpha",
   "publisher": "msazurermtools",
   "config": {
@@ -11,14 +11,15 @@
     "Azure",
     "Programming Languages",
     "Linters",
-    "Formatters"
+    "Formatters",
+    "Snippets"
   ],
   "keywords": [
     "Azure Template",
-    "ARM Template",
+    "ARM",
     "Resource Manager",
     "Azure",
-    "ARM"
+    "Snippets"
   ],
   "repository": {
     "url": "https://github.com/Microsoft/vscode-azurearmtools.git"
@@ -54,6 +55,20 @@
       {
         "scopeName": "source.tle.arm-template",
         "path": "dist/grammars/arm-expression-string.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "arm-template",
+        "path": "./assets/armsnippets.jsonc"
+      },
+      {
+        "language": "json",
+        "path": "./assets/jsonsnippets.jsonc"
+      },
+      {
+        "language": "jsonc",
+        "path": "./assets/jsonsnippets.jsonc"
       }
     ],
     "configuration": {
