@@ -20,7 +20,6 @@ export interface IFunctionMetadata {
 
 export interface IFunctionParameterMetadata {
     name: string;
-    usage: string;
     // tslint:disable-next-line: no-reserved-keywords
     type: ExpressionType | null;
 }

@@ -130,7 +130,7 @@ export class BuiltinFunctionMetadata implements IFunctionMetadata {
         const result: IFunctionParameterMetadata[] = [];
         if (parametersSubstring) {
             for (const parameter of parametersSubstring.split(",")) {
-                result.push({ name: parameter.trim(), usage: parameter.trim(), type: null }); // CONSIDER: Our metadata doesn't currently give the parameter types
+                result.push({ name: parameter.trim(), type: null }); // CONSIDER: Our metadata doesn't currently give the parameter types
             }
         }
 

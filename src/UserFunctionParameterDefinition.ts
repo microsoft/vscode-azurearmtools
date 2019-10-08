@@ -41,11 +41,7 @@ export class UserFunctionParameterDefinition implements IParameterDefinition {
 
     // Returns null if not a valid expression type
     public get validType(): ExpressionType | null {
-        if (this.type) {
-            return toValidExpressionType(this.type.toString());
-        }
-
-        return null;
+        return this.type ? toValidExpressionType(this.type.toString()) : null;
     }
 
     public get span(): language.Span {

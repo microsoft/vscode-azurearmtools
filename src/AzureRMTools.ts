@@ -21,6 +21,7 @@ import * as language from "./Language";
 import { startArmLanguageServer, stopArmLanguageServer } from "./languageclient/startArmLanguageServer";
 import { PositionContext } from "./PositionContext";
 import * as Reference from "./Reference";
+import { getFunctionParamUsage } from "./signatureFormatting";
 import { Stopwatch } from "./Stopwatch";
 import { armDeploymentDocumentSelector, mightBeDeploymentTemplate } from "./supported";
 import * as TLE from "./TLE";
@@ -544,7 +545,9 @@ export class AzureRMTools {
                     signatureInformation.parameters = [];
                     for (const param of functionSignatureHelp.functionMetadata.parameters) {
                         // Parameter label needs to be in the exact same format as in the function usage (including type, if you want it to get highlighted with the parameter name)
-                        signatureInformation.parameters.push(new vscode.ParameterInformation(param.usage, ''));
+                        const paramUsage = getFunctionParamUsage(param.name, param.type);
+                        const paramDocumentation = "";
+                        signatureInformation.parameters.push(new vscode.ParameterInformation(paramUsage, paramDocumentation));
                     }
 
                     signatureHelp = new vscode.SignatureHelp();

@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { ExpressionType, toValidExpressionType } from './ExpressionType';
 import { assert } from './fixed_assert';
 import { IParameterDefinition } from "./IParameterDefinition";
 import * as Json from "./JSON";
@@ -27,6 +28,11 @@ export class ParameterDefinition implements IParameterDefinition {
         }
 
         return null;
+    }
+
+    // Returns null if not a valid expression type
+    public get validType(): ExpressionType | null {
+        return this.type ? toValidExpressionType(this.type.toString()) : null;
     }
 
     public get span(): language.Span {

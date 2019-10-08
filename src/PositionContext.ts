@@ -564,29 +564,28 @@ export class PositionContext {
     public async getSignatureHelp(): Promise<TLE.FunctionSignatureHelp | null> {
         const tleValue: TLE.Value | null = this.tleInfo && this.tleInfo.tleValue;
         if (this.tleInfo && tleValue) {
-            let functionCallToHelpWith: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(tleValue);
-            if (!functionCallToHelpWith) {
-                functionCallToHelpWith = TLE.asFunctionCallValue(tleValue.parent);
+            let functionToHelpWith: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(tleValue);
+            if (!functionToHelpWith) {
+                functionToHelpWith = TLE.asFunctionCallValue(tleValue.parent);
             }
 
-            if (functionCallToHelpWith) {
+            if (functionToHelpWith) {
                 let functionMetadata: IFunctionMetadata | undefined;
 
-                if (functionCallToHelpWith.namespaceToken) {
+                if (functionToHelpWith.namespaceToken) {
                     // Call to user-defined function
-                    const namespace: string = functionCallToHelpWith.namespaceToken.stringValue;
-                    const name: string = functionCallToHelpWith.nameToken.stringValue;
-
+                    const namespace: string = functionToHelpWith.namespaceToken.stringValue;
+                    const name: string = functionToHelpWith.nameToken.stringValue;
                     const udfDefinition: UserFunctionDefinition | null = this.tleInfo.scope.getFunctionDefinition(namespace, name);
                     functionMetadata = udfDefinition ? UserFunctionMetadata.fromDefinition(udfDefinition) : undefined;
                 } else {
                     // Call to built-in function
-                    functionMetadata = await AzureRMAssets.getFunctionMetadataFromName(functionCallToHelpWith.nameToken.stringValue);
+                    functionMetadata = await AzureRMAssets.getFunctionMetadataFromName(functionToHelpWith.nameToken.stringValue);
                 }
                 if (functionMetadata) {
                     let currentArgumentIndex: number = 0;
 
-                    for (const commaToken of functionCallToHelpWith.commaTokens) {
+                    for (const commaToken of functionToHelpWith.commaTokens) {
                         if (commaToken.span.startIndex < this.tleInfo.tleCharacterIndex) {
                             ++currentArgumentIndex;
                         }

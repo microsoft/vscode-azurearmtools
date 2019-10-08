@@ -3,8 +3,8 @@
 // ----------------------------------------------------------------------------
 
 import { ExpressionType } from "./ExpressionType";
-import { UserFunctionInfo } from "./Hover";
 import { IFunctionMetadata, IFunctionParameterMetadata } from "./IFunctionMetadata";
+import { getUserFunctionUsage } from "./signatureFormatting";
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
 
 /**
@@ -25,16 +25,14 @@ export class UserFunctionMetadata implements IFunctionMetadata {
     public readonly minimumArguments: number;
     public readonly maximumArguments: number;
 
-    // asdf have hover get from this instead
     public static fromDefinition(func: UserFunctionDefinition): UserFunctionMetadata {
         return new UserFunctionMetadata(
             func.fullName,
-            UserFunctionInfo.getUsage(func, true),
+            getUserFunctionUsage(func, true),
             "User-defined function",
             func.parameterDefinitions.map(pd =>
                 <IFunctionParameterMetadata>{
                     name: pd.name.unquotedValue,
-                    usage: UserFunctionInfo.getParamUsage(pd),
                     type: pd.validType
                 }),
             func.output && func.output.validOutputType,

@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { ExpressionType } from "./ExpressionType";
 import * as Json from "./JSON";
 import * as language from "./Language";
 
@@ -12,6 +13,7 @@ export interface IParameterDefinition {
     name: Json.StringValue;
     // tslint:disable-next-line:no-reserved-keywords
     type: Json.Value | null;
+    validType: ExpressionType | null;
     span: language.Span;
 
     // We don't currently need access to the top-level parameters' "type" other properties

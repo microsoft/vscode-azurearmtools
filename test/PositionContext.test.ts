@@ -6,11 +6,7 @@
 // tslint:disable:no-non-null-assertion object-literal-key-quotes
 
 import * as assert from "assert";
-import { Completion, DeploymentTemplate, Hover, Json, Language, PositionContext, TLE, Utilities } from "../extension.bundle";
-import { IParameterDefinition } from "../src/IParameterDefinition";
-import { IReferenceSite } from "../src/PositionContext";
-import { FunctionSignatureHelp } from "../src/TLE";
-import { UserFunctionMetadata } from "../src/UserFunctionMetadata";
+import { Completion, DeploymentTemplate, FunctionSignatureHelp, Hover, IParameterDefinition, IReferenceSite, Json, Language, PositionContext, TLE, UserFunctionMetadata, Utilities } from "../extension.bundle";
 import * as jsonTest from "./JSON.test";
 import { assertNotNull } from "./support/assertNotNull";
 import { IDeploymentTemplate } from "./support/diagnostics";
@@ -1464,8 +1460,8 @@ suite("PositionContext", () => {
                 `udf.concat(p1 [string], p2 [string]) [string]`,
                 "User-defined function",
                 [
-                    { name: "p1", usage: "p1 [string]", "type": "string" }, //asdf refactor
-                    { name: "p2", usage: "p2 [string]", "type": "string" }
+                    { name: "p1", "type": "string" },
+                    { name: "p2", "type": "string" }
                 ],
                 "string",
                 []);
@@ -1534,7 +1530,7 @@ suite("PositionContext", () => {
                             `udf.double(number [int]) [int]`,
                             "User-defined function",
                             [
-                                { name: "number", usage: "number [int]", "type": "int" }
+                                { name: "number", "type": "int" }
                             ],
                             "int",
                             [])
@@ -1550,8 +1546,8 @@ suite("PositionContext", () => {
                             `udf.mysterious(p1 [secureobject], p2) [int]`,
                             "User-defined function",
                             [
-                                { name: "p1", usage: "p1 [secureobject]", "type": "secureobject" },
-                                { name: "p2", usage: "p2", "type": null }
+                                { name: "p1", "type": "secureobject" },
+                                { name: "p2", "type": null }
                             ],
                             "int",
                             [])
