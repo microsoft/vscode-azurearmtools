@@ -11,7 +11,8 @@
             "    \"parameters\": {},",
             "    \"variables\": {},",
             "    \"resources\": [],",
-            "    \"outputs\": {}",
+            "    \"outputs\": {},",
+            "    \"functions\": []",
             "}"
         ],
         "description": "Skeleton ARM Template"
