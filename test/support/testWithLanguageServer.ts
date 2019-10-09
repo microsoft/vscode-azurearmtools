@@ -14,11 +14,7 @@ export function testWithLanguageServer(expectation: string, callback?: (this: IT
                 console.log("Skipping test because DISABLE_LANGUAGE_SERVER_TESTS is enabled");
                 this.skip();
             } else {
-                // tslint:disable-next-line: no-unsafe-any no-any prefer-template restrict-plus-operands
-                console.log("timeout=" + (<any>this).timeout());
                 this.timeout(diagnosticsTimeout);
-                // tslint:disable-next-line: no-unsafe-any no-any prefer-template restrict-plus-operands
-                console.log("timeout=" + (<any>this).timeout());
                 if (callback) {
                     // tslint:disable-next-line: no-unsafe-any
                     return await callback.call(this);

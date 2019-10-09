@@ -49,7 +49,7 @@ class ReferenceInVariableDefinitionTLEVisitor extends TLE.Visitor {
     }
 
     public visitFunctionCall(functionValue: TLE.FunctionCallValue | null): void {
-        if (functionValue && functionValue.doesNameMatch("", "reference")) {
+        if (functionValue && functionValue.nameToken && functionValue.doesNameMatch("", "reference")) {
             this._referenceSpans.push(functionValue.nameToken.span);
         }
 

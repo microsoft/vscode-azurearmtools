@@ -26,9 +26,8 @@ suite("ParameterDefinition", () => {
 
             const pd = new ParameterDefinition(property);
 
-            assert.deepStrictEqual(pd.name, parameterName);
+            assert.deepStrictEqual(pd.nameValue, parameterName);
             assert.deepStrictEqual(pd.description, null);
-            assert.deepStrictEqual(pd.span, new Language.Span(0, 18));
         });
     });
 });

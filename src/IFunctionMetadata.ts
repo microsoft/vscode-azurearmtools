@@ -8,7 +8,8 @@ import { ExpressionType } from "./ExpressionType";
  * Metadata for a TLE (Template Language Expression) function.
  */
 export interface IFunctionMetadata {
-    name: string;
+    fullName: string;
+    unqualifiedName: string;
     usage: string;
     parameters: IFunctionParameterMetadata[];
     description: string;

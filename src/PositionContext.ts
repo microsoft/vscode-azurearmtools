@@ -6,24 +6,28 @@
 
 import { Language } from "../extension.bundle";
 import { AzureRMAssets, BuiltinFunctionMetadata } from "./AzureRMAssets";
-import { CachedPromise } from "./CachedPromise";
 import { CachedValue } from "./CachedValue";
 import * as Completion from "./Completion";
+import { templateKeys } from "./constants";
 import { __debugMarkPositionInString } from "./debugMarkStrings";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { assert } from './fixed_assert';
 import * as Hover from "./Hover";
 import { IFunctionMetadata, IFunctionParameterMetadata } from "./IFunctionMetadata";
+import { DefinitionKind, INamedDefinition } from "./INamedDefinition";
 import { IParameterDefinition } from "./IParameterDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
-import * as Reference from "./Reference";
+import { ParameterDefinition } from "./ParameterDefinition";
+import * as Reference from "./ReferenceList";
 import { TemplateScope } from "./TemplateScope";
 import * as TLE from "./TLE";
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
 import { UserFunctionMetadata } from "./UserFunctionMetadata";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
+import { UserFunctionParameterDefinition } from "./UserFunctionParameterDefinition";
 import { assertNever } from "./util/assertNever";
+import { VariableDefinition } from "./VariableDefinition";
 
 /**
  * Information about the TLE expression (if position is at an expression string)
@@ -41,33 +45,17 @@ class TleInfo implements ITleInfo {
 /**
  * Information about a reference site (function call, parameter reference, etc.)
  */
-export type IReferenceSite = {
-    kind: "userNamespace";
-    userNamespace: UserFunctionNamespaceDefinition;
+export interface IReferenceSite {
+    /**
+     * Where the reference occurs in the template
+     */
     referenceSpan: Language.Span;
-    definitionSpan: Language.Span;
-} | {
-    kind: "userFunction";
-    userNamespace: UserFunctionNamespaceDefinition;
-    userFunction: UserFunctionDefinition;
-    referenceSpan: Language.Span;
-    definitionSpan: Language.Span;
-} | {
-    kind: "builtinFunction";
-    functionMetadata: BuiltinFunctionMetadata;
-    referenceSpan: Language.Span;
-    definitionSpan: undefined;
-} | {
-    kind: "parameter";
-    parameter: IParameterDefinition;
-    referenceSpan: Language.Span;
-    definitionSpan: Language.Span;
-} | {
-    kind: "variable";
-    variable: Json.Property;
-    referenceSpan: Language.Span;
-    definitionSpan: Language.Span;
-};
+
+    /**
+     * The definition that the reference refers to
+     */
+    definition: INamedDefinition;
+}
 
 /**
  * Represents a position inside the snapshot of a deployment template, plus all related information
@@ -82,7 +70,6 @@ export class PositionContext {
     private _jsonToken: CachedValue<Json.Token | null> = new CachedValue<Json.Token>();
     private _jsonValue: CachedValue<Json.Value | null> = new CachedValue<Json.Value | null>();
     private _tleInfo: CachedValue<TleInfo | null> = new CachedValue<TleInfo | null>();
-    private _completionItems: CachedPromise<Completion.Item[]> = new CachedPromise<Completion.Item[]>();
 
     public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number): PositionContext {
         assert(deploymentTemplate !== null, "deploymentTemplate cannot be null");
@@ -121,7 +108,7 @@ export class PositionContext {
      */
     public get __debugDisplay(): string {
         let docText: string = this._deploymentTemplate.documentText;
-        return __debugMarkPositionInString(docText, this.documentCharacterIndex, "<<POSITION>>");
+        return __debugMarkPositionInString(docText, this.documentCharacterIndex, "<CURSOR>");
     }
 
     /**
@@ -129,7 +116,7 @@ export class PositionContext {
      */
     public get __debugFullDisplay(): string {
         let docText: string = this._deploymentTemplate.documentText;
-        return __debugMarkPositionInString(docText, this.documentCharacterIndex, "<<POSITION>>", Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
+        return __debugMarkPositionInString(docText, this.documentCharacterIndex, "<CURSOR>", Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
     }
 
     public get documentPosition(): language.Position {
@@ -208,7 +195,7 @@ export class PositionContext {
      * If this position is inside an expression, inside a reference to an interesting function/parameter/etc, then
      * return an object with information about this reference and the corresponding definition
      */
-    public async getReferenceSiteInfo(): Promise<null | IReferenceSite> {
+    public getReferenceSiteInfo(): null | IReferenceSite {
         const tleInfo = this.tleInfo;
         if (tleInfo) {
             const scope = tleInfo.scope;
@@ -222,27 +209,25 @@ export class PositionContext {
                     const nsDefinition = scope.getFunctionNamespaceDefinition(ns);
                     if (nsDefinition) {
                         const referenceSpan: language.Span = tleFuncCall.namespaceToken.span.translate(this.jsonTokenStartIndex);
-                        const definitionSpan: language.Span = nsDefinition.namespaceName.span;
-                        return { kind: "userNamespace", userNamespace: nsDefinition, referenceSpan: referenceSpan, definitionSpan };
+                        return { definition: nsDefinition, referenceSpan };
                     }
-                } else if (tleFuncCall.nameToken.span.contains(tleCharacterIndex)) {
+                } else if (tleFuncCall.nameToken && tleFuncCall.nameToken.span.contains(tleCharacterIndex)) {
                     if (tleFuncCall.namespaceToken) {
                         // Inside the name of a user-function reference
                         const ns = tleFuncCall.namespaceToken.stringValue;
                         const name = tleFuncCall.nameToken.stringValue;
                         const nsDefinition = scope.getFunctionNamespaceDefinition(ns);
-                        const definition = scope.getFunctionDefinition(ns, name);
-                        if (nsDefinition && definition) {
+                        const userFunctiondefinition = scope.getUserFunctionDefinition(ns, name);
+                        if (nsDefinition && userFunctiondefinition) {
                             const referenceSpan: language.Span = tleFuncCall.nameToken.span.translate(this.jsonTokenStartIndex);
-                            const definitionSpan: language.Span = definition.name.span;
-                            return { kind: "userFunction", userNamespace: nsDefinition, userFunction: definition, referenceSpan, definitionSpan };
+                            return { definition: userFunctiondefinition, referenceSpan };
                         }
                     } else {
                         // Inside a reference to a built-in function
-                        const functionMetadata: BuiltinFunctionMetadata | undefined = await AzureRMAssets.getFunctionMetadataFromName(tleFuncCall.nameToken.stringValue);
+                        const functionMetadata: BuiltinFunctionMetadata | undefined = AzureRMAssets.getFunctionMetadataFromName(tleFuncCall.nameToken.stringValue);
                         if (functionMetadata) {
                             const referenceSpan: language.Span = tleFuncCall.nameToken.span.translate(this.jsonTokenStartIndex);
-                            return { kind: "builtinFunction", functionMetadata: functionMetadata, referenceSpan, definitionSpan: undefined };
+                            return { definition: functionMetadata, referenceSpan };
                         }
                     }
                 }
@@ -255,16 +240,14 @@ export class PositionContext {
                     const parameterDefinition: IParameterDefinition | null = scope.getParameterDefinition(tleStringValue.toString());
                     if (parameterDefinition) {
                         const referenceSpan: language.Span = tleStringValue.getSpan().translate(this.jsonTokenStartIndex);
-                        const definitionSpan: language.Span = parameterDefinition.name.span;
-                        return { kind: 'parameter', parameter: parameterDefinition, referenceSpan, definitionSpan };
+                        return { definition: parameterDefinition, referenceSpan };
                     }
                 } else if (tleStringValue.isVariablesArgument()) {
-                    const variableDefinition: Json.Property | null = scope.getVariableDefinition(tleStringValue.toString());
+                    const variableDefinition: VariableDefinition | null = scope.getVariableDefinition(tleStringValue.toString());
                     if (variableDefinition) {
                         // Inside the 'xxx' of a variables('xxx') reference
                         const referenceSpan: language.Span = tleStringValue.getSpan().translate(this.jsonTokenStartIndex);
-                        const definitionSpan: language.Span = variableDefinition.name.span;
-                        return { kind: 'variable', variable: variableDefinition, referenceSpan, definitionSpan };
+                        return { definition: variableDefinition, referenceSpan };
                     }
                 }
             }
@@ -273,27 +256,45 @@ export class PositionContext {
         return null;
     }
 
-    public async getHoverInfo(): Promise<Hover.Info | null> {
-        const refSiteInfo: IReferenceSite | null = await this.getReferenceSiteInfo();
-        if (refSiteInfo) {
-            const span = refSiteInfo.referenceSpan;
+    public getHoverInfo(): Hover.Info | null {
+        const reference: IReferenceSite | null = this.getReferenceSiteInfo();
+        if (reference) {
+            const span = reference.referenceSpan;
+            const definition = reference.definition;
 
             // tslint:disable-next-line:switch-default
-            switch (refSiteInfo.kind) {
-                case "userNamespace":
-                    return new Hover.UserNamespaceInfo(refSiteInfo.userNamespace, span);
-                case "userFunction":
-                    return new Hover.UserFunctionInfo(refSiteInfo.userFunction, span);
-                case "builtinFunction":
-                    const functionMetadata = refSiteInfo.functionMetadata;
-                    return new Hover.FunctionInfo(functionMetadata.name, functionMetadata.usage, functionMetadata.description, span);
-                case "parameter":
-                    return Hover.ParameterReferenceInfo.fromDefinition(refSiteInfo.parameter, span);
-                case "variable":
-                    return Hover.VariableReferenceInfo.fromDefinition(refSiteInfo.variable, span);
+            switch (definition.definitionKind) {
+                case DefinitionKind.Namespace:
+                    if (definition instanceof UserFunctionNamespaceDefinition) {
+                        return new Hover.UserNamespaceInfo(definition, span);
+                    }
+                    break;
+                case DefinitionKind.UserFunction:
+                    if (definition instanceof UserFunctionDefinition) {
+                        return new Hover.UserFunctionInfo(definition, span);
+                    }
+                    break;
+                case DefinitionKind.BuiltinFunction:
+                    if (definition instanceof BuiltinFunctionMetadata) {
+                        const functionMetadata = definition;
+                        return new Hover.FunctionInfo(functionMetadata.fullName, functionMetadata.usage, functionMetadata.description, span);
+                    }
+                    break;
+                case DefinitionKind.Parameter:
+                    if (definition instanceof ParameterDefinition || definition instanceof UserFunctionParameterDefinition) {
+                        return Hover.ParameterReferenceInfo.fromDefinition(definition, span);
+                    }
+                    break;
+                case DefinitionKind.Variable:
+                    if (definition instanceof VariableDefinition) {
+                        return Hover.VariableReferenceInfo.fromDefinition(definition, span);
+                    }
+                    break;
                 default:
-                    return assertNever(refSiteInfo); // Gives compile-time error if a case is missed
+                    return assertNever(definition.definitionKind); // Gives compile-time error if a case is missed
             }
+
+            assert(false, `Unexpected definition type for definition kind ${definition.definitionKind}`);
         }
 
         return null;
@@ -302,40 +303,41 @@ export class PositionContext {
     /**
      * Get completion items for our position in the document
      */
-    public async getCompletionItems(): Promise<Completion.Item[]> {
-        return this._completionItems.getOrCachePromise(async () => {
-            const tleInfo = this.tleInfo;
-            if (!tleInfo) {
-                // No string at this position
+    public getCompletionItems(): Completion.Item[] {
+        const tleInfo = this.tleInfo;
+        if (!tleInfo) {
+            // No string at this position
+            return [];
+        }
+
+        // We're inside a JSON string. It may or may not contain square brackets.
+
+        // The function/string/number/etc at the current position inside the string expression,
+        // or else the JSON string itself even it's not an expression
+        const tleValue: TLE.Value | null = tleInfo.tleValue;
+        const scope: TemplateScope = tleInfo.scope;
+
+        if (!tleValue || !tleValue.contains(tleInfo.tleCharacterIndex)) {
+            // No TLE value here. For instance, expression is empty, or before/after/on the square brackets
+            if (PositionContext.isInsideSquareBrackets(tleInfo.tleParseResult, tleInfo.tleCharacterIndex)) {
+                // Inside brackets, so complete with all valid functions and namespaces
+                const replaceSpan = this.emptySpanAtDocumentCharacterIndex;
+                const functionCompletions = PositionContext.getMatchingFunctionCompletions(scope, null, "", replaceSpan);
+                const namespaceCompletions = PositionContext.getMatchingNamespaceCompletions(scope, "", replaceSpan);
+                return functionCompletions.concat(namespaceCompletions);
+            } else {
                 return [];
             }
 
-            // We're inside a JSON string. It may or may not contain square brackets.
+        } else if (tleValue instanceof TLE.FunctionCallValue) {
+            return this.getFunctionCallCompletions(tleValue, tleInfo.tleCharacterIndex, scope);
+        } else if (tleValue instanceof TLE.StringValue) {
+            return this.getStringLiteralCompletions(tleValue, tleInfo.tleCharacterIndex, scope);
+        } else if (tleValue instanceof TLE.PropertyAccess) {
+            return this.getPropertyAccessCompletions(tleValue, tleInfo.tleCharacterIndex, scope);
+        }
 
-            // The function/string/number/etc at the current position inside the string expression,
-            // or else the JSON string itself even it's not an expression
-            const tleValue: TLE.Value | null = tleInfo.tleValue;
-            const scope: TemplateScope = tleInfo.scope;
-
-            if (!tleValue || !tleValue.contains(tleInfo.tleCharacterIndex)) {
-                // No TLE value here. For instance, expression is empty, or before/after/on the square brackets
-                if (PositionContext.isInsideSquareBrackets(tleInfo.tleParseResult, tleInfo.tleCharacterIndex)) {
-                    // Inside brackets, so complete with all valid functions
-                    return await PositionContext.getMatchingFunctionCompletions("", this.emptySpanAtDocumentCharacterIndex);
-                } else {
-                    return [];
-                }
-
-            } else if (tleValue instanceof TLE.FunctionCallValue) {
-                return this.getFunctionCallCompletions(tleValue, tleInfo.tleCharacterIndex, scope);
-            } else if (tleValue instanceof TLE.StringValue) {
-                return this.getStringLiteralCompletions(tleValue, tleInfo.tleCharacterIndex, scope);
-            } else if (tleValue instanceof TLE.PropertyAccess) {
-                return await this.getPropertyAccessCompletions(tleValue, tleInfo.tleCharacterIndex, scope);
-            }
-
-            return [];
-        });
+        return [];
     }
 
     /**
@@ -373,9 +375,9 @@ export class PositionContext {
     }
 
     /**
-     * Get completions when we're anywhere inside a property accesses, e.g. "resourceGroup().prop1.prop2"
+     * Get completions when we're anywhere inside a property access, e.g. "resourceGroup().prop1.prop2"
      */
-    private async getPropertyAccessCompletions(tleValue: TLE.PropertyAccess, tleCharacterIndex: number, scope: TemplateScope): Promise<Completion.Item[]> {
+    private getPropertyAccessCompletions(tleValue: TLE.PropertyAccess, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
         const functionSource: TLE.FunctionCallValue | null = tleValue.functionSource;
         if (functionSource) {
             let propertyPrefix: string = "";
@@ -386,7 +388,7 @@ export class PositionContext {
                 propertyPrefix = propertyNameToken.stringValue.substring(0, tleCharacterIndex - propertyNameToken.span.startIndex).toLowerCase();
             }
 
-            const variableProperty: Json.Property | null = scope.getVariableDefinitionFromFunctionCall(functionSource);
+            const variableProperty: VariableDefinition | null = scope.getVariableDefinitionFromFunctionCall(functionSource);
             const parameterProperty: IParameterDefinition | null = scope.getParameterDefinitionFromFunctionCall(functionSource);
             const sourcesNameStack: string[] = tleValue.sourcesNameStack;
             if (variableProperty) {
@@ -416,20 +418,22 @@ export class PositionContext {
                 // We don't allow multiple levels of property access
                 // (resourceGroup().prop1.prop2) on functions other than variables/parameters,
                 // therefore checking that sourcesNameStack.length === 0
-                const functionName: string = functionSource.nameToken.stringValue;
-                let functionMetadataMatches: BuiltinFunctionMetadata[] = await AzureRMAssets.getFunctionMetadataFromPrefix(functionName);
-                assert(functionMetadataMatches);
+                const functionName: string | null = functionSource.name;
+                if (functionName && !functionSource.namespaceToken) { // Don't currently support completions from a user function returning an object
+                    let functionMetadataMatches: BuiltinFunctionMetadata[] = AzureRMAssets.getFunctionMetadataFromPrefix(functionName);
+                    assert(functionMetadataMatches);
 
-                const result: Completion.Item[] = [];
-                if (functionMetadataMatches.length === 1) {
-                    const functionMetadata: BuiltinFunctionMetadata = functionMetadataMatches[0];
-                    for (const returnValueMember of functionMetadata.returnValueMembers) {
-                        if (propertyPrefix === "" || returnValueMember.toLowerCase().startsWith(propertyPrefix)) {
-                            result.push(PositionContext.createPropertyCompletionItem(returnValueMember, replaceSpan));
+                    const result: Completion.Item[] = [];
+                    if (functionMetadataMatches.length === 1) {
+                        const functionMetadata: BuiltinFunctionMetadata = functionMetadataMatches[0];
+                        for (const returnValueMember of functionMetadata.returnValueMembers) {
+                            if (propertyPrefix === "" || returnValueMember.toLowerCase().startsWith(propertyPrefix)) {
+                                result.push(PositionContext.createPropertyCompletionItem(returnValueMember, replaceSpan));
+                            }
                         }
-                    }
 
-                    return result;
+                        return result;
+                    }
                 }
             }
         }
@@ -440,32 +444,122 @@ export class PositionContext {
     /**
      * Return completions when we're anywhere inside a function call expression
      */
-    private async getFunctionCallCompletions(tleValue: TLE.FunctionCallValue, tleCharacterIndex: number, scope: TemplateScope): Promise<Completion.Item[]> {
-        if (tleValue.nameToken.span.contains(tleCharacterIndex, true)) {
-            // The caret is inside the TLE function's name
-            const functionNameStartIndex: number = tleValue.nameToken.span.startIndex;
-            const functionNamePrefix: string = tleValue.nameToken.stringValue.substring(0, tleCharacterIndex - functionNameStartIndex);
+    // tslint:disable-next-line: max-func-body-length cyclomatic-complexity // Pretty straightforward, don't think further refactoring is important
+    private getFunctionCallCompletions(tleValue: TLE.FunctionCallValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
+        assert(tleValue.getSpan().contains(tleCharacterIndex, true), "Position should be inside the function call, or right after it");
 
-            let replaceSpan: language.Span;
-            if (functionNamePrefix.length === 0) {
+        const namespaceName: string | null = tleValue.namespaceToken ? tleValue.namespaceToken.stringValue : null;
+        // tslint:disable-next-line: strict-boolean-expressions
+        const namespace: UserFunctionNamespaceDefinition | null = (namespaceName && scope.getFunctionNamespaceDefinition(namespaceName)) || null;
+
+        // The token (namespace or name) that the user is completing and will be replaced with the user's selection
+        // If null, we're just inserting at the current position, not replacing anything
+        let tleTokenToComplete: TLE.Token | null;
+
+        let completeNamespaces: boolean;
+        let completeBuiltinFunctions: boolean;
+        let completeUserFunctions: boolean;
+
+        if (tleValue.nameToken && tleValue.nameToken.span.contains(tleCharacterIndex, true)) {
+            // The caret is inside the function's name (or a namespace before the period has been typed), so one of
+            // three possibilities.
+            tleTokenToComplete = tleValue.nameToken;
+
+            if (namespace) {
+                // 1) "namespace.func<CURSOR>tion"
+                //   Complete only UDF functions
+                completeUserFunctions = true;
+                completeNamespaces = false;
+                completeBuiltinFunctions = false;
+            } else {
+                // 2) "name<CURSOR>space"
+                // 3) "func<CURSOR>tion"
+                //   Complete built-ins and namespaces
+                completeNamespaces = true;
+                completeBuiltinFunctions = true;
+                completeUserFunctions = false;
+            }
+        } else if (namespaceName && tleValue.periodToken && tleValue.periodToken.span.afterEndIndex === tleCharacterIndex) {
+            // "namespace.<CURSOR>function"
+            //   The caret is right after the period between a namespace and a function name, so we will be looking for UDF function completions
+
+            if (!namespace) {
+                // The given namespace is not defined, so no completions
+                return [];
+            }
+
+            tleTokenToComplete = tleValue.nameToken;
+            completeNamespaces = false;
+            completeBuiltinFunctions = false;
+            completeUserFunctions = true;
+        } else if (tleValue.namespaceToken && tleValue.periodToken && tleValue.namespaceToken.span.contains(tleCharacterIndex, true)) {
+            // "name<CURSOR>space.function"
+            //   The caret is inside the UDF's namespace (e.g., the namespace and at least a period already exist in the call).
+            //
+            // So we want built-in functions or namespaces only
+
+            tleTokenToComplete = tleValue.namespaceToken;
+            completeNamespaces = true;
+            completeBuiltinFunctions = true;
+            completeUserFunctions = false;
+
+        } else if (tleValue.isCallToBuiltinWithName(templateKeys.parameters) && tleValue.argumentExpressions.length === 0) {
+            // "parameters<CURSOR>" or "parameters(<CURSOR>)" or similar
+            return this.getMatchingParameterCompletions("", tleValue, tleCharacterIndex, scope);
+        } else if (tleValue.isCallToBuiltinWithName(templateKeys.variables) && tleValue.argumentExpressions.length === 0) {
+            // "variables<CURSOR>" or "variables(<CURSOR>)" or similar
+            return this.getMatchingVariableCompletions("", tleValue, tleCharacterIndex, scope);
+        } else {
+            // Anywhere else (e.g. whitespace after function name, or inside the arguments list).
+            //
+            //   "function <CURSOR>()"
+            //   "function(<CURSOR>)"
+            //   etc.
+            //
+            // Assume the user is starting a new function call and provide all completions at that location;
+
+            tleTokenToComplete = null;
+            completeNamespaces = true;
+            completeBuiltinFunctions = true;
+            completeUserFunctions = false;
+        }
+
+        let replaceSpan: language.Span;
+        let completionPrefix: string;
+
+        // Figure out the span which will be replaced by the completion
+        if (tleTokenToComplete) {
+            const tokenToCompleteStartIndex: number = tleTokenToComplete.span.startIndex;
+            completionPrefix = tleTokenToComplete.stringValue.substring(0, tleCharacterIndex - tokenToCompleteStartIndex);
+            if (completionPrefix.length === 0) {
                 replaceSpan = this.emptySpanAtDocumentCharacterIndex;
             } else {
-                replaceSpan = tleValue.nameToken.span.translate(this.jsonTokenStartIndex);
+                replaceSpan = tleTokenToComplete.span.translate(this.jsonTokenStartIndex);
             }
-
-            return await PositionContext.getMatchingFunctionCompletions(functionNamePrefix, replaceSpan);
-        } else if (tleValue.leftParenthesisToken && tleCharacterIndex <= tleValue.leftParenthesisToken.span.startIndex) {
-            // The caret is between the function name and the left parenthesis (with whitespace between them)
-            return await PositionContext.getMatchingFunctionCompletions("", this.emptySpanAtDocumentCharacterIndex);
         } else {
-            if (tleValue.isCallToBuiltinWithName("parameters") && tleValue.argumentExpressions.length === 0) {
-                return this.getMatchingParameterCompletions("", tleValue, tleCharacterIndex, scope);
-            } else if (tleValue.isCallToBuiltinWithName("variables") && tleValue.argumentExpressions.length === 0) {
-                return this.getMatchingVariableCompletions("", tleValue, tleCharacterIndex, scope);
-            } else {
-                return await PositionContext.getMatchingFunctionCompletions("", this.emptySpanAtDocumentCharacterIndex);
+            // Nothing getting completed, completion selection will be inserted at current location
+            replaceSpan = this.emptySpanAtDocumentCharacterIndex;
+            completionPrefix = "";
+        }
+
+        assert(completeBuiltinFunctions || completeUserFunctions || completeNamespaces, "Should be completing something");
+        let builtinCompletions: Completion.Item[] = [];
+        let userFunctionCompletions: Completion.Item[] = [];
+        let namespaceCompletions: Completion.Item[] = [];
+
+        if (completeBuiltinFunctions || completeUserFunctions) {
+            if (completeUserFunctions && namespace) {
+                userFunctionCompletions = PositionContext.getMatchingFunctionCompletions(scope, namespace, completionPrefix, replaceSpan);
+            }
+            if (completeBuiltinFunctions) {
+                builtinCompletions = PositionContext.getMatchingFunctionCompletions(scope, null, completionPrefix, replaceSpan);
             }
         }
+        if (completeNamespaces) {
+            namespaceCompletions = PositionContext.getMatchingNamespaceCompletions(scope, completionPrefix, replaceSpan);
+        }
+
+        return builtinCompletions.concat(namespaceCompletions).concat(userFunctionCompletions);
     }
 
     private getDeepPropertyAccessCompletions(propertyPrefix: string, variableOrParameterDefinition: Json.ObjectValue, sourcesNameStack: string[], replaceSpan: language.Span): Completion.Item[] {
@@ -494,74 +588,57 @@ export class PositionContext {
     }
 
     private static createPropertyCompletionItem(propertyName: string, replaceSpan: language.Span): Completion.Item {
-        return new Completion.Item(propertyName, `${propertyName}$0`, replaceSpan, "(property)", "", Completion.CompletionKind.Property);
+        return Completion.Item.fromPropertyName(propertyName, replaceSpan);
     }
 
     // Returns null if references are not supported at this location.
     // Returns empty list if supported but none found
-    public async getReferences(): Promise<Reference.List | null> {
-        let referenceName: string | null = null;
-        let referenceType: Reference.ReferenceKind | null = null;
-
+    public getReferences(): Reference.ReferenceList | null {
         const tleInfo = this.tleInfo;
         if (tleInfo) { // If we're inside a string (whether an expression or not)
-            const scope = tleInfo.scope;
-
-            const refInfo = await this.getReferenceSiteInfo();
+            const refInfo = this.getReferenceSiteInfo();
             if (refInfo) {
-                switch (refInfo.kind) {
-                    case "parameter":
-                        // We're inside a parameters('xxx') call
-                        referenceType = Reference.ReferenceKind.Parameter;
-                        referenceName = refInfo.parameter.name.unquotedValue;
-                        break;
-                    case "variable":
-                        // We're inside a vriables('xxx') call
-                        referenceType = Reference.ReferenceKind.Variable;
-                        referenceName = refInfo.variable.name.unquotedValue;
-                        break;
-                    case "builtinFunction":
-                    case "userNamespace":
-                    case "userFunction":
-                        return null; // Not currently supported
-                    default:
-                        return assertNever(refInfo);
-                }
-
-                if (referenceName && referenceType !== null) {
-                    return this._deploymentTemplate.findReferences(referenceType, referenceName, tleInfo.scope);
-                }
+                return this._deploymentTemplate.findReferences(refInfo.definition);
             }
 
-            // Handle when we're directly on the name in a parameter or variable definition (as opposed to a reference)
-            if (referenceType === null) {
-                const jsonStringValue: Json.StringValue | null = Json.asStringValue(this.jsonValue);
-                if (jsonStringValue) {
-                    const unquotedString = jsonStringValue.unquotedValue;
+            // Handle when we're directly on the name of a parameter/variable/etc definition (as opposed to a reference)
+            const jsonStringValue: Json.StringValue | null = Json.asStringValue(this.jsonValue);
+            if (jsonStringValue) {
+                const unquotedString = jsonStringValue.unquotedValue;
+                const scope = tleInfo.scope;
 
-                    const parameterDefinition: IParameterDefinition | null = scope.getParameterDefinition(unquotedString);
-                    if (parameterDefinition && parameterDefinition.name.unquotedValue === unquotedString) {
-                        referenceName = unquotedString;
-                        referenceType = Reference.ReferenceKind.Parameter;
-                    } else {
-                        const variableDefinition: Json.Property | null = scope.getVariableDefinition(unquotedString);
-                        if (variableDefinition && variableDefinition.name === jsonStringValue) {
-                            referenceName = unquotedString;
-                            referenceType = Reference.ReferenceKind.Variable;
-                        }
+                // Is it a parameter definition?
+                const parameterDefinition: IParameterDefinition | null = scope.getParameterDefinition(unquotedString);
+                if (parameterDefinition && parameterDefinition.nameValue === jsonStringValue) {
+                    return this._deploymentTemplate.findReferences(parameterDefinition);
+                }
+
+                // Is it a variable definition?
+                const variableDefinition: VariableDefinition | null = scope.getVariableDefinition(unquotedString);
+                if (variableDefinition && variableDefinition.nameValue === jsonStringValue) {
+                    return this._deploymentTemplate.findReferences(variableDefinition);
+                }
+
+                // Is it a user namespace definition?
+                const namespaceDefinition: UserFunctionNamespaceDefinition | undefined = scope.getFunctionNamespaceDefinition(unquotedString);
+                if (namespaceDefinition && namespaceDefinition.nameValue === jsonStringValue) {
+                    return this._deploymentTemplate.findReferences(namespaceDefinition);
+                }
+
+                // Is it a user function definition inside any namespace?
+                for (let ns of scope.namespaceDefinitions) {
+                    const userFunctionDefinition: UserFunctionDefinition | null = scope.getUserFunctionDefinition(ns.nameValue.unquotedValue, unquotedString);
+                    if (userFunctionDefinition && userFunctionDefinition.nameValue === jsonStringValue) {
+                        return this._deploymentTemplate.findReferences(userFunctionDefinition);
                     }
                 }
-            }
-
-            if (referenceName && referenceType !== null) {
-                return this._deploymentTemplate.findReferences(referenceType, referenceName, scope);
             }
         }
 
         return null;
     }
 
-    public async getSignatureHelp(): Promise<TLE.FunctionSignatureHelp | null> {
+    public getSignatureHelp(): TLE.FunctionSignatureHelp | null {
         const tleValue: TLE.Value | null = this.tleInfo && this.tleInfo.tleValue;
         if (this.tleInfo && tleValue) {
             let functionToHelpWith: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(tleValue);
@@ -569,18 +646,18 @@ export class PositionContext {
                 functionToHelpWith = TLE.asFunctionCallValue(tleValue.parent);
             }
 
-            if (functionToHelpWith) {
+            if (functionToHelpWith && functionToHelpWith.name) {
                 let functionMetadata: IFunctionMetadata | undefined;
 
                 if (functionToHelpWith.namespaceToken) {
                     // Call to user-defined function
                     const namespace: string = functionToHelpWith.namespaceToken.stringValue;
-                    const name: string = functionToHelpWith.nameToken.stringValue;
-                    const udfDefinition: UserFunctionDefinition | null = this.tleInfo.scope.getFunctionDefinition(namespace, name);
+                    const name: string | null = functionToHelpWith.name;
+                    const udfDefinition: UserFunctionDefinition | null = this.tleInfo.scope.getUserFunctionDefinition(namespace, name);
                     functionMetadata = udfDefinition ? UserFunctionMetadata.fromDefinition(udfDefinition) : undefined;
                 } else {
                     // Call to built-in function
-                    functionMetadata = await AzureRMAssets.getFunctionMetadataFromName(functionToHelpWith.nameToken.stringValue);
+                    functionMetadata = AzureRMAssets.getFunctionMetadataFromName(functionToHelpWith.name);
                 }
                 if (functionMetadata) {
                     let currentArgumentIndex: number = 0;
@@ -608,31 +685,32 @@ export class PositionContext {
     }
 
     /**
-     * Given a function name prefix and replacement span, return a list of completions for functions
-     * starting with that prefix
+     * Given a possible namespace name plus a function name prefix and replacement span, return a list
+     * of completions for functions or namespaces starting with that prefix
      */
-    private static async getMatchingFunctionCompletions(prefix: string, replaceSpan: language.Span): Promise<Completion.Item[]> {
-        let functionMetadataMatches: BuiltinFunctionMetadata[];
-        if (prefix === "") {
-            functionMetadataMatches = (await AzureRMAssets.getFunctionsMetadata()).functionMetadata;
+    private static getMatchingFunctionCompletions(scope: TemplateScope, namespace: UserFunctionNamespaceDefinition | null, functionNamePrefix: string, replaceSpan: language.Span): Completion.Item[] {
+        let matches: IFunctionMetadata[];
+
+        if (namespace) {
+            // User-defined function
+            matches = scope.findFunctionDefinitionsWithPrefix(namespace, functionNamePrefix).map(fd => UserFunctionMetadata.fromDefinition(fd));
         } else {
-            functionMetadataMatches = (await AzureRMAssets.getFunctionMetadataFromPrefix(prefix));
+            // Built-in function
+            matches = functionNamePrefix === "" ?
+                AzureRMAssets.getFunctionsMetadata().functionMetadata :
+                AzureRMAssets.getFunctionMetadataFromPrefix(functionNamePrefix);
         }
 
-        const completionItems: Completion.Item[] = [];
-        for (const functionMetadata of functionMetadataMatches) {
-            const name: string = functionMetadata.name;
+        return matches.map(m => Completion.Item.fromFunctionMetadata(m, replaceSpan));
+    }
 
-            let insertText: string = name;
-            if (functionMetadata.maximumArguments === 0) {
-                insertText += "()$0";
-            } else {
-                insertText += "($0)";
-            }
-
-            completionItems.push(new Completion.Item(name, insertText, replaceSpan, `(function) ${functionMetadata.usage}`, functionMetadata.description, Completion.CompletionKind.Function));
-        }
-        return completionItems;
+    /**
+     * Given a possible namespace name plus a function name prefix and replacement span, return a list
+     * of completions for functions or namespaces starting with that prefix
+     */
+    private static getMatchingNamespaceCompletions(scope: TemplateScope, namespacePrefix: string, replaceSpan: language.Span): Completion.Item[] {
+        const matches: UserFunctionNamespaceDefinition[] = scope.findNamespaceDefinitionsWithPrefix(namespacePrefix);
+        return matches.map(m => Completion.Item.fromNamespaceDefinition(m, replaceSpan));
     }
 
     private getMatchingParameterCompletions(prefix: string, tleValue: TLE.StringValue | TLE.FunctionCallValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
@@ -641,16 +719,7 @@ export class PositionContext {
         const parameterCompletions: Completion.Item[] = [];
         const parameterDefinitionMatches: IParameterDefinition[] = scope.findParameterDefinitionsWithPrefix(prefix);
         for (const parameterDefinition of parameterDefinitionMatches) {
-            const name: string = `'${parameterDefinition.name}'`;
-            parameterCompletions.push(
-                new Completion.Item(
-                    name,
-                    `${name}${replaceSpanInfo.includeRightParenthesisInCompletion ? ")" : ""}$0`,
-                    replaceSpanInfo.replaceSpan,
-                    `(parameter)`,
-                    // tslint:disable-next-line: strict-boolean-expressions
-                    parameterDefinition.description,
-                    Completion.CompletionKind.Parameter));
+            parameterCompletions.push(Completion.Item.fromParameterDefinition(parameterDefinition, replaceSpanInfo.replaceSpan, replaceSpanInfo.includeRightParenthesisInCompletion));
         }
         return parameterCompletions;
     }
@@ -659,10 +728,9 @@ export class PositionContext {
         const replaceSpanInfo: ReplaceSpanInfo = this.getReplaceSpanInfo(tleValue, tleCharacterIndex);
 
         const variableCompletions: Completion.Item[] = [];
-        const variableDefinitionMatches: Json.Property[] = scope.findVariableDefinitionsWithPrefix(prefix);
+        const variableDefinitionMatches: VariableDefinition[] = scope.findVariableDefinitionsWithPrefix(prefix);
         for (const variableDefinition of variableDefinitionMatches) {
-            const variableName: string = `'${variableDefinition.name.toString()}'`;
-            variableCompletions.push(new Completion.Item(variableName, `${variableName}${replaceSpanInfo.includeRightParenthesisInCompletion ? ")" : ""}$0`, replaceSpanInfo.replaceSpan, `(variable)`, "", Completion.CompletionKind.Variable));
+            variableCompletions.push(Completion.Item.fromVariableDefinition(variableDefinition, replaceSpanInfo.replaceSpan, replaceSpanInfo.includeRightParenthesisInCompletion));
         }
         return variableCompletions;
     }

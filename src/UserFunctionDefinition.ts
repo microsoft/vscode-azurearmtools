@@ -2,8 +2,9 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import * as assert from "assert";
 import { CachedValue } from "./CachedValue";
+import { templateKeys } from "./constants";
+import { DefinitionKind, INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
 import { OutputDefinition } from "./OutputDefinition";
 import { ScopeContext, TemplateScope } from "./TemplateScope";
@@ -13,18 +14,24 @@ import { UserFunctionParameterDefinition } from "./UserFunctionParameterDefiniti
 /**
  * This class represents the definition of a user-defined function in a deployment template.
  */
-export class UserFunctionDefinition {
+export class UserFunctionDefinition implements INamedDefinition {
     private readonly _output: CachedValue<OutputDefinition | null> = new CachedValue<OutputDefinition | null>();
     private readonly _parameterDefinitions: CachedValue<UserFunctionParameterDefinition[]> = new CachedValue<UserFunctionParameterDefinition[]>();
     private readonly _scope: CachedValue<TemplateScope> = new CachedValue<TemplateScope>();
 
+    public readonly definitionKind: DefinitionKind = DefinitionKind.UserFunction;
+
     constructor(
         public readonly namespace: UserFunctionNamespaceDefinition,
-        private _name: Json.StringValue,
+        public readonly nameValue: Json.StringValue,
         public readonly objectValue: Json.ObjectValue
-    ) {
-        assert(_name);
-        assert(objectValue);
+    ) { }
+
+    /**
+     * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
+     */
+    public get __debugDisplay(): string {
+        return this.fullName;
     }
 
     public get scope(): TemplateScope {
@@ -44,13 +51,9 @@ export class UserFunctionDefinition {
         });
     }
 
-    public get name(): Json.StringValue {
-        return this._name;
-    }
-
     public get fullName(): string {
         // tslint:disable-next-line: strict-boolean-expressions
-        return `${this.namespace.namespaceName.unquotedValue || "(none)"}.${this.name.unquotedValue || "(none)"}`;
+        return `${this.namespace.nameValue.unquotedValue || "(none)"}.${this.nameValue.unquotedValue || "(none)"}`;
     }
 
     public get output(): OutputDefinition | null {
@@ -69,7 +72,7 @@ export class UserFunctionDefinition {
             const parameterDefinitions: UserFunctionParameterDefinition[] = [];
 
             // User-function parameters are an ordered array, not an object
-            const parametersArray: Json.ArrayValue | null = Json.asArrayValue(this.objectValue.getPropertyValue("parameters"));
+            const parametersArray: Json.ArrayValue | null = Json.asArrayValue(this.objectValue.getPropertyValue(templateKeys.parameters));
             if (parametersArray) {
                 for (const parameter of parametersArray.elements) {
                     const parameterObject = Json.asObjectValue(parameter);

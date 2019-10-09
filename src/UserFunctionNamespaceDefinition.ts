@@ -4,6 +4,7 @@
 
 import { CachedValue } from './CachedValue';
 import { assert } from './fixed_assert';
+import { DefinitionKind, INamedDefinition } from './INamedDefinition';
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
@@ -11,7 +12,7 @@ import { UserFunctionDefinition } from "./UserFunctionDefinition";
 /**
  * This class represents the definition of a user-defined namespace in a deployment template.
  */
-export class UserFunctionNamespaceDefinition {
+export class UserFunctionNamespaceDefinition implements INamedDefinition {
     /* Example:
 
             "functions": [
@@ -35,23 +36,31 @@ export class UserFunctionNamespaceDefinition {
             ],
         */
 
+    public readonly definitionKind: DefinitionKind = DefinitionKind.Namespace;
+
     private _members: CachedValue<UserFunctionDefinition[]> = new CachedValue<UserFunctionDefinition[]>();
 
-    private constructor(private _value: Json.ObjectValue, private _name: Json.StringValue) {
+    private constructor(
+        public readonly nameValue: Json.StringValue,
+        private readonly _value: Json.ObjectValue
+    ) {
         assert(_value);
     }
 
     public static createIfValid(functionValue: Json.ObjectValue): UserFunctionNamespaceDefinition | null {
         let nameValue: Json.StringValue | null = Json.asStringValue(functionValue.getPropertyValue("namespace"));
         if (nameValue) {
-            return new UserFunctionNamespaceDefinition(functionValue, nameValue);
+            return new UserFunctionNamespaceDefinition(nameValue, functionValue);
         }
 
         return null;
     }
 
-    public get namespaceName(): Json.StringValue {
-        return this._name;
+    /**
+     * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
+     */
+    public get __debugDisplay(): string {
+        return this.nameValue.unquotedValue;
     }
 
     public get span(): language.Span {
@@ -79,8 +88,11 @@ export class UserFunctionNamespaceDefinition {
     }
 
     public getMemberDefinition(functionName: string): UserFunctionDefinition | undefined {
-        assert(!!functionName, "functionName cannot be null, undefined, or empty");
-        let functionNameLC = functionName.toLowerCase();
-        return this.members.find(fd => fd.name.toString().toLowerCase() === functionNameLC);
+        if (functionName) {
+            let functionNameLC = functionName.toLowerCase();
+            return this.members.find(fd => fd.nameValue.toString().toLowerCase() === functionNameLC);
+        } else {
+            return undefined;
+        }
     }
 }

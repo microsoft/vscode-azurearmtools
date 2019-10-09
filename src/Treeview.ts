@@ -10,7 +10,7 @@
 
 import * as path from 'path';
 import * as vscode from "vscode";
-import { iconsPath, languageId } from "./constants";
+import { iconsPath, languageId, templateKeys } from "./constants";
 import { assert } from './fixed_assert';
 import * as Json from "./JSON";
 
@@ -19,15 +19,15 @@ const topLevelIcons: [string, string][] = [
     ["version", "label.svg"],
     ["contentVersion", "label.svg"],
     ["handler", "label.svg"],
-    ["parameters", "parameters.svg"],
-    ["variables", "variables.svg"],
+    [templateKeys.parameters, "parameters.svg"],
+    [templateKeys.variables, "variables.svg"],
     ["resources", "resources.svg"],
     ["outputs", "outputs.svg"],
 ];
 
 const topLevelChildIconsByRootNode: [string, string][] = [
-    ["parameters", "parameters.svg"],
-    ["variables", "variables.svg"],
+    [templateKeys.parameters, "parameters.svg"],
+    [templateKeys.variables, "variables.svg"],
     ["outputs", "outputs.svg"],
 ];
 

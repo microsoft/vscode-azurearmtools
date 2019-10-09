@@ -18,7 +18,7 @@ suite("AzureRMAssets", () => {
     suite("FunctionMetadata", () => {
         test("constructor(string,string,string)", () => {
             const metadata = new BuiltinFunctionMetadata("a", "b", "c", 1, 2, []);
-            assert.deepStrictEqual(metadata.name, "a");
+            assert.deepStrictEqual(metadata.fullName, "a");
             assert.deepStrictEqual(metadata.usage, "b");
             assert.deepStrictEqual(metadata.description, "c");
             assert.deepStrictEqual(metadata.minimumArguments, 1);
@@ -30,9 +30,9 @@ suite("AzureRMAssets", () => {
             const metadata = new FunctionsMetadata(
                 [new BuiltinFunctionMetadata("hi", "", "", 0, 0, []), new BuiltinFunctionMetadata("MyFunction", "", "", 0, 0, [])]);
 
-            assert.equal(metadata.findbyName("MyFunction")!.name, "MyFunction");
-            assert.equal(metadata.findbyName("myfunction")!.name, "MyFunction");
-            assert.equal(metadata.findbyName("MYFUNCTION")!.name, "MyFunction");
+            assert.equal(metadata.findbyName("MyFunction")!.fullName, "MyFunction");
+            assert.equal(metadata.findbyName("myfunction")!.fullName, "MyFunction");
+            assert.equal(metadata.findbyName("MYFUNCTION")!.fullName, "MyFunction");
 
             assert.equal(metadata.findbyName("MyFunction2"), undefined);
         });
@@ -46,11 +46,11 @@ suite("AzureRMAssets", () => {
 
             assert.deepStrictEqual(metadata.filterByPrefix("MyFunction"), []);
 
-            assert.deepStrictEqual(metadata.filterByPrefix("On").map(meta => meta.name), ["One", "Onerous"]);
-            assert.deepStrictEqual(metadata.filterByPrefix("on").map(meta => meta.name), ["One", "Onerous"]);
-            assert.deepStrictEqual(metadata.filterByPrefix("ONE").map(meta => meta.name), ["One", "Onerous"]);
-            assert.deepStrictEqual(metadata.filterByPrefix("Oner").map(meta => meta.name), ["Onerous"]);
-            assert.deepStrictEqual(metadata.filterByPrefix("Onerous").map(meta => meta.name), ["Onerous"]);
+            assert.deepStrictEqual(metadata.filterByPrefix("On").map(meta => meta.fullName), ["One", "Onerous"]);
+            assert.deepStrictEqual(metadata.filterByPrefix("on").map(meta => meta.fullName), ["One", "Onerous"]);
+            assert.deepStrictEqual(metadata.filterByPrefix("ONE").map(meta => meta.fullName), ["One", "Onerous"]);
+            assert.deepStrictEqual(metadata.filterByPrefix("Oner").map(meta => meta.fullName), ["Onerous"]);
+            assert.deepStrictEqual(metadata.filterByPrefix("Onerous").map(meta => meta.fullName), ["Onerous"]);
             assert.deepStrictEqual(metadata.filterByPrefix("Onerousy"), []);
         });
 
