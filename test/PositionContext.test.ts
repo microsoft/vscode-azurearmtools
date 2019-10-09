@@ -560,7 +560,7 @@ suite("PositionContext", () => {
         }
 
         function deploymentCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("deployment", "deployment()$0", new Language.Span(startIndex, length), "(function) deployment()", "Returns information about the current deployment operation. This function returns the object that is passed during deployment. The properties in the returned object will differ based on whether the deployment object is passed as a link or as an in-line object.", Completion.CompletionKind.Function);
+            return new Completion.Item("deployment", "deployment()$0", new Language.Span(startIndex, length), "(function) deployment() [object]", "Returns information about the current deployment operation. This function returns the object that is passed during deployment. The properties in the returned object will differ based on whether the deployment object is passed as a link or as an in-line object.", Completion.CompletionKind.Function);
         }
 
         function divCompletion(startIndex: number, length: number): Completion.Item {
@@ -576,7 +576,7 @@ suite("PositionContext", () => {
         }
 
         function listKeysCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("listKeys", "listKeys($0)", new Language.Span(startIndex, length), "(function) listKeys(resourceName/resourceIdentifier, apiVersion)", "Returns the keys of a storage account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primary (key[0]) and secondary key (key[1]).", Completion.CompletionKind.Function);
+            return new Completion.Item("listKeys", "listKeys($0)", new Language.Span(startIndex, length), "(function) listKeys(resourceName/resourceIdentifier, apiVersion) [object]", "Returns the keys of a storage account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primary (key[0]) and secondary key (key[1]).", Completion.CompletionKind.Function);
         }
 
         function listPackageCompletion(startIndex: number, length: number): Completion.Item {
@@ -612,7 +612,7 @@ suite("PositionContext", () => {
         }
 
         function resourceGroupCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("resourceGroup", "resourceGroup()$0", new Language.Span(startIndex, length), "(function) resourceGroup()", "Returns a structured object that represents the current resource group.", Completion.CompletionKind.Function);
+            return new Completion.Item("resourceGroup", "resourceGroup()$0", new Language.Span(startIndex, length), "(function) resourceGroup() [object]", "Returns a structured object that represents the current resource group.", Completion.CompletionKind.Function);
         }
 
         function resourceIdCompletion(startIndex: number, length: number): Completion.Item {
@@ -636,7 +636,7 @@ suite("PositionContext", () => {
         }
 
         function subscriptionCompletion(startIndex: number, length: number): Completion.Item {
-            return new Completion.Item("subscription", "subscription()$0", new Language.Span(startIndex, length), "(function) subscription()", "Returns details about the subscription.", Completion.CompletionKind.Function);
+            return new Completion.Item("subscription", "subscription()$0", new Language.Span(startIndex, length), "(function) subscription() [object]", "Returns details about the subscription.", Completion.CompletionKind.Function);
         }
 
         function substringCompletion(startIndex: number, length: number): Completion.Item {

@@ -118,7 +118,7 @@ export class BuiltinFunctionMetadata implements IFunctionMetadata {
     }
 
     public get usage(): string {
-        return this._usage;
+        return this.returnType ? `${this._usage} [${this.returnType}]` : this._usage;
     }
 
     public get parameters(): IFunctionParameterMetadata[] {
