@@ -15,7 +15,7 @@ suite("JSON validation", () => {
             },
             [
                 'Error: The object is unclosed, \'}\' expected. (arm-template (syntax))',
-                'Warning: Missing required property resources (arm-template (schema))'
+                'Warning: Missing required property "resources" (arm-template (schema))'
             ])
     );
 });
