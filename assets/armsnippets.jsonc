@@ -1,7 +1,8 @@
-{ /*
-// Azure Resource Manager Template Snippets
-*/
-    "Azure Resource Manager (ARM) Template": {
+{
+    /*
+    // Azure Resource Manager Template ("ARM") Snippets
+    */
+    "Azure Resource Manager (\"ARM\") Template": {
         "prefix": "arm!",
         "body": [
             "{",
@@ -16,7 +17,7 @@
         ],
         "description": "Skeleton ARM Template"
     },
-    "Azure Resource Manager (ARM) Parameters Template": {
+    "Azure Resource Manager (\"ARM\") Parameters Template": {
         "prefix": "armp!",
         "body": [
             "{",
