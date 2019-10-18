@@ -55,6 +55,7 @@ export class AzureRMTools {
     private readonly _diagnosticsCollection: vscode.DiagnosticCollection;
     private readonly _deploymentTemplates: Map<string, DeploymentTemplate> = new Map<string, DeploymentTemplate>();
     private _areDeploymentTemplateEventsHookedUp: boolean = false;
+    private _diagnosticsVersion: number = 0;
 
     // More information can be found about this definition at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
     // Several of these properties are CSS properties. More information about those can be found at https://www.w3.org/wiki/CSS/Properties
@@ -223,6 +224,8 @@ export class AzureRMTools {
         callWithTelemetryAndErrorHandling('reportDeploymentTemplateErrors', async (actionContext: IActionContext): Promise<void> => {
             actionContext.telemetry.suppressIfSuccessful = true;
 
+            ++this._diagnosticsVersion;
+
             let parseErrors: language.Issue[] = await deploymentTemplate.errorsPromise;
             const diagnostics: vscode.Diagnostic[] = [];
 
@@ -248,7 +251,7 @@ export class AzureRMTools {
             // Add a diagnostic to indicate expression validation is done (for testing)
             return {
                 severity: vscode.DiagnosticSeverity.Information,
-                message: expressionsDiagnosticsCompletionMessage,
+                message: `${expressionsDiagnosticsCompletionMessage}, version ${this._diagnosticsVersion}`,
                 source: expressionsDiagnosticsSource,
                 code: "",
                 range: new vscode.Range(0, 0, 0, 0)
