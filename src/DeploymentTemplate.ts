@@ -18,7 +18,7 @@ import { isArmSchema } from "./supported";
 import { ScopeContext, TemplateScope } from "./TemplateScope";
 import * as TLE from "./TLE";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
-import { VariableDefinition } from "./VariableDefinition";
+import { IVariableDefinition, TopLevelCopyBlockVariableDefinition, TopLevelVariableDefinition } from "./VariableDefinition";
 import { FindReferencesVisitor } from "./visitors/FindReferencesVisitor";
 import { FunctionCountVisitor } from "./visitors/FunctionCountVisitor";
 import { GenericStringVisitor } from "./visitors/GenericStringVisitor";
@@ -46,7 +46,7 @@ export class DeploymentTemplate {
     private _warnings: CachedValue<language.Issue[]> = new CachedValue<language.Issue[]>();
 
     private _topLevelNamespaceDefinitions: CachedValue<UserFunctionNamespaceDefinition[]> = new CachedValue<UserFunctionNamespaceDefinition[]>();
-    private _topLevelVariableDefinitions: CachedValue<VariableDefinition[]> = new CachedValue<VariableDefinition[]>();
+    private _topLevelVariableDefinitions: CachedValue<IVariableDefinition[]> = new CachedValue<IVariableDefinition[]>();
     private _topLevelParameterDefinitions: CachedValue<ParameterDefinition[]> = new CachedValue<ParameterDefinition[]>();
 
     private _schemaUri: CachedValue<string | null> = new CachedValue<string | null>();
@@ -206,6 +206,7 @@ export class DeploymentTemplate {
                         }
                     });
 
+                    // ReferenceInVariableDefinitionsVisitor
                     const deploymentTemplateObject: Json.ObjectValue | null = Json.asObjectValue(this.jsonParseResult.value);
                     if (deploymentTemplateObject) {
                         const variablesObject: Json.ObjectValue | null = Json.asObjectValue(deploymentTemplateObject.getPropertyValue(templateKeys.variables));
@@ -367,12 +368,43 @@ export class DeploymentTemplate {
         });
     }
 
-    private getTopLevelVariableDefinitions(): VariableDefinition[] {
+    private getTopLevelVariableDefinitions(): IVariableDefinition[] {
         return this._topLevelVariableDefinitions.getOrCacheValue(() => {
             if (this._topLevelValue) {
                 const variables: Json.ObjectValue | null = Json.asObjectValue(this._topLevelValue.getPropertyValue(templateKeys.variables));
                 if (variables) {
-                    return variables.properties.map(prop => new VariableDefinition(prop));
+                    const varDefs: IVariableDefinition[] = [];
+                    for (let prop of variables.properties) {
+                        if (prop.nameValue.unquotedValue.toLowerCase() === templateKeys.loopVarCopy) {
+                            // We have a top-level copy block, e.g.:
+                            //
+                            // "copy": [
+                            //   {
+                            //     "name": "top-level-object-array",
+                            //     "count": 5,
+                            //     "input": {
+                            //       "name": "[concat('myDataDisk', copyIndex('top-level-object-array', 1))]",
+                            //       "diskSizeGB": "1",
+                            //       "diskIndex": "[copyIndex('top-level-object-array')]"
+                            //     }
+                            //   },
+                            // ]
+                            //
+                            // Each element of the array is a TopLevelCopyBlockVariableDefinition
+                            const varsArray: Json.ArrayValue | null = Json.asArrayValue(prop.value);
+                            // tslint:disable-next-line: strict-boolean-expressions
+                            for (let varElement of (varsArray && varsArray.elements) || []) {
+                                const def = TopLevelCopyBlockVariableDefinition.createIfValid(varElement);
+                                if (def) {
+                                    varDefs.push(def);
+                                }
+                            }
+                        } else {
+                            varDefs.push(new TopLevelVariableDefinition(prop));
+                        }
+                    }
+
+                    return varDefs;
                 }
             }
 

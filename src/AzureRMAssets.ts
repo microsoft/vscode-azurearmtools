@@ -11,6 +11,10 @@ import { IFunctionMetadata, IFunctionParameterMetadata } from './IFunctionMetada
 import { DefinitionKind, INamedDefinition } from './INamedDefinition';
 import { StringValue } from './JSON';
 
+export function isBuiltinFunctionDefinition(definition: INamedDefinition): definition is BuiltinFunctionMetadata {
+    return definition.definitionKind === DefinitionKind.BuiltinFunction;
+}
+
 /**
  * An accessor class for the Azure RM storage account.
  */

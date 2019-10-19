@@ -13,6 +13,10 @@ import { ScopeContext, TemplateScope } from "./TemplateScope";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
 import { UserFunctionParameterDefinition } from "./UserFunctionParameterDefinition";
 
+export function isUserFunctionDefinition(definition: INamedDefinition): definition is UserFunctionDefinition {
+    return definition.definitionKind === DefinitionKind.UserFunction;
+}
+
 /**
  * This class represents the definition of a user-defined function in a deployment template.
  */

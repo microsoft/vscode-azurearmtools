@@ -6,7 +6,7 @@ import * as Json from '../JSON';
 import * as language from "../Language";
 import { TemplateScope } from "../TemplateScope";
 import { FunctionCallValue, PropertyAccess, Value, Visitor } from "../TLE";
-import { VariableDefinition } from '../VariableDefinition';
+import { IVariableDefinition } from '../VariableDefinition';
 
 /**
  * A TLE visitor that finds references to variable properties that aren't defined in the variable's value
@@ -24,7 +24,7 @@ export class UndefinedVariablePropertyVisitor extends Visitor {
             const functionSource: FunctionCallValue | null = tlePropertyAccess.functionSource;
             if (functionSource) {
                 // Get the definition for the variable that's being referenced via a variables('v') call
-                const variableProperty: VariableDefinition | null = this._scope.getVariableDefinitionFromFunctionCall(functionSource);
+                const variableProperty: IVariableDefinition | null = this._scope.getVariableDefinitionFromFunctionCall(functionSource);
                 if (variableProperty) {
                     const variableDefinition: Json.ObjectValue | null = Json.asObjectValue(variableProperty.value);
                     const sourcesNameStack: string[] = tlePropertyAccess.sourcesNameStack;

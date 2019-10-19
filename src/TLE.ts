@@ -477,6 +477,7 @@ export class PropertyAccess extends ParentValue {
         assert(_source);
         assert(_periodToken);
 
+        assert(!this._source.parent, "Parent already assigned");
         this._source.parent = this;
     }
 

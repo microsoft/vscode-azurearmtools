@@ -1,7 +1,8 @@
 # Change Log
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
-## Coming Soon
+## Version 0.8.1 (2019-11-01)
+### Added
 - Support for variable iteration ("COPY blocks")
 
 ## Version 0.8.0 (2019-10-28)
