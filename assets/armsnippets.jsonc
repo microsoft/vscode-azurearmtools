@@ -335,7 +335,7 @@
             "    \"type\": \"Microsoft.Network/applicationSecurityGroups\",",
             "    \"apiVersion\": \"2018-08-01\",",
             "    \"location\": \"[resourceGroup().location]\",",
-            "    \"tags\": {}",
+            "    \"tags\": {},",
             "    \"properties\": {}",
             "}"
         ],
@@ -352,7 +352,7 @@
             "    \"tags\": {},",
             "    \"properties\": {",
             "        \"sku\": {",
-            "            \"name\": \"${2|Free,Basic|}\",",
+            "            \"name\": \"${2|Free,Basic|}\"",
             "        }",
             "    }",
             "}"
@@ -677,13 +677,13 @@
             "                    \"image\": \"${3:containerImage}\",",
             "                    \"ports\": [",
             "                        {",
-            "                            \"port\": ${4:containerPort}",
+            "                            \"port\": \"${4:containerPort}\"",
             "                        }",
             "                    ],",
             "                    \"resources\": {",
             "                        \"requests\": {",
-            "                            \"cpu\": ${5:containerCPUCount},",
-            "                            \"memoryInGB\": ${6:containerMemoryInGb}",
+            "                            \"cpu\": \"${5:containerCPUCount}\",",
+            "                            \"memoryInGB\": \"${6:containerMemoryInGb}\"",
             "                        }",
             "                    }",
             "                }",
@@ -694,8 +694,8 @@
             "            \"type\": \"Public\",",
             "            \"ports\": [",
             "                {",
-            "                    \"protocol\": \"{8|TCP,UDP|}}\",",
-            "                    \"port\": ${9:containerPublicPort}",
+            "                    \"protocol\": \"{8|TCP,UDP|}\",",
+            "                    \"port\": \"${9:containerPublicPort}\"",
             "                }",
             "            ]",
             "         }",
@@ -769,9 +769,9 @@
             "            \"resource\":{",
             "                \"id\": \"${2:database-name}\"",
             "            },",
-            "            \"resource\":{",
+            "            \"options\":{",
             "                \"throughput\": ${3:400}",
-            "            },",
+            "            }",
             "        }",
             "}"
         ],
@@ -788,7 +788,7 @@
             "    \"properties\":{",
             "        \"resource\":{",
             "            \"throughput\": ${4:400}",
-            "        },",
+            "        }",
             "    }",
             "}"
         ],
@@ -807,12 +807,12 @@
             "    \"properties\": {",
             "        \"resource\": {",
             "            \"id\": \"${2:database-name}\"",
-            "        }",
+            "        },",
             "        \"options\": {",
             "            \"throughput\": ${3:400}",
             "        }",
             "    }",
-            "},"
+            "}"
         ],
         "description": "Cosmos DB Gremlin Database"
     },
@@ -830,9 +830,9 @@
             "            },",
             "         \"options\":{",
             "             \"throughput\": ${4:400}",
-            "         },",
+            "         }",
             "    }",
-            "},"
+            "}"
         ],
         "description": "Cosmos DB Cassandra Namespace"
     },
@@ -855,7 +855,7 @@
             "            }",
             "        }",
             "    }",
-            "},"
+            "}"
         ],
         "description": "Cosmos DB Cassandra Table"
     },
@@ -887,14 +887,14 @@
             "                               \"precision\": -1",
             "                        }",
             "                    ]",
-            "                }]",
+            "                }],",
             "                   \"excludedPaths\": [{",
             "                       \"path\": \"/${8:PathToNotIndex}/*\"",
             "                }]",
             "            }",
             "        }",
             "    }",
-            "},"
+            "}"
         ],
         "description": "Cosmos DB SQL Container"
     },
@@ -933,7 +933,7 @@
             "            }",
             "        }",
             "    }",
-            "},"
+            "}"
         ],
         "description": ""
     },
@@ -947,11 +947,11 @@
             "    \"dependsOn\": [ \"[resourceId('Microsoft.DocumentDB/databaseAccounts/', ${1:account-name})]\" ],",
             "           \"properties\":{",
             "               \"resource\":{",
-            "                   \"id\": \"${4:table-name}\"",
+            "                   \"id\": \"${3:table-name}\"",
             "               },",
             "            \"options\":{",
             "                \"throughput\": ${4:400}",
-            "            },",
+            "            }",
             "    }",
             "}"
         ],
@@ -986,7 +986,7 @@
             "    ],",
             "    \"properties\": {",
             "        \"TTL\": 3600,",
-            "        \"${4|Arecords,AAAARecords,MXRecords,NSRecords,PTRRecords,SRVRecords,TXTRecords,CNAMERecord,SOARecord|}\": []",
+            "        \"${z|Arecords,AAAARecords,MXRecords,NSRecords,PTRRecords,SRVRecords,TXTRecords,CNAMERecord,SOARecord|}\": []",
             "    }",
             "}"
         ],
@@ -1270,7 +1270,7 @@
             "    }",
             "}"
         ],
-        "description": "External Load Balancer",
+        "description": "External Load Balancer"
     },
     "Load Balancer Internal": {
         "prefix": "arm-loadbalancer-internal",
@@ -1293,7 +1293,7 @@
             "                \"properties\": {",
             "                    \"privateIPAddress\": \"${4:0.0.0.0}\",",
             "                    \"privateIPAllocationMethod\": \"Static\"",
-            "                },",
+            "                }",
             "            }",
             "        ],",
             "        \"backendAddressPools\": [",
@@ -1467,7 +1467,7 @@
             "    }",
             "}"
         ],
-        "description": "Media Services account",
+        "description": "Media Services account"
     },
     "MySQL Database": {
         "prefix": "arm-mysql",
@@ -1562,7 +1562,7 @@
             "        \"sourceAddressPrefix\": \"${6:nsgRuleSourceAddressPrefix}\",",
             "        \"destinationAddressPrefix\": \"${7:nsgRileDestinationAddressRange}\",",
             "        \"access\": \"${8:nsgRuleAccess}\",",
-            "        \"priority\": ${9:nsgRulePriority},",
+            "        \"priority\": \"${9:nsgRulePriority}\",",
             "        \"direction\": \"${10:nsgRuleDirection}\"",
             "    }",
             "}"
@@ -1608,7 +1608,7 @@
             "    }",
             "}"
         ],
-        "description": "Public IP Prefix",
+        "description": "Public IP Prefix"
     },
     "Recovery Service Vault": {
         "prefix": "arm-recovery-service-vault",
@@ -1619,7 +1619,7 @@
             "    \"apiVersion\": \"2018-01-10\",",
             "    \"location\": \"[resourceGroup().location]\",",
             "    \"sku\": {",
-            "        \"name\": \"${2|RS0,Standard|}\"",
+            "        \"name\": \"${2|RS0,Standard|}\",",
             "        \"tier\": \"Standard\"",
             "    },",
             "    \"properties\": {}",
@@ -1673,7 +1673,7 @@
             "    }",
             "}"
         ],
-        "description": "Route Table",
+        "description": "Route Table"
     },
     "Route Table Route": {
         "prefix": "arm-route-table-route",
@@ -1687,9 +1687,9 @@
             "       \"nextHopType\": \"${3|VirtualNetworkGateway,VnetLocal,Internet,VirtualAppliance,None|}\",",
             "       \"nextHopIpAddress\": \"${4:next-hop-ip}\"",
             "    }",
-            "  }",
+            "  }"
         ],
-        "description": "Azure Route Table Route",
+        "description": "Azure Route Table Route"
     },
     "SQL Database": {
         "prefix": "arm-sql-db",
@@ -1797,7 +1797,7 @@
         "body": [
             " \"tags\": {",
             "     \"${1:tagName}\": \"${2:tagValue}\"",
-            "    },"
+            " }"
         ],
         "description": "Tag Section"
     },
@@ -1838,7 +1838,7 @@
             "    }",
             "}"
         ],
-        "description": "Traffic Manager Profile",
+        "description": "Traffic Manager Profile"
     },
     "Ubuntu Virtual Machine": {
         "prefix": "arm-vm-ubuntu",
@@ -2267,7 +2267,7 @@
             "        \"diagnosticsProfile\": {",
             "            \"bootDiagnostics\": {",
             "                \"enabled\": true,",
-            "                \"storageUri\": \"[reference(resourceId('Microsoft.Storage/storageAccounts', toLower('${1:windowsVM1}storage'), '2015-06-15').primaryEndpoints.blob]\"",
+            "                \"storageUri\": \"[reference(resourceId('Microsoft.Storage/storageAccounts', toLower('${1:windowsVM1}storage'), '2015-06-15').primaryEndpoints.blob)]\"",
             "            }",
             "        }",
             "    },",
@@ -2400,5 +2400,5 @@
             "}"
         ],
         "description": "Desired State Configuration PowerShell script for a Windows Virtual Machine"
-    },
+    }
 }

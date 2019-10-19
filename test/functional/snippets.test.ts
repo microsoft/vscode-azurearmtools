@@ -9,18 +9,18 @@ import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import { commands, Diagnostic, Position, Selection, window, workspace } from "vscode";
-import { getDiagnosticsForDocument, testFolder } from '../support/diagnostics';
+import { getDiagnosticsForDocument, sources, testFolder } from '../support/diagnostics';
 import { getTempFilePath } from "../support/getTempFilePath";
 
 let resourceTemplate: string = `{
-    resources: [
+    "resources": [
 
     ],
-    $schema: "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    contentVersion: "1.0.0.0",
-    variables: {
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "variables": {
     },
-    parameters: {
+    "parameters": {
     }
 }`;
 
@@ -39,7 +39,8 @@ const overrideInsertPosition: { [name: string]: Position } = {
 const overrideExpectedDiagnostics: { [name: string]: string[] } = {
     "Azure Resource Manager (ARM) Parameters Template":
         [
-            "Template validation failed: Required property 'resources' not found in JSON. Path '', line 5, position 1"
+            "Template validation failed: Required property 'resources' not found in JSON. Path '', line 5, position 1."
+            //"Missing required property resources"
         ]
 };
 
@@ -65,7 +66,7 @@ suite("Snippets functional tests", () => {
     async function createSnippetTest(snippetName: string): Promise<void> {
         const template = overrideTemplateForSnippet[snippetName] !== undefined ? overrideTemplateForSnippet[snippetName] : resourceTemplate;
         // tslint:disable-next-line: strict-boolean-expressions
-        const expectedDiagnostics = overrideExpectedDiagnostics[snippetName] || [];
+        const expectedDiagnostics = (overrideExpectedDiagnostics[snippetName] || []).sort();
         // tslint:disable-next-line: strict-boolean-expressions
         const snippetInsertPos: Position = overrideInsertPosition[snippetName] || new Position(2, 0);
 
@@ -79,25 +80,32 @@ suite("Snippets functional tests", () => {
         // Wait for first set of diagnostics to finish.
         await getDiagnosticsForDocument(doc, {});
 
+        // Start waiting for next set of diagnostics (so it picks up the current completion versions)
+        let diagnosticsPromise: Promise<Diagnostic[]> = getDiagnosticsForDocument(
+            doc,
+            {
+                waitForChange: true,
+                ignoreSources: [sources.schema] //asdf TODO
+            });
+
+        // Insert snippet
         window.activeTextEditor!.selection = new Selection(snippetInsertPos, snippetInsertPos);
-        console.log(snippetName);
         await commands.executeCommand('editor.action.insertSnippet', {
             name: snippetName
         });
 
-        let diagnostics: Diagnostic[] = await getDiagnosticsForDocument(
-            doc,
-            {
-                waitForChange: true
-            });
-        assert.deepStrictEqual(diagnostics, expectedDiagnostics);
+        // Wait for diagnostics to finish
+        let diagnostics: Diagnostic[] = await diagnosticsPromise;
+
+        let messages = diagnostics.map(d => d.message).sort();
+        assert.deepStrictEqual(messages, expectedDiagnostics);
 
         // // NOTE: Even though we request the editor to be closed,
         // // there's no way to request the document actually be closed,
         // //   and when you open it via an API, it doesn't close for a while,
         // //   so the diagnostics won't go away
         // // See https://github.com/Microsoft/vscode/issues/43056
-        fse.writeFileSync(tempPath, template);
+        await commands.executeCommand("undo");
         fse.unlinkSync(tempPath);
         await commands.executeCommand('workbench.action.closeAllEditors');
     }
