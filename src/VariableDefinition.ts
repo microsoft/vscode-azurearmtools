@@ -4,6 +4,7 @@
 
 import { Language } from '../extension.bundle';
 import { assert } from './fixed_assert';
+import { IUsageInfo } from './Hover';
 import { DefinitionKind, INamedDefinition } from './INamedDefinition';
 import * as Json from "./JSON";
 
@@ -11,7 +12,6 @@ import * as Json from "./JSON";
  * This class represents the definition of a top-level parameter in a deployment template.
  */
 export class VariableDefinition implements INamedDefinition {
-
     public readonly definitionKind: DefinitionKind = DefinitionKind.Variable;
 
     constructor(private readonly _property: Json.Property) {
@@ -28,6 +28,14 @@ export class VariableDefinition implements INamedDefinition {
 
     public get span(): Language.Span {
         return this._property.span;
+    }
+
+    public get usageInfo(): IUsageInfo {
+        return {
+            usage: this.nameValue.unquotedValue,
+            friendlyType: "variable",
+            description: undefined
+        };
     }
 
     /**

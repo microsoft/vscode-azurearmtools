@@ -4,6 +4,7 @@
 
 import { ExpressionType, toValidExpressionType } from './ExpressionType';
 import { assert } from './fixed_assert';
+import { IUsageInfo } from './Hover';
 import { DefinitionKind } from './INamedDefinition';
 import { IParameterDefinition } from './IParameterDefinition';
 import * as Json from "./JSON";
@@ -53,6 +54,14 @@ export class UserFunctionParameterDefinition implements IParameterDefinition {
 
     public readonly description: string | null = null;
     public readonly defaultValue: Json.Value | null = null;
+
+    public get usageInfo(): IUsageInfo {
+        return {
+            usage: this.nameValue.unquotedValue,
+            friendlyType: "function parameter",
+            description: this.description
+        };
+    }
 
     /**
      * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code

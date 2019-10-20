@@ -4,9 +4,11 @@
 
 import { CachedValue } from './CachedValue';
 import { assert } from './fixed_assert';
+import { IUsageInfo } from './Hover';
 import { DefinitionKind, INamedDefinition } from './INamedDefinition';
 import * as Json from "./JSON";
 import * as language from "./Language";
+import { getUserFunctionUsage } from './signatureFormatting';
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
 
 /**
@@ -94,5 +96,23 @@ export class UserFunctionNamespaceDefinition implements INamedDefinition {
         } else {
             return undefined;
         }
+    }
+
+    public get usageInfo(): IUsageInfo {
+        const ns = this.nameValue.unquotedValue;
+        const methodsUsage: string[] = this.members
+            .map(md => getUserFunctionUsage(md, false));
+        let description: string | undefined;
+        if (methodsUsage.length > 0) {
+            description = `Members:\n${methodsUsage.map(mu => `* ${mu}`).join("\n")}`;
+        } else {
+            description = `No members`;
+        }
+
+        return {
+            usage: ns,
+            friendlyType: "user-defined namespace",
+            description // CONSIDER: retrieve description from metadata, if supported
+        };
     }
 }

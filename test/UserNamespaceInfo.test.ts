@@ -5,7 +5,8 @@
 // tslint:disable:no-unused-expression no-non-null-assertion max-func-body-length
 
 import * as assert from "assert";
-import { Hover, Language } from "../extension.bundle";
+import * as os from 'os';
+import { HoverInfo, Language } from "../extension.bundle";
 import { parseTemplate } from "./support/parseTemplate";
 
 const fakeSpan = new Language.Span(0, 0);
@@ -23,10 +24,10 @@ suite("Hover.UserNamespaceInfo", () => {
                     }
                 ]
             });
-            const info = new Hover.UserNamespaceInfo(
-                dt.topLevelScope.getFunctionNamespaceDefinition("udf")!,
+            const info = new HoverInfo(
+                dt.topLevelScope.getFunctionNamespaceDefinition("udf")!.usageInfo,
                 fakeSpan);
-            assert.equal(info.getHoverText(), "**udf** User-defined namespace\n\nNo members");
+            assert.equal(info.getHoverText(), `**udf**${os.EOL}*(user-defined namespace)*\n\nNo members`);
         });
     });
 
@@ -44,10 +45,10 @@ suite("Hover.UserNamespaceInfo", () => {
                 }
             ]
         });
-        const info = new Hover.UserNamespaceInfo(
-            dt.topLevelScope.getFunctionNamespaceDefinition("udf")!,
+        const info = new HoverInfo(
+            dt.topLevelScope.getFunctionNamespaceDefinition("udf")!.usageInfo,
             fakeSpan);
-        assert.equal(info.getHoverText(), "**udf** User-defined namespace\n\nMembers:\n* date()");
+        assert.equal(info.getHoverText(), `**udf**${os.EOL}*(user-defined namespace)*\n\nMembers:\n* date()`);
     });
 
     test("one member, one param, no type", async () => {
@@ -67,10 +68,10 @@ suite("Hover.UserNamespaceInfo", () => {
                 }
             ]
         });
-        const info = new Hover.UserNamespaceInfo(
-            dt.topLevelScope.getFunctionNamespaceDefinition("udf")!,
+        const info = new HoverInfo(
+            dt.topLevelScope.getFunctionNamespaceDefinition("udf")!.usageInfo,
             fakeSpan);
-        assert.equal(info.getHoverText(), "**udf** User-defined namespace\n\nMembers:\n* date(param)");
+        assert.equal(info.getHoverText(), `**udf**${os.EOL}*(user-defined namespace)*\n\nMembers:\n* date(param)`);
     });
 
     test("one member, one param", async () => {
@@ -93,10 +94,10 @@ suite("Hover.UserNamespaceInfo", () => {
                 }
             ]
         });
-        const info = new Hover.UserNamespaceInfo(
-            dt.topLevelScope.getFunctionNamespaceDefinition("udf")!,
+        const info = new HoverInfo(
+            dt.topLevelScope.getFunctionNamespaceDefinition("udf")!.usageInfo,
             fakeSpan);
-        assert.equal(info.getHoverText(), "**udf** User-defined namespace\n\nMembers:\n* date(param)");
+        assert.equal(info.getHoverText(), `**udf**${os.EOL}*(user-defined namespace)*\n\nMembers:\n* date(param)`);
     });
 
     test("one member, two params", async () => {
@@ -123,10 +124,10 @@ suite("Hover.UserNamespaceInfo", () => {
                 }
             ]
         });
-        const info = new Hover.UserNamespaceInfo(
-            dt.topLevelScope.getFunctionNamespaceDefinition("udf")!,
+        const info = new HoverInfo(
+            dt.topLevelScope.getFunctionNamespaceDefinition("udf")!.usageInfo,
             fakeSpan);
-        assert.equal(info.getHoverText(), "**udf** User-defined namespace\n\nMembers:\n* date(param1 [string], param2 [securestring])");
+        assert.equal(info.getHoverText(), `**udf**${os.EOL}*(user-defined namespace)*\n\nMembers:\n* date(param1 [string], param2 [securestring])`);
     });
 
     test("two members", async () => {
@@ -161,9 +162,9 @@ suite("Hover.UserNamespaceInfo", () => {
                 }
             ]
         });
-        const info = new Hover.UserNamespaceInfo(
-            dt.topLevelScope.getFunctionNamespaceDefinition("udf")!,
+        const info = new HoverInfo(
+            dt.topLevelScope.getFunctionNamespaceDefinition("udf")!.usageInfo,
             fakeSpan);
-        assert.equal(info.getHoverText(), "**udf** User-defined namespace\n\nMembers:\n* date(param1 [string], param2 [securestring])\n* time(param [string])");
+        assert.equal(info.getHoverText(), `**udf**${os.EOL}*(user-defined namespace)*\n\nMembers:\n* date(param1 [string], param2 [securestring])\n* time(param [string])`);
     });
 });
