@@ -26,7 +26,6 @@ import * as TLE from "./src/TLE";
 import * as basic from "./src/Tokenizer";
 import * as Utilities from "./src/Utilities";
 
-export { getVSCodePositionFromPosition } from '../../src/util/vscodePosition';
 export * from './src/AzureRMAssets';
 export { AzureRMAssets } from "./src/AzureRMAssets";
 export { activateInternal, deactivateInternal } from './src/AzureRMTools'; // Export activate/deactivate for main.js
@@ -58,6 +57,7 @@ export { UnrecognizedBuiltinFunctionIssue, UnrecognizedUserFunctionIssue, Unreco
 export { UserFunctionMetadata } from "./src/UserFunctionMetadata";
 export { UserFunctionNamespaceDefinition } from "./src/UserFunctionNamespaceDefinition";
 export { UserFunctionParameterDefinition } from "./src/UserFunctionParameterDefinition";
+export { getVSCodePositionFromPosition } from './src/util/vscodePosition';
 export { VariableDefinition } from "./src/VariableDefinition";
 export { FindReferencesVisitor } from "./src/visitors/FindReferencesVisitor";
 export { FunctionCountVisitor } from "./src/visitors/FunctionCountVisitor";
