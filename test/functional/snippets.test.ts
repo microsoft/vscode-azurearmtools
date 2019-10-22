@@ -14,6 +14,7 @@ import { DeploymentTemplate, getVSCodePositionFromPosition } from '../../extensi
 import { delay } from '../support/delay';
 import { getDiagnosticsForDocument, sources, testFolder } from '../support/diagnostics';
 import { getTempFilePath } from "../support/getTempFilePath";
+import { testWithLanguageServer } from '../support/testWithLanguageServer';
 
 let resourceTemplate: string = `{
     "resources": [
@@ -98,7 +99,7 @@ suite("Snippets functional tests", () => {
             const snippets = <{ [name: string]: ISnippet }>fse.readJsonSync(snippetsPath);
             // tslint:disable-next-line:no-for-in forin
             for (let snippetName in snippets) {
-                test(`snippet: ${snippetName}`, async function (this: ITestCallbackContext): Promise<void> {
+                testWithLanguageServer(`snippet: ${snippetName}`, async function (this: ITestCallbackContext): Promise<void> {
                     await testSnippet(this, snippetsPath, snippetName, snippets[snippetName]);
                 });
             }
