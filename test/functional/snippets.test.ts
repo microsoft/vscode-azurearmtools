@@ -144,6 +144,11 @@ suite("Snippets functional tests", () => {
         // Wait for diagnostics to finish
         let diagnostics: Diagnostic[] = await diagnosticsPromise;
 
+        // Verify that any $schema string was inserted correctly (must be specified as \\$ in the snippets file)
+        if (window.activeTextEditor!.document.getText().match(/"schema"/)) {
+            assert(false, "Incorrect insertion of \"$schema\"");
+        }
+
         let messages = diagnostics.map(d => d.message).sort();
         assert.deepStrictEqual(messages, expectedDiagnostics);
 
