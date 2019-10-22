@@ -3,7 +3,7 @@
         "prefix": "arm!",
         "body": [
             "{",
-            "    \"$$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#\",",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#\",",
             "    \"contentVersion\": \"1.0.0.0\",",
             "    \"parameters\": {},",
             "    \"variables\": {},",
@@ -18,7 +18,7 @@
         "prefix": "armp!",
         "body": [
             "{",
-            "    \"$$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#\",",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#\",",
             "    \"contentVersion\": \"1.0.0.0\",",
             "    \"parameters\": {}",
             "}"
@@ -1390,7 +1390,7 @@
             "    \"location\": \"[resourceGroup().location]\",",
             "    \"properties\": {",
             "        \"definition\": {",
-            "            \"$schema\": \"https://schema.management.azure.com/schemas/2016-06-01/Microsoft.Logic.json\",",
+            "            \"\\$schema\": \"https://schema.management.azure.com/schemas/2016-06-01/Microsoft.Logic.json\",",
             "            \"contentVersion\": \"1.0.0.0\",",
             "            \"parameters\": {},",
             "            \"triggers\": {},",
