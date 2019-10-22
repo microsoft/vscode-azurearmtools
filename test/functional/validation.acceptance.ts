@@ -25,12 +25,20 @@ suite("Acceptance validation tests (all sources)", () => {
                     includeRange: true
                 },
                 [
-                    "Warning: The parameter 'backupVaultRGIsNew' is never used. (arm-template (expr)) [32,8-32,28]",
-                    "Warning: The parameter 'backupContainerName' is never used. (arm-template (expr)) [47,8-47,29]"
+                    "Warning: The parameter 'backupVaultRGIsNew' is never used. (arm-template (expressions)) [32,8-32,28]",
+                    "Warning: The parameter 'backupContainerName' is never used. (arm-template (expressions)) [47,8-47,29]"
                 ])
     );
 
     test('language-service-p0.template.json'); // TODO
     test('language-service-p1.template.json'); // TODO
     test('language-service-p2.template.json'); // TODO
+
+    testWithLanguageServer("udf-xmas-tree2", async () => {
+        await testDiagnostics(
+            minimalDeploymentTemplate,
+            {
+            },
+            []);
+    });
 });

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// tslint:disable:no-unsafe-any no-console
+// tslint:disable:no-unsafe-any no-console prefer-template
 
 import * as cp from 'child_process';
 import * as fse from 'fs-extra';
@@ -11,6 +11,8 @@ import * as gulp from 'gulp';
 import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
+// tslint:disable-next-line:no-implicit-dependencies
+import * as recursiveReadDir from 'recursive-readdir';
 import * as shelljs from 'shelljs';
 import { gulp_installAzureAccount, gulp_webpack } from 'vscode-azureextensiondev';
 import { languageServerFolderName as languageServerRelativeFolderPath } from './src/constants';
@@ -298,6 +300,39 @@ async function packageVsix(): Promise<void> {
     console.log(`Packaged successfully to ${vsixDestPath}`);
 }
 
+// When webpacked, the tests cannot touch any code under src/, or it will end up getting loaded
+// twice (because it's also in the bundle), which causes problems with objects that are supposed to
+// be singletons.  The test errors are somewhat mysterious, so verify that condition here during build.
+async function verifyTestReferencesOnlyExtensionBundle(testFolder: string): Promise<void> {
+    const errors: string[] = [];
+
+    for (let filePath of await recursiveReadDir(testFolder)) {
+        await verifyFile(filePath);
+    }
+
+    async function verifyFile(file: string): Promise<void> {
+        const regex = /import .*['"]\.\.\/src\/.*['"]/mg;
+        if (path.extname(file) === ".ts") {
+            const contents: string = (await fse.readFile(file)).toString();
+            const matches = contents.match(regex);
+            if (matches) {
+                for (let match of matches) {
+                    errors.push(
+                        os.EOL +
+                        `${path.relative(__dirname, file)}: error: Test code may not import from the src folder, it should import from '../extension.bundle'${os.EOL}` +
+                        `Imported here: ${match}${os.EOL}`
+                    );
+                    console.error(match);
+                }
+            }
+        }
+    }
+
+    if (errors.length > 0) {
+        throw new Error(errors.join("\n"));
+    }
+}
+
 exports['webpack-dev'] = gulp.series(() => gulp_webpack('development'), buildGrammars);
 exports['webpack-prod'] = gulp.series(() => gulp_webpack('production'), buildGrammars);
 exports.test = gulp.series(gulp_installAzureAccount, test);
@@ -306,3 +341,4 @@ exports['watch-grammars'] = (): unknown => gulp.watch('grammars/**', buildGramma
 exports['get-language-server'] = getLanguageServer;
 exports.package = packageVsix;
 exports['error-vsce-package'] = (): never => { throw new Error(`Please do not run vsce package, instead use 'npm run package`); };
+exports['verify-test-uses-extension-bundle'] = (): Promise<void> => verifyTestReferencesOnlyExtensionBundle(path.resolve("test"));

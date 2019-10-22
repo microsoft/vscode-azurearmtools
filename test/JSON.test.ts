@@ -206,7 +206,7 @@ suite("JSON", () => {
             let result: Json.ParseResult = Json.parse("'hello there'");
             assert.deepStrictEqual(result.tokenCount, 1);
             assert.deepStrictEqual(result.lineLengths, [13]);
-            assert.deepStrictEqual(result.value, new Json.StringValue(new Language.Span(0, 13), "hello there"));
+            assert.deepStrictEqual(result.value, new Json.StringValue(new Language.Span(0, 13), "'hello there'"));
         });
 
         test("with number", () => {

@@ -25,7 +25,7 @@ import { Stopwatch } from "./Stopwatch";
 import { armDeploymentDocumentSelector, mightBeDeploymentTemplate } from "./supported";
 import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
-import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
+import { UnrecognizedBuiltinFunctionIssue } from "./UnrecognizedFunctionIssues";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -192,6 +192,9 @@ export class AzureRMTools {
         deploymentTemplate: DeploymentTemplate,
         stopwatch: Stopwatch
     ): void {
+        const functionsInEachNamespace = deploymentTemplate.topLevelScope.namespaceDefinitions.map(ns => ns.members.length);
+        const totalUserFunctionsCount = functionsInEachNamespace.reduce((sum, count) => sum + count, 0);
+
         ext.reporter.sendTelemetryEvent(
             "Deployment Template Opened",
             {
@@ -202,9 +205,10 @@ export class AzureRMTools {
                 documentSizeInCharacters: document.getText().length,
                 parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds,
                 lineCount: deploymentTemplate.lineCount,
-                paramsCount: deploymentTemplate.parameterDefinitions.length,
-                varsCount: deploymentTemplate.variableDefinitions.length,
-                namespacesCount: deploymentTemplate.namespaceDefinitions.length
+                paramsCount: deploymentTemplate.topLevelScope.parameterDefinitions.length,
+                varsCount: deploymentTemplate.topLevelScope.variableDefinitions.length,
+                namespacesCount: deploymentTemplate.topLevelScope.namespaceDefinitions.length,
+                userFunctionsCount: totalUserFunctionsCount
             });
 
         this.logFunctionCounts(deploymentTemplate);
@@ -216,7 +220,7 @@ export class AzureRMTools {
         callWithTelemetryAndErrorHandling('reportDeploymentTemplateErrors', async (actionContext: IActionContext): Promise<void> => {
             actionContext.telemetry.suppressIfSuccessful = true;
 
-            let parseErrors: language.Issue[] = await deploymentTemplate.errors;
+            let parseErrors: language.Issue[] = await deploymentTemplate.errorsPromise;
             const diagnostics: vscode.Diagnostic[] = [];
 
             for (const error of parseErrors) {
@@ -280,15 +284,15 @@ export class AzureRMTools {
         ext.context.subscriptions.push(vscode.languages.registerCompletionItemProvider(armDeploymentDocumentSelector, completionProvider, "'", "[", "."));
 
         const definitionProvider: vscode.DefinitionProvider = {
-            provideDefinition: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Definition | undefined => {
-                return this.onProvideDefinition(document, position, token);
+            provideDefinition: async (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Definition | undefined> => {
+                return await this.onProvideDefinition(document, position, token);
             }
         };
         ext.context.subscriptions.push(vscode.languages.registerDefinitionProvider(armDeploymentDocumentSelector, definitionProvider));
 
         const referenceProvider: vscode.ReferenceProvider = {
-            provideReferences: (document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): vscode.Location[] | undefined => {
-                return this.onProvideReferences(document, position, context, token);
+            provideReferences: async (document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): Promise<vscode.Location[] | undefined> => {
+                return await this.onProvideReferences(document, position, context, token);
             }
         };
         ext.context.subscriptions.push(vscode.languages.registerReferenceProvider(armDeploymentDocumentSelector, referenceProvider));
@@ -301,8 +305,8 @@ export class AzureRMTools {
         ext.context.subscriptions.push(vscode.languages.registerSignatureHelpProvider(armDeploymentDocumentSelector, signatureHelpProvider, ",", "(", "\n"));
 
         const renameProvider: vscode.RenameProvider = {
-            provideRenameEdits: (document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): vscode.WorkspaceEdit | undefined => {
-                return this.onProvideRename(document, position, newName, token);
+            provideRenameEdits: async (document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): Promise<vscode.WorkspaceEdit | undefined> => {
+                return await this.onProvideRename(document, position, newName, token);
             }
         };
         ext.context.subscriptions.push(vscode.languages.registerRenameProvider(armDeploymentDocumentSelector, renameProvider));
@@ -324,15 +328,10 @@ export class AzureRMTools {
                 functionCounts?: string;
                 unrecognized?: string;
                 incorrectArgs?: string;
-                [key: string]: string | undefined;
-            } = actionContext.telemetry.properties;
+            } & TelemetryProperties = actionContext.telemetry.properties;
 
             // Full function counts
-            //
-            // Note: Due to the way DeploymentTemplate is implemented (see quotedStringToTleParseResultMap), string expressions which are exactly
-            //   the same (e.g. 'prop1': '[add(1,2)]' and 'prop2': '[add(1,2)]') only get counted once, thus the functions inside them will only get
-            //   counted once.
-            const functionCounts: Histogram = deploymentTemplate.functionCounts;
+            const functionCounts: Histogram = deploymentTemplate.getFunctionCounts();
             const functionsData: { [key: string]: number } = {};
             for (const functionName of functionCounts.keys) {
                 functionsData[<string>functionName] = functionCounts.getCount(functionName);
@@ -340,11 +339,11 @@ export class AzureRMTools {
             properties.functionCounts = JSON.stringify(functionsData);
 
             // Missing function names and functions with incorrect number of arguments
-            let issues: language.Issue[] = await deploymentTemplate.errors;
+            let issues: language.Issue[] = await deploymentTemplate.errorsPromise;
             let unrecognized = new Set<string>();
             let incorrectArgCounts = new Set<string>();
             for (const issue of issues) {
-                if (issue instanceof UnrecognizedFunctionIssue) {
+                if (issue instanceof UnrecognizedBuiltinFunctionIssue) {
                     unrecognized.add(issue.functionName);
                 } else if (issue instanceof IncorrectArgumentsCountIssue) {
                     // Encode function name as "funcname(<actual-args>)[<min-expected>..<max-expected>]"
@@ -352,12 +351,12 @@ export class AzureRMTools {
                     incorrectArgCounts.add(encodedName);
                 }
             }
-            properties.unrecognized = AzureRMTools.setToJson(unrecognized);
-            properties.incorrectArgs = AzureRMTools.setToJson(incorrectArgCounts);
+            properties.unrecognized = AzureRMTools.convertSetToJson(unrecognized);
+            properties.incorrectArgs = AzureRMTools.convertSetToJson(incorrectArgCounts);
         });
     }
 
-    private static setToJson(s: Set<string>): string {
+    private static convertSetToJson(s: Set<string>): string {
         // tslint:disable-next-line: strict-boolean-expressions
         if (!s.size) {
             return "";
@@ -393,11 +392,15 @@ export class AzureRMTools {
                 let properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>actionContext.telemetry.properties;
 
                 const context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                let hoverInfo: Hover.Info | null = await context.hoverInfo;
+                let hoverInfo: Hover.Info | null = await context.getHoverInfo();
                 let hover: vscode.Hover;
 
                 if (hoverInfo) {
-                    if (hoverInfo instanceof Hover.FunctionInfo) {
+                    if (hoverInfo instanceof Hover.UserNamespaceInfo) {
+                        properties.hoverType = "User Namespace";
+                    } else if (hoverInfo instanceof Hover.UserFunctionInfo) {
+                        properties.hoverType = "User Function";
+                    } else if (hoverInfo instanceof Hover.FunctionInfo) {
                         properties.hoverType = "TLE Function";
                         properties.tleFunctionName = hoverInfo.functionName;
                     } else if (hoverInfo instanceof Hover.ParameterReferenceInfo) {
@@ -463,44 +466,38 @@ export class AzureRMTools {
         }
     }
 
-    private onProvideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Location | undefined {
+    private async onProvideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Location | undefined> {
         const deploymentTemplate: DeploymentTemplate | undefined = this.getDeploymentTemplate(document);
         if (deploymentTemplate) {
-            return callWithTelemetryAndErrorHandlingSync('Go To Definition', (actionContext: IActionContext): vscode.Location | undefined => {
+            return await callWithTelemetryAndErrorHandling('Go To Definition', async (actionContext: IActionContext): Promise<vscode.Location | undefined> => {
                 let properties = <TelemetryProperties & { definitionType?: string }>actionContext.telemetry.properties;
                 actionContext.errorHandling.suppressDisplay = true;
-                let result: vscode.Location | undefined;
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
+                const refInfo = await context.getReferenceSiteInfo();
+                if (refInfo && refInfo.definitionSpan) {
+                    properties.definitionType = refInfo.kind;
 
-                let definitionType: string = "no definition";
-                if (context.parameterDefinition) {
-                    const locationUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
-                    const definitionRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, context.parameterDefinition.span);
-                    result = new vscode.Location(locationUri, definitionRange);
-                    definitionType = "parameter";
-                } else if (context.variableDefinition) {
-                    const locationUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
-                    const definitionRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, context.variableDefinition.span);
-                    result = new vscode.Location(locationUri, definitionRange);
-                    definitionType = "variable";
+                    return new vscode.Location(
+                        vscode.Uri.parse(deploymentTemplate.documentId),
+                        this.getVSCodeRangeFromSpan(deploymentTemplate, refInfo.definitionSpan)
+                    );
                 }
 
-                properties.definitionType = definitionType;
-                return result;
+                return undefined;
             });
         }
     }
 
-    private onProvideReferences(document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): vscode.Location[] | undefined {
+    private async onProvideReferences(document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): Promise<vscode.Location[] | undefined> {
         const deploymentTemplate: DeploymentTemplate | undefined = this.getDeploymentTemplate(document);
         if (deploymentTemplate) {
-            return callWithTelemetryAndErrorHandlingSync('Find References', (actionContext: IActionContext): vscode.Location[] => {
+            return await callWithTelemetryAndErrorHandling('Find References', async (actionContext: IActionContext): Promise<vscode.Location[]> => {
                 const results: vscode.Location[] = [];
                 const locationUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
                 const positionContext: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
-                const references: Reference.List | null = positionContext.references;
+                const references: Reference.List | null = await positionContext.getReferences();
                 if (references && references.length > 0) {
                     let referenceType: string;
                     switch (references.kind) {
@@ -561,14 +558,14 @@ export class AzureRMTools {
         }
     }
 
-    private onProvideRename(document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): vscode.WorkspaceEdit | undefined {
+    private async onProvideRename(document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): Promise<vscode.WorkspaceEdit | undefined> {
         const deploymentTemplate: DeploymentTemplate | undefined = this.getDeploymentTemplate(document);
         if (deploymentTemplate) {
-            return callWithTelemetryAndErrorHandlingSync('Rename', () => {
+            return await callWithTelemetryAndErrorHandling('Rename', async () => {
                 const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                const referenceList: Reference.List | null = context.references;
+                const referenceList: Reference.List | null = await context.getReferences();
                 if (referenceList) {
                     // When trying to rename a parameter or variable reference inside of a TLE, the
                     // textbox that pops up when you press F2 contains more than just the variable

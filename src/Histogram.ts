@@ -18,7 +18,7 @@ export class Histogram {
         return result;
     }
 
-    public add(key: string | Histogram | undefined | null, count: number = 1): void {
+    public add(key: string | Histogram | undefined | null, count: number = 1): Histogram {
         if (key === null) {
             this._nullCounts += count;
         } else if (key === undefined) {
@@ -35,6 +35,8 @@ export class Histogram {
                 this.add(rhsKey, key.getCount(rhsKey));
             }
         }
+
+        return this;
     }
 
     public getCount(key: string | undefined | null): number {

@@ -201,6 +201,49 @@ suite("Utilities", () => {
         });
     });
 
+    suite("unquote(string)", () => {
+        function testUnquote(input: string, expected: string): void {
+            test(String(input), () => {
+                assert.deepStrictEqual(Utilities.unquote(input), expected);
+            });
+        }
+        // tslint:disable-next-line: no-any
+        testUnquote(<any>null, "");
+        // tslint:disable-next-line: no-any
+        testUnquote(<any>undefined, "");
+        testUnquote("\"\"", "");
+        testUnquote("''", "");
+
+        testUnquote("\"hello\"", "hello");
+        testUnquote("'hello'", "hello");
+
+        suite("No quotes", () => {
+            testUnquote("", "");
+            testUnquote("hello", "hello");
+        });
+
+        suite("Only end quote - don't remove end quote (string tokens should have beginning quote but might not have end quote)", () => {
+            testUnquote("hello'", "hello'");
+            testUnquote("hello\"", "hello\"");
+        });
+
+        suite("Mismatched quotes - only remove opening quote", () => {
+            testUnquote("\"'", "'");
+            testUnquote("'\"", "\"");
+
+            testUnquote("\"hello'", "hello'");
+            testUnquote("'hello\"", "hello\"");
+        });
+
+        suite("Missing end quote - only remove opening quote", () => {
+            testUnquote("\"", "");
+            testUnquote("'", "");
+
+            testUnquote("\"hello", "hello");
+            testUnquote("'hello", "hello");
+        });
+    });
+
     suite("escape(string)", () => {
         test("with null", () => {
             assert.deepStrictEqual(Utilities.escape(null), null);

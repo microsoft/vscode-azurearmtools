@@ -16,8 +16,9 @@ import { commands, Diagnostic, DiagnosticSeverity, Disposable, languages, TextDo
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, getLanguageServerState, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
 import { getTempFilePath } from "./getTempFilePath";
+import { stringify } from "./stringify";
 
-export const diagnosticsTimeout = 30000; // CONSIDER: Use this long timeout only for first test, or for suite setup
+export const diagnosticsTimeout = 2 * 60 * 1000; // CONSIDER: Use this long timeout only for first test, or for suite setup
 export const testFolder = path.join(__dirname, '..', '..', '..', 'test');
 
 export interface Source {
@@ -53,6 +54,21 @@ export interface IDeploymentOutput {
     value: number | unknown[] | string | {};
 }
 
+export interface IDeploymentNamespaceDefinition {
+    namespace: string;
+    members: {
+        [key: string]: {
+            parameters?:
+            {
+                name: string;
+                // tslint:disable-next-line: no-reserved-keywords
+                type: string;
+            }[];
+            output?: IDeploymentOutput;
+        };
+    };
+}
+
 export interface IDeploymentTemplate {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#" | "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#";
     contentVersion: string;
@@ -66,20 +82,7 @@ export interface IDeploymentTemplate {
     outputs?: {
         [key: string]: IDeploymentOutput;
     };
-    functions?: {
-        namespace: string;
-        members: {
-            [key: string]: {
-                parameters?:
-                {
-                    name: string;
-                    // tslint:disable-next-line: no-reserved-keywords
-                    type: string;
-                }[];
-                output?: IDeploymentOutput;
-            };
-        };
-    }[];
+    functions?: IDeploymentNamespaceDefinition[];
 }
 
 export const defaultArmSchema = "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#";
@@ -243,7 +246,7 @@ export async function getDiagnosticsForTemplate(
     } else {
         // It's a (flying?) object
         let templateObject: Partial<IDeploymentTemplate> = templateContentsOrFileName;
-        templateContents = JSON.stringify(templateObject, undefined, 2);
+        templateContents = stringify(templateObject);
     }
 
     // Add schema if not already present (to make it easier to write tests)
