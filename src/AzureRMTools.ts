@@ -21,6 +21,7 @@ import * as language from "./Language";
 import { startArmLanguageServer, stopArmLanguageServer } from "./languageclient/startArmLanguageServer";
 import { PositionContext } from "./PositionContext";
 import * as Reference from "./Reference";
+import { getFunctionParamUsage } from "./signatureFormatting";
 import { Stopwatch } from "./Stopwatch";
 import { armDeploymentDocumentSelector, mightBeDeploymentTemplate } from "./supported";
 import * as TLE from "./TLE";
@@ -536,15 +537,17 @@ export class AzureRMTools {
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
-                let functionSignatureHelp: TLE.FunctionSignatureHelp | null = await context.signatureHelp;
+                let functionSignatureHelp: TLE.FunctionSignatureHelp | null = await context.getSignatureHelp();
                 let signatureHelp: vscode.SignatureHelp | undefined;
 
                 if (functionSignatureHelp) {
-
                     const signatureInformation = new vscode.SignatureInformation(functionSignatureHelp.functionMetadata.usage, functionSignatureHelp.functionMetadata.description);
                     signatureInformation.parameters = [];
-                    for (const parameterName of functionSignatureHelp.functionMetadata.parameters) {
-                        signatureInformation.parameters.push(new vscode.ParameterInformation(parameterName));
+                    for (const param of functionSignatureHelp.functionMetadata.parameters) {
+                        // Parameter label needs to be in the exact same format as in the function usage (including type, if you want it to get highlighted with the parameter name)
+                        const paramUsage = getFunctionParamUsage(param.name, param.type);
+                        const paramDocumentation = "";
+                        signatureInformation.parameters.push(new vscode.ParameterInformation(paramUsage, paramDocumentation));
                     }
 
                     signatureHelp = new vscode.SignatureHelp();

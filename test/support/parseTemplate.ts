@@ -77,6 +77,13 @@ export function getDocumentMarkers(template: object | string): { text: string; m
         template = template.slice(0, marker.index) + template.slice(index + match[0].length);
     }
 
+    // Also look for shortcut marker "!" with id "bang" used in some tests
+    let bangIndex = template.indexOf('!');
+    if (bangIndex >= 0) {
+        markers.bang = { name: 'bang', index: bangIndex };
+        template = template.slice(0, bangIndex) + template.slice(bangIndex + 1);
+    }
+
     return {
         text: template,
         markers

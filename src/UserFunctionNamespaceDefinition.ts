@@ -68,7 +68,7 @@ export class UserFunctionNamespaceDefinition {
                     let name: Json.StringValue = member.name;
                     let value = Json.asObjectValue(member.value);
                     if (value) {
-                        let func = new UserFunctionDefinition(name, value, this.namespaceName.unquotedValue);
+                        let func = new UserFunctionDefinition(this, name, value);
                         membersResult.push(func);
                     }
                 }

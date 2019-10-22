@@ -1288,7 +1288,7 @@ suite("User functions", () => {
 
         test("Hover over user-defined function reference's name", async () => {
             const { dt, markers: { udfRefAtName } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
-            await testHover(dt, udfRefAtName.index, "**udf.string(year [int], month, day [int])** User-defined function");
+            await testHover(dt, udfRefAtName.index, "**udf.string(year [int], month, day [int]) [string]** User-defined function");
         });
 
         test("Hover over user-defined function reference's namespace", async () => {
@@ -1296,7 +1296,7 @@ suite("User functions", () => {
             await testHover(
                 dt,
                 udfRefAtNs.index,
-                "**udf** User-defined namespace\n\nMembers:\n* string(year [int], month, day [int])");
+                "**udf** User-defined namespace\n\nMembers:\n* string(year [int], month, day [int]) [string]");
         });
     }); // suite UDF Hover Info
 

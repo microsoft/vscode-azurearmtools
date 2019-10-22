@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { ExpressionType, toValidExpressionType } from './ExpressionType';
 import { assert } from './fixed_assert';
 import * as Json from "./JSON";
 
@@ -15,6 +16,11 @@ export class OutputDefinition {
 
     public get outputType(): Json.StringValue | null {
         return Json.asStringValue(this._value.getPropertyValue("type"));
+    }
+
+    // Returns null if not a valid type
+    public get validOutputType(): ExpressionType | null {
+        return toValidExpressionType(this.outputType && this.outputType.unquotedValue);
     }
 
     public get value(): Json.StringValue | null {

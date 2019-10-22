@@ -13,7 +13,7 @@ import * as assert from "assert";
 import * as fs from 'fs';
 import * as path from 'path';
 import { commands, Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument, window, workspace } from "vscode";
-import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, getLanguageServerState, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
+import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, getLanguageServerState, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
 import { getTempFilePath } from "./getTempFilePath";
 import { stringify } from "./stringify";
@@ -35,10 +35,9 @@ function isSourceFromLanguageServer(source: Source): boolean {
     return source.name !== sources.expressions.name;
 }
 
-export type IDeploymentExpressionType = "string" | "securestring" | "int" | "bool" | "object" | "secureObject" | "array";
 export interface IDeploymentParameterDefinition {
     // tslint:disable-next-line:no-reserved-keywords
-    type: IDeploymentExpressionType;
+    type: ExpressionType;
     metadata?: {
         [key: string]: string | undefined;
         description?: string;
@@ -50,22 +49,24 @@ export interface IDeploymentParameterDefinition {
 
 export interface IDeploymentOutput {
     // tslint:disable-next-line:no-reserved-keywords
-    type: IDeploymentExpressionType;
+    type: ExpressionType;
     value: number | unknown[] | string | {};
+}
+
+export interface IDeploymentFunctionDefinition {
+    parameters?:
+    {
+        name: string;
+        // tslint:disable-next-line: no-reserved-keywords
+        type: string;
+    }[];
+    output?: IDeploymentOutput;
 }
 
 export interface IDeploymentNamespaceDefinition {
     namespace: string;
     members: {
-        [key: string]: {
-            parameters?:
-            {
-                name: string;
-                // tslint:disable-next-line: no-reserved-keywords
-                type: string;
-            }[];
-            output?: IDeploymentOutput;
-        };
+        [key: string]: IDeploymentFunctionDefinition;
     };
 }
 

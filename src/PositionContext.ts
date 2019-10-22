@@ -5,7 +5,7 @@
 // tslint:disable:max-line-length
 
 import { Language } from "../extension.bundle";
-import { AzureRMAssets, FunctionMetadata } from "./AzureRMAssets";
+import { AzureRMAssets, BuiltinFunctionMetadata } from "./AzureRMAssets";
 import { CachedPromise } from "./CachedPromise";
 import { CachedValue } from "./CachedValue";
 import * as Completion from "./Completion";
@@ -13,6 +13,7 @@ import { __debugMarkPositionInString } from "./debugMarkStrings";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { assert } from './fixed_assert';
 import * as Hover from "./Hover";
+import { IFunctionMetadata, IFunctionParameterMetadata } from "./IFunctionMetadata";
 import { IParameterDefinition } from "./IParameterDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
@@ -20,6 +21,7 @@ import * as Reference from "./Reference";
 import { TemplateScope } from "./TemplateScope";
 import * as TLE from "./TLE";
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
+import { UserFunctionMetadata } from "./UserFunctionMetadata";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
 import { assertNever } from "./util/assertNever";
 
@@ -52,7 +54,7 @@ export type IReferenceSite = {
     definitionSpan: Language.Span;
 } | {
     kind: "builtinFunction";
-    functionMetadata: FunctionMetadata;
+    functionMetadata: BuiltinFunctionMetadata;
     referenceSpan: Language.Span;
     definitionSpan: undefined;
 } | {
@@ -81,7 +83,6 @@ export class PositionContext {
     private _jsonValue: CachedValue<Json.Value | null> = new CachedValue<Json.Value | null>();
     private _tleInfo: CachedValue<TleInfo | null> = new CachedValue<TleInfo | null>();
     private _completionItems: CachedPromise<Completion.Item[]> = new CachedPromise<Completion.Item[]>();
-    private _signatureHelp: CachedPromise<TLE.FunctionSignatureHelp | null> = new CachedPromise<TLE.FunctionSignatureHelp | null>();
 
     public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number): PositionContext {
         assert(deploymentTemplate !== null, "deploymentTemplate cannot be null");
@@ -238,7 +239,7 @@ export class PositionContext {
                         }
                     } else {
                         // Inside a reference to a built-in function
-                        const functionMetadata: FunctionMetadata | undefined = await AzureRMAssets.getFunctionMetadataFromName(tleFuncCall.nameToken.stringValue);
+                        const functionMetadata: BuiltinFunctionMetadata | undefined = await AzureRMAssets.getFunctionMetadataFromName(tleFuncCall.nameToken.stringValue);
                         if (functionMetadata) {
                             const referenceSpan: language.Span = tleFuncCall.nameToken.span.translate(this.jsonTokenStartIndex);
                             return { kind: "builtinFunction", functionMetadata: functionMetadata, referenceSpan, definitionSpan: undefined };
@@ -282,7 +283,7 @@ export class PositionContext {
                 case "userNamespace":
                     return new Hover.UserNamespaceInfo(refSiteInfo.userNamespace, span);
                 case "userFunction":
-                    return new Hover.UserFunctionInfo(refSiteInfo.userNamespace, refSiteInfo.userFunction, span);
+                    return new Hover.UserFunctionInfo(refSiteInfo.userFunction, span);
                 case "builtinFunction":
                     const functionMetadata = refSiteInfo.functionMetadata;
                     return new Hover.FunctionInfo(functionMetadata.name, functionMetadata.usage, functionMetadata.description, span);
@@ -416,12 +417,12 @@ export class PositionContext {
                 // (resourceGroup().prop1.prop2) on functions other than variables/parameters,
                 // therefore checking that sourcesNameStack.length === 0
                 const functionName: string = functionSource.nameToken.stringValue;
-                let functionMetadataMatches: FunctionMetadata[] = await AzureRMAssets.getFunctionMetadataFromPrefix(functionName);
+                let functionMetadataMatches: BuiltinFunctionMetadata[] = await AzureRMAssets.getFunctionMetadataFromPrefix(functionName);
                 assert(functionMetadataMatches);
 
                 const result: Completion.Item[] = [];
                 if (functionMetadataMatches.length === 1) {
-                    const functionMetadata: FunctionMetadata = functionMetadataMatches[0];
+                    const functionMetadata: BuiltinFunctionMetadata = functionMetadataMatches[0];
                     for (const returnValueMember of functionMetadata.returnValueMembers) {
                         if (propertyPrefix === "" || returnValueMember.toLowerCase().startsWith(propertyPrefix)) {
                             result.push(PositionContext.createPropertyCompletionItem(returnValueMember, replaceSpan));
@@ -560,41 +561,50 @@ export class PositionContext {
         return null;
     }
 
-    public get signatureHelp(): Promise<TLE.FunctionSignatureHelp | null> {
-        return this._signatureHelp.getOrCachePromise(async () => {
-            const tleValue: TLE.Value | null = this.tleInfo && this.tleInfo.tleValue;
-            if (this.tleInfo && tleValue) {
-                let functionToHelpWith: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(tleValue);
-                if (!functionToHelpWith) {
-                    functionToHelpWith = TLE.asFunctionCallValue(tleValue.parent);
-                }
-
-                if (functionToHelpWith) {
-                    const functionMetadata: FunctionMetadata | undefined = await AzureRMAssets.getFunctionMetadataFromName(functionToHelpWith.nameToken.stringValue);
-                    if (functionMetadata) {
-                        let currentArgumentIndex: number = 0;
-
-                        for (const commaToken of functionToHelpWith.commaTokens) {
-                            if (commaToken.span.startIndex < this.tleInfo.tleCharacterIndex) {
-                                ++currentArgumentIndex;
-                            }
-                        }
-
-                        const functionMetadataParameters: string[] = functionMetadata.parameters;
-                        if (functionMetadataParameters.length > 0 &&
-                            functionMetadataParameters.length <= currentArgumentIndex &&
-                            functionMetadataParameters[functionMetadataParameters.length - 1].endsWith("...")) {
-
-                            currentArgumentIndex = functionMetadataParameters.length - 1;
-                        }
-
-                        return new TLE.FunctionSignatureHelp(currentArgumentIndex, functionMetadata);
-                    }
-                }
+    public async getSignatureHelp(): Promise<TLE.FunctionSignatureHelp | null> {
+        const tleValue: TLE.Value | null = this.tleInfo && this.tleInfo.tleValue;
+        if (this.tleInfo && tleValue) {
+            let functionToHelpWith: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(tleValue);
+            if (!functionToHelpWith) {
+                functionToHelpWith = TLE.asFunctionCallValue(tleValue.parent);
             }
 
-            return null;
-        });
+            if (functionToHelpWith) {
+                let functionMetadata: IFunctionMetadata | undefined;
+
+                if (functionToHelpWith.namespaceToken) {
+                    // Call to user-defined function
+                    const namespace: string = functionToHelpWith.namespaceToken.stringValue;
+                    const name: string = functionToHelpWith.nameToken.stringValue;
+                    const udfDefinition: UserFunctionDefinition | null = this.tleInfo.scope.getFunctionDefinition(namespace, name);
+                    functionMetadata = udfDefinition ? UserFunctionMetadata.fromDefinition(udfDefinition) : undefined;
+                } else {
+                    // Call to built-in function
+                    functionMetadata = await AzureRMAssets.getFunctionMetadataFromName(functionToHelpWith.nameToken.stringValue);
+                }
+                if (functionMetadata) {
+                    let currentArgumentIndex: number = 0;
+
+                    for (const commaToken of functionToHelpWith.commaTokens) {
+                        if (commaToken.span.startIndex < this.tleInfo.tleCharacterIndex) {
+                            ++currentArgumentIndex;
+                        }
+                    }
+
+                    const functionMetadataParameters: IFunctionParameterMetadata[] = functionMetadata.parameters;
+                    if (functionMetadataParameters.length > 0 &&
+                        functionMetadataParameters.length <= currentArgumentIndex &&
+                        functionMetadataParameters[functionMetadataParameters.length - 1].name.endsWith("...")) {
+
+                        currentArgumentIndex = functionMetadataParameters.length - 1;
+                    }
+
+                    return new TLE.FunctionSignatureHelp(currentArgumentIndex, functionMetadata);
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -602,7 +612,7 @@ export class PositionContext {
      * starting with that prefix
      */
     private static async getMatchingFunctionCompletions(prefix: string, replaceSpan: language.Span): Promise<Completion.Item[]> {
-        let functionMetadataMatches: FunctionMetadata[];
+        let functionMetadataMatches: BuiltinFunctionMetadata[];
         if (prefix === "") {
             functionMetadataMatches = (await AzureRMAssets.getFunctionsMetadata()).functionMetadata;
         } else {

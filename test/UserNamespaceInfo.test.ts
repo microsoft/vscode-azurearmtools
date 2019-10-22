@@ -96,7 +96,7 @@ suite("Hover.UserNamespaceInfo", () => {
         const info = new Hover.UserNamespaceInfo(
             dt.topLevelScope.getFunctionNamespaceDefinition("udf")!,
             fakeSpan);
-        assert.equal(info.getHoverText(), "**udf** User-defined namespace\n\nMembers:\n* date(param [whatever])");
+        assert.equal(info.getHoverText(), "**udf** User-defined namespace\n\nMembers:\n* date(param)");
     });
 
     test("one member, two params", async () => {

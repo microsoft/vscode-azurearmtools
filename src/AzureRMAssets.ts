@@ -5,6 +5,8 @@
 import * as fse from 'fs-extra';
 import * as path from "path";
 import { assetsPath } from './constants';
+import { ExpressionType } from './ExpressionType';
+import { IFunctionMetadata, IFunctionParameterMetadata } from './IFunctionMetadata';
 
 /**
  * An accessor class for the Azure RM storage account.
@@ -17,7 +19,7 @@ export class AzureRMAssets {
     public static setFunctionsMetadata(metadataString: string): void {
         // tslint:disable-next-line:typedef
         AzureRMAssets._functionsMetadataPromise = new Promise<FunctionsMetadata>(async (resolve, reject) => {
-            let array = FunctionMetadata.fromString(metadataString);
+            let array = BuiltinFunctionMetadata.fromString(metadataString);
             resolve(new FunctionsMetadata(array));
         });
     }
@@ -29,7 +31,7 @@ export class AzureRMAssets {
                 try {
                     let uri = AzureRMAssets.getFunctionMetadataUri();
                     let contents = await AzureRMAssets.readFile(uri);
-                    let array: FunctionMetadata[] = FunctionMetadata.fromString(contents);
+                    let array: BuiltinFunctionMetadata[] = BuiltinFunctionMetadata.fromString(contents);
                     resolve(new FunctionsMetadata(array));
                 } catch (err) {
                     reject(err);
@@ -40,11 +42,11 @@ export class AzureRMAssets {
         return await AzureRMAssets._functionsMetadataPromise;
     }
 
-    public static async getFunctionMetadataFromName(functionName: string): Promise<FunctionMetadata | undefined> {
+    public static async getFunctionMetadataFromName(functionName: string): Promise<BuiltinFunctionMetadata | undefined> {
         return (await this.getFunctionsMetadata()).findbyName(functionName);
     }
 
-    public static async getFunctionMetadataFromPrefix(functionNamePrefix: string): Promise<FunctionMetadata[]> {
+    public static async getFunctionMetadataFromPrefix(functionNamePrefix: string): Promise<BuiltinFunctionMetadata[]> {
         return (await this.getFunctionsMetadata()).filterByPrefix(functionNamePrefix);
     }
 
@@ -68,15 +70,15 @@ export class AzureRMAssets {
  * Metadata for all TLE (Template Language Expression) functions.
  */
 export class FunctionsMetadata {
-    public constructor(public readonly functionMetadata: FunctionMetadata[]) {
+    public constructor(public readonly functionMetadata: BuiltinFunctionMetadata[]) {
     }
 
-    public findbyName(functionName: string): FunctionMetadata | undefined {
+    public findbyName(functionName: string): BuiltinFunctionMetadata | undefined {
         const lowerCasedFunctionName: string = functionName.toLowerCase();
         return this.functionMetadata.find(func => func.lowerCaseName === lowerCasedFunctionName);
     }
 
-    public filterByPrefix(functionNamePrefix: string): FunctionMetadata[] {
+    public filterByPrefix(functionNamePrefix: string): BuiltinFunctionMetadata[] {
         const lowerCasedPrefix: string = functionNamePrefix.toLowerCase();
         return this.functionMetadata.filter(func => func.lowerCaseName.startsWith(lowerCasedPrefix));
     }
@@ -85,21 +87,26 @@ export class FunctionsMetadata {
 /**
  * Metadata for a TLE (Template Language Expression) function.
  */
-export class FunctionMetadata {
-    private _name: string;
-    private _lowerCaseName: string;
+export class BuiltinFunctionMetadata implements IFunctionMetadata {
+    private readonly _name: string;
+    private readonly _lowerCaseName: string;
+    private readonly _returnType: ExpressionType | null;
 
     constructor(
         name: string,
-        private _usage: string,
-        private _description: string,
-        private _minimumArguments: number,
-        private _maximumArguments: number,
-        private _returnValueMembers: string[]
+        private readonly _usage: string,
+        private readonly _description: string,
+        private readonly _minimumArguments: number,
+        private readonly _maximumArguments: number,
+        private readonly _returnValueMembers: string[]
     ) {
         // tslint:disable-next-line: strict-boolean-expressions
         this._name = name || '';
         this._lowerCaseName = this._name.toLowerCase();
+
+        // CONSIDER: Our metadata doesn't currently give the return type
+        // ... Except if it has value members, it must be an object
+        this._returnType = this.returnValueMembers.length > 0 ? 'object' : null;
     }
 
     public get name(): string {
@@ -111,19 +118,19 @@ export class FunctionMetadata {
     }
 
     public get usage(): string {
-        return this._usage;
+        return this.returnType ? `${this._usage} [${this.returnType}]` : this._usage;
     }
 
-    public get parameters(): string[] {
+    public get parameters(): IFunctionParameterMetadata[] {
         const usage: string = this.usage;
         const leftParenthesisIndex: number = usage.indexOf("(");
         const rightParenthesisIndex: number = usage.indexOf(")");
 
         const parametersSubstring: string = usage.substr(leftParenthesisIndex + 1, rightParenthesisIndex - leftParenthesisIndex - 1);
-        const result: string[] = [];
+        const result: IFunctionParameterMetadata[] = [];
         if (parametersSubstring) {
             for (const parameter of parametersSubstring.split(",")) {
-                result.push(parameter.trim());
+                result.push({ name: parameter.trim(), type: null }); // CONSIDER: Our metadata doesn't currently give the parameter types
             }
         }
 
@@ -142,22 +149,26 @@ export class FunctionMetadata {
         return this._maximumArguments;
     }
 
+    public get returnType(): ExpressionType | null {
+        return this._returnType;
+    }
+
     public get returnValueMembers(): string[] {
         return this._returnValueMembers;
     }
 
-    public static fromString(metadataString: string): FunctionMetadata[] {
+    public static fromString(metadataString: string): BuiltinFunctionMetadata[] {
         let metadataJSON: FunctionMetadataContract;
         try {
             metadataJSON = <FunctionMetadataContract>JSON.parse(metadataString);
         } catch (e) {
             metadataJSON = { functionSignatures: [] };
         }
-        return FunctionMetadata.fromJSON(metadataJSON);
+        return BuiltinFunctionMetadata.fromJSON(metadataJSON);
     }
 
-    public static fromJSON(metadataJSON: FunctionMetadataContract): FunctionMetadata[] {
-        const result: FunctionMetadata[] = [];
+    public static fromJSON(metadataJSON: FunctionMetadataContract): BuiltinFunctionMetadata[] {
+        const result: BuiltinFunctionMetadata[] = [];
 
         // tslint:disable-next-line: strict-boolean-expressions
         if (metadataJSON && metadataJSON.functionSignatures) {
@@ -172,7 +183,7 @@ export class FunctionMetadata {
                     }
                     returnValueMembers.sort();
 
-                    result.push(new FunctionMetadata(
+                    result.push(new BuiltinFunctionMetadata(
                         functionMetadata.name,
                         functionMetadata.expectedUsage,
                         functionMetadata.description,

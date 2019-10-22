@@ -37,6 +37,7 @@ export { configKeys, configPrefix, diagnosticsCompletePrefix, expressionsDiagnos
 export { __debugMarkPositionInString, __debugMarkSubstring } from "./src/debugMarkStrings";
 export { DeploymentTemplate } from "./src/DeploymentTemplate";
 export { Duration } from './src/Duration';
+export { ExpressionType } from "./src/ExpressionType";
 export { ext } from './src/extensionVariables';
 export { Histogram } from "./src/Histogram";
 export { httpGet } from './src/httpGet';
@@ -48,8 +49,10 @@ export { ParameterDefinition } from "./src/ParameterDefinition";
 export { IReferenceSite, PositionContext } from "./src/PositionContext";
 export { containsArmSchema, isArmSchema } from './src/supported';
 export { ScopeContext, TemplateScope } from "./src/TemplateScope";
+export { FunctionSignatureHelp } from "./src/TLE";
 export { JsonOutlineProvider, shortenTreeLabel } from "./src/Treeview";
 export { UnrecognizedBuiltinFunctionIssue, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "./src/UnrecognizedFunctionIssues";
+export { UserFunctionMetadata } from "./src/UserFunctionMetadata";
 export { UserFunctionNamespaceDefinition } from "./src/UserFunctionNamespaceDefinition";
 export { UserFunctionParameterDefinition } from "./src/UserFunctionParameterDefinition";
 export { FindReferencesVisitor } from "./src/visitors/FindReferencesVisitor";
