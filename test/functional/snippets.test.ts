@@ -81,6 +81,12 @@ const overrideExpectedDiagnostics: { [name: string]: string[] } = {
     ]
 };
 
+interface ISnippet {
+    prefix: string;
+    body: string[];
+    description?: string;
+}
+
 suite("Snippets functional tests", () => {
     suite("all snippets", () => {
         createSnippetTests("jsonsnippets.jsonc");
@@ -90,21 +96,23 @@ suite("Snippets functional tests", () => {
     function createSnippetTests(snippetsFile: string): void {
         suite(snippetsFile, () => {
             const snippetsPath = path.join(testFolder, '..', 'assets', snippetsFile);
-            const snippets = <{ [name: string]: {} }>fse.readJsonSync(snippetsPath);
+            const snippets = <{ [name: string]: ISnippet }>fse.readJsonSync(snippetsPath);
             // tslint:disable-next-line:no-for-in forin
             for (let snippetName in snippets) {
                 test(`snippet: ${snippetName}`, async function (this: ITestCallbackContext): Promise<void> {
-                    await testSnippet(this, snippetName);
+                    await testSnippet(this, snippetsPath, snippetName, snippets[snippetName]);
                 });
             }
         });
     }
 
-    async function testSnippet(testCallbackContext: ITestCallbackContext, snippetName: string): Promise<void> {
+    async function testSnippet(testCallbackContext: ITestCallbackContext, snippetsPath: string, snippetName: string, snippet: ISnippet): Promise<void> {
         if (overrideSkipTests[snippetName]) {
             testCallbackContext.skip();
             return;
         }
+
+        validateSnippet();
 
         const template = overrideTemplateForSnippet[snippetName] !== undefined ? overrideTemplateForSnippet[snippetName] : resourceTemplate;
         // tslint:disable-next-line: strict-boolean-expressions
@@ -124,6 +132,7 @@ suite("Snippets functional tests", () => {
 
         // Wait for first set of diagnostics to finish.
         await getDiagnosticsForDocument(doc, {});
+        const initialDocText = window.activeTextEditor!.document.getText();
 
         // Start waiting for next set of diagnostics (so it picks up the current completion versions)
         let diagnosticsPromise: Promise<Diagnostic[]> = getDiagnosticsForDocument(
@@ -144,10 +153,8 @@ suite("Snippets functional tests", () => {
         // Wait for diagnostics to finish
         let diagnostics: Diagnostic[] = await diagnosticsPromise;
 
-        // Verify that any $schema string was inserted correctly (must be specified as \\$ in the snippets file)
-        if (window.activeTextEditor!.document.getText().match(/"schema"/)) {
-            assert(false, "Incorrect insertion of \"$schema\"");
-        }
+        const docTextAfterInsertion = window.activeTextEditor!.document.getText();
+        validateDocumentWithSnippet();
 
         let messages = diagnostics.map(d => d.message).sort();
         assert.deepStrictEqual(messages, expectedDiagnostics);
@@ -160,5 +167,24 @@ suite("Snippets functional tests", () => {
         await commands.executeCommand("undo");
         fse.unlinkSync(tempPath);
         await commands.executeCommand('workbench.action.closeAllEditors');
+
+        // Look for common errors in the snippet
+        function validateSnippet(): void {
+            const snippetText = JSON.stringify(snippet, null, 4);
+
+            errorIfTextMatches(snippetText, /\$\$/, `Instead of $$ in snippet, use \\$`);
+            errorIfTextMatches(snippetText, /\${[^0-9]/, "Snippet placeholder is missing the numeric id, makes it look like a variable to vscode");
+        }
+
+        function validateDocumentWithSnippet(): void {
+            assert(initialDocText !== docTextAfterInsertion, "No insertion happened?  Document didn't change.");
+        }
+
+        function errorIfTextMatches(text: string, regex: RegExp, errorMessage: string): void {
+            const match = text.match(regex);
+            if (match) {
+                assert(false, `${errorMessage}.  At "${text.slice(match.index!, match.index! + 20)}..."`);
+            }
+        }
     }
 });

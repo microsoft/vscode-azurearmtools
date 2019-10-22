@@ -893,12 +893,17 @@ export class NullValue extends Value {
  * The result of parsing a JSON string.
  */
 export class ParseResult {
-    constructor(private _tokens: Token[], private _lineLengths: number[], private _value: Value | null) {
+    private readonly _debugText: string; // Used only for debugging - copy of the original text being parsed
+
+    constructor(private _tokens: Token[], private _lineLengths: number[], private _value: Value | null, text: string) {
         assert(_tokens !== null);
         assert(_tokens !== undefined);
         assert(_lineLengths !== null);
         assert(_lineLengths !== undefined);
         assert(_value !== undefined);
+
+        this._debugText = text;
+        this._debugText = this._debugText; // Make compiler happy
     }
 
     public get tokenCount(): number {
@@ -959,12 +964,15 @@ export class ParseResult {
         let line: number = 0;
         let column: number = 0;
 
+        let remainingChars: number = characterIndex;
+
         for (let lineLength of this.lineLengths) {
-            if (lineLength <= characterIndex) {
+            if (lineLength <= remainingChars) {
                 ++line;
-                characterIndex -= lineLength;
+                remainingChars -= lineLength;
             } else {
-                column = characterIndex;
+                // Reached the line with the character index
+                column = remainingChars;
                 break;
             }
         }
@@ -1088,7 +1096,7 @@ export function parse(stringValue: string): ParseResult {
         next(jt, tokens);
     }
 
-    return new ParseResult(tokens, jt.lineLengths, value);
+    return new ParseResult(tokens, jt.lineLengths, value, stringValue);
 }
 
 /**
