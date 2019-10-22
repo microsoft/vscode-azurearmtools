@@ -7,41 +7,78 @@
 
 import * as assert from 'assert';
 import * as fse from 'fs-extra';
+import { ITestCallbackContext } from 'mocha';
 import * as path from 'path';
-import { commands, Diagnostic, Position, Selection, window, workspace } from "vscode";
+import { commands, Diagnostic, Selection, window, workspace } from "vscode";
+import { DeploymentTemplate } from '../../src/DeploymentTemplate';
+import { getVSCodePositionFromPosition } from '../../src/util/vscodePosition';
+import { delay } from '../support/delay';
 import { getDiagnosticsForDocument, sources, testFolder } from '../support/diagnostics';
 import { getTempFilePath } from "../support/getTempFilePath";
 
 let resourceTemplate: string = `{
     "resources": [
-
+        // Insert here: resource
     ],
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "variables": {
+        // Insert here: variable
     },
     "parameters": {
+        // Insert here: parameter
+    },
+    "outputs": {
+        // Insert here: output
     }
 }`;
 
-let emptyTemplate: string = "";
+let emptyTemplate: string = `
+// Insert here: empty
+`;
+
+//
+// These provide some snippet-specific instructions that can't be handled by the general test logic
+//
+
+const overrideSkipTests: { [name: string]: boolean } = {
+    "Azure Resource Manager (ARM) Template": true, // TODO: Blocked by https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1005573
+    "Azure Resource Manager (ARM) Parameters Template": true, // TODO: Blocked by https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1005573
+
+    "Tag Section": true // Needs comma for no errors, and not complicated, just ignore
+};
 
 const overrideTemplateForSnippet: { [name: string]: string } = {
+    // Which template to start with - default is resourceTemplate
     "Azure Resource Manager (ARM) Template": emptyTemplate,
     "Azure Resource Manager (ARM) Parameters Template": emptyTemplate
 };
 
-const overrideInsertPosition: { [name: string]: Position } = {
-    "Azure Resource Manager (ARM) Template": new Position(1, 0),
-    "Azure Resource Manager (ARM) Parameters Template": new Position(1, 0)
+const overrideInsertPosition: { [name: string]: string } = {
+    // Where to insert the template - default is "Insert here: resource"
+    "Azure Resource Manager (ARM) Template": "// Insert here: empty",
+    "Azure Resource Manager (ARM) Parameters Template": "// Insert here: empty",
+    Variable: "// Insert here: variable",
+    Parameter: "// Insert here: parameter",
+    Output: "// Insert here: output"
 };
 
 const overrideExpectedDiagnostics: { [name: string]: string[] } = {
+    // Expected errors/warnings - default is none
     "Azure Resource Manager (ARM) Parameters Template":
         [
             "Template validation failed: Required property 'resources' not found in JSON. Path '', line 5, position 1."
             //"Missing required property resources"
-        ]
+        ],
+    Variable: [
+        "The variable 'variable1' is never used."
+    ],
+    Parameter: [
+        "The parameter 'parameter1' is never used."
+    ],
+    Function: [
+        "Undefined variable reference: 'applicationInsightsName'"
+    ]
 };
 
 suite("Snippets functional tests", () => {
@@ -56,19 +93,27 @@ suite("Snippets functional tests", () => {
             const snippets = <{ [name: string]: {} }>fse.readJsonSync(snippetsPath);
             // tslint:disable-next-line:no-for-in forin
             for (let snippetName in snippets) {
-                test(snippetName, async () => {
-                    await createSnippetTest(snippetName);
+                test(`snippet: ${snippetName}`, async function (this: ITestCallbackContext): Promise<void> {
+                    await testSnippet(this, snippetName);
                 });
             }
         });
     }
 
-    async function createSnippetTest(snippetName: string): Promise<void> {
+    async function testSnippet(testCallbackContext: ITestCallbackContext, snippetName: string): Promise<void> {
+        if (overrideSkipTests[snippetName]) {
+            testCallbackContext.skip();
+            return;
+        }
+
         const template = overrideTemplateForSnippet[snippetName] !== undefined ? overrideTemplateForSnippet[snippetName] : resourceTemplate;
         // tslint:disable-next-line: strict-boolean-expressions
         const expectedDiagnostics = (overrideExpectedDiagnostics[snippetName] || []).sort();
         // tslint:disable-next-line: strict-boolean-expressions
-        const snippetInsertPos: Position = overrideInsertPosition[snippetName] || new Position(2, 0);
+        const snippetInsertComment: string = overrideInsertPosition[snippetName] || "// Insert here: resource";
+        const snippetInsertIndex: number = template.indexOf(snippetInsertComment);
+        assert(snippetInsertIndex >= 0, `Couldn't find location to insert snippet (looking for "${snippetInsertComment}")`);
+        const snippetInsertPos = getVSCodePositionFromPosition(new DeploymentTemplate(template, "fake template").getContextFromDocumentCharacterIndex(snippetInsertIndex).documentPosition);
 
         const tempPath = getTempFilePath(`snippet ${snippetName}`, '.azrm');
 
@@ -85,11 +130,13 @@ suite("Snippets functional tests", () => {
             doc,
             {
                 waitForChange: true,
-                ignoreSources: [sources.schema] //asdf TODO
+                ignoreSources: [sources.schema] //asdf TODO: Don't ignore schema errors
             });
 
         // Insert snippet
         window.activeTextEditor!.selection = new Selection(snippetInsertPos, snippetInsertPos);
+        await delay(1);
+
         await commands.executeCommand('editor.action.insertSnippet', {
             name: snippetName
         });

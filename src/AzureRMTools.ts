@@ -27,6 +27,7 @@ import { armDeploymentDocumentSelector, mightBeDeploymentTemplate } from "./supp
 import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedBuiltinFunctionIssue } from "./UnrecognizedFunctionIssues";
+import { getVSCodeRangeFromSpan } from "./util/vscodePosition";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -375,7 +376,7 @@ export class AzureRMTools {
     }
 
     private getVSCodeDiagnosticFromIssue(deploymentTemplate: DeploymentTemplate, issue: language.Issue, severity: vscode.DiagnosticSeverity): vscode.Diagnostic {
-        const range: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, issue.span);
+        const range: vscode.Range = getVSCodeRangeFromSpan(deploymentTemplate, issue.span);
         const message: string = issue.message;
         let diagnostic = new vscode.Diagnostic(range, message, severity);
         diagnostic.source = expressionsDiagnosticsSource;
@@ -415,7 +416,7 @@ export class AzureRMTools {
                         properties.hoverType = "Variable Reference";
                     }
 
-                    const hoverRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, hoverInfo.span);
+                    const hoverRange: vscode.Range = getVSCodeRangeFromSpan(deploymentTemplate, hoverInfo.span);
                     hover = new vscode.Hover(hoverInfo.getHoverText(), hoverRange);
                     return hover;
                 }
@@ -437,7 +438,7 @@ export class AzureRMTools {
                 let completionItemArray: Completion.Item[] = context.getCompletionItems();
                 const completionItems: vscode.CompletionItem[] = [];
                 for (const completion of completionItemArray) {
-                    const insertRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, completion.insertSpan);
+                    const insertRange: vscode.Range = getVSCodeRangeFromSpan(deploymentTemplate, completion.insertSpan);
 
                     const completionToAdd = new vscode.CompletionItem(completion.name);
                     completionToAdd.range = insertRange;
@@ -492,7 +493,7 @@ export class AzureRMTools {
 
                     return new vscode.Location(
                         vscode.Uri.parse(deploymentTemplate.documentId),
-                        this.getVSCodeRangeFromSpan(deploymentTemplate, refInfo.definition.nameValue.span)
+                        getVSCodeRangeFromSpan(deploymentTemplate, refInfo.definition.nameValue.span)
                     );
                 }
 
@@ -514,7 +515,7 @@ export class AzureRMTools {
                     actionContext.telemetry.properties.referenceType = references.kind;
 
                     for (const span of references.spans) {
-                        const referenceRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, span);
+                        const referenceRange: vscode.Range = getVSCodeRangeFromSpan(deploymentTemplate, span);
                         results.push(new vscode.Location(locationUri, referenceRange));
                     }
                 }
@@ -588,7 +589,7 @@ export class AzureRMTools {
                     const documentUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
 
                     for (const referenceSpan of referenceList.spans) {
-                        const referenceRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, referenceSpan);
+                        const referenceRange: vscode.Range = getVSCodeRangeFromSpan(deploymentTemplate, referenceSpan);
                         result.replace(documentUri, referenceRange, newName);
                     }
                 } else {
@@ -632,7 +633,7 @@ export class AzureRMTools {
                     let braceHighlightRanges: vscode.Range[] = [];
                     for (let tleHighlightIndex of tleBraceHighlightIndexes) {
                         const highlightSpan = new language.Span(tleHighlightIndex + context.jsonTokenStartIndex, 1);
-                        braceHighlightRanges.push(this.getVSCodeRangeFromSpan(deploymentTemplate, highlightSpan));
+                        braceHighlightRanges.push(getVSCodeRangeFromSpan(deploymentTemplate, highlightSpan));
                     }
 
                     editor.setDecorations(this._braceHighlightDecorationType, braceHighlightRanges);
@@ -657,18 +658,5 @@ export class AzureRMTools {
 
             this.closeDeploymentTemplate(closedDocument);
         });
-    }
-
-    private getVSCodeRangeFromSpan(deploymentTemplate: DeploymentTemplate, span: language.Span): vscode.Range {
-        assert(span);
-        assert(deploymentTemplate);
-
-        const startPosition: language.Position = deploymentTemplate.getContextFromDocumentCharacterIndex(span.startIndex).documentPosition;
-        const vscodeStartPosition = new vscode.Position(startPosition.line, startPosition.column);
-
-        const endPosition: language.Position = deploymentTemplate.getContextFromDocumentCharacterIndex(span.afterEndIndex).documentPosition;
-        const vscodeEndPosition = new vscode.Position(endPosition.line, endPosition.column);
-
-        return new vscode.Range(vscodeStartPosition, vscodeEndPosition);
     }
 }
