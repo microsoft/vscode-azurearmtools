@@ -10,7 +10,7 @@ import { networkTest } from "./networkTest.test";
 
 suite("AzureRMAssets", () => {
     networkTest("getFunctionMetadata()", async () => {
-        const functionMetadataArray = (await AzureRMAssets.getFunctionsMetadata()).functionMetadata;
+        const functionMetadataArray = AzureRMAssets.getFunctionsMetadata().functionMetadata;
         assert(functionMetadataArray);
         assert(functionMetadataArray.length > 0, `Expected to get at least 1 function metadata, but got ${functionMetadataArray.length} instead.`);
     });
