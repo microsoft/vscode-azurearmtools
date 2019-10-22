@@ -77,6 +77,20 @@ export class Span {
         return result;
     }
 
+    /**
+     * Create a new span that is a union of the given spans.
+     * If both are null, null will be returned
+     */
+    public static union(lhs: Span | null, rhs: Span | null): Span | null {
+        if (lhs) {
+            return lhs.union(rhs);
+        } else if (rhs) {
+            return rhs;
+        } else {
+            return null;
+        }
+    }
+
     public translate(movement: number): Span {
         return movement === 0 ? this : new Span(this._startIndex + movement, this._length);
     }

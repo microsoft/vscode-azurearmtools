@@ -3,13 +3,14 @@
 // ----------------------------------------------------------------------------
 
 import { assert } from "./fixed_assert";
+import { DefinitionKind } from "./INamedDefinition";
 import * as language from "./Language";
 
 /**
  * A list of references that have been found.
  */
-export class List {
-    constructor(private _type: ReferenceKind, private _spans: language.Span[] = []) {
+export class ReferenceList {
+    constructor(private _type: DefinitionKind, private _spans: language.Span[] = []) {
         assert(_type !== null, "Cannot create a reference list a null type.");
         assert(_type !== undefined, "Cannot create a reference list an undefined type.");
         assert(_spans, "Cannot create a reference list with a null spans array.");
@@ -23,7 +24,7 @@ export class List {
         return this._spans;
     }
 
-    public get kind(): ReferenceKind {
+    public get kind(): DefinitionKind {
         return this._type;
     }
 
@@ -33,7 +34,7 @@ export class List {
         this._spans.push(span);
     }
 
-    public addAll(list: List): void {
+    public addAll(list: ReferenceList): void {
         assert(list, "Cannot add all of the references from a null or undefined list.");
         assert.deepStrictEqual(this._type, list.kind, "Cannot add references from a list of a different reference type.");
 
@@ -42,11 +43,11 @@ export class List {
         }
     }
 
-    public translate(movement: number): List {
+    public translate(movement: number): ReferenceList {
         assert(movement !== null, "Cannot translate a reference list by a null amount.");
         assert(movement !== undefined, "Cannot translate a reference list by an undefined amount.");
 
-        const result = new List(this._type);
+        const result = new ReferenceList(this._type);
 
         for (const span of this._spans) {
             result.add(span.translate(movement));
@@ -54,9 +55,4 @@ export class List {
 
         return result;
     }
-}
-
-export enum ReferenceKind {
-    Parameter = 1,
-    Variable
 }

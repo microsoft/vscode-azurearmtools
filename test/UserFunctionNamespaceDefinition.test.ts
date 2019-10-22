@@ -28,7 +28,7 @@ suite("UserFunctionNamespaceDefinition", () => {
             assert(pd);
             pd = pd!;
 
-            assert(pd.namespaceName, "Contoso");
+            assert(pd.nameValue, "Contoso");
             assert(pd.members);
             assert.equal(pd.members.length, 0);
             assert.deepStrictEqual(pd.span, fakeSpan);
@@ -42,7 +42,7 @@ suite("UserFunctionNamespaceDefinition", () => {
             assert(pd);
             pd = pd!;
 
-            assert(pd.namespaceName, "Contoso");
+            assert(pd.nameValue, "Contoso");
         });
 
         suite("with members", () => {
@@ -76,10 +76,10 @@ suite("UserFunctionNamespaceDefinition", () => {
                 assert(userNs);
                 userNs = userNs!;
 
-                assert(userNs.namespaceName, "Contoso");
+                assert(userNs.nameValue, "Contoso");
                 assert(userNs.members);
                 assert.equal(userNs.members.length, 2);
-                assert.equal(userNs.getMemberDefinition("function1")!.name, "function1");
+                assert.equal(userNs.getMemberDefinition("function1")!.nameValue.unquotedValue, "function1");
             });
 
             test("getMemberDefinition case insensitive", () => {
@@ -87,11 +87,11 @@ suite("UserFunctionNamespaceDefinition", () => {
                 assert(userNs);
                 userNs = userNs!;
 
-                assert(userNs.namespaceName, "microsoft");
+                assert(userNs.nameValue, "microsoft");
                 assert(userNs.members);
                 assert.equal(userNs.members.length, 2);
                 assert(userNs.getMemberDefinition("function2"));
-                assert.equal(userNs.getMemberDefinition("function2")!.name, "Function2");
+                assert.equal(userNs.getMemberDefinition("function2")!.nameValue.unquotedValue, "Function2");
             });
         });
     });

@@ -12,7 +12,8 @@ import { UserFunctionDefinition } from "./UserFunctionDefinition";
  */
 export class UserFunctionMetadata implements IFunctionMetadata {
     constructor(
-        public readonly name: string,
+        public readonly fullName: string,
+        public readonly unqualifiedName: string,
         public readonly usage: string,
         public readonly description: string,
         public readonly parameters: IFunctionParameterMetadata[],
@@ -28,11 +29,12 @@ export class UserFunctionMetadata implements IFunctionMetadata {
     public static fromDefinition(func: UserFunctionDefinition): UserFunctionMetadata {
         return new UserFunctionMetadata(
             func.fullName,
+            func.nameValue.unquotedValue,
             getUserFunctionUsage(func, true),
             "User-defined function",
             func.parameterDefinitions.map(pd =>
                 <IFunctionParameterMetadata>{
-                    name: pd.name.unquotedValue,
+                    name: pd.nameValue.unquotedValue,
                     type: pd.validType
                 }),
             func.output && func.output.validOutputType,

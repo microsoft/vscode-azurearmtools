@@ -9,6 +9,7 @@
 // tslint:disable:switch-default // Grandfathered in
 // tslint:disable:max-classes-per-file // Grandfathered in
 
+import { templateKeys } from "./constants";
 import { __debugMarkSubstring } from "./debugMarkStrings";
 import { assert } from "./fixed_assert";
 import { IFunctionMetadata } from "./IFunctionMetadata";
@@ -43,7 +44,7 @@ export function asPropertyAccessValue(value: Value | null): PropertyAccess | nul
  * The Value class is the generic base class that all other TLE values inherit from.
  */
 export abstract class Value {
-    private _parent: ParentValue | null;
+    private _parent: ParentValue | null; // should be in constructor?
 
     public get parent(): ParentValue | null {
         return this._parent;
@@ -120,14 +121,14 @@ export class StringValue extends Value {
      * Checks whether the current position is at the argument of a 'parameters' function call
      */
     public isParametersArgument(): boolean {
-        return this.isBuiltinFunctionArgument("parameters");
+        return this.isBuiltinFunctionArgument(templateKeys.parameters);
     }
 
     /**
      * Checks whether the current position is at the argument of a 'variables' function call
      */
     public isVariablesArgument(): boolean {
-        return this.isBuiltinFunctionArgument("variables");
+        return this.isBuiltinFunctionArgument(templateKeys.variables);
     }
 
     /**
@@ -275,16 +276,19 @@ export class ArrayAccessValue extends ParentValue {
  */
 export class FunctionCallValue extends ParentValue {
     constructor(
-        private _namespaceToken: Token | null,
-        private _nameToken: Token,
-        private _leftParenthesisToken: Token | null,
-        private _commaTokens: Token[],
-        private _argumentExpressions: (Value | null)[], // Missing args are null
-        private _rightParenthesisToken: Token | null
+        private readonly _namespaceToken: Token | null,
+        public readonly periodToken: Token | null,
+        private readonly _nameToken: Token | null,
+        private readonly _leftParenthesisToken: Token | null,
+        private readonly _commaTokens: Token[],
+        private readonly _argumentExpressions: (Value | null)[], // Missing args are null
+        private readonly _rightParenthesisToken: Token | null,
+        public readonly scope: TemplateScope
     ) {
         super();
 
-        assert(_nameToken);
+        assert(_namespaceToken || _nameToken, "Must have a namespace or name token");
+        assert(!(_namespaceToken && _nameToken) || periodToken, "If we have a namespace and name, we should have a period token");
         assert(_commaTokens);
         assert(_argumentExpressions);
 
@@ -307,19 +311,56 @@ export class FunctionCallValue extends ParentValue {
     }
 
     /**
+     * The namespace name of the function call, if specified
+     */
+    public get namespace(): string | null {
+        // tslint:disable-next-line: strict-boolean-expressions
+        return (this._namespaceToken && this._namespaceToken.stringValue) || null;
+    }
+
+    /**
+     * The function's name
+     */
+    public get name(): string | null {
+        // tslint:disable-next-line: strict-boolean-expressions
+        return (this._nameToken && this._nameToken.stringValue) || null;
+    }
+
+    /**
      * The token for the function's name.
      */
-    public get nameToken(): Token {
+    public get nameToken(): Token | null {
         return this._nameToken;
     }
 
     public get fullName(): string {
-        let result = this._nameToken.stringValue;
-        if (this._namespaceToken) {
-            result = `${this._namespaceToken.stringValue}.${this._nameToken.stringValue}`;
-        }
+        // tslint:disable-next-line: strict-boolean-expressions
+        const name: string = this.name || "";
 
-        return result;
+        if (this._namespaceToken) {
+            return `${this._namespaceToken.stringValue}.${name}`;
+        } else {
+            assert(this.nameToken, "We asserted in the constructor that we have to have a namespace or a name");
+            // tslint:disable-next-line: no-non-null-assertion
+            return this.name!;
+        }
+    }
+
+    /**
+     * The span containing the namespace, period and name (at least some of these will exist)
+     */
+    public get fullNameSpan(): language.Span {
+        const result: language.Span | null =
+            language.Span.union(
+                // tslint:disable-next-line: strict-boolean-expressions
+                language.Span.union(this._namespaceToken && this._namespaceToken.span, this.periodToken && this.periodToken.span),
+                // tslint:disable-next-line: strict-boolean-expressions
+                this._nameToken && this._nameToken.span
+            );
+
+        assert(result, "Should have had at least one of a namespace or a name, therefore span should be non-empty");
+        // tslint:disable-next-line: no-non-null-assertion // Asserted
+        return result!;
     }
 
     /**
@@ -332,10 +373,12 @@ export class FunctionCallValue extends ParentValue {
     public doesNameMatch(namespaceName: string | null, name: string): boolean {
         // tslint:disable-next-line: strict-boolean-expressions
         namespaceName = namespaceName || '';
-        assert(!!name);
+
+        if (!this.nameToken || !name) {
+            return false;
+        }
 
         let thisNamespace = this._namespaceToken ? this._namespaceToken.stringValue : '';
-        assert(this.nameToken);
 
         return thisNamespace.toLowerCase() === namespaceName.toLowerCase() &&
             this.nameToken.stringValue.toLowerCase() === name.toLowerCase();
@@ -385,10 +428,8 @@ export class FunctionCallValue extends ParentValue {
     }
 
     public getSpan(): language.Span {
-        return this._nameToken.span
-            .union(this.argumentListSpan)
-            // tslint:disable-next-line: strict-boolean-expressions
-            .union(this._namespaceToken && this._namespaceToken.span);
+        return this.fullNameSpan
+            .union(this.argumentListSpan);
     }
 
     public contains(characterIndex: number): boolean {
@@ -693,7 +734,7 @@ export class Parser {
                     tokenizer.next();
                 }
 
-                expression = Parser.parseExpression(tokenizer, errors);
+                expression = Parser.parseExpression(tokenizer, scope, errors);
 
                 while (<Token | null>tokenizer.current) {
                     if (tokenizer.current.getType() === TokenType.RightSquareBracket) {
@@ -728,7 +769,7 @@ export class Parser {
         return new ParseResult(leftSquareBracketToken, expression, rightSquareBracketToken, errors, scope);
     }
 
-    private static parseExpression(tokenizer: Tokenizer, errors: language.Issue[]): Value | null {
+    private static parseExpression(tokenizer: Tokenizer, scope: TemplateScope, errors: language.Issue[]): Value | null {
         let expression: Value;
         if (tokenizer.current) {
             let rootExpression: Value | null = null; // Initial expression
@@ -736,7 +777,7 @@ export class Parser {
             let token = tokenizer.current;
             let tokenType = token.getType();
             if (tokenType === TokenType.Literal) {
-                rootExpression = Parser.parseFunctionCall(tokenizer, errors);
+                rootExpression = Parser.parseFunctionCall(tokenizer, scope, errors);
             } else if (tokenType === TokenType.QuotedString) {
                 if (!token.stringValue.endsWith(token.stringValue[0])) {
                     errors.push(new language.Issue(token.span, "A constant string is missing an end quote."));
@@ -801,7 +842,7 @@ export class Parser {
                 let leftSquareBracketToken: Token = tokenizer.current;
                 tokenizer.next();
 
-                let indexValue: Value | null = Parser.parseExpression(tokenizer, errors);
+                let indexValue: Value | null = Parser.parseExpression(tokenizer, scope, errors);
 
                 let rightSquareBracketToken: Token | null = null;
                 if (<Token | null>tokenizer.current && tokenizer.current.getType() === TokenType.RightSquareBracket) {
@@ -819,7 +860,7 @@ export class Parser {
     }
 
     // tslint:disable-next-line:cyclomatic-complexity max-func-body-length // CONSIDER: refactor
-    private static parseFunctionCall(tokenizer: Tokenizer, errors: language.Issue[]): FunctionCallValue {
+    private static parseFunctionCall(tokenizer: Tokenizer, scope: TemplateScope, errors: language.Issue[]): FunctionCallValue {
         assert(tokenizer);
         assert(tokenizer.current, "tokenizer must have a current token.");
         // tslint:disable-next-line:no-non-null-assertion // Asserted
@@ -827,7 +868,8 @@ export class Parser {
         assert(errors);
 
         let namespaceToken: Token | null = null;
-        let nameToken: Token;
+        let nameToken: Token | null = null;
+        let periodToken: Token | null = null;
 
         // tslint:disable-next-line:no-non-null-assertion // Asserted
         let firstToken: Token = tokenizer.current!;
@@ -836,7 +878,7 @@ export class Parser {
         // Check for <namespace>.<functionname>
         if (tokenizer.current && tokenizer.current.getType() === TokenType.Period) {
             // It's a user-defined function because it has a namespace before the function name
-            let periodToken = tokenizer.current;
+            periodToken = tokenizer.current;
             namespaceToken = firstToken;
             tokenizer.next();
 
@@ -846,8 +888,6 @@ export class Parser {
                 tokenizer.next();
             } else {
                 errors.push(new language.Issue(periodToken.span, "Expected user-defined function name."));
-                // Badly formed, but we need at least a nameToken, so pretend the period isn't there
-                [namespaceToken, nameToken] = [null, firstToken];
             }
         } else {
             nameToken = firstToken;
@@ -866,7 +906,8 @@ export class Parser {
                     tokenizer.next();
                     break;
                 } else if (tokenizer.current.getType() === TokenType.RightSquareBracket) {
-                    errors.push(new language.Issue(nameToken.span, "Missing function argument list."));
+                    // tslint:disable-next-line: strict-boolean-expressions
+                    errors.push(new language.Issue(getFullNameSpan(), "Missing function argument list."));
                     break;
                 } else {
                     errors.push(new language.Issue(tokenizer.current.span, "Expected the end of the string."));
@@ -874,7 +915,7 @@ export class Parser {
                 }
             }
         } else {
-            errors.push(new language.Issue(nameToken.span, "Missing function argument list."));
+            errors.push(new language.Issue(getFullNameSpan(), "Missing function argument list."));
         }
 
         if (tokenizer.hasCurrent()) {
@@ -884,7 +925,7 @@ export class Parser {
                 if (tokenizer.current.getType() === TokenType.RightParenthesis || tokenizer.current.getType() === TokenType.RightSquareBracket) {
                     break;
                 } else if (expectingArgument) {
-                    let expression = Parser.parseExpression(tokenizer, errors);
+                    let expression = Parser.parseExpression(tokenizer, scope, errors);
                     if (expression === null && tokenizer.hasCurrent() && tokenizer.current.getType() === TokenType.Comma) {
                         errors.push(new language.Issue(tokenizer.current.span, "Expected a constant string, function, or property expression."));
                     }
@@ -931,7 +972,19 @@ export class Parser {
             }
         }
 
-        return new FunctionCallValue(namespaceToken, nameToken, leftParenthesisToken, commaTokens, argumentExpressions, rightParenthesisToken);
+        assert(namespaceToken || nameToken, "Should have had a namespace or a name");
+        return new FunctionCallValue(namespaceToken, periodToken, nameToken, leftParenthesisToken, commaTokens, argumentExpressions, rightParenthesisToken, scope);
+
+        function getFullNameSpan(): language.Span {
+            if (!nameToken) {
+                assert(namespaceToken);
+                // tslint:disable-next-line: no-non-null-assertion
+                return namespaceToken!.span;
+            } else {
+                // tslint:disable-next-line: strict-boolean-expressions
+                return nameToken.span.union(namespaceToken && namespaceToken.span);
+            }
+        }
     }
 
     private static isMissingArgument(
@@ -1275,6 +1328,10 @@ export class Token {
         assert(1 <= stringValue.length);
 
         return Token.create(TokenType.Literal, startIndex, stringValue);
+    }
+
+    public static createEmptyLiteral(startIndex: number): Token {
+        return Token.create(TokenType.Literal, startIndex, "");
     }
 }
 

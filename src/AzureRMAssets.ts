@@ -7,47 +7,44 @@ import * as path from "path";
 import { assetsPath } from './constants';
 import { ExpressionType } from './ExpressionType';
 import { IFunctionMetadata, IFunctionParameterMetadata } from './IFunctionMetadata';
+import { DefinitionKind, INamedDefinition } from './INamedDefinition';
+import { StringValue } from './JSON';
 
 /**
  * An accessor class for the Azure RM storage account.
  */
 // tslint:disable-next-line:no-unnecessary-class // Grandfathered in
 export class AzureRMAssets {
-    private static _functionsMetadataPromise: Promise<FunctionsMetadata> | undefined;
+    private static _functionsMetadata: FunctionsMetadata | undefined;
 
     // For test dependency injection only
-    public static setFunctionsMetadata(metadataString: string): void {
-        // tslint:disable-next-line:typedef
-        AzureRMAssets._functionsMetadataPromise = new Promise<FunctionsMetadata>(async (resolve, reject) => {
+    public static setFunctionsMetadata(metadataString: string | undefined): void {
+        if (!metadataString) {
+            // Reset so next call to getFunctionsMetadata will retrieve real data
+            AzureRMAssets._functionsMetadata = undefined;
+        } else {
             let array = BuiltinFunctionMetadata.fromString(metadataString);
-            resolve(new FunctionsMetadata(array));
-        });
+            AzureRMAssets._functionsMetadata = new FunctionsMetadata(array);
+        }
     }
 
-    public static async getFunctionsMetadata(): Promise<FunctionsMetadata> {
-        if (!AzureRMAssets._functionsMetadataPromise) {
-            // tslint:disable-next-line:typedef
-            AzureRMAssets._functionsMetadataPromise = new Promise<FunctionsMetadata>(async (resolve, reject) => {
-                try {
-                    let uri = AzureRMAssets.getFunctionMetadataUri();
-                    let contents = await AzureRMAssets.readFile(uri);
-                    let array: BuiltinFunctionMetadata[] = BuiltinFunctionMetadata.fromString(contents);
-                    resolve(new FunctionsMetadata(array));
-                } catch (err) {
-                    reject(err);
-                }
-            });
+    public static getFunctionsMetadata(): FunctionsMetadata {
+        if (!AzureRMAssets._functionsMetadata) {
+            let uri = AzureRMAssets.getFunctionMetadataUri();
+            let contents = AzureRMAssets.readFile(uri);
+            let array: BuiltinFunctionMetadata[] = BuiltinFunctionMetadata.fromString(contents);
+            AzureRMAssets._functionsMetadata = new FunctionsMetadata(array);
         }
 
-        return await AzureRMAssets._functionsMetadataPromise;
+        return AzureRMAssets._functionsMetadata;
     }
 
-    public static async getFunctionMetadataFromName(functionName: string): Promise<BuiltinFunctionMetadata | undefined> {
-        return (await this.getFunctionsMetadata()).findbyName(functionName);
+    public static getFunctionMetadataFromName(functionName: string): BuiltinFunctionMetadata | undefined {
+        return this.getFunctionsMetadata().findbyName(functionName);
     }
 
-    public static async getFunctionMetadataFromPrefix(functionNamePrefix: string): Promise<BuiltinFunctionMetadata[]> {
-        return (await this.getFunctionsMetadata()).filterByPrefix(functionNamePrefix);
+    public static getFunctionMetadataFromPrefix(functionNamePrefix: string): BuiltinFunctionMetadata[] {
+        return this.getFunctionsMetadata().filterByPrefix(functionNamePrefix);
     }
 
     /**
@@ -61,8 +58,8 @@ export class AzureRMAssets {
         return path.join(assetsPath, assetFileName);
     }
 
-    private static async readFile(filePath: string): Promise<string> {
-        return await fse.readFile(filePath, "utf8");
+    private static readFile(filePath: string): string {
+        return fse.readFileSync(filePath, "utf8");
     }
 }
 
@@ -87,7 +84,12 @@ export class FunctionsMetadata {
 /**
  * Metadata for a TLE (Template Language Expression) function.
  */
-export class BuiltinFunctionMetadata implements IFunctionMetadata {
+// tslint:disable-next-line: no-bitwise
+export class BuiltinFunctionMetadata implements IFunctionMetadata, INamedDefinition {
+    // tslint:disable-next-line: no-unnecessary-field-initialization
+    public readonly nameValue: StringValue | undefined = undefined;
+    public definitionKind: DefinitionKind = DefinitionKind.BuiltinFunction;
+
     private readonly _name: string;
     private readonly _lowerCaseName: string;
     private readonly _returnType: ExpressionType | null;
@@ -109,7 +111,11 @@ export class BuiltinFunctionMetadata implements IFunctionMetadata {
         this._returnType = this.returnValueMembers.length > 0 ? 'object' : null;
     }
 
-    public get name(): string {
+    public get fullName(): string {
+        return this._name;
+    }
+
+    public get unqualifiedName(): string {
         return this._name;
     }
 

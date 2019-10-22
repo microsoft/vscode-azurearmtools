@@ -39,9 +39,9 @@ suite("UserFunctionParameterDefinition", () => {
             assert(pd, "Should be valid with name");
             pd = pd!;
 
-            assert(pd.name);
-            assert(pd.name.toString() === 'parameterName');
-            assert.deepStrictEqual(pd.span, fakeSpan);
+            assert(pd.nameValue);
+            assert(pd.nameValue.toString() === 'parameterName');
+            assert.deepStrictEqual(pd.fullSpan, fakeSpan);
             assert(!pd.defaultValue);
             assert(!pd.description);
         });
@@ -55,7 +55,7 @@ suite("UserFunctionParameterDefinition", () => {
             assert(pd, "Should be valid with name");
             pd = pd!;
 
-            assert(pd.name.toString() === 'parameterName');
+            assert(pd.nameValue.toString() === 'parameterName');
         });
 
         test("with other fields", () => {
@@ -72,9 +72,9 @@ suite("UserFunctionParameterDefinition", () => {
             assert(pd, "Should be valid with name");
             pd = pd!;
 
-            assert(pd.name);
-            assert(pd.name.toString() === 'parameterName');
-            assert.deepStrictEqual(pd.span, fakeSpan);
+            assert(pd.nameValue);
+            assert(pd.nameValue.toString() === 'parameterName');
+            assert.deepStrictEqual(pd.fullSpan, fakeSpan);
             assert(!pd.defaultValue);
             assert(!pd.description);
         });

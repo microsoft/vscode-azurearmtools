@@ -1,0 +1,131 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "domainNamePrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "The public DNS name label for the service.  The pattern will follow: <domainNamePrefix>.<region>.cloudapp.azure.com"
+      }
+    },
+    "vmssName": {
+      "type": "string",
+      "metadata": {
+        "description": "String used as a base for naming resources (9 characters or less). A hash is prepended to this string for some resources, and resource-specific information is appended."
+      },
+      "maxLength": 9
+    },
+    "automationAccountName": {
+      "type": "string",
+      "defaultValue": "myAutomationAccount",
+      "metadata": {
+        "description": "The name of the Automation account to use.  Check the SKU and tags to make sure they match the existing account."
+      }
+    },
+    "automationRegionId": {
+      "type": "string",
+      "defaultValue": "East US 2",
+      "allowedValues": [
+        "Japan East",
+        "East US 2",
+        "West Europe",
+        "Southeast Asia",
+        "South Central US",
+        "Central India"
+      ],
+      "metadata": {
+        "description": "The region the Automation account is located in."
+      }
+    },
+    "configurationName": {
+      "type": "string",
+      "defaultValue": "MyService",
+      "metadata": {
+        "description": "The name of the DSC Configuration. The name must match the name in the URI."
+      }
+    },
+    "jobid": {
+      "type": "string",
+      "metadata": {
+        "description": "The job id to compile the configuration"
+      }
+    }
+  },
+  "variables": {
+    "saCount": 5,
+    "namingInfix": "[toLower(parameters('vmssName'))]",
+    "newStorageAccountSuffix": "[concat(variables('namingInfix'), 'sa')]",
+    "uniqueStringArray": [
+      "[concat(uniqueString(concat(resourceGroup().id, deployment().name, variables('newStorageAccountSuffix'), '0')))]",
+      "[concat(uniqueString(concat(resourceGroup().id, deployment().name, variables('newStorageAccountSuffix'), '1')))]",
+      "[concat(uniqueString(concat(resourceGroup().id, deployment().name, variables('newStorageAccountSuffix'), '2')))]",
+      "[concat(uniqueString(concat(resourceGroup().id, deployment().name, variables('newStorageAccountSuffix'), '3')))]",
+      "[concat(uniqueString(concat(resourceGroup().id, deployment().name, variables('newStorageAccountSuffix'), '4')))]"
+    ],
+    "publicIPAddressName": "[concat(variables('namingInfix'), 'pip')]",
+    "publicIPAddressID": "[resourceId('Microsoft.Network/publicIPAddresses/',variables('publicIPAddressName'))]",
+    "osType": {
+      "publisher": "MicrosoftWindowsServer",
+      "offer": "WindowsServer",
+      "sku": "[parameters('windowsOSVersion')]",
+      "version": "latest"
+    },
+    "automationPricingTier": "Free"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Automation/automationAccounts",
+      "name": "[parameters('automationAccountName')]",
+      "apiVersion": "2015-10-31",
+      "location": "[parameters('automationRegionId')]",
+      "dependsOn": [],
+      "tags": {},
+      "properties": {
+        "sku": {
+          "name": "[variables('automationPricingTier')]"
+        }
+      },
+      "resources": [
+        {
+          "name": "[parameters('jobid')]",
+          "type": "compilationjobs",
+          "apiVersion": "2015-10-31",
+          "location": "parameters('automationRegionId')]",
+          "tags": {},
+          "dependsOn": [
+            "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))]",
+            "[concat('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'),'/Configurations/', parameters('configurationName'))]"
+          ],
+          "properties": {
+            "configuration": {
+              "name": "[parameters('configurationName')]"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[concat(variables('uniqueStringArray')[copyindex(1,2)], variables('newStorageAccountSuffix'))]",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "copy": {
+        "name": "storageLoop",
+        "count": "[variables('sacount')]"
+      },
+      "properties": {
+        "accountType": "[variables('storageAccountType')]"
+      }
+    }
+  ],
+  "outputs": {
+    "fqdn": {
+      "value": "[reference(variables('publicIPAddressID'),'2017-04-01', 'Full').dnsSettings.fqdn]",
+      "type": "string"
+    },
+    "ipaddress": {
+      "value": "[reference(variables('publicIPAddressID'),'2017-04-01').ipAddress]",
+      "type": "string"
+    }
+  }
+}

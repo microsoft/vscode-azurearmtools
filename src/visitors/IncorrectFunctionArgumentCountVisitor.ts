@@ -5,7 +5,6 @@
 import * as assets from "../AzureRMAssets";
 import { assert } from "../fixed_assert";
 import { IncorrectArgumentsCountIssue } from "../IncorrectArgumentsCountIssue";
-import { TemplateScope } from "../TemplateScope";
 import { FunctionCallValue, Value, Visitor } from "../TLE";
 import { UserFunctionNamespaceDefinition } from "../UserFunctionNamespaceDefinition";
 
@@ -16,7 +15,7 @@ import { UserFunctionNamespaceDefinition } from "../UserFunctionNamespaceDefinit
 export class IncorrectFunctionArgumentCountVisitor extends Visitor {
     private _errors: IncorrectArgumentsCountIssue[] = [];
 
-    constructor(private _tleFunctions: assets.FunctionsMetadata, private _scope: TemplateScope) {
+    constructor(private _tleFunctions: assets.FunctionsMetadata) {
         super();
     }
 
@@ -29,16 +28,20 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
         let minimumArguments: number | undefined;
         let maximumArguments: number | undefined;
 
+        const functionName: string | null = tleFunction.name;
+        if (!functionName) {
+            return;
+        }
+
         if (tleFunction.namespaceToken) {
             const namespaceName: string = tleFunction.namespaceToken.stringValue.toString();
-            const nsDefinition: UserFunctionNamespaceDefinition | undefined = this._scope.getFunctionNamespaceDefinition(namespaceName);
+            const nsDefinition: UserFunctionNamespaceDefinition | undefined = tleFunction.scope.getFunctionNamespaceDefinition(namespaceName);
 
             // If not found, will be handled by the UnrecognizedFunctionVisitor visitor
             if (!nsDefinition) {
                 return;
             }
 
-            const functionName: string = tleFunction.nameToken.stringValue.toString();
             const functionDefinition = nsDefinition.getMemberDefinition(functionName);
             if (!functionDefinition) {
                 return;
@@ -48,12 +51,11 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
             minimumArguments = maximumArguments = functionDefinition.parameterDefinitions.length;
         } else {
             // Built-in function call
-            const parsedFunctionName: string = tleFunction.nameToken.stringValue;
-            let functionMetadata: assets.BuiltinFunctionMetadata | undefined = this._tleFunctions.findbyName(parsedFunctionName);
+            let functionMetadata: assets.BuiltinFunctionMetadata | undefined = this._tleFunctions.findbyName(functionName);
             if (!functionMetadata) {
                 return;
             }
-            actualFullFunctionName = functionMetadata.name;
+            actualFullFunctionName = functionMetadata.fullName;
 
             minimumArguments = functionMetadata.minimumArguments;
             // tslint:disable-next-line:max-line-length
@@ -94,8 +96,8 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
         return `argument${argumentCount === 1 ? "" : "s"}`;
     }
 
-    public static visit(tleValue: Value | null, tleFunctions: assets.FunctionsMetadata, scope: TemplateScope): IncorrectFunctionArgumentCountVisitor {
-        const visitor = new IncorrectFunctionArgumentCountVisitor(tleFunctions, scope);
+    public static visit(tleValue: Value | null, tleFunctions: assets.FunctionsMetadata): IncorrectFunctionArgumentCountVisitor {
+        const visitor = new IncorrectFunctionArgumentCountVisitor(tleFunctions);
         if (tleValue) {
             tleValue.accept(visitor);
         }

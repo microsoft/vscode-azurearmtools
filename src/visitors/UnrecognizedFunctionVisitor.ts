@@ -20,29 +20,34 @@ export class UnrecognizedFunctionVisitor extends Visitor {
         return this._errors;
     }
     public visitFunctionCall(tleFunction: FunctionCallValue): void {
-        const functionName: string = tleFunction.nameToken.stringValue;
-        if (tleFunction.namespaceToken) {
-            // User-defined function reference
-            const namespaceName: string = tleFunction.namespaceToken.stringValue;
-            const namespaceSpan: language.Span = tleFunction.namespaceToken.span;
-            let namespaceDefinition = this._scope.getFunctionNamespaceDefinition(namespaceName);
-            if (!namespaceDefinition) {
-                // Namespace not found
-                this._errors.push(new UnrecognizedUserNamespaceIssue(namespaceSpan, namespaceName));
+        const functionName: string | null = tleFunction.name;
+        // tslint:disable-next-line: strict-boolean-expressions
+        const functionNameSpan: language.Span | null = tleFunction.nameToken && tleFunction.nameToken.span;
+        if (functionName && functionNameSpan) {
+            if (tleFunction.namespaceToken) {
+                // User-defined function reference
+                const namespaceName: string = tleFunction.namespaceToken.stringValue;
+                const namespaceSpan: language.Span = tleFunction.namespaceToken.span;
+                let namespaceDefinition = this._scope.getFunctionNamespaceDefinition(namespaceName);
+                if (!namespaceDefinition) {
+                    // Namespace not found
+                    this._errors.push(new UnrecognizedUserNamespaceIssue(namespaceSpan, namespaceName));
+                } else {
+                    // Name not found within namespace
+                    let funcDefinition = namespaceDefinition.getMemberDefinition(functionName);
+                    if (!funcDefinition) {
+                        this._errors.push(new UnrecognizedUserFunctionIssue(functionNameSpan, namespaceName, functionName));
+                    }
+                }
             } else {
-                // Name not found within namespace
-                let funcDefinition = namespaceDefinition.getMemberDefinition(functionName);
-                if (!funcDefinition) {
-                    this._errors.push(new UnrecognizedUserFunctionIssue(tleFunction.nameToken.span, namespaceName, functionName));
+                // Built-in function
+                const functionMetadata: assets.BuiltinFunctionMetadata | undefined = this._tleFunctions.findbyName(functionName);
+                if (!functionMetadata) {
+                    this._errors.push(new UnrecognizedBuiltinFunctionIssue(functionNameSpan, functionName));
                 }
             }
-        } else {
-            // Built-in function
-            const functionMetadata: assets.BuiltinFunctionMetadata | undefined = this._tleFunctions.findbyName(functionName);
-            if (!functionMetadata) {
-                this._errors.push(new UnrecognizedBuiltinFunctionIssue(tleFunction.nameToken.span, functionName));
-            }
         }
+
         super.visitFunctionCall(tleFunction);
     }
     public static visit(scope: TemplateScope, tleValue: Value | null, tleFunctions: assets.FunctionsMetadata): UnrecognizedFunctionVisitor {

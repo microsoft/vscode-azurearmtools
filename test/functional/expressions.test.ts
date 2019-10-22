@@ -243,31 +243,31 @@ suite("Expressions functional tests", () => {
         testExpression("", "[deployment()]", []);
 
         // 1 arg
-        testExpression("", "[empty(1)]", []);
+        testExpression("", "[string(1)]", []);
 
         // 2 args
-        testExpression("", "[endsWith('abc','bc')]", []);
-        testExpression("", "[ endsWith ( 'abc', 'bc' ) ]", []);
+        testExpression("", "[equals('abc','bc')]", []);
+        testExpression("", "[ equals ( 'abc', 'bc' ) ]", []);
 
         // Missing comma
-        testExpression("", "[endsWith('abc' 'bc')]", [
-            "Error: Expected a comma (','). (arm-template (expressions)) [10,33-10,37]",
-            "Error: The function 'endsWith' takes 2 arguments. (arm-template (expressions)) [10,18-10,38]"
+        testExpression("", "[equals('abc' 'bc')]", [
+            "Error: Expected a comma (','). (arm-template (expressions)) [10,31-10,35]",
+            "Error: The function 'equals' takes 2 arguments. (arm-template (expressions)) [10,18-10,36]"
         ]);
 
         // Expected 2 args, has zero
-        testExpression("", "[endsWith()]", [
-            "Error: The function 'endsWith' takes 2 arguments. (arm-template (expressions)) [10,18-10,28]"
+        testExpression("", "[equals()]", [
+            "Error: The function 'equals' takes 2 arguments. (arm-template (expressions)) [10,18-10,26]"
         ]);
 
         // Expected 2 args, has one
-        testExpression("", "[endsWith('a')]", [
-            "Error: The function 'endsWith' takes 2 arguments. (arm-template (expressions)) [10,18-10,31]"
+        testExpression("", "[equals('a')]", [
+            "Error: The function 'equals' takes 2 arguments. (arm-template (expressions)) [10,18-10,29]"
         ]);
 
         // Expected 2 args, has three
-        testExpression("", "[endsWith('a', 'b', 'c')]", [
-            "Error: The function 'endsWith' takes 2 arguments. (arm-template (expressions)) [10,18-10,41]"
+        testExpression("", "[equals('a', 'b', 'c')]", [
+            "Error: The function 'equals' takes 2 arguments. (arm-template (expressions)) [10,18-10,39]"
         ]);
 
         // Unrecognized function name with arg
@@ -335,7 +335,7 @@ suite("Expressions functional tests", () => {
         testExpression("", "[parameters('objParam').abc[2]]", []);
 
         // Array argument
-        testExpression("", "[empty(variables('arrayVar')[0])]", []);
+        testExpression("", "[string(variables('arrayVar')[0])]", []);
 
         testExpression("", "[variables('arrayVar')[1][1]", [
             "Error: Expected a right square bracket (']'). (arm-template (expressions)) [10,45-10,46]"

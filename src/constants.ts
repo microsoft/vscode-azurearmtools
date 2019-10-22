@@ -31,3 +31,8 @@ export namespace configKeys {
 // For testing: We create a diagnostic with this message during testing to indicate when all (expression) diagnostics have been calculated
 export const diagnosticsCompletePrefix = "Diagnostics complete: ";
 export const expressionsDiagnosticsCompletionMessage = diagnosticsCompletePrefix + expressionsDiagnosticsSource;
+
+export namespace templateKeys {
+    export const parameters = 'parameters';
+    export const variables = 'variables';
+}

@@ -20,7 +20,7 @@ import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 import * as language from "./Language";
 import { startArmLanguageServer, stopArmLanguageServer } from "./languageclient/startArmLanguageServer";
 import { PositionContext } from "./PositionContext";
-import * as Reference from "./Reference";
+import * as Reference from "./ReferenceList";
 import { getFunctionParamUsage } from "./signatureFormatting";
 import { Stopwatch } from "./Stopwatch";
 import { armDeploymentDocumentSelector, mightBeDeploymentTemplate } from "./supported";
@@ -193,7 +193,9 @@ export class AzureRMTools {
         deploymentTemplate: DeploymentTemplate,
         stopwatch: Stopwatch
     ): void {
+        // tslint:disable-next-line: restrict-plus-operands
         const functionsInEachNamespace = deploymentTemplate.topLevelScope.namespaceDefinitions.map(ns => ns.members.length);
+        // tslint:disable-next-line: restrict-plus-operands
         const totalUserFunctionsCount = functionsInEachNamespace.reduce((sum, count) => sum + count, 0);
 
         ext.reporter.sendTelemetryEvent(
@@ -271,35 +273,35 @@ export class AzureRMTools {
         vscode.workspace.onDidCloseTextDocument(this.onDocumentClosed, this, ext.context.subscriptions);
 
         const hoverProvider: vscode.HoverProvider = {
-            provideHover: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover | undefined> => {
+            provideHover: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Hover | undefined => {
                 return this.onProvideHover(document, position, token);
             }
         };
         ext.context.subscriptions.push(vscode.languages.registerHoverProvider(armDeploymentDocumentSelector, hoverProvider));
 
         const completionProvider: vscode.CompletionItemProvider = {
-            provideCompletionItems: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList | undefined> => {
+            provideCompletionItems: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.CompletionList | undefined => {
                 return this.onProvideCompletionItems(document, position, token);
             }
         };
         ext.context.subscriptions.push(vscode.languages.registerCompletionItemProvider(armDeploymentDocumentSelector, completionProvider, "'", "[", "."));
 
         const definitionProvider: vscode.DefinitionProvider = {
-            provideDefinition: async (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Definition | undefined> => {
-                return await this.onProvideDefinition(document, position, token);
+            provideDefinition: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Definition | undefined => {
+                return this.onProvideDefinition(document, position, token);
             }
         };
         ext.context.subscriptions.push(vscode.languages.registerDefinitionProvider(armDeploymentDocumentSelector, definitionProvider));
 
         const referenceProvider: vscode.ReferenceProvider = {
             provideReferences: async (document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): Promise<vscode.Location[] | undefined> => {
-                return await this.onProvideReferences(document, position, context, token);
+                return this.onProvideReferences(document, position, context, token);
             }
         };
         ext.context.subscriptions.push(vscode.languages.registerReferenceProvider(armDeploymentDocumentSelector, referenceProvider));
 
         const signatureHelpProvider: vscode.SignatureHelpProvider = {
-            provideSignatureHelp: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp | undefined> => {
+            provideSignatureHelp: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.SignatureHelp | undefined => {
                 return this.onProvideSignatureHelp(document, position, token);
             }
         };
@@ -385,15 +387,15 @@ export class AzureRMTools {
         this._deploymentTemplates.delete(document.uri.toString());
     }
 
-    private async onProvideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover | undefined> {
+    private onProvideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Hover | undefined {
         const deploymentTemplate = this.getDeploymentTemplate(document);
         if (deploymentTemplate) {
-            return await callWithTelemetryAndErrorHandling('Hover', async (actionContext: IActionContext): Promise<vscode.Hover | undefined> => {
+            return callWithTelemetryAndErrorHandlingSync('Hover', (actionContext: IActionContext): vscode.Hover | undefined => {
                 actionContext.errorHandling.suppressDisplay = true;
                 let properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>actionContext.telemetry.properties;
 
                 const context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                let hoverInfo: Hover.Info | null = await context.getHoverInfo();
+                let hoverInfo: Hover.Info | null = context.getHoverInfo();
                 let hover: vscode.Hover;
 
                 if (hoverInfo) {
@@ -420,16 +422,16 @@ export class AzureRMTools {
         }
     }
 
-    private async onProvideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList | undefined> {
+    private onProvideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.CompletionList | undefined {
         const deploymentTemplate = this.getDeploymentTemplate(document);
         if (deploymentTemplate) {
-            return await callWithTelemetryAndErrorHandling('provideCompletionItems', async (actionContext: IActionContext): Promise<vscode.CompletionList | undefined> => {
+            return callWithTelemetryAndErrorHandlingSync('provideCompletionItems', (actionContext: IActionContext): vscode.CompletionList | undefined => {
                 let properties = <TelemetryProperties & { completionKind?: string }>actionContext.telemetry.properties;
                 actionContext.telemetry.suppressIfSuccessful = true;
                 actionContext.errorHandling.suppressDisplay = true;
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                let completionItemArray: Completion.Item[] = await context.getCompletionItems();
+                let completionItemArray: Completion.Item[] = context.getCompletionItems();
                 const completionItems: vscode.CompletionItem[] = [];
                 for (const completion of completionItemArray) {
                     const insertRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, completion.insertSpan);
@@ -454,10 +456,16 @@ export class AzureRMTools {
                             completionToAdd.kind = vscode.CompletionItemKind.Field;
                             break;
 
+                        case Completion.CompletionKind.Namespace:
+                            completionToAdd.kind = vscode.CompletionItemKind.Unit;
+                            break;
+
                         default:
                             assert.fail(`Unrecognized Completion.Type: ${completion.kind}`);
                             break;
                     }
+
+                    // Add completion kind to telemetry
                     properties.completionKind = typeof completionToAdd.kind === "number" ? vscode.CompletionItemKind[completionToAdd.kind] : undefined;
 
                     completionItems.push(completionToAdd);
@@ -467,21 +475,21 @@ export class AzureRMTools {
         }
     }
 
-    private async onProvideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Location | undefined> {
+    private onProvideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Location | undefined {
         const deploymentTemplate: DeploymentTemplate | undefined = this.getDeploymentTemplate(document);
         if (deploymentTemplate) {
-            return await callWithTelemetryAndErrorHandling('Go To Definition', async (actionContext: IActionContext): Promise<vscode.Location | undefined> => {
+            return callWithTelemetryAndErrorHandlingSync('Go To Definition', (actionContext: IActionContext): vscode.Location | undefined => {
                 let properties = <TelemetryProperties & { definitionType?: string }>actionContext.telemetry.properties;
                 actionContext.errorHandling.suppressDisplay = true;
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                const refInfo = await context.getReferenceSiteInfo();
-                if (refInfo && refInfo.definitionSpan) {
-                    properties.definitionType = refInfo.kind;
+                const refInfo = context.getReferenceSiteInfo();
+                if (refInfo && refInfo.definition.nameValue) {
+                    properties.definitionType = refInfo.definition.definitionKind;
 
                     return new vscode.Location(
                         vscode.Uri.parse(deploymentTemplate.documentId),
-                        this.getVSCodeRangeFromSpan(deploymentTemplate, refInfo.definitionSpan)
+                        this.getVSCodeRangeFromSpan(deploymentTemplate, refInfo.definition.nameValue.span)
                     );
                 }
 
@@ -490,33 +498,17 @@ export class AzureRMTools {
         }
     }
 
-    private async onProvideReferences(document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): Promise<vscode.Location[] | undefined> {
+    private onProvideReferences(document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): vscode.Location[] | undefined {
         const deploymentTemplate: DeploymentTemplate | undefined = this.getDeploymentTemplate(document);
         if (deploymentTemplate) {
-            return await callWithTelemetryAndErrorHandling('Find References', async (actionContext: IActionContext): Promise<vscode.Location[]> => {
+            return callWithTelemetryAndErrorHandlingSync('Find References', (actionContext: IActionContext): vscode.Location[] => {
                 const results: vscode.Location[] = [];
                 const locationUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
                 const positionContext: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
-                const references: Reference.List | null = await positionContext.getReferences();
+                const references: Reference.ReferenceList | null = positionContext.getReferences();
                 if (references && references.length > 0) {
-                    let referenceType: string;
-                    switch (references.kind) {
-                        case Reference.ReferenceKind.Parameter:
-                            referenceType = "parameter";
-                            break;
-
-                        case Reference.ReferenceKind.Variable:
-                            referenceType = "variable";
-                            break;
-
-                        default:
-                            assert.fail(`Unrecognized Reference.Kind: ${references.kind}`);
-                            referenceType = "no reference type";
-                            break;
-                    }
-
-                    actionContext.telemetry.properties.referenceType = referenceType;
+                    actionContext.telemetry.properties.referenceType = references.kind;
 
                     for (const span of references.spans) {
                         const referenceRange: vscode.Range = this.getVSCodeRangeFromSpan(deploymentTemplate, span);
@@ -529,15 +521,15 @@ export class AzureRMTools {
         }
     }
 
-    private async onProvideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp | undefined> {
+    private onProvideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.SignatureHelp | undefined {
         const deploymentTemplate: DeploymentTemplate | undefined = this.getDeploymentTemplate(document);
         if (deploymentTemplate) {
-            return await callWithTelemetryAndErrorHandling('provideSignatureHelp', async (actionContext: IActionContext): Promise<vscode.SignatureHelp | undefined> => {
+            return callWithTelemetryAndErrorHandlingSync('provideSignatureHelp', (actionContext: IActionContext): vscode.SignatureHelp | undefined => {
                 actionContext.errorHandling.suppressDisplay = true;
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
-                let functionSignatureHelp: TLE.FunctionSignatureHelp | null = await context.getSignatureHelp();
+                let functionSignatureHelp: TLE.FunctionSignatureHelp | null = context.getSignatureHelp();
                 let signatureHelp: vscode.SignatureHelp | undefined;
 
                 if (functionSignatureHelp) {
@@ -568,7 +560,7 @@ export class AzureRMTools {
                 const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                const referenceList: Reference.List | null = await context.getReferences();
+                const referenceList: Reference.ReferenceList | null = context.getReferences();
                 if (referenceList) {
                     // When trying to rename a parameter or variable reference inside of a TLE, the
                     // textbox that pops up when you press F2 contains more than just the variable

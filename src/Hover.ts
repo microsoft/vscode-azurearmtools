@@ -5,11 +5,11 @@
 // tslint:disable max-classes-per-file // Grandfathered in
 
 import { IParameterDefinition } from "./IParameterDefinition";
-import * as Json from "./JSON";
 import * as language from "./Language";
 import { getUserFunctionUsage } from "./signatureFormatting";
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
+import { VariableDefinition } from "./VariableDefinition";
 
 /**
  * The information that will be displayed when the cursor hovers over parts of a document.
@@ -72,7 +72,7 @@ export class UserNamespaceInfo extends Info {
     }
 
     public getHoverText(): string {
-        const ns = this._namespace.namespaceName.unquotedValue;
+        const ns = this._namespace.nameValue.unquotedValue;
         const methodsUsage: string[] = this._namespace.members
             .map(md => getUserFunctionUsage(md, false));
         const summary = `**${ns}** User-defined namespace`;
@@ -93,7 +93,7 @@ export class ParameterReferenceInfo extends Info {
     }
 
     public static fromDefinition(definition: IParameterDefinition, parameterNameSpan: language.Span): ParameterReferenceInfo {
-        return new ParameterReferenceInfo(definition.name.unquotedValue, definition.description, parameterNameSpan);
+        return new ParameterReferenceInfo(definition.nameValue.unquotedValue, definition.description, parameterNameSpan);
     }
 
     public getHoverText(): string {
@@ -109,8 +109,8 @@ export class VariableReferenceInfo extends Info {
         super(_variableNameSpan);
     }
 
-    public static fromDefinition(definition: Json.Property, variableNameSpan: language.Span): VariableReferenceInfo {
-        return new VariableReferenceInfo(definition.name.unquotedValue, variableNameSpan);
+    public static fromDefinition(definition: VariableDefinition, variableNameSpan: language.Span): VariableReferenceInfo {
+        return new VariableReferenceInfo(definition.nameValue.unquotedValue, variableNameSpan);
     }
 
     public getHoverText(): string {

@@ -3,12 +3,11 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as fs from "fs";
 import * as mocha from 'mocha';
-import * as path from "path";
 import * as vscode from 'vscode';
-import { AzureRMAssets, configKeys, configPrefix, ext, languageId } from "../extension.bundle";
+import { configKeys, configPrefix, ext, languageId } from "../extension.bundle";
 import { delay } from "./support/delay";
+import { useTestFunctionMetadata } from "./TestData";
 
 // tslint:disable:no-console no-function-expression
 
@@ -19,8 +18,9 @@ let previousSettings = {
 
 // Runs before all tests
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
-    let testMetadata = fs.readFileSync(path.join(__dirname, '..', '..', 'test', 'ExpressionMetadata.test.json'));
-    AzureRMAssets.setFunctionsMetadata(testMetadata.toString());
+
+    // Use test metadata for all tests by default
+    useTestFunctionMetadata();
 
     ext.addCompletedDiagnostic = true;
 

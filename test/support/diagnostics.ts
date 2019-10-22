@@ -197,7 +197,7 @@ async function getDiagnosticsForDocument(
             timer = setTimeout(
                 () => {
                     reject(
-                        new Error('Timed out waiting for diagnostics. Last retrieved diagnostics: '
+                        new Error(`Timed out waiting for diagnostics (${diagnosticsTimeout}ms). Last retrieved diagnostics: `
                             + (currentDiagnostics ? currentDiagnostics.map(d => d.message).join('\n') : "None")));
                 },
                 diagnosticsTimeout);
