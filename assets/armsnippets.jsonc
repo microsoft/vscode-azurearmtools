@@ -977,7 +977,7 @@
             "    ],",
             "    \"properties\": {",
             "        \"TTL\": 3600,",
-            "        \"${z|Arecords,AAAARecords,MXRecords,NSRecords,PTRRecords,SRVRecords,TXTRecords,CNAMERecord,SOARecord|}\": []",
+            "        \"${9|Arecords,AAAARecords,MXRecords,NSRecords,PTRRecords,SRVRecords,TXTRecords,CNAMERecord,SOARecord|}\": []",
             "    }",
             "}"
         ],
@@ -1576,7 +1576,7 @@
             "    \"properties\": {",
             "        \"publicIPAllocationMethod\": \"Dynamic\",",
             "        \"dnsSettings\": {",
-            "            \"domainNameLabel\": \"${dnsname1}\"",
+            "            \"domainNameLabel\": \"${2:dnsname1}\"",
             "        }",
             "    }",
             "}"
