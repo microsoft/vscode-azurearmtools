@@ -1003,6 +1003,28 @@ suite("PositionContext", () => {
                                             []);
                 }
 
+                // Should retain original casing when completing
+                for (let i = 0; i <= 78; ++i) {
+                    completionItemsTest(`{ "variables": { "A": { "Bb": { "cC": 200 } } }, "b": "[variables('a').Bb.]" }`, i,
+                        (i === 56) ? allTestDataExpectedCompletions(56, 0) :
+                            (57 <= i && i <= 65) ? [expectedVariablesCompletion(56, 9)] :
+                                (67 <= i && i <= 68) ? [variableCompletion("A", 66, 4)] :
+                                    (70 <= i && i <= 73) ? [propertyCompletion("Bb", 71, 2)] :
+                                        (i === 74) ? [propertyCompletion("cC", 74, 0)] :
+                                            []);
+                }
+
+                // Casing shouldn't matter for finding completions
+                for (let i = 0; i <= 78; ++i) {
+                    completionItemsTest(`{ "variables": { "A": { "Bb": { "cC": 200 } } }, "b": "[variables('a').BB.Cc]" }`, i,
+                        (i === 56) ? allTestDataExpectedCompletions(56, 0) :
+                            (57 <= i && i <= 65) ? [expectedVariablesCompletion(56, 9)] :
+                                (67 <= i && i <= 68) ? [variableCompletion("A", 66, 4)] :
+                                    (70 <= i && i <= 73) ? [propertyCompletion("Bb", 71, 2)] :
+                                        (74 <= i && i <= 76) ? [propertyCompletion("cC", 74, 2)] :
+                                            []);
+                }
+
             });
 
             // CONSIDER: Use parseTemplateWithMarkers

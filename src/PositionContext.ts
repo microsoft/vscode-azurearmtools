@@ -571,9 +571,12 @@ export class PositionContext {
             if (!propertyPrefix) {
                 matchingPropertyNames = sourcePropertyDefinition.propertyNames;
             } else {
+                // We need to ignore casing when creating completions
+                const propertyPrefixLC = propertyPrefix.toLowerCase();
+
                 matchingPropertyNames = [];
                 for (const propertyName of sourcePropertyDefinition.propertyNames) {
-                    if (propertyName.startsWith(propertyPrefix)) {
+                    if (propertyName.toLowerCase().startsWith(propertyPrefixLC)) {
                         matchingPropertyNames.push(propertyName);
                     }
                 }
