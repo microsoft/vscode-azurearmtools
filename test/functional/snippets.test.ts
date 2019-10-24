@@ -89,7 +89,6 @@ interface ISnippet {
 
 suite("Snippets functional tests", () => {
     suite("all snippets", () => {
-        createSnippetTests("jsonsnippets.jsonc");
         createSnippetTests("armsnippets.jsonc");
     });
 

@@ -24,5 +24,14 @@
             "}"
         ],
         "description": "Skeleton ARM Parameters Template"
+    },
+    "Parameter Value": {
+        "prefix": "arm-param-value",
+        "body": [
+            "\"${1:parameter1}\": {",
+            "    \"value\": \"${2:value}\"",
+            "}"
+        ],
+        "description": "ARM Template Parameter value used in a azuredeploy.parameters.json file"
     }
 }
