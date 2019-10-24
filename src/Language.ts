@@ -117,6 +117,10 @@ export class Position {
     public get column(): number {
         return this._column;
     }
+
+    public toFriendlyString(): string {
+        return `[${this._line + 1}:${this._column + 1}]`;
+    }
 }
 
 /**

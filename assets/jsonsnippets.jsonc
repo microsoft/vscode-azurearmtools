@@ -3,7 +3,7 @@
         "prefix": "arm!",
         "body": [
             "{",
-            "    \"$$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#\",",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#\",",
             "    \"contentVersion\": \"1.0.0.0\",",
             "    \"parameters\": {},",
             "    \"variables\": {},",
@@ -18,11 +18,20 @@
         "prefix": "armp!",
         "body": [
             "{",
-            "    \"$$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#\",",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#\",",
             "    \"contentVersion\": \"1.0.0.0\",",
             "    \"parameters\": {}",
             "}"
         ],
         "description": "Skeleton ARM Parameters Template"
+    },
+    "Parameter Value": {
+        "prefix": "arm-param-value",
+        "body": [
+            "\"${1:parameter1}\": {",
+            "    \"value\": \"${2:value}\"",
+            "}"
+        ],
+        "description": "ARM Template Parameter value used in a azuredeploy.parameters.json file"
     }
 }
