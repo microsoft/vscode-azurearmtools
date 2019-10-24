@@ -4,12 +4,13 @@
 
 import * as path from 'path';
 import { testDiagnosticsFromFile } from "./support/diagnostics";
+import { testWithLanguageServer } from './support/testWithLanguageServer';
 
 // These are from the templates at https://github.com/bmoore-msft/arm-template-language-samples which show problems with the 0.6.0 version of the extension
 
 suite("arm-template-language-samples", () => {
     function testSample(templateName: string, expectedErrors: string[] = []): void {
-        test(templateName, async () => {
+        testWithLanguageServer(templateName, async () => {
             await testDiagnosticsFromFile(
                 path.join('templates', 'arm-template-language-samples', templateName),
                 {
