@@ -36,7 +36,7 @@
         "prefix": "arm-param",
         "body": [
             "\"${1:parameter1}\": {",
-            "   \"type\": \"${2|string,securestring,int,bool,object,secureObject,array|}\",",
+            "   \"type\": \"${2|string,securestring,int,bool,object,secureobject,array|}\",",
             "   \"metadata\": {",
             "        \"description\": \"${3:description}\"",
             "    }",
@@ -48,7 +48,7 @@
         "prefix": "arm-output",
         "body": [
             "\"${1:output1}\": {",
-            "   \"type\": \"${2|string,securestring,int,bool,object,secureObject,array|}\",",
+            "   \"type\": \"${2|string,securestring,int,bool,object,secureobject,array|}\",",
             "   \"value\": \"${3:value}\"",
             "}"
         ],
@@ -1961,6 +1961,47 @@
             "}"
         ],
         "description": "Ubuntu Virtual Machine"
+    },
+    "User Function": {
+        "prefix": "arm-userfunc",
+        "body": [
+            "\"${1:function-name}\": {",
+            "    \"parameters\": [",
+            "        {",
+            "            \"name\": \"${2:parameter-name}\",",
+            "            \"type\": \"${3|string,securestring,int,bool,object,secureobject,array|}\"",
+            "        }",
+            "    ],",
+            "    \"output\": {",
+            "        \"value\": \"${4:function-return-value}\",",
+            "        \"type\": \"${5|string,securestring,int,bool,object,secureobject,array|}\"",
+            "    }",
+            "}"
+        ],
+        "description": "User-defined namespace and member function, should be placed inside a \"members\" object inside \"functions\""
+    },
+    "User Function Namespace": {
+        "prefix": "arm-userfunc-namespace",
+        "body": [
+            "{",
+            "    \"namespace\": \"${1:namespace-name}\",",
+            "    \"members\": {",
+            "        \"${2:function-name}\": {",
+            "            \"parameters\": [",
+            "                {",
+            "                    \"name\": \"${3:parameter-name}\",",
+            "                    \"type\": \"${4|string,securestring,int,bool,object,secureobject,array|}\"",
+            "                }",
+            "            ],",
+            "            \"output\": {",
+            "                \"value\": \"${5:function-return-value}\",",
+            "                \"type\": \"${6|string,securestring,int,bool,object,secureobject,array|}\"",
+            "            }",
+            "        }",
+            "    }",
+            "}"
+        ],
+        "description": "User-defined namespace and member function, should be placed inside the top-level \"functions\" section"
     },
     "Virtual Network": {
         "prefix": "arm-vnet",
