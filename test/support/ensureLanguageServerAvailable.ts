@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { getLanguageServerState, LanguageServerState } from "../../extension.bundle";
+import { ext, LanguageServerState } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
 import { delay } from "./delay";
 
@@ -16,7 +16,7 @@ export async function ensureLanguageServerAvailable(): Promise<void> {
     if (!isLanguageServerAvailable) {
         // tslint:disable-next-line: no-constant-condition
         while (true) {
-            switch (getLanguageServerState()) {
+            switch (ext.languageServerState) {
                 case LanguageServerState.Failed:
                     throw new Error('Language server failed to start');
                 case LanguageServerState.NotStarted:

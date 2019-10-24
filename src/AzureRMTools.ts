@@ -244,7 +244,7 @@ export class AzureRMTools {
     }
 
     private getCompletedDiagnostic(): vscode.Diagnostic | undefined {
-        if (ext.addCompletedDiagnostic) {
+        if (ext.getAddCompletedDiagnostic()) {
             // Add a diagnostic to indicate expression validation is done (for testing)
             return {
                 severity: vscode.DiagnosticSeverity.Information,

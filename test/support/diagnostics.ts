@@ -13,7 +13,7 @@ import * as assert from "assert";
 import * as fs from 'fs';
 import * as path from 'path';
 import { commands, Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument, window, workspace } from "vscode";
-import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, getLanguageServerState, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
+import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
 import { getTempFilePath } from "./getTempFilePath";
 import { stringify } from "./stringify";
@@ -182,7 +182,7 @@ async function getDiagnosticsForDocument(
             }
 
             if (includesLanguageServerSource) {
-                if (getLanguageServerState() === LanguageServerState.Failed) {
+                if (ext.languageServerState === LanguageServerState.Failed) {
                     throw new Error("Language server failed to start");
                 }
             }
