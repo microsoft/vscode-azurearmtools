@@ -45,7 +45,7 @@ export { DefinitionKind, INamedDefinition } from "./src/INamedDefinition";
 export { IncorrectArgumentsCountIssue } from "./src/IncorrectArgumentsCountIssue";
 export { IParameterDefinition } from "./src/IParameterDefinition";
 export * from "./src/Language";
-export { getLanguageServerState, LanguageServerState } from "./src/languageclient/startArmLanguageServer";
+export { LanguageServerState } from "./src/languageclient/startArmLanguageServer";
 export { ParameterDefinition } from "./src/ParameterDefinition";
 export { IReferenceSite, PositionContext } from "./src/PositionContext";
 export { ReferenceList } from "./src/ReferenceList";

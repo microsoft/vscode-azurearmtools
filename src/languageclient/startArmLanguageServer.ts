@@ -26,16 +26,12 @@ export enum LanguageServerState {
     Started,
     Stopped,
 }
-let languageServerState: LanguageServerState = LanguageServerState.NotStarted;
 let client: LanguageClient | undefined;
-
-export function getLanguageServerState(): LanguageServerState {
-    return languageServerState;
-}
 
 export async function stopArmLanguageServer(): Promise<void> {
     ext.outputChannel.appendLine(`Stopping ${languageServerName}...`);
-    languageServerState = LanguageServerState.Stopped;
+    // Work-around for https://github.com/microsoft/vscode/issues/83254 - store languageServerState global via ext to keep it a singleton
+    ext.languageServerState = LanguageServerState.Stopped;
     if (client) {
         await client.stop();
         client = undefined;
@@ -51,7 +47,7 @@ export async function startArmLanguageServer(): Promise<void> {
             title: `Starting ${languageServerName}`
         },
         async () => {
-            languageServerState = LanguageServerState.Starting;
+            ext.languageServerState = LanguageServerState.Starting;
             try {
                 // The server is implemented in .NET Core. We run it by calling 'dotnet' with the dll as an argument
                 let serverDllPath: string = findLanguageServer();
@@ -59,9 +55,9 @@ export async function startArmLanguageServer(): Promise<void> {
                 await ensureDependencies(dotnetExePath, serverDllPath);
                 await startLanguageClient(serverDllPath, dotnetExePath);
 
-                languageServerState = LanguageServerState.Started;
+                ext.languageServerState = LanguageServerState.Started;
             } catch (error) {
-                languageServerState = LanguageServerState.Failed;
+                ext.languageServerState = LanguageServerState.Failed;
                 throw error;
             }
         });
@@ -104,7 +100,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         if (waitForDebugger) {
             commonArgs.push('--wait-for-debugger');
         }
-        if (ext.addCompletedDiagnostic) {
+        if (ext.getAddCompletedDiagnostic()) {
             // Forces the server to add a completion message to its diagnostics
             commonArgs.push('--verbose-diagnostics');
         }
