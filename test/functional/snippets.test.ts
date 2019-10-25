@@ -5,6 +5,10 @@
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length no-http-string no-suspicious-comment
 // tslint:disable:no-non-null-assertion
 
+const DEBUG_BREAK_AFTER_INSERTING_SNIPPET = false;
+// WARNING: At this breakpoint, the extension will be in an inactivate state (i.e., if you make changes in the editor, diagnostics,
+//   formatting, etc. will not be updated until you F5 again)
+
 import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import { ITestCallbackContext } from 'mocha';
@@ -30,7 +34,13 @@ let resourceTemplate: string = `{
     },
     "outputs": {
         // Insert here: output
-    }
+    },
+    "functions": [{
+        "namespace": "udf",
+        "members": {
+            // Insert here: user function
+        }
+    }]
 }`;
 
 let emptyTemplate: string = `
@@ -51,7 +61,15 @@ const overrideSkipTests: { [name: string]: boolean } = {
 const overrideTemplateForSnippet: { [name: string]: string } = {
     // Which template to start with - default is resourceTemplate
     "Azure Resource Manager (ARM) Template": emptyTemplate,
-    "Azure Resource Manager (ARM) Parameters Template": emptyTemplate
+    "Azure Resource Manager (ARM) Parameters Template": emptyTemplate,
+    "User Function Namespace": `{
+        "resources": [],
+        "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+        "contentVersion": "1.0.0.0",
+        "functions": [
+            // Insert here: namespace
+        ]
+    }`
 };
 
 const overrideInsertPosition: { [name: string]: string } = {
@@ -60,7 +78,9 @@ const overrideInsertPosition: { [name: string]: string } = {
     "Azure Resource Manager (ARM) Parameters Template": "// Insert here: empty",
     Variable: "// Insert here: variable",
     Parameter: "// Insert here: parameter",
-    Output: "// Insert here: output"
+    Output: "// Insert here: output",
+    "User Function": "// Insert here: user function",
+    "User Function Namespace": "// Insert here: namespace"
 };
 
 const overrideExpectedDiagnostics: { [name: string]: string[] } = {
@@ -78,6 +98,16 @@ const overrideExpectedDiagnostics: { [name: string]: string[] } = {
     ],
     Function: [
         "Undefined variable reference: 'applicationInsightsName'"
+    ],
+    "User Function": [
+        "Template validation failed: The template function 'function-name' at line '19' and column '30' is not valid. The function name contains invalid characters '-'. Please see https://aka.ms/arm-template/#functions for usage details.",
+        "The user-defined function 'udf.function-name' is never used.",
+        "The parameter 'parameter-name' of function 'udf.function-name' is never used."
+    ],
+    "User Function Namespace": [
+        "Template validation failed: The template function at line '6' and column '13' is not valid. The function namespace 'namespace-name' contains invalid characters '-'. Please see https://aka.ms/arm-template/#functions for usage details.",
+        "The user-defined function 'namespace-name.function-name' is never used.",
+        "The parameter 'parameter-name' of function 'namespace-name.function-name' is never used."
     ]
 };
 
@@ -151,6 +181,11 @@ suite("Snippets functional tests", () => {
 
         // Wait for diagnostics to finish
         let diagnostics: Diagnostic[] = await diagnosticsPromise;
+
+        if (DEBUG_BREAK_AFTER_INSERTING_SNIPPET) {
+            // tslint:disable-next-line: no-debugger
+            debugger;
+        }
 
         const docTextAfterInsertion = window.activeTextEditor!.document.getText();
         validateDocumentWithSnippet();
