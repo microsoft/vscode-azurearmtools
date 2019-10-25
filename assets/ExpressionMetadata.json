@@ -143,6 +143,54 @@
             "maximumArguments": 2
         },
         {
+            "name": "environment",
+            "expectedUsage": "environment()",
+            "description": "Returns information about the current cloud environment. The function returns an object that contains endpoints and other information specific to the cloud used for the deployment.  The properties in the returned object may differ based on the capabilities of the cloud.",
+            "minimumArguments": 0,
+            "maximumArguments": 0,
+            "returnValueMembers": [
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "gallery"
+                },
+                {
+                    "name": "graph"
+                },
+                {
+                    "name": "portal"
+                },
+                {
+                    "name": "graphAudience"
+                },
+                {
+                    "name": "activeDirectoryDataLake"
+                },
+                {
+                    "name": "batch"
+                },
+                {
+                    "name": "media"
+                },
+                {
+                    "name": "sqlManagement"
+                },
+                {
+                    "name": "vmImageAliasDoc"
+                },
+                {
+                    "name": "resourceManager"
+                },
+                {
+                    "name": "authentication"
+                },
+                {
+                    "name": "suffixes"
+                }
+            ]
+        },
+        {
             "name": "equals",
             "expectedUsage": "equals(arg1, arg2)",
             "description": "Checks whether two values equal each other.",
