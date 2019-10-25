@@ -23,6 +23,7 @@
         "member-ordering": false,
         "missing-jsdoc": false,
         "newline-before-return": false,
+        "newline-per-chained-call": false,
         "no-backbone-get-set-outside-model": false,
         "no-implicit-dependencies": [
             true,
@@ -91,6 +92,7 @@
             "ban-keywords",
             "check-format",
             "allow-leading-underscore"
-        ]
+        ],
+        "no-unnecessary-type-assertion": false // TODO: Turn this back on when done with strict null checking work
     }
 }

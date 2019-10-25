@@ -7,8 +7,14 @@
 // tslint:disable:function-name // Grandfathered in
 // tslint:disable:cyclomatic-complexity // Grandfathered in
 
-import { assert } from "./fixed_assert";
+// CONSIDER: This parser makes the incorrect assumption that JSON strings can be enclosed by either
+//   single or double quotes.  JSON only allows double quotes.
+// Because the JSON/ARM parsers catch these errors, it doesn't make too much difference for the end user
+//   so might not be worth fixing.
 
+import { CachedValue } from "./CachedValue";
+import { CaseInsensitiveMap } from "./CaseInsensitiveMap";
+import { assert } from "./fixed_assert";
 import * as language from "./Language";
 import * as basic from "./Tokenizer";
 import * as utilities from "./Utilities";
@@ -70,7 +76,10 @@ export abstract class Segment {
 }
 
 /**
- * A JSON token from a JSON string.
+ * A JSON token from a JSON string. The JSON token is made up of one or more basic tokens (for instance,
+ * a JSON string literal would be composed of the basic token representing a double quote, followed
+ * by some group of basic tokens representing groups of letters, groups of numbers, punctuation, etc.,
+ * and possibly ending with a double quote basic token).
  */
 export class Token extends Segment {
     constructor(private _type: TokenType, _startIndex: number, private _basicTokens: basic.Token[]) {
@@ -86,8 +95,18 @@ export class Token extends Segment {
         return utilities.getCombinedLength(this._basicTokens);
     }
 
+    /**
+     * Gets the original string that this token was parsed from.
+     */
     public toString(): string {
         return utilities.getCombinedText(this._basicTokens);
+    }
+
+    /**
+     * Convenient way of seeing what this token represents in the debugger, shouldn't be used for production code
+     */
+    public get __debugDisplay(): string {
+        return this.toString();
     }
 }
 
@@ -147,75 +166,92 @@ export function Unrecognized(startIndex: number, basicToken: basic.Token): Token
     return new Token(TokenType.Unrecognized, startIndex, [basicToken]);
 }
 
-export function asObjectValue(value: Value): ObjectValue {
+export function asObjectValue(value: Value | null): ObjectValue | null {
     return value instanceof ObjectValue ? value : null;
 }
 
-export function asArrayValue(value: Value): ArrayValue {
+export function asArrayValue(value: Value | null): ArrayValue | null {
     return value instanceof ArrayValue ? value : null;
 }
 
-export function asStringValue(value: Value): StringValue {
+export function asStringValue(value: Value | null): StringValue | null {
     return value instanceof StringValue ? value : null;
 }
 
-export function asNumberValue(value: Value): NumberValue {
+export function asNumberValue(value: Value | null): NumberValue | null {
     return value instanceof NumberValue ? value : null;
 }
 
-export function asBooleanValue(value: Value): BooleanValue {
+export function asBooleanValue(value: Value | null): BooleanValue | null {
     return value instanceof BooleanValue ? value : null;
 }
 
 /**
  * Read a JSON quoted string from the provided tokenizer. The tokenizer must be pointing at
  * either a SingleQuote or DoubleQuote Token.
+ *
+ * Note that the returned quoted string may not end with a quote (if EOD is reached)
  */
 export function readQuotedString(iterator: utilities.Iterator<basic.Token>): basic.Token[] {
-    const startQuote: basic.Token = iterator.current();
+    const startingToken: basic.Token | undefined = iterator.current();
+    assert(startingToken && (startingToken.getType() === basic.TokenType.SingleQuote || startingToken.getType() === basic.TokenType.DoubleQuote));
+
+    // tslint:disable-next-line: no-non-null-assertion // Asserted
+    const startQuote: basic.Token = startingToken!;
     const quotedStringTokens: basic.Token[] = [startQuote];
     iterator.moveNext();
 
     let escaped: boolean = false;
-    let endQuote: basic.Token;
-    while (!endQuote && iterator.current()) {
-        quotedStringTokens.push(iterator.current());
+    let endQuote: basic.Token | undefined;
+    let current: basic.Token | undefined = iterator.current();
+    while (!endQuote && current) {
+        quotedStringTokens.push(current);
 
         if (escaped) {
             escaped = false;
         } else {
-            if (iterator.current().getType() === basic.TokenType.Backslash) {
+            if (current.getType() === basic.TokenType.Backslash) {
                 escaped = true;
-            } else if (iterator.current().getType() === startQuote.getType()) {
+            } else if (current.getType() === startQuote.getType()) {
                 endQuote = iterator.current();
             }
         }
 
         iterator.moveNext();
+        current = iterator.current();
     }
 
     return quotedStringTokens;
 }
 
 /**
- * Read a JSON whitespace string from the provided tokenizer. The tokenizer must be pointing at
- * either a Space, Tab, CarriageReturn, NewLine, or CarriageReturnNewLine Token.
+ * Read a JSON whitespace string from the provided tokenizer.
  */
 export function readWhitespace(iterator: utilities.Iterator<basic.Token>): basic.Token[] {
-    const whitespaceTokens: basic.Token[] = [iterator.current()];
-    iterator.moveNext();
+    const whitespaceTokens: basic.Token[] = [];
 
-    while (iterator.current() &&
-        (iterator.current().getType() === basic.TokenType.Space ||
-            iterator.current().getType() === basic.TokenType.Tab ||
-            iterator.current().getType() === basic.TokenType.CarriageReturn ||
-            iterator.current().getType() === basic.TokenType.NewLine ||
-            iterator.current().getType() === basic.TokenType.CarriageReturnNewLine)) {
-        whitespaceTokens.push(iterator.current());
-        iterator.moveNext();
+    // tslint:disable-next-line: no-constant-condition
+    while (true) {
+        let current: basic.Token | undefined = iterator.current();
+        if (!current) {
+            return whitespaceTokens;
+        }
+
+        switch (current.getType()) {
+            case basic.TokenType.Space:
+            case basic.TokenType.Tab:
+            case basic.TokenType.CarriageReturn:
+            case basic.TokenType.NewLine:
+            case basic.TokenType.CarriageReturnNewLine:
+                whitespaceTokens.push(current);
+                iterator.moveNext();
+                current = iterator.current();
+                break;
+
+            default:
+                return whitespaceTokens;
+        }
     }
-
-    return whitespaceTokens;
 }
 
 /**
@@ -225,47 +261,55 @@ export function readWhitespace(iterator: utilities.Iterator<basic.Token>): basic
 export function readNumber(iterator: utilities.Iterator<basic.Token>): basic.Token[] {
     const numberBasicTokens: basic.Token[] = [];
 
-    if (iterator.current().getType() === basic.TokenType.Dash) {
+    // tslint:disable-next-line:no-non-null-assertion no-unnecessary-type-assertion // Precondition is that current points to Dash or Digits
+    const dashOrDigitsToken = iterator.current()!;
+    if (dashOrDigitsToken.getType() === basic.TokenType.Dash) {
         // Negative sign
-        numberBasicTokens.push(iterator.current());
+        numberBasicTokens.push(dashOrDigitsToken);
         iterator.moveNext();
     }
 
-    if (iterator.current() && iterator.current().getType() === basic.TokenType.Digits) {
+    const digits = iterator.current();
+    if (digits && digits.getType() === basic.TokenType.Digits) {
         // Whole number digits
-        numberBasicTokens.push(iterator.current());
+        numberBasicTokens.push(digits);
         iterator.moveNext();
     }
 
-    if (iterator.current() && iterator.current().getType() === basic.TokenType.Period) {
+    const decimal = iterator.current();
+    if (decimal && decimal.getType() === basic.TokenType.Period) {
         // Decimal point
-        numberBasicTokens.push(iterator.current());
+        numberBasicTokens.push(decimal);
         iterator.moveNext();
 
-        if (iterator.current() && iterator.current().getType() === basic.TokenType.Digits) {
+        const fractionalDigits = iterator.current();
+        if (fractionalDigits && fractionalDigits.getType() === basic.TokenType.Digits) {
             // Fractional number digits
-            numberBasicTokens.push(iterator.current());
+            numberBasicTokens.push(fractionalDigits);
             iterator.moveNext();
         }
     }
 
-    if (iterator.current()) {
-        if (iterator.current().getType() === basic.TokenType.Letters && iterator.current().toString().toLowerCase() === "e") {
+    const exponentLetter = iterator.current();
+    if (exponentLetter) {
+        if (exponentLetter.getType() === basic.TokenType.Letters && exponentLetter.toString().toLowerCase() === "e") {
             // e
-            numberBasicTokens.push(iterator.current());
+            numberBasicTokens.push(exponentLetter);
             iterator.moveNext();
 
-            if (iterator.current()
-                && (iterator.current().getType() === basic.TokenType.Dash || iterator.current().getType() === basic.TokenType.Plus)
+            const exponentSign = iterator.current();
+            if (exponentSign
+                && (exponentSign.getType() === basic.TokenType.Dash || exponentSign.getType() === basic.TokenType.Plus)
             ) {
                 // Exponent number sign
-                numberBasicTokens.push(iterator.current());
+                numberBasicTokens.push(exponentSign);
                 iterator.moveNext();
             }
 
-            if (iterator.current() && iterator.current().getType() === basic.TokenType.Digits) {
+            const exponentDigits = iterator.current();
+            if (exponentDigits && exponentDigits.getType() === basic.TokenType.Digits) {
                 // Exponent number digits
-                numberBasicTokens.push(iterator.current());
+                numberBasicTokens.push(exponentDigits);
                 iterator.moveNext();
             }
         }
@@ -279,7 +323,7 @@ export function readNumber(iterator: utilities.Iterator<basic.Token>): basic.Tok
  */
 export class Tokenizer {
     private _innerTokenizer: basic.Tokenizer;
-    private _current: Token;
+    private _current: Token | null;
     private _currentTokenStartIndex: number;
     private _lineLengths: number[] = [0];
 
@@ -292,7 +336,7 @@ export class Tokenizer {
         return this._innerTokenizer.hasStarted();
     }
 
-    public get current(): Token {
+    public get current(): Token | null {
         return this._current;
     }
 
@@ -303,23 +347,26 @@ export class Tokenizer {
     /**
      * Get the current basic token that the basic Tokenizer is pointing at.
      */
-    private currentBasicToken(): basic.Token {
+    private currentBasicToken(): basic.Token | undefined {
         return this._innerTokenizer.current();
     }
 
-    private currentBasicTokenType(): basic.TokenType {
-        const currentBasicToken: basic.Token = this.currentBasicToken();
+    private currentBasicTokenType(): basic.TokenType | undefined {
+        const currentBasicToken: basic.Token | undefined = this.currentBasicToken();
         return currentBasicToken ? currentBasicToken.getType() : undefined;
     }
 
     /**
      * Move to the next basic Token from the basic Tokenizer.
+     * @returns True if there is a current token after moving
      */
     private moveNextBasicToken(): boolean {
         const result: boolean = this._innerTokenizer.moveNext();
-        if (this.currentBasicToken()) {
-            this._lineLengths[this._lineLengths.length - 1] += this.currentBasicToken().length();
-            if (this.currentBasicTokenType() === basic.TokenType.NewLine || this.currentBasicTokenType() === basic.TokenType.CarriageReturnNewLine) {
+        let currentBasicToken = this.currentBasicToken();
+        if (currentBasicToken) {
+            let currentBasicTokenType = this.currentBasicTokenType();
+            this._lineLengths[this._lineLengths.length - 1] += currentBasicToken.length();
+            if (currentBasicTokenType === basic.TokenType.NewLine || currentBasicTokenType === basic.TokenType.CarriageReturnNewLine) {
                 this._lineLengths.push(0);
             }
         }
@@ -332,7 +379,7 @@ export class Tokenizer {
         // without a bound "this" pointer.
         return {
             hasStarted: (): boolean => { return this.hasStarted(); },
-            current: (): basic.Token => { return this.currentBasicToken(); },
+            current: (): basic.Token | undefined => { return this.currentBasicToken(); },
             moveNext: (): boolean => { return this.moveNextBasicToken(); }
         };
     }
@@ -396,7 +443,8 @@ export class Tokenizer {
                                     && this.currentBasicTokenType() !== basic.TokenType.NewLine
                                     && this.currentBasicTokenType() !== basic.TokenType.CarriageReturnNewLine
                                 ) {
-                                    lineCommentBasicTokens.push(this.currentBasicToken());
+                                    // tslint:disable-next-line: no-non-null-assertion // guaranteed by this.moveNextBasicToken() return value in while
+                                    lineCommentBasicTokens.push(this.currentBasicToken()!);
                                 }
                                 this._current = Comment(this._currentTokenStartIndex, lineCommentBasicTokens);
                                 break;
@@ -406,13 +454,15 @@ export class Tokenizer {
                                 this.moveNextBasicToken();
 
                                 while (this.currentBasicToken()) {
-                                    blockCommentBasicTokens.push(this.currentBasicToken());
+                                    // tslint:disable-next-line: no-non-null-assertion // Validated by while
+                                    blockCommentBasicTokens.push(this.currentBasicToken()!);
 
                                     if (this.currentBasicTokenType() === basic.TokenType.Asterisk) {
                                         this.moveNextBasicToken();
 
                                         if (this.currentBasicTokenType() === basic.TokenType.ForwardSlash) {
-                                            blockCommentBasicTokens.push(this.currentBasicToken());
+                                            // tslint:disable-next-line: no-non-null-assertion // Guaranteed by if
+                                            blockCommentBasicTokens.push(this.currentBasicToken()!);
                                             this.moveNextBasicToken();
                                             break;
                                         }
@@ -445,10 +495,12 @@ export class Tokenizer {
                     break;
 
                 case basic.TokenType.Letters:
-                    switch (this.currentBasicToken().toString()) {
+                    // tslint:disable-next-line: no-non-null-assertion // Validated by if
+                    switch (this.currentBasicToken()!.toString()) {
                         case "true":
                         case "false":
-                            this._current = Boolean(this._currentTokenStartIndex, this.currentBasicToken());
+                            // tslint:disable-next-line: no-non-null-assertion // Validated by if
+                            this._current = Boolean(this._currentTokenStartIndex, this.currentBasicToken()!);
                             this.moveNextBasicToken();
                             break;
 
@@ -458,13 +510,15 @@ export class Tokenizer {
                             break;
 
                         default:
-                            const literalTokens: basic.Token[] = [this.currentBasicToken()];
+                            // tslint:disable-next-line: no-non-null-assertion // Validated by if
+                            const literalTokens: basic.Token[] = [this.currentBasicToken()!];
                             this.moveNextBasicToken();
 
                             while (this.currentBasicToken() &&
                                 (this.currentBasicTokenType() === basic.TokenType.Letters ||
                                     this.currentBasicTokenType() === basic.TokenType.Underscore)) {
-                                literalTokens.push(this.currentBasicToken());
+                                // tslint:disable-next-line: no-non-null-assertion // Validated by if
+                                literalTokens.push(this.currentBasicToken()!);
                                 this.moveNextBasicToken();
                             }
 
@@ -474,7 +528,8 @@ export class Tokenizer {
                     break;
 
                 default:
-                    this._current = Unrecognized(this._currentTokenStartIndex, this.currentBasicToken());
+                    // tslint:disable-next-line: no-non-null-assertion // Validated by if
+                    this._current = Unrecognized(this._currentTokenStartIndex, this.currentBasicToken()!);
                     this.moveNextBasicToken();
                     break;
             }
@@ -515,16 +570,25 @@ export abstract class Value {
      * A user-friendly string that represents this value, suitable for display in a label, etc.
      */
     public abstract toFriendlyString(): string;
+
+    /**
+     * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
+     */
+    public get __debugDisplay(): string {
+        return this.toString();
+    }
 }
 
 /**
  * A JSON object that contains properties.
  */
 export class ObjectValue extends Value {
-    private _propertyMap: { [key: string]: Value };
+    // Last set with the same (case-insensitive) key wins (just like in Azure template deployment)
+    private _caseInsensitivePropertyMap: CachedValue<CaseInsensitiveMap<string, Value | null>> = new CachedValue<CaseInsensitiveMap<string, Value | null>>();
 
     constructor(span: language.Span, private _properties: Property[]) {
         super(span);
+        assert(this._properties);
     }
 
     public get valueKind(): ValueKind {
@@ -535,17 +599,18 @@ export class ObjectValue extends Value {
      * Get the map of property names to property values for this ObjectValue. This mapping is
      * created lazily.
      */
-    private get propertyMap(): { [key: string]: Value } {
-        if (!this._propertyMap) {
-            this._propertyMap = {};
+    private get caseInsensitivePropertyMap(): CaseInsensitiveMap<string, Value | null> {
+        return this._caseInsensitivePropertyMap.getOrCacheValue(() => {
+            const caseInsensitivePropertyMap = new CaseInsensitiveMap<string, Value | null>();
 
-            if (this._properties && this._properties.length > 0) {
+            if (this._properties.length > 0) {
                 for (const property of this._properties) {
-                    this._propertyMap[property.name.toString()] = property.value;
+                    caseInsensitivePropertyMap.set(property.name.toString(), property.value);
                 }
             }
-        }
-        return this._propertyMap;
+
+            return caseInsensitivePropertyMap;
+        });
     }
 
     public get properties(): Property[] {
@@ -556,28 +621,34 @@ export class ObjectValue extends Value {
      * Get whether a property with the provided propertyName is defined or not on this ObjectValue.
      */
     public hasProperty(propertyName: string): boolean {
-        return this.getPropertyValue(propertyName) !== undefined;
+        return !!this.getPropertyValue(propertyName);
     }
 
     /**
      * Get the property value for the provided property name. If no property exists with the
      * provided name, then undefined will be returned.
      */
-    public getPropertyValue(propertyName: string): Value {
-        return this.propertyMap[propertyName];
+    public getPropertyValue(propertyName: string): Value | null {
+        const result = this.caseInsensitivePropertyMap.get(propertyName);
+        return result ? result : null;
     }
 
     /**
      * Get the property value that is at the chain of properties in the provided property name
      * stack. If the provided property name stack is empty, then return this value.
      */
-    public getPropertyValueFromStack(propertyNameStack: string[]): Value {
+    public getPropertyValueFromStack(propertyNameStack: string[]): Value | null {
         // tslint:disable-next-line:no-this-assignment
-        let result: Value = this;
+        let result: Value | null = <Value | null>this;
 
         while (result && propertyNameStack.length > 0) {
-            const objectValue: ObjectValue = asObjectValue(result);
-            result = objectValue.getPropertyValue(propertyNameStack.pop());
+            const objectValue: ObjectValue | null = asObjectValue(result);
+            if (objectValue) {
+                const propertyName = propertyNameStack.pop();
+                result = propertyName ? objectValue.getPropertyValue(propertyName) : null;
+            } else {
+                assert(false);
+            }
         }
 
         return result;
@@ -587,7 +658,7 @@ export class ObjectValue extends Value {
      * Get the property names
      */
     public get propertyNames(): string[] {
-        return Object.keys(this.propertyMap);
+        return [...this.caseInsensitivePropertyMap.keys()];
     }
 
     public accept(visitor: Visitor): void {
@@ -596,6 +667,13 @@ export class ObjectValue extends Value {
 
     public toFriendlyString(): string {
         return "(object)";
+    }
+
+    public get __debugDisplay(): string {
+        // tslint:disable-next-line: prefer-template
+        return "{" +
+            this.properties.map(pv => pv.name.toString() + ':' + (pv.value instanceof Value ? pv.value.__debugDisplay : String(pv.value))).join(",")
+            + "}";
     }
 }
 
@@ -632,6 +710,11 @@ export class Property extends Value {
     public toFriendlyString(): string {
         return "(property)";
     }
+
+    public get __debugDisplay(): string {
+        // tslint:disable-next-line: prefer-template
+        return this._name.toString() + ":" + (this.value instanceof Value ? this.value.__debugDisplay : String(this.value));
+    }
 }
 
 /**
@@ -647,6 +730,7 @@ export interface Properties {
 export class ArrayValue extends Value {
     constructor(span: language.Span, private _elements: Value[]) {
         super(span);
+        assert(_elements);
     }
 
     public get valueKind(): ValueKind {
@@ -664,7 +748,7 @@ export class ArrayValue extends Value {
      * The number of elements in this Array.
      */
     public get length(): number {
-        return this._elements ? this._elements.length : 0;
+        return this._elements.length;
     }
 
     public accept(visitor: Visitor): void {
@@ -673,6 +757,13 @@ export class ArrayValue extends Value {
 
     public toFriendlyString(): string {
         return "(array)";
+    }
+
+    public get __debugDisplay(): string {
+        // tslint:disable-next-line: prefer-template
+        return "[" +
+            this.elements.map(e => e.__debugDisplay).join(",")
+            + "]";
     }
 }
 
@@ -712,8 +803,11 @@ export class BooleanValue extends Value {
  * A JSON quoted string.
  */
 export class StringValue extends Value {
-    constructor(span: language.Span, private _value: string) {
-        super(span);
+    private _unquotedValue: string;
+
+    constructor(quotedSpan: language.Span, private _quotedValue: string) {
+        super(quotedSpan);
+        this._unquotedValue = utilities.unquote(_quotedValue);
     }
 
     public get valueKind(): ValueKind {
@@ -721,11 +815,19 @@ export class StringValue extends Value {
     }
 
     public get unquotedSpan(): language.Span {
-        return new language.Span(this.startIndex + 1, this._value.length);
+        return new language.Span(this.startIndex + 1, this._unquotedValue.length);
     }
 
-    public toString(): string {
-        return this._value;
+    public get unquotedValue(): string {
+        return this._unquotedValue;
+    }
+
+    public get quotedValue(): string {
+        return this._quotedValue;
+    }
+
+    public toString(): string { // CONSIDER: remove in favor of unquotedValue
+        return this._unquotedValue;
     }
 
     public accept(visitor: Visitor): void {
@@ -791,12 +893,17 @@ export class NullValue extends Value {
  * The result of parsing a JSON string.
  */
 export class ParseResult {
-    constructor(private _tokens: Token[], private _lineLengths: number[], private _value: Value) {
+    private readonly _debugText: string; // Used only for debugging - copy of the original text being parsed
+
+    constructor(private _tokens: Token[], private _lineLengths: number[], private _value: Value | null, text: string) {
         assert(_tokens !== null);
         assert(_tokens !== undefined);
         assert(_lineLengths !== null);
         assert(_lineLengths !== undefined);
         assert(_value !== undefined);
+
+        this._debugText = text;
+        this._debugText = this._debugText; // Make compiler happy
     }
 
     public get tokenCount(): number {
@@ -822,7 +929,8 @@ export class ParseResult {
         return result;
     }
 
-    public get value(): Value {
+    // The top-level value, if any
+    public get value(): Value | null {
         return this._value;
     }
 
@@ -856,12 +964,15 @@ export class ParseResult {
         let line: number = 0;
         let column: number = 0;
 
+        let remainingChars: number = characterIndex;
+
         for (let lineLength of this.lineLengths) {
-            if (lineLength <= characterIndex) {
+            if (lineLength <= remainingChars) {
                 ++line;
-                characterIndex -= lineLength;
+                remainingChars -= lineLength;
             } else {
-                column = characterIndex;
+                // Reached the line with the character index
+                column = remainingChars;
                 break;
             }
         }
@@ -887,18 +998,18 @@ export class ParseResult {
         return this._tokens[tokenIndex];
     }
 
-    private get lastToken(): Token {
+    private get lastToken(): Token | null {
         let tokenCount = this.tokenCount;
         return tokenCount > 0 ? this.getToken(tokenCount - 1) : null;
     }
 
     /**
-     * Get the JSON Token that contains the provided characterIndex.
+     * Get the JSON Token that contains the provided characterIndex, if any (e.g. returns null if at whitespace)
      */
-    public getTokenAtCharacterIndex(characterIndex: number): Token {
+    public getTokenAtCharacterIndex(characterIndex: number): Token | null {
         assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);
 
-        let token: Token = null;
+        let token: Token | null = null;
 
         if (this.lastToken !== null && this.lastToken.span.afterEndIndex === characterIndex) {
             token = this.lastToken;
@@ -923,37 +1034,38 @@ export class ParseResult {
         return token;
     }
 
-    public getValueAtCharacterIndex(characterIndex: number): Value {
+    public getValueAtCharacterIndex(characterIndex: number): Value | null {
         assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);
 
-        let result: Value = null;
+        let result: Value | null = null;
 
-        if (this.value.span.contains(characterIndex, true)) {
+        // Find the Value at the given character index via a binary search through the value tree
+        if (this.value && this.value.span.contains(characterIndex, true)) {
             let current: Value = this.value;
 
             while (result === null) {
                 const currentValue: Value = current;
 
                 if (currentValue instanceof Property) {
-                    if (currentValue.name && currentValue.name.span.contains(characterIndex, true)) {
+                    if (currentValue.name.span.contains(characterIndex, true)) {
                         current = currentValue.name;
                     } else if (currentValue.value && currentValue.value.span.contains(characterIndex, true)) {
                         current = currentValue.value;
                     }
                 } else if (currentValue instanceof ObjectValue) {
-                    if (currentValue.properties) {
-                        for (const property of currentValue.properties) {
-                            if (property && property.span.contains(characterIndex, true)) {
-                                current = property;
-                            }
+                    assert(currentValue.properties);
+                    for (const property of currentValue.properties) {
+                        assert(property);
+                        if (property.span.contains(characterIndex, true)) {
+                            current = property;
                         }
                     }
                 } else if (currentValue instanceof ArrayValue) {
-                    if (currentValue.elements) {
-                        for (const element of currentValue.elements) {
-                            if (element && element.span.contains(characterIndex, true)) {
-                                current = element;
-                            }
+                    assert(currentValue.elements);
+                    for (const element of currentValue.elements) {
+                        assert(element);
+                        if (element.span.contains(characterIndex, true)) {
+                            current = element;
                         }
                     }
                 }
@@ -977,14 +1089,14 @@ export function parse(stringValue: string): ParseResult {
 
     const tokens: Token[] = [];
     const jt = new Tokenizer(stringValue);
-    const value: Value = parseValue(jt, tokens);
+    const value: Value | null = parseValue(jt, tokens);
 
     // Read the rest of the Tokens so that they will be put into the tokens array.
     while (jt.current) {
         next(jt, tokens);
     }
 
-    return new ParseResult(tokens, jt.lineLengths, value);
+    return new ParseResult(tokens, jt.lineLengths, value, stringValue);
 }
 
 /**
@@ -993,7 +1105,7 @@ export function parse(stringValue: string): ParseResult {
  * tokens array.
  */
 function parseValue(tokenizer: Tokenizer, tokens: Token[]): Value | null {
-    let value: Value = null;
+    let value: Value | null = null;
 
     if (!tokenizer.hasStarted()) {
         next(tokenizer, tokens);
@@ -1002,7 +1114,7 @@ function parseValue(tokenizer: Tokenizer, tokens: Token[]): Value | null {
     if (tokenizer.current) {
         switch (tokenizer.current.type) {
             case TokenType.QuotedString:
-                value = new StringValue(tokenizer.current.span, utilities.unquote(tokenizer.current.toString()));
+                value = new StringValue(tokenizer.current.span, tokenizer.current.toString());
                 next(tokenizer, tokens);
                 break;
 
@@ -1035,14 +1147,19 @@ function parseValue(tokenizer: Tokenizer, tokens: Token[]): Value | null {
 }
 
 function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
+    if (!tokenizer.current) {
+        throw new Error("Precondition failed");
+    }
+
     let objectSpan: language.Span = tokenizer.current.span;
     const properties: Property[] = [];
 
     next(tokenizer, tokens);
 
-    let propertySpan: language.Span = null;
-    let propertyName: StringValue = null;
+    let propertySpan: language.Span | null = null;
+    let propertyName: StringValue | null = null;
     let foundColon: boolean = false;
+    // tslint:disable-next-line: strict-boolean-expressions
     while (tokenizer.current) {
         objectSpan = objectSpan.union(tokenizer.current.span);
 
@@ -1052,13 +1169,13 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
         } else if (propertyName === null) {
             if (tokenizer.current.type === TokenType.QuotedString) {
                 propertySpan = tokenizer.current.span;
-                propertyName = new StringValue(propertySpan, utilities.unquote(tokenizer.current.toString()));
+                propertyName = new StringValue(propertySpan, tokenizer.current.toString());
                 next(tokenizer, tokens);
             } else {
                 next(tokenizer, tokens);
             }
         } else if (!foundColon) {
-            propertySpan = propertySpan.union(tokenizer.current.span);
+            propertySpan = propertySpan ? propertySpan.union(tokenizer.current.span) : tokenizer.current.span;
             if (tokenizer.current.type === TokenType.Colon) {
                 foundColon = true;
                 next(tokenizer, tokens);
@@ -1066,13 +1183,18 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
                 propertyName = null;
             }
         } else {
+            // Shouldn't be able to reach here without these two assertions being true
+            assert(foundColon);
+            assert(propertyName);
+
             const propertyValue: Value | null = parseValue(tokenizer, tokens);
             if (propertyValue) {
-                propertySpan = propertySpan.union(propertyValue.span);
+                propertySpan = propertySpan ? propertySpan.union(propertyValue.span) : propertyValue.span;
                 objectSpan = objectSpan.union(propertyValue.span);
             }
 
-            properties.push(new Property(propertySpan, propertyName, propertyValue));
+            // tslint:disable-next-line: strict-boolean-expressions no-non-null-assertion // Asserted propertyName
+            properties.push(new Property(propertySpan || objectSpan, propertyName!, propertyValue));
 
             propertySpan = null;
             propertyName = null;
@@ -1084,12 +1206,17 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
 }
 
 function parseArray(tokenizer: Tokenizer, tokens: Token[]): ArrayValue {
+    if (!tokenizer.current) {
+        throw new Error("Precondition failed");
+    }
+
     let span: language.Span = tokenizer.current.span;
     const elements: Value[] = [];
 
     next(tokenizer, tokens);
 
     let expectElement: boolean = true;
+    // tslint:disable-next-line: strict-boolean-expressions
     while (tokenizer.current) {
         span = span.union(tokenizer.current.span);
 
@@ -1097,7 +1224,7 @@ function parseArray(tokenizer: Tokenizer, tokens: Token[]): ArrayValue {
             next(tokenizer, tokens);
             break;
         } else if (expectElement) {
-            const element: Value = parseValue(tokenizer, tokens);
+            const element: Value | null = parseValue(tokenizer, tokens);
             if (element) {
                 span = span.union(element.span);
 
@@ -1119,20 +1246,24 @@ function parseArray(tokenizer: Tokenizer, tokens: Token[]): ArrayValue {
 
 function next(tokenizer: Tokenizer, tokens: Token[]): void {
     while (tokenizer.moveNext()) {
-        if (tokenizer.current.type !== TokenType.Whitespace &&
-            tokenizer.current.type !== TokenType.Comment) {
-            tokens.push(tokenizer.current);
+        // tslint:disable-next-line: no-non-null-assertion // Guaranteed by tokenizer.moveNext() returning true
+        const current: Token = tokenizer.current!;
+        if (current.type !== TokenType.Whitespace &&
+            current.type !== TokenType.Comment) {
+            tokens.push(current);
             break;
         }
     }
 }
 
+/**
+ * Traverses every node in a given Value tree
+ */
 export abstract class Visitor {
-    public visitProperty(property: Property): void {
+    public visitProperty(property: Property | null): void {
         if (property) {
-            if (property.name) {
-                property.name.accept(this);
-            }
+            assert(property.name);
+            property.name.accept(this);
 
             if (property.value) {
                 property.value.accept(this);
@@ -1152,7 +1283,7 @@ export abstract class Visitor {
         // Nothing to do
     }
 
-    public visitObjectValue(objectValue: ObjectValue): void {
+    public visitObjectValue(objectValue: ObjectValue | null): void {
         if (objectValue) {
             for (const property of objectValue.properties) {
                 property.accept(this);
@@ -1160,12 +1291,11 @@ export abstract class Visitor {
         }
     }
 
-    public visitArrayValue(arrayValue: ArrayValue): void {
+    public visitArrayValue(arrayValue: ArrayValue | null): void {
         if (arrayValue) {
             for (const element of arrayValue.elements) {
-                if (element) {
-                    element.accept(this);
-                }
+                assert(element);
+                element.accept(this);
             }
         }
     }

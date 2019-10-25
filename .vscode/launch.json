@@ -14,12 +14,12 @@
             "sourceMaps": true,
             // outFiles is used for locating generated JavaScript files, see https://code.visualstudio.com/docs/nodejs/nodejs-debugging#_source-maps
             "outFiles": [
-                "${workspaceFolder}/**/*.js"
+                "${workspaceFolder}/out/**/*.js"
             ],
             "preLaunchTask": "npm: compile",
             "env": {
                 "AZCODE_ARM_IGNORE_BUNDLE": "1",
-                "DEBUGTELEMETRY": "1",
+                "DEBUGTELEMETRY": "1", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
                 "NODE_DEBUG": ""
             }
         },
@@ -34,12 +34,14 @@
             "stopOnEntry": false,
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceFolder}/**/*.js"
+                "${workspaceFolder}/dist/**/*.js"
             ],
             "preLaunchTask": "npm: webpack",
             "env": {
-                "DEBUGTELEMETRY": "1",
-                "NODE_DEBUG": ""
+                "DEBUGTELEMETRY": "1", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
+                "NODE_DEBUG": "",
+                "DEBUG_WEBPACK": "",
+                "AZCODE_ARM_IGNORE_BUNDLE": "0",
             }
         },
         {
@@ -59,11 +61,14 @@
             ],
             "preLaunchTask": "npm: compile",
             "env": {
-                "AZCODE_ARM_IGNORE_BUNDLE": "1",
                 "MOCHA_grep": "", // RegExp of tests to run (empty for all)
+                "MOCHA_invert": "0", // Invert the RegExp
+                "AZCODE_ARM_IGNORE_BUNDLE": "1",
                 "MOCHA_enableTimeouts": "0", // Disable time-outs
-                "DEBUGTELEMETRY": "1",
-                "NODE_DEBUG": ""
+                "DEBUGTELEMETRY": "1", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
+                "NODE_DEBUG": "",
+                "DISABLE_LANGUAGE_SERVER_TESTS": "0",
+                "DISABLE_SLOW_TESTS": "0"
             }
         },
         {
@@ -84,9 +89,11 @@
             "preLaunchTask": "npm: pretest-dev",
             "env": {
                 "MOCHA_grep": "", // RegExp of tests to run (empty for all)
+                "MOCHA_invert": "0", // Invert the RegExp
                 "MOCHA_enableTimeouts": "0", // Disable time-outs
-                "DEBUGTELEMETRY": "1",
-                "NODE_DEBUG": ""
+                "DEBUGTELEMETRY": "1", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
+                "NODE_DEBUG": "",
+                "AZCODE_ARM_IGNORE_BUNDLE": "0"
             }
         }
     ]

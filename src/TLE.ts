@@ -1,45 +1,42 @@
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
-
+// tslint:disable-next-line:no-suspicious-comment
+// CONSIDER: move to multiple files
 // TLE = Template Language Expression
 
 // tslint:disable:no-unnecessary-class // Grandfathered in
 // tslint:disable:switch-default // Grandfathered in
 // tslint:disable:max-classes-per-file // Grandfathered in
 
+import { templateKeys } from "./constants";
+import { __debugMarkSubstring } from "./debugMarkStrings";
 import { assert } from "./fixed_assert";
-
-import * as assets from "./AzureRMAssets";
+import { IFunctionMetadata } from "./IFunctionMetadata";
 import * as Json from "./JSON";
 import * as language from "./Language";
-import * as Reference from "./Reference";
+import { PositionContext } from "./PositionContext";
+import { TemplateScope } from "./TemplateScope";
 import * as basic from "./Tokenizer";
 import * as Utilities from "./Utilities";
 
-import { DeploymentTemplate } from "./DeploymentTemplate";
-import { Histogram } from "./Histogram";
-import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
-import { PositionContext } from "./PositionContext";
-import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
-
-export function asStringValue(value: Value): StringValue {
+export function asStringValue(value: Value | null): StringValue | null {
     return value instanceof StringValue ? value : null;
 }
 
-export function asNumberValue(value: Value): NumberValue {
+export function asNumberValue(value: Value | null): NumberValue | null {
     return value instanceof NumberValue ? value : null;
 }
 
-export function asArrayAccessValue(value: Value): ArrayAccessValue {
+export function asArrayAccessValue(value: Value | null): ArrayAccessValue | null {
     return value instanceof ArrayAccessValue ? value : null;
 }
 
-export function asFunctionValue(value: Value): FunctionValue {
-    return value instanceof FunctionValue ? value : null;
+export function asFunctionCallValue(value: Value | null): FunctionCallValue | null {
+    return value instanceof FunctionCallValue ? value : null;
 }
 
-export function asPropertyAccessValue(value: Value): PropertyAccess {
+export function asPropertyAccessValue(value: Value | null): PropertyAccess | null {
     return value instanceof PropertyAccess ? value : null;
 }
 
@@ -47,13 +44,13 @@ export function asPropertyAccessValue(value: Value): PropertyAccess {
  * The Value class is the generic base class that all other TLE values inherit from.
  */
 export abstract class Value {
-    private _parent: ParentValue;
+    private _parent: ParentValue | null; // should be in constructor?
 
-    public get parent(): ParentValue {
+    public get parent(): ParentValue | null {
         return this._parent;
     }
 
-    public set parent(parent: ParentValue) {
+    public set parent(parent: ParentValue | null) {
         this._parent = parent;
     }
 
@@ -64,20 +61,32 @@ export abstract class Value {
     public abstract toString(): string;
 
     public abstract accept(visitor: Visitor): void;
+
+    /**
+     * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
+     */
+    public get __debugDisplay(): string {
+        return this.toString();
+    }
 }
 
 export abstract class ParentValue extends Value {
 }
 
 /**
- * A TLE value representing a string.
+ * A TLE value representing a string.  This can be either an entire JSON string that
+ * is not an expression (e.g. "string value") or a single-quoted string value inside
+ * of a JSON string that is an expression (e.g. "[concat('string value')]").
+ *
+ * CONSIDER: Differentiate between a string value that is an entire string vs a
+ * single-quoted string inside an expression string
  */
 export class StringValue extends Value {
     constructor(private _token: Token) {
         super();
 
-        assert.notEqual(null, _token);
-        assert.deepEqual(TokenType.QuotedString, _token.getType());
+        assert(_token);
+        assert.equal(TokenType.QuotedString, _token.getType());
     }
 
     public get token(): Token {
@@ -108,19 +117,29 @@ export class StringValue extends Value {
         return this.length > 1 && this.toString()[this.length - 1] === this.quoteCharacter;
     }
 
+    /**
+     * Checks whether the current position is at the argument of a 'parameters' function call
+     */
     public isParametersArgument(): boolean {
-        return this.isFunctionArgument("parameters");
+        return this.isBuiltinFunctionArgument(templateKeys.parameters);
     }
 
+    /**
+     * Checks whether the current position is at the argument of a 'variables' function call
+     */
     public isVariablesArgument(): boolean {
-        return this.isFunctionArgument("variables");
+        return this.isBuiltinFunctionArgument(templateKeys.variables);
     }
 
-    private isFunctionArgument(functionName: string): boolean {
-        const parent: Value = this.parent;
-        return parent &&
-            parent instanceof FunctionValue &&
-            parent.nameToken.stringValue === functionName &&
+    /**
+     * Checks whether the current position is at the argument of a call to the
+     * built-in function with the given name
+     */
+    private isBuiltinFunctionArgument(functionName: string): boolean {
+        const parent: Value | null = this.parent;
+        return !!parent &&
+            parent instanceof FunctionCallValue &&
+            parent.isCallToBuiltinWithName(functionName) &&
             parent.argumentExpressions[0] === this;
     }
 
@@ -140,7 +159,7 @@ export class NumberValue extends Value {
     constructor(private _token: Token) {
         super();
 
-        assert.notEqual(null, _token);
+        assert(_token);
         assert.deepEqual(TokenType.Number, _token.getType());
     }
 
@@ -169,22 +188,20 @@ export class NumberValue extends Value {
  * A TLE value that represents an array access expression.
  */
 export class ArrayAccessValue extends ParentValue {
-    constructor(private _source: Value, private _leftSquareBracketToken: Token, private _index: Value, private _rightSquareBracketToken: Token) {
+    constructor(private _source: Value, private _leftSquareBracketToken: Token, private _indexValue: Value | null, private _rightSquareBracketToken: Token | null) {
         super();
 
         assert(_source);
-        assert.notEqual(null, _leftSquareBracketToken);
+        assert(_leftSquareBracketToken);
         assert.deepEqual(TokenType.LeftSquareBracket, _leftSquareBracketToken.getType());
-        assert(undefined !== _index);
+        assert(undefined !== _indexValue);
         assert(undefined !== _rightSquareBracketToken);
         assert(_rightSquareBracketToken === null || _rightSquareBracketToken.getType() === TokenType.RightSquareBracket);
 
-        if (this._source) {
-            this._source.parent = this;
-        }
+        this._source.parent = this;
 
-        if (this._index) {
-            this._index.parent = this;
+        if (this._indexValue) {
+            this._indexValue.parent = this;
         }
     }
 
@@ -205,15 +222,15 @@ export class ArrayAccessValue extends ParentValue {
     /**
      * The expression that is being used as an index value (source[index]).
      */
-    public get index(): Value {
-        return this._index;
+    public get indexValue(): Value | null {
+        return this._indexValue;
     }
 
     /**
      * The token for the right square bracket. This can be null if the array access doesn't have a
      * closing right square bracket.
      */
-    public get rightSquareBracketToken(): Token {
+    public get rightSquareBracketToken(): Token | null {
         return this._rightSquareBracketToken;
     }
 
@@ -225,8 +242,8 @@ export class ArrayAccessValue extends ParentValue {
 
         if (this._rightSquareBracketToken) {
             result = result.union(this._rightSquareBracketToken.span);
-        } else if (this._index) {
-            result = result.union(this._index.getSpan());
+        } else if (this._indexValue) {
+            result = result.union(this._indexValue.getSpan());
         } else {
             result = result.union(this._leftSquareBracketToken.span);
         }
@@ -244,8 +261,8 @@ export class ArrayAccessValue extends ParentValue {
 
     public toString(): string {
         let result: string = `${this._source.toString()}[`;
-        if (this._index !== null) {
-            result += this._index.toString();
+        if (this._indexValue !== null) {
+            result += this._indexValue.toString();
         }
         if (this._rightSquareBracketToken !== null) {
             result += "]";
@@ -255,21 +272,25 @@ export class ArrayAccessValue extends ParentValue {
 }
 
 /**
- * A TLE value that represents a function expression.
+ * A TLE value that represents a function call expression.
  */
-export class FunctionValue extends ParentValue {
+export class FunctionCallValue extends ParentValue {
     constructor(
-        private _nameToken: Token,
-        private _leftParenthesisToken: Token,
-        private _commaTokens: Token[],
-        private _argumentExpressions: Value[],
-        private _rightParenthesisToken: Token
+        private readonly _namespaceToken: Token | null,
+        public readonly periodToken: Token | null,
+        private readonly _nameToken: Token | null,
+        private readonly _leftParenthesisToken: Token | null,
+        private readonly _commaTokens: Token[],
+        private readonly _argumentExpressions: (Value | null)[], // Missing args are null
+        private readonly _rightParenthesisToken: Token | null,
+        public readonly scope: TemplateScope
     ) {
         super();
 
-        assert.notEqual(null, _nameToken);
-        assert.notEqual(null, _commaTokens);
-        assert.notEqual(null, _argumentExpressions);
+        assert(_namespaceToken || _nameToken, "Must have a namespace or name token");
+        assert(!(_namespaceToken && _nameToken) || periodToken, "If we have a namespace and name, we should have a period token");
+        assert(_commaTokens);
+        assert(_argumentExpressions);
 
         for (const argumentExpression of this._argumentExpressions) {
             if (argumentExpression) {
@@ -278,31 +299,110 @@ export class FunctionValue extends ParentValue {
         }
     }
 
+    public get isUserDefinedFunction(): boolean {
+        return !!this._namespaceToken;
+    }
+
+    /**
+     * The token for the namespace if it's a user-defined function.
+     */
+    public get namespaceToken(): Token | null {
+        return this._namespaceToken;
+    }
+
+    /**
+     * The namespace name of the function call, if specified
+     */
+    public get namespace(): string | null {
+        // tslint:disable-next-line: strict-boolean-expressions
+        return (this._namespaceToken && this._namespaceToken.stringValue) || null;
+    }
+
+    /**
+     * The function's name
+     */
+    public get name(): string | null {
+        // tslint:disable-next-line: strict-boolean-expressions
+        return (this._nameToken && this._nameToken.stringValue) || null;
+    }
+
     /**
      * The token for the function's name.
      */
-    public get nameToken(): Token {
+    public get nameToken(): Token | null {
         return this._nameToken;
+    }
+
+    public get fullName(): string {
+        // tslint:disable-next-line: strict-boolean-expressions
+        const name: string = this.name || "";
+
+        if (this._namespaceToken) {
+            return `${this._namespaceToken.stringValue}.${name}`;
+        } else {
+            assert(this.nameToken, "We asserted in the constructor that we have to have a namespace or a name");
+            // tslint:disable-next-line: no-non-null-assertion
+            return this.name!;
+        }
+    }
+
+    /**
+     * The span containing the namespace, period and name (at least some of these will exist)
+     */
+    public get fullNameSpan(): language.Span {
+        const result: language.Span | null =
+            language.Span.union(
+                // tslint:disable-next-line: strict-boolean-expressions
+                language.Span.union(this._namespaceToken && this._namespaceToken.span, this.periodToken && this.periodToken.span),
+                // tslint:disable-next-line: strict-boolean-expressions
+                this._nameToken && this._nameToken.span
+            );
+
+        assert(result, "Should have had at least one of a namespace or a name, therefore span should be non-empty");
+        // tslint:disable-next-line: no-non-null-assertion // Asserted
+        return result!;
+    }
+
+    /**
+     * Returns true if this is a function call to the built-in function with the given name
+     */
+    public isCallToBuiltinWithName(functionName: string): boolean {
+        return this.doesNameMatch(null, functionName);
+    }
+
+    public doesNameMatch(namespaceName: string | null, name: string): boolean {
+        // tslint:disable-next-line: strict-boolean-expressions
+        namespaceName = namespaceName || '';
+
+        if (!this.nameToken || !name) {
+            return false;
+        }
+
+        let thisNamespace = this._namespaceToken ? this._namespaceToken.stringValue : '';
+
+        return thisNamespace.toLowerCase() === namespaceName.toLowerCase() &&
+            this.nameToken.stringValue.toLowerCase() === name.toLowerCase();
     }
 
     public get commaTokens(): Token[] {
         return this._commaTokens;
     }
 
-    public get argumentExpressions(): Value[] {
+    // A null expression can indicate a missing parameter (e.g. concat('a', , 'c'))
+    public get argumentExpressions(): (Value | null)[] {
         return this._argumentExpressions;
     }
 
-    public get leftParenthesisToken(): Token {
+    public get leftParenthesisToken(): Token | null {
         return this._leftParenthesisToken;
     }
 
-    public get rightParenthesisToken(): Token {
+    public get rightParenthesisToken(): Token | null {
         return this._rightParenthesisToken;
     }
 
-    public get argumentListSpan(): language.Span {
-        let result: language.Span = null;
+    public get argumentListSpan(): language.Span | null {
+        let result: language.Span | null = null;
 
         if (this._leftParenthesisToken) {
             result = this._leftParenthesisToken.span;
@@ -328,7 +428,8 @@ export class FunctionValue extends ParentValue {
     }
 
     public getSpan(): language.Span {
-        return this._nameToken.span.union(this.argumentListSpan);
+        return this.fullNameSpan
+            .union(this.argumentListSpan);
     }
 
     public contains(characterIndex: number): boolean {
@@ -336,20 +437,23 @@ export class FunctionValue extends ParentValue {
     }
 
     public accept(visitor: Visitor): void {
-        visitor.visitFunction(this);
+        visitor.visitFunctionCall(this);
     }
 
     public toString(): string {
-        let result = this._nameToken.stringValue;
+        let result = this.fullName;
+
         if (this._leftParenthesisToken !== null) {
             result += "(";
         }
 
         for (let i = 0; i < this._argumentExpressions.length; ++i) {
+            const argExpr = this._argumentExpressions[i];
+
             if (i > 0) {
                 result += ", ";
             }
-            result += this._argumentExpressions[i].toString();
+            result += argExpr ? argExpr.toString() : "";
         }
 
         if (this._rightParenthesisToken !== null) {
@@ -364,11 +468,14 @@ export class FunctionValue extends ParentValue {
  * A TLE value representing a property access (source.property).
  */
 export class PropertyAccess extends ParentValue {
-    constructor(private _source: Value, private _periodToken: Token, private _nameToken: Token) {
+    // We need to allow creating a property access expresion whether the property name
+    //   was correctly given or note, so we can have proper intellisense/etc.
+    // I.e., we require the period, but after that might be empty or an error.
+    constructor(private _source: Value, private _periodToken: Token, private _nameToken: Token | null) {
         super();
 
-        assert.notEqual(null, _source);
-        assert.notEqual(null, _periodToken);
+        assert(_source);
+        assert(_periodToken);
 
         this._source.parent = this;
     }
@@ -385,8 +492,8 @@ export class PropertyAccess extends ParentValue {
     public get sourcesNameStack(): string[] {
         const result: string[] = [];
 
-        let propertyAccessSource: PropertyAccess = asPropertyAccessValue(this._source);
-        while (propertyAccessSource) {
+        let propertyAccessSource: PropertyAccess | null = asPropertyAccessValue(this._source);
+        while (propertyAccessSource && propertyAccessSource.nameToken) {
             result.push(propertyAccessSource.nameToken.stringValue);
             propertyAccessSource = asPropertyAccessValue(propertyAccessSource.source);
         }
@@ -397,19 +504,22 @@ export class PropertyAccess extends ParentValue {
     /**
      * Get the root source value of this PropertyAccess as a FunctionValue.
      */
-    public get functionSource(): FunctionValue {
+    public get functionSource(): FunctionCallValue | null {
         let currentSource: Value = this._source;
-        while (currentSource && currentSource instanceof PropertyAccess) {
-            currentSource = asPropertyAccessValue(currentSource).source;
+        while (currentSource instanceof PropertyAccess) {
+            const propertyAccess: PropertyAccess | null = asPropertyAccessValue(currentSource);
+            assert(propertyAccess);
+            // tslint:disable-next-line:no-non-null-assertion // Asserted
+            currentSource = propertyAccess!.source;
         }
-        return asFunctionValue(currentSource);
+        return asFunctionCallValue(currentSource);
     }
 
     public get periodToken(): Token {
         return this._periodToken;
     }
 
-    public get nameToken(): Token {
+    public get nameToken(): Token | null {
         return this._nameToken;
     }
 
@@ -451,15 +561,15 @@ export class BraceHighlighter {
 
         let highlightCharacterIndexes: number[] = [];
 
-        let tleParseResult = context.tleParseResult;
-        if (tleParseResult) {
-            let tleCharacterIndex = context.tleCharacterIndex;
+        if (context.tleInfo) {
+            let tleParseResult = context.tleInfo.tleParseResult;
+            let tleCharacterIndex = context.tleInfo.tleCharacterIndex;
 
             if (tleParseResult.leftSquareBracketToken !== null && tleParseResult.leftSquareBracketToken.span.startIndex === tleCharacterIndex) {
                 BraceHighlighter.addTLEBracketHighlights(highlightCharacterIndexes, tleParseResult);
             } else {
-                let tleValue: Value = tleParseResult.getValueAtCharacterIndex(tleCharacterIndex);
-                if (tleValue instanceof FunctionValue) {
+                let tleValue: Value | null = tleParseResult.getValueAtCharacterIndex(tleCharacterIndex);
+                if (tleValue instanceof FunctionCallValue) {
                     if (tleValue.leftParenthesisToken !== null && tleValue.leftParenthesisToken.span.startIndex === tleCharacterIndex) {
                         BraceHighlighter.addTLEFunctionHighlights(highlightCharacterIndexes, tleValue);
                     }
@@ -476,8 +586,8 @@ export class BraceHighlighter {
             ) {
                 BraceHighlighter.addTLEBracketHighlights(highlightCharacterIndexes, tleParseResult);
             } else if (0 <= leftOfTLECharacterIndex) {
-                let tleValue: Value = tleParseResult.getValueAtCharacterIndex(leftOfTLECharacterIndex);
-                if (tleValue instanceof FunctionValue) {
+                let tleValue: Value | null = tleParseResult.getValueAtCharacterIndex(leftOfTLECharacterIndex);
+                if (tleValue instanceof FunctionCallValue) {
                     if (tleValue.rightParenthesisToken !== null && tleValue.rightParenthesisToken.span.startIndex === leftOfTLECharacterIndex) {
                         BraceHighlighter.addTLEFunctionHighlights(highlightCharacterIndexes, tleValue);
                     }
@@ -493,31 +603,31 @@ export class BraceHighlighter {
     }
 
     private static addTLEBracketHighlights(highlightCharacterIndexes: number[], tleParseResult: ParseResult): void {
-        assert.notEqual(null, highlightCharacterIndexes);
-        assert.notEqual(null, tleParseResult);
-        assert.notEqual(null, tleParseResult.leftSquareBracketToken);
+        assert(tleParseResult);
+        assert(tleParseResult.leftSquareBracketToken);
 
-        highlightCharacterIndexes.push(tleParseResult.leftSquareBracketToken.span.startIndex);
+        // tslint:disable-next-line:no-non-null-assertion // Asserted above
+        highlightCharacterIndexes.push(tleParseResult.leftSquareBracketToken!.span.startIndex);
         if (tleParseResult.rightSquareBracketToken !== null) {
             highlightCharacterIndexes.push(tleParseResult.rightSquareBracketToken.span.startIndex);
         }
     }
 
-    private static addTLEFunctionHighlights(highlightCharacterIndexes: number[], tleFunction: FunctionValue): void {
-        assert.notEqual(null, highlightCharacterIndexes);
-        assert.notEqual(null, tleFunction);
-        assert.notEqual(null, tleFunction.leftParenthesisToken);
+    private static addTLEFunctionHighlights(highlightCharacterIndexes: number[], tleFunction: FunctionCallValue): void {
+        assert(tleFunction);
+        assert(tleFunction.leftParenthesisToken);
 
-        highlightCharacterIndexes.push(tleFunction.leftParenthesisToken.span.startIndex);
+        // tslint:disable-next-line:no-non-null-assertion // Asserted
+        highlightCharacterIndexes.push(tleFunction.leftParenthesisToken!
+            .span.startIndex);
         if (tleFunction.rightParenthesisToken !== null) {
             highlightCharacterIndexes.push(tleFunction.rightParenthesisToken.span.startIndex);
         }
     }
 
     private static addTLEArrayHighlights(highlightCharacterIndexes: number[], tleArrayAccess: ArrayAccessValue): void {
-        assert.notEqual(null, highlightCharacterIndexes);
-        assert.notEqual(null, tleArrayAccess);
-        assert.notEqual(null, tleArrayAccess.leftSquareBracketToken);
+        assert(tleArrayAccess);
+        assert(tleArrayAccess.leftSquareBracketToken);
 
         highlightCharacterIndexes.push(tleArrayAccess.leftSquareBracketToken.span.startIndex);
         if (tleArrayAccess.rightSquareBracketToken !== null) {
@@ -530,19 +640,18 @@ export class BraceHighlighter {
  * A generic visitor base class for TLE values.
  */
 export abstract class Visitor {
-    public visitArrayAccess(tleArrayAccess: ArrayAccessValue): void {
+    public visitArrayAccess(tleArrayAccess: ArrayAccessValue | null): void {
         if (tleArrayAccess) {
-            if (tleArrayAccess.source) {
-                tleArrayAccess.source.accept(this);
-            }
-            if (tleArrayAccess.index) {
-                tleArrayAccess.index.accept(this);
+            assert(tleArrayAccess.source);
+            tleArrayAccess.source.accept(this);
+            if (tleArrayAccess.indexValue) {
+                tleArrayAccess.indexValue.accept(this);
             }
         }
     }
 
-    public visitFunction(tleFunction: FunctionValue): void {
-        if (tleFunction && tleFunction.argumentExpressions) {
+    public visitFunctionCall(tleFunction: FunctionCallValue | null): void {
+        if (tleFunction) {
             for (const argumentExpression of tleFunction.argumentExpressions) {
                 if (argumentExpression) {
                     argumentExpression.accept(this);
@@ -555,8 +664,9 @@ export abstract class Visitor {
         // Nothing to do
     }
 
-    public visitPropertyAccess(tlePropertyAccess: PropertyAccess): void {
-        if (tlePropertyAccess && tlePropertyAccess.source) {
+    public visitPropertyAccess(tlePropertyAccess: PropertyAccess | null): void {
+        if (tlePropertyAccess) {
+            assert(tlePropertyAccess.source);
             tlePropertyAccess.source.accept(this);
         }
     }
@@ -566,333 +676,57 @@ export abstract class Visitor {
     }
 }
 
-/**
- * A TLE visitor that counts the function usages in a TLE value.
- */
-export class FunctionCountVisitor extends Visitor {
-    private _functionCounts: Histogram = new Histogram();
-
-    /**
-     * Get the histogram of function usages.
-     */
-    public get functionCounts(): Histogram {
-        return this._functionCounts;
-    }
-
-    public visitFunction(tleFunction: FunctionValue): void {
-        // Log count for both "func" and "func(<args-count>)"
-        let args = tleFunction.argumentExpressions || [];
-        let argsCount = args.length;
-        let functionName = tleFunction.nameToken.stringValue;
-        let functionNameWithArgs = `${functionName}(${argsCount})`;
-        this._functionCounts.add(functionName);
-        this._functionCounts.add(functionNameWithArgs);
-
-        super.visitFunction(tleFunction);
-    }
-
-    public static visit(tleValue: Value): FunctionCountVisitor {
-        let visitor = new FunctionCountVisitor();
-        if (tleValue) {
-            tleValue.accept(visitor);
-        }
-        return visitor;
-    }
-}
-
-/**
- * A TLE visitor that finds references to undefined parameters or variables.
- */
-export class UndefinedParameterAndVariableVisitor extends Visitor {
-    private _errors: language.Issue[] = [];
-
-    constructor(private _deploymentTemplate: DeploymentTemplate) {
-        super();
-
-        assert(_deploymentTemplate !== null, "_deploymentTemplate cannot be null");
-        assert(_deploymentTemplate !== undefined, "_deploymentTemplate cannot be undefined");
-    }
-
-    public get errors(): language.Issue[] {
-        return this._errors;
-    }
-
-    public visitString(tleString: StringValue): void {
-        assert(tleString, "Cannot visit a null or undefined StringValue");
-
-        const quotedStringValue: string = tleString.token.stringValue;
-
-        if (tleString.isParametersArgument() && !this._deploymentTemplate.getParameterDefinition(quotedStringValue)) {
-            this._errors.push(new language.Issue(tleString.token.span, `Undefined parameter reference: ${quotedStringValue}`));
-        }
-
-        if (tleString.isVariablesArgument() && !this._deploymentTemplate.getVariableDefinition(quotedStringValue)) {
-            this._errors.push(new language.Issue(tleString.token.span, `Undefined variable reference: ${quotedStringValue}`));
-        }
-    }
-
-    public static visit(tleValue: Value, deploymentTemplate: DeploymentTemplate): UndefinedParameterAndVariableVisitor {
-        const visitor = new UndefinedParameterAndVariableVisitor(deploymentTemplate);
-        if (tleValue) {
-            tleValue.accept(visitor);
-        }
-        return visitor;
-    }
-}
-
-/**
- * A TLE visitor that finds references to undefined functions.
- */
-export class UnrecognizedFunctionVisitor extends Visitor {
-    private _errors: UnrecognizedFunctionIssue[] = [];
-
-    constructor(private _tleFunctions: assets.FunctionsMetadata) {
-        super();
-    }
-
-    public get errors(): language.Issue[] {
-        return this._errors;
-    }
-
-    public visitFunction(tleFunction: FunctionValue): void {
-        const functionName: string = tleFunction.nameToken.stringValue;
-        const functionMetadata: assets.FunctionMetadata = this._tleFunctions.findbyName(functionName);
-        if (!functionMetadata) {
-            this._errors.push(new UnrecognizedFunctionIssue(tleFunction.nameToken.span, functionName));
-        }
-
-        super.visitFunction(tleFunction);
-    }
-
-    public static visit(tleValue: Value, tleFunctions: assets.FunctionsMetadata): UnrecognizedFunctionVisitor {
-        let visitor = new UnrecognizedFunctionVisitor(tleFunctions);
-        if (tleValue) {
-            tleValue.accept(visitor);
-        }
-        return visitor;
-    }
-}
-
-/**
- * A TLE visitor that creates errors if an incorrect number of arguments are used when calling a
- * TLE function.
- */
-export class IncorrectFunctionArgumentCountVisitor extends Visitor {
-    private _errors: IncorrectArgumentsCountIssue[] = [];
-
-    constructor(private _tleFunctions: assets.FunctionsMetadata) {
-        super();
-    }
-
-    public get errors(): IncorrectArgumentsCountIssue[] {
-        return this._errors;
-    }
-
-    public visitFunction(tleFunction: FunctionValue): void {
-        const parsedFunctionName: string = tleFunction.nameToken.stringValue;
-        let functionMetadata: assets.FunctionMetadata = this._tleFunctions.findbyName(parsedFunctionName);
-        if (functionMetadata) {
-            const actualFunctionName: string = functionMetadata.name;
-
-            const minimumArguments: number = functionMetadata.minimumArguments;
-            // tslint:disable-next-line:max-line-length
-            assert(minimumArguments !== null && minimumArguments !== undefined, `TLE function metadata for '${actualFunctionName}' has a null or undefined minimum argument value.`);
-
-            const maximumArguments: number = functionMetadata.maximumArguments;
-            const functionCallArgumentCount: number = tleFunction.argumentExpressions ? tleFunction.argumentExpressions.length : 0;
-
-            let message: string;
-            if (minimumArguments === maximumArguments) {
-                if (functionCallArgumentCount !== minimumArguments) {
-                    message = `The function '${actualFunctionName}' takes ${minimumArguments} ${this.getArgumentsString(minimumArguments)}.`;
-                }
-            } else if (maximumArguments === null || maximumArguments === undefined) {
-                if (functionCallArgumentCount < minimumArguments) {
-                    message = `The function '${actualFunctionName}' takes at least ${minimumArguments} ${this.getArgumentsString(minimumArguments)}.`;
-                }
-            } else {
-                assert(minimumArguments < maximumArguments);
-                if (functionCallArgumentCount < minimumArguments || maximumArguments < functionCallArgumentCount) {
-                    // tslint:disable-next-line:max-line-length
-                    message = `The function '${actualFunctionName}' takes between ${minimumArguments} and ${maximumArguments} ${this.getArgumentsString(maximumArguments)}.`;
-                }
-            }
-
-            if (message) {
-                let issue = new IncorrectArgumentsCountIssue(
-                    tleFunction.getSpan(),
-                    message,
-                    actualFunctionName,
-                    tleFunction.argumentExpressions.length,
-                    functionMetadata.minimumArguments,
-                    functionMetadata.maximumArguments);
-                this._errors.push(issue);
-            }
-        }
-
-        super.visitFunction(tleFunction);
-    }
-
-    private getArgumentsString(argumentCount: number): string {
-        return `argument${argumentCount === 1 ? "" : "s"}`;
-    }
-
-    public static visit(tleValue: Value, tleFunctions: assets.FunctionsMetadata): IncorrectFunctionArgumentCountVisitor {
-        const visitor = new IncorrectFunctionArgumentCountVisitor(tleFunctions);
-        if (tleValue) {
-            tleValue.accept(visitor);
-        }
-        return visitor;
-    }
-}
-
-/**
- * A TLE visitor that finds references to variable properties that haven't been defined.
- */
-export class UndefinedVariablePropertyVisitor extends Visitor {
-    private _errors: language.Issue[] = [];
-
-    constructor(private _deploymentTemplate: DeploymentTemplate) {
-        super();
-    }
-
-    public get errors(): language.Issue[] {
-        return this._errors;
-    }
-
-    public visitPropertyAccess(tlePropertyAccess: PropertyAccess): void {
-        if (tlePropertyAccess.nameToken) {
-            const functionSource: FunctionValue = tlePropertyAccess.functionSource;
-            if (functionSource) {
-
-                const variableProperty: Json.Property = this._deploymentTemplate.getVariableDefinitionFromFunction(functionSource);
-                if (variableProperty) {
-
-                    const variableDefinition: Json.ObjectValue = Json.asObjectValue(variableProperty.value);
-                    const sourcesNameStack: string[] = tlePropertyAccess.sourcesNameStack;
-                    if (variableDefinition) {
-                        const sourcePropertyDefinition: Json.ObjectValue =
-                            Json.asObjectValue(variableDefinition.getPropertyValueFromStack(sourcesNameStack));
-                        if (sourcePropertyDefinition && !sourcePropertyDefinition.hasProperty(tlePropertyAccess.nameToken.stringValue)) {
-                            this.addIssue(tlePropertyAccess);
-                        }
-                    } else if (sourcesNameStack.length === 0) {
-                        this.addIssue(tlePropertyAccess);
-                    }
-                }
-            }
-        }
-
-        super.visitPropertyAccess(tlePropertyAccess);
-    }
-
-    private addIssue(tlePropertyAccess: PropertyAccess): void {
-        const propertyName: string = tlePropertyAccess.nameToken.stringValue;
-        const sourceString: string = tlePropertyAccess.source.toString();
-        this._errors.push(
-            new language.Issue(tlePropertyAccess.nameToken.span, `Property "${propertyName}" is not a defined property of "${sourceString}".`));
-    }
-
-    public static visit(tleValue: Value, deploymentTemplate: DeploymentTemplate): UndefinedVariablePropertyVisitor {
-        const visitor = new UndefinedVariablePropertyVisitor(deploymentTemplate);
-        if (tleValue) {
-            tleValue.accept(visitor);
-        }
-        return visitor;
-    }
-}
-
-/**
- * A TLE visitor that searches a TLE value tree looking for references to the provided parameter or
- * variable.
- */
-export class FindReferencesVisitor extends Visitor {
-    private _references: Reference.List;
-    private _lowerCasedName: string;
-
-    constructor(private _kind: Reference.ReferenceKind, _name: string) {
-        super();
-
-        this._references = new Reference.List(_kind);
-        this._lowerCasedName = Utilities.unquote(_name).toLowerCase();
-    }
-
-    public get references(): Reference.List {
-        return this._references;
-    }
-
-    public visitString(tleString: StringValue): void {
-        if (tleString && Utilities.unquote(tleString.toString()).toLowerCase() === this._lowerCasedName) {
-            switch (this._kind) {
-                case Reference.ReferenceKind.Parameter:
-                    if (tleString.isParametersArgument()) {
-                        this._references.add(tleString.unquotedSpan);
-                    }
-                    break;
-
-                case Reference.ReferenceKind.Variable:
-                    if (tleString.isVariablesArgument()) {
-                        this._references.add(tleString.unquotedSpan);
-                    }
-                    break;
-
-                default:
-                    assert.fail(`Unrecognized ReferenceKind: ${this._kind}`);
-                    break;
-            }
-        }
-    }
-
-    public static visit(tleValue: Value, referenceType: Reference.ReferenceKind, referenceName: string): FindReferencesVisitor {
-        const visitor = new FindReferencesVisitor(referenceType, referenceName);
-        if (tleValue) {
-            tleValue.accept(visitor);
-        }
-        return visitor;
-    }
-}
-
 export class FunctionSignatureHelp {
-    constructor(private _activeParameterIndex: number, private _functionMetadata: assets.FunctionMetadata) {
+    constructor(private _activeParameterIndex: number, private _functionMetadata: IFunctionMetadata) {
     }
 
     public get activeParameterIndex(): number {
         return this._activeParameterIndex;
     }
 
-    public get functionMetadata(): assets.FunctionMetadata {
+    public get functionMetadata(): IFunctionMetadata {
         return this._functionMetadata;
     }
 }
 
 /**
- * A parser for TLE strings.
+ * A parser for JSON strings inside a deployment template (whether they contain expressions or not).
+ * The given string value must start with a quote (single or double).
+ * If there are no square brackets, the expression will be a StringValue representing the entire
+ *   JSON (non-expression) string, assuming no errors
+ *
+ * CONSIDER: Change the following implementation details:
+ * Given that the current parser requires a function expression at the top-most level of an expression,
+ *   the top-level expression returned will only be a StringValue if there is in fact no expression.
  */
 export class Parser {
-    public static parse(stringValue: string): ParseResult {
-        assert.notEqual(null, stringValue, "TLE strings cannot be null.");
-        assert(1 <= stringValue.length, "TLE strings must be at least 1 character.");
-        assert(Utilities.isQuoteCharacter(stringValue[0]), "The first character in a TLE string must be a quote character.");
+    // Handles any JSON string, not just those that are actually TLE expressions beginning with bracket
+    public static parse(quotedStringValue: string, scope: TemplateScope): ParseResult {
+        assert(quotedStringValue, "TLE strings cannot be null.");
+        assert(1 <= quotedStringValue.length, "TLE strings must be at least 1 character.");
+        assert(Utilities.isQuoteCharacter(quotedStringValue[0]), "The first character in the TLE string to parse must be a quote character.");
 
-        let leftSquareBracketToken: Token = null;
-        let expression: Value = null;
-        let rightSquareBracketToken: Token = null;
+        let leftSquareBracketToken: Token | null = null;
+        let expression: Value | null = null;
+        let rightSquareBracketToken: Token | null = null;
         let errors: language.Issue[] = [];
 
-        if (3 <= stringValue.length && stringValue.substr(1, 2) === "[[") {
-            expression = new StringValue(Token.createQuotedString(0, stringValue));
+        if (3 <= quotedStringValue.length && quotedStringValue.substr(1, 2) === "[[") {
+            expression = new StringValue(Token.createQuotedString(0, quotedStringValue));
         } else {
-            let tokenizer = Tokenizer.fromString(stringValue);
+            let tokenizer = Tokenizer.fromString(quotedStringValue);
             tokenizer.next();
 
-            if (!tokenizer.hasCurrent() || tokenizer.current.getType() !== TokenType.LeftSquareBracket) {
-                expression = new StringValue(Token.createQuotedString(0, stringValue));
+            if (!tokenizer.current || tokenizer.current.getType() !== TokenType.LeftSquareBracket) {
+                // This is just a plain old string (no brackets). Mark its expression as being
+                // the string value.
+                expression = new StringValue(Token.createQuotedString(0, quotedStringValue));
             } else {
                 leftSquareBracketToken = tokenizer.current;
                 tokenizer.next();
 
                 while (
-                    tokenizer.hasCurrent()
+                    <Token | null>tokenizer.current
                     && tokenizer.current.getType() !== TokenType.Literal
                     && tokenizer.current.getType() !== TokenType.RightSquareBracket
                 ) {
@@ -900,9 +734,9 @@ export class Parser {
                     tokenizer.next();
                 }
 
-                expression = Parser.parseExpression(tokenizer, errors);
+                expression = Parser.parseExpression(tokenizer, scope, errors);
 
-                while (tokenizer.hasCurrent()) {
+                while (<Token | null>tokenizer.current) {
                     if (tokenizer.current.getType() === TokenType.RightSquareBracket) {
                         rightSquareBracketToken = tokenizer.current;
                         tokenizer.next();
@@ -914,12 +748,12 @@ export class Parser {
                 }
 
                 if (rightSquareBracketToken !== null) {
-                    while (tokenizer.hasCurrent()) {
+                    while (<Token | null>tokenizer.current) {
                         errors.push(new language.Issue(tokenizer.current.span, "Nothing should exist after the closing ']' except for whitespace."));
                         tokenizer.next();
                     }
                 } else {
-                    errors.push(new language.Issue(new language.Span(stringValue.length - 1, 1), "Expected a right square bracket (']')."));
+                    errors.push(new language.Issue(new language.Span(quotedStringValue.length - 1, 1), "Expected a right square bracket (']')."));
                 }
 
                 if (expression === null) {
@@ -932,111 +766,148 @@ export class Parser {
             }
         }
 
-        return new ParseResult(leftSquareBracketToken, expression, rightSquareBracketToken, errors);
+        return new ParseResult(leftSquareBracketToken, expression, rightSquareBracketToken, errors, scope);
     }
 
-    private static parseExpression(tokenizer: Tokenizer, errors: language.Issue[]): Value {
-        let expression: Value = null;
+    private static parseExpression(tokenizer: Tokenizer, scope: TemplateScope, errors: language.Issue[]): Value | null {
+        let expression: Value;
+        if (tokenizer.current) {
+            let rootExpression: Value | null = null; // Initial expression
 
-        if (tokenizer.hasCurrent()) {
             let token = tokenizer.current;
             let tokenType = token.getType();
             if (tokenType === TokenType.Literal) {
-                expression = Parser.parseFunction(tokenizer, errors);
+                rootExpression = Parser.parseFunctionCall(tokenizer, scope, errors);
             } else if (tokenType === TokenType.QuotedString) {
                 if (!token.stringValue.endsWith(token.stringValue[0])) {
                     errors.push(new language.Issue(token.span, "A constant string is missing an end quote."));
                 }
-                expression = new StringValue(token);
+                rootExpression = new StringValue(token);
                 tokenizer.next();
             } else if (tokenType === TokenType.Number) {
-                expression = new NumberValue(token);
+                rootExpression = new NumberValue(token);
                 tokenizer.next();
             } else if (tokenType !== TokenType.RightSquareBracket && tokenType !== TokenType.Comma) {
                 errors.push(new language.Issue(token.span, "Template language expressions must start with a function."));
                 tokenizer.next();
             }
+
+            if (!rootExpression) {
+                return null;
+            }
+
+            expression = rootExpression;
+        } else {
+            return null;
         }
 
-        if (expression !== null) {
-            while (tokenizer.hasCurrent()) {
-                if (tokenizer.current.getType() === TokenType.Period) {
-                    let periodToken = tokenizer.current;
-                    tokenizer.next();
+        // Check for property or array accesses off of the root expression
+        while (<Token | null>tokenizer.current) {
+            if (tokenizer.current.getType() === TokenType.Period) {
+                let periodToken = tokenizer.current;
+                tokenizer.next();
 
-                    let propertyNameToken: Token = null;
-                    let errorSpan: language.Span = null;
+                let propertyNameToken: Token | null = null;
+                let errorSpan: language.Span | null = null;
 
-                    if (tokenizer.hasCurrent()) {
-                        if (tokenizer.current.getType() === TokenType.Literal) {
-                            propertyNameToken = tokenizer.current;
-                            tokenizer.next();
-                        } else {
-                            errorSpan = tokenizer.current.span;
-
-                            let tokenType = tokenizer.current.getType();
-                            if (tokenType !== TokenType.RightParenthesis
-                                && tokenType !== TokenType.RightSquareBracket
-                                && tokenType !== TokenType.Comma
-                            ) {
-                                tokenizer.next();
-                            }
-                        }
-                    } else {
-                        errorSpan = periodToken.span;
-                    }
-
-                    if (propertyNameToken === null) {
-                        assert.notEqual(null, errorSpan);
-                        errors.push(new language.Issue(errorSpan, "Expected a literal value."));
-                    }
-
-                    expression = new PropertyAccess(expression, periodToken, propertyNameToken);
-                } else if (tokenizer.current.getType() === TokenType.LeftSquareBracket) {
-                    let leftSquareBracketToken: Token = tokenizer.current;
-                    tokenizer.next();
-
-                    let index: Value = Parser.parseExpression(tokenizer, errors);
-
-                    let rightSquareBracketToken: Token = null;
-                    if (tokenizer.hasCurrent() && tokenizer.current.getType() === TokenType.RightSquareBracket) {
-                        rightSquareBracketToken = tokenizer.current;
+                if (<Token | null>tokenizer.current) {
+                    if (tokenizer.current.getType() === TokenType.Literal) {
+                        propertyNameToken = tokenizer.current;
                         tokenizer.next();
-                    }
+                    } else {
+                        errorSpan = tokenizer.current.span;
 
-                    expression = new ArrayAccessValue(expression, leftSquareBracketToken, index, rightSquareBracketToken);
+                        let tokenType = tokenizer.current.getType();
+                        if (tokenType !== TokenType.RightParenthesis
+                            && tokenType !== TokenType.RightSquareBracket
+                            && tokenType !== TokenType.Comma
+                        ) {
+                            tokenizer.next();
+                        }
+                    }
                 } else {
-                    break;
+                    errorSpan = periodToken.span;
                 }
+
+                if (propertyNameToken === null) {
+                    assert(errorSpan);
+                    // tslint:disable-next-line: no-non-null-assertion // Asserted
+                    errors.push(new language.Issue(errorSpan!, "Expected a literal value."));
+                }
+
+                // We go ahead and create a property access expresion whether the property name
+                //   was correctly given or not, so we can have proper intellisense/etc.
+                expression = new PropertyAccess(expression, periodToken, propertyNameToken);
+            } else if (tokenizer.current.getType() === TokenType.LeftSquareBracket) {
+                let leftSquareBracketToken: Token = tokenizer.current;
+                tokenizer.next();
+
+                let indexValue: Value | null = Parser.parseExpression(tokenizer, scope, errors);
+
+                let rightSquareBracketToken: Token | null = null;
+                if (<Token | null>tokenizer.current && tokenizer.current.getType() === TokenType.RightSquareBracket) {
+                    rightSquareBracketToken = tokenizer.current;
+                    tokenizer.next();
+                }
+
+                expression = new ArrayAccessValue(expression, leftSquareBracketToken, indexValue, rightSquareBracketToken);
+            } else {
+                break;
             }
         }
 
         return expression;
     }
 
-    // tslint:disable-next-line:cyclomatic-complexity // Grandfathered in
-    private static parseFunction(tokenizer: Tokenizer, errors: language.Issue[]): FunctionValue {
-        assert.notEqual(null, tokenizer);
-        assert(tokenizer.hasCurrent(), "tokenizer must have a current token.");
-        assert.deepEqual(TokenType.Literal, tokenizer.current.getType(), "tokenizer's current token must be a literal.");
-        assert.notEqual(null, errors);
+    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length // CONSIDER: refactor
+    private static parseFunctionCall(tokenizer: Tokenizer, scope: TemplateScope, errors: language.Issue[]): FunctionCallValue {
+        assert(tokenizer);
+        assert(tokenizer.current, "tokenizer must have a current token.");
+        // tslint:disable-next-line:no-non-null-assertion // Asserted
+        assert.deepEqual(TokenType.Literal, tokenizer.current!.getType(), "tokenizer's current token must be a literal.");
+        assert(errors);
 
-        let nameToken = tokenizer.current;
+        let namespaceToken: Token | null = null;
+        let nameToken: Token | null = null;
+        let periodToken: Token | null = null;
+
+        // tslint:disable-next-line:no-non-null-assertion // Asserted
+        let firstToken: Token = tokenizer.current!;
         tokenizer.next();
 
-        let leftParenthesisToken: Token = null;
-        let rightParenthesisToken: Token = null;
-        let commaTokens: Token[] = [];
-        let argumentExpressions: Value[] = [];
+        // Check for <namespace>.<functionname>
+        if (tokenizer.current && tokenizer.current.getType() === TokenType.Period) {
+            // It's a user-defined function because it has a namespace before the function name
+            periodToken = tokenizer.current;
+            namespaceToken = firstToken;
+            tokenizer.next();
 
-        if (tokenizer.hasCurrent()) {
-            while (tokenizer.hasCurrent()) {
+            // Get the function name following the period
+            if (tokenizer.hasCurrent() && tokenizer.current.getType() === TokenType.Literal) {
+                nameToken = tokenizer.current;
+                tokenizer.next();
+            } else {
+                errors.push(new language.Issue(periodToken.span, "Expected user-defined function name."));
+            }
+        } else {
+            nameToken = firstToken;
+        }
+
+        let leftParenthesisToken: Token | null = null;
+        let rightParenthesisToken: Token | null = null;
+        let commaTokens: Token[] = [];
+        let argumentExpressions: (Value | null)[] = [];
+
+        if (tokenizer.current) {
+            // tslint:disable-next-line: strict-boolean-expressions // False positive
+            while (tokenizer.current) {
                 if (tokenizer.current.getType() === TokenType.LeftParenthesis) {
                     leftParenthesisToken = tokenizer.current;
                     tokenizer.next();
                     break;
                 } else if (tokenizer.current.getType() === TokenType.RightSquareBracket) {
-                    errors.push(new language.Issue(nameToken.span, "Missing function argument list."));
+                    // tslint:disable-next-line: strict-boolean-expressions
+                    errors.push(new language.Issue(getFullNameSpan(), "Missing function argument list."));
                     break;
                 } else {
                     errors.push(new language.Issue(tokenizer.current.span, "Expected the end of the string."));
@@ -1044,17 +915,17 @@ export class Parser {
                 }
             }
         } else {
-            errors.push(new language.Issue(nameToken.span, "Missing function argument list."));
+            errors.push(new language.Issue(getFullNameSpan(), "Missing function argument list."));
         }
 
         if (tokenizer.hasCurrent()) {
             let expectingArgument: boolean = true;
 
-            while (tokenizer.hasCurrent()) {
+            while (tokenizer.current) {
                 if (tokenizer.current.getType() === TokenType.RightParenthesis || tokenizer.current.getType() === TokenType.RightSquareBracket) {
                     break;
                 } else if (expectingArgument) {
-                    let expression = Parser.parseExpression(tokenizer, errors);
+                    let expression = Parser.parseExpression(tokenizer, scope, errors);
                     if (expression === null && tokenizer.hasCurrent() && tokenizer.current.getType() === TokenType.Comma) {
                         errors.push(new language.Issue(tokenizer.current.span, "Expected a constant string, function, or property expression."));
                     }
@@ -1073,7 +944,7 @@ export class Parser {
             if (Parser.isMissingArgument(expectingArgument, leftParenthesisToken, argumentExpressions.length, tokenizer)) {
                 argumentExpressions.push(null);
                 let errorSpan: language.Span;
-                if (tokenizer.hasCurrent()) {
+                if (tokenizer.current) {
                     errorSpan = tokenizer.current.span;
                 } else {
                     assert(0 < commaTokens.length);
@@ -1086,7 +957,7 @@ export class Parser {
             errors.push(new language.Issue(leftParenthesisToken.span, "Expected a right parenthesis (')')."));
         }
 
-        if (tokenizer.hasCurrent()) {
+        if (tokenizer.current) {
             switch (tokenizer.current.getType()) {
                 case TokenType.RightParenthesis:
                     rightParenthesisToken = tokenizer.current;
@@ -1101,19 +972,31 @@ export class Parser {
             }
         }
 
-        return new FunctionValue(nameToken, leftParenthesisToken, commaTokens, argumentExpressions, rightParenthesisToken);
+        assert(namespaceToken || nameToken, "Should have had a namespace or a name");
+        return new FunctionCallValue(namespaceToken, periodToken, nameToken, leftParenthesisToken, commaTokens, argumentExpressions, rightParenthesisToken, scope);
+
+        function getFullNameSpan(): language.Span {
+            if (!nameToken) {
+                assert(namespaceToken);
+                // tslint:disable-next-line: no-non-null-assertion
+                return namespaceToken!.span;
+            } else {
+                // tslint:disable-next-line: strict-boolean-expressions
+                return nameToken.span.union(namespaceToken && namespaceToken.span);
+            }
+        }
     }
 
     private static isMissingArgument(
         expectingArgument: boolean,
-        leftParenthesisToken: Token,
+        leftParenthesisToken: Token | null,
         existingArguments: number,
         tokenizer: Tokenizer
     ): boolean {
         let result = false;
 
-        if (expectingArgument && leftParenthesisToken !== null && 0 < existingArguments) {
-            if (!tokenizer.hasCurrent()) {
+        if (expectingArgument && leftParenthesisToken && 0 < existingArguments) {
+            if (!tokenizer.current) {
                 result = true;
             } else {
                 result = tokenizer.current.getType() === TokenType.RightParenthesis ||
@@ -1130,23 +1013,24 @@ export class Parser {
  */
 export class ParseResult {
     constructor(
-        private _leftSquareBracketToken: Token,
-        private _expression: Value,
-        private _rightSquareBracketToken: Token,
-        private _errors: language.Issue[]
+        private _leftSquareBracketToken: Token | null,
+        private _expression: Value | null,
+        private _rightSquareBracketToken: Token | null,
+        private _errors: language.Issue[],
+        public readonly scope: TemplateScope
     ) {
-        assert.notEqual(null, _errors);
+        assert(_errors);
     }
 
-    public get leftSquareBracketToken(): Token {
+    public get leftSquareBracketToken(): Token | null {
         return this._leftSquareBracketToken;
     }
 
-    public get rightSquareBracketToken(): Token {
+    public get rightSquareBracketToken(): Token | null {
         return this._rightSquareBracketToken;
     }
 
-    public get expression(): Value {
+    public get expression(): Value | null {
         return this._expression;
     }
 
@@ -1154,20 +1038,19 @@ export class ParseResult {
         return this._errors;
     }
 
-    public getValueAtCharacterIndex(characterIndex: number): Value {
-        let result: Value = null;
+    public getValueAtCharacterIndex(characterIndex: number): Value | null {
+        let result: Value | null = null;
 
-        let current: Value = this._expression;
+        let current: Value | null = this._expression;
         if (current && current.contains(characterIndex)) {
             while (!result) {
                 const currentValue: Value = current;
-                if (currentValue instanceof FunctionValue) {
-                    if (currentValue.argumentExpressions) {
-                        for (const argumentExpression of currentValue.argumentExpressions) {
-                            if (argumentExpression && argumentExpression.contains(characterIndex)) {
-                                current = argumentExpression;
-                                break;
-                            }
+                if (currentValue instanceof FunctionCallValue) {
+                    assert(currentValue.argumentExpressions);
+                    for (const argumentExpression of currentValue.argumentExpressions) {
+                        if (argumentExpression && argumentExpression.contains(characterIndex)) {
+                            current = argumentExpression;
+                            break;
                         }
                     }
 
@@ -1177,10 +1060,10 @@ export class ParseResult {
                         result = current;
                     }
                 } else if (currentValue instanceof ArrayAccessValue) {
-                    if (currentValue.source && currentValue.source.contains(characterIndex)) {
+                    if (currentValue.source.contains(characterIndex)) {
                         current = currentValue.source;
-                    } else if (currentValue.index && currentValue.index.contains(characterIndex)) {
-                        current = currentValue.index;
+                    } else if (currentValue.indexValue && currentValue.indexValue.contains(characterIndex)) {
+                        current = currentValue.indexValue;
                     } else {
                         result = current;
                     }
@@ -1205,13 +1088,17 @@ export class ParseResult {
  */
 export class Tokenizer {
     private _basicTokenizer: basic.Tokenizer;
+    private _text: string;
 
-    private _current: Token;
+    private _current: Token | null;
     // This offset (+1) is because we trimmed off the initial quote character.
     private _currentTokenStartIndex: number = 1;
 
+    private constructor() {
+    }
+
     public static fromString(stringValue: string): Tokenizer {
-        assert.notEqual(null, stringValue);
+        assert(stringValue);
         assert(1 <= stringValue.length);
         assert(Utilities.isQuoteCharacter(stringValue[0]));
 
@@ -1221,7 +1108,15 @@ export class Tokenizer {
 
         const tt = new Tokenizer();
         tt._basicTokenizer = new basic.Tokenizer(trimmedString);
+        tt._text = stringValue;
         return tt;
+    }
+
+    /**
+     * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
+     */
+    public get __debugDisplay(): string {
+        return __debugMarkSubstring(this._text, this._currentTokenStartIndex, this._current ? this._current.toString().length : 0);
     }
 
     public hasStarted(): boolean {
@@ -1232,7 +1127,7 @@ export class Tokenizer {
         return this._current !== null;
     }
 
-    public get current(): Token {
+    public get current(): Token | null {
         return this._current;
     }
 
@@ -1240,20 +1135,21 @@ export class Tokenizer {
         this._basicTokenizer.moveNext();
     }
 
-    private get currentBasicToken(): basic.Token {
+    private get currentBasicToken(): basic.Token | undefined {
         return this._basicTokenizer.current();
     }
 
-    public readToken(): Token {
+    public readToken(): Token | null {
         if (this.hasStarted() === false) {
             this.nextBasicToken();
-        } else if (this.hasCurrent()) {
+        } else if (this.current) {
             this._currentTokenStartIndex += this.current.length;
         }
 
         this._current = null;
-        if (this.currentBasicToken) {
-            switch (this.currentBasicToken.getType()) {
+        const currentBasicToken = this.currentBasicToken;
+        if (currentBasicToken) {
+            switch (currentBasicToken.getType()) {
                 case basic.TokenType.LeftParenthesis:
                     this._current = Token.createLeftParenthesis(this._currentTokenStartIndex);
                     this.nextBasicToken();
@@ -1313,7 +1209,7 @@ export class Tokenizer {
                     break;
 
                 default:
-                    const literalTokens: basic.Token[] = [this.currentBasicToken];
+                    const literalTokens: basic.Token[] = [currentBasicToken];
                     this.nextBasicToken();
 
                     while (this.currentBasicToken &&
@@ -1339,7 +1235,7 @@ export class Tokenizer {
     }
 
     private skipWhitespace(): void {
-        while (this.hasCurrent() && this._current.getType() === TokenType.Whitespace) {
+        while (this._current && this._current.getType() === TokenType.Whitespace) {
             this.next();
         }
     }
@@ -1354,8 +1250,8 @@ export class Token {
     private _stringValue: string;
 
     private static create(tokenType: TokenType, startIndex: number, stringValue: string): Token {
-        assert.notEqual(null, tokenType);
-        assert.notEqual(null, stringValue);
+        assert(typeof tokenType === "number");
+        assert(typeof stringValue === "string");
 
         let t = new Token();
         t._type = tokenType;
@@ -1405,7 +1301,7 @@ export class Token {
     }
 
     public static createWhitespace(startIndex: number, stringValue: string): Token {
-        assert.notEqual(null, stringValue);
+        assert(stringValue);
         assert(1 <= stringValue.length);
 
         return Token.create(TokenType.Whitespace, startIndex, stringValue);
@@ -1433,6 +1329,10 @@ export class Token {
 
         return Token.create(TokenType.Literal, startIndex, stringValue);
     }
+
+    public static createEmptyLiteral(startIndex: number): Token {
+        return Token.create(TokenType.Literal, startIndex, "");
+    }
 }
 
 /**
@@ -1457,28 +1357,34 @@ export enum TokenType {
  * e.g. 'That''s all, folks!')
  */
 export function readQuotedTLEString(iterator: Utilities.Iterator<basic.Token>): basic.Token[] {
-    assert(iterator.current().getType() === basic.TokenType.SingleQuote);
-    const quotedStringTokens: basic.Token[] = [iterator.current()];
+    assert(iterator.current());
+    // tslint:disable-next-line:no-non-null-assertion // Asserted
+    assert(iterator.current()!.getType() === basic.TokenType.SingleQuote);
+    // tslint:disable-next-line:no-non-null-assertion // Asserted
+    const quotedStringTokens: basic.Token[] = [iterator.current()!];
     iterator.moveNext();
 
     let escaped: boolean = false;
     while (iterator.current()) {
-        quotedStringTokens.push(iterator.current());
+        // tslint:disable-next-line:no-non-null-assertion // guaranteed by while
+        const current = iterator.current()!;
+        quotedStringTokens.push(current);
 
         if (escaped) {
             escaped = false;
         } else {
-            if (iterator.current().getType() === basic.TokenType.Backslash) {
+            if (current.getType() === basic.TokenType.Backslash) {
                 escaped = true;
-            } else if (iterator.current().getType() === basic.TokenType.SingleQuote) {
+            } else if (current.getType() === basic.TokenType.SingleQuote) {
                 // If the next token is also a single quote, it's escaped, otherwise it's the
                 // end of the string.
                 iterator.moveNext();
-                if (!iterator.current()) {
+                const afterCurrent = iterator.current();
+                if (!afterCurrent) {
                     break;
                 }
 
-                if (iterator.current().getType() === basic.TokenType.SingleQuote) {
+                if (afterCurrent.getType() === basic.TokenType.SingleQuote) {
                     escaped = true;
                     continue;
                 } else {

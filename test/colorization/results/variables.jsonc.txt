@@ -6,9 +6,34 @@ variables           {{scope-variables}}
 )                   {{scope-parentheses-funccall}}
 ]"                  {{scope-expression-end}}
 
+TEST STRING: "[Variables('Myvar')]"
+"[                  {{scope-expression-start}}
+Variables           {{scope-variables}}
+(                   {{scope-parentheses-funccall}}
+'Myvar'             {{scope-variable}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
 TEST STRING: "[variables(concat('myvar','a'))]"
 "[                  {{scope-expression-start}}
 variables           {{scope-variables}}
+(                   {{scope-parentheses-funccall}}
+concat              {{scope-builtin}}
+(                   {{scope-parentheses-funccall}}
+'                   {{scope-string-start}}
+myvar               {{scope-string-contents}}
+'                   {{scope-string-end}}
+,                   {{scope-funcargs-separator}}
+'                   {{scope-string-start}}
+a                   {{scope-string-contents}}
+'                   {{scope-string-end}}
+)                   {{scope-parentheses-funccall}}
+)                   {{scope-parentheses-funccall}}
+]"                  {{scope-expression-end}}
+
+TEST STRING: "[Variables(concat('myvar','a'))]"
+"[                  {{scope-expression-start}}
+Variables           {{scope-variables}}
 (                   {{scope-parentheses-funccall}}
 concat              {{scope-builtin}}
 (                   {{scope-parentheses-funccall}}

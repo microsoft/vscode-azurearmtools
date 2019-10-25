@@ -10,7 +10,7 @@
             },
             "isBackground": true,
             "presentation": {
-                "reveal": "silent"
+                "reveal": "never"
             },
             "problemMatcher": "$tsc-watch"
         },
@@ -39,9 +39,8 @@
         },
         {
             "type": "npm",
-            "script": "watch",
-            "problemMatcher": [],
-            "isBackground": true
+            "script": "verify-test-uses-extension-bundle",
+            "problemMatcher": []
         }
     ]
 }

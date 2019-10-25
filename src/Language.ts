@@ -65,7 +65,7 @@ export class Span {
      * Create a new span that is a union of this Span and the provided Span.
      * If the provided Span is null, then this Span will be returned.
      */
-    public union(rhs: Span): Span {
+    public union(rhs: Span | null): Span {
         let result: Span;
         if (rhs !== null) {
             let minStart = Math.min(this.startIndex, rhs.startIndex);
@@ -75,6 +75,20 @@ export class Span {
             result = this;
         }
         return result;
+    }
+
+    /**
+     * Create a new span that is a union of the given spans.
+     * If both are null, null will be returned
+     */
+    public static union(lhs: Span | null, rhs: Span | null): Span | null {
+        if (lhs) {
+            return lhs.union(rhs);
+        } else if (rhs) {
+            return rhs;
+        } else {
+            return null;
+        }
     }
 
     public translate(movement: number): Span {
@@ -102,6 +116,10 @@ export class Position {
 
     public get column(): number {
         return this._column;
+    }
+
+    public toFriendlyString(): string {
+        return `[${this._line + 1}:${this._column + 1}]`;
     }
 }
 

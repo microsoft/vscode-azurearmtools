@@ -5,18 +5,20 @@
 
 'use strict';
 
-// tslint:disable:max-func-body-length no-console cyclomatic-complexity max-line-length
+// tslint:disable:max-func-body-length no-console cyclomatic-complexity max-line-length prefer-template non-literal-fs-path
 
 // Turn on to overwrite results files rather than creating new ".txt.actual" files when there are differences.
-const OVERWRITE = true;
+const OVERWRITE = false;
 
 import * as assert from 'assert';
 import * as fs from 'fs';
-import { ISuiteCallbackContext } from 'mocha';
+import { ISuiteCallbackContext, ITestCallbackContext } from 'mocha';
 import * as os from 'os';
 import * as path from 'path';
-import { commands, Uri, workspace } from 'vscode';
+import { commands, Uri } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
+import { getTempFilePath } from '../support/getTempFilePath';
+import { DISABLE_SLOW_TESTS } from '../testConstants';
 
 const tleGrammarSourcePath: string = path.join(__dirname, '../../../grammars/arm-expression-string.tmLanguage.json');
 export interface IGrammar {
@@ -38,13 +40,14 @@ interface ITokenInfo {
     colors: { [key: string]: string }[];
 }
 
-// E.g., change keyword.other.expression.begin.arm-deployment => {{scope-expression-start}}, according to the preprocess section of the grammar
+// E.g., change keyword.other.expression.begin.tle.arm-template => {{scope-expression-start}}, according to the preprocess section of the grammar
 const tabSize = 20;
-let unpreprocess: [RegExp, string][];
+let unpreprocess: [RegExp, string][] | undefined;
 function unpreprocessScopes(scopes: string): string {
     if (!unpreprocess) {
         let source: string = fs.readFileSync(tleGrammarSourcePath).toString();
         let grammar = <IGrammar>JSON.parse(source);
+        // tslint:disable-next-line: strict-boolean-expressions
         let preprocess = grammar.preprocess || <{ [key: string]: string }>{};
         unpreprocess = [];
         for (let key of Object.getOwnPropertyNames(preprocess)) {
@@ -67,37 +70,50 @@ let longestTestDuration = 0;
 async function assertUnchangedTokens(testPath: string, resultPath: string): Promise<void> {
     let start = Date.now();
     try {
+        // If the test filename contains ".invalid.", then all testcases in it should have at least one "invalid" token.
+        // Otherwise they should contain none.
+        let shouldHaveInvalidTokens = !!testPath.match(/\.INVALID\./i);
 
-        let doc = await workspace.openTextDocument(testPath);
-        let languageId = doc.languageId;
+        // If the test filename contains ".not-arm.", then all testcases in it should not contain any source.json.arm-template tokens.
+        // Otherwise they should have at least one.
+        let shouldBeArmTemplate = !testPath.match(/\.NOT-ARM\./i);
 
-        let rawData: { c: string; t: string; r: unknown[] }[] = await commands.executeCommand('_workbench.captureSyntaxTokens', Uri.file(testPath));
+        let shouldBeExpression = shouldBeArmTemplate && !testPath.match(/\.NOT-EXPR\./i);
+
+        let filePathForReadingTokens = testPath;
+
+        if (shouldBeArmTemplate) {
+            // _workbench.captureSyntaxTokens always takes a URL (it can't use the current buffer).
+            // If we use the standard .json{,c} extension for the file, it will start out with the
+            // json{,c} language ID before we automatically switch it to arm-template. By the time
+            // we switch it, it's too late. So we need to use an extension that's actually mapped
+            // directly to arm-template.
+            filePathForReadingTokens = getTempFilePath(path.basename(testPath), '.azrm');
+            fs.writeFileSync(filePathForReadingTokens, fs.readFileSync(testPath));
+        }
+
+        let rawData: { c: string; t: string; r: unknown[] }[] | undefined = await commands.executeCommand('_workbench.captureSyntaxTokens', Uri.file(filePathForReadingTokens));
+        if (!rawData) {
+            throw new Error("_workbench.captureSyntaxTokens failed");
+        }
 
         // Let's use more reasonable property names in our data
         let data: ITokenInfo[] = rawData.map(d => <ITokenInfo>{ text: d.c.trim(), scopes: d.t, colors: d.r })
             .filter(d => d.text !== "");
 
-        let expectedLanguageId = testPath.endsWith('.json') ? 'json' : 'jsonc';
-        if (languageId !== expectedLanguageId) {
-            throw new Error(`File ${testPath} is getting opened in vscode using language ID '${languageId}' instead of the expected ID '${expectedLanguageId}'.`
-                + ' Check if your user settings have modified the default file.associations setting.');
-        }
+        // let doc = await workspace.openTextDocument(filePathForReadingTokens);
+        // let editor = await window.showTextDocument(doc);
 
-        commands.executeCommand('workbench.action.closeActiveEditor');
+        // let languageId = doc.languageId;
+        // let expectedLanguageId = shouldBeArmTemplate ? 'arm-template' : testPath.endsWith('.json') ? 'json' : 'jsonc';
+        // if (languageId !== expectedLanguageId) {
+        //     throw new Error(`File ${testPath} is getting opened in vscode using language ID '${languageId}' instead of the expected ID '${expectedLanguageId}'.`
+        //         + ' Check if your user settings have modified the default file.associations setting.');
+        // }
 
-        let testCases: ITestcase[];
+        //commands.executeCommand('workbench.action.closeActiveEditor');
 
-        // ------------- USAGE TIP ------------
-        // If the test filename contains ".invalid.", then all testcases in it should have at least one "invalid" token.
-        // Otherwise they should contain none.
-        let shouldHaveInvalidTokens = !!testPath.match(/\.INVALID\./i);
-
-        // ------------- USAGE TIP ------------
-        // If the test filename contains ".not-arm.", then all testcases in it should not contain any arm-deployment tokens.
-        // Otherwise they should have at least one.
-        let shouldBeArmTemplate = !testPath.match(/\.NOT-ARM\./i);
-
-        let shouldBeExpression = shouldBeArmTemplate && !testPath.match(/\.NOT-EXPR\./i);
+        let testCases: ITestcase[] | undefined;
 
         // ------------- USAGE TIP ------------
         // If the test filename contains '.full-scope.', then the full scope will be output for each test, otherwise
@@ -162,6 +178,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
         }
 
         // If no individual testcases found, the whole file is a single testcase
+        // tslint:disable-next-line: strict-boolean-expressions
         testCases = testCases || [<ITestcase>{ data }];
 
         let { results: testcaseResults, fullScopeString: resultsFullString, shortScopeString: resultsShortString } = getTestcaseResults(testCases);
@@ -183,21 +200,21 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
                     } else {
                         assert(
                             !testcaseResult.includes('invalid.illegal'),
-                            "This test's filename does not contain '.INVALID.', but at least one testcase in it contains an invalid token.");
+                            "This test's filename does not contain '.INVALID.', but at least one testcase in it contains an invalid token (but shouldn't).");
                     }
 
                     if (shouldBeArmTemplate) {
                         assert(
-                            testcaseResult.includes('arm-deployment'),
+                            testcaseResult.includes('source.json.arm-template'),
                             // tslint:disable-next-line: max-line-length
-                            "This test's filename does not contain '.NOT-ARM.', and so every testcase in it should contain at least one arm-deployment token.");
+                            "This test's filename does not contain '.NOT-ARM.', and so every testcase in it should contain at least one source.json.arm-template token.");
                     } else {
                         assert(
-                            !testcaseResult.includes('arm-deployment'),
-                            "This test's filename contains '.NOT-ARM.', but at least one testcase in it contains an arm-deployment token.");
+                            !testcaseResult.includes('source.json.arm-template'),
+                            "This test's filename contains '.NOT-ARM.', but at least one testcase in it contains an source.json.arm-template token (but shouldn't).");
                     }
 
-                    let isExpression = testcaseResult.includes('meta.expression.tle.arm');
+                    let isExpression = testcaseResult.includes('meta.expression.tle.arm-template');
                     if (shouldBeExpression) {
                         assert(
                             isExpression,
@@ -206,7 +223,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
                     } else {
                         assert(
                             !isExpression,
-                            "This test's filename contains '.NOT-EXPR.', but at least one testcase in it contains an ARM expression.");
+                            "This test's filename contains '.NOT-EXPR.', but at least one testcase in it contains an ARM expression (but shouldn't).");
                     }
                 }
 
@@ -247,7 +264,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     function writeToResultsFile(resultPathToWriteTo: string, resultsString: string, shouldCompareFullScope: boolean, resultsFullString: string): void {
         fs.writeFileSync(resultPathToWriteTo, resultsString);
         if (!shouldCompareFullScope) {
-            fs.writeFileSync(`${resultPathToWriteTo}.full-scope-result.txt`, resultsFullString);
+            fs.writeFileSync(resultPathToWriteTo + ".full-scope-result.txt", resultsFullString);
         }
     }
 }
@@ -321,7 +338,7 @@ suite('TLE colorization', function (this: ISuiteCallbackContext): void {
 
     resultFiles = fs.readdirSync(resultsFolder);
     for (let resultFile of resultFiles) {
-        if (resultFile.endsWith('.actual') || resultFile.endsWith('.full-scope.txt')) {
+        if (resultFile.endsWith('.actual') || resultFile.endsWith('.full-scope-result.txt')) {
             fs.unlinkSync(path.join(resultsFolder, resultFile));
         }
     }
@@ -340,11 +357,18 @@ suite('TLE colorization', function (this: ISuiteCallbackContext): void {
     });
 
     testFiles.forEach(testFile => {
+        // tslint:disable-next-line: no-suspicious-comment
         if (testFile.startsWith('TODO')) {
             test(testFile);
         } else {
-            test(testFile, async (): Promise<void> => {
-                await assertUnchangedTokens(path.join(testFolder, testFile), path.join(resultsFolder, testToResultFileMap.get(testFile)));
+            test(testFile, async function (this: ITestCallbackContext): Promise<void> {
+                if (DISABLE_SLOW_TESTS) {
+                    this.skip();
+                    return;
+                }
+
+                // tslint:disable-next-line:no-non-null-assertion
+                await assertUnchangedTokens(path.join(testFolder, testFile), path.join(resultsFolder, testToResultFileMap.get(testFile)!));
             });
         }
     });

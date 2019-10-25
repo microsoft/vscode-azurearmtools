@@ -11,8 +11,28 @@ export const isWebpack: boolean = /^(false|0)?$/i.test(process.env.AZCODE_ARM_IG
 export const assetsPath = path.join(__dirname, isWebpack ? "" : "..", "..", "assets");
 export const iconsPath = path.join(__dirname, isWebpack ? "" : "..", "..", "icons");
 
-// String that shows up in our errors as the source in parentheses
-export const diagnosticsSource = "ARM Tools";
+export const languageServerName = 'ARM Template Language Server';
+export const languageFriendlyName = 'Azure Resource Manager Template';
+export const languageId = 'arm-template';
+export const languageServerFolderName = 'languageServer';
+export const configPrefix = 'azureResourceManagerTools'; // Prefix for user settings
+export const outputWindowName = 'Azure Resource Manager Tools';
 
-// For testing
-export const diagnosticsCompleteMessage = "Diagnostics complete";
+// String that shows up in our errors as the source in parentheses
+export const expressionsDiagnosticsSource = "arm-template (expressions)";
+
+// Source string for errors related to the language server starting up or failing
+export const languageServerStateSource = "arm-template";
+
+export namespace configKeys {
+    export const autoDetectJsonTemplates = "autoDetectJsonTemplates";
+}
+
+// For testing: We create a diagnostic with this message during testing to indicate when all (expression) diagnostics have been calculated
+export const diagnosticsCompletePrefix = "Diagnostics complete: ";
+export const expressionsDiagnosticsCompletionMessage = diagnosticsCompletePrefix + expressionsDiagnosticsSource;
+
+export namespace templateKeys {
+    export const parameters = 'parameters';
+    export const variables = 'variables';
+}

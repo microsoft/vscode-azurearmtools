@@ -8,6 +8,10 @@
         "out": true,
         "**/node_modules": true
     },
+    "editor.codeActionsOnSave": {
+        "source.fixAll": true,
+        "source.organizeImports": true
+    },
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,

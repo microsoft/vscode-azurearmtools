@@ -1,11 +1,11 @@
 TEST STRING: "[1.]"
 "[                  {{scope-expression-start}}
 1                   {{scope-number}}
-.                   invalid.illegal.expected-expression.tle.arm
+.                   invalid.illegal.expected-expression.tle.arm-template
 ]"                  {{scope-expression-end}}
 
 TEST STRING: "[-.2]"
 "[                  {{scope-expression-start}}
--.                  invalid.illegal.expected-expression.tle.arm
+-.                  invalid.illegal.expected-expression.tle.arm-template
 2                   {{scope-number}}
 ]"                  {{scope-expression-end}}

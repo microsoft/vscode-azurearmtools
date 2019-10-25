@@ -1,17 +1,17 @@
 TEST STRING: "[[2]]"
-"                   punctuation.definition.string.begin.json.arm
-[[2                 string.quoted.double.json.arm
-]]                  string.quoted.double.json.arm
-"                   punctuation.definition.string.end.json.arm
+"                   punctuation.definition.string.begin.json.arm-template
+[[2                 string.quoted.double.json.arm-template
+]]                  string.quoted.double.json.arm-template
+"                   punctuation.definition.string.end.json.arm-template
 
 TEST STRING: "[[[four]five]"
-"                   punctuation.definition.string.begin.json.arm
-[[[four]            string.quoted.double.json.arm
-five]               string.quoted.double.json.arm
-"                   punctuation.definition.string.end.json.arm
+"                   punctuation.definition.string.begin.json.arm-template
+[[[four]            string.quoted.double.json.arm-template
+five]               string.quoted.double.json.arm-template
+"                   punctuation.definition.string.end.json.arm-template
 
 TEST STRING: "[starts with whitespace]"
-"                   punctuation.definition.string.begin.json.arm
+"                   punctuation.definition.string.begin.json.arm-template
 [starts with whitespace]
-                    string.quoted.double.json.arm
-"                   punctuation.definition.string.end.json.arm
+                    string.quoted.double.json.arm-template
+"                   punctuation.definition.string.end.json.arm-template

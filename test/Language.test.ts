@@ -99,11 +99,13 @@ suite("Language", () => {
     suite("Position", () => {
         suite("constructor(number,number)", () => {
             test("With null _line", () => {
-                assert.throws(() => { new Language.Position(null, 3); });
+                // tslint:disable-next-line:no-any
+                assert.throws(() => { new Language.Position(<any>null, 3); });
             });
 
             test("With undefined _line", () => {
-                assert.throws(() => { new Language.Position(undefined, 3); });
+                // tslint:disable-next-line:no-any
+                assert.throws(() => { new Language.Position(<any>undefined, 3); });
             });
 
             test("With negative _line", () => {
@@ -111,11 +113,13 @@ suite("Language", () => {
             });
 
             test("With null _column", () => {
-                assert.throws(() => { new Language.Position(2, null); });
+                // tslint:disable-next-line:no-any
+                assert.throws(() => { new Language.Position(2, <any>null); });
             });
 
             test("With undefined _column", () => {
-                assert.throws(() => { new Language.Position(2, undefined); });
+                // tslint:disable-next-line:no-any
+                assert.throws(() => { new Language.Position(2, <any>undefined); });
             });
 
             test("With negative _column", () => {
@@ -133,11 +137,13 @@ suite("Language", () => {
     suite("Issue", () => {
         suite("constructor(Span,string)", () => {
             test("With null span", () => {
-                assert.throws(() => { new Language.Issue(null, "error message"); });
+                // tslint:disable-next-line:no-any
+                assert.throws(() => { new Language.Issue(<any>null, "error message"); });
             });
 
             test("With undefined span", () => {
-                assert.throws(() => { new Language.Issue(undefined, "error message"); });
+                // tslint:disable-next-line:no-any
+                assert.throws(() => { new Language.Issue(<any>undefined, "error message"); });
             });
 
             test("With empty span", () => {
@@ -145,11 +151,13 @@ suite("Language", () => {
             });
 
             test("With null message", () => {
-                assert.throws(() => { new Language.Issue(new Language.Span(4, 1), null); });
+                // tslint:disable-next-line:no-any
+                assert.throws(() => { new Language.Issue(new Language.Span(4, 1), <any>null); });
             });
 
             test("With undefined message", () => {
-                assert.throws(() => { new Language.Issue(new Language.Span(4, 1), undefined); });
+                // tslint:disable-next-line:no-any
+                assert.throws(() => { new Language.Issue(new Language.Span(4, 1), <any>undefined); });
             });
 
             test("With empty message", () => {

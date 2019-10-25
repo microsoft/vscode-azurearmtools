@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:max-func-body-length no-http-string max-line-length
+// tslint:disable:max-func-body-length no-http-string max-line-length no-null-keyword
 
 import * as assert from "assert";
 import { Utilities } from "../extension.bundle";
@@ -10,11 +10,13 @@ import { Utilities } from "../extension.bundle";
 suite("Utilities", () => {
     suite("clone(any)", () => {
         test("With null", () => {
-            assert.deepEqual(null, Utilities.clone(null));
+            // tslint:disable-next-line:no-any
+            assert.deepEqual(null, Utilities.clone(<any>null));
         });
 
         test("With undefined", () => {
-            assert.deepEqual(undefined, Utilities.clone(undefined));
+            // tslint:disable-next-line:no-any
+            assert.deepEqual(undefined, Utilities.clone(<any>undefined));
         });
 
         test("With number", () => {
@@ -36,7 +38,7 @@ suite("Utilities", () => {
         });
 
         test("With empty array", () => {
-            let emptyArray = [];
+            let emptyArray: string[] = [];
             let clone = Utilities.clone(emptyArray);
             assert.deepEqual(emptyArray, clone);
             clone.push("test");
@@ -77,7 +79,8 @@ suite("Utilities", () => {
 
     suite("isWhitespaceCharacter(string)", () => {
         test("With null", () => {
-            assert.equal(false, Utilities.isWhitespaceCharacter(null));
+            // tslint:disable-next-line:no-any
+            assert.equal(false, Utilities.isWhitespaceCharacter(<any>null));
         });
 
         test("With empty", () => {
@@ -111,7 +114,8 @@ suite("Utilities", () => {
 
     suite("isQuoteCharacter(string)", () => {
         test("With null", () => {
-            assert.equal(false, Utilities.isQuoteCharacter(null));
+            // tslint:disable-next-line:no-any
+            assert.equal(false, Utilities.isQuoteCharacter(<any>null));
         });
 
         test("With empty", () => {
@@ -145,7 +149,8 @@ suite("Utilities", () => {
 
     suite("isDigit(string)", () => {
         test("With null", () => {
-            assert.equal(false, Utilities.isDigit(null));
+            // tslint:disable-next-line:no-any
+            assert.equal(false, Utilities.isDigit(<any>null));
         });
 
         test("With empty", () => {
@@ -193,6 +198,49 @@ suite("Utilities", () => {
 
         test(`with "hello"`, () => {
             assert.deepStrictEqual(Utilities.quote("hello"), `"hello"`);
+        });
+    });
+
+    suite("unquote(string)", () => {
+        function testUnquote(input: string, expected: string): void {
+            test(String(input), () => {
+                assert.deepStrictEqual(Utilities.unquote(input), expected);
+            });
+        }
+        // tslint:disable-next-line: no-any
+        testUnquote(<any>null, "");
+        // tslint:disable-next-line: no-any
+        testUnquote(<any>undefined, "");
+        testUnquote("\"\"", "");
+        testUnquote("''", "");
+
+        testUnquote("\"hello\"", "hello");
+        testUnquote("'hello'", "hello");
+
+        suite("No quotes", () => {
+            testUnquote("", "");
+            testUnquote("hello", "hello");
+        });
+
+        suite("Only end quote - don't remove end quote (string tokens should have beginning quote but might not have end quote)", () => {
+            testUnquote("hello'", "hello'");
+            testUnquote("hello\"", "hello\"");
+        });
+
+        suite("Mismatched quotes - only remove opening quote", () => {
+            testUnquote("\"'", "'");
+            testUnquote("'\"", "\"");
+
+            testUnquote("\"hello'", "hello'");
+            testUnquote("'hello\"", "hello\"");
+        });
+
+        suite("Missing end quote - only remove opening quote", () => {
+            testUnquote("\"", "");
+            testUnquote("'", "");
+
+            testUnquote("\"hello", "hello");
+            testUnquote("'hello", "hello");
         });
     });
 
@@ -277,60 +325,6 @@ suite("Utilities", () => {
 
         test(`with "\\very"`, () => {
             assert.deepStrictEqual(Utilities.escapeAndQuote("\very"), `"\\very"`);
-        });
-    });
-
-    suite("isValidSchemaUri(string)", () => {
-        test("with null", () => {
-            assert.equal(false, Utilities.isValidSchemaUri(null));
-        });
-
-        test("with undefined", () => {
-            assert.equal(false, Utilities.isValidSchemaUri(undefined));
-        });
-
-        test("with 'hello world'", () => {
-            assert.equal(false, Utilities.isValidSchemaUri("hello world"));
-        });
-
-        test("with 'www.bing.com'", () => {
-            assert.equal(false, Utilities.isValidSchemaUri("www.bing.com"));
-        });
-
-        test("with 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#'", () => {
-            assert.equal(true, Utilities.isValidSchemaUri("https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"));
-        });
-
-        test("with 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json'", () => {
-            assert.equal(true, Utilities.isValidSchemaUri("https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json"));
-        });
-
-        test("with 'http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json'", () => {
-            assert.equal(true, Utilities.isValidSchemaUri("http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json"));
-        });
-
-        test("with 'http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#'", () => {
-            assert.equal(true, Utilities.isValidSchemaUri("http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"));
-        });
-
-        test("with 'https://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#'", () => {
-            assert.equal(true, Utilities.isValidSchemaUri("https://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#"));
-        });
-
-        test("subscription deployment template: 'https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#'", () => {
-            assert.equal(true, Utilities.isValidSchemaUri("https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#"));
-        });
-
-        test("subscription deployment template: 'http://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#'", () => {
-            assert.equal(true, Utilities.isValidSchemaUri("http://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#"));
-        });
-
-        test("subscription deployment template: 'http://schema.management.azure.com/schemas/xxxx-yy-zz/subscriptionDeploymentTemplate.json#'", () => {
-            assert.equal(true, Utilities.isValidSchemaUri("http://schema.management.azure.com/schemas/xxxx-yy-zz/subscriptionDeploymentTemplate.json#"));
-        });
-
-        test("false: subscription deployment template: 'http://schema.management.azure.com/schemas/xxxx-yy-zz/SubscriptionDeploymentTemplate.json#'", () => {
-            assert.equal(false, Utilities.isValidSchemaUri("http://schema.management.azure.com/schemas/xxxx-yy-zz/SubscriptionDeploymentTemplate.json#"));
         });
     });
 });

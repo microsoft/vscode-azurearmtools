@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import * as assert from "assert";
+import * as assert from 'assert';
 
 export class Duration {
     private _milliseconds: number;
@@ -16,22 +16,16 @@ export class Duration {
     }
 
     public plus(rhs: Duration): Duration {
-        assert(rhs !== null, "rhs cannot be null");
-        assert(rhs !== undefined, "rhs cannot be undefined");
-
         return Duration.milliseconds(this._milliseconds + rhs._milliseconds);
     }
 
     public dividedBy(divisor: number): Duration {
-        assert(divisor !== null, "divisor cannot be null");
-        assert(divisor !== undefined, "divisor cannot be undefined");
         assert.notEqual(0, divisor, "divisor cannot be 0");
-
         return Duration.milliseconds(this._milliseconds / divisor);
     }
 
     public lessThanOrEqualTo(rhs: Duration): boolean {
-        return rhs ? this.totalMilliseconds <= rhs.totalMilliseconds : false;
+        return this.totalMilliseconds <= rhs.totalMilliseconds;
     }
 
     public toString(): string {
