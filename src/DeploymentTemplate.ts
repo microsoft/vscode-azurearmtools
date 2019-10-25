@@ -306,7 +306,7 @@ export class DeploymentTemplate {
     }
 
     /**
-     * Gets a history of function usage, useful for telemetry
+     * Gets info about TLE function usage, useful for telemetry
      */
     public getFunctionCounts(): Histogram {
         const functionCounts = new Histogram();
@@ -322,6 +322,44 @@ export class DeploymentTemplate {
         }
 
         return functionCounts;
+    }
+
+    /**
+     * Gets info about schema usage, useful for telemetry
+     */
+    public getResourceUsage(): Histogram {
+        const resourceCounts = new Histogram();
+
+        // Collect all resources used
+        const resources: Json.ArrayValue | null = this._topLevelValue ? Json.asArrayValue(this._topLevelValue.getPropertyValue(templateKeys.resources)) : null;
+        if (resources) {
+            traverseResources(resources, undefined);
+        }
+
+        return resourceCounts;
+
+        function traverseResources(resourcesObject: Json.ArrayValue, parentKey: string | undefined): void {
+            for (let resource of resourcesObject.elements) {
+                const resourceObject = Json.asObjectValue(resource);
+                if (resourceObject) {
+                    const resourceType = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceType));
+                    const apiVersion = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceApiVersion));
+                    if (resourceType && apiVersion) {
+                        const isTypeAnExpression = resourceType.unquotedValue.trim().startsWith('[');
+                        const isApiVersionAnExpression = apiVersion.unquotedValue.trim().startsWith('[');
+                        let simpleKey = `${isTypeAnExpression ? '(expression)' : resourceType.unquotedValue.toLowerCase()}@${(isApiVersionAnExpression ? '(expression)' : apiVersion.unquotedValue.toLowerCase())}`;
+                        const fullKey = parentKey ? `${simpleKey}[parent=${parentKey}]` : simpleKey;
+                        resourceCounts.add(fullKey);
+
+                        // Check for child resources
+                        const childResources = Json.asArrayValue(resourceObject.getPropertyValue(templateKeys.resources));
+                        if (childResources) {
+                            traverseResources(childResources, simpleKey);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public get jsonParseResult(): Json.ParseResult {

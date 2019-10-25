@@ -39,11 +39,14 @@ export const expressionsDiagnosticsCompletionMessage = diagnosticsCompletePrefix
 
 export namespace templateKeys {
     export const parameters = 'parameters';
+    export const resources = 'resources';
     export const variables = 'variables';
 
     export const loopVarCopy = "copy";
-
     export const loopVarName = 'name';
     export const loopVarInput = 'input';
     export const loopVarCount = 'count';
+
+    export const resourceType = 'type';
+    export const resourceApiVersion = 'apiVersion';
 }

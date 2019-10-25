@@ -9,7 +9,7 @@ import * as assert from "assert";
 import { randomBytes } from "crypto";
 import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
 import { DefinitionKind, DeploymentTemplate, Histogram, INamedDefinition, IncorrectArgumentsCountIssue, IParameterDefinition, IVariableDefinition, Json, Language, ReferenceInVariableDefinitionsVisitor, ReferenceList, TemplateScope, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "../extension.bundle";
-import { sources, testDiagnostics } from "./support/diagnostics";
+import { IDeploymentTemplate, sources, testDiagnostics } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
 import { testWithLanguageServer } from "./support/testWithLanguageServer";
@@ -301,7 +301,8 @@ suite("DeploymentTemplate", () => {
 
         test("with one user function where function name matches a built-in function name", async () => {
             await parseTemplate(
-                {
+                // tslint:disable-next-line:no-any
+                <IDeploymentTemplate><any>{
                     "name": "[contoso.reference()]", // This is not a call to the built-in "reference" function
                     "functions": [
                         {
@@ -386,34 +387,36 @@ suite("DeploymentTemplate", () => {
         });
 
         test("Calling user function with name 'reference' okay in variables", async () => {
-            const template = {
-                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                "contentVersion": "1.0.0.0",
-                "functions": [
-                    {
-                        "namespace": "udf",
-                        "members": {
-                            "reference": {
-                                "output": {
-                                    "value": true,
-                                    "type": "BOOL"
+            const template =
+                // tslint:disable-next-line:no-any
+                <IDeploymentTemplate><any>{
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "functions": [
+                        {
+                            "namespace": "udf",
+                            "members": {
+                                "reference": {
+                                    "output": {
+                                        "value": true,
+                                        "type": "BOOL"
+                                    }
                                 }
                             }
                         }
+                    ],
+                    "resources": [
+                    ],
+                    "variables": {
+                        "v1": "[udf.reference()]"
+                    },
+                    "outputs": {
+                        "v1Output": {
+                            "type": "bool",
+                            "value": "[variables('v1')]"
+                        }
                     }
-                ],
-                "resources": [
-                ],
-                "variables": {
-                    "v1": "[udf.reference()]"
-                },
-                "outputs": {
-                    "v1Output": {
-                        "type": "bool",
-                        "value": "[variables('v1')]"
-                    }
-                }
-            };
+                };
 
             await parseTemplate(template, []);
         });
