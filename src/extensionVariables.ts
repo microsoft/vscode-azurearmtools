@@ -25,16 +25,7 @@ class ExtensionVariables {
     public languageServerState: LanguageServerState = LanguageServerState.NotStarted;
 
     // Suite support - lets us know when diagnostics have been completely published for a file
-    // export let addCompletedDiagnostic: boolean = false;
-    public getAddCompletedDiagnostic(): boolean {
-        // tslint:disable-next-line: no-any
-        return (<any>global).addCompletedDiagnostic = true;
-    }
-
-    public setAddCompletedDiagnostic(): void {
-        // tslint:disable-next-line: no-any
-        (<any>global).addCompletedDiagnostic = true;
-    }
+    public addCompletedDiagnostic: boolean;
 }
 
 // tslint:disable-next-line: no-any

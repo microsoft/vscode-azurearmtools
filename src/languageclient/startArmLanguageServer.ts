@@ -100,7 +100,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         if (waitForDebugger) {
             commonArgs.push('--wait-for-debugger');
         }
-        if (ext.getAddCompletedDiagnostic()) {
+        if (ext.addCompletedDiagnostic) {
             // Forces the server to add a completion message to its diagnostics
             commonArgs.push('--verbose-diagnostics');
         }
