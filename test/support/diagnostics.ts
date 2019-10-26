@@ -13,7 +13,7 @@ import * as assert from "assert";
 import * as fs from 'fs';
 import * as path from 'path';
 import { commands, Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument, window, workspace } from "vscode";
-import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, getLanguageServerState, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
+import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
 import { getTempFilePath } from "./getTempFilePath";
 import { stringify } from "./stringify";
@@ -119,6 +119,7 @@ interface IGetDiagnosticsOptions {
     search?: RegExp;           // Run a replacement using this regex and replacement on the file/contents before testing for errors
     replace?: string;          // Run a replacement using this regex and replacement on the file/contents before testing for errors
     doNotAddSchema?: boolean;  // Don't add schema (testDiagnostics only) automatically
+    waitForChange?: boolean;   // Wait until diagnostics change before retrieving themed
 }
 
 export async function testDiagnosticsFromFile(filePath: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
@@ -134,7 +135,7 @@ async function testDiagnosticsCore(templateContentsOrFileName: string | Partial<
     compareDiagnostics(actual, expected, options);
 }
 
-async function getDiagnosticsForDocument(
+export async function getDiagnosticsForDocument(
     document: TextDocument,
     options: IGetDiagnosticsOptions
 ): Promise<Diagnostic[]> {
@@ -159,9 +160,10 @@ async function getDiagnosticsForDocument(
     // tslint:disable-next-line:typedef promise-must-complete // (false positive for promise-must-complete)
     let diagnosticsPromise = new Promise<Diagnostic[]>((resolve, reject) => {
         let currentDiagnostics: Diagnostic[] | undefined;
-        let complete: boolean = false;
 
-        function pollDiagnostics(): void {
+        function pollDiagnostics(): { diagnostics: Diagnostic[]; sourceCompletionVersions: { [source: string]: number } } {
+            const sourceCompletionVersions: { [source: string]: number } = {};
+
             currentDiagnostics = languages.getDiagnostics(document.uri);
 
             // Filter out any language server state diagnostics
@@ -171,40 +173,69 @@ async function getDiagnosticsForDocument(
             let filteredDiagnostics = currentDiagnostics.filter(d => filterSources.find(s => d.source === s.name));
 
             // Find completion messages
-            let completedSources: string[] = filteredDiagnostics.filter(d => d.message.startsWith(diagnosticsCompletePrefix)).map(d => d.source!);
+            for (let d of filteredDiagnostics) {
+                if (d.message.startsWith(diagnosticsCompletePrefix)) {
+                    const version = Number(d.message.match(/version ([0-9]+)$/)![1]);
+                    sourceCompletionVersions[d.source!] = version;
+                }
+            }
 
             // Remove completion messages
             filteredDiagnostics = filteredDiagnostics.filter(d => !d.message.startsWith(diagnosticsCompletePrefix));
 
-            if (filterSources.every(s => completedSources.includes(s.name))) {
-                complete = true;
-                resolve(filteredDiagnostics);
-            }
-
             if (includesLanguageServerSource) {
-                if (getLanguageServerState() === LanguageServerState.Failed) {
+                if (ext.languageServerState === LanguageServerState.Failed) {
                     throw new Error("Language server failed to start");
                 }
             }
+
+            return { diagnostics: filteredDiagnostics, sourceCompletionVersions };
         }
 
-        // Poll first in case the diagnostics are already in
-        pollDiagnostics();
+        function areAllSourcesComplete(sourceCompletionVersions: { [source: string]: number }): boolean {
+            for (let source of filterSources) {
+                const completionVersion = sourceCompletionVersions[source.name];
+                if (completionVersion === undefined) {
+                    return false;
+                }
+                if (requiredSourceCompletionVersions[source.name] !== undefined
+                    && completionVersion < requiredSourceCompletionVersions[source.name]) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        const initialResults = pollDiagnostics();
+        const requiredSourceCompletionVersions = Object.assign({}, initialResults.sourceCompletionVersions);
+        if (options.waitForChange) {
+            // tslint:disable-next-line:no-for-in forin
+            for (let source in requiredSourceCompletionVersions) {
+                requiredSourceCompletionVersions[source] = requiredSourceCompletionVersions[source] + 1;
+            }
+        }
+
+        if (areAllSourcesComplete(initialResults.sourceCompletionVersions)) {
+            resolve(initialResults.diagnostics);
+            return;
+        }
 
         // Now only poll on changed events
         console.log("Waiting for diagnostics to complete...");
-        if (!complete) {
-            timer = setTimeout(
-                () => {
-                    reject(
-                        new Error(`Timed out waiting for diagnostics (${diagnosticsTimeout}ms). Last retrieved diagnostics: `
-                            + (currentDiagnostics ? currentDiagnostics.map(d => d.message).join('\n') : "None")));
-                },
-                diagnosticsTimeout);
-            dispose = languages.onDidChangeDiagnostics(e => {
-                pollDiagnostics();
-            });
-        }
+        timer = setTimeout(
+            () => {
+                reject(
+                    new Error('Timed out waiting for diagnostics. Last retrieved diagnostics: '
+                        + (currentDiagnostics ? currentDiagnostics.map(d => d.message).join('\n') : "None")));
+            },
+            diagnosticsTimeout);
+        dispose = languages.onDidChangeDiagnostics(e => {
+            const results = pollDiagnostics();
+            if (areAllSourcesComplete(results.sourceCompletionVersions)) {
+                resolve(results.diagnostics);
+            }
+        });
     });
 
     let diagnostics = await diagnosticsPromise;

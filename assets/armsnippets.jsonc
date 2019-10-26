@@ -3,7 +3,7 @@
         "prefix": "arm!",
         "body": [
             "{",
-            "    \"$$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#\",",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#\",",
             "    \"contentVersion\": \"1.0.0.0\",",
             "    \"parameters\": {},",
             "    \"variables\": {},",
@@ -18,7 +18,7 @@
         "prefix": "armp!",
         "body": [
             "{",
-            "    \"$$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#\",",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#\",",
             "    \"contentVersion\": \"1.0.0.0\",",
             "    \"parameters\": {}",
             "}"
@@ -36,7 +36,7 @@
         "prefix": "arm-param",
         "body": [
             "\"${1:parameter1}\": {",
-            "   \"type\": \"${2|string,securestring,int,bool,object,secureObject,array|}\",",
+            "   \"type\": \"${2|string,securestring,int,bool,object,secureobject,array|}\",",
             "   \"metadata\": {",
             "        \"description\": \"${3:description}\"",
             "    }",
@@ -48,20 +48,11 @@
         "prefix": "arm-output",
         "body": [
             "\"${1:output1}\": {",
-            "   \"type\": \"${2|string,securestring,int,bool,object,secureObject,array|}\",",
+            "   \"type\": \"${2|string,securestring,int,bool,object,secureobject,array|}\",",
             "   \"value\": \"${3:value}\"",
             "}"
         ],
         "description": "ARM Template output"
-    },
-    "Parameter Value": {
-        "prefix": "arm-param-value",
-        "body": [
-            "\"${1:parameter1}\": {",
-            "    \"value\": \"${2:value}\"",
-            "}"
-        ],
-        "description": "ARM Template Parameter value used in a azuredeploy.parameters.json file"
     },
     "Nested Deployment": {
         "prefix": "arm-nested",
@@ -335,7 +326,7 @@
             "    \"type\": \"Microsoft.Network/applicationSecurityGroups\",",
             "    \"apiVersion\": \"2018-08-01\",",
             "    \"location\": \"[resourceGroup().location]\",",
-            "    \"tags\": {}",
+            "    \"tags\": {},",
             "    \"properties\": {}",
             "}"
         ],
@@ -352,7 +343,7 @@
             "    \"tags\": {},",
             "    \"properties\": {",
             "        \"sku\": {",
-            "            \"name\": \"${2|Free,Basic|}\",",
+            "            \"name\": \"${2|Free,Basic|}\"",
             "        }",
             "    }",
             "}"
@@ -677,13 +668,13 @@
             "                    \"image\": \"${3:containerImage}\",",
             "                    \"ports\": [",
             "                        {",
-            "                            \"port\": ${4:containerPort}",
+            "                            \"port\": \"${4:containerPort}\"",
             "                        }",
             "                    ],",
             "                    \"resources\": {",
             "                        \"requests\": {",
-            "                            \"cpu\": ${5:containerCPUCount},",
-            "                            \"memoryInGB\": ${6:containerMemoryInGb}",
+            "                            \"cpu\": \"${5:containerCPUCount}\",",
+            "                            \"memoryInGB\": \"${6:containerMemoryInGb}\"",
             "                        }",
             "                    }",
             "                }",
@@ -694,8 +685,8 @@
             "            \"type\": \"Public\",",
             "            \"ports\": [",
             "                {",
-            "                    \"protocol\": \"{8|TCP,UDP|}}\",",
-            "                    \"port\": ${9:containerPublicPort}",
+            "                    \"protocol\": \"{8|TCP,UDP|}\",",
+            "                    \"port\": \"${9:containerPublicPort}\"",
             "                }",
             "            ]",
             "         }",
@@ -762,16 +753,16 @@
         "body": [
             "{",
             "    \"type\": \"Microsoft.DocumentDB/databaseAccounts/apis/databases\",",
-            "    \"name\": \"[concat(${1:account-name}, '/sql/', ${2:database-name})]\",",
+            "    \"name\": \"[concat('${1:account-name}', '/sql/', '${2:database-name}')]\",",
             "        \"apiVersion\": \"2016-03-31\",",
-            "        \"dependsOn\": [ \"[resourceId('Microsoft.DocumentDB/databaseAccounts/', ${1:account-name})]\" ],",
+            "        \"dependsOn\": [ \"[resourceId('Microsoft.DocumentDB/databaseAccounts/', '${1:account-name}')]\" ],",
             "        \"properties\":{",
             "            \"resource\":{",
             "                \"id\": \"${2:database-name}\"",
             "            },",
-            "            \"resource\":{",
+            "            \"options\":{",
             "                \"throughput\": ${3:400}",
-            "            },",
+            "            }",
             "        }",
             "}"
         ],
@@ -782,13 +773,13 @@
         "body": [
             "{",
             "    \"type\": \"Microsoft.DocumentDB/databaseAccounts/apis/databases\",",
-            "    \"name\": \"[concat(${1:account-name}, '/mongodb/', ${2:database-name},'/',${3:collectionName})]\",",
+            "    \"name\": \"[concat('${1:account-name}', '/mongodb/', '${2:database-name}', '/', '${3:collectionName}')]\",",
             "    \"apiVersion\": \"2016-03-31\",",
-            "    \"dependsOn\": [ \"[resourceId('Microsoft.DocumentDB/databaseAccounts/', ${1:account-name})]\" ],",
+            "    \"dependsOn\": [ \"[resourceId('Microsoft.DocumentDB/databaseAccounts/', '${1:account-name}')]\" ],",
             "    \"properties\":{",
             "        \"resource\":{",
             "            \"throughput\": ${4:400}",
-            "        },",
+            "        }",
             "    }",
             "}"
         ],
@@ -799,20 +790,20 @@
         "body": [
             "{",
             "    \"type\": \"Microsoft.DocumentDB/databaseAccounts/apis/databases\",",
-            "    \"name\": \"[concat(${1:account-name}, '/gremlin/', ${2:database-name})]\",",
+            "    \"name\": \"[concat('${1:account-name}', '/gremlin/', '${2:database-name}')]\",",
             "    \"apiVersion\": \"2016-03-31\",",
             "    \"dependsOn\": [",
-            "    \"[resourceId('Microsoft.DocumentDB/databaseAccounts/', ${1:account-name})]\"",
+            "    \"[resourceId('Microsoft.DocumentDB/databaseAccounts/', '${1:account-name}')]\"",
             "    ],",
             "    \"properties\": {",
             "        \"resource\": {",
             "            \"id\": \"${2:database-name}\"",
-            "        }",
+            "        },",
             "        \"options\": {",
             "            \"throughput\": ${3:400}",
             "        }",
             "    }",
-            "},"
+            "}"
         ],
         "description": "Cosmos DB Gremlin Database"
     },
@@ -820,81 +811,81 @@
         "prefix": "arm-cosmos-cassandra-namespace",
         "body": [
             "{",
-        "	    \"type\": \"Microsoft.DocumentDB/databaseAccounts/apis/keyspaces\",",
-        "	    \"name\": \"[concat(${1:account-name}, '/cassandra/', ${2:database-name})]\",",
-        "		\"apiVersion\": \"2016-03-31\",",
-        "		\"dependsOn\": [ \"[resourceId('Microsoft.DocumentDB/databaseAccounts/', ${1:account-name})]\" ],",
-        "		\"properties\":{",
-        "		    \"resource\":{",
-        "		    	\"id\": \"${3:keyspace}\"",
-        "			},",
+            "        \"type\": \"Microsoft.DocumentDB/databaseAccounts/apis/keyspaces\",",
+            "        \"name\": \"[concat('${1:account-name}', '/cassandra/', '${2:database-name}')]\",",
+            "        \"apiVersion\": \"2016-03-31\",",
+            "        \"dependsOn\": [ \"[resourceId('Microsoft.DocumentDB/databaseAccounts/', '${1:account-name}')]\" ],",
+            "        \"properties\":{",
+            "            \"resource\":{",
+            "                \"id\": \"${3:keyspace}\"",
+            "            },",
             "         \"options\":{",
             "             \"throughput\": ${4:400}",
-            "         },",
+            "         }",
             "    }",
-            "},"
+            "}"
         ],
         "description": "Cosmos DB Cassandra Namespace"
     },
     "Cosmos DB Cassandra Table": {
         "prefix": "arm-cosmos-cassandra-table",
         "body": [
-        "	{",
+            "    {",
             "    \"type\": \"Microsoft.DocumentDb/databaseAccounts/apis/keyspaces/tables\",",
-        "	   \"name\": \"[concat(${1:account-name}, '/cassandra/', ${2:keyspace}, '/', ${3:table-name})]\",",
+            "       \"name\": \"[concat('${1:account-name}', '/cassandra/', '${2:keyspace}', '/', '${3:table-name}')]\",",
             "    \"apiVersion\": \"2016-03-31\",",
-        "	   \"dependsOn\": [ \"[resourceId('Microsoft.DocumentDB/databaseAccounts/apis/keyspaces', ${1:account-name}, 'cassandra', ${2:keyspace})]\" ],",
+            "       \"dependsOn\": [ \"[resourceId('Microsoft.DocumentDB/databaseAccounts/apis/keyspaces', '${1:account-name}', 'cassandra', '${2:keyspace}')]\" ],",
             "    \"properties\":{",
             "        \"resource\":{",
-        "		       \"id\":  \"${4:table-name}\",",
-        "			   \"schema\": {",
-        "			       \"columns\": [",
-        "					],",
-        "			       \"partitionKeys\": [ ",
-        "			       ]",
+            "               \"id\":  \"${4:table-name}\",",
+            "               \"schema\": {",
+            "                   \"columns\": [",
+            "                    ],",
+            "                   \"partitionKeys\": [ ",
+            "                   ]",
             "            }",
             "        }",
             "    }",
-            "},"
+            "}"
         ],
         "description": "Cosmos DB Cassandra Table"
     },
     "Cosmos DB SQL Container": {
         "prefix": "arm-cosmos-sql-container",
         "body": [
-        "	{",
+            "    {",
             "    \"type\": \"Microsoft.DocumentDb/databaseAccounts/apis/databases/containers\",",
-        "	   \"name\": \"[concat(${1:account-name}, '/sql/',${2:database-name}, '/', ${3:container-name})]\",",
-        "	   \"apiVersion\": \"2016-03-31\",",
-        "	   \"dependsOn\": [ \"[resourceId('Microsoft.DocumentDB/databaseAccounts/apis/databases', ${1:account-name}, 'sql', ${2:database-name})]\" ],",
-        "	   \"properties\":{",
+            "       \"name\": \"[concat('${1:account-name}', '/sql/', '${2:database-name}', '/', '${3:container-name}')]\",",
+            "       \"apiVersion\": \"2016-03-31\",",
+            "       \"dependsOn\": [ \"[resourceId('Microsoft.DocumentDB/databaseAccounts/apis/databases', '${1:account-name}', 'sql', '${2:database-name}')]\" ],",
+            "       \"properties\":{",
             "        \"resource\":{",
-        "		       \"id\":  \"${3:container-name}\",",
-        "		       \"partitionKey\": {",
-        "		           \"paths\": [",
-        "			           \"/{2:partition-key}\"",
-        "			        ],",
-        "			       \"kind\": \"${4|hash,range|}\"",
-        "		       },",
-        "		       \"indexingPolicy\": {",
-        "			       \"indexingMode\": \"${5|consistent,lazy,none|}\",",
-        "			       \"includedPaths\": [{",
-        "			           \"path\": \"/*\",",
-        "			           \"indexes\": [",
-        "				           {",
-        "					           \"kind\": \"${6|Hash,Range,Spatial|}\",",
-        "					           \"dataType\": \"${7|String,Number,Point,Polygon,LineString,MultiPolygon|}\",",
-        "					           \"precision\": -1",
+            "               \"id\":  \"${3:container-name}\",",
+            "               \"partitionKey\": {",
+            "                   \"paths\": [",
+            "                       \"/{2:partition-key}\"",
+            "                    ],",
+            "                   \"kind\": \"${4|hash,range|}\"",
+            "               },",
+            "               \"indexingPolicy\": {",
+            "                   \"indexingMode\": \"${5|consistent,lazy,none|}\",",
+            "                   \"includedPaths\": [{",
+            "                       \"path\": \"/*\",",
+            "                       \"indexes\": [",
+            "                           {",
+            "                               \"kind\": \"${6|Hash,Range,Spatial|}\",",
+            "                               \"dataType\": \"${7|String,Number,Point,Polygon,LineString,MultiPolygon|}\",",
+            "                               \"precision\": -1",
             "                        }",
             "                    ]",
-            "                }]",
-        "			       \"excludedPaths\": [{",
-        "			           \"path\": \"/${8:PathToNotIndex}/*\"",
+            "                }],",
+            "                   \"excludedPaths\": [{",
+            "                       \"path\": \"/${8:PathToNotIndex}/*\"",
             "                }]",
             "            }",
             "        }",
             "    }",
-            "},"
+            "}"
         ],
         "description": "Cosmos DB SQL Container"
     },
@@ -903,37 +894,37 @@
         "body": [
             "{",
             "    \"type\": \"Microsoft.DocumentDb/databaseAccounts/apis/databases/graphs\",",
-            "    \"name\": \"[concat(${1:account-name}, '/gremlin/',${2:database-name}, '/', ${3:graph-name})]\",",
+            "    \"name\": \"[concat('${1:account-name}', '/gremlin/', '${2:database-name}', '/', '${3:graph-name}')]\",",
             "    \"apiVersion\": \"2016-03-31\",",
             "    \"dependsOn\": [",
-            "        \"[resourceId('Microsoft.DocumentDB/databaseAccounts/apis/databases', variables('accountName'), 'gremlin', ${2:database-name})]\"",
+            "        \"[resourceId('Microsoft.DocumentDB/databaseAccounts/apis/databases', '${1:account-name}', 'gremlin', '${2:database-name}')]\"",
             "    ],",
             "    \"properties\": {",
             "        \"resource\": {",
             "            \"id\": \"${3:graph-name}\",",
-        "			   \"partitionKey\": {",
-        "			       \"paths\": [",
-        "				       \"/{4:partition-key}\"",
-        "				   ],",
-        "				   \"kind\": \"${5|hash,range|}\"",
+            "               \"partitionKey\": {",
+            "                   \"paths\": [",
+            "                       \"/{4:partition-key}\"",
+            "                   ],",
+            "                   \"kind\": \"${5|hash,range|}\"",
             "            },",
             "            \"indexingPolicy\": {",
             "                \"indexingMode\": \"${6|consistent,lazy,none|}\",",
             "                \"includedPaths\": [{",
             "                    \"path\": \"/*\",",
             "                    \"indexes\": [{",
-        "					       \"kind\": \"${7|Hash,Range,Spatial|}\",",
-        "						   \"dataType\": \"${8|String,Number,Point,Polygon,LineString,MultiPolygon|}\",",
-        "						   \"precision\": -1",
+            "                           \"kind\": \"${7|Hash,Range,Spatial|}\",",
+            "                           \"dataType\": \"${8|String,Number,Point,Polygon,LineString,MultiPolygon|}\",",
+            "                           \"precision\": -1",
             "                    }]",
             "                }],",
             "                \"excludedPaths\": [{",
-        "			           \"path\": \"/${9:PathToNotIndex}/*\"",
+            "                       \"path\": \"/${9:PathToNotIndex}/*\"",
             "                }]",
             "            }",
             "        }",
-            "    }"
-        "},"
+            "    }",
+            "}"
         ],
         "description": ""
     },
@@ -942,22 +933,22 @@
         "body": [
             "{",
             "    \"type\": \"Microsoft.DocumentDB/databaseAccounts/apis/tables\",",
-        "	   \"name\": \"[concat(${1:account-name}, '/table/', ${2:database-name})]\",",
+            "       \"name\": \"[concat('${1:account-name}', '/table/', '${2:database-name}')]\",",
             "    \"apiVersion\": \"2016-03-31\",",
-            "    \"dependsOn\": [ \"[resourceId('Microsoft.DocumentDB/databaseAccounts/', ${1:account-name})]\" ],",
-        "	       \"properties\":{",
-        "		       \"resource\":{",
-        "			       \"id\": \"${4:table-name}\"",
-        "			   },",
+            "    \"dependsOn\": [ \"[resourceId('Microsoft.DocumentDB/databaseAccounts/', '${1:account-name}')]\" ],",
+            "           \"properties\":{",
+            "               \"resource\":{",
+            "                   \"id\": \"${3:table-name}\"",
+            "               },",
             "            \"options\":{",
             "                \"throughput\": ${4:400}",
-            "            },",
+            "            }",
             "    }",
             "}"
         ],
         "description": ""
-    }
-"Data Lake Store Account": {
+    },
+    "Data Lake Store Account": {
         "prefix": "arm-data-lake",
         "body": [
             "{",
@@ -986,7 +977,7 @@
             "    ],",
             "    \"properties\": {",
             "        \"TTL\": 3600,",
-            "        \"${4|Arecords,AAAARecords,MXRecords,NSRecords,PTRRecords,SRVRecords,TXTRecords,CNAMERecord,SOARecord|}\": []",
+            "        \"${9|Arecords,AAAARecords,MXRecords,NSRecords,PTRRecords,SRVRecords,TXTRecords,CNAMERecord,SOARecord|}\": []",
             "    }",
             "}"
         ],
@@ -1015,28 +1006,28 @@
             "      \"location\": \"[resourceGroup().location]\",",
             "      \"kind\": \"functionapp\",",
             "      \"dependsOn\": [",
-            "        \"[resourceId('Microsoft.Web/serverfarms',${2:serverFarmName})]\",",
-            "        \"[resourceId('Microsoft.Storage/storageAccounts', ${3:storageAccountName})]\"",
+            "        \"[resourceId('Microsoft.Web/serverfarms', '${2:serverFarmName}')]\",",
+            "        \"[resourceId('Microsoft.Storage/storageAccounts', '${3:storageAccountName}')]\"",
             "      ],",
             "      \"properties\": {",
-            "        \"serverFarmId\": \"[resourceId('Microsoft.Web/serverfarms', ${2:serverFarmName})]\",",
+            "        \"serverFarmId\": \"[resourceId('Microsoft.Web/serverfarms', '${2:serverFarmName}')]\",",
             "        \"siteConfig\": {",
             "          \"appSettings\": [",
             "            {",
             "              \"name\": \"AzureWebJobsDashboard\",",
-            "              \"value\": \"[concat('DefaultEndpointsProtocol=https;AccountName=', ${3:storageAccountName}, ';AccountKey=', listKeys(${4:storageAccountID},'2015-05-01-preview').key1)]\"",
+            "              \"value\": \"[concat('DefaultEndpointsProtocol=https;AccountName=', '${3:storageAccountName}', ';AccountKey=', listKeys('${4:storageAccountID}','2015-05-01-preview').key1)]\"",
             "            },",
             "            {",
             "              \"name\": \"AzureWebJobsStorage\",",
-            "              \"value\": \"[concat('DefaultEndpointsProtocol=https;AccountName=', ${3:storageAccountName}, ';AccountKey=', listKeys(${4:storageAccountID},'2015-05-01-preview').key1)]\"",
+            "              \"value\": \"[concat('DefaultEndpointsProtocol=https;AccountName=', '${3:storageAccountName}', ';AccountKey=', listKeys('${4:storageAccountID}','2015-05-01-preview').key1)]\"",
             "            },",
             "            {",
             "              \"name\": \"WEBSITE_CONTENTAZUREFILECONNECTIONSTRING\",",
-            "              \"value\": \"[concat('DefaultEndpointsProtocol=https;AccountName=', ${3:storageAccountName}, ';AccountKey=', listKeys(${4:storageAccountID},'2015-05-01-preview').key1)]\"",
+            "              \"value\": \"[concat('DefaultEndpointsProtocol=https;AccountName=', '${3:storageAccountName}', ';AccountKey=', listKeys('${4:storageAccountID}','2015-05-01-preview').key1)]\"",
             "            },",
             "            {",
             "              \"name\": \"WEBSITE_CONTENTSHARE\",",
-            "              \"value\": \"[toLower(${1:functionName})]\"",
+            "              \"value\": \"[toLower('${1:functionName}')]\"",
             "            },",
             "            {",
             "              \"name\": \"FUNCTIONS_EXTENSION_VERSION\",",
@@ -1270,7 +1261,7 @@
             "    }",
             "}"
         ],
-        "description": "External Load Balancer",
+        "description": "External Load Balancer"
     },
     "Load Balancer Internal": {
         "prefix": "arm-loadbalancer-internal",
@@ -1293,7 +1284,7 @@
             "                \"properties\": {",
             "                    \"privateIPAddress\": \"${4:0.0.0.0}\",",
             "                    \"privateIPAllocationMethod\": \"Static\"",
-            "                },",
+            "                }",
             "            }",
             "        ],",
             "        \"backendAddressPools\": [",
@@ -1399,7 +1390,7 @@
             "    \"location\": \"[resourceGroup().location]\",",
             "    \"properties\": {",
             "        \"definition\": {",
-            "            \"$schema\": \"https://schema.management.azure.com/schemas/2016-06-01/Microsoft.Logic.json\",",
+            "            \"\\$schema\": \"https://schema.management.azure.com/schemas/2016-06-01/Microsoft.Logic.json\",",
             "            \"contentVersion\": \"1.0.0.0\",",
             "            \"parameters\": {},",
             "            \"triggers\": {},",
@@ -1467,7 +1458,7 @@
             "    }",
             "}"
         ],
-        "description": "Media Services account",
+        "description": "Media Services account"
     },
     "MySQL Database": {
         "prefix": "arm-mysql",
@@ -1554,6 +1545,8 @@
         "body": [
             "{",
             "    \"name\": \"${1:networkSecurityGroupRuleName}\",",
+            "    \"type\": \"Microsoft.Network/networkSecurityGroups/securityRules\",",
+            "    \"apiVersion\": \"2018-11-01\",",
             "    \"properties\": {",
             "        \"description\": \"${2:nsgRuleDescription}\",",
             "        \"protocol\": \"${3:nsgRuleProtocol}\",",
@@ -1562,7 +1555,7 @@
             "        \"sourceAddressPrefix\": \"${6:nsgRuleSourceAddressPrefix}\",",
             "        \"destinationAddressPrefix\": \"${7:nsgRileDestinationAddressRange}\",",
             "        \"access\": \"${8:nsgRuleAccess}\",",
-            "        \"priority\": ${9:nsgRulePriority},",
+            "        \"priority\": \"${9:nsgRulePriority}\",",
             "        \"direction\": \"${10:nsgRuleDirection}\"",
             "    }",
             "}"
@@ -1583,7 +1576,7 @@
             "    \"properties\": {",
             "        \"publicIPAllocationMethod\": \"Dynamic\",",
             "        \"dnsSettings\": {",
-            "            \"domainNameLabel\": \"${dnsname1}\"",
+            "            \"domainNameLabel\": \"${2:dnsname1}\"",
             "        }",
             "    }",
             "}"
@@ -1608,7 +1601,7 @@
             "    }",
             "}"
         ],
-        "description": "Public IP Prefix",
+        "description": "Public IP Prefix"
     },
     "Recovery Service Vault": {
         "prefix": "arm-recovery-service-vault",
@@ -1619,7 +1612,7 @@
             "    \"apiVersion\": \"2018-01-10\",",
             "    \"location\": \"[resourceGroup().location]\",",
             "    \"sku\": {",
-            "        \"name\": \"${2|RS0,Standard|}\"",
+            "        \"name\": \"${2|RS0,Standard|}\",",
             "        \"tier\": \"Standard\"",
             "    },",
             "    \"properties\": {}",
@@ -1673,7 +1666,7 @@
             "    }",
             "}"
         ],
-        "description": "Route Table",
+        "description": "Route Table"
     },
     "Route Table Route": {
         "prefix": "arm-route-table-route",
@@ -1687,9 +1680,9 @@
             "       \"nextHopType\": \"${3|VirtualNetworkGateway,VnetLocal,Internet,VirtualAppliance,None|}\",",
             "       \"nextHopIpAddress\": \"${4:next-hop-ip}\"",
             "    }",
-            "  }",
+            "  }"
         ],
-        "description": "Azure Route Table Route",
+        "description": "Azure Route Table Route"
     },
     "SQL Database": {
         "prefix": "arm-sql-db",
@@ -1797,7 +1790,7 @@
         "body": [
             " \"tags\": {",
             "     \"${1:tagName}\": \"${2:tagValue}\"",
-            "    },"
+            " }"
         ],
         "description": "Tag Section"
     },
@@ -1838,7 +1831,7 @@
             "    }",
             "}"
         ],
-        "description": "Traffic Manager Profile",
+        "description": "Traffic Manager Profile"
     },
     "Ubuntu Virtual Machine": {
         "prefix": "arm-vm-ubuntu",
@@ -1968,6 +1961,47 @@
             "}"
         ],
         "description": "Ubuntu Virtual Machine"
+    },
+    "User Function": {
+        "prefix": "arm-userfunc",
+        "body": [
+            "\"${1:function-name}\": {",
+            "    \"parameters\": [",
+            "        {",
+            "            \"name\": \"${2:parameter-name}\",",
+            "            \"type\": \"${3|string,securestring,int,bool,object,secureobject,array|}\"",
+            "        }",
+            "    ],",
+            "    \"output\": {",
+            "        \"value\": \"${4:function-return-value}\",",
+            "        \"type\": \"${5|string,securestring,int,bool,object,secureobject,array|}\"",
+            "    }",
+            "}"
+        ],
+        "description": "User-defined namespace and member function, should be placed inside a \"members\" object inside \"functions\""
+    },
+    "User Function Namespace": {
+        "prefix": "arm-userfunc-namespace",
+        "body": [
+            "{",
+            "    \"namespace\": \"${1:namespace-name}\",",
+            "    \"members\": {",
+            "        \"${2:function-name}\": {",
+            "            \"parameters\": [",
+            "                {",
+            "                    \"name\": \"${3:parameter-name}\",",
+            "                    \"type\": \"${4|string,securestring,int,bool,object,secureobject,array|}\"",
+            "                }",
+            "            ],",
+            "            \"output\": {",
+            "                \"value\": \"${5:function-return-value}\",",
+            "                \"type\": \"${6|string,securestring,int,bool,object,secureobject,array|}\"",
+            "            }",
+            "        }",
+            "    }",
+            "}"
+        ],
+        "description": "User-defined namespace and member function, should be placed inside the top-level \"functions\" section"
     },
     "Virtual Network": {
         "prefix": "arm-vnet",
@@ -2267,7 +2301,7 @@
             "        \"diagnosticsProfile\": {",
             "            \"bootDiagnostics\": {",
             "                \"enabled\": true,",
-            "                \"storageUri\": \"[reference(resourceId('Microsoft.Storage/storageAccounts', toLower('${1:windowsVM1}storage'), '2015-06-15').primaryEndpoints.blob]\"",
+            "                \"storageUri\": \"[reference(resourceId('Microsoft.Storage/storageAccounts', toLower('${1:windowsVM1}storage'), '2015-06-15').primaryEndpoints.blob)]\"",
             "            }",
             "        }",
             "    },",
@@ -2400,5 +2434,5 @@
             "}"
         ],
         "description": "Desired State Configuration PowerShell script for a Windows Virtual Machine"
-    },
+    }
 }

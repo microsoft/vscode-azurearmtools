@@ -45,7 +45,7 @@ export { DefinitionKind, INamedDefinition } from "./src/INamedDefinition";
 export { IncorrectArgumentsCountIssue } from "./src/IncorrectArgumentsCountIssue";
 export { IParameterDefinition } from "./src/IParameterDefinition";
 export * from "./src/Language";
-export { getLanguageServerState, LanguageServerState } from "./src/languageclient/startArmLanguageServer";
+export { LanguageServerState } from "./src/languageclient/startArmLanguageServer";
 export { ParameterDefinition } from "./src/ParameterDefinition";
 export { IReferenceSite, PositionContext } from "./src/PositionContext";
 export { ReferenceList } from "./src/ReferenceList";
@@ -57,6 +57,7 @@ export { UnrecognizedBuiltinFunctionIssue, UnrecognizedUserFunctionIssue, Unreco
 export { UserFunctionMetadata } from "./src/UserFunctionMetadata";
 export { UserFunctionNamespaceDefinition } from "./src/UserFunctionNamespaceDefinition";
 export { UserFunctionParameterDefinition } from "./src/UserFunctionParameterDefinition";
+export { getVSCodePositionFromPosition } from './src/util/vscodePosition';
 export { VariableDefinition } from "./src/VariableDefinition";
 export { FindReferencesVisitor } from "./src/visitors/FindReferencesVisitor";
 export { FunctionCountVisitor } from "./src/visitors/FunctionCountVisitor";
