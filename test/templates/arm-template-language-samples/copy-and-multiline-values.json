@@ -1,0 +1,28 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": { },
+    "variables": {
+        
+        "copy": [
+            {
+                "name": "arrayTest",
+                "count": 5,
+                "input": "[concat('item', copyIndex('arrayTest', 1))]"
+            }
+        ]
+    },
+    "resources": [],
+    "outputs": {
+        "foo": {
+            "type": "array",
+            "value": "[variables('arrayTest')]"
+        },
+        "bar": {
+            "condition": true,
+            "type": "string",
+            "value": "multi-line
+            string"
+        }
+    }
+}
