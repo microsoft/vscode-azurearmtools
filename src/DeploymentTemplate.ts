@@ -362,6 +362,21 @@ export class DeploymentTemplate {
         }
     }
 
+    public getMaxLineLength(): number {
+        let max = 0;
+        for (let len of this.jsonParseResult.lineLengths) {
+            if (len > max) {
+                max = len;
+            }
+        }
+
+        return max;
+    }
+
+    public getCommentCount(): number {
+        return this.jsonParseResult.commentCount;
+    }
+
     public getMultilineStringCount(): number {
         let count = 0;
         this.visitAllReachableStringValues(jsonStringValue => {

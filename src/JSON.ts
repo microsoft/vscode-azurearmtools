@@ -326,6 +326,7 @@ export class Tokenizer {
     private _current: Token | null;
     private _currentTokenStartIndex: number;
     private _lineLengths: number[] = [0];
+    private _commentsCount: number = 0;
 
     constructor(jsonDocumentText: string, startIndex: number = 0) {
         this._innerTokenizer = new basic.Tokenizer(jsonDocumentText);
@@ -342,6 +343,10 @@ export class Tokenizer {
 
     public get lineLengths(): number[] {
         return this._lineLengths;
+    }
+
+    public get commentsCount(): number {
+        return this._commentsCount;
     }
 
     /**
@@ -447,6 +452,7 @@ export class Tokenizer {
                                     lineCommentBasicTokens.push(this.currentBasicToken()!);
                                 }
                                 this._current = Comment(this._currentTokenStartIndex, lineCommentBasicTokens);
+                                this._commentsCount++;
                                 break;
 
                             case basic.TokenType.Asterisk:
@@ -472,6 +478,7 @@ export class Tokenizer {
                                 }
 
                                 this._current = Comment(this._currentTokenStartIndex, blockCommentBasicTokens);
+                                this._commentsCount++;
                                 break;
 
                             default:
@@ -897,7 +904,7 @@ export class NullValue extends Value {
 export class ParseResult {
     private readonly _debugText: string; // Used only for debugging - copy of the original text being parsed
 
-    constructor(private _tokens: Token[], private _lineLengths: number[], private _value: Value | null, text: string) {
+    constructor(private _tokens: Token[], private _lineLengths: number[], private _value: Value | null, text: string, public readonly commentCount: number) {
         assert(_tokens !== null);
         assert(_tokens !== undefined);
         assert(_lineLengths !== null);
@@ -1098,7 +1105,7 @@ export function parse(stringValue: string): ParseResult {
         next(jt, tokens);
     }
 
-    return new ParseResult(tokens, jt.lineLengths, value, stringValue);
+    return new ParseResult(tokens, jt.lineLengths, value, stringValue, jt.commentsCount);
 }
 
 /**

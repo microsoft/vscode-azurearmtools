@@ -1429,4 +1429,56 @@ suite("DeploymentTemplate", () => {
         });
 
     });
+
+    suite("getMaxLineLength", () => {
+        test("getMaxLineLength", async () => {
+            const dt = await parseTemplate(`{
+//345678
+//345678901234567890
+//345
+}`);
+
+            const maxLineLength = dt.getMaxLineLength();
+
+            // Max line length isn't quite exact - it can also includes line break characters
+            assert(maxLineLength >= 20 && maxLineLength <= 20 + 2);
+        });
+    });
+
+    suite("getCommentsCount()", () => {
+        test("no comments", async () => {
+            // tslint:disable-next-line:no-any
+            const dt = await parseTemplate(<any>{
+                "$schema": "foo",
+                "contentVersion": "1.2.3 /*not a comment*/",
+                "whoever": "1.2.3 //not a comment"
+            });
+
+            assert.equal(dt.getCommentCount(), 0);
+        });
+
+        test("block comments", async () => {
+            // tslint:disable-next-line:no-any
+            const dt = await parseTemplate(`{
+                "$schema": "foo",
+                /* This is
+                    a comment */
+                "contentVersion": "1.2.3",
+                "whoever": "1.2.3" /* This is a comment */
+            }`);
+
+            assert.equal(dt.getCommentCount(), 2);
+        });
+
+        test("single-line comments", async () => {
+            // tslint:disable-next-line:no-any
+            const dt = await parseTemplate(`{
+                "$schema": "foo", // This is a comment
+                "contentVersion": "1.2.3", // Another comment
+                "whoever": "1.2.3" // This is a comment
+            }`);
+
+            assert.equal(dt.getCommentCount(), 3);
+        });
+    });
 });

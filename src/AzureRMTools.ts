@@ -212,11 +212,13 @@ export class AzureRMTools {
                 documentSizeInCharacters: document.getText().length,
                 parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds,
                 lineCount: deploymentTemplate.lineCount,
+                maxLineLength: deploymentTemplate.getMaxLineLength(),
                 paramsCount: deploymentTemplate.topLevelScope.parameterDefinitions.length,
                 varsCount: deploymentTemplate.topLevelScope.variableDefinitions.length,
                 namespacesCount: deploymentTemplate.topLevelScope.namespaceDefinitions.length,
                 userFunctionsCount: totalUserFunctionsCount,
-                multilineStringCount: deploymentTemplate.getMultilineStringCount()
+                multilineStringCount: deploymentTemplate.getMultilineStringCount(),
+                commentCount: deploymentTemplate.getCommentCount()
             });
 
         this.logFunctionCounts(deploymentTemplate);
