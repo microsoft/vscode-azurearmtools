@@ -22,7 +22,7 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     // Use test metadata for all tests by default
     useTestFunctionMetadata();
 
-    ext.setAddCompletedDiagnostic();
+    ext.addCompletedDiagnostic = true;
 
     // Just to make it easier to see what's going on
     vscode.commands.executeCommand('workbench.actions.view.problems');
