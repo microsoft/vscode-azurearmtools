@@ -1401,4 +1401,32 @@ suite("DeploymentTemplate", () => {
             }
         });
     }); //Incomplete JSON shouldn't cause crash
+
+    suite("getMultilineStringCount", () => {
+        test("TLE strings", async () => {
+            const dt = await parseTemplate(`{
+                "abc": "[abc
+                def]",
+                "xyz": "[xyz
+                    qrs]"
+            }`);
+            assert.equal(dt.getMultilineStringCount(), 2);
+        });
+
+        test("JSON strings", async () => {
+            const dt = await parseTemplate(`{
+                "abc": "abc
+                def"
+            }`);
+            assert.equal(dt.getMultilineStringCount(), 1);
+        });
+
+        test("don't count escaped \\n, \\r", async () => {
+            const dt = await parseTemplate(`{
+                "abc": "abc\\r\\ndef"
+            }`);
+            assert.equal(dt.getMultilineStringCount(), 0);
+        });
+
+    });
 });

@@ -215,7 +215,8 @@ export class AzureRMTools {
                 paramsCount: deploymentTemplate.topLevelScope.parameterDefinitions.length,
                 varsCount: deploymentTemplate.topLevelScope.variableDefinitions.length,
                 namespacesCount: deploymentTemplate.topLevelScope.namespaceDefinitions.length,
-                userFunctionsCount: totalUserFunctionsCount
+                userFunctionsCount: totalUserFunctionsCount,
+                multilineStringCount: deploymentTemplate.getMultilineStringCount()
             });
 
         this.logFunctionCounts(deploymentTemplate);

@@ -362,6 +362,17 @@ export class DeploymentTemplate {
         }
     }
 
+    public getMultilineStringCount(): number {
+        let count = 0;
+        this.visitAllReachableStringValues(jsonStringValue => {
+            if (jsonStringValue.unquotedValue.indexOf("\n") >= 0) {
+                ++count;
+            }
+        });
+
+        return count;
+    }
+
     public get jsonParseResult(): Json.ParseResult {
         return this._jsonParseResult;
     }
