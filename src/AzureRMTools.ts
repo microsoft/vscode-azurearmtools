@@ -206,7 +206,9 @@ export class AzureRMTools {
                 docLangId: document.languageId,
                 docExtension: path.extname(document.fileName),
                 // tslint:disable-next-line: strict-boolean-expressions
-                schema: deploymentTemplate.schemaUri || ""
+                schema: deploymentTemplate.schemaUri || "",
+                // tslint:disable-next-line: strict-boolean-expressions
+                apiProfile: deploymentTemplate.apiProfile || ""
             },
             {
                 documentSizeInCharacters: document.getText().length,

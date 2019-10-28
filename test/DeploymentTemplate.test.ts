@@ -1481,4 +1481,41 @@ suite("DeploymentTemplate", () => {
             assert.equal(dt.getCommentCount(), 3);
         });
     });
+
+    suite("apiProfile", () => {
+        test("no apiProfile", async () => {
+            const dt = await parseTemplate({
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
+            });
+            assert.equal(dt.apiProfile, null);
+        });
+
+        test("empty apiProfile", async () => {
+            const dt = await parseTemplate({
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                apiProfile: ""
+            });
+
+            assert.equal(dt.apiProfile, "");
+        });
+
+        test("non-string apiProfile", async () => {
+            // tslint:disable-next-line: no-any
+            const dt = await parseTemplate(<IDeploymentTemplate><any>{
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                apiProfile: false
+            });
+
+            assert.equal(dt.apiProfile, null);
+        });
+
+        test("valid apiProfile", async () => {
+            const dt = await parseTemplate({
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                "apiProfile": "2018–03-01-hybrid"
+            });
+
+            assert.equal(dt.apiProfile, "2018–03-01-hybrid");
+        });
+    });
 });

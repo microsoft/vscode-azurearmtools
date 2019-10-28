@@ -81,6 +81,17 @@ export class DeploymentTemplate {
         return isArmSchema(this.schemaUri);
     }
 
+    public get apiProfile(): string | null {
+        if (this._topLevelValue) {
+            const apiProfileValue = Json.asStringValue(this._topLevelValue.getPropertyValue(templateKeys.apiProfile));
+            if (apiProfileValue) {
+                return apiProfileValue.unquotedValue;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Parses all JSON strings in the template, assigns them a scope, and caches the results.
      * Returns a map that maps from the Json.StringValue object to the parse result (we can't cache
