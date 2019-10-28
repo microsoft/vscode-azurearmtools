@@ -9,7 +9,7 @@ import { ProgressLocation, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
 import { dotnetAcquire, ensureDotnetDependencies } from '../acquisition/dotnetAcquisition';
-import { configPrefix, languageFriendlyName, languageId, languageServerFolderName, languageServerName } from '../constants';
+import { configKeys, configPrefix, languageFriendlyName, languageId, languageServerFolderName, languageServerName } from '../constants';
 import { ext } from '../extensionVariables';
 import { assert } from '../fixed_assert';
 import { armDeploymentDocumentSelector } from '../supported';
@@ -86,7 +86,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         //   Error
         //   Critical
         //   None
-        let trace: string = workspace.getConfiguration(configPrefix).get<string>("languageServer.traceLevel")
+        let trace: string = workspace.getConfiguration(configPrefix).get<string>(configKeys.traceLevel)
             // tslint:disable-next-line: strict-boolean-expressions
             || defaultTraceLevel;
 
@@ -96,7 +96,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
             trace
         ];
 
-        const waitForDebugger = workspace.getConfiguration(configPrefix).get<boolean>('languageServer.waitForDebugger', false) === true;
+        const waitForDebugger = workspace.getConfiguration(configPrefix).get<boolean>(configKeys.waitForDebugger, false) === true;
         if (waitForDebugger) {
             commonArgs.push('--wait-for-debugger');
         }
@@ -159,22 +159,34 @@ async function acquireDotnet(dotnetExePath: string): Promise<string> {
     const resultPath = await callWithTelemetryAndErrorHandling('acquireDotnet', async (actionContext: IActionContext) => {
         actionContext.errorHandling.rethrow = true;
 
-        dotnetExePath = await dotnetAcquire(dotnetVersion, actionContext.telemetry.properties);
-        if (!(await fse.pathExists(dotnetExePath)) || !(await fse.stat(dotnetExePath)).isFile()) {
-            throw new Error(`Unexpected path returned for .net core: ${dotnetExePath}`);
-        }
-        ext.outputChannel.appendLine(`Using dotnet core from ${dotnetExePath}`);
+        const overriddenDotNetExePath = workspace.getConfiguration(configPrefix).get<string>(configKeys.dotnetExePath);
+        if (typeof overriddenDotNetExePath === "string" && !!overriddenDotNetExePath) {
+            if (!(await isFile(overriddenDotNetExePath))) {
+                throw new Error(`Invalid path given for ${configPrefix}.${configKeys.dotnetExePath} setting. Must point to dotnet executable. Could not find file ${overriddenDotNetExePath}`);
+            }
+            dotnetExePath = overriddenDotNetExePath;
+            actionContext.telemetry.properties.overriddenDotNetExePath = "true";
+        } else {
+            actionContext.telemetry.properties.overriddenDotNetExePath = "false";
 
-        // Telemetry: dotnet version actually used
-        try {
-            // E.g. "c:\Users\<user>\AppData\Roaming\Code - Insiders\User\globalStorage\msazurermtools.azurerm-vscode-tools\.dotnet\2.2.5\dotnet.exe"
-            const verionMatch = dotnetExePath.match(/dotnet[\\/]([^\\/]+)[\\/]/);
-            // tslint:disable-next-line: strict-boolean-expressions
-            const actualVersion = verionMatch && verionMatch[1] || 'unknown';
-            actionContext.telemetry.properties.dotnetVersionInstalled = actualVersion;
-        } catch (error) {
-            // ignore (telemetry only)
+            dotnetExePath = await dotnetAcquire(dotnetVersion, actionContext.telemetry.properties);
+            if (!(await isFile(dotnetExePath))) {
+                throw new Error(`Unexpected path returned for .net core: ${dotnetExePath}`);
+            }
+
+            // Telemetry: dotnet version actually used
+            try {
+                // E.g. "c:\Users\<user>\AppData\Roaming\Code - Insiders\User\globalStorage\msazurermtools.azurerm-vscode-tools\.dotnet\2.2.5\dotnet.exe"
+                const verionMatch = dotnetExePath.match(/dotnet[\\/]([^\\/]+)[\\/]/);
+                // tslint:disable-next-line: strict-boolean-expressions
+                const actualVersion = verionMatch && verionMatch[1] || 'unknown';
+                actionContext.telemetry.properties.dotnetVersionInstalled = actualVersion;
+            } catch (error) {
+                // ignore (telemetry only)
+            }
         }
+
+        ext.outputChannel.appendLine(`Using dotnet core executable at ${dotnetExePath}`);
 
         return dotnetExePath;
     });
@@ -188,7 +200,7 @@ function findLanguageServer(): string {
     const serverDllPath: string | undefined = callWithTelemetryAndErrorHandlingSync('findLanguageServer', (actionContext: IActionContext) => {
         actionContext.errorHandling.rethrow = true;
 
-        let serverDllPathSetting: string | undefined = workspace.getConfiguration(configPrefix).get<string | undefined>('languageServer.path');
+        let serverDllPathSetting: string | undefined = workspace.getConfiguration(configPrefix).get<string | undefined>(configKeys.langServerPath);
         if (typeof serverDllPathSetting !== 'string' || serverDllPathSetting === '') {
             actionContext.telemetry.properties.customServerDllPath = 'false';
 
@@ -234,4 +246,8 @@ async function ensureDependencies(dotnetExePath: string, serverDllPath: string):
             ],
             actionContext.telemetry.properties);
     });
+}
+
+async function isFile(path: string): Promise<boolean> {
+    return (await fse.pathExists(path)) && (await fse.stat(path)).isFile();
 }
