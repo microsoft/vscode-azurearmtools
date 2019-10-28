@@ -34,6 +34,22 @@ This extension provides language support for Azure Resource Manager deployment t
     - Rename parameters and variables
     - User-defined template functions
 
+- Snippets
+    Just type "arm" in the editor to see the available snippets
+    - Getting started with a new JSON/JSONC file
+        - `arm!` - Adds the framework for a full deployment template file.
+
+            If you have not turned off auto detection of template files, you will now have access to all the snippets for "Azure Resource Manager Template" files
+
+        - `armp!` - Adds the framework for a full deployment template parameters file
+
+            Then you can use the `arm-param-value` snippet to add new parameter values for deployment
+
+    - For existing Azure Resource Manage Template files
+        - `arm-param`, `arm-variable`, `arm-userfunc`, `arm-userfunc-namespace`
+        Add new parameters, variables, user functions and user namespaces.
+        - Resources - type `arm-` to see the other 70+ snippets for creating new resources of various types
+
 ## Automatic Detection of deployment template files
 
 By default, the extension recognizes a .json or .jsonc file as a deployment template file based on the $schema specified in the file (for instance, ```https://schema.management.azure.com/schemas/2018-05-01/deploymentTemplate.json#```) and will switch the editor language to "Azure Resource Manager Template" automatically.  If you do not want that behavior, you can set the ```azureResourceManagerTools.autoDetectJsonTemplates``` setting to false and use the below methods to determine which files to treat as deployment templates.
