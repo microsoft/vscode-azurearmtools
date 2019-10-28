@@ -35,7 +35,7 @@ This extension provides language support for Azure Resource Manager deployment t
     - User-defined template functions
 
 - Snippets
-    Just type "arm" in the editor to see the available snippets
+    Just type `arm` in the editor to see the available snippets
     - Getting started with a new JSON/JSONC file
         - `arm!` - Adds the framework for a full deployment template file.
 
@@ -48,7 +48,7 @@ This extension provides language support for Azure Resource Manager deployment t
     - For existing Azure Resource Manage Template files
         - `arm-param`, `arm-variable`, `arm-userfunc`, `arm-userfunc-namespace`
         Add new parameters, variables, user functions and user namespaces.
-        - Resources - type `arm-` to see the other 70+ snippets for creating new resources of various types
+        - Resources - type `arm-` to see the other 70+ snippets for creating new resources of various types. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine.
 
 ## Automatic Detection of deployment template files
 
