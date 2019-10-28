@@ -13,7 +13,7 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
   - Errors provide better guidance for what actually needs to be fixed in each resource to match the schema
   - Greatly improved completion speed
   - Greatly reduced memory usage
-  - Note: The Azure schemas should continue to improve (this is a separate issue from this extension)
+  - Note: The Azure schemas (which are read and interpreted by this extension) are undergoing continual improvement
 - Full support for user-defined template functions [#122](https://github.com/microsoft/vscode-azurearmtools/issues/122). See Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#functions).
   - Find References (namespaces, user functions, user function parameters)
   - Go to Definition
@@ -27,6 +27,7 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 - Fewer false positives
   - We now allow string values to be automatically coerced to non-string types as appropriate (e.g., "false" can be used in place of false), as the ARM backend allows
   - We now allow non-string values to be automatically coerced to string as appropriate (e.g. false can be used in place of "false")
+- Add Find References for built-in template functions (e.g. click on "add" in an expression then right-click -> Find All References)
 
 ### Fixed
 - Language server using lots of memory [#324](https://github.com/microsoft/vscode-azurearmtools/issues/324)
@@ -38,8 +39,7 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 - Azure Resource Manager Template Server crashed on MacOS [#332](https://github.com/microsoft/vscode-azurearmtools/issues/332) - ~/.local/share folder will now be created if necessary
 
 ### Changed
-- Added "(ARM)" to extension name (to "Azure Resource Manager (ARM) Tools" from
-"Azure Resource Manager Tools" for better discoverability
+- Added "(ARM)" to extension name (to "Azure Resource Manager (ARM) Tools" from "Azure Resource Manager Tools") for better discoverability
 
 ### Engineering Improvements
 - Enabled strict null checking
