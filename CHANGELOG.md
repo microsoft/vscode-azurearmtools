@@ -22,7 +22,7 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
   - Rename user function parameters
   - Hover information
   - Signature help
-- Added basic snippet support. This makes Sam Cogen's [Azure Resource Manager Snippets](https://marketplace.visualstudio.com/items?itemName=samcogan.arm-snippets) extension no longer necessary when using this extension.  If you have snippet suggestions, you can add them to our [repo](https://github.com/microsoft/vscode-azurearmtools/issues).
+- Added basic snippet support. This makes Sam Cogan's [Azure Resource Manager Snippets](https://marketplace.visualstudio.com/items?itemName=samcogan.arm-snippets) extension no longer necessary when using this extension.  If you have snippet suggestions, you can add them to our [repo](https://github.com/microsoft/vscode-azurearmtools/issues).
 - Hover information for JSON properties (outside of expressions)
 - Fewer false positives
   - We now allow string values to be automatically coerced to non-string types as appropriate (e.g., "false" can be used in place of false), as the ARM backend allows
