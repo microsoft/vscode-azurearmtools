@@ -102,6 +102,10 @@
           ],
           "default": "Warning",
           "description": "Sets the trace level in the Output window for the Azure Template Language Server (requires restart)"
+        },
+        "azureResourceManagerTools.languageServer.dotnetExePath": {
+          "type": "string",
+          "description": "(Not recommended, requires restart) If specified, overrides the use of a local version of dotnet core the extension and instead points to another installed version of dotnet.exe (must match the version needed by the extension)"
         }
       }
     },
