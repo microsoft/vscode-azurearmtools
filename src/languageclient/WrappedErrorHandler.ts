@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as os from 'os';
 import { callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { Message } from 'vscode-jsonrpc';
 import { CloseAction, ErrorAction, ErrorHandler } from 'vscode-languageclient';
@@ -39,7 +40,7 @@ export class WrappedErrorHandler implements ErrorHandler {
             context.telemetry.properties.jsonrpcMessage = message ? message.jsonrpc : "";
             context.telemetry.measurements.secondsSinceStart = (Date.now() - this._serverStartTime) / 1000;
 
-            throw new Error(`An error occurred in the ${languageServerName}.\n\n${parseError(error).message}`);
+            throw new Error(`An error occurred in the ${languageServerName}.${os.EOL}${os.EOL}${parseError(error).message}`);
         });
 
         return this._handler.error(error, message, count);

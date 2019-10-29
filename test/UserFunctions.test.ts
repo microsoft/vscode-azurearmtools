@@ -1354,7 +1354,7 @@ suite("User functions", () => {
             await testHover(
                 dt,
                 udfReferenceAtNamespace.index,
-                `**udf**${os.EOL}*(user-defined namespace)*\n\nMembers:\n* string(year [int], month, day [int]) [string]`);
+                `**udf**${os.EOL}*(user-defined namespace)*${os.EOL}${os.EOL}Members:${os.EOL}* string(year [int], month, day [int]) [string]`);
         });
     }); // suite UDF Hover Info
 

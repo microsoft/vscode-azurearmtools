@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import * as os from 'os';
 import { CachedValue } from './CachedValue';
 import { assert } from './fixed_assert';
 import { IUsageInfo } from './Hover';
@@ -104,7 +105,7 @@ export class UserFunctionNamespaceDefinition implements INamedDefinition {
             .map(md => getUserFunctionUsage(md, false));
         let description: string | undefined;
         if (methodsUsage.length > 0) {
-            description = `Members:\n${methodsUsage.map(mu => `* ${mu}`).join("\n")}`;
+            description = `Members:${os.EOL}${methodsUsage.map(mu => `* ${mu}`).join(os.EOL)}`;
         } else {
             description = `No members`;
         }
