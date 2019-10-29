@@ -248,6 +248,6 @@ async function ensureDependencies(dotnetExePath: string, serverDllPath: string):
     });
 }
 
-async function isFile(path: string): Promise<boolean> {
-    return (await fse.pathExists(path)) && (await fse.stat(path)).isFile();
+async function isFile(pathPath: string): Promise<boolean> {
+    return (await fse.pathExists(pathPath)) && (await fse.stat(pathPath)).isFile();
 }
