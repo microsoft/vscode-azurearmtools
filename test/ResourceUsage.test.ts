@@ -278,7 +278,7 @@ suite("ResourceUsage (schema.stats telemetry)", () => {
 
         // tslint:disable-next-line:no-any
         await testGetResourceUsage(<any>template, {
-            "(expression)@2016-04-30-preview": 1
+            "[expression]@2016-04-30-preview": 1
         });
     });
 
@@ -295,7 +295,7 @@ suite("ResourceUsage (schema.stats telemetry)", () => {
 
         // tslint:disable-next-line:no-any
         await testGetResourceUsage(<any>template, {
-            "microsoft.network/virtualnetworks@(expression)": 1
+            "microsoft.network/virtualnetworks@[expression]": 1
         });
     });
 
@@ -313,7 +313,40 @@ suite("ResourceUsage (schema.stats telemetry)", () => {
 
         // tslint:disable-next-line:no-any
         await testGetResourceUsage(<any>template, {
-            "microsoft.network/virtualnetworks@(expression)": 1
+            "microsoft.network/virtualnetworks@[expression]": 1
+        });
+    });
+
+    test("apiVersion is missing, no apiProfile specified)", async () => {
+        // tslint:disable-next-line:no-any
+        const template = {
+            resources: [
+                {
+                    "type": "Microsoft.Network/virtualNetworks"
+                }
+            ]
+        };
+
+        // tslint:disable-next-line:no-any
+        await testGetResourceUsage(<any>template, {
+            "microsoft.network/virtualnetworks@(profile=none)": 1
+        });
+    });
+
+    test("apiVersion is missing, apiProfile specified)", async () => {
+        // tslint:disable-next-line:no-any
+        const template = {
+            apiProfile: "myProfile",
+            resources: [
+                {
+                    "type": "Microsoft.Network/virtualNetworks"
+                }
+            ]
+        };
+
+        // tslint:disable-next-line:no-any
+        await testGetResourceUsage(<any>template, {
+            "microsoft.network/virtualnetworks@(profile=myprofile)": 1
         });
     });
 });

@@ -340,6 +340,8 @@ export class DeploymentTemplate {
      */
     public getResourceUsage(): Histogram {
         const resourceCounts = new Histogram();
+        // tslint:disable-next-line: strict-boolean-expressions
+        const apiProfileString = `(profile=${this.apiProfile || 'none'})`.toLowerCase();
 
         // Collect all resources used
         const resources: Json.ArrayValue | null = this._topLevelValue ? Json.asArrayValue(this._topLevelValue.getPropertyValue(templateKeys.resources)) : null;
@@ -354,11 +356,23 @@ export class DeploymentTemplate {
                 const resourceObject = Json.asObjectValue(resource);
                 if (resourceObject) {
                     const resourceType = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceType));
-                    const apiVersion = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceApiVersion));
-                    if (resourceType && apiVersion) {
-                        const isTypeAnExpression = resourceType.unquotedValue.trim().startsWith('[');
-                        const isApiVersionAnExpression = apiVersion.unquotedValue.trim().startsWith('[');
-                        let simpleKey = `${isTypeAnExpression ? '(expression)' : resourceType.unquotedValue.toLowerCase()}@${(isApiVersionAnExpression ? '(expression)' : apiVersion.unquotedValue.toLowerCase())}`;
+                    if (resourceType) {
+                        const apiVersion = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceApiVersion));
+                        let apiVersionString: string | null = apiVersion ? apiVersion.unquotedValue.trim().toLowerCase() : null;
+                        if (!apiVersionString) {
+                            apiVersionString = apiProfileString;
+                        } else {
+                            if (apiVersionString.startsWith('[')) {
+                                apiVersionString = '[expression]';
+                            }
+                        }
+
+                        let resourceTypeString = resourceType.unquotedValue.trim().toLowerCase();
+                        if (resourceTypeString.startsWith('[')) {
+                            resourceTypeString = "[expression]";
+                        }
+
+                        let simpleKey = `${resourceTypeString}@${apiVersionString}`;
                         const fullKey = parentKey ? `${simpleKey}[parent=${parentKey}]` : simpleKey;
                         resourceCounts.add(fullKey);
 
