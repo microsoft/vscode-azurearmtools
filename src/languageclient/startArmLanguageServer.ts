@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as fse from 'fs-extra';
+import * as os from 'os';
 import * as path from 'path';
 import { ProgressLocation, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
@@ -125,8 +126,8 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         actionContext.telemetry.properties.langServerNugetVersion = langServerVersion;
         ext.outputChannel.appendLine(`Starting ${languageServerName} at ${serverDllPath}`);
         ext.outputChannel.appendLine(`Language server nuget version: ${langServerVersion}`);
-        ext.outputChannel.appendLine(`Client options:\n${JSON.stringify(clientOptions, undefined, 2)}`);
-        ext.outputChannel.appendLine(`Server options:\n${JSON.stringify(serverOptions, undefined, 2)}`);
+        ext.outputChannel.appendLine(`Client options:${os.EOL}${JSON.stringify(clientOptions, undefined, 2)}`);
+        ext.outputChannel.appendLine(`Server options:${os.EOL}${JSON.stringify(serverOptions, undefined, 2)}`);
         client = new LanguageClient(
             languageId,
             languageFriendlyName, // Used in the Output window combobox
@@ -149,7 +150,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
             await client.onReady();
         } catch (error) {
             throw new Error(
-                `${languageServerName}: An error occurred starting the language server.\n\n${parseError(error).message}`
+                `${languageServerName}: An error occurred starting the language server.${os.EOL}${os.EOL}${parseError(error).message}`
             );
         }
     });

@@ -396,28 +396,15 @@ export class AzureRMTools {
         if (deploymentTemplate) {
             return callWithTelemetryAndErrorHandlingSync('Hover', (actionContext: IActionContext): vscode.Hover | undefined => {
                 actionContext.errorHandling.suppressDisplay = true;
-                let properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>actionContext.telemetry.properties;
+                const properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>actionContext.telemetry.properties;
 
                 const context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                let hoverInfo: Hover.Info | null = context.getHoverInfo();
-                let hover: vscode.Hover;
+                const hoverInfo: Hover.HoverInfo | null = context.getHoverInfo();
 
                 if (hoverInfo) {
-                    if (hoverInfo instanceof Hover.UserNamespaceInfo) {
-                        properties.hoverType = "User Namespace";
-                    } else if (hoverInfo instanceof Hover.UserFunctionInfo) {
-                        properties.hoverType = "User Function";
-                    } else if (hoverInfo instanceof Hover.FunctionInfo) {
-                        properties.hoverType = "TLE Function";
-                        properties.tleFunctionName = hoverInfo.functionName;
-                    } else if (hoverInfo instanceof Hover.ParameterReferenceInfo) {
-                        properties.hoverType = "Parameter Reference";
-                    } else if (hoverInfo instanceof Hover.VariableReferenceInfo) {
-                        properties.hoverType = "Variable Reference";
-                    }
-
+                    properties.hoverType = hoverInfo.friendlyType;
                     const hoverRange: vscode.Range = getVSCodeRangeFromSpan(deploymentTemplate, hoverInfo.span);
-                    hover = new vscode.Hover(hoverInfo.getHoverText(), hoverRange);
+                    const hover = new vscode.Hover(hoverInfo.getHoverText(), hoverRange);
                     return hover;
                 }
 

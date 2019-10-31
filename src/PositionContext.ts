@@ -12,21 +12,18 @@ import { templateKeys } from "./constants";
 import { __debugMarkPositionInString } from "./debugMarkStrings";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { assert } from './fixed_assert';
-import * as Hover from "./Hover";
+import { HoverInfo } from "./Hover";
 import { IFunctionMetadata, IFunctionParameterMetadata } from "./IFunctionMetadata";
-import { DefinitionKind, INamedDefinition } from "./INamedDefinition";
+import { INamedDefinition } from "./INamedDefinition";
 import { IParameterDefinition } from "./IParameterDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
-import { ParameterDefinition } from "./ParameterDefinition";
 import * as Reference from "./ReferenceList";
 import { TemplateScope } from "./TemplateScope";
 import * as TLE from "./TLE";
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
 import { UserFunctionMetadata } from "./UserFunctionMetadata";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
-import { UserFunctionParameterDefinition } from "./UserFunctionParameterDefinition";
-import { assertNever } from "./util/assertNever";
 import { VariableDefinition } from "./VariableDefinition";
 
 /**
@@ -256,45 +253,12 @@ export class PositionContext {
         return null;
     }
 
-    public getHoverInfo(): Hover.Info | null {
+    public getHoverInfo(): HoverInfo | null {
         const reference: IReferenceSite | null = this.getReferenceSiteInfo();
         if (reference) {
             const span = reference.referenceSpan;
             const definition = reference.definition;
-
-            // tslint:disable-next-line:switch-default
-            switch (definition.definitionKind) {
-                case DefinitionKind.Namespace:
-                    if (definition instanceof UserFunctionNamespaceDefinition) {
-                        return new Hover.UserNamespaceInfo(definition, span);
-                    }
-                    break;
-                case DefinitionKind.UserFunction:
-                    if (definition instanceof UserFunctionDefinition) {
-                        return new Hover.UserFunctionInfo(definition, span);
-                    }
-                    break;
-                case DefinitionKind.BuiltinFunction:
-                    if (definition instanceof BuiltinFunctionMetadata) {
-                        const functionMetadata = definition;
-                        return new Hover.FunctionInfo(functionMetadata.fullName, functionMetadata.usage, functionMetadata.description, span);
-                    }
-                    break;
-                case DefinitionKind.Parameter:
-                    if (definition instanceof ParameterDefinition || definition instanceof UserFunctionParameterDefinition) {
-                        return Hover.ParameterReferenceInfo.fromDefinition(definition, span);
-                    }
-                    break;
-                case DefinitionKind.Variable:
-                    if (definition instanceof VariableDefinition) {
-                        return Hover.VariableReferenceInfo.fromDefinition(definition, span);
-                    }
-                    break;
-                default:
-                    return assertNever(definition.definitionKind); // Gives compile-time error if a case is missed
-            }
-
-            assert(false, `Unexpected definition type for definition kind ${definition.definitionKind}`);
+            return new HoverInfo(definition.usageInfo, span);
         }
 
         return null;

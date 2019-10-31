@@ -19,7 +19,6 @@
  */
 
 import * as Completion from './src/Completion';
-import * as Hover from "./src/Hover";
 import * as Json from "./src/JSON";
 import * as Language from "./src/Language";
 import * as TLE from "./src/TLE";
@@ -40,6 +39,7 @@ export { Duration } from './src/Duration';
 export { ExpressionType } from "./src/ExpressionType";
 export { ext } from './src/extensionVariables';
 export { Histogram } from "./src/Histogram";
+export { HoverInfo } from "./src/Hover";
 export { httpGet } from './src/httpGet';
 export { DefinitionKind, INamedDefinition } from "./src/INamedDefinition";
 export { IncorrectArgumentsCountIssue } from "./src/IncorrectArgumentsCountIssue";
@@ -69,7 +69,6 @@ export { UnrecognizedFunctionVisitor } from "./src/visitors/UnrecognizedFunction
 export { Completion };
 export { Json };
 export { Language };
-export { Hover };
 export { basic };
 export { Utilities };
 export { TLE };

@@ -6,7 +6,8 @@
 // tslint:disable:no-non-null-assertion object-literal-key-quotes
 
 import * as assert from "assert";
-import { Completion, DeploymentTemplate, FunctionSignatureHelp, Hover, IParameterDefinition, IReferenceSite, Json, Language, PositionContext, TLE, UserFunctionMetadata, Utilities, VariableDefinition } from "../extension.bundle";
+import * as os from 'os';
+import { Completion, DeploymentTemplate, FunctionSignatureHelp, HoverInfo, IParameterDefinition, IReferenceSite, Json, Language, PositionContext, TLE, UserFunctionMetadata, Utilities, VariableDefinition } from "../extension.bundle";
 import * as jsonTest from "./JSON.test";
 import { assertNotNull } from "./support/assertNotNull";
 import { IDeploymentTemplate } from "./support/diagnostics";
@@ -369,80 +370,76 @@ suite("PositionContext", () => {
     suite("hoverInfo", () => {
         test("in non-string json token", () => {
             const dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", "id");
-            const hoverInfo: Hover.Info | null = dt.getContextFromDocumentCharacterIndex(0).getHoverInfo();
+            const hoverInfo: HoverInfo | null = dt.getContextFromDocumentCharacterIndex(0).getHoverInfo();
             assert.deepStrictEqual(hoverInfo, null);
         });
 
         test("in property name json token", () => {
             const dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", "id");
-            const hoverInfo: Hover.Info | null = dt.getContextFromDocumentCharacterIndex(3).getHoverInfo();
+            const hoverInfo: HoverInfo | null = dt.getContextFromDocumentCharacterIndex(3).getHoverInfo();
             assert.deepStrictEqual(hoverInfo, null);
         });
     });
 
     test("in unrecognized function name", () => {
         const dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[toads('B'", "id");
-        const hoverInfo: Hover.Info | null = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[to".length).getHoverInfo();
+        const hoverInfo: HoverInfo | null = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[to".length).getHoverInfo();
         assert.deepStrictEqual(hoverInfo, null);
     });
 
     test("in recognized function name", () => {
         const dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", "id");
         const pc = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[c".length);
-        const hi: Hover.Info | null = pc.getHoverInfo();
-        assert(hi instanceof Hover.FunctionInfo);
-        if (hi instanceof Hover.FunctionInfo) {
-            assert.deepStrictEqual(hi.functionName, "concat");
-            assert.deepStrictEqual(hi.span, new Language.Span("{ 'a': 'A', 'b': \"[".length, 6));
-        }
+        const hi: HoverInfo = pc.getHoverInfo()!;
+        assert(hi);
+        assert.deepStrictEqual(hi.usage, "concat(arg1, arg2, arg3, ...)");
+        assert.deepStrictEqual(hi.span, new Language.Span("{ 'a': 'A', 'b': \"[".length, 6));
     });
 
     test("in unrecognized parameter reference", () => {
         const dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[parameters('B')]\" }", "id");
         const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[parameters('".length);
-        const hi: Hover.Info | null = pc.getHoverInfo();
+        const hi: HoverInfo | null = pc.getHoverInfo();
         assert.deepStrictEqual(hi, null);
     });
 
     test("in recognized parameter reference name", () => {
         const dt = new DeploymentTemplate("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters('pName')\" }", "id");
         const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters('pN".length);
-        const hi: Hover.Info | null = pc.getHoverInfo(); assert(hi instanceof Hover.ParameterReferenceInfo);
-        if (hi instanceof Hover.ParameterReferenceInfo) {
-            assert.deepStrictEqual("**pName** (parameter)", hi.getHoverText());
-            assert.deepStrictEqual(new Language.Span("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters(".length, 7), hi.span);
-        }
+        const hi: HoverInfo = pc.getHoverInfo()!;
+        assert(hi);
+        assert.deepStrictEqual(`**pName**${os.EOL}*(parameter)*`, hi.getHoverText());
+        assert.deepStrictEqual(new Language.Span("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters(".length, 7), hi.span);
     });
 
     test("in parameter reference function with empty string parameter", () => {
         const dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[parameters('')]\" }", "id");
         const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[parameters('".length);
-        const hi: Hover.Info | null = pc.getHoverInfo(); assert.deepStrictEqual(hi, null);
+        const hi: HoverInfo | null = pc.getHoverInfo();
+        assert.deepStrictEqual(hi, null);
     });
 
     test("in parameter reference function with no arguments", () => {
         const dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[parameters()]\" }", "id");
         const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[parameters(".length);
-        const hi: Hover.Info | null = pc.getHoverInfo();
+        const hi: HoverInfo | null = pc.getHoverInfo();
         assert.deepStrictEqual(hi, null);
     });
 
     test("in unrecognized variable reference", () => {
         const dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[variables('B')]\" }", "id");
         const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[variables('".length);
-        const hi: Hover.Info | null = pc.getHoverInfo();
+        const hi: HoverInfo | null = pc.getHoverInfo();
         assert.deepStrictEqual(hi, null);
     });
 
     test("in recognized variable reference name", () => {
         const dt = new DeploymentTemplate("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables('vName')\" }", "id");
         const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables('vNam".length);
-        const hi: Hover.Info | null = pc.getHoverInfo();
-        assert(hi instanceof Hover.VariableReferenceInfo);
-        if (hi instanceof Hover.VariableReferenceInfo) {
-            assert.deepStrictEqual("**vName** (variable)", hi.getHoverText());
-            assert.deepStrictEqual(new Language.Span("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables(".length, 7), hi.span);
-        }
+        const hi: HoverInfo | null = pc.getHoverInfo()!;
+        assert(hi);
+        assert.deepStrictEqual(`**vName**${os.EOL}*(variable)*`, hi.getHoverText());
+        assert.deepStrictEqual(new Language.Span("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables(".length, 7), hi.span);
     });
 
     suite("completionItems", async () => {

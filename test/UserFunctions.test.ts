@@ -6,7 +6,8 @@
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name no-constant-condition
 
 import * as assert from "assert";
-import { DefinitionKind, DeploymentTemplate, Hover, IReferenceSite, Language, ReferenceList } from "../extension.bundle";
+import * as os from 'os';
+import { DefinitionKind, DeploymentTemplate, HoverInfo, IReferenceSite, Language, ReferenceList } from "../extension.bundle";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
@@ -1310,7 +1311,7 @@ suite("User functions", () => {
             expectedSpan?: Language.Span
         ): Promise<void> {
             const pc = dt.getContextFromDocumentCharacterIndex(cursorIndex);
-            let hoverInfo: Hover.Info = pc.getHoverInfo()!;
+            let hoverInfo: HoverInfo = pc.getHoverInfo()!;
             assert(hoverInfo, "Expected non-empty hover info");
             hoverInfo = hoverInfo!;
 
@@ -1325,27 +1326,27 @@ suite("User functions", () => {
 
         test("Hover over top-level parameter reference", async () => {
             const { dt, markers: { yearReference } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
-            await testHover(dt, yearReference.index, "**year** (parameter)");
+            await testHover(dt, yearReference.index, `**year**${os.EOL}*(parameter)*`);
         });
 
         test("Hover over UDF parameter reference", async () => {
             const { dt, markers: { udfyearReference } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
-            await testHover(dt, udfyearReference.index, "**year** (parameter)");
+            await testHover(dt, udfyearReference.index, `**year**${os.EOL}*(function parameter)*`);
         });
 
         test("Hover over top-level variable reference", async () => {
             const { dt, markers: { var1Reference1 } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
-            await testHover(dt, var1Reference1.index, "**var1** (variable)");
+            await testHover(dt, var1Reference1.index, `**var1**${os.EOL}*(variable)*`);
         });
 
         test("Hover over built-in function reference", async () => {
             const { dt, markers: { stringRef4 } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
-            await testHover(dt, stringRef4.index, "**string(valueToConvert)**\nConverts the specified value to String.");
+            await testHover(dt, stringRef4.index, `**string(valueToConvert)**${os.EOL}*(function)*${os.EOL}${os.EOL}Converts the specified value to String.`);
         });
 
         test("Hover over user-defined function reference's name", async () => {
             const { dt, markers: { udfReferenceAtName } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
-            await testHover(dt, udfReferenceAtName.index, "**udf.string(year [int], month, day [int]) [string]** User-defined function");
+            await testHover(dt, udfReferenceAtName.index, `**udf.string(year [int], month, day [int]) [string]**${os.EOL}*(user-defined function)*`);
         });
 
         test("Hover over user-defined function reference's namespace", async () => {
@@ -1353,7 +1354,7 @@ suite("User functions", () => {
             await testHover(
                 dt,
                 udfReferenceAtNamespace.index,
-                "**udf** User-defined namespace\n\nMembers:\n* string(year [int], month, day [int]) [string]");
+                `**udf**${os.EOL}*(user-defined namespace)*${os.EOL}${os.EOL}Members:${os.EOL}* string(year [int], month, day [int]) [string]`);
         });
     }); // suite UDF Hover Info
 

@@ -6,6 +6,7 @@ import * as fse from 'fs-extra';
 import * as path from "path";
 import { assetsPath } from './constants';
 import { ExpressionType } from './ExpressionType';
+import { IUsageInfo } from './Hover';
 import { IFunctionMetadata, IFunctionParameterMetadata } from './IFunctionMetadata';
 import { DefinitionKind, INamedDefinition } from './INamedDefinition';
 import { StringValue } from './JSON';
@@ -125,6 +126,14 @@ export class BuiltinFunctionMetadata implements IFunctionMetadata, INamedDefinit
 
     public get usage(): string {
         return this.returnType ? `${this._usage} [${this.returnType}]` : this._usage;
+    }
+
+    public get usageInfo(): IUsageInfo {
+        return {
+            usage: this.usage,
+            friendlyType: "function",
+            description: this.description
+        };
     }
 
     public get parameters(): IFunctionParameterMetadata[] {
