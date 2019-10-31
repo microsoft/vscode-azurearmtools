@@ -49,7 +49,7 @@ export { LanguageServerState } from "./src/languageclient/startArmLanguageServer
 export { ParameterDefinition } from "./src/ParameterDefinition";
 export { IReferenceSite, PositionContext } from "./src/PositionContext";
 export { ReferenceList } from "./src/ReferenceList";
-export { containsArmSchema, isArmSchema } from './src/supported';
+export { containsArmSchema, getPreferredSchema, isArmSchema } from './src/schemas';
 export { ScopeContext, TemplateScope } from "./src/TemplateScope";
 export { FunctionSignatureHelp } from "./src/TLE";
 export { JsonOutlineProvider, shortenTreeLabel } from "./src/Treeview";
@@ -73,3 +73,4 @@ export { Language };
 export { basic };
 export { Utilities };
 export { TLE };
+

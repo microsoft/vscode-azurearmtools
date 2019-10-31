@@ -14,7 +14,7 @@ import * as language from "./Language";
 import { ParameterDefinition } from "./ParameterDefinition";
 import { PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
-import { isArmSchema } from "./supported";
+import { isArmSchema } from "./schemas";
 import { ScopeContext, TemplateScope } from "./TemplateScope";
 import * as TLE from "./TLE";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
@@ -49,7 +49,7 @@ export class DeploymentTemplate {
     private _topLevelVariableDefinitions: CachedValue<IVariableDefinition[]> = new CachedValue<IVariableDefinition[]>();
     private _topLevelParameterDefinitions: CachedValue<ParameterDefinition[]> = new CachedValue<ParameterDefinition[]>();
 
-    private _schemaUri: CachedValue<string | null> = new CachedValue<string | null>();
+    private _schema: CachedValue<Json.StringValue | null> = new CachedValue<Json.StringValue | null>();
 
     /**
      * Create a new DeploymentTemplate object.
@@ -154,12 +154,17 @@ export class DeploymentTemplate {
     }
 
     public get schemaUri(): string | null {
-        return this._schemaUri.getOrCacheValue(() => {
+        const schema = this.schemaValue;
+        return schema ? schema.unquotedValue : null;
+    }
+
+    public get schemaValue(): Json.StringValue | null {
+        return this._schema.getOrCacheValue(() => {
             const value: Json.ObjectValue | null = Json.asObjectValue(this._jsonParseResult.value);
             if (value) {
-                const schema: Json.Value | null = Json.asStringValue(value.getPropertyValue("$schema"));
+                const schema: Json.StringValue | null = Json.asStringValue(value.getPropertyValue("$schema"));
                 if (schema) {
-                    return schema.toString();
+                    return schema;
                 }
             }
 
