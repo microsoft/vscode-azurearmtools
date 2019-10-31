@@ -37,7 +37,7 @@ function isSourceFromLanguageServer(source: Source): boolean {
 
 export interface IDeploymentParameterDefinition {
     // tslint:disable-next-line:no-reserved-keywords
-    type: ExpressionType;
+    type: ExpressionType | string;
     metadata?: {
         [key: string]: string | undefined;
         description?: string;
@@ -49,7 +49,7 @@ export interface IDeploymentParameterDefinition {
 
 export interface IDeploymentOutput {
     // tslint:disable-next-line:no-reserved-keywords
-    type: ExpressionType;
+    type: ExpressionType | string;
     value: number | unknown[] | string | {};
 }
 
@@ -58,7 +58,7 @@ export interface IDeploymentFunctionDefinition {
     {
         name: string;
         // tslint:disable-next-line: no-reserved-keywords
-        type: string;
+        type: ExpressionType | string;
     }[];
     output?: IDeploymentOutput;
 }
@@ -74,6 +74,7 @@ export interface IDeploymentTemplate {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#" | "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
     | string;
     contentVersion: string;
+    apiProfile?: string;
     parameters?: {
         [key: string]: IDeploymentParameterDefinition;
     };

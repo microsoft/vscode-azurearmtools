@@ -99,7 +99,8 @@ suite("User functions", () => {
     // #region
     suite("UDF Malformed", () => {
         test("missing namespace name", async () => {
-            const template = {
+            // tslint:disable-next-line:no-any
+            const template = <IDeploymentTemplate><any>{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
                 "functions": [
@@ -158,7 +159,8 @@ suite("User functions", () => {
         });
 
         test("Empty function name", async () => {
-            const template = {
+            // tslint:disable-next-line:no-any
+            const template = <IDeploymentTemplate><any>{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
                 "parameters": {
@@ -212,7 +214,8 @@ suite("User functions", () => {
                             }
                         }
                     }
-                }]
+                }],
+                "resources": []
             };
 
             await parseTemplate(template, [
@@ -279,7 +282,8 @@ suite("User functions", () => {
                 ]
             }];
 
-            const dt = await parseTemplate(template, [
+            // tslint:disable-next-line:no-any
+            const dt = await parseTemplate(<any>template, [
             ]);
             assert.equal(0, dt.topLevelScope.namespaceDefinitions.length);
         });
@@ -302,7 +306,8 @@ suite("User functions", () => {
                 }],
                 "outputs": {
                     "o1": {
-                        "value": "[udf.odd()]"
+                        "value": "[udf.odd()]",
+                        "type": "string"
                     }
                 }
             };

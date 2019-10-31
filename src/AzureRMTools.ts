@@ -205,18 +205,26 @@ export class AzureRMTools {
             {
                 docLangId: document.languageId,
                 docExtension: path.extname(document.fileName),
+                // tslint:disable-next-line: strict-boolean-expressions
+                schema: deploymentTemplate.schemaUri || "",
+                // tslint:disable-next-line: strict-boolean-expressions
+                apiProfile: deploymentTemplate.apiProfile || ""
             },
             {
                 documentSizeInCharacters: document.getText().length,
                 parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds,
                 lineCount: deploymentTemplate.lineCount,
+                maxLineLength: deploymentTemplate.getMaxLineLength(),
                 paramsCount: deploymentTemplate.topLevelScope.parameterDefinitions.length,
                 varsCount: deploymentTemplate.topLevelScope.variableDefinitions.length,
                 namespacesCount: deploymentTemplate.topLevelScope.namespaceDefinitions.length,
-                userFunctionsCount: totalUserFunctionsCount
+                userFunctionsCount: totalUserFunctionsCount,
+                multilineStringCount: deploymentTemplate.getMultilineStringCount(),
+                commentCount: deploymentTemplate.getCommentCount()
             });
 
         this.logFunctionCounts(deploymentTemplate);
+        this.logResourceUsage(deploymentTemplate);
     }
 
     private reportDeploymentTemplateErrors(document: vscode.TextDocument, deploymentTemplate: DeploymentTemplate): void {
@@ -337,6 +345,8 @@ export class AzureRMTools {
                 incorrectArgs?: string;
             } & TelemetryProperties = actionContext.telemetry.properties;
 
+            let issues: language.Issue[] = await deploymentTemplate.errorsPromise;
+
             // Full function counts
             const functionCounts: Histogram = deploymentTemplate.getFunctionCounts();
             const functionsData: { [key: string]: number } = {};
@@ -345,8 +355,8 @@ export class AzureRMTools {
             }
             properties.functionCounts = JSON.stringify(functionsData);
 
-            // Missing function names and functions with incorrect number of arguments
-            let issues: language.Issue[] = await deploymentTemplate.errorsPromise;
+            // Missing function names and functions with incorrect number of arguments (useful for knowing
+            //   if our expressionMetadata.json file is up to date)
             let unrecognized = new Set<string>();
             let incorrectArgCounts = new Set<string>();
             for (const issue of issues) {
@@ -361,6 +371,31 @@ export class AzureRMTools {
             properties.unrecognized = AzureRMTools.convertSetToJson(unrecognized);
             properties.incorrectArgs = AzureRMTools.convertSetToJson(incorrectArgCounts);
         });
+    }
+
+    /**
+     * Log information about which resource types and apiVersions are being used
+     */
+    private logResourceUsage(deploymentTemplate: DeploymentTemplate): void {
+        // Don't wait for promise
+        // tslint:disable-next-line: no-floating-promises
+        callWithTelemetryAndErrorHandling("schema.stats", async (actionContext: IActionContext): Promise<void> => {
+            actionContext.errorHandling.suppressDisplay = true;
+            let properties: {
+                resourceCounts?: string;
+            } & TelemetryProperties = actionContext.telemetry.properties;
+
+            const resourceCounts: Histogram = deploymentTemplate.getResourceUsage();
+            properties.resourceCounts = this.histogramToTelemetryString(resourceCounts);
+        });
+    }
+
+    private histogramToTelemetryString(histogram: Histogram): string {
+        const data: { [key: string]: number } = {};
+        for (const key of histogram.keys) {
+            data[<string>key] = histogram.getCount(key);
+        }
+        return JSON.stringify(data);
     }
 
     private static convertSetToJson(s: Set<string>): string {

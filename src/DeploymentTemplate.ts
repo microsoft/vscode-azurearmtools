@@ -81,6 +81,17 @@ export class DeploymentTemplate {
         return isArmSchema(this.schemaUri);
     }
 
+    public get apiProfile(): string | null {
+        if (this._topLevelValue) {
+            const apiProfileValue = Json.asStringValue(this._topLevelValue.getPropertyValue(templateKeys.apiProfile));
+            if (apiProfileValue) {
+                return apiProfileValue.unquotedValue;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Parses all JSON strings in the template, assigns them a scope, and caches the results.
      * Returns a map that maps from the Json.StringValue object to the parse result (we can't cache
@@ -306,7 +317,7 @@ export class DeploymentTemplate {
     }
 
     /**
-     * Gets a history of function usage, useful for telemetry
+     * Gets info about TLE function usage, useful for telemetry
      */
     public getFunctionCounts(): Histogram {
         const functionCounts = new Histogram();
@@ -322,6 +333,84 @@ export class DeploymentTemplate {
         }
 
         return functionCounts;
+    }
+
+    /**
+     * Gets info about schema usage, useful for telemetry
+     */
+    public getResourceUsage(): Histogram {
+        const resourceCounts = new Histogram();
+        // tslint:disable-next-line: strict-boolean-expressions
+        const apiProfileString = `(profile=${this.apiProfile || 'none'})`.toLowerCase();
+
+        // Collect all resources used
+        const resources: Json.ArrayValue | null = this._topLevelValue ? Json.asArrayValue(this._topLevelValue.getPropertyValue(templateKeys.resources)) : null;
+        if (resources) {
+            traverseResources(resources, undefined);
+        }
+
+        return resourceCounts;
+
+        function traverseResources(resourcesObject: Json.ArrayValue, parentKey: string | undefined): void {
+            for (let resource of resourcesObject.elements) {
+                const resourceObject = Json.asObjectValue(resource);
+                if (resourceObject) {
+                    const resourceType = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceType));
+                    if (resourceType) {
+                        const apiVersion = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceApiVersion));
+                        let apiVersionString: string | null = apiVersion ? apiVersion.unquotedValue.trim().toLowerCase() : null;
+                        if (!apiVersionString) {
+                            apiVersionString = apiProfileString;
+                        } else {
+                            if (apiVersionString.startsWith('[')) {
+                                apiVersionString = '[expression]';
+                            }
+                        }
+
+                        let resourceTypeString = resourceType.unquotedValue.trim().toLowerCase();
+                        if (resourceTypeString.startsWith('[')) {
+                            resourceTypeString = "[expression]";
+                        }
+
+                        let simpleKey = `${resourceTypeString}@${apiVersionString}`;
+                        const fullKey = parentKey ? `${simpleKey}[parent=${parentKey}]` : simpleKey;
+                        resourceCounts.add(fullKey);
+
+                        // Check for child resources
+                        const childResources = Json.asArrayValue(resourceObject.getPropertyValue(templateKeys.resources));
+                        if (childResources) {
+                            traverseResources(childResources, simpleKey);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public getMaxLineLength(): number {
+        let max = 0;
+        for (let len of this.jsonParseResult.lineLengths) {
+            if (len > max) {
+                max = len;
+            }
+        }
+
+        return max;
+    }
+
+    public getCommentCount(): number {
+        return this.jsonParseResult.commentCount;
+    }
+
+    public getMultilineStringCount(): number {
+        let count = 0;
+        this.visitAllReachableStringValues(jsonStringValue => {
+            if (jsonStringValue.unquotedValue.indexOf("\n") >= 0) {
+                ++count;
+            }
+        });
+
+        return count;
     }
 
     public get jsonParseResult(): Json.ParseResult {

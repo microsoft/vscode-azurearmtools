@@ -9,7 +9,7 @@ import * as assert from "assert";
 import { randomBytes } from "crypto";
 import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
 import { DefinitionKind, DeploymentTemplate, Histogram, INamedDefinition, IncorrectArgumentsCountIssue, IParameterDefinition, IVariableDefinition, Json, Language, ReferenceInVariableDefinitionsVisitor, ReferenceList, TemplateScope, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "../extension.bundle";
-import { sources, testDiagnostics } from "./support/diagnostics";
+import { IDeploymentTemplate, sources, testDiagnostics } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
 import { testWithLanguageServer } from "./support/testWithLanguageServer";
@@ -301,7 +301,8 @@ suite("DeploymentTemplate", () => {
 
         test("with one user function where function name matches a built-in function name", async () => {
             await parseTemplate(
-                {
+                // tslint:disable-next-line:no-any
+                <IDeploymentTemplate><any>{
                     "name": "[contoso.reference()]", // This is not a call to the built-in "reference" function
                     "functions": [
                         {
@@ -386,34 +387,36 @@ suite("DeploymentTemplate", () => {
         });
 
         test("Calling user function with name 'reference' okay in variables", async () => {
-            const template = {
-                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                "contentVersion": "1.0.0.0",
-                "functions": [
-                    {
-                        "namespace": "udf",
-                        "members": {
-                            "reference": {
-                                "output": {
-                                    "value": true,
-                                    "type": "BOOL"
+            const template =
+                // tslint:disable-next-line:no-any
+                <IDeploymentTemplate><any>{
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "functions": [
+                        {
+                            "namespace": "udf",
+                            "members": {
+                                "reference": {
+                                    "output": {
+                                        "value": true,
+                                        "type": "BOOL"
+                                    }
                                 }
                             }
                         }
+                    ],
+                    "resources": [
+                    ],
+                    "variables": {
+                        "v1": "[udf.reference()]"
+                    },
+                    "outputs": {
+                        "v1Output": {
+                            "type": "bool",
+                            "value": "[variables('v1')]"
+                        }
                     }
-                ],
-                "resources": [
-                ],
-                "variables": {
-                    "v1": "[udf.reference()]"
-                },
-                "outputs": {
-                    "v1Output": {
-                        "type": "bool",
-                        "value": "[variables('v1')]"
-                    }
-                }
-            };
+                };
 
             await parseTemplate(template, []);
         });
@@ -1398,4 +1401,121 @@ suite("DeploymentTemplate", () => {
             }
         });
     }); //Incomplete JSON shouldn't cause crash
+
+    suite("getMultilineStringCount", () => {
+        test("TLE strings", async () => {
+            const dt = await parseTemplate(`{
+                "abc": "[abc
+                def]",
+                "xyz": "[xyz
+                    qrs]"
+            }`);
+            assert.equal(dt.getMultilineStringCount(), 2);
+        });
+
+        test("JSON strings", async () => {
+            const dt = await parseTemplate(`{
+                "abc": "abc
+                def"
+            }`);
+            assert.equal(dt.getMultilineStringCount(), 1);
+        });
+
+        test("don't count escaped \\n, \\r", async () => {
+            const dt = await parseTemplate(`{
+                "abc": "abc\\r\\ndef"
+            }`);
+            assert.equal(dt.getMultilineStringCount(), 0);
+        });
+
+    });
+
+    suite("getMaxLineLength", () => {
+        test("getMaxLineLength", async () => {
+            const dt = await parseTemplate(`{
+//345678
+//345678901234567890
+//345
+}`);
+
+            const maxLineLength = dt.getMaxLineLength();
+
+            // Max line length isn't quite exact - it can also includes line break characters
+            assert(maxLineLength >= 20 && maxLineLength <= 20 + 2);
+        });
+    });
+
+    suite("getCommentsCount()", () => {
+        test("no comments", async () => {
+            // tslint:disable-next-line:no-any
+            const dt = await parseTemplate(<any>{
+                "$schema": "foo",
+                "contentVersion": "1.2.3 /*not a comment*/",
+                "whoever": "1.2.3 //not a comment"
+            });
+
+            assert.equal(dt.getCommentCount(), 0);
+        });
+
+        test("block comments", async () => {
+            // tslint:disable-next-line:no-any
+            const dt = await parseTemplate(`{
+                "$schema": "foo",
+                /* This is
+                    a comment */
+                "contentVersion": "1.2.3",
+                "whoever": "1.2.3" /* This is a comment */
+            }`);
+
+            assert.equal(dt.getCommentCount(), 2);
+        });
+
+        test("single-line comments", async () => {
+            // tslint:disable-next-line:no-any
+            const dt = await parseTemplate(`{
+                "$schema": "foo", // This is a comment
+                "contentVersion": "1.2.3", // Another comment
+                "whoever": "1.2.3" // This is a comment
+            }`);
+
+            assert.equal(dt.getCommentCount(), 3);
+        });
+    });
+
+    suite("apiProfile", () => {
+        test("no apiProfile", async () => {
+            const dt = await parseTemplate({
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
+            });
+            assert.equal(dt.apiProfile, null);
+        });
+
+        test("empty apiProfile", async () => {
+            const dt = await parseTemplate({
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                apiProfile: ""
+            });
+
+            assert.equal(dt.apiProfile, "");
+        });
+
+        test("non-string apiProfile", async () => {
+            // tslint:disable-next-line: no-any
+            const dt = await parseTemplate(<IDeploymentTemplate><any>{
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                apiProfile: false
+            });
+
+            assert.equal(dt.apiProfile, null);
+        });
+
+        test("valid apiProfile", async () => {
+            const dt = await parseTemplate({
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                "apiProfile": "2018–03-01-hybrid"
+            });
+
+            assert.equal(dt.apiProfile, "2018–03-01-hybrid");
+        });
+    });
 });
