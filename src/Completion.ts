@@ -6,7 +6,7 @@ import { IFunctionMetadata } from "./IFunctionMetadata";
 import { IParameterDefinition } from "./IParameterDefinition";
 import * as language from "./Language";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
-import { VariableDefinition } from "./VariableDefinition";
+import { IVariableDefinition } from "./VariableDefinition";
 
 /**
  * A completion item in the list of completion suggestions that appear when a user invokes auto-completion (Ctrl + Space).
@@ -80,7 +80,7 @@ export class Item {
             CompletionKind.Parameter);
     }
 
-    public static fromVariableDefinition(variable: VariableDefinition, replaceSpan: language.Span, includeRightParenthesisInCompletion: boolean): Item {
+    public static fromVariableDefinition(variable: IVariableDefinition, replaceSpan: language.Span, includeRightParenthesisInCompletion: boolean): Item {
         const variableName: string = `'${variable.nameValue.unquotedValue}'`;
         return new Item(
             variableName,

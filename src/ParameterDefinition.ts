@@ -5,10 +5,14 @@
 import { ExpressionType, toValidExpressionType } from './ExpressionType';
 import { assert } from './fixed_assert';
 import { IUsageInfo } from './Hover';
-import { DefinitionKind } from './INamedDefinition';
+import { DefinitionKind, INamedDefinition } from './INamedDefinition';
 import { IParameterDefinition } from './IParameterDefinition';
 import * as Json from "./JSON";
 import * as language from "./Language";
+
+export function isParameterDefinition(definition: INamedDefinition): definition is IParameterDefinition {
+    return definition.definitionKind === DefinitionKind.Parameter;
+}
 
 /**
  * This class represents the definition of a top-level parameter in a deployment template.
@@ -16,12 +20,12 @@ import * as language from "./Language";
 export class ParameterDefinition implements IParameterDefinition {
     public readonly definitionKind: DefinitionKind = DefinitionKind.Parameter;
 
-    constructor(private _property: Json.Property) {
+    constructor(private readonly _property: Json.Property) {
         assert(_property);
     }
 
     public get nameValue(): Json.StringValue {
-        return this._property.name;
+        return this._property.nameValue;
     }
 
     // tslint:disable-next-line:no-reserved-keywords

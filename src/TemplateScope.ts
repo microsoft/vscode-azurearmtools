@@ -9,7 +9,7 @@ import { IParameterDefinition } from "./IParameterDefinition";
 import * as TLE from "./TLE";
 import { UserFunctionDefinition } from './UserFunctionDefinition';
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
-import { VariableDefinition } from './VariableDefinition';
+import { IVariableDefinition } from './VariableDefinition';
 
 export enum ScopeContext {
     TopLevel = "TopLevel",
@@ -27,7 +27,7 @@ export class TemplateScope {
     constructor(
         public readonly scopeContext: ScopeContext,
         private readonly _parameterDefinitions: IParameterDefinition[] | undefined, // undefined means not supported in this context
-        private readonly _variableDefinitions: VariableDefinition[] | undefined, // undefined means not supported in this context
+        private readonly _variableDefinitions: IVariableDefinition[] | undefined, // undefined means not supported in this context
         private readonly _namespaceDefinitions: UserFunctionNamespaceDefinition[] | undefined, // undefined means not supported in this context
         // tslint:disable-next-line:variable-name
         public readonly __debugDisplay: string // Convenience for debugging
@@ -39,7 +39,7 @@ export class TemplateScope {
         return this._parameterDefinitions || [];
     }
 
-    public get variableDefinitions(): VariableDefinition[] {
+    public get variableDefinitions(): IVariableDefinition[] {
         // tslint:disable-next-line: strict-boolean-expressions
         return this._variableDefinitions || [];
     }
@@ -86,7 +86,7 @@ export class TemplateScope {
     }
 
     // variableName can be surrounded with single quotes or not.  Search is case-insensitive
-    public getVariableDefinition(variableName: string): VariableDefinition | null {
+    public getVariableDefinition(variableName: string): IVariableDefinition | null {
         assert(variableName, "variableName cannot be null, undefined, or empty");
 
         const unquotedVariableName = Utilities.unquote(variableName);
@@ -106,8 +106,8 @@ export class TemplateScope {
     /**
      * If the function call is a variables() reference, return the related variable definition
      */
-    public getVariableDefinitionFromFunctionCall(tleFunction: TLE.FunctionCallValue): VariableDefinition | null {
-        let result: VariableDefinition | null = null;
+    public getVariableDefinitionFromFunctionCall(tleFunction: TLE.FunctionCallValue): IVariableDefinition | null {
+        let result: IVariableDefinition | null = null;
 
         if (tleFunction.isCallToBuiltinWithName(templateKeys.variables)) {
             const variableName: TLE.StringValue | null = TLE.asStringValue(tleFunction.argumentExpressions[0]);
@@ -183,11 +183,11 @@ export class TemplateScope {
         return result;
     }
 
-    public findVariableDefinitionsWithPrefix(variableNamePrefix: string): VariableDefinition[] {
+    public findVariableDefinitionsWithPrefix(variableNamePrefix: string): IVariableDefinition[] {
         assert(variableNamePrefix !== null, "variableNamePrefix cannot be null");
         assert(variableNamePrefix !== undefined, "variableNamePrefix cannot be undefined");
 
-        let result: VariableDefinition[];
+        let result: IVariableDefinition[];
         if (variableNamePrefix) {
             result = [];
 

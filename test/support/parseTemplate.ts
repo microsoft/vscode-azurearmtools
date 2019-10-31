@@ -7,24 +7,12 @@ import { DeploymentTemplate } from "../../extension.bundle";
 import { Issue } from '../../src/Language';
 import { stringify } from "./stringify";
 
-export async function parseTemplate(template: string | {}, expected?: string[], options?: { ignoreWarnings: boolean }): Promise<DeploymentTemplate> {
-    const json = typeof template === "string" ? template : stringify(template);
-    const dt = new DeploymentTemplate(json, "id");
-
-    // Always run these even if not checking against expected, to verify nothing throws
-    const errors: Issue[] = await dt.errorsPromise;
-    const warnings: Issue[] = dt.warnings;
-    const errorMessages = errors.map(e => `Error: ${e.message}`);
-    const warningMessages = warnings.map(e => `Warning: ${e.message}`);
-
-    if (expected) {
-        let expectedMessages = errorMessages;
-        if (!options || !options.ignoreWarnings) {
-            expectedMessages = expectedMessages.concat(warningMessages);
-        }
-        assert.deepStrictEqual(expectedMessages, expected);
-    }
-
+/**
+ * Given a deployment template (string or object), parses it, optionally verifying expected diagnostic messages
+ */
+export async function parseTemplate(template: string | {}, expectedDiagnosticMessages?: string[], options?: { ignoreWarnings: boolean }): Promise<DeploymentTemplate> {
+    // Go ahead and allow markers in the document to be removed, we just won't mark them (makes it easier to share the same template in multiple places)
+    const { dt } = await parseTemplateWithMarkers(template, expectedDiagnosticMessages, options);
     return dt;
 }
 
@@ -43,11 +31,25 @@ interface Markers {
  */
 export async function parseTemplateWithMarkers(
     template: string | {},
-    expected?: string[],
+    expectedDiagnosticMessages?: string[],
     options?: { ignoreWarnings: boolean }
 ): Promise<{ dt: DeploymentTemplate; markers: Markers }> {
     const { text: templateWithoutMarkers, markers } = getDocumentMarkers(template);
-    const dt: DeploymentTemplate = await parseTemplate(templateWithoutMarkers, expected, options);
+    const dt: DeploymentTemplate = new DeploymentTemplate(templateWithoutMarkers, "parseTemplate() template");
+
+    // Always run these even if not checking against expected, to verify nothing throws
+    const errors: Issue[] = await dt.errorsPromise;
+    const warnings: Issue[] = dt.warnings;
+    const errorMessages = errors.map(e => `Error: ${e.message}`);
+    const warningMessages = warnings.map(e => `Warning: ${e.message}`);
+
+    if (expectedDiagnosticMessages) {
+        let expectedMessages = errorMessages;
+        if (!options || !options.ignoreWarnings) {
+            expectedMessages = expectedMessages.concat(warningMessages);
+        }
+        assert.deepStrictEqual(expectedMessages, expectedDiagnosticMessages);
+    }
 
     return { dt, markers };
 }
