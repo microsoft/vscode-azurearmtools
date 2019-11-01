@@ -11,16 +11,18 @@ import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import * as Completion from "./Completion";
-import { configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, languageId, outputWindowName } from "./constants";
+import { configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, languageId, outputWindowName, storageKeys } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
-import * as Hover from "./Hover";
+import * as Hover from './Hover';
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
+import * as Json from "./JSON";
 import * as language from "./Language";
 import { startArmLanguageServer, stopArmLanguageServer } from "./languageclient/startArmLanguageServer";
 import { PositionContext } from "./PositionContext";
-import * as Reference from "./ReferenceList";
+import { ReferenceList } from "./ReferenceList";
+import { getPreferredSchema } from "./schemas";
 import { getFunctionParamUsage } from "./signatureFormatting";
 import { Stopwatch } from "./Stopwatch";
 import { armDeploymentDocumentSelector, mightBeDeploymentTemplate } from "./supported";
@@ -117,6 +119,7 @@ export class AzureRMTools {
             actionContext.telemetry.properties.fileExt = path.extname(document.fileName);
 
             assert(document);
+            const editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
 
             const stopwatch = new Stopwatch();
             stopwatch.start();
@@ -162,6 +165,12 @@ export class AzureRMTools {
                         // Template for template opened
                         // tslint:disable-next-line: no-floating-promises // Don't wait
                         this.reportTemplateOpenedTelemetry(document, deploymentTemplate, stopwatch);
+
+                        // No guarantee that active editor is the one we're processing, ignore if not
+                        if (editor && editor.document === document) {
+                            // Are they using an older schema?  Ask to update.
+                            this.queryUseNewerSchema(editor, deploymentTemplate);
+                        }
                     }
 
                     this.reportDeploymentTemplateErrors(document, deploymentTemplate);
@@ -267,6 +276,80 @@ export class AzureRMTools {
 
             this._diagnosticsCollection.set(document.uri, diagnostics);
         });
+    }
+
+    private queryUseNewerSchema(editor: vscode.TextEditor, deploymentTemplate: DeploymentTemplate): void {
+        // tslint:disable-next-line: strict-boolean-expressions
+        const schemaValue: Json.StringValue | null = deploymentTemplate.schemaValue;
+        // tslint:disable-next-line: strict-boolean-expressions
+        const schemaUri: string | undefined = deploymentTemplate.schemaUri || undefined;
+        const preferredSchemaUri: string | undefined = schemaUri && getPreferredSchema(schemaUri);
+        const document = editor.document;
+        const documentUri = document.uri.toString();
+
+        if (preferredSchemaUri && schemaValue) {
+            // tslint:disable-next-line: no-floating-promises
+            callWithTelemetryAndErrorHandling('queryUpdateSchema', async (actionContext: IActionContext): Promise<void> => {
+                actionContext.telemetry.properties.currentSchema = schemaUri;
+                actionContext.telemetry.properties.preferredSchema = preferredSchemaUri;
+
+                // tslint:disable-next-line: strict-boolean-expressions
+                const dontAskFiles = ext.context.globalState.get<string[]>(storageKeys.dontAskAboutSchemaFiles) || [];
+                if (dontAskFiles.includes(documentUri)) {
+                    actionContext.telemetry.properties.isInDontAskList = 'true';
+                    return;
+                }
+
+                const yes: vscode.MessageItem = { title: "Use latest" };
+                const notNow: vscode.MessageItem = { title: "Not now" };
+                const neverForThisFile: vscode.MessageItem = { title: "Not for this file" };
+
+                const response = await ext.ui.showWarningMessage(
+                    `Would you like to use the latest schema for deployment template "${path.basename(document.uri.path)}" (note: some tools may be unable to process the latest schema)?`,
+                    {
+                        learnMoreLink: "https://aka.ms/vscode-azurearmtools-updateschema"
+                    },
+                    yes,
+                    notNow,
+                    neverForThisFile
+                );
+                actionContext.telemetry.properties.response = response.title;
+
+                switch (response.title) {
+                    case yes.title:
+                        await this.replaceSchema(editor, deploymentTemplate, schemaValue.unquotedValue, preferredSchemaUri);
+                        return;
+                    case notNow.title:
+                        return;
+                    case neverForThisFile.title:
+                        dontAskFiles.push(documentUri);
+                        await ext.context.globalState.update(storageKeys.dontAskAboutSchemaFiles, dontAskFiles);
+                        break;
+                    default:
+                        assert("queryAddSchema: Unexpected response");
+                        break;
+                }
+            });
+        }
+    }
+
+    private async  replaceSchema(editor: vscode.TextEditor, deploymentTemplate: DeploymentTemplate, previousSchema: string, newSchema: string): Promise<void> {
+        // The document might have changed since we asked, so find the $schema again
+        const currentTemplate = new DeploymentTemplate(editor.document.getText(), `current ${deploymentTemplate.documentId}`);
+        const currentSchemaValue: Json.StringValue | null = currentTemplate.schemaValue;
+        if (currentSchemaValue && currentSchemaValue.unquotedValue === previousSchema) {
+            const range = getVSCodeRangeFromSpan(currentTemplate, currentSchemaValue.unquotedSpan);
+            await editor.edit(edit => {
+                // Replace $schema value
+                edit.replace(range, newSchema);
+            });
+
+            // Select what we just replaced
+            editor.selection = new vscode.Selection(range.start, range.end);
+            editor.revealRange(range, vscode.TextEditorRevealType.Default);
+        } else {
+            throw new Error("The document has changed, the $schema was not replaced.");
+        }
     }
 
     private getCompletedDiagnostic(): vscode.Diagnostic | undefined {
@@ -546,7 +629,7 @@ export class AzureRMTools {
                 const locationUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
                 const positionContext: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
-                const references: Reference.ReferenceList | null = positionContext.getReferences();
+                const references: ReferenceList | null = positionContext.getReferences();
                 if (references && references.length > 0) {
                     actionContext.telemetry.properties.referenceType = references.kind;
 
@@ -600,7 +683,7 @@ export class AzureRMTools {
                 const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                const referenceList: Reference.ReferenceList | null = context.getReferences();
+                const referenceList: ReferenceList | null = context.getReferences();
                 if (referenceList) {
                     // When trying to rename a parameter or variable reference inside of a TLE, the
                     // textbox that pops up when you press F2 contains more than just the variable

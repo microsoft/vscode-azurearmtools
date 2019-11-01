@@ -33,6 +33,10 @@ export namespace configKeys {
     export const langServerPath = 'languageServer.path';
 }
 
+export namespace storageKeys {
+    export const dontAskAboutSchemaFiles = 'dontAskAboutSchemaFiles';
+}
+
 // For testing: We create a diagnostic with this message during testing to indicate when all (expression) diagnostics have been calculated
 export const diagnosticsCompletePrefix = "Diagnostics complete: ";
 export const expressionsDiagnosticsCompletionMessage = diagnosticsCompletePrefix + expressionsDiagnosticsSource;
