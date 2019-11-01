@@ -228,7 +228,7 @@ export class DeploymentTemplate {
                             // Can't call reference() inside variable definitions
                             for (const referenceSpan of referenceInVariablesFinder.referenceSpans) {
                                 parseErrors.push(
-                                    new language.Issue(referenceSpan, "reference() cannot be invoked inside of a variable definition."));
+                                    new language.Issue(referenceSpan, "reference() cannot be invoked inside of a variable definition.", language.IssueKind.referenceInVar));
                             }
                         }
                     }
@@ -261,7 +261,7 @@ export class DeploymentTemplate {
             const variableReferences: ReferenceList = this.findReferences(variableDefinition);
             if (variableReferences.length === 1) {
                 warnings.push(
-                    new language.Issue(variableDefinition.nameValue.span, `The variable '${variableDefinition.nameValue.toString()}' is never used.`));
+                    new language.Issue(variableDefinition.nameValue.span, `The variable '${variableDefinition.nameValue.toString()}' is never used.`, language.IssueKind.unusedVar));
             }
         }
 
@@ -277,7 +277,10 @@ export class DeploymentTemplate {
                 this.findReferences(parameterDefinition);
             if (parameterReferences.length === 1) {
                 warnings.push(
-                    new language.Issue(parameterDefinition.nameValue.span, `The parameter '${parameterDefinition.nameValue.toString()}' is never used.`));
+                    new language.Issue(
+                        parameterDefinition.nameValue.span,
+                        `The parameter '${parameterDefinition.nameValue.toString()}' is never used.`,
+                        language.IssueKind.unusedParam));
             }
         }
 
@@ -289,7 +292,10 @@ export class DeploymentTemplate {
                         this.findReferences(parameterDefinition);
                     if (parameterReferences.length === 1) {
                         warnings.push(
-                            new language.Issue(parameterDefinition.nameValue.span, `The parameter '${parameterDefinition.nameValue.toString()}' of function '${member.fullName}' is never used.`));
+                            new language.Issue(
+                                parameterDefinition.nameValue.span,
+                                `The parameter '${parameterDefinition.nameValue.toString()}' of function '${member.fullName}' is never used.`,
+                                language.IssueKind.unusedUdfParam));
                     }
                 }
             }
@@ -308,7 +314,10 @@ export class DeploymentTemplate {
                     this.findReferences(member);
                 if (userFuncReferences.length === 1) {
                     warnings.push(
-                        new language.Issue(member.nameValue.span, `The user-defined function '${member.fullName}' is never used.`));
+                        new language.Issue(
+                            member.nameValue.span,
+                            `The user-defined function '${member.fullName}' is never used.`,
+                            language.IssueKind.unusedUdf));
                 }
             }
         }

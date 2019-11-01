@@ -160,6 +160,7 @@ export class AzureRMTools {
                         }
 
                         // Template for template opened
+                        // tslint:disable-next-line: no-floating-promises // Don't wait
                         this.reportTemplateOpenedTelemetry(document, deploymentTemplate, stopwatch);
                     }
 
@@ -190,15 +191,25 @@ export class AzureRMTools {
         actionContext.telemetry.suppressIfSuccessful = false;
     }
 
-    private reportTemplateOpenedTelemetry(
+    private async reportTemplateOpenedTelemetry(
         document: vscode.TextDocument,
         deploymentTemplate: DeploymentTemplate,
         stopwatch: Stopwatch
-    ): void {
+    ): Promise<void> {
         // tslint:disable-next-line: restrict-plus-operands
         const functionsInEachNamespace = deploymentTemplate.topLevelScope.namespaceDefinitions.map(ns => ns.members.length);
         // tslint:disable-next-line: restrict-plus-operands
         const totalUserFunctionsCount = functionsInEachNamespace.reduce((sum, count) => sum + count, 0);
+
+        const issuesHistograph = new Histogram();
+        const errors = await deploymentTemplate.errorsPromise;
+        const warnings = deploymentTemplate.warnings;
+        for (const error of errors) {
+            issuesHistograph.add(`extErr:${error.kind}`);
+        }
+        for (const warning of deploymentTemplate.warnings) {
+            issuesHistograph.add(`extWarn:${warning.kind}`);
+        }
 
         ext.reporter.sendTelemetryEvent(
             "Deployment Template Opened",
@@ -208,7 +219,8 @@ export class AzureRMTools {
                 // tslint:disable-next-line: strict-boolean-expressions
                 schema: deploymentTemplate.schemaUri || "",
                 // tslint:disable-next-line: strict-boolean-expressions
-                apiProfile: deploymentTemplate.apiProfile || ""
+                apiProfile: deploymentTemplate.apiProfile || "",
+                issues: this.histogramToTelemetryString(issuesHistograph)
             },
             {
                 documentSizeInCharacters: document.getText().length,
@@ -220,7 +232,9 @@ export class AzureRMTools {
                 namespacesCount: deploymentTemplate.topLevelScope.namespaceDefinitions.length,
                 userFunctionsCount: totalUserFunctionsCount,
                 multilineStringCount: deploymentTemplate.getMultilineStringCount(),
-                commentCount: deploymentTemplate.getCommentCount()
+                commentCount: deploymentTemplate.getCommentCount(),
+                extErrorsCount: errors.length,
+                extWarnCount: warnings.length
             });
 
         this.logFunctionCounts(deploymentTemplate);

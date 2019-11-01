@@ -30,15 +30,25 @@ export class UndefinedParameterAndVariableVisitor extends TLE.Visitor {
         const quotedStringValue: string = tleString.token.stringValue;
 
         if (tleString.isParametersArgument() && !this._scope.getParameterDefinition(quotedStringValue)) {
-            this._errors.push(new language.Issue(tleString.token.span, `Undefined parameter reference: ${quotedStringValue}`));
+            this._errors.push(new language.Issue(
+                tleString.token.span,
+                `Undefined parameter reference: ${quotedStringValue}`,
+                language.IssueKind.undefinedParam));
         }
 
         if (tleString.isVariablesArgument()) {
             if (!this._scope.getVariableDefinition(quotedStringValue)) {
                 if (this._scope.isInUserFunction) {
-                    this._errors.push(new language.Issue(tleString.token.span, "User functions cannot reference variables"));
+                    this._errors.push(new language.Issue(
+                        tleString.token.span,
+                        "User functions cannot reference variables",
+                        language.IssueKind.varInUdf
+                    ));
                 } else {
-                    this._errors.push(new language.Issue(tleString.token.span, `Undefined variable reference: ${quotedStringValue}`));
+                    this._errors.push(new language.Issue(
+                        tleString.token.span,
+                        `Undefined variable reference: ${quotedStringValue}`,
+                        language.IssueKind.undefinedVar));
                 }
             }
         }

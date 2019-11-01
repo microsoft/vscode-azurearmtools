@@ -8,6 +8,8 @@
 import * as assert from "assert";
 import { Language } from "../extension.bundle";
 
+const IssueKind = Language.IssueKind;
+
 suite("Language", () => {
     suite("Span", () => {
         suite("constructor()", () => {
@@ -138,34 +140,34 @@ suite("Language", () => {
         suite("constructor(Span,string)", () => {
             test("With null span", () => {
                 // tslint:disable-next-line:no-any
-                assert.throws(() => { new Language.Issue(<any>null, "error message"); });
+                assert.throws(() => { new Language.Issue(<any>null, "error message", IssueKind.tleSyntax); });
             });
 
             test("With undefined span", () => {
                 // tslint:disable-next-line:no-any
-                assert.throws(() => { new Language.Issue(<any>undefined, "error message"); });
+                assert.throws(() => { new Language.Issue(<any>undefined, "error message", IssueKind.tleSyntax); });
             });
 
             test("With empty span", () => {
-                assert.throws(() => { new Language.Issue(new Language.Span(5, 0), "error message"); });
+                assert.throws(() => { new Language.Issue(new Language.Span(5, 0), "error message", IssueKind.tleSyntax); });
             });
 
             test("With null message", () => {
                 // tslint:disable-next-line:no-any
-                assert.throws(() => { new Language.Issue(new Language.Span(4, 1), <any>null); });
+                assert.throws(() => { new Language.Issue(new Language.Span(4, 1), <any>null, IssueKind.tleSyntax); });
             });
 
             test("With undefined message", () => {
                 // tslint:disable-next-line:no-any
-                assert.throws(() => { new Language.Issue(new Language.Span(4, 1), <any>undefined); });
+                assert.throws(() => { new Language.Issue(new Language.Span(4, 1), <any>undefined, IssueKind.tleSyntax); });
             });
 
             test("With empty message", () => {
-                assert.throws(() => { new Language.Issue(new Language.Span(3, 2), ""); });
+                assert.throws(() => { new Language.Issue(new Language.Span(3, 2), "", IssueKind.tleSyntax); });
             });
 
             test("With valid arguments", () => {
-                const issue = new Language.Issue(new Language.Span(2, 4), "error message");
+                const issue = new Language.Issue(new Language.Span(2, 4), "error message", IssueKind.tleSyntax);
                 assert.deepStrictEqual(issue.span, new Language.Span(2, 4));
                 assert.deepStrictEqual(issue.message, "error message");
             });
