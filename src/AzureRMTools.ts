@@ -162,7 +162,7 @@ export class AzureRMTools {
                             return;
                         }
 
-                        // Template for template opened
+                        // Telemetry for template opened
                         // tslint:disable-next-line: no-floating-promises // Don't wait
                         this.reportTemplateOpenedTelemetry(document, deploymentTemplate, stopwatch);
 
