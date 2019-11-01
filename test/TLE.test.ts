@@ -11,6 +11,9 @@ import { assertNotNull } from "./support/assertNotNull";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 
+const IssueKind = Language.IssueKind;
+const tleSyntax = IssueKind.tleSyntax;
+
 suite("TLE", () => {
     const emptyScope = new TemplateScope(ScopeContext.TopLevel, [], [], [], "empty scope");
 
@@ -449,7 +452,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(
                     visitor.errors,
                     [
-                        new Language.Issue(new Language.Span(17, 2), "Undefined parameter reference: ''")
+                        new Language.Issue(new Language.Span(17, 2), "Undefined parameter reference: ''", IssueKind.undefinedParam)
                     ]
                 );
             });
@@ -473,7 +476,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(
                     visitor.errors,
                     [
-                        new Language.Issue(new Language.Span(17, 2), "Undefined variable reference: ''")
+                        new Language.Issue(new Language.Span(17, 2), "Undefined variable reference: ''", IssueKind.undefinedVar)
                     ]
                 );
             });
@@ -531,8 +534,8 @@ suite("TLE", () => {
                 assert.equal(null, pr.rightSquareBracketToken);
                 assert.deepStrictEqual(
                     [
-                        new Language.Issue(new Language.Span(2, 1), "Expected a right square bracket (']')."),
-                        new Language.Issue(new Language.Span(1, 1), "Expected a function or property expression.")
+                        new Language.Issue(new Language.Span(2, 1), "Expected a right square bracket (']').", tleSyntax),
+                        new Language.Issue(new Language.Span(1, 1), "Expected a function or property expression.", tleSyntax)
                     ],
                     pr.errors);
             });
@@ -577,7 +580,7 @@ suite("TLE", () => {
                 assert.equal(null, pr.expression);
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(2), pr.rightSquareBracketToken);
                 assert.deepStrictEqual(
-                    [new Language.Issue(new Language.Span(1, 2), "Expected a function or property expression.")],
+                    [new Language.Issue(new Language.Span(1, 2), "Expected a function or property expression.", tleSyntax)],
                     pr.errors);
             });
 
@@ -588,7 +591,7 @@ suite("TLE", () => {
                 assert.equal(null, pr.expression);
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(4), pr.rightSquareBracketToken);
                 assert.deepStrictEqual(
-                    [new Language.Issue(new Language.Span(3, 2), "Expected a function or property expression.")],
+                    [new Language.Issue(new Language.Span(3, 2), "Expected a function or property expression.", tleSyntax)],
                     pr.errors);
             });
 
@@ -599,7 +602,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(null, pr.expression);
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(6), pr.rightSquareBracketToken);
                 assert.deepStrictEqual(
-                    [new Language.Issue(new Language.Span(1, 6), "Expected a function or property expression.")],
+                    [new Language.Issue(new Language.Span(1, 6), "Expected a function or property expression.", tleSyntax)],
                     pr.errors);
             });
 
@@ -622,8 +625,8 @@ suite("TLE", () => {
                 assert.equal(null, pr.rightSquareBracketToken);
                 assert.deepStrictEqual(
                     [
-                        new Language.Issue(new Language.Span(2, 6), "Missing function argument list."),
-                        new Language.Issue(new Language.Span(8, 1), "Expected a right square bracket (']').")
+                        new Language.Issue(new Language.Span(2, 6), "Missing function argument list.", tleSyntax),
+                        new Language.Issue(new Language.Span(8, 1), "Expected a right square bracket (']').", tleSyntax)
                     ],
                     pr.errors);
             });
@@ -636,9 +639,9 @@ suite("TLE", () => {
                 assert.equal(null, pr.rightSquareBracketToken);
                 assert.deepStrictEqual(
                     [
-                        new Language.Issue(new Language.Span(8, 1), "Expected user-defined function name."),
-                        new Language.Issue(new Language.Span(2, 6), "Missing function argument list."),
-                        new Language.Issue(new Language.Span(9, 1), "Expected a right square bracket (']').")
+                        new Language.Issue(new Language.Span(8, 1), "Expected user-defined function name.", tleSyntax),
+                        new Language.Issue(new Language.Span(2, 6), "Missing function argument list.", tleSyntax),
+                        new Language.Issue(new Language.Span(9, 1), "Expected a right square bracket (']').", tleSyntax)
                     ],
                     pr.errors);
             });
@@ -650,7 +653,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(new TLE.FunctionCallValue(null, null, TLE.Token.createLiteral(2, "concat"), null, [], [], null, pr.scope), pr.expression);
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(8), pr.rightSquareBracketToken);
                 assert.deepStrictEqual(
-                    [new Language.Issue(new Language.Span(2, 6), "Missing function argument list.")],
+                    [new Language.Issue(new Language.Span(2, 6), "Missing function argument list.", tleSyntax)],
                     pr.errors);
             });
 
@@ -672,8 +675,8 @@ suite("TLE", () => {
                 assert.equal(null, pr.rightSquareBracketToken);
                 assert.deepStrictEqual(
                     [
-                        new Language.Issue(new Language.Span(9, 1), "Expected a right parenthesis (')')."),
-                        new Language.Issue(new Language.Span(10, 1), "Expected a right square bracket (']').")
+                        new Language.Issue(new Language.Span(9, 1), "Expected a right parenthesis (')').", tleSyntax),
+                        new Language.Issue(new Language.Span(10, 1), "Expected a right square bracket (']').", tleSyntax)
                     ],
                     pr.errors);
             });
@@ -695,7 +698,7 @@ suite("TLE", () => {
                     pr.expression);
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(10), pr.rightSquareBracketToken);
                 assert.deepStrictEqual(
-                    [new Language.Issue(new Language.Span(10, 1), "Expected a right parenthesis (')').")],
+                    [new Language.Issue(new Language.Span(10, 1), "Expected a right parenthesis (')').", tleSyntax)],
                     pr.errors);
             });
 
@@ -717,8 +720,8 @@ suite("TLE", () => {
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(9), pr.rightSquareBracketToken);
                 assert.deepStrictEqual(
                     [
-                        new Language.Issue(new Language.Span(8, 1), "Expected the end of the string."),
-                        new Language.Issue(new Language.Span(2, 6), "Missing function argument list."),
+                        new Language.Issue(new Language.Span(8, 1), "Expected the end of the string.", tleSyntax),
+                        new Language.Issue(new Language.Span(2, 6), "Missing function argument list.", tleSyntax),
                     ],
                     pr.errors);
             });
@@ -800,7 +803,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(null, pr.rightSquareBracketToken);
                 assert.deepStrictEqual(
                     [
-                        new Language.Issue(new Language.Span(9, 1), "Expected a right square bracket (']').")
+                        new Language.Issue(new Language.Span(9, 1), "Expected a right square bracket (']').", tleSyntax)
                     ],
                     pr.errors);
             });
@@ -823,7 +826,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(null, pr.rightSquareBracketToken);
                 assert.deepStrictEqual(
                     [
-                        new Language.Issue(new Language.Span(10, 1), "Expected a right square bracket (']').")
+                        new Language.Issue(new Language.Span(10, 1), "Expected a right square bracket (']').", tleSyntax)
                     ],
                     pr.errors);
             });
@@ -877,7 +880,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(
                     pr.errors,
                     [
-                        new Language.Issue(new Language.Span(16, 1), "Expected a constant string, function, or property expression.")
+                        new Language.Issue(new Language.Span(16, 1), "Expected a constant string, function, or property expression.", tleSyntax)
                     ]);
 
                 const concat: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(pr.expression);
@@ -908,7 +911,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(
                     pr.errors,
                     [
-                        new Language.Issue(new Language.Span(9, 1), "Expected a constant string, function, or property expression.")
+                        new Language.Issue(new Language.Span(9, 1), "Expected a constant string, function, or property expression.", tleSyntax)
                     ]);
 
                 const concat: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(pr.expression);
@@ -939,8 +942,8 @@ suite("TLE", () => {
                 assert.deepStrictEqual(
                     pr.errors,
                     [
-                        new Language.Issue(new Language.Span(13, 1), "Expected a constant string, function, or property expression."),
-                        new Language.Issue(new Language.Span(13, 1), "Expected a right square bracket (']').")
+                        new Language.Issue(new Language.Span(13, 1), "Expected a constant string, function, or property expression.", tleSyntax),
+                        new Language.Issue(new Language.Span(13, 1), "Expected a right square bracket (']').", tleSyntax)
                     ]);
 
                 const concat: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(pr.expression);
@@ -985,9 +988,9 @@ suite("TLE", () => {
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(12), pr.rightSquareBracketToken);
                 assert.deepStrictEqual(
                     [
-                        new Language.Issue(new Language.Span(9, 1), "Expected a constant string, function, or property expression."),
-                        new Language.Issue(new Language.Span(10, 1), "Expected a constant string, function, or property expression."),
-                        new Language.Issue(new Language.Span(11, 1), "Expected a constant string, function, or property expression.")
+                        new Language.Issue(new Language.Span(9, 1), "Expected a constant string, function, or property expression.", tleSyntax),
+                        new Language.Issue(new Language.Span(10, 1), "Expected a constant string, function, or property expression.", tleSyntax),
+                        new Language.Issue(new Language.Span(11, 1), "Expected a constant string, function, or property expression.", tleSyntax)
                     ],
                     pr.errors);
             });
@@ -1113,8 +1116,8 @@ suite("TLE", () => {
                 assert.deepStrictEqual(
                     pr.errors,
                     [
-                        new Language.Issue(new Language.Span(9, 3), "A constant string is missing an end quote."),
-                        new Language.Issue(new Language.Span(12, 1), "Expected a right square bracket (']').")
+                        new Language.Issue(new Language.Span(9, 3), "A constant string is missing an end quote.", tleSyntax),
+                        new Language.Issue(new Language.Span(12, 1), "Expected a right square bracket (']').", tleSyntax)
                     ]);
 
                 const concat: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(pr.expression);
@@ -1139,7 +1142,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(
                     pr.errors,
                     [
-                        new Language.Issue(new Language.Span(16, 2), "Expected a comma (',')."),
+                        new Language.Issue(new Language.Span(16, 2), "Expected a comma (',').", tleSyntax),
                     ]);
 
                 const concat: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(pr.expression);
@@ -1164,8 +1167,8 @@ suite("TLE", () => {
                 assert.deepStrictEqual(
                     pr.errors,
                     [
-                        new Language.Issue(new Language.Span(16, 2), "Expected a comma (',')."),
-                        new Language.Issue(new Language.Span(18, 7), "Expected a comma (',')."),
+                        new Language.Issue(new Language.Span(16, 2), "Expected a comma (',').", tleSyntax),
+                        new Language.Issue(new Language.Span(18, 7), "Expected a comma (',').", tleSyntax),
                     ]);
 
                 const concat: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(pr.expression);
@@ -1220,7 +1223,7 @@ suite("TLE", () => {
                         pr.scope),
                     pr.expression);
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(21), pr.rightSquareBracketToken);
-                assert.deepStrictEqual([new Language.Issue(new Language.Span(17, 4), "Expected the end of the string.")], pr.errors);
+                assert.deepStrictEqual([new Language.Issue(new Language.Span(17, 4), "Expected the end of the string.", tleSyntax)], pr.errors);
             });
 
             test("with quoted string instead of literal for property access", () => {
@@ -1231,7 +1234,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(
                     pr.errors,
                     [
-                        new Language.Issue(new Language.Span(18, 6), "Expected a literal value.")
+                        new Language.Issue(new Language.Span(18, 6), "Expected a literal value.", tleSyntax)
                     ]);
 
                 const propertyAccess: TLE.PropertyAccess | null = TLE.asPropertyAccessValue(pr.expression);
@@ -1257,7 +1260,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(
                     pr.errors,
                     [
-                        new Language.Issue(new Language.Span(18, 1), "Expected a literal value.")
+                        new Language.Issue(new Language.Span(18, 1), "Expected a literal value.", tleSyntax)
                     ]);
 
                 const propertyAccess: TLE.PropertyAccess | null = TLE.asPropertyAccessValue(pr.expression);
@@ -1426,7 +1429,7 @@ suite("TLE", () => {
                         pr.scope),
                     pr.expression);
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(16), pr.rightSquareBracketToken);
-                assert.deepStrictEqual([new Language.Issue(new Language.Span(9, 7), "Expected the end of the string.")], pr.errors);
+                assert.deepStrictEqual([new Language.Issue(new Language.Span(9, 7), "Expected the end of the string.", tleSyntax)], pr.errors);
             });
 
             test("with function after string", () => {
@@ -1445,7 +1448,7 @@ suite("TLE", () => {
                         pr.scope),
                     pr.expression);
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(16), pr.rightSquareBracketToken);
-                assert.deepStrictEqual([new Language.Issue(new Language.Span(7, 7), "Expected the end of the string.")], pr.errors);
+                assert.deepStrictEqual([new Language.Issue(new Language.Span(7, 7), "Expected the end of the string.", tleSyntax)], pr.errors);
             });
 
             test("with string followed by literal", () => {
@@ -1466,8 +1469,8 @@ suite("TLE", () => {
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(14), pr.rightSquareBracketToken);
                 assert.deepStrictEqual(
                     [
-                        new Language.Issue(new Language.Span(2, 7), "Expected a literal value."),
-                        new Language.Issue(new Language.Span(9, 5), "Missing function argument list."),
+                        new Language.Issue(new Language.Span(2, 7), "Expected a literal value.", tleSyntax),
+                        new Language.Issue(new Language.Span(9, 5), "Missing function argument list.", tleSyntax),
                     ],
                     pr.errors);
             });
@@ -1490,8 +1493,8 @@ suite("TLE", () => {
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(14), pr.rightSquareBracketToken);
                 assert.deepStrictEqual(
                     [
-                        new Language.Issue(new Language.Span(7, 7), "Expected the end of the string."),
-                        new Language.Issue(new Language.Span(2, 5), "Missing function argument list."),
+                        new Language.Issue(new Language.Span(7, 7), "Expected the end of the string.", tleSyntax),
+                        new Language.Issue(new Language.Span(2, 5), "Missing function argument list.", tleSyntax),
                     ],
                     pr.errors);
             });
@@ -1501,9 +1504,9 @@ suite("TLE", () => {
                 assert.deepStrictEqual(
                     pr.errors,
                     [
-                        new Language.Issue(new Language.Span(116, 1), "Nothing should exist after the closing ']' except for whitespace."),
-                        new Language.Issue(new Language.Span(118, 1), "Nothing should exist after the closing ']' except for whitespace."),
-                        new Language.Issue(new Language.Span(119, 1), "Nothing should exist after the closing ']' except for whitespace.")
+                        new Language.Issue(new Language.Span(116, 1), "Nothing should exist after the closing ']' except for whitespace.", tleSyntax),
+                        new Language.Issue(new Language.Span(118, 1), "Nothing should exist after the closing ']' except for whitespace.", tleSyntax),
+                        new Language.Issue(new Language.Span(119, 1), "Nothing should exist after the closing ']' except for whitespace.", tleSyntax)
                     ]);
             });
         });
@@ -2181,7 +2184,7 @@ suite("TLE", () => {
                 const visitor = UndefinedVariablePropertyVisitor.visit(context.tleInfo!.tleValue, dt.topLevelScope);
                 assert.deepStrictEqual(
                     visitor.errors,
-                    [new Language.Issue(new Language.Span(18, 6), `Property "apples" is not a defined property of "variables('v1')".`)]);
+                    [new Language.Issue(new Language.Span(18, 6), `Property "apples" is not a defined property of "variables('v1')".`, IssueKind.undefinedVarProp)]);
             });
 
             test("with grandchild property access from variable reference to non-object variable", () => {
@@ -2190,7 +2193,7 @@ suite("TLE", () => {
                 const visitor = UndefinedVariablePropertyVisitor.visit(context.tleInfo!.tleValue, dt.topLevelScope);
                 assert.deepStrictEqual(
                     visitor.errors,
-                    [new Language.Issue(new Language.Span(18, 6), `Property "apples" is not a defined property of "variables('v1')".`)]);
+                    [new Language.Issue(new Language.Span(18, 6), `Property "apples" is not a defined property of "variables('v1')".`, IssueKind.undefinedVarProp)]);
             });
         });
     });

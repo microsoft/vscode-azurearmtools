@@ -15,6 +15,8 @@ import { parseTemplateWithMarkers } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
 import { allTestDataCompletionNames, allTestDataExpectedCompletions, expectedConcatCompletion, expectedCopyIndexCompletion, expectedPadLeftCompletion, expectedParametersCompletion, expectedProvidersCompletion, expectedReferenceCompletion, expectedReplaceCompletion, expectedResourceGroupCompletion, expectedResourceIdCompletion, expectedSkipCompletion, expectedSplitCompletion, expectedStringCompletion, expectedSubCompletion, expectedSubscriptionCompletion, expectedSubstringCompletion, expectedVariablesCompletion, parameterCompletion, propertyCompletion, variableCompletion } from "./TestData";
 
+const IssueKind = Language.IssueKind;
+
 suite("PositionContext", () => {
     suite("fromDocumentLineAndColumnIndexes(DeploymentTemplate,number,number)", () => {
         test("with null deploymentTemplate", () => {
@@ -241,7 +243,7 @@ suite("PositionContext", () => {
             assert.deepStrictEqual(
                 tleParseResult.errors,
                 [
-                    new Language.Issue(new Language.Span(11, 1), "Expected a right square bracket (']').")
+                    new Language.Issue(new Language.Span(11, 1), "Expected a right square bracket (']').", IssueKind.tleSyntax)
                 ]);
             assert.deepStrictEqual(tleParseResult.leftSquareBracketToken, TLE.Token.createLeftSquareBracket(1));
             assert.deepStrictEqual(tleParseResult.rightSquareBracketToken, null);

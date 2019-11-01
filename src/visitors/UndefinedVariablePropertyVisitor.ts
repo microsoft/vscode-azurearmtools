@@ -46,7 +46,10 @@ export class UndefinedVariablePropertyVisitor extends Visitor {
         const propertyName: string = nameToken ? nameToken.stringValue : "(unknown)";
         const sourceString: string = tlePropertyAccess.source.toString();
         const span = nameToken ? nameToken.span : tlePropertyAccess.getSpan();
-        this._errors.push(new language.Issue(span, `Property "${propertyName}" is not a defined property of "${sourceString}".`));
+        this._errors.push(new language.Issue(
+            span,
+            `Property "${propertyName}" is not a defined property of "${sourceString}".`,
+            language.IssueKind.undefinedVarProp));
     }
     public static visit(tleValue: Value | null, scope: TemplateScope): UndefinedVariablePropertyVisitor {
         const visitor = new UndefinedVariablePropertyVisitor(scope);

@@ -123,11 +123,29 @@ export class Position {
     }
 }
 
+export enum IssueKind {
+    tleSyntax = "tleSyntax",
+    referenceInVar = "referenceInVar",
+    unusedVar = "unusedVar",
+    unusedParam = "unusedParam",
+    unusedUdfParam = "unusedUdfParam",
+    unusedUdf = "unusedUdf",
+    badArgsCount = "badArgsCount",
+    badFuncContext = "badFuncContext",
+    undefinedFunc = "undefinedFunc",
+    undefinedNs = "undefinedNs",
+    undefinedUdf = "undefinedUdf",
+    undefinedParam = "undefinedParam",
+    undefinedVar = "undefinedVar",
+    varInUdf = "varInUdf",
+    undefinedVarProp = "undefinedVarProp"
+}
+
 /**
  * An issue that was detected while parsing a deployment template.
  */
 export class Issue {
-    constructor(private _span: Span, private _message: string) {
+    constructor(private _span: Span, private _message: string, public kind: IssueKind) {
         assert(_span !== null, "_span must not be null.");
         assert(_span !== undefined, "_span must not be undefined.");
         assert(1 <= _span.length, "_span's length must be greater than or equal to 1.");
@@ -145,6 +163,6 @@ export class Issue {
     }
 
     public translate(movement: number): Issue {
-        return new Issue(this._span.translate(movement), this._message);
+        return new Issue(this._span.translate(movement), this._message, this.kind);
     }
 }

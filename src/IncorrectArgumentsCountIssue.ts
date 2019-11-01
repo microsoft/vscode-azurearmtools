@@ -16,7 +16,7 @@ export class IncorrectArgumentsCountIssue extends language.Issue {
         private _minExpectedCount: number,
         private _maxExpectedCount: number
     ) {
-        super(span, message);
+        super(span, message, language.IssueKind.badArgsCount);
     }
 
     public translate(movement: number): language.Issue {

@@ -20,6 +20,8 @@ import { TemplateScope } from "./TemplateScope";
 import * as basic from "./Tokenizer";
 import * as Utilities from "./Utilities";
 
+const tleSyntax: language.IssueKind = language.IssueKind.tleSyntax;
+
 export function asStringValue(value: Value | null): StringValue | null {
     return value instanceof StringValue ? value : null;
 }
@@ -731,7 +733,7 @@ export class Parser {
                     && tokenizer.current.getType() !== TokenType.Literal
                     && tokenizer.current.getType() !== TokenType.RightSquareBracket
                 ) {
-                    errors.push(new language.Issue(tokenizer.current.span, "Expected a literal value."));
+                    errors.push(new language.Issue(tokenizer.current.span, "Expected a literal value.", tleSyntax));
                     tokenizer.next();
                 }
 
@@ -743,18 +745,18 @@ export class Parser {
                         tokenizer.next();
                         break;
                     } else {
-                        errors.push(new language.Issue(tokenizer.current.span, "Expected the end of the string."));
+                        errors.push(new language.Issue(tokenizer.current.span, "Expected the end of the string.", tleSyntax));
                         tokenizer.next();
                     }
                 }
 
                 if (rightSquareBracketToken !== null) {
                     while (<Token | null>tokenizer.current) {
-                        errors.push(new language.Issue(tokenizer.current.span, "Nothing should exist after the closing ']' except for whitespace."));
+                        errors.push(new language.Issue(tokenizer.current.span, "Nothing should exist after the closing ']' except for whitespace.", tleSyntax));
                         tokenizer.next();
                     }
                 } else {
-                    errors.push(new language.Issue(new language.Span(quotedStringValue.length - 1, 1), "Expected a right square bracket (']')."));
+                    errors.push(new language.Issue(new language.Span(quotedStringValue.length - 1, 1), "Expected a right square bracket (']').", tleSyntax));
                 }
 
                 if (expression === null) {
@@ -762,7 +764,7 @@ export class Parser {
                     if (rightSquareBracketToken !== null) {
                         errorSpan = errorSpan.union(rightSquareBracketToken.span);
                     }
-                    errors.push(new language.Issue(errorSpan, "Expected a function or property expression."));
+                    errors.push(new language.Issue(errorSpan, "Expected a function or property expression.", tleSyntax));
                 }
             }
         }
@@ -781,7 +783,7 @@ export class Parser {
                 rootExpression = Parser.parseFunctionCall(tokenizer, scope, errors);
             } else if (tokenType === TokenType.QuotedString) {
                 if (!token.stringValue.endsWith(token.stringValue[0])) {
-                    errors.push(new language.Issue(token.span, "A constant string is missing an end quote."));
+                    errors.push(new language.Issue(token.span, "A constant string is missing an end quote.", tleSyntax));
                 }
                 rootExpression = new StringValue(token);
                 tokenizer.next();
@@ -789,7 +791,7 @@ export class Parser {
                 rootExpression = new NumberValue(token);
                 tokenizer.next();
             } else if (tokenType !== TokenType.RightSquareBracket && tokenType !== TokenType.Comma) {
-                errors.push(new language.Issue(token.span, "Template language expressions must start with a function."));
+                errors.push(new language.Issue(token.span, "Template language expressions must start with a function.", tleSyntax));
                 tokenizer.next();
             }
 
@@ -833,7 +835,7 @@ export class Parser {
                 if (propertyNameToken === null) {
                     assert(errorSpan);
                     // tslint:disable-next-line: no-non-null-assertion // Asserted
-                    errors.push(new language.Issue(errorSpan!, "Expected a literal value."));
+                    errors.push(new language.Issue(errorSpan!, "Expected a literal value.", tleSyntax));
                 }
 
                 // We go ahead and create a property access expresion whether the property name
@@ -888,7 +890,7 @@ export class Parser {
                 nameToken = tokenizer.current;
                 tokenizer.next();
             } else {
-                errors.push(new language.Issue(periodToken.span, "Expected user-defined function name."));
+                errors.push(new language.Issue(periodToken.span, "Expected user-defined function name.", tleSyntax));
             }
         } else {
             nameToken = firstToken;
@@ -908,15 +910,15 @@ export class Parser {
                     break;
                 } else if (tokenizer.current.getType() === TokenType.RightSquareBracket) {
                     // tslint:disable-next-line: strict-boolean-expressions
-                    errors.push(new language.Issue(getFullNameSpan(), "Missing function argument list."));
+                    errors.push(new language.Issue(getFullNameSpan(), "Missing function argument list.", tleSyntax));
                     break;
                 } else {
-                    errors.push(new language.Issue(tokenizer.current.span, "Expected the end of the string."));
+                    errors.push(new language.Issue(tokenizer.current.span, "Expected the end of the string.", tleSyntax));
                     tokenizer.next();
                 }
             }
         } else {
-            errors.push(new language.Issue(getFullNameSpan(), "Missing function argument list."));
+            errors.push(new language.Issue(getFullNameSpan(), "Missing function argument list.", tleSyntax));
         }
 
         if (tokenizer.hasCurrent()) {
@@ -928,7 +930,7 @@ export class Parser {
                 } else if (expectingArgument) {
                     let expression = Parser.parseExpression(tokenizer, scope, errors);
                     if (expression === null && tokenizer.hasCurrent() && tokenizer.current.getType() === TokenType.Comma) {
-                        errors.push(new language.Issue(tokenizer.current.span, "Expected a constant string, function, or property expression."));
+                        errors.push(new language.Issue(tokenizer.current.span, "Expected a constant string, function, or property expression.", tleSyntax));
                     }
                     argumentExpressions.push(expression);
                     expectingArgument = false;
@@ -937,7 +939,7 @@ export class Parser {
                     commaTokens.push(tokenizer.current);
                     tokenizer.next();
                 } else {
-                    errors.push(new language.Issue(tokenizer.current.span, "Expected a comma (',')."));
+                    errors.push(new language.Issue(tokenizer.current.span, "Expected a comma (',').", tleSyntax));
                     tokenizer.next();
                 }
             }
@@ -952,10 +954,10 @@ export class Parser {
 
                     errorSpan = commaTokens[commaTokens.length - 1].span;
                 }
-                errors.push(new language.Issue(errorSpan, "Expected a constant string, function, or property expression."));
+                errors.push(new language.Issue(errorSpan, "Expected a constant string, function, or property expression.", tleSyntax));
             }
         } else if (leftParenthesisToken !== null) {
-            errors.push(new language.Issue(leftParenthesisToken.span, "Expected a right parenthesis (')')."));
+            errors.push(new language.Issue(leftParenthesisToken.span, "Expected a right parenthesis (')').", tleSyntax));
         }
 
         if (tokenizer.current) {
@@ -967,7 +969,7 @@ export class Parser {
 
                 case TokenType.RightSquareBracket:
                     if (leftParenthesisToken !== null) {
-                        errors.push(new language.Issue(tokenizer.current.span, "Expected a right parenthesis (')')."));
+                        errors.push(new language.Issue(tokenizer.current.span, "Expected a right parenthesis (')').", tleSyntax));
                     }
                     break;
             }

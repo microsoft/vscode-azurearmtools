@@ -6,7 +6,7 @@ import * as language from "./Language";
 
 export class InvalidFunctionContextIssue extends language.Issue {
     constructor(span: language.Span, private _functionName: string, message: string) {
-        super(span, `Cannot use '${_functionName}' in this context.`);
+        super(span, `Cannot use '${_functionName}' in this context.`, language.IssueKind.badFuncContext);
     }
 
     public translate(movement: number): language.Issue {
