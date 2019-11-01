@@ -4,6 +4,10 @@
 
 // Support for testing diagnostics in vscode
 
+// WARNING: At the breakpoint, the extension will be in an inactivate state (i.e., if you make changes in the editor, diagnostics,
+//   formatting, etc. will not be updated until you F5 again)
+const DEBUG_BREAK_AFTER_DIAGNOSTICS_COMPLETE = false;
+
 // tslint:disable:no-unused-expression no-console no-string-based-set-timeout
 // tslint:disable:insecure-random max-func-body-length radix prefer-template
 // tslint:disable:object-literal-key-quotes no-http-string non-literal-fs-path
@@ -248,10 +252,14 @@ export async function getDiagnosticsForDocument(
     let diagnostics = await diagnosticsPromise;
     assert(diagnostics);
 
-    // ************* BREAKPOINT HERE TO INSPECT THE TEST FILE WITH DIAGNOSTICS IN THE VSCODE EDITOR
-    //
-    // But note: If you edit the template in the experimental instance, it won't update errors because
-    //   the debugger is paused.
+    if (DEBUG_BREAK_AFTER_DIAGNOSTICS_COMPLETE) {
+        // tslint:disable-next-line:no-debugger
+        debugger;
+        // ************* BREAKPOINT HERE TO INSPECT THE TEST FILE WITH DIAGNOSTICS IN THE VSCODE EDITOR
+        //
+        // But note: If you edit the template in the experimental instance, it won't update errors because
+        //   the debugger is paused.
+    }
 
     if (dispose) {
         dispose.dispose();
