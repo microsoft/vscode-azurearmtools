@@ -265,19 +265,24 @@ export class AzureRMTools {
     }
 
     private queryUseNewerSchema(editor: vscode.TextEditor, deploymentTemplate: DeploymentTemplate): void {
-        // tslint:disable-next-line: strict-boolean-expressions
         const schemaValue: Json.StringValue | null = deploymentTemplate.schemaValue;
         // tslint:disable-next-line: strict-boolean-expressions
         const schemaUri: string | undefined = deploymentTemplate.schemaUri || undefined;
         const preferredSchemaUri: string | undefined = schemaUri && getPreferredSchema(schemaUri);
         const document = editor.document;
         const documentUri = document.uri.toString();
+        const checkForLatestSchema = !!vscode.workspace.getConfiguration(configPrefix).get<boolean>(configKeys.checkForLatestSchema);
 
         if (preferredSchemaUri && schemaValue) {
-            // tslint:disable-next-line: no-floating-promises
+            // tslint:disable-next-line: no-floating-promises // Don't wait
             callWithTelemetryAndErrorHandling('queryUpdateSchema', async (actionContext: IActionContext): Promise<void> => {
                 actionContext.telemetry.properties.currentSchema = schemaUri;
                 actionContext.telemetry.properties.preferredSchema = preferredSchemaUri;
+                actionContext.telemetry.properties.checkForLatestSchema = String(checkForLatestSchema);
+
+                if (!checkForLatestSchema) {
+                    return;
+                }
 
                 // tslint:disable-next-line: strict-boolean-expressions
                 const dontAskFiles = ext.context.globalState.get<string[]>(storageKeys.dontAskAboutSchemaFiles) || [];
@@ -304,6 +309,7 @@ export class AzureRMTools {
                 switch (response.title) {
                     case yes.title:
                         await this.replaceSchema(editor, deploymentTemplate, schemaValue.unquotedValue, preferredSchemaUri);
+                        actionContext.telemetry.properties.replacedSchema = "true";
                         return;
                     case notNow.title:
                         return;

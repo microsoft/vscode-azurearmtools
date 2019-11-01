@@ -31,6 +31,7 @@ export namespace configKeys {
     export const traceLevel = 'languageServer.traceLevel';
     export const waitForDebugger = 'languageServer.waitForDebugger';
     export const langServerPath = 'languageServer.path';
+    export const checkForLatestSchema = 'checkForLatestSchema';
 }
 
 export namespace storageKeys {
