@@ -52,7 +52,8 @@ suite("Backend validation", () => {
                 includeSources: [sources.template]
             },
             [
-                "Error: Template validation failed: The template function 'storageUri' at line '9' and column '23' is not valid. These function calls are not supported in a function definition: 'reference'. Please see https://aka.ms/arm-template/#functions for usage details. (arm-template (validation))"
+                // (Used to point to the user-function name, now points to the "output" property)
+                "Error: Template validation failed: The template function 'storageUri' at line '16' and column '21' is not valid. These function calls are not supported in a function definition: 'reference'. Please see https://aka.ms/arm-template/#functions for usage details. (arm-template (validation))"
             ]
         );
     });

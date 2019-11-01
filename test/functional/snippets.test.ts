@@ -5,9 +5,9 @@
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length no-http-string no-suspicious-comment
 // tslint:disable:no-non-null-assertion
 
-const DEBUG_BREAK_AFTER_INSERTING_SNIPPET = false;
-// WARNING: At this breakpoint, the extension will be in an inactivate state (i.e., if you make changes in the editor, diagnostics,
+// WARNING: At the breakpoint, the extension will be in an inactivate state (i.e., if you make changes in the editor, diagnostics,
 //   formatting, etc. will not be updated until you F5 again)
+const DEBUG_BREAK_AFTER_INSERTING_SNIPPET = false;
 
 import * as assert from 'assert';
 import * as fse from 'fs-extra';
@@ -97,7 +97,8 @@ const overrideExpectedDiagnostics: { [name: string]: string[] } = {
         "The parameter 'parameter1' is never used."
     ],
     Function: [
-        "Undefined variable reference: 'applicationInsightsName'"
+        "Undefined variable reference: 'applicationInsightsName'",
+        "Template validation failed: The template variable 'applicationInsightsName' is not found. Please see https://aka.ms/arm-template/#variables for usage details."
     ],
     "User Function": [
         "Template validation failed: The template function 'function-name' at line '19' and column '30' is not valid. The function name contains invalid characters '-'. Please see https://aka.ms/arm-template/#functions for usage details.",
@@ -105,9 +106,61 @@ const overrideExpectedDiagnostics: { [name: string]: string[] } = {
         "The parameter 'parameter-name' of function 'udf.function-name' is never used."
     ],
     "User Function Namespace": [
-        "Template validation failed: The template function at line '6' and column '13' is not valid. The function namespace 'namespace-name' contains invalid characters '-'. Please see https://aka.ms/arm-template/#functions for usage details.",
+        "Template validation failed: The template function at line '7' and column '45' is not valid. The function namespace 'namespace-name' contains invalid characters '-'. Please see https://aka.ms/arm-template/#functions for usage details.",
         "The user-defined function 'namespace-name.function-name' is never used.",
         "The parameter 'parameter-name' of function 'namespace-name.function-name' is never used."
+    ],
+    "Automation Certificate": [
+        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        "Template validation failed: The template resource 'automationCertificate1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '74' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+    ],
+    "Automation Credential": [
+        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        "Template validation failed: The template resource 'automationCredential' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '73' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+    ],
+    "Automation Job Schedule": [
+        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        "Template validation failed: The template resource 'automationJobSchedule1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '74' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+    ],
+    "Automation Runbook": [
+        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        "Template validation failed: The template resource 'automationRunbook1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '70' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+    ],
+    "Automation Schedule": [
+        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        "Template validation failed: The template resource 'automationSchedule1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '71' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+    ],
+    "Automation Variable": [
+        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        "Template validation failed: The template resource 'automationVariable1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '71' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+    ],
+    "Cosmos DB Mongo Database": [
+        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        "Template validation failed: The template resource 'account-name/mongodb/database-name/collectionName' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '4' and column '74' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+    ],
+    "DNS Record": [
+        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        "Template validation failed: The template resource 'dnsRecord1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '50' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+    ],
+    "Network Security Group Rule": [
+        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        "Template validation failed: The template resource 'networkSecurityGroupRuleName' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '75' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+    ],
+    "Route Table Route": [
+        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        "Template validation failed: The template resource 'route-name' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '58' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+    ],
+    "SQL Database Import": [
+        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        "Template validation failed: The template resource 'sqlDatabase1Import1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '64' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+    ],
+    "Web Deploy for Web App": [
+        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        "Template validation failed: The template resource 'Deploy-webApp1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '52' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+    ],
+    "Windows Virtual Machine": [
+        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012636
+        "Template validation failed: The template resource 'windowsVM1' at line '83' and column '9' is not valid: Unable to evaluate template language function 'resourceId': the type 'Microsoft.Storage/storageAccounts' requires '1' resource name argument(s). Please see https://aka.ms/arm-template-expressions/#resourceid for usage details.. Please see https://aka.ms/arm-template-expressions for usage details."
     ]
 };
 
