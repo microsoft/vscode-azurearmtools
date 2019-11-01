@@ -36,7 +36,7 @@ export class DeploymentTemplate {
     private _topLevelScope: TemplateScope;
 
     // The JSON node for the top-level JSON object (if the JSON is not empty or malformed)
-    private _topLevelValue: Json.ObjectValue | null;
+    public _topLevelValue: Json.ObjectValue | null;
 
     // A map from all JSON string value nodes to their cached TLE parse results
     private _jsonStringValueToTleParseResultMap: CachedValue<Map<Json.StringValue, TLE.ParseResult>> = new CachedValue<Map<Json.StringValue, TLE.ParseResult>>();

@@ -12,6 +12,7 @@
 // Because the JSON/ARM parsers catch these errors, it doesn't make too much difference for the end user
 //   so might not be worth fixing.
 
+import { Json } from "../extension.bundle";
 import { CachedValue } from "./CachedValue";
 import { CaseInsensitiveMap } from "./CaseInsensitiveMap";
 import { assert } from "./fixed_assert";
@@ -629,6 +630,12 @@ export class ObjectValue extends Value {
      */
     public hasProperty(propertyName: string): boolean {
         return !!this.getPropertyValue(propertyName);
+    }
+
+    public getProperty(propertyName: string): Json.Property | null {
+        return this.properties.find(p => p.nameValue.unquotedValue.toLowerCase() === propertyName.toLowerCase())
+            // tslint:disable-next-line: strict-boolean-expressions
+            || null;
     }
 
     /**

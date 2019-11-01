@@ -75,6 +75,24 @@ export class AzureRMTools {
         }
     });
 
+    private readonly _varDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
+        //textDecoration: "underline", // #569cd6ff",
+        color: "white"// "#4ec9b0ff"// "#dcdcaaff"// "#bbbb66" // "#569cd6ff"
+        //backgroundColor: "black"
+
+        // borderColor: "lightgreen",
+        // borderWidth: "1px",
+        // borderStyle: "solid"
+    });
+
+    private readonly _paramDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
+        color: "lightblue",
+        backgroundColor: "black",
+        // borderColor: "lightgreen",
+        // borderWidth: "1px",
+        // borderStyle: "solid"
+    });
+
     constructor(context: vscode.ExtensionContext) {
         const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
         ext.jsonOutlineProvider = jsonOutline;
@@ -261,6 +279,42 @@ export class AzureRMTools {
             }
 
             this._diagnosticsCollection.set(document.uri, diagnostics);
+
+            if (vscode.window.activeTextEditor) {
+                const varRanges: vscode.Range[] = [];
+                // tslint:disable-next-line:no-non-null-assertion
+                for (let p of Json.asObjectValue(deploymentTemplate._topLevelValue)!.properties) {
+                    varRanges.push(getVSCodeRangeFromSpan(deploymentTemplate, p.nameValue.span));
+                }
+
+                for (let v of deploymentTemplate.topLevelScope.variableDefinitions) {
+                    varRanges.push(getVSCodeRangeFromSpan(deploymentTemplate, v.nameValue.span));
+                }
+                // vscode.window.activeTextEditor.setDecorations(this._varDecorationType, varRanges);
+
+                // const paramRanges: vscode.Range[] = [];
+                for (let v of deploymentTemplate.topLevelScope.parameterDefinitions) {
+                    varRanges.push(getVSCodeRangeFromSpan(deploymentTemplate, v.nameValue.span));
+                }
+
+                // tslint:disable-next-line:no-non-null-assertion
+                for (let p of Json.asObjectValue(deploymentTemplate._topLevelValue!.getPropertyValue("outputs"))!.properties) {
+                    varRanges.push(getVSCodeRangeFromSpan(deploymentTemplate, p.nameValue.span));
+                }
+
+                // tslint:disable-next-line:no-non-null-assertion
+                for (let p of Json.asArrayValue(deploymentTemplate._topLevelValue!.getPropertyValue("resources"))!.elements) {
+                    // tslint:disable-next-line:no-non-null-assertion
+                    const rt = Json.asObjectValue(p)!.getProperty("type")!;
+                    // tslint:disable-next-line:no-non-null-assertion
+                    const apiVersion = Json.asObjectValue(p)!.getProperty("apiVersion")!;
+                    varRanges.push(getVSCodeRangeFromSpan(deploymentTemplate, rt.nameValue.span));
+                    varRanges.push(getVSCodeRangeFromSpan(deploymentTemplate, apiVersion.nameValue.span));
+                }
+
+                vscode.window.activeTextEditor.setDecorations(this._varDecorationType, varRanges);
+            }
+
         });
     }
 
