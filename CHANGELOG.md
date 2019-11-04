@@ -3,7 +3,24 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 
 ## Version 0.8.1 (2019-11-01)
 ### Added
-- Support for variable iteration ("COPY blocks")
+- Support for variable iteration ("variable COPY blocks") [(ARM template variable copy block highlighting error #30)](https://github.com/microsoft/vscode-azurearmtools/issues/30), see https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration
+- Added `azureResourceManagerTools.languageServer.dotnetExePath` setting to allow using an existing dotnet installation as a work-around for installation issues
+- Added expression metadata for the environment() function [#344](https://github.com/microsoft/vscode-azurearmtools/pull/344)
+- Do not validate schema against properties containing expressions
+- Added additional template validations
+  - Language expression evaluation
+  - Dependency checks
+  - Template function checks
+- Support for all root-level Azure schemas
+- Completion for $schema now shows only root-level schemas
+- Query user to update to latest schema [#368](https://github.com/microsoft/vscode-azurearmtools/pull/368)
+  - Can be completely disabled via `azureResourceManagerTools.checkForLatestSchema` setting
+- Recognize deployment scope from the schema
+  - .../deploymentTemplate.json# - resource group deployment
+  - .../subscriptionDeploymentTemplate.json# - subscription deployment
+  - .../managementGroupDeploymentTemplate.json# - management group deployment
+  - .../tenantDeploymentTemplate.json# - tenant deployment
+- Completion provider for ARM resource type names and apiVersions
 
 ## Version 0.8.0 (2019-10-28)
 ### Added

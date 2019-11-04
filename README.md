@@ -32,7 +32,8 @@ This extension provides language support for Azure Resource Manager deployment t
     - [Hover](https://code.visualstudio.com/docs/editor/editingevolved#_hover) for parameter description
     - [TLE brace matching](https://code.visualstudio.com/docs/editor/editingevolved#_bracket-matching)
     - Rename parameters and variables
-    - User-defined template functions
+    - User-defined template functions, see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#functions)
+    - Variable iteration ("copy blocks"), see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration)
 
 - Snippets
     Just type `arm` in the editor to see the available snippets
