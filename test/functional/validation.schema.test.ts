@@ -49,6 +49,48 @@ suite("Schema validation", () => {
                 [])
     );
 
+    testWithLanguageServer(
+        "Shouldn't validate expressions against schema",
+        async () =>
+            await testDiagnostics(
+                {
+                    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "rgName": {
+                            "type": "string",
+                            "metadata": {
+                                "description": "Name of the resourceGroup to create"
+                            }
+                        },
+                        "rgLocation": {
+                            "type": "string",
+                            "defaultValue": "southcentralus",
+                            "metadata": {
+                                "description": "Location for the resourceGroup"
+                            }
+                        }
+                    },
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Resources/resourceGroups",
+                            "apiVersion": "2018-05-01",
+                            "location": "[parameters('rgLocation')]",
+                            // Schema has a regex validation and a maxLength validation, which we should ignore since it's an expression
+                            "name": "[concat(parameters('rgName'),uniqueString('some-very-long-expression','and-another-long-expression','plus another one'))]",
+                            "tags": {
+                                "Note": "subscription level deployment"
+                            },
+                            "properties": {}
+                        }
+                    ]
+                },
+                {},
+                []
+            )
+    );
+
     suite("Case-insensitivity", async () => {
         testWithLanguageServer(
             'Resource type miscapitalized',
@@ -96,25 +138,7 @@ suite("Schema validation", () => {
 
     suite("More specific error messages for schema problems", async () => {
         // tslint:disable-next-line: no-suspicious-comment
-        /* TODO: not yet fixed
-        testWithLanguageServer('Resource type miscapitalized (https://github.com/microsoft/vscode-azurearmtools/issues/238)',
-            async () =>
-                await testDiagnostics(
-                    {
-                        $schema: "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                        contentVersion: "1.0.0.0",
-                        resources: [
-                            {
-                                name: "example",
-                                type: "Microsoft.Network/publicIPAddresses",
-                                apiVersion: "2018-08-01",
-                                location: "westus",
-                                properties: {},
-                            }]
-                    },
-                    {},
-                    [
-                    ])
-        ); */
+        // TODO
+        test("https://devdiv.visualstudio.com/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1013538");
     });
 });

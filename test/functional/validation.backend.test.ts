@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:object-literal-key-quotes no-http-string
+// tslint:disable:object-literal-key-quotes no-http-string max-func-body-length
 
 import { sources, testDiagnostics } from "../support/diagnostics";
 import { testWithLanguageServer } from "../support/testWithLanguageServer";
