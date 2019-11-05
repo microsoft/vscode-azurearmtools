@@ -22,6 +22,9 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
   - .../tenantDeploymentTemplate.json# - tenant deployment
 - Completion provider for ARM resource type names and apiVersions
 
+### Fixed
+- Fixed message "Exactly 1 match required, but found more than 1" which appears in some scenarios.
+
 ## Version 0.8.0 (2019-10-28)
 ### Added
 - Greatly improved schema errors and completion
@@ -42,9 +45,10 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
   - Signature help
 - Added basic snippet support. This makes Sam Cogan's [Azure Resource Manager Snippets](https://marketplace.visualstudio.com/items?itemName=samcogan.arm-snippets) extension no longer necessary when using this extension.  If you have snippet suggestions, you can add them to our [repo](https://github.com/microsoft/vscode-azurearmtools/issues).
 - Hover information for JSON properties (outside of expressions)
-- Fewer false positives
-  - We now allow string values to be automatically coerced to non-string types as appropriate (e.g., "false" can be used in place of false), as the ARM backend allows
-  - We now allow non-string values to be automatically coerced to string as appropriate (e.g. false can be used in place of "false")
+- ~~Fewer false positives~~
+  - ~~We now allow string values to be automatically coerced to non-string types as appropriate (e.g., "false" can be used in place of false), as the ARM backend allows~~
+  - ~~We now allow non-string values to be automatically coerced to string as appropriate (e.g. false can be used in place of "false")~~
+(This change was reverted in favor of providing a clearer error message.)
 - Add Find References for built-in template functions (e.g. click on "add" in an expression then right-click -> Find All References)
 
 ### Fixed
