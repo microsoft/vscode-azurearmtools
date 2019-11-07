@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as os from 'os';
 import * as vscode from 'vscode';
 import { DotnetAcquisitionCompleted, DotnetAcquisitionError, DotnetAcquisitionStarted } from './EventStreamEvents';
 import { EventType } from './EventType';
@@ -34,6 +35,7 @@ export class OutputChannelObserver implements IEventStreamObserver {
                     }
 
                     const versionString = this.inProgressDownloads.join(', ');
+                    this.outputChannel.appendLine(`Installation command:${os.EOL}${acquisitionStarted.installCommand}`);
                     this.outputChannel.append(`Downloading .NET Core tooling version(s) ${versionString} ...`);
                 }
                 break;
