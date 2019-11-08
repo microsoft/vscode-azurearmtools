@@ -98,7 +98,8 @@ const overrideExpectedDiagnostics: { [name: string]: string[] } = {
     ],
     Function: [
         "Undefined variable reference: 'applicationInsightsName'",
-        "Template validation failed: The template variable 'applicationInsightsName' is not found. Please see https://aka.ms/arm-template/#variables for usage details."
+        // Full validation temporarily disabled, so we don't currently get this error
+        // "Template validation failed: The template variable 'applicationInsightsName' is not found. Please see https://aka.ms/arm-template/#variables for usage details."
     ],
     "User Function": [
         "Template validation failed: The template function 'function-name' at line '19' and column '30' is not valid. The function name contains invalid characters '-'. Please see https://aka.ms/arm-template/#functions for usage details.",
