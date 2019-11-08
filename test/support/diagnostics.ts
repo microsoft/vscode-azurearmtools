@@ -365,5 +365,10 @@ function compareDiagnostics(actual: Diagnostic[], expected: string[], options: I
     let includeRanges = !!options.includeRange && expectedHasRanges;
 
     let actualAsStrings = actual.map(d => diagnosticToString(d, options, includeRanges));
+
+    // Sort
+    expected = expected.sort();
+    actualAsStrings = actualAsStrings.sort();
+
     assert.deepStrictEqual(actualAsStrings, expected);
 }

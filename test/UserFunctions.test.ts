@@ -126,7 +126,7 @@ suite("User functions", () => {
             const dt = await parseTemplate(template, [
                 "Error: Undefined parameter reference: 'number'"
             ]);
-            assert.equal(0, dt.topLevelScope.namespaceDefinitions.length);
+            assert.equal(0, dt.topLevelScope.namespaceDefinitions.length);  // <<<<<<<<<<<<<<<<<< PUT BREAKPOINT HERE
         });
 
         test("missing function name", async () => {

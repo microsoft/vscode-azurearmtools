@@ -35,6 +35,8 @@ suite("Backend validation deployment scope", () => {
             )
         );
 
+        // tslint:disable-next-line: no-suspicious-comment
+        /* TODO: https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1018665
         testWithLanguageServer("resourceGroup() with subscription schema gives error", () =>
             testDiagnostics(
                 {
@@ -71,6 +73,7 @@ suite("Backend validation deployment scope", () => {
                 ]
             )
         );
+        */
     }); // end suite Subscription scope
 
     suite("Resource Group deployment scope", () => {
@@ -123,6 +126,8 @@ suite("Backend validation deployment scope", () => {
             )
         );*/
 
+        // tslint:disable-next-line: no-suspicious-comment
+        /* TODO: https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1018665
         testWithLanguageServer("subscription() with resource group schema gives error", () =>
             testDiagnostics(
                 {
@@ -140,6 +145,7 @@ suite("Backend validation deployment scope", () => {
                 ]
             )
         );
+        */
     }); // Resource Group deployment scope
 
     // tslint:disable-next-line: no-suspicious-comment

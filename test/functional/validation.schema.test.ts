@@ -4,7 +4,7 @@
 
 // tslint:disable:object-literal-key-quotes no-http-string max-func-body-length
 
-import { sources, testDiagnostics, testDiagnosticsFromFile } from "../support/diagnostics";
+import { testDiagnostics, testDiagnosticsFromFile } from "../support/diagnostics";
 import { testWithLanguageServer } from "../support/testWithLanguageServer";
 
 suite("Schema validation", () => {
@@ -16,7 +16,6 @@ suite("Schema validation", () => {
                 contentVersion: "1.2.3.4"
             },
             {
-                includeSources: [sources.schema]
             },
             [
                 'Warning: Missing required property "resources" (arm-template (schema))'
@@ -30,8 +29,7 @@ suite("Schema validation", () => {
                 'templates/networkInterfaces.json',
                 {
                     search: /{{apiVersion}}/,
-                    replace: "2018-10-01",
-                    includeSources: [sources.schema]
+                    replace: "2018-10-01"
                 },
                 [])
     );
@@ -43,8 +41,7 @@ suite("Schema validation", () => {
                 'templates/networkInterfaces.json',
                 {
                     search: /{{apiVersion}}/,
-                    replace: "2018-11-01",
-                    includeSources: [sources.schema]
+                    replace: "2018-11-01"
                 },
                 [])
     );
@@ -129,7 +126,6 @@ suite("Schema validation", () => {
                         ]
                     },
                     {
-                        includeSources: [sources.schema]
                     },
                     [
                     ])

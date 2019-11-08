@@ -1,4 +1,4 @@
-import { sources, testDiagnostics } from "../support/diagnostics";
+import { testDiagnostics } from "../support/diagnostics";
 import { testWithLanguageServer } from "../support/testWithLanguageServer";
 
 // ----------------------------------------------------------------------------
@@ -9,13 +9,13 @@ suite("JSON validation", () => {
     testWithLanguageServer("no closing brace", async () =>
         await testDiagnostics(
             `{  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-            "contentVersion": "1.0.0.0"`,
+            "contentVersion": "1.0.0.0",
+            "resources: []`,
             {
-                includeSources: [sources.schema, sources.syntax]
             },
             [
                 'Error: The object is unclosed, \'}\' expected. (arm-template (syntax))',
-                'Warning: Missing required property "resources" (arm-template (schema))'
+                "Error: Template validation failed: Unexpected end when deserializing object. Path 'contentVersion', line 2, position 39. (arm-template (validation))"
             ])
     );
 });
