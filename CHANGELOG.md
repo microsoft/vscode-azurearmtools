@@ -1,16 +1,23 @@
 # Change Log
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.8.2 (2019-11-08)
+### Fixed
+- Full template validation has been temporarily disabled until we can find a long-term solution for some bugs. This fixed:
+  - Template validation error for evaluated variables [#380](https://github.com/microsoft/vscode-azurearmtools/issues/380)
+  - Validation fails using int() with parameter
+  - Validation error if you have a parameter of type "object" [regression from 0.7.0]
+
 ## Version 0.8.1 (2019-11-01)
 ### Added
 - Support for variable iteration ("variable COPY blocks") [(ARM template variable copy block highlighting error #30)](https://github.com/microsoft/vscode-azurearmtools/issues/30), see https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration
 - Added `azureResourceManagerTools.languageServer.dotnetExePath` setting to allow using an existing dotnet installation as a work-around for installation issues
 - Added expression metadata for the environment() function [#344](https://github.com/microsoft/vscode-azurearmtools/pull/344)
 - Do not validate schema against properties containing expressions
-- Added additional template validations
-  - Language expression evaluation
-  - Dependency checks
-  - Template function checks
+- ~~Added additional template validations~~ (temporarily disabled in 0.8.2)
+  - ~~Language expression evaluation~~
+  - ~~Dependency checks~~
+  - ~~Template function checks~~
 - Support for all root-level Azure schemas
 - Completion for $schema now shows only root-level schemas
 - Query user to update to latest schema [#368](https://github.com/microsoft/vscode-azurearmtools/pull/368)
