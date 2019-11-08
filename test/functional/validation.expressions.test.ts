@@ -28,8 +28,7 @@ suite("Expression validation", () => {
         async () => testDiagnosticsFromFile(
             'templates/errors.json',
             {
-                includeRange: true,
-                includeSources: [sources.expressions]
+                includeRange: true
             },
             [
                 "Error: Undefined parameter reference: 'windowsOSVersion' (arm-template (expressions)) [69,26-69,44]",

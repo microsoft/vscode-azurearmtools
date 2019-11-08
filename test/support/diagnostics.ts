@@ -47,6 +47,7 @@ export interface IDeploymentParameterDefinition {
         description?: string;
     };
     maxLength?: number;
+    minLength?: number;
     defaultValue?: number | unknown[] | string | {};
     allowedValues?: (number | unknown[] | string | {})[];
 }
@@ -365,5 +366,10 @@ function compareDiagnostics(actual: Diagnostic[], expected: string[], options: I
     let includeRanges = !!options.includeRange && expectedHasRanges;
 
     let actualAsStrings = actual.map(d => diagnosticToString(d, options, includeRanges));
+
+    // Sort
+    expected = expected.sort();
+    actualAsStrings = actualAsStrings.sort();
+
     assert.deepStrictEqual(actualAsStrings, expected);
 }
