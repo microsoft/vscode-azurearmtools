@@ -108,7 +108,14 @@ export class AzureRMTools {
 
     private getDeploymentTemplate(document: vscode.TextDocument): DeploymentTemplate | undefined {
         assert(document);
-        return this._deploymentTemplates.get(document.uri.toString());
+        const dt = this._deploymentTemplates.get(document.uri.toString());
+        if (dt && dt.documentVersion !== document.version) {
+            // tslint:disable-next-line: no-console
+            console.log("Document version does not match cached version");
+            return undefined;
+        }
+
+        return dt;
     }
 
     private updateDeploymentTemplate(document: vscode.TextDocument): void {
@@ -142,7 +149,7 @@ export class AzureRMTools {
                 }
 
                 // Do a full parse
-                let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(document.getText(), documentUri);
+                let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(document.getText(), documentUri, document.version);
                 if (deploymentTemplate.hasArmSchemaUri()) {
                     treatAsDeploymentTemplate = true;
                 }
@@ -341,7 +348,8 @@ export class AzureRMTools {
 
     private async  replaceSchema(editor: vscode.TextEditor, deploymentTemplate: DeploymentTemplate, previousSchema: string, newSchema: string): Promise<void> {
         // The document might have changed since we asked, so find the $schema again
-        const currentTemplate = new DeploymentTemplate(editor.document.getText(), `current ${deploymentTemplate.documentId}`);
+        const document: vscode.TextDocument = editor.document;
+        const currentTemplate = new DeploymentTemplate(document.getText(), `current ${deploymentTemplate.documentId}`, document.version);
         const currentSchemaValue: Json.StringValue | null = currentTemplate.schemaValue;
         if (currentSchemaValue && currentSchemaValue.unquotedValue === previousSchema) {
             const range = getVSCodeRangeFromSpan(currentTemplate, currentSchemaValue.unquotedSpan);
@@ -726,13 +734,12 @@ export class AzureRMTools {
         }
     }
 
-    private onActiveTextEditorChanged(): void {
+    private onActiveTextEditorChanged(activeEditor: vscode.TextEditor | undefined): void {
         callWithTelemetryAndErrorHandlingSync('onActiveTextEditorChanged', (actionContext: IActionContext): void => {
             actionContext.telemetry.properties.isActivationEvent = 'true';
             actionContext.errorHandling.suppressDisplay = true;
             actionContext.telemetry.suppressIfSuccessful = true;
 
-            let activeEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
             if (activeEditor) {
                 if (this.getDeploymentTemplate(activeEditor.document) === undefined) {
                     this.updateDeploymentTemplate(activeEditor.document);
@@ -741,28 +748,26 @@ export class AzureRMTools {
         });
     }
 
-    private onTextSelectionChanged(): void {
+    private onTextSelectionChanged(event: vscode.TextEditorSelectionChangeEvent): void {
         callWithTelemetryAndErrorHandlingSync('onTextSelectionChanged', (actionContext: IActionContext): void => {
             actionContext.telemetry.properties.isActivationEvent = 'true';
             actionContext.errorHandling.suppressDisplay = true;
             actionContext.telemetry.suppressIfSuccessful = true;
 
-            let editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-            if (editor) {
-                let deploymentTemplate = this.getDeploymentTemplate(editor.document);
-                if (deploymentTemplate) {
-                    let position = editor.selection.anchor;
-                    let context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                    let tleBraceHighlightIndexes: number[] = TLE.BraceHighlighter.getHighlightCharacterIndexes(context);
+            let editor: vscode.TextEditor = event.textEditor;
+            let deploymentTemplate = this.getDeploymentTemplate(editor.document);
+            if (deploymentTemplate) {
+                let position = event.selections[0].anchor; // The primary selection is always at index 0.
+                let context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
+                let tleBraceHighlightIndexes: number[] = TLE.BraceHighlighter.getHighlightCharacterIndexes(context);
 
-                    let braceHighlightRanges: vscode.Range[] = [];
-                    for (let tleHighlightIndex of tleBraceHighlightIndexes) {
-                        const highlightSpan = new language.Span(tleHighlightIndex + context.jsonTokenStartIndex, 1);
-                        braceHighlightRanges.push(getVSCodeRangeFromSpan(deploymentTemplate, highlightSpan));
-                    }
-
-                    editor.setDecorations(this._braceHighlightDecorationType, braceHighlightRanges);
+                let braceHighlightRanges: vscode.Range[] = [];
+                for (let tleHighlightIndex of tleBraceHighlightIndexes) {
+                    const highlightSpan = new language.Span(tleHighlightIndex + context.jsonTokenStartIndex, 1);
+                    braceHighlightRanges.push(getVSCodeRangeFromSpan(deploymentTemplate, highlightSpan));
                 }
+
+                editor.setDecorations(this._braceHighlightDecorationType, braceHighlightRanges);
             }
         });
     }

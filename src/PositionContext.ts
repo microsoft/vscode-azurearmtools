@@ -74,11 +74,19 @@ export class PositionContext {
         assert(documentLineIndex !== null, "documentLineIndex cannot be null");
         assert(documentLineIndex !== undefined, "documentLineIndex cannot be undefined");
         assert(documentLineIndex >= 0, "documentLineIndex cannot be negative");
-        assert(documentLineIndex < deploymentTemplate.lineCount, `documentLineIndex (${documentLineIndex}) cannot be greater than or equal to the deployment template's line count (${deploymentTemplate.lineCount})`);
+        // tslint:disable-next-line: no-console
+        console.log(`Line idx: ${documentLineIndex}, lineCount=${deploymentTemplate.lineCount}`);
+        if (!(documentLineIndex < deploymentTemplate.lineCount)) {
+            throw new Error(`documentLineIndex (${documentLineIndex}) cannot be greater than or equal to the deployment template's line count (${deploymentTemplate.lineCount})`);
+        }
         assert(documentColumnIndex !== null, "documentColumnIndex cannot be null");
         assert(documentColumnIndex !== undefined, "documentColumnIndex cannot be undefined");
         assert(documentColumnIndex >= 0, "documentColumnIndex cannot be negative");
-        assert(documentColumnIndex <= deploymentTemplate.getMaxColumnIndex(documentLineIndex), `documentColumnIndex (${documentColumnIndex}) cannot be greater than the line's maximum index (${deploymentTemplate.getMaxColumnIndex(documentLineIndex)})`);
+        // tslint:disable-next-line: no-console
+        console.log(`Col idx: ${documentColumnIndex}, maxColumnIndex: ${deploymentTemplate.getMaxColumnIndex(documentLineIndex)}`);
+        if (!(documentColumnIndex <= deploymentTemplate.getMaxColumnIndex(documentLineIndex))) {
+            throw new Error(`documentColumnIndex (${documentColumnIndex}) cannot be greater than the line's maximum index (${deploymentTemplate.getMaxColumnIndex(documentLineIndex)})`);
+        }
 
         let context = new PositionContext();
         context._deploymentTemplate = deploymentTemplate;
@@ -92,7 +100,11 @@ export class PositionContext {
         assert(documentCharacterIndex !== null, "documentCharacterIndex cannot be null");
         assert(documentCharacterIndex !== undefined, "documentCharacterIndex cannot be undefined");
         assert(documentCharacterIndex >= 0, "documentCharacterIndex cannot be negative");
-        assert(documentCharacterIndex <= deploymentTemplate.maxCharacterIndex, `documentCharacterIndex (${documentCharacterIndex}) cannot be greater than the maximum character index (${deploymentTemplate.maxCharacterIndex})`);
+        // tslint:disable-next-line: no-console
+        console.log(`documentCharacterIndex: ${documentCharacterIndex}, maxCharIdx: ${deploymentTemplate.maxCharacterIndex}`);
+        if (!(documentCharacterIndex <= deploymentTemplate.maxCharacterIndex)) {
+            throw new Error(`documentCharacterIndex (${documentCharacterIndex}) cannot be greater than the maximum character index (${deploymentTemplate.maxCharacterIndex})`);
+        }
 
         let context = new PositionContext();
         context._deploymentTemplate = deploymentTemplate;

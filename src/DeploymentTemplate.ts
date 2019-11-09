@@ -57,7 +57,7 @@ export class DeploymentTemplate {
      * @param _documentText The string text of the document.
      * @param _documentId A unique identifier for this document. Usually this will be a URI to the document.
      */
-    constructor(private _documentText: string, private _documentId: string) {
+    constructor(private _documentText: string, private _documentId: string, public readonly documentVersion: number) {
         assert(_documentText !== null);
         assert(_documentText !== undefined);
         assert(_documentId);
