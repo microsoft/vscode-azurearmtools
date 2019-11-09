@@ -16,11 +16,12 @@ import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
 import * as Hover from './Hover';
+import { DefinitionKind } from "./INamedDefinition";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { startArmLanguageServer, stopArmLanguageServer } from "./languageclient/startArmLanguageServer";
-import { PositionContext } from "./PositionContext";
+import { IReferenceSite, PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
 import { getPreferredSchema } from "./schemas";
 import { getFunctionParamUsage } from "./signatureFormatting";
@@ -689,6 +690,11 @@ export class AzureRMTools {
                 const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
+                const referenceSiteInfo: IReferenceSite | null = context.getReferenceSiteInfo();
+                if (referenceSiteInfo && referenceSiteInfo.definition.definitionKind === DefinitionKind.BuiltinFunction) {
+                    throw new Error("Built-in functions cannot be renamed.");
+                }
+
                 const referenceList: ReferenceList | null = context.getReferences();
                 if (referenceList) {
                     // When trying to rename a parameter or variable reference inside of a TLE, the
@@ -718,7 +724,7 @@ export class AzureRMTools {
                         result.replace(documentUri, referenceRange, newName);
                     }
                 } else {
-                    throw new Error('You can only rename parameters and variables.');
+                    throw new Error('Only parameters, variables, user namespaces and user functions can be renamed.');
                 }
 
                 return result;
