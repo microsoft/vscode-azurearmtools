@@ -332,7 +332,7 @@ export class AzureRMTools {
                         await ext.context.globalState.update(storageKeys.dontAskAboutSchemaFiles, dontAskFiles);
                         break;
                     default:
-                        assert("queryAddSchema: Unexpected response");
+                        assert("queryUseNewerSchema: Unexpected response");
                         break;
                 }
             });

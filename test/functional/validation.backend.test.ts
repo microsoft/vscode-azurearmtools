@@ -2,9 +2,9 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:object-literal-key-quotes no-http-string
+// tslint:disable:object-literal-key-quotes no-http-string max-func-body-length
 
-import { sources, testDiagnostics } from "../support/diagnostics";
+import { testDiagnostics } from "../support/diagnostics";
 import { testWithLanguageServer } from "../support/testWithLanguageServer";
 
 suite("Backend validation", () => {
@@ -15,10 +15,13 @@ suite("Backend validation", () => {
                 contentVersion: "1.2.3.4"
             },
             {
-                includeSources: [sources.template]
             },
             [
-                "Error: Template validation failed: Required property 'resources' not found in JSON. Path '', line 4, position 1. (arm-template (validation))"
+                // Expected:
+                "Error: Template validation failed: Required property 'resources' not found in JSON. Path '', line 4, position 1. (arm-template (validation))",
+
+                // Other errors:
+                'Warning: Missing required property "resources" (arm-template (schema))'
             ])
     );
 
@@ -49,11 +52,14 @@ suite("Backend validation", () => {
                 ]
             },
             {
-                includeSources: [sources.template]
             },
             [
+                // Expected:
                 // (Used to point to the user-function name, now points to the "output" property)
-                "Error: Template validation failed: The template function 'storageUri' at line '16' and column '21' is not valid. These function calls are not supported in a function definition: 'reference'. Please see https://aka.ms/arm-template/#functions for usage details. (arm-template (validation))"
+                "Error: Template validation failed: The template function 'storageUri' at line '16' and column '21' is not valid. These function calls are not supported in a function definition: 'reference'. Please see https://aka.ms/arm-template/#functions for usage details. (arm-template (validation))",
+
+                // Unrelated errors:
+                "Warning: The user-defined function 'udf.storageUri' is never used. (arm-template (expressions))"
             ]
         );
     });
