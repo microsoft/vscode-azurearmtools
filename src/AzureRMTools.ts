@@ -57,6 +57,7 @@ export function deactivateInternal(): void {
 export class AzureRMTools {
     private readonly _diagnosticsCollection: vscode.DiagnosticCollection;
     private readonly _deploymentTemplates: Map<string, DeploymentTemplate> = new Map<string, DeploymentTemplate>();
+    private readonly _filesAskedToUpdateSchema: Set<string> = new Set<string>();
     private _areDeploymentTemplateEventsHookedUp: boolean = false;
     private _diagnosticsVersion: number = 0;
 
@@ -85,8 +86,8 @@ export class AzureRMTools {
             await stopArmLanguageServer();
             await uninstallDotnet();
         });
-        vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
 
+        vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
         vscode.workspace.onDidOpenTextDocument(this.onDocumentOpened, this, context.subscriptions);
         vscode.workspace.onDidChangeTextDocument(this.onDocumentChanged, this, context.subscriptions);
 
@@ -120,12 +121,12 @@ export class AzureRMTools {
 
             assert(document);
             const editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-
             const stopwatch = new Stopwatch();
             stopwatch.start();
 
             let treatAsDeploymentTemplate = false;
-            let isNewlyOpened = false; // As opposed to already opened and being activated
+            let isNewlyOpened = false; // As opposed to already opened and simply being made active
+            const documentUri: string = document.uri.toString();
 
             if (document.languageId === languageId) {
                 // Lang ID is set to arm-template, whether auto or manual, respect the setting
@@ -136,7 +137,7 @@ export class AzureRMTools {
             if (shouldParseFile) {
                 // If the documentUri is not in our dictionary of deployment templates, then we
                 // know that this document was just opened (as opposed to changed/updated).
-                const documentUri: string = document.uri.toString();
+                // Note that it might have been opened, then closed, then reopened.
                 if (!this._deploymentTemplates.has(documentUri)) {
                     isNewlyOpened = true;
                 }
@@ -168,8 +169,11 @@ export class AzureRMTools {
 
                         // No guarantee that active editor is the one we're processing, ignore if not
                         if (editor && editor.document === document) {
-                            // Are they using an older schema?  Ask to update.
-                            this.queryUseNewerSchema(editor, deploymentTemplate);
+                            let queriedToUpdateSchema = this._filesAskedToUpdateSchema.has(documentUri);
+                            if (!queriedToUpdateSchema) { // Only ask to upgrade once per session per file
+                                // Are they using an older schema?  Ask to update.
+                                this.queryUseNewerSchema(editor, deploymentTemplate);
+                            }
                         }
                     }
 
@@ -309,6 +313,7 @@ export class AzureRMTools {
                 const notNow: vscode.MessageItem = { title: "Not now" };
                 const neverForThisFile: vscode.MessageItem = { title: "Not for this file" };
 
+                this._filesAskedToUpdateSchema.add(documentUri);
                 const response = await ext.ui.showWarningMessage(
                     `Would you like to use the latest schema for deployment template "${path.basename(document.uri.path)}" (note: some tools may be unable to process the latest schema)?`,
                     {
@@ -322,7 +327,7 @@ export class AzureRMTools {
 
                 switch (response.title) {
                     case yes.title:
-                        await this.replaceSchema(editor, deploymentTemplate, schemaValue.unquotedValue, preferredSchemaUri);
+                        await this.replaceSchema(document.uri, deploymentTemplate, schemaValue.unquotedValue, preferredSchemaUri);
                         actionContext.telemetry.properties.replacedSchema = "true";
                         return;
                     case notNow.title:
@@ -339,7 +344,10 @@ export class AzureRMTools {
         }
     }
 
-    private async  replaceSchema(editor: vscode.TextEditor, deploymentTemplate: DeploymentTemplate, previousSchema: string, newSchema: string): Promise<void> {
+    private async  replaceSchema(uri: vscode.Uri, deploymentTemplate: DeploymentTemplate, previousSchema: string, newSchema: string): Promise<void> {
+        // Editor might have been closed or tabbed away from, so make sure it's visible
+        const editor = await vscode.window.showTextDocument(uri);
+
         // The document might have changed since we asked, so find the $schema again
         const currentTemplate = new DeploymentTemplate(editor.document.getText(), `current ${deploymentTemplate.documentId}`);
         const currentSchemaValue: Json.StringValue | null = currentTemplate.schemaValue;
@@ -726,16 +734,16 @@ export class AzureRMTools {
         }
     }
 
-    private onActiveTextEditorChanged(): void {
+    private onActiveTextEditorChanged(editor: vscode.TextEditor | undefined): void {
         callWithTelemetryAndErrorHandlingSync('onActiveTextEditorChanged', (actionContext: IActionContext): void => {
             actionContext.telemetry.properties.isActivationEvent = 'true';
             actionContext.errorHandling.suppressDisplay = true;
             actionContext.telemetry.suppressIfSuccessful = true;
 
-            let activeEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-            if (activeEditor) {
-                if (this.getDeploymentTemplate(activeEditor.document) === undefined) {
-                    this.updateDeploymentTemplate(activeEditor.document);
+            if (editor) {
+                const document = editor.document;
+                if (!this.getDeploymentTemplate(document)) {
+                    this.updateDeploymentTemplate(document);
                 }
             }
         });
