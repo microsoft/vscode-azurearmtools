@@ -7,6 +7,7 @@ import * as cp from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import * as process from 'process';
 import { Memento } from 'vscode';
 import { EventStream } from './EventStream';
 import { DotnetAcquisitionCompleted, DotnetAcquisitionInstallError, DotnetAcquisitionScriptError, DotnetAcquisitionStarted, DotnetAcquisitionUnexpectedError } from './EventStreamEvents';
@@ -39,10 +40,14 @@ export class DotnetCoreAcquisitionWorker {
         private readonly storagePath: string,
         private readonly extensionState: Memento,
         private readonly scriptsPath: string,
-        private readonly eventStream: EventStream) {
+        private readonly eventStream: EventStream
+    ) {
+        // tslint:disable-next-line: strict-boolean-expressions
+        const dotnetInstallFolder: string = process.env.ARM_DOTNET_INSTALL_FOLDER || '.dotnet';
+
         const script = os.platform() === 'win32' ? 'dotnet-install.cmd' : 'dotnet-install.sh';
         this.scriptPath = path.join(this.scriptsPath, script);
-        this.installDir = path.join(this.storagePath, '.dotnet');
+        this.installDir = path.join(this.storagePath, dotnetInstallFolder);
         const dotnetExtension = os.platform() === 'win32' ? '.exe' : '';
         this.dotnetExecutable = `dotnet${dotnetExtension}`;
         this.acquisitionPromises = {};
@@ -113,15 +118,27 @@ export class DotnetCoreAcquisitionWorker {
         installingVersions.push(version);
         await this.extensionState.update(this.installingVersionsKey, installingVersions);
 
+        //const dotnetInstallDirEscaped = dotnetInstallDir.replace("'", "''");
+        let dotnetInstallDirEscaped: string;
+        if (os.platform() === 'win32') {
+            // Need to escape apostrophes with two apostrophes
+            dotnetInstallDirEscaped = dotnetInstallDir.replace(/'/g, "''");
+
+            // Surround with single quotes instead of double quotes (see https://github.com/dotnet/cli/issues/11521)
+            dotnetInstallDirEscaped = `'${dotnetInstallDirEscaped}'`;
+        } else {
+            dotnetInstallDirEscaped = `"${dotnetInstallDir}"`;
+        }
+
         const args = [
-            '-InstallDir', `'${dotnetInstallDir}'`, // Use single quotes instead of double quotes (see https://github.com/dotnet/cli/issues/11521)
+            '-InstallDir', dotnetInstallDirEscaped,
             '-Runtime', 'dotnet',
             '-Version', version,
         ];
 
         const installCommand = `"${this.scriptPath}" ${args.join(' ')}`;
 
-        this.eventStream.post(new DotnetAcquisitionStarted(version));
+        this.eventStream.post(new DotnetAcquisitionStarted(version, installCommand));
         await this.installDotnet(installCommand, version, dotnetPath);
 
         // Need to re-query our installing versions because there may have been concurrent acquisitions that

@@ -12,7 +12,7 @@ import { IEvent } from './IEvent';
 export class DotnetAcquisitionStarted implements IEvent {
     public readonly eventType: EventType = EventType.DotnetAcquisitionStart;
 
-    constructor(public readonly version: string) {
+    constructor(public readonly version: string, public readonly installCommand: string) {
     }
 }
 
