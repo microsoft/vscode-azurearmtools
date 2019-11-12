@@ -25,6 +25,7 @@ export function testWithRealFunctionMetadata(expectation: string, callback?: (th
         async function (this: ITestCallbackContext): Promise<unknown> {
             if (callback) {
                 try {
+                    useRealFunctionMetadata();
                     // tslint:disable-next-line: no-unsafe-any
                     return await callback.call(this);
                 } finally {

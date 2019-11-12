@@ -19,6 +19,9 @@ let previousSettings = {
 // Runs before all tests
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
 
+    // For tests, set up dotnet install path to something unusual to simulate installing with unusual usernames
+    process.env.ARM_DOTNET_INSTALL_FOLDER = ".dotnet O'Hare O'Donald";
+
     // Use test metadata for all tests by default
     useTestFunctionMetadata();
 

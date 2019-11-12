@@ -172,7 +172,7 @@ async function acquireDotnet(dotnetExePath: string): Promise<string> {
 
             dotnetExePath = await dotnetAcquire(dotnetVersion, actionContext.telemetry.properties);
             if (!(await isFile(dotnetExePath))) {
-                throw new Error(`Unexpected path returned for .net core: ${dotnetExePath}`);
+                throw new Error(`The path returned for .net core does not exist: ${dotnetExePath}`);
             }
 
             // Telemetry: dotnet version actually used
