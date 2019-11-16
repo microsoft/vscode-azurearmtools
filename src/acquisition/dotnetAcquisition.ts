@@ -20,6 +20,7 @@ import { StatusBarObserver } from './StatusBarObserver';
 
 let acquisitionWorker: DotnetCoreAcquisitionWorker;
 let initialized = false;
+const eventStreamObservers: IEventStreamObserver[] = [];
 
 function initializeDotnetAcquire(): void {
     if (initialized) {
@@ -37,11 +38,8 @@ function initializeDotnetAcquire(): void {
         throw new Error(`Could not resolve dotnet acquisition extension '${parentExtensionId}' location`);
     }
 
-    const eventStreamObservers: IEventStreamObserver[] =
-        [
-            new StatusBarObserver(vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, Number.MIN_VALUE)),
-            new OutputChannelObserver(ext.outputChannel),
-        ];
+    eventStreamObservers.push(new StatusBarObserver(vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, Number.MIN_VALUE)));
+    eventStreamObservers.push(new OutputChannelObserver(ext.outputChannel));
     const eventStream = new EventStream();
 
     for (const observer of eventStreamObservers) {
@@ -60,31 +58,50 @@ function initializeDotnetAcquire(): void {
         eventStream);
 }
 
-export async function dotnetAcquire(version: string, telemetryProperties: { [key: string]: string | undefined }): Promise<string> {
-    initializeDotnetAcquire();
-
-    if (!version || version === 'latest') {
-        throw new Error(`Cannot acquire .NET Core version "${version}". Please provide a valid version.`);
-    }
-    return acquisitionWorker.acquire(version, telemetryProperties);
+function getStreamLogs(): string {
+    return eventStreamObservers.map(observer => observer.log).filter(log => !!log).join('\n'); // Use OS-independent newline
 }
 
-export async function ensureDotnetDependencies(dotnetPath: string, args: string[], telemetryProperties: { [key: string]: string | undefined }): Promise<void> {
-    initializeDotnetAcquire();
+export async function dotnetAcquire(
+    version: string,
+    telemetryProperties: { [key: string]: string | undefined },
+    issueProperties: { [key: string]: string | undefined }
+): Promise<string> {
+    try {
+        initializeDotnetAcquire();
 
-    if (os.platform() !== 'linux') {
-        // We can't handle installing dependencies for anything other than Linux
-        telemetryProperties.skipped = "true";
-        return;
+        if (!version || version === 'latest') {
+            throw new Error(`Cannot acquire .NET Core version "${version}". Please provide a valid version.`);
+        }
+        return await acquisitionWorker.acquire(version, telemetryProperties);
+    } finally {
+        issueProperties.dotnetAcquireLog = getStreamLogs();
     }
+}
 
-    const result = cp.spawnSync(dotnetPath, args);
-    const installer = new DotnetCoreDependencyInstaller(ext.outputChannel);
-    if (installer.signalIndicatesMissingLinuxDependencies(result.signal)) {
-        telemetryProperties.signalIndicatesMissing = "true";
-        await installer.promptLinuxDependencyInstall(telemetryProperties, 'Failed to successfully run the language server.');
-    } else {
-        telemetryProperties.signalIndicatesMissing = "false";
+export async function ensureDotnetDependencies(
+    dotnetPath: string, args: string[],
+    telemetryProperties: { [key: string]: string | undefined },
+    issueProperties: { [key: string]: string | undefined }
+): Promise<void> {
+    try {
+        initializeDotnetAcquire();
+
+        if (os.platform() !== 'linux') {
+            // We can't handle installing dependencies for anything other than Linux
+            telemetryProperties.skipped = "true";
+        }
+
+        const result = cp.spawnSync(dotnetPath, args);
+        const installer = new DotnetCoreDependencyInstaller(ext.outputChannel);
+        if (installer.signalIndicatesMissingLinuxDependencies(result.signal)) {
+            telemetryProperties.signalIndicatesMissing = "true";
+            await installer.promptLinuxDependencyInstall(telemetryProperties, 'Failed to successfully run the language server.');
+        } else {
+            telemetryProperties.signalIndicatesMissing = "false";
+        }
+    } finally {
+        issueProperties.dotnetAcquireLog = getStreamLogs();
     }
 }
 

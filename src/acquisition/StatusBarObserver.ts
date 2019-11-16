@@ -14,7 +14,13 @@ enum StatusBarColors {
 }
 
 export class StatusBarObserver implements IEventStreamObserver {
+    private _log: string = "";
+
     constructor(private readonly statusBarItem: vscode.StatusBarItem) {
+    }
+
+    public get log(): string {
+        return this._log;
     }
 
     public post(event: IEvent): void {
@@ -27,6 +33,8 @@ export class StatusBarObserver implements IEventStreamObserver {
                 break;
             case EventType.DotnetAcquisitionError:
                 this.setAndShowStatusBar('$(alert) Error acquiring .NET Core tooling!', 'dotnet.showAcquisitionLog', StatusBarColors.Red, 'Error acquiring .NET Core tooling');
+                break;
+            case EventType.DotnetAcquisitionMessage:
                 break;
             default:
                 // tslint:disable-next-line: no-console
@@ -41,6 +49,8 @@ export class StatusBarObserver implements IEventStreamObserver {
         this.statusBarItem.color = color;
         this.statusBarItem.tooltip = tooltip;
         this.statusBarItem.show();
+
+        this._log += `Status bar: ${text}\n`; // Use OS-independent newline
     }
 
     public resetAndHideStatusBar(): void {
