@@ -40,7 +40,7 @@ const env = process.env;
 const preserveStagingFolder = !!env.ARMTOOLS_PRESERVE_STAGING_FOLDER;
 
 // Official builds will download and include the language server bits (which are licensed differently than the code in the public repo)
-const packageLanguageServer = !!env.LANGSERVER_NUGET_USERNAME && !!env.LANGSERVER_NUGET_PASSWORD;
+const packageLanguageServer = !env.DISABLE_LANGUAGE_SERVER && !!env.LANGSERVER_NUGET_USERNAME && !!env.LANGSERVER_NUGET_PASSWORD;
 
 const publicLicenseFileName = 'LICENSE.md';
 const languageServerLicenseFileName = 'License.txt';
