@@ -171,10 +171,10 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             } else {
                 // Object contains elements, look for displayName tag first
                 // tslint:disable-next-line: strict-boolean-expressions
-                let tags = keyNode.properties.find(p => p.name && p.name.toString().toLowerCase() === 'tags');
+                let tags = keyNode.properties.find(p => p.nameValue && p.nameValue.toString().toLowerCase() === 'tags');
                 if (tags && tags.value instanceof Json.ObjectValue) {
                     // tslint:disable-next-line: strict-boolean-expressions
-                    let displayNameProp = tags.value.properties.find(p => p.name && p.name.toString().toLowerCase() === 'displayname');
+                    let displayNameProp = tags.value.properties.find(p => p.nameValue && p.nameValue.toString().toLowerCase() === 'displayname');
                     if (displayNameProp) {
                         let displayName = displayNameProp.value && displayNameProp.value.toString();
                         if (displayName) {
@@ -188,7 +188,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                 for (var i = 0, l = keyNode.properties.length; i < l; i++) {
                     let props = keyNode.properties[i];
                     // If name element is found
-                    if (props.name instanceof Json.StringValue && props.name.toString().toUpperCase() === "name".toUpperCase()) {
+                    if (props.nameValue instanceof Json.StringValue && props.nameValue.toString().toUpperCase() === "name".toUpperCase()) {
                         let name = toFriendlyString(props.value);
 
                         return shortenTreeLabel(name);
@@ -339,7 +339,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             if (rootNode && rootNode.toString().toUpperCase() === "resources".toUpperCase() && keyOrResourceNode instanceof Json.ObjectValue) {
                 // tslint:disable-next-line:one-variable-per-declaration
                 for (var i = 0, il = keyOrResourceNode.properties.length; i < il; i++) {
-                    const name = keyOrResourceNode.properties[i].name;
+                    const name = keyOrResourceNode.properties[i].nameValue;
                     if (name.toString().toUpperCase() === "type".toUpperCase()) {
                         const value = keyOrResourceNode.properties[i].value;
                         if (value) {

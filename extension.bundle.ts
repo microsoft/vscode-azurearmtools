@@ -19,7 +19,6 @@
  */
 
 import * as Completion from './src/Completion';
-import * as Hover from "./src/Hover";
 import * as Json from "./src/JSON";
 import * as Language from "./src/Language";
 import * as TLE from "./src/TLE";
@@ -40,6 +39,7 @@ export { Duration } from './src/Duration';
 export { ExpressionType } from "./src/ExpressionType";
 export { ext } from './src/extensionVariables';
 export { Histogram } from "./src/Histogram";
+export { HoverInfo } from "./src/Hover";
 export { httpGet } from './src/httpGet';
 export { DefinitionKind, INamedDefinition } from "./src/INamedDefinition";
 export { IncorrectArgumentsCountIssue } from "./src/IncorrectArgumentsCountIssue";
@@ -49,7 +49,7 @@ export { LanguageServerState } from "./src/languageclient/startArmLanguageServer
 export { ParameterDefinition } from "./src/ParameterDefinition";
 export { IReferenceSite, PositionContext } from "./src/PositionContext";
 export { ReferenceList } from "./src/ReferenceList";
-export { containsArmSchema, isArmSchema } from './src/supported';
+export { containsArmSchema, getPreferredSchema, isArmSchema } from './src/schemas';
 export { ScopeContext, TemplateScope } from "./src/TemplateScope";
 export { FunctionSignatureHelp } from "./src/TLE";
 export { JsonOutlineProvider, shortenTreeLabel } from "./src/Treeview";
@@ -57,8 +57,9 @@ export { UnrecognizedBuiltinFunctionIssue, UnrecognizedUserFunctionIssue, Unreco
 export { UserFunctionMetadata } from "./src/UserFunctionMetadata";
 export { UserFunctionNamespaceDefinition } from "./src/UserFunctionNamespaceDefinition";
 export { UserFunctionParameterDefinition } from "./src/UserFunctionParameterDefinition";
-export { getVSCodePositionFromPosition } from './src/util/vscodePosition';
-export { VariableDefinition } from "./src/VariableDefinition";
+export { mapJsonObjectValue } from "./src/util/mapJsonObjectValue";
+export { getVSCodePositionFromPosition } from "./src/util/vscodePosition";
+export { isVariableDefinition, IVariableDefinition } from "./src/VariableDefinition";
 export { FindReferencesVisitor } from "./src/visitors/FindReferencesVisitor";
 export { FunctionCountVisitor } from "./src/visitors/FunctionCountVisitor";
 export { IncorrectFunctionArgumentCountVisitor } from "./src/visitors/IncorrectFunctionArgumentCountVisitor";
@@ -69,7 +70,6 @@ export { UnrecognizedFunctionVisitor } from "./src/visitors/UnrecognizedFunction
 export { Completion };
 export { Json };
 export { Language };
-export { Hover };
 export { basic };
 export { Utilities };
 export { TLE };

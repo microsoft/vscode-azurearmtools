@@ -2,12 +2,19 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import * as os from 'os';
 import { CachedValue } from './CachedValue';
 import { assert } from './fixed_assert';
+import { IUsageInfo } from './Hover';
 import { DefinitionKind, INamedDefinition } from './INamedDefinition';
 import * as Json from "./JSON";
 import * as language from "./Language";
+import { getUserFunctionUsage } from './signatureFormatting';
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
+
+export function isUserNamespaceDefinition(definition: INamedDefinition): definition is UserFunctionNamespaceDefinition {
+    return definition.definitionKind === DefinitionKind.Namespace;
+}
 
 /**
  * This class represents the definition of a user-defined namespace in a deployment template.
@@ -74,7 +81,7 @@ export class UserFunctionNamespaceDefinition implements INamedDefinition {
             const members: Json.ObjectValue | null = Json.asObjectValue(this._value.getPropertyValue("members"));
             if (members) {
                 for (let member of members.properties) {
-                    let name: Json.StringValue = member.name;
+                    let name: Json.StringValue = member.nameValue;
                     let value = Json.asObjectValue(member.value);
                     if (value) {
                         let func = new UserFunctionDefinition(this, name, value);
@@ -94,5 +101,23 @@ export class UserFunctionNamespaceDefinition implements INamedDefinition {
         } else {
             return undefined;
         }
+    }
+
+    public get usageInfo(): IUsageInfo {
+        const ns = this.nameValue.unquotedValue;
+        const methodsUsage: string[] = this.members
+            .map(md => getUserFunctionUsage(md, false));
+        let description: string | undefined;
+        if (methodsUsage.length > 0) {
+            description = `Members:${os.EOL}${methodsUsage.map(mu => `* ${mu}`).join(os.EOL)}`;
+        } else {
+            description = `No members`;
+        }
+
+        return {
+            usage: ns,
+            friendlyType: "user-defined namespace",
+            description // CONSIDER: retrieve description from metadata, if supported
+        };
     }
 }

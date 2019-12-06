@@ -4,24 +4,47 @@
 
 // tslint:disable max-classes-per-file // Grandfathered in
 
-import { IParameterDefinition } from "./IParameterDefinition";
+import * as os from 'os';
 import * as language from "./Language";
-import { getUserFunctionUsage } from "./signatureFormatting";
-import { UserFunctionDefinition } from "./UserFunctionDefinition";
-import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
-import { VariableDefinition } from "./VariableDefinition";
+
+export interface IUsageInfo {
+    usage: string;
+    friendlyType: string; // e.g "parameter", "user function"
+    description: string | undefined | null;
+}
 
 /**
  * The information that will be displayed when the cursor hovers over parts of a document.
  */
-export abstract class Info {
-    constructor(private readonly _span: language.Span) {
+export class HoverInfo {
+    constructor(private readonly _usageInfo: IUsageInfo, private readonly _referenceSpan: language.Span) {
     }
 
-    public abstract getHoverText(): string;
+    public getHoverText(): string {
+        let info = `**${this._usageInfo.usage}**${os.EOL}*(${this._usageInfo.friendlyType})*`;
+        const description = this._usageInfo.description;
+        if (description) {
+            info += os.EOL + os.EOL + description;
+        }
+
+        return info;
+    }
 
     public get span(): language.Span {
-        return this._span;
+        return this._referenceSpan;
+    }
+
+    public get friendlyType(): string {
+        return this._usageInfo.friendlyType;
+    }
+
+    public get usage(): string {
+        return this._usageInfo.usage;
+    }
+
+    public get description(): string | undefined {
+        // tslint:disable-next-line: strict-boolean-expressions
+        return this._usageInfo.description || undefined;
     }
 
     /**
@@ -29,91 +52,5 @@ export abstract class Info {
      */
     public get __debugDisplay(): string {
         return this.getHoverText();
-    }
-}
-
-/**
- * The information that will be displayed when the cursor hovers over a TLE function.
- */
-export class FunctionInfo extends Info {
-    constructor(private _name: string, private _usage: string, private _description: string, _functionNameSpan: language.Span) {
-        super(_functionNameSpan);
-    }
-
-    public getHoverText(): string {
-        return `**${this._usage}**${(this._description ? `\n${this._description}` : ``)}`;
-    }
-
-    public get functionName(): string {
-        return this._name;
-    }
-}
-
-/**
- * The information that will be displayed when the cursor hovers over a user-defined TLE function.
- */
-export class UserFunctionInfo extends Info {
-    constructor(private _function: UserFunctionDefinition, _span: language.Span) {
-        super(_span);
-    }
-
-    public getHoverText(): string {
-        const usage: string = getUserFunctionUsage(this._function);
-        return `**${usage}** User-defined function`;
-    }
-}
-
-/**
- * The information that will be displayed when the cursor hovers over a user-defined namespace
- */
-export class UserNamespaceInfo extends Info {
-    constructor(private _namespace: UserFunctionNamespaceDefinition, _span: language.Span) {
-        super(_span);
-    }
-
-    public getHoverText(): string {
-        const ns = this._namespace.nameValue.unquotedValue;
-        const methodsUsage: string[] = this._namespace.members
-            .map(md => getUserFunctionUsage(md, false));
-        const summary = `**${ns}** User-defined namespace`;
-        if (methodsUsage.length > 0) {
-            return `${summary}\n\nMembers:\n${methodsUsage.map(mu => `* ${mu}`).join("\n")}`;
-        } else {
-            return `${summary}\n\nNo members`;
-        }
-    }
-}
-
-/**
- * The information that will be displayed when the cursor hovers over a TLE parameter reference.
- */
-export class ParameterReferenceInfo extends Info {
-    constructor(private _name: string, private _description: string | null, _parameterNameSpan: language.Span) {
-        super(_parameterNameSpan);
-    }
-
-    public static fromDefinition(definition: IParameterDefinition, parameterNameSpan: language.Span): ParameterReferenceInfo {
-        return new ParameterReferenceInfo(definition.nameValue.unquotedValue, definition.description, parameterNameSpan);
-    }
-
-    public getHoverText(): string {
-        return `**${this._name}** (parameter)${(this._description ? `\n${this._description}` : "")}`;
-    }
-}
-
-/**
- * The information that will be displayed when the cursor hovers over a TLE variable reference.
- */
-export class VariableReferenceInfo extends Info {
-    constructor(private _name: string, _variableNameSpan: language.Span) {
-        super(_variableNameSpan);
-    }
-
-    public static fromDefinition(definition: VariableDefinition, variableNameSpan: language.Span): VariableReferenceInfo {
-        return new VariableReferenceInfo(definition.nameValue.unquotedValue, variableNameSpan);
-    }
-
-    public getHoverText(): string {
-        return `**${this._name}** (variable)`;
     }
 }

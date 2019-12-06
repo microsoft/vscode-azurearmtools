@@ -1,0 +1,97 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "metadata": {
+    "notes": "vs code doesn't recognize this schema but when it does, won't handle the nested resource scoping against a different schema"
+  },
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "rgName": {
+      "type": "string",
+      "defaultValue": "rgLockTest",
+      "metadata": {
+        "description": "Name of the resourceGroup to create"
+      }
+    },
+    "rgLocation": {
+      "type": "string",
+      "defaultValue": "westus2",
+      "metadata": {
+        "description": "Location for the resourceGroup"
+      }
+    },
+    "principalId": {
+      "type": "string",
+      "defaultValue": "7c1752e8-668a-4aed-9405-20d1e9daf1e6",
+      "metadata": {
+        "description": "principalId if the user that will be given contributor access to the resourceGroup"
+      }
+    },
+    "roleDefinitionId": {
+      "type": "string",
+      "defaultValue": "b24988ac-6180-42a0-ab88-20f7382dd24c",
+      "metadata": {
+        "description": "roleDefinition to apply to the resourceGroup - default is contributor"
+      }
+    },
+    "roleAssignmentName": {
+      "type": "string",
+      "defaultValue": "[guid(deployment().name)]",
+      "metadata": {
+        "description": "Unique name for the roleAssignment in the format of a guid"
+      }
+    }
+  },
+  "variables": { },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2018-05-01",
+      "location": "[parameters('rgLocation')]",
+      "name": "[parameters('rgName')]",
+      "tags": {
+        "Note": "subscription level deployment",
+        "TagApply": "test"
+      },
+      "properties": {}
+    },
+    {
+      "apiVersion": "2018-05-01",
+      "name": "applyLock",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[parameters('rgName')]",
+      "dependsOn": [
+        "[parameters('rgName')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "resources": [
+            {
+              "name": "DontDelete",
+              "type": "Microsoft.Authorization/locks",
+              "apiVersion": "2019-04-01",
+              "properties": {
+                "level": "CanNotDelete",
+                "notes": "Prevent deletion of the resourceGroup"
+              }
+            },
+            {
+              "name": "[guid(parameters('roleAssignmentName'))]",
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2017-05-01",
+              "properties": {
+                "roleDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/roleDefinitions/', parameters('roleDefinitionId'))]",
+                "principalId": "[parameters('principalId')]",
+                "scope": "[concat(subscription().id, '/resourceGroups/', parameters('rgName'))]"
+              }
+            }        
+          ]
+        },
+        "parameters": {}
+      }
+    }
+  ]
+}

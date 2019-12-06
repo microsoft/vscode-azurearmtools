@@ -11,16 +11,19 @@ import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import * as Completion from "./Completion";
-import { configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, languageId, outputWindowName } from "./constants";
+import { configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, languageId, outputWindowName, storageKeys } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
-import * as Hover from "./Hover";
+import * as Hover from './Hover';
+import { DefinitionKind } from "./INamedDefinition";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
+import * as Json from "./JSON";
 import * as language from "./Language";
 import { startArmLanguageServer, stopArmLanguageServer } from "./languageclient/startArmLanguageServer";
-import { PositionContext } from "./PositionContext";
-import * as Reference from "./ReferenceList";
+import { IReferenceSite, PositionContext } from "./PositionContext";
+import { ReferenceList } from "./ReferenceList";
+import { getPreferredSchema } from "./schemas";
 import { getFunctionParamUsage } from "./signatureFormatting";
 import { Stopwatch } from "./Stopwatch";
 import { armDeploymentDocumentSelector, mightBeDeploymentTemplate } from "./supported";
@@ -55,6 +58,7 @@ export function deactivateInternal(): void {
 export class AzureRMTools {
     private readonly _diagnosticsCollection: vscode.DiagnosticCollection;
     private readonly _deploymentTemplates: Map<string, DeploymentTemplate> = new Map<string, DeploymentTemplate>();
+    private readonly _filesAskedToUpdateSchema: Set<string> = new Set<string>();
     private _areDeploymentTemplateEventsHookedUp: boolean = false;
     private _diagnosticsVersion: number = 0;
 
@@ -83,8 +87,8 @@ export class AzureRMTools {
             await stopArmLanguageServer();
             await uninstallDotnet();
         });
-        vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
 
+        vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
         vscode.workspace.onDidOpenTextDocument(this.onDocumentOpened, this, context.subscriptions);
         vscode.workspace.onDidChangeTextDocument(this.onDocumentChanged, this, context.subscriptions);
 
@@ -117,12 +121,13 @@ export class AzureRMTools {
             actionContext.telemetry.properties.fileExt = path.extname(document.fileName);
 
             assert(document);
-
+            const editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
             const stopwatch = new Stopwatch();
             stopwatch.start();
 
             let treatAsDeploymentTemplate = false;
-            let isNewlyOpened = false; // As opposed to already opened and being activated
+            let isNewlyOpened = false; // As opposed to already opened and simply being made active
+            const documentUri: string = document.uri.toString();
 
             if (document.languageId === languageId) {
                 // Lang ID is set to arm-template, whether auto or manual, respect the setting
@@ -133,7 +138,7 @@ export class AzureRMTools {
             if (shouldParseFile) {
                 // If the documentUri is not in our dictionary of deployment templates, then we
                 // know that this document was just opened (as opposed to changed/updated).
-                const documentUri: string = document.uri.toString();
+                // Note that it might have been opened, then closed, then reopened.
                 if (!this._deploymentTemplates.has(documentUri)) {
                     isNewlyOpened = true;
                 }
@@ -159,8 +164,18 @@ export class AzureRMTools {
                             return;
                         }
 
-                        // Template for template opened
+                        // Telemetry for template opened
+                        // tslint:disable-next-line: no-floating-promises // Don't wait
                         this.reportTemplateOpenedTelemetry(document, deploymentTemplate, stopwatch);
+
+                        // No guarantee that active editor is the one we're processing, ignore if not
+                        if (editor && editor.document === document) {
+                            let queriedToUpdateSchema = this._filesAskedToUpdateSchema.has(documentUri);
+                            if (!queriedToUpdateSchema) { // Only ask to upgrade once per session per file
+                                // Are they using an older schema?  Ask to update.
+                                this.queryUseNewerSchema(editor, deploymentTemplate);
+                            }
+                        }
                     }
 
                     this.reportDeploymentTemplateErrors(document, deploymentTemplate);
@@ -190,33 +205,54 @@ export class AzureRMTools {
         actionContext.telemetry.suppressIfSuccessful = false;
     }
 
-    private reportTemplateOpenedTelemetry(
+    private async reportTemplateOpenedTelemetry(
         document: vscode.TextDocument,
         deploymentTemplate: DeploymentTemplate,
         stopwatch: Stopwatch
-    ): void {
+    ): Promise<void> {
         // tslint:disable-next-line: restrict-plus-operands
         const functionsInEachNamespace = deploymentTemplate.topLevelScope.namespaceDefinitions.map(ns => ns.members.length);
         // tslint:disable-next-line: restrict-plus-operands
         const totalUserFunctionsCount = functionsInEachNamespace.reduce((sum, count) => sum + count, 0);
+
+        const issuesHistograph = new Histogram();
+        const errors = await deploymentTemplate.errorsPromise;
+        const warnings = deploymentTemplate.warnings;
+        for (const error of errors) {
+            issuesHistograph.add(`extErr:${error.kind}`);
+        }
+        for (const warning of deploymentTemplate.warnings) {
+            issuesHistograph.add(`extWarn:${warning.kind}`);
+        }
 
         ext.reporter.sendTelemetryEvent(
             "Deployment Template Opened",
             {
                 docLangId: document.languageId,
                 docExtension: path.extname(document.fileName),
+                // tslint:disable-next-line: strict-boolean-expressions
+                schema: deploymentTemplate.schemaUri || "",
+                // tslint:disable-next-line: strict-boolean-expressions
+                apiProfile: deploymentTemplate.apiProfile || "",
+                issues: this.histogramToTelemetryString(issuesHistograph)
             },
             {
                 documentSizeInCharacters: document.getText().length,
                 parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds,
                 lineCount: deploymentTemplate.lineCount,
+                maxLineLength: deploymentTemplate.getMaxLineLength(),
                 paramsCount: deploymentTemplate.topLevelScope.parameterDefinitions.length,
                 varsCount: deploymentTemplate.topLevelScope.variableDefinitions.length,
                 namespacesCount: deploymentTemplate.topLevelScope.namespaceDefinitions.length,
-                userFunctionsCount: totalUserFunctionsCount
+                userFunctionsCount: totalUserFunctionsCount,
+                multilineStringCount: deploymentTemplate.getMultilineStringCount(),
+                commentCount: deploymentTemplate.getCommentCount(),
+                extErrorsCount: errors.length,
+                extWarnCount: warnings.length
             });
 
         this.logFunctionCounts(deploymentTemplate);
+        this.logResourceUsage(deploymentTemplate);
     }
 
     private reportDeploymentTemplateErrors(document: vscode.TextDocument, deploymentTemplate: DeploymentTemplate): void {
@@ -247,8 +283,92 @@ export class AzureRMTools {
         });
     }
 
+    private queryUseNewerSchema(editor: vscode.TextEditor, deploymentTemplate: DeploymentTemplate): void {
+        const schemaValue: Json.StringValue | null = deploymentTemplate.schemaValue;
+        // tslint:disable-next-line: strict-boolean-expressions
+        const schemaUri: string | undefined = deploymentTemplate.schemaUri || undefined;
+        const preferredSchemaUri: string | undefined = schemaUri && getPreferredSchema(schemaUri);
+        const document = editor.document;
+        const documentUri = document.uri.toString();
+        const checkForLatestSchema = !!vscode.workspace.getConfiguration(configPrefix).get<boolean>(configKeys.checkForLatestSchema);
+
+        if (preferredSchemaUri && schemaValue) {
+            // tslint:disable-next-line: no-floating-promises // Don't wait
+            callWithTelemetryAndErrorHandling('queryUpdateSchema', async (actionContext: IActionContext): Promise<void> => {
+                actionContext.telemetry.properties.currentSchema = schemaUri;
+                actionContext.telemetry.properties.preferredSchema = preferredSchemaUri;
+                actionContext.telemetry.properties.checkForLatestSchema = String(checkForLatestSchema);
+
+                if (!checkForLatestSchema) {
+                    return;
+                }
+
+                // tslint:disable-next-line: strict-boolean-expressions
+                const dontAskFiles = ext.context.globalState.get<string[]>(storageKeys.dontAskAboutSchemaFiles) || [];
+                if (dontAskFiles.includes(documentUri)) {
+                    actionContext.telemetry.properties.isInDontAskList = 'true';
+                    return;
+                }
+
+                const yes: vscode.MessageItem = { title: "Use latest" };
+                const notNow: vscode.MessageItem = { title: "Not now" };
+                const neverForThisFile: vscode.MessageItem = { title: "Not for this file" };
+
+                this._filesAskedToUpdateSchema.add(documentUri);
+                const response = await ext.ui.showWarningMessage(
+                    `Would you like to use the latest schema for deployment template "${path.basename(document.uri.path)}" (note: some tools may be unable to process the latest schema)?`,
+                    {
+                        learnMoreLink: "https://aka.ms/vscode-azurearmtools-updateschema"
+                    },
+                    yes,
+                    notNow,
+                    neverForThisFile
+                );
+                actionContext.telemetry.properties.response = response.title;
+
+                switch (response.title) {
+                    case yes.title:
+                        await this.replaceSchema(document.uri, deploymentTemplate, schemaValue.unquotedValue, preferredSchemaUri);
+                        actionContext.telemetry.properties.replacedSchema = "true";
+                        return;
+                    case notNow.title:
+                        return;
+                    case neverForThisFile.title:
+                        dontAskFiles.push(documentUri);
+                        await ext.context.globalState.update(storageKeys.dontAskAboutSchemaFiles, dontAskFiles);
+                        break;
+                    default:
+                        assert("queryUseNewerSchema: Unexpected response");
+                        break;
+                }
+            });
+        }
+    }
+
+    private async  replaceSchema(uri: vscode.Uri, deploymentTemplate: DeploymentTemplate, previousSchema: string, newSchema: string): Promise<void> {
+        // Editor might have been closed or tabbed away from, so make sure it's visible
+        const editor = await vscode.window.showTextDocument(uri);
+
+        // The document might have changed since we asked, so find the $schema again
+        const currentTemplate = new DeploymentTemplate(editor.document.getText(), `current ${deploymentTemplate.documentId}`);
+        const currentSchemaValue: Json.StringValue | null = currentTemplate.schemaValue;
+        if (currentSchemaValue && currentSchemaValue.unquotedValue === previousSchema) {
+            const range = getVSCodeRangeFromSpan(currentTemplate, currentSchemaValue.unquotedSpan);
+            await editor.edit(edit => {
+                // Replace $schema value
+                edit.replace(range, newSchema);
+            });
+
+            // Select what we just replaced
+            editor.selection = new vscode.Selection(range.start, range.end);
+            editor.revealRange(range, vscode.TextEditorRevealType.Default);
+        } else {
+            throw new Error("The document has changed, the $schema was not replaced.");
+        }
+    }
+
     private getCompletedDiagnostic(): vscode.Diagnostic | undefined {
-        if (ext.getAddCompletedDiagnostic()) {
+        if (ext.addCompletedDiagnostic) {
             // Add a diagnostic to indicate expression validation is done (for testing)
             return {
                 severity: vscode.DiagnosticSeverity.Information,
@@ -337,6 +457,8 @@ export class AzureRMTools {
                 incorrectArgs?: string;
             } & TelemetryProperties = actionContext.telemetry.properties;
 
+            let issues: language.Issue[] = await deploymentTemplate.errorsPromise;
+
             // Full function counts
             const functionCounts: Histogram = deploymentTemplate.getFunctionCounts();
             const functionsData: { [key: string]: number } = {};
@@ -345,8 +467,8 @@ export class AzureRMTools {
             }
             properties.functionCounts = JSON.stringify(functionsData);
 
-            // Missing function names and functions with incorrect number of arguments
-            let issues: language.Issue[] = await deploymentTemplate.errorsPromise;
+            // Missing function names and functions with incorrect number of arguments (useful for knowing
+            //   if our expressionMetadata.json file is up to date)
             let unrecognized = new Set<string>();
             let incorrectArgCounts = new Set<string>();
             for (const issue of issues) {
@@ -361,6 +483,31 @@ export class AzureRMTools {
             properties.unrecognized = AzureRMTools.convertSetToJson(unrecognized);
             properties.incorrectArgs = AzureRMTools.convertSetToJson(incorrectArgCounts);
         });
+    }
+
+    /**
+     * Log information about which resource types and apiVersions are being used
+     */
+    private logResourceUsage(deploymentTemplate: DeploymentTemplate): void {
+        // Don't wait for promise
+        // tslint:disable-next-line: no-floating-promises
+        callWithTelemetryAndErrorHandling("schema.stats", async (actionContext: IActionContext): Promise<void> => {
+            actionContext.errorHandling.suppressDisplay = true;
+            let properties: {
+                resourceCounts?: string;
+            } & TelemetryProperties = actionContext.telemetry.properties;
+
+            const resourceCounts: Histogram = deploymentTemplate.getResourceUsage();
+            properties.resourceCounts = this.histogramToTelemetryString(resourceCounts);
+        });
+    }
+
+    private histogramToTelemetryString(histogram: Histogram): string {
+        const data: { [key: string]: number } = {};
+        for (const key of histogram.keys) {
+            data[<string>key] = histogram.getCount(key);
+        }
+        return JSON.stringify(data);
     }
 
     private static convertSetToJson(s: Set<string>): string {
@@ -396,28 +543,15 @@ export class AzureRMTools {
         if (deploymentTemplate) {
             return callWithTelemetryAndErrorHandlingSync('Hover', (actionContext: IActionContext): vscode.Hover | undefined => {
                 actionContext.errorHandling.suppressDisplay = true;
-                let properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>actionContext.telemetry.properties;
+                const properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>actionContext.telemetry.properties;
 
                 const context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                let hoverInfo: Hover.Info | null = context.getHoverInfo();
-                let hover: vscode.Hover;
+                const hoverInfo: Hover.HoverInfo | null = context.getHoverInfo();
 
                 if (hoverInfo) {
-                    if (hoverInfo instanceof Hover.UserNamespaceInfo) {
-                        properties.hoverType = "User Namespace";
-                    } else if (hoverInfo instanceof Hover.UserFunctionInfo) {
-                        properties.hoverType = "User Function";
-                    } else if (hoverInfo instanceof Hover.FunctionInfo) {
-                        properties.hoverType = "TLE Function";
-                        properties.tleFunctionName = hoverInfo.functionName;
-                    } else if (hoverInfo instanceof Hover.ParameterReferenceInfo) {
-                        properties.hoverType = "Parameter Reference";
-                    } else if (hoverInfo instanceof Hover.VariableReferenceInfo) {
-                        properties.hoverType = "Variable Reference";
-                    }
-
+                    properties.hoverType = hoverInfo.friendlyType;
                     const hoverRange: vscode.Range = getVSCodeRangeFromSpan(deploymentTemplate, hoverInfo.span);
-                    hover = new vscode.Hover(hoverInfo.getHoverText(), hoverRange);
+                    const hover = new vscode.Hover(hoverInfo.getHoverText(), hoverRange);
                     return hover;
                 }
 
@@ -510,7 +644,7 @@ export class AzureRMTools {
                 const locationUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
                 const positionContext: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
-                const references: Reference.ReferenceList | null = positionContext.getReferences();
+                const references: ReferenceList | null = positionContext.getReferences();
                 if (references && references.length > 0) {
                     actionContext.telemetry.properties.referenceType = references.kind;
 
@@ -564,7 +698,12 @@ export class AzureRMTools {
                 const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                const referenceList: Reference.ReferenceList | null = context.getReferences();
+                const referenceSiteInfo: IReferenceSite | null = context.getReferenceSiteInfo();
+                if (referenceSiteInfo && referenceSiteInfo.definition.definitionKind === DefinitionKind.BuiltinFunction) {
+                    throw new Error("Built-in functions cannot be renamed.");
+                }
+
+                const referenceList: ReferenceList | null = context.getReferences();
                 if (referenceList) {
                     // When trying to rename a parameter or variable reference inside of a TLE, the
                     // textbox that pops up when you press F2 contains more than just the variable
@@ -593,7 +732,7 @@ export class AzureRMTools {
                         result.replace(documentUri, referenceRange, newName);
                     }
                 } else {
-                    throw new Error('You can only rename parameters and variables.');
+                    throw new Error('Only parameters, variables, user namespaces and user functions can be renamed.');
                 }
 
                 return result;
@@ -601,16 +740,16 @@ export class AzureRMTools {
         }
     }
 
-    private onActiveTextEditorChanged(): void {
+    private onActiveTextEditorChanged(editor: vscode.TextEditor | undefined): void {
         callWithTelemetryAndErrorHandlingSync('onActiveTextEditorChanged', (actionContext: IActionContext): void => {
             actionContext.telemetry.properties.isActivationEvent = 'true';
             actionContext.errorHandling.suppressDisplay = true;
             actionContext.telemetry.suppressIfSuccessful = true;
 
-            let activeEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-            if (activeEditor) {
-                if (this.getDeploymentTemplate(activeEditor.document) === undefined) {
-                    this.updateDeploymentTemplate(activeEditor.document);
+            if (editor) {
+                const document = editor.document;
+                if (!this.getDeploymentTemplate(document)) {
+                    this.updateDeploymentTemplate(document);
                 }
             }
         });

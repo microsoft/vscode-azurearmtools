@@ -1,0 +1,454 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "9.0-5",
+    "parameters": {
+        "DeploymentName": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10,
+            "metadata": {
+                "description": "The value will be used as prefix for all resources. Limit to 10 characters and spaces will be removed."
+            }
+        },
+        "AdminUser": {
+            "type": "string",
+            "minLength": 0,
+            "metadata": {
+                "description": "The MarkLogic administrator user name"
+            }
+        },
+        "AdminPassword": {
+            "type": "secureString",
+            "minLength": 0,
+            "metadata": {
+                "description": "The MarkLogic administrator password"
+            }
+        },
+        "Licensee": {
+            "type": "string",
+            "minLength": 1,
+            "defaultValue": "none",
+            "metadata": {
+                "description": "The MarkLogic Licensee or 'none' for developer license"
+            }
+        },
+        "LicenseKey": {
+            "type": "string",
+            "minLength": 1,
+            "defaultValue": "none",
+            "metadata": {
+                "description": "The MarkLogic License Key or 'none' for developer license"
+            }
+        },
+        "NumberOfNodes": {
+            "type": "int",
+            "defaultValue": 3,
+            "allowedValues": [1,3],
+            "metadata": {
+                "description": "Number of nodes in the cluster"
+            }
+        },
+        "LoadBalancer": {
+            "type": "string",
+            "defaultValue": "public",
+            "allowedValues": ["public", "internal"],
+            "metadata": {
+                "description": "Type of load balancer to use"
+            }
+        },
+        "LoadBalancerIPV6": {
+            "type": "string",
+            "defaultValue": "enable",
+            "allowedValues": ["enable", "disable"],
+            "metadata": {
+                "description": "IPv6 address on the load balancer. Only applicable if load balancer is public"
+            }
+        },
+        "OSStorage": {
+            "type": "string",
+            "defaultValue": "premium",
+            "allowedValues": ["premium", "standard"],
+            "metadata": {
+                "description": "Storage type for operating system of virtual machines"
+            }
+        },
+        "DataStorage": {
+            "type": "string",
+            "defaultValue": "premium",
+            "allowedValues": ["premium", "standard"],
+            "metadata": {
+                "description": "Storage type for data directory of virtual machines"
+            }
+        },
+        "VirtualMachineUser": {
+            "type": "string",
+            "minLength": 0,
+            "metadata": {
+                "description": "Operating system user name for virtual machines"
+            }
+        },
+        "SSHPublicKey": {
+            "type": "secureString",
+            "minLength": 0,
+            "metadata": {
+                "description": "Public SSH key for virtual machine user specified"
+            }
+        },
+        "InstanceType": {
+            "type": "string",
+            "defaultValue": "Standard_DS13_v2",
+            "metadata": {
+                "description": "Type of virtual machine to launch. The list only includes instance types that meet minimum requirement of MarkLogic Server"
+            }
+        },
+        "HighAvailability": {
+            "type": "string",
+            "defaultValue": "enable",
+            "allowedValues": ["enable","disable"],
+            "metadata": {
+                "description": "Configure local-disk failover. Only applicable to multi-node cluster"
+            }
+        },
+        "baseUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URL for dependent assets",
+                "artifactsBaseUrl": ""
+            },
+            "minLength": 1,
+            "defaultValue": "https://raw.githubusercontent.com/marklogic/cloud-enablement/v9.0-5/azure"
+        },
+        "location": {
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+                "description": "The location to deploy the cluster"
+            }
+        }
+    },
+    "variables": {
+        "templateVersion": "9.0-5",
+        "templateBaseUrl": "[concat(parameters('baseUrl'),'/templates/')]",
+        "scriptBaseUrl": "[concat(parameters('baseUrl'),'/scripts/')]",
+        "clusterPrefix": "[replace(parameters('DeploymentName'),' ','')]",
+        "clusterLocation": "[parameters('location')]",
+        "enableAvailabilitySet": true,
+        "enableLbIpv6": "[if(equals(parameters('LoadBalancerIPv6'),'enable'),bool('true'),bool('false'))]",
+        "enableHA": "[if(lessOrEquals(parameters('NumberOfNodes'),1),bool('false'),equals(parameters('HighAvailability'),'enable'))]",
+        "license": "[if(and(equals(parameters('Licensee'),'none'),equals(parameters('LicenseKey'),'none')),'DEV','BYOL')]",
+        "imageOffer": "[if(equals(variables('license'),'DEV'),'marklogic-developer-9','marklogic-9-byol')]",
+        "imageSku": "[if(equals(variables('license'),'DEV'),'ml905_centos','ml905_centos_byol')]",
+        "apiVersions": {
+            "resourcesApiVersion": "2016-09-01",
+            "networkApiVersion": "2017-08-01",
+            "storageApiVersion": "2017-03-30",
+            "computeApiVersion": "2017-03-30"
+        },
+        "templateUrls": {
+            "availabilitySetTemplateUrl": "[concat(variables('templateBaseUrl'),'availabilitySet.json')]",
+            "vnetTemplateUrl": "[concat(variables('templateBaseUrl'),'virtualNetwork.json')]",
+            "nodePublicIpTemplateUrl": "[concat(variables('templateBaseUrl'),'nodePublicIp.json')]",
+            "nsgTemplateUrl": "[concat(variables('templateBaseUrl'),'networkSecurityGroup.json')]",
+            "networkInterfaceTemplateUrl": "[concat(variables('templateBaseUrl'),'networkInterface.json')]",
+            "vmTemplateUrl": "[concat(variables('templateBaseUrl'),'virtualMachine.json')]",
+            "bootstrapNodeExtTemplateUrl": "[concat(variables('templateBaseUrl'),'bootstrapNodeExt.json')]",
+            "additionalNodeExtTemplateUrl": "[concat(variables('templateBaseUrl'),'additionalNodeExt.json')]",
+            "lbTemplateUrl": "[concat(variables('templateBaseUrl'),'loadBalancer.json')]"
+        },
+        "scriptUrls": {
+            "bootstrapNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'config-bootstrap-node.sh')]",
+            "additionalNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'config-additional-node.sh')]",
+            "highAvailabilityScriptUrl": "[concat(variables('scriptBaseUrl'),'high-availability.sh')]",
+            "haExtXqyUrl": "[concat(variables('scriptBaseUrl'),'configure-ha.txt')]",
+            "initScriptUrl": "[concat(variables('scriptBaseUrl'),'init.sh')]"
+        },
+        "availabilitySetSetting": {
+            "name": "[concat(variables('clusterPrefix'),'-availset')]",
+            "location": "[variables('clusterLocation')]",
+            "updateDomainCount": "20",
+            "faultDomainCount": "3",
+            "apiVersion": "[variables('apiVersions').computeApiVersion]"
+        },
+        "vnetSetting": {
+            "name": "[concat(variables('clusterPrefix'),'-vnet')]",
+            "location": "[variables('clusterLocation')]",
+            "vnetPrefix": "10.0.0.0/16",
+            "vnetSubnetName": "[concat(variables('clusterPrefix'),'-vnet-subnet')]",
+            "vnetSubnetPrefix": "10.0.1.0/24",
+            "apiVersion": "[variables('apiVersions').networkApiVersion]"
+        },
+        "nsgSetting": {
+            "name": "[concat(variables('clusterPrefix'),'-nsg')]",
+            "location": "[variables('clusterLocation')]",
+            "apiVersion": "[variables('apiVersions').networkApiVersion]"
+        },
+        "nodePublicIpSetting": {
+            "namev4": "[concat(variables('clusterPrefix'),'-ipv4-node')]",
+            "namev6": "[concat(variables('clusterPrefix'),'-ipv6-node')]",
+            "location": "[variables('clusterLocation')]",
+            "domainNameLabel": "[concat(variables('clusterPrefix'),'-',uniqueString(concat(variables('clusterPrefix'),resourceGroup().id)),'-')]",
+            "IPv4AllocationMethod": "Static",
+            "IPv6AllocationMethod": "Dynamic",
+            "idleTimeout": "4",
+            "count": "[parameters('NumberOfNodes')]",
+            "apiVersion": "[variables('apiVersions').networkApiVersion]"
+        },
+        "networkInterfaceSetting": {
+            "name": "[concat(variables('clusterPrefix'),'-networkInterface')]",
+            "apiVersion": "[variables('apiVersions').networkApiVersion]",
+            "location": "[variables('clusterLocation')]",
+            "count":  "[parameters('NumberOfNodes')]",
+            "vnetName": "[variables('vnetSetting').name]",
+            "subnetName": "[variables('vnetSetting').vnetSubnetName]",
+            "nodePublicIpName": "[variables('nodePublicIpSetting').namev4]",
+            "nsgName": "[variables('nsgSetting').name]",
+            "lbName": "[variables('lbSetting').name]",
+            "lbBackendPoolIpv4Name": "[concat(variables('lbSetting').lbBackendPoolName,'-v4')]",
+            "lbBackendPoolIpv6Name": "[concat(variables('lbSetting').lbBackendPoolName,'-v6')]"
+        },
+        "lbSetting": {
+            "name": "[concat(variables('clusterPrefix'),'-lb')]",
+            "apiVersion": "[variables('apiVersions').networkApiVersion]",
+            "location": "[variables('clusterLocation')]",
+            "lbIpConfigName": "[concat(variables('clusterPrefix'),'-lbIpConfig')]",
+            "lbBackendPoolName": "[concat(variables('clusterPrefix'),'-lbBackendPool')]",
+            "probeName": "[concat(variables('clusterPrefix'),'-lbProbe')]",
+            "vnetName": "[variables('vnetSetting').name]",
+            "subnetName": "[variables('vnetSetting').vnetSubnetName]",
+            "type": "[parameters('LoadBalancer')]"
+        },
+        "publicLBIpSetting": {
+            "name": "[concat(variables('lbSetting').name,'Ip')]",
+            "enableIpv6": "[variables('enableLbIpv6')]",
+            "apiVersion": "[variables('apiVersions').networkApiVersion]",
+            "location": "[variables('clusterLocation')]",
+            "IPAllocationMethod": "Static",
+            "domainNameLabel": "[concat(variables('clusterPrefix'),'-',uniqueString(concat(variables('clusterPrefix'),resourceGroup().id)),'-lb')]"
+        },
+        "vmSetting": {
+            "location": "[variables('clusterLocation')]",
+            "count": "[parameters('NumberOfNodes')]",
+
+            "diagnoStorageAcctName": "[concat(toLower(variables('clusterPrefix')),'diagnostorageacct')]",
+            "storageApiVersion": "[variables('apiVersions').storageApiVersion]",
+            "diagnoStorageAccType": "Standard_RAGRS",
+
+            "dataDiskName": "[concat(variables('clusterPrefix'),'-disk')]",
+            "dataDiskCreateOption": "Empty",
+            "dataDiskAcctType": "[if(equals(parameters('DataStorage'),'standard'),'Standard_LRS','Premium_LRS')]",
+            "dataDiskSizeGB": 1023,
+
+            "computeApiVersion": "[variables('apiVersions').computeApiVersion]",
+            "vmName": "[concat(variables('clusterPrefix'),'-vm')]",
+            "imagePublisher": "marklogic",
+            "imageOffer": "[variables('imageOffer')]",
+            "imageSku": "[variables('imageSku')]",
+            "imageVersion": "latest",
+            "availabilitySetName": "[variables('availabilitySetSetting').name]",
+            "enableAvailabilitySet": "[variables('enableAvailabilitySet')]",
+            "vmSize": "[parameters('InstanceType')]",
+            "adminUsername": "[parameters('VirtualMachineUser')]",
+            "sshKey": "[parameters('SSHPublicKey')]",
+            "osDiskAcctType": "[if(equals(parameters('OSStorage'),'standard'),'Standard_LRS','Premium_LRS')]",
+            "networkInterfaceName": "[variables('networkInterfaceSetting').name]"
+        },
+        "bootstrapNodeExtSetting": {
+            "vmName": "[variables('vmSetting').vmName]",
+            "apiVersion": "[variables('apiVersions').computeApiVersion]",
+            "location": "[variables('clusterLocation')]",
+            "bootstrapNodeScriptUrl": "[variables('scriptUrls').bootstrapNodeScriptUrl]",
+            "initScriptUrl": "[variables('scriptUrls').initScriptUrl]",
+            "nodePublicIpName": "[variables('nodePublicIpSetting').namev4]",
+            "cmdPrefix": "[concat('sudo sh config-bootstrap-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 public ',parameters('LicenseKey'),' ',parameters('Licensee'))]"
+        },
+        "additionalNodeExtSetting": {
+            "vmName": "[variables('vmSetting').vmName]",
+            "apiVersion": "[variables('apiVersions').computeApiVersion]",
+            "location": "[variables('clusterLocation')]",
+            "additionalNodeExtCount": "[sub(parameters('NumberOfNodes'),1)]",
+            "additionalNodeScriptUrl": "[variables('scriptUrls').additionalNodeScriptUrl]",
+            "initScriptUrl": "[variables('scriptUrls').initScriptUrl]",
+            "vmLocation": "[variables('vmSetting').location]",
+            "nodePublicIpName": "[variables('nodePublicIpSetting').namev4]",
+            "haExtXqyUrl": "[variables('scriptUrls').haExtXqyUrl]",
+            "highAvailabilityScriptUrl": "[variables('scriptUrls').highAvailabilityScriptUrl]",
+            "cmdPrefix": "[concat('sudo sh config-additional-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 ',string(variables('enableHA')),' ',parameters('LicenseKey'),' ',parameters('Licensee'))]"
+        }
+    },
+    "resources": [
+        {
+            "name": "availabilitySetDeployment",
+            "condition": "[variables('enableAvailabilitySet')]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').availabilitySetTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "availabilitySetSetting": {
+                        "value": "[variables('availabilitySetSetting')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "vnetDeployment",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').vnetTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "vnetSetting": {
+                        "value": "[variables('vnetSetting')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "nodePublicIpDeployment",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').nodePublicIpTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "nodePublicIpSetting": {
+                        "value": "[variables('nodePublicIpSetting')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "nsgDeployment",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').nsgTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "nsgSetting": {
+                        "value": "[variables('nsgSetting')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "loadBalancerDeployment",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').lbTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "lbSetting": {
+                        "value": "[variables('lbSetting')]"
+                    },
+                    "publicLBIpSetting": {
+                        "value": "[variables('publicLBIpSetting')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "networkInterfaceDeployment",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
+            "dependsOn": [
+                "vnetDeployment",
+                "nodePublicIpDeployment",
+                "nsgDeployment",
+                "loadBalancerDeployment"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').networkInterfaceTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "networkInterfaceSetting": {
+                        "value": "[variables('networkInterfaceSetting')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "virtualMachineDeployment",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
+            "dependsOn": [
+                "networkInterfaceDeployment",
+                "availabilitySetDeployment"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').vmTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "vmSetting": {
+                        "value": "[variables('vmSetting')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "bootstrapNodeExtDeployment",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
+            "dependsOn": [
+                "virtualMachineDeployment"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').bootstrapNodeExtTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "extSetting": {
+                        "value": "[variables('bootstrapNodeExtSetting')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "additionalNodeExtDeployment",
+            "type": "Microsoft.Resources/deployments",
+            "condition": "[greater(parameters('NumberOfNodes'),1)]",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
+            "dependsOn": [
+                "bootstrapNodeExtDeployment"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').additionalNodeExtTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "extSetting": {
+                        "value": "[variables('additionalNodeExtSetting')]"
+                    }
+                }
+            }
+        }
+    ]
+}

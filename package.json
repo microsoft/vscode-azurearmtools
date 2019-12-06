@@ -2,10 +2,10 @@
   "name": "azurerm-vscode-tools",
   "displayName": "Azure Resource Manager (ARM) Tools",
   "description": "Language server, editing tools and snippets for Azure Resource Manager (ARM) template files.",
-  "version": "0.7.1-alpha",
+  "version": "0.8.3-alpha",
   "publisher": "msazurermtools",
   "config": {
-    "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.19520.2"
+    "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.19558.3"
   },
   "categories": [
     "Azure",
@@ -102,6 +102,15 @@
           ],
           "default": "Warning",
           "description": "Sets the trace level in the Output window for the Azure Template Language Server (requires restart)"
+        },
+        "azureResourceManagerTools.languageServer.dotnetExePath": {
+          "type": "string",
+          "description": "(Not recommended, requires restart) If specified, overrides the use of a local version of dotnet core the extension and instead points to another installed version of dotnet.exe (must match the version needed by the extension)"
+        },
+        "azureResourceManagerTools.checkForLatestSchema": {
+          "type": "boolean",
+          "description": "Check if the schema for deployment templates is using an out-of-date version and suggest updating",
+          "default": true
         }
       }
     },

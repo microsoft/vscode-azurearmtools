@@ -4,6 +4,10 @@
 
 // Support for testing diagnostics in vscode
 
+// WARNING: At the breakpoint, the extension will be in an inactivate state (i.e., if you make changes in the editor, diagnostics,
+//   formatting, etc. will not be updated until you F5 again)
+const DEBUG_BREAK_AFTER_DIAGNOSTICS_COMPLETE = false;
+
 // tslint:disable:no-unused-expression no-console no-string-based-set-timeout
 // tslint:disable:insecure-random max-func-body-length radix prefer-template
 // tslint:disable:object-literal-key-quotes no-http-string non-literal-fs-path
@@ -37,19 +41,20 @@ function isSourceFromLanguageServer(source: Source): boolean {
 
 export interface IDeploymentParameterDefinition {
     // tslint:disable-next-line:no-reserved-keywords
-    type: ExpressionType;
+    type: ExpressionType | string;
     metadata?: {
         [key: string]: string | undefined;
         description?: string;
     };
     maxLength?: number;
+    minLength?: number;
     defaultValue?: number | unknown[] | string | {};
     allowedValues?: (number | unknown[] | string | {})[];
 }
 
 export interface IDeploymentOutput {
     // tslint:disable-next-line:no-reserved-keywords
-    type: ExpressionType;
+    type: ExpressionType | string;
     value: number | unknown[] | string | {};
 }
 
@@ -58,7 +63,7 @@ export interface IDeploymentFunctionDefinition {
     {
         name: string;
         // tslint:disable-next-line: no-reserved-keywords
-        type: string;
+        type: ExpressionType | string;
     }[];
     output?: IDeploymentOutput;
 }
@@ -71,13 +76,20 @@ export interface IDeploymentNamespaceDefinition {
 }
 
 export interface IDeploymentTemplate {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#" | "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#";
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#" | "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
+    | string;
     contentVersion: string;
+    apiProfile?: string;
     parameters?: {
         [key: string]: IDeploymentParameterDefinition;
     };
     variables?: {
-        [key: string]: number | unknown[] | string | {};
+        copy?: {
+            name: string;
+            count: number;
+            input: string | {};
+        }[];
+        [key: string]: number | unknown[] | string | {} | undefined;
     };
     resources: IDeploymentTemplateResource[];
     outputs?: {
@@ -241,10 +253,14 @@ export async function getDiagnosticsForDocument(
     let diagnostics = await diagnosticsPromise;
     assert(diagnostics);
 
-    // ************* BREAKPOINT HERE TO INSPECT THE TEST FILE WITH DIAGNOSTICS IN THE VSCODE EDITOR
-    //
-    // But note: If you edit the template in the experimental instance, it won't update errors because
-    //   the debugger is paused.
+    if (DEBUG_BREAK_AFTER_DIAGNOSTICS_COMPLETE) {
+        // tslint:disable-next-line:no-debugger
+        debugger;
+        // ************* BREAKPOINT HERE TO INSPECT THE TEST FILE WITH DIAGNOSTICS IN THE VSCODE EDITOR
+        //
+        // But note: If you edit the template in the experimental instance, it won't update errors because
+        //   the debugger is paused.
+    }
 
     if (dispose) {
         dispose.dispose();
@@ -350,5 +366,10 @@ function compareDiagnostics(actual: Diagnostic[], expected: string[], options: I
     let includeRanges = !!options.includeRange && expectedHasRanges;
 
     let actualAsStrings = actual.map(d => diagnosticToString(d, options, includeRanges));
+
+    // Sort
+    expected = expected.sort();
+    actualAsStrings = actualAsStrings.sort();
+
     assert.deepStrictEqual(actualAsStrings, expected);
 }

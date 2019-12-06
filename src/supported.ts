@@ -4,15 +4,12 @@
 
 import { Position, Range, TextDocument, workspace } from "vscode";
 import { configKeys, configPrefix, languageId } from "./constants";
+import { containsArmSchema } from "./schemas";
 
 export const armDeploymentDocumentSelector = [
     { language: languageId, scheme: 'file' }
 ];
 
-const containsArmSchemaRegexString =
-    `https?:\/\/schema\.management\.azure\.com\/schemas\/[^"\/]+\/[a-zA-Z]*[dD]eploymentTemplate\.json#?`;
-const containsArmSchemaRegex = new RegExp(containsArmSchemaRegexString, 'i');
-const isArmSchemaRegex = new RegExp(`^${containsArmSchemaRegexString}$`, 'i');
 const maxLinesToDetectSchemaIn = 500;
 
 function isJsonOrJsoncLangId(textDocument: TextDocument): boolean {
@@ -56,12 +53,4 @@ export function mightBeDeploymentTemplate(textDocument: TextDocument): boolean {
     }
 
     return false;
-}
-
-export function containsArmSchema(json: string): boolean {
-    return !!json && containsArmSchemaRegex.test(json);
-}
-
-export function isArmSchema(json: string | undefined | null): boolean {
-    return !!json && isArmSchemaRegex.test(json);
 }

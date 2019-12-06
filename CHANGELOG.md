@@ -1,7 +1,78 @@
 # Change Log
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
-## Version 0.8.0 (2019-10-01)
+## Version 0.8.2 (2019-11-08)
+### Fixed
+- Full template validation has been temporarily disabled until we can find a long-term solution for some bugs. This fixed:
+  - Template validation error for evaluated variables [#380](https://github.com/microsoft/vscode-azurearmtools/issues/380)
+  - Validation fails using int() with parameter
+  - Validation error if you have a parameter of type "object" [regression from 0.7.0]
+
+## Version 0.8.1 (2019-11-01)
+### Added
+- Support for variable iteration ("variable COPY blocks") [(ARM template variable copy block highlighting error #30)](https://github.com/microsoft/vscode-azurearmtools/issues/30), see https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration
+- Added `azureResourceManagerTools.languageServer.dotnetExePath` setting to allow using an existing dotnet installation as a work-around for installation issues
+- Added expression metadata for the environment() function [#344](https://github.com/microsoft/vscode-azurearmtools/pull/344)
+- Do not validate schema against properties containing expressions
+- ~~Added additional template validations~~ (temporarily disabled in 0.8.2)
+  - ~~Language expression evaluation~~
+  - ~~Dependency checks~~
+  - ~~Template function checks~~
+- Support for all root-level Azure schemas
+- Completion for $schema now shows only root-level schemas
+- Query user to update to latest schema [#368](https://github.com/microsoft/vscode-azurearmtools/pull/368)
+  - Can be completely disabled via `azureResourceManagerTools.checkForLatestSchema` setting
+- Recognize deployment scope from the schema
+  - .../deploymentTemplate.json# - resource group deployment
+  - .../subscriptionDeploymentTemplate.json# - subscription deployment
+  - .../managementGroupDeploymentTemplate.json# - management group deployment
+  - .../tenantDeploymentTemplate.json# - tenant deployment
+- Completion provider for ARM resource type names and apiVersions
+
+### Fixed
+- Fixed message "Exactly 1 match required, but found more than 1" which appears in some scenarios.
+
+## Version 0.8.0 (2019-10-28)
+### Added
+- Greatly improved schema errors and completion
+  - Our new language server now has a better understanding of Azure Resource Manager templates and can therefore provide a better error and completion experience beyond that provided using standard JSON validation
+  - It now narrows down its schema validation based on the resource type and apiVersion properties of each resource.
+  - No longer suggests changing the resource type if the apiVersion is not supported, or if a property is missing or invalid
+  - Errors provide better guidance for what actually needs to be fixed in each resource to match the schema
+  - Greatly improved completion speed
+  - Greatly reduced memory usage
+  - Note: The Azure schemas (which are read and interpreted by this extension) are undergoing continual improvement
+- Full support for user-defined template functions [#122](https://github.com/microsoft/vscode-azurearmtools/issues/122). See Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#functions).
+  - Find References (namespaces, user functions, user function parameters)
+  - Go to Definition
+  - Expression completion
+  - Parameter count validation
+  - Rename user function parameters
+  - Hover information
+  - Signature help
+- Added basic snippet support. This makes Sam Cogan's [Azure Resource Manager Snippets](https://marketplace.visualstudio.com/items?itemName=samcogan.arm-snippets) extension no longer necessary when using this extension.  If you have snippet suggestions, you can add them to our [repo](https://github.com/microsoft/vscode-azurearmtools/issues).
+- Hover information for JSON properties (outside of expressions)
+- ~~Fewer false positives~~
+  - ~~We now allow string values to be automatically coerced to non-string types as appropriate (e.g., "false" can be used in place of false), as the ARM backend allows~~
+  - ~~We now allow non-string values to be automatically coerced to string as appropriate (e.g. false can be used in place of "false")~~
+(This change was reverted in favor of providing a clearer error message.)
+- Add Find References for built-in template functions (e.g. click on "add" in an expression then right-click -> Find All References)
+
+### Fixed
+- Language server using lots of memory [#324](https://github.com/microsoft/vscode-azurearmtools/issues/324)
+- Colorization of parameters and variables should be case-insensitive [#298](https://github.com/microsoft/vscode-azurearmtools/pull/298)
+- Improved description for uniqueString [#309](https://github.com/microsoft/vscode-azurearmtools/issues/309)
+- Updated dotnet core install scripts to latest versions from https://dot.net/v1/dotnet-install.sh and https://dot.net/v1/dotnet-install.ps1
+- Lookup of object variable property names is now correctly case-insensitive
+- JSON keys such as "Parameters" are now correctly case-insensitive
+- Azure Resource Manager Template Server crashed on MacOS [#332](https://github.com/microsoft/vscode-azurearmtools/issues/332) - ~/.local/share folder will now be created if necessary
+
+### Changed
+- Added "(ARM)" to extension name (to "Azure Resource Manager (ARM) Tools" from "Azure Resource Manager Tools") for better discoverability
+
+### Engineering Improvements
+- Enabled strict null checking
+- Lots of other code improvements
 
 ## Version 0.7.0 (2019-09-16)
 ### Added
@@ -19,6 +90,7 @@ In addition, we are considering other improvements to the experience, such as:
 1. Snippets
 2. User-defined functions support
 3. Copy loops support
+
 If you would like to suggest additional features, or for other comments or problems, please enter a new issue at our [public repo](https://github.com/microsoft/vscode-azurearmtools/issues).
 
 ### Fixed<a id="fixed-070"></a>

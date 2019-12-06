@@ -6,7 +6,11 @@ import * as language from "./Language";
 
 export class UnrecognizedBuiltinFunctionIssue extends language.Issue {
     constructor(span: language.Span, private _functionName: string) {
-        super(span, `Unrecognized function name '${_functionName}'.`);
+        super(
+            span,
+            `Unrecognized function name '${_functionName}'.`,
+            language.IssueKind.undefinedFunc
+        );
     }
 
     public translate(movement: number): language.Issue {
@@ -20,7 +24,11 @@ export class UnrecognizedBuiltinFunctionIssue extends language.Issue {
 
 export class UnrecognizedUserNamespaceIssue extends language.Issue {
     constructor(span: language.Span, private _namspaceName: string) {
-        super(span, `Unrecognized user-defined function namespace '${_namspaceName}'.`);
+        super(
+            span,
+            `Unrecognized user-defined function namespace '${_namspaceName}'.`,
+            language.IssueKind.undefinedNs
+        );
     }
 
     public translate(movement: number): language.Issue {
@@ -34,7 +42,11 @@ export class UnrecognizedUserNamespaceIssue extends language.Issue {
 
 export class UnrecognizedUserFunctionIssue extends language.Issue {
     constructor(span: language.Span, private _namespaceName: string, private _functionName: string) {
-        super(span, `Unrecognized function name '${_functionName}' in user-defined namespace '${_namespaceName}'.`);
+        super(
+            span,
+            `Unrecognized function name '${_functionName}' in user-defined namespace '${_namespaceName}'.`,
+            language.IssueKind.undefinedUdf
+        );
     }
 
     public translate(movement: number): language.Issue {

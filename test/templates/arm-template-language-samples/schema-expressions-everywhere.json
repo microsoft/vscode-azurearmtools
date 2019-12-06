@@ -1,0 +1,94 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "rgName": {
+      "type": "string",
+      "defaultValue": "0-sublevel-test",
+      "metadata": {
+        "description": "Name of the resourceGroup to create"
+      }
+    },
+    "rgLocation": {
+      "type": "string",
+      "defaultValue": "southcentralus",
+      "metadata": {
+        "description": "Location for the resourceGroup"
+      }
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "apiVersion": "2018-05-01",
+      "name": "pid-c2d704c2-409b-401c-bd3e-3b0703bf255e",
+      "type": "Microsoft.Resources/deployments",
+      "location": "[parameters('rgLocation')]",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": []
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2018-05-01",
+      "location": "[parameters('rgLocation')]",
+      "name": "[parameters('rgName')]",
+      "tags": {
+        "Note": "subscription level deployment"
+      },
+      "properties": {}
+    },
+    {
+      "apiVersion": "2018-05-01",
+      "name": "createStorage",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[parameters('rgName')]",
+      "dependsOn": [
+        "[parameters('rgName')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "resources": [
+            {
+              "type": "Microsoft.Storage/storageAccounts",
+              "name": "bjmsublevelstorage",
+              "location": "[parameters('rgLocation')]",
+              "apiVersion": "2018-07-01",
+              "sku": {
+                "name": "Premium_LRS"
+              },
+              "kind": "StorageV2",
+              "properties": {}
+            },
+            {
+              "type": "Microsoft.Compute/disks",
+              "apiVersion": "2018-06-01",
+              "name": "prem-disk-test",
+              "location": "[parameters('rgLocation')]",
+              "sku": {
+                  "name": "Premium_LRS"
+              },
+              "properties": {
+                  "osType": "Windows",
+                  "creationData": {
+                      "createOption": "Empty"
+                  },
+                  "diskSizeGB": 4095
+              }
+          }
+          ]
+        },
+        "parameters": {}
+      }
+    }
+  ]
+}

@@ -14,11 +14,11 @@ import * as language from "./Language";
 import { ParameterDefinition } from "./ParameterDefinition";
 import { PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
-import { isArmSchema } from "./supported";
+import { isArmSchema } from "./schemas";
 import { ScopeContext, TemplateScope } from "./TemplateScope";
 import * as TLE from "./TLE";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
-import { VariableDefinition } from "./VariableDefinition";
+import { IVariableDefinition, TopLevelCopyBlockVariableDefinition, TopLevelVariableDefinition } from "./VariableDefinition";
 import { FindReferencesVisitor } from "./visitors/FindReferencesVisitor";
 import { FunctionCountVisitor } from "./visitors/FunctionCountVisitor";
 import { GenericStringVisitor } from "./visitors/GenericStringVisitor";
@@ -46,10 +46,10 @@ export class DeploymentTemplate {
     private _warnings: CachedValue<language.Issue[]> = new CachedValue<language.Issue[]>();
 
     private _topLevelNamespaceDefinitions: CachedValue<UserFunctionNamespaceDefinition[]> = new CachedValue<UserFunctionNamespaceDefinition[]>();
-    private _topLevelVariableDefinitions: CachedValue<VariableDefinition[]> = new CachedValue<VariableDefinition[]>();
+    private _topLevelVariableDefinitions: CachedValue<IVariableDefinition[]> = new CachedValue<IVariableDefinition[]>();
     private _topLevelParameterDefinitions: CachedValue<ParameterDefinition[]> = new CachedValue<ParameterDefinition[]>();
 
-    private _schemaUri: CachedValue<string | null> = new CachedValue<string | null>();
+    private _schema: CachedValue<Json.StringValue | null> = new CachedValue<Json.StringValue | null>();
 
     /**
      * Create a new DeploymentTemplate object.
@@ -79,6 +79,17 @@ export class DeploymentTemplate {
 
     public hasArmSchemaUri(): boolean {
         return isArmSchema(this.schemaUri);
+    }
+
+    public get apiProfile(): string | null {
+        if (this._topLevelValue) {
+            const apiProfileValue = Json.asStringValue(this._topLevelValue.getPropertyValue(templateKeys.apiProfile));
+            if (apiProfileValue) {
+                return apiProfileValue.unquotedValue;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -143,12 +154,17 @@ export class DeploymentTemplate {
     }
 
     public get schemaUri(): string | null {
-        return this._schemaUri.getOrCacheValue(() => {
+        const schema = this.schemaValue;
+        return schema ? schema.unquotedValue : null;
+    }
+
+    public get schemaValue(): Json.StringValue | null {
+        return this._schema.getOrCacheValue(() => {
             const value: Json.ObjectValue | null = Json.asObjectValue(this._jsonParseResult.value);
             if (value) {
-                const schema: Json.Value | null = Json.asStringValue(value.getPropertyValue("$schema"));
+                const schema: Json.StringValue | null = Json.asStringValue(value.getPropertyValue("$schema"));
                 if (schema) {
-                    return schema.toString();
+                    return schema;
                 }
             }
 
@@ -206,6 +222,7 @@ export class DeploymentTemplate {
                         }
                     });
 
+                    // ReferenceInVariableDefinitionsVisitor
                     const deploymentTemplateObject: Json.ObjectValue | null = Json.asObjectValue(this.jsonParseResult.value);
                     if (deploymentTemplateObject) {
                         const variablesObject: Json.ObjectValue | null = Json.asObjectValue(deploymentTemplateObject.getPropertyValue(templateKeys.variables));
@@ -216,7 +233,7 @@ export class DeploymentTemplate {
                             // Can't call reference() inside variable definitions
                             for (const referenceSpan of referenceInVariablesFinder.referenceSpans) {
                                 parseErrors.push(
-                                    new language.Issue(referenceSpan, "reference() cannot be invoked inside of a variable definition."));
+                                    new language.Issue(referenceSpan, "reference() cannot be invoked inside of a variable definition.", language.IssueKind.referenceInVar));
                             }
                         }
                     }
@@ -249,7 +266,7 @@ export class DeploymentTemplate {
             const variableReferences: ReferenceList = this.findReferences(variableDefinition);
             if (variableReferences.length === 1) {
                 warnings.push(
-                    new language.Issue(variableDefinition.nameValue.span, `The variable '${variableDefinition.nameValue.toString()}' is never used.`));
+                    new language.Issue(variableDefinition.nameValue.span, `The variable '${variableDefinition.nameValue.toString()}' is never used.`, language.IssueKind.unusedVar));
             }
         }
 
@@ -265,7 +282,10 @@ export class DeploymentTemplate {
                 this.findReferences(parameterDefinition);
             if (parameterReferences.length === 1) {
                 warnings.push(
-                    new language.Issue(parameterDefinition.nameValue.span, `The parameter '${parameterDefinition.nameValue.toString()}' is never used.`));
+                    new language.Issue(
+                        parameterDefinition.nameValue.span,
+                        `The parameter '${parameterDefinition.nameValue.toString()}' is never used.`,
+                        language.IssueKind.unusedParam));
             }
         }
 
@@ -277,7 +297,10 @@ export class DeploymentTemplate {
                         this.findReferences(parameterDefinition);
                     if (parameterReferences.length === 1) {
                         warnings.push(
-                            new language.Issue(parameterDefinition.nameValue.span, `The parameter '${parameterDefinition.nameValue.toString()}' of function '${member.fullName}' is never used.`));
+                            new language.Issue(
+                                parameterDefinition.nameValue.span,
+                                `The parameter '${parameterDefinition.nameValue.toString()}' of function '${member.fullName}' is never used.`,
+                                language.IssueKind.unusedUdfParam));
                     }
                 }
             }
@@ -296,7 +319,10 @@ export class DeploymentTemplate {
                     this.findReferences(member);
                 if (userFuncReferences.length === 1) {
                     warnings.push(
-                        new language.Issue(member.nameValue.span, `The user-defined function '${member.fullName}' is never used.`));
+                        new language.Issue(
+                            member.nameValue.span,
+                            `The user-defined function '${member.fullName}' is never used.`,
+                            language.IssueKind.unusedUdf));
                 }
             }
         }
@@ -305,7 +331,7 @@ export class DeploymentTemplate {
     }
 
     /**
-     * Gets a history of function usage, useful for telemetry
+     * Gets info about TLE function usage, useful for telemetry
      */
     public getFunctionCounts(): Histogram {
         const functionCounts = new Histogram();
@@ -321,6 +347,84 @@ export class DeploymentTemplate {
         }
 
         return functionCounts;
+    }
+
+    /**
+     * Gets info about schema usage, useful for telemetry
+     */
+    public getResourceUsage(): Histogram {
+        const resourceCounts = new Histogram();
+        // tslint:disable-next-line: strict-boolean-expressions
+        const apiProfileString = `(profile=${this.apiProfile || 'none'})`.toLowerCase();
+
+        // Collect all resources used
+        const resources: Json.ArrayValue | null = this._topLevelValue ? Json.asArrayValue(this._topLevelValue.getPropertyValue(templateKeys.resources)) : null;
+        if (resources) {
+            traverseResources(resources, undefined);
+        }
+
+        return resourceCounts;
+
+        function traverseResources(resourcesObject: Json.ArrayValue, parentKey: string | undefined): void {
+            for (let resource of resourcesObject.elements) {
+                const resourceObject = Json.asObjectValue(resource);
+                if (resourceObject) {
+                    const resourceType = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceType));
+                    if (resourceType) {
+                        const apiVersion = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceApiVersion));
+                        let apiVersionString: string | null = apiVersion ? apiVersion.unquotedValue.trim().toLowerCase() : null;
+                        if (!apiVersionString) {
+                            apiVersionString = apiProfileString;
+                        } else {
+                            if (apiVersionString.startsWith('[')) {
+                                apiVersionString = '[expression]';
+                            }
+                        }
+
+                        let resourceTypeString = resourceType.unquotedValue.trim().toLowerCase();
+                        if (resourceTypeString.startsWith('[')) {
+                            resourceTypeString = "[expression]";
+                        }
+
+                        let simpleKey = `${resourceTypeString}@${apiVersionString}`;
+                        const fullKey = parentKey ? `${simpleKey}[parent=${parentKey}]` : simpleKey;
+                        resourceCounts.add(fullKey);
+
+                        // Check for child resources
+                        const childResources = Json.asArrayValue(resourceObject.getPropertyValue(templateKeys.resources));
+                        if (childResources) {
+                            traverseResources(childResources, simpleKey);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public getMaxLineLength(): number {
+        let max = 0;
+        for (let len of this.jsonParseResult.lineLengths) {
+            if (len > max) {
+                max = len;
+            }
+        }
+
+        return max;
+    }
+
+    public getCommentCount(): number {
+        return this.jsonParseResult.commentCount;
+    }
+
+    public getMultilineStringCount(): number {
+        let count = 0;
+        this.visitAllReachableStringValues(jsonStringValue => {
+            if (jsonStringValue.unquotedValue.indexOf("\n") >= 0) {
+                ++count;
+            }
+        });
+
+        return count;
     }
 
     public get jsonParseResult(): Json.ParseResult {
@@ -367,12 +471,43 @@ export class DeploymentTemplate {
         });
     }
 
-    private getTopLevelVariableDefinitions(): VariableDefinition[] {
+    private getTopLevelVariableDefinitions(): IVariableDefinition[] {
         return this._topLevelVariableDefinitions.getOrCacheValue(() => {
             if (this._topLevelValue) {
                 const variables: Json.ObjectValue | null = Json.asObjectValue(this._topLevelValue.getPropertyValue(templateKeys.variables));
                 if (variables) {
-                    return variables.properties.map(prop => new VariableDefinition(prop));
+                    const varDefs: IVariableDefinition[] = [];
+                    for (let prop of variables.properties) {
+                        if (prop.nameValue.unquotedValue.toLowerCase() === templateKeys.loopVarCopy) {
+                            // We have a top-level copy block, e.g.:
+                            //
+                            // "copy": [
+                            //   {
+                            //     "name": "top-level-object-array",
+                            //     "count": 5,
+                            //     "input": {
+                            //       "name": "[concat('myDataDisk', copyIndex('top-level-object-array', 1))]",
+                            //       "diskSizeGB": "1",
+                            //       "diskIndex": "[copyIndex('top-level-object-array')]"
+                            //     }
+                            //   },
+                            // ]
+                            //
+                            // Each element of the array is a TopLevelCopyBlockVariableDefinition
+                            const varsArray: Json.ArrayValue | null = Json.asArrayValue(prop.value);
+                            // tslint:disable-next-line: strict-boolean-expressions
+                            for (let varElement of (varsArray && varsArray.elements) || []) {
+                                const def = TopLevelCopyBlockVariableDefinition.createIfValid(varElement);
+                                if (def) {
+                                    varDefs.push(def);
+                                }
+                            }
+                        } else {
+                            varDefs.push(new TopLevelVariableDefinition(prop));
+                        }
+                    }
+
+                    return varDefs;
                 }
             }
 

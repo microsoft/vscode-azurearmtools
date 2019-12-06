@@ -4,12 +4,18 @@
 
 import { CachedValue } from "./CachedValue";
 import { templateKeys } from "./constants";
+import { IUsageInfo } from "./Hover";
 import { DefinitionKind, INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
 import { OutputDefinition } from "./OutputDefinition";
+import { getUserFunctionUsage } from "./signatureFormatting";
 import { ScopeContext, TemplateScope } from "./TemplateScope";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
 import { UserFunctionParameterDefinition } from "./UserFunctionParameterDefinition";
+
+export function isUserFunctionDefinition(definition: INamedDefinition): definition is UserFunctionDefinition {
+    return definition.definitionKind === DefinitionKind.UserFunction;
+}
 
 /**
  * This class represents the definition of a user-defined function in a deployment template.
@@ -87,5 +93,13 @@ export class UserFunctionDefinition implements INamedDefinition {
 
             return parameterDefinitions;
         });
+    }
+
+    public get usageInfo(): IUsageInfo {
+        return {
+            usage: getUserFunctionUsage(this),
+            friendlyType: "user-defined function",
+            description: undefined // CONSIDER: retrieve description from metadata
+        };
     }
 }

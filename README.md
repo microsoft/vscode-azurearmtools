@@ -8,7 +8,15 @@ This extension provides language support for Azure Resource Manager deployment t
 - Provides a language server that understands Azure Resource Manager deployment template files
 - ARM Template Outline view for easy navigation through large templates
 - Colorization for Template Language Expressions (TLE)
-- Analyze and validate JSON syntax, JSON schema conformance for Azure resources, string expressions and deployment issues
+- Analyze and validate JSON syntax, JSON schema conformance for Azure resources, string expressions issues that would affect deployment
+  - **NEW in 0.8.0!** Our new language server now has a better understanding of Azure Resource Manager templates and can therefore provide a better error and completion experience beyond that provided using standard JSON validation
+    - It narrows down its schema validation based on the resource type and apiVersion properties of each resource.
+    - No longer suggests changing the resource type if the apiVersion is not supported, or if a property is missing or invalid (as tools using standard JSON validation would do)
+    - Errors provide better guidance for what actually needs to be fixed in each resource to match the schema
+    - Greatly improved completion speed
+    - Greatly reduced memory usage
+    - Schema validation now is case-insensitive and follows other conventions matching the Azure Resource Manager backend's behavior
+    - Note: The Azure schemas (which are read and interpreted by this extension) are undergoing continual improvement
 - IntelliSense for string expressions
     - [Built-in function names](https://go.microsoft.com/fwlink/?LinkID=733958)
     - [Parameter references](https://go.microsoft.com/fwlink/?LinkID=733959)
@@ -24,12 +32,30 @@ This extension provides language support for Azure Resource Manager deployment t
     - [Hover](https://code.visualstudio.com/docs/editor/editingevolved#_hover) for parameter description
     - [TLE brace matching](https://code.visualstudio.com/docs/editor/editingevolved#_bracket-matching)
     - Rename parameters and variables
+    - User-defined template functions, see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#functions)
+    - Variable iteration ("copy blocks"), see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration)
+
+- Snippets
+    Just type `arm` in the editor to see the available snippets
+    - Getting started with a new JSON/JSONC file
+        - `arm!` - Adds the framework for a full deployment template file.
+
+            If you have not turned off auto detection of template files, you will now have access to all the snippets for "Azure Resource Manager Template" files
+
+        - `armp!` - Adds the framework for a full deployment template parameters file
+
+            Then you can use the `arm-param-value` snippet to add new parameter values for deployment
+
+    - For existing Azure Resource Manage Template files
+        - `arm-param`, `arm-variable`, `arm-userfunc`, `arm-userfunc-namespace`
+        Add new parameters, variables, user functions and user namespaces.
+        - Resources - type `arm-` to see the other 70+ snippets for creating new resources of various types. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine.
 
 ## Automatic Detection of deployment template files
 
 By default, the extension recognizes a .json or .jsonc file as a deployment template file based on the $schema specified in the file (for instance, ```https://schema.management.azure.com/schemas/2018-05-01/deploymentTemplate.json#```) and will switch the editor language to "Azure Resource Manager Template" automatically.  If you do not want that behavior, you can set the ```azureResourceManagerTools.autoDetectJsonTemplates``` setting to false and use the below methods to determine which files to treat as deployment templates.
 
-Besides automatic detection, you also use the ```files.associations``` setting to set up your own specific mappings based on specific files paths or patterns to mark them as deployment templates, e.g.
+Besides automatic detection, you can also use the ```files.associations``` setting to set up your own specific mappings based on specific files paths or patterns to mark them as deployment templates, e.g.
 
 ```json
     "files.associations": {

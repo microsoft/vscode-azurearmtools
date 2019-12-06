@@ -12,22 +12,19 @@ import { templateKeys } from "./constants";
 import { __debugMarkPositionInString } from "./debugMarkStrings";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { assert } from './fixed_assert';
-import * as Hover from "./Hover";
+import { HoverInfo } from "./Hover";
 import { IFunctionMetadata, IFunctionParameterMetadata } from "./IFunctionMetadata";
-import { DefinitionKind, INamedDefinition } from "./INamedDefinition";
+import { INamedDefinition } from "./INamedDefinition";
 import { IParameterDefinition } from "./IParameterDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
-import { ParameterDefinition } from "./ParameterDefinition";
 import * as Reference from "./ReferenceList";
 import { TemplateScope } from "./TemplateScope";
 import * as TLE from "./TLE";
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
 import { UserFunctionMetadata } from "./UserFunctionMetadata";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
-import { UserFunctionParameterDefinition } from "./UserFunctionParameterDefinition";
-import { assertNever } from "./util/assertNever";
-import { VariableDefinition } from "./VariableDefinition";
+import { IVariableDefinition } from "./VariableDefinition";
 
 /**
  * Information about the TLE expression (if position is at an expression string)
@@ -243,7 +240,7 @@ export class PositionContext {
                         return { definition: parameterDefinition, referenceSpan };
                     }
                 } else if (tleStringValue.isVariablesArgument()) {
-                    const variableDefinition: VariableDefinition | null = scope.getVariableDefinition(tleStringValue.toString());
+                    const variableDefinition: IVariableDefinition | null = scope.getVariableDefinition(tleStringValue.toString());
                     if (variableDefinition) {
                         // Inside the 'xxx' of a variables('xxx') reference
                         const referenceSpan: language.Span = tleStringValue.getSpan().translate(this.jsonTokenStartIndex);
@@ -256,45 +253,12 @@ export class PositionContext {
         return null;
     }
 
-    public getHoverInfo(): Hover.Info | null {
+    public getHoverInfo(): HoverInfo | null {
         const reference: IReferenceSite | null = this.getReferenceSiteInfo();
         if (reference) {
             const span = reference.referenceSpan;
             const definition = reference.definition;
-
-            // tslint:disable-next-line:switch-default
-            switch (definition.definitionKind) {
-                case DefinitionKind.Namespace:
-                    if (definition instanceof UserFunctionNamespaceDefinition) {
-                        return new Hover.UserNamespaceInfo(definition, span);
-                    }
-                    break;
-                case DefinitionKind.UserFunction:
-                    if (definition instanceof UserFunctionDefinition) {
-                        return new Hover.UserFunctionInfo(definition, span);
-                    }
-                    break;
-                case DefinitionKind.BuiltinFunction:
-                    if (definition instanceof BuiltinFunctionMetadata) {
-                        const functionMetadata = definition;
-                        return new Hover.FunctionInfo(functionMetadata.fullName, functionMetadata.usage, functionMetadata.description, span);
-                    }
-                    break;
-                case DefinitionKind.Parameter:
-                    if (definition instanceof ParameterDefinition || definition instanceof UserFunctionParameterDefinition) {
-                        return Hover.ParameterReferenceInfo.fromDefinition(definition, span);
-                    }
-                    break;
-                case DefinitionKind.Variable:
-                    if (definition instanceof VariableDefinition) {
-                        return Hover.VariableReferenceInfo.fromDefinition(definition, span);
-                    }
-                    break;
-                default:
-                    return assertNever(definition.definitionKind); // Gives compile-time error if a case is missed
-            }
-
-            assert(false, `Unexpected definition type for definition kind ${definition.definitionKind}`);
+            return new HoverInfo(definition.usageInfo, span);
         }
 
         return null;
@@ -388,7 +352,7 @@ export class PositionContext {
                 propertyPrefix = propertyNameToken.stringValue.substring(0, tleCharacterIndex - propertyNameToken.span.startIndex).toLowerCase();
             }
 
-            const variableProperty: VariableDefinition | null = scope.getVariableDefinitionFromFunctionCall(functionSource);
+            const variableProperty: IVariableDefinition | null = scope.getVariableDefinitionFromFunctionCall(functionSource);
             const parameterProperty: IParameterDefinition | null = scope.getParameterDefinitionFromFunctionCall(functionSource);
             const sourcesNameStack: string[] = tleValue.sourcesNameStack;
             if (variableProperty) {
@@ -565,17 +529,17 @@ export class PositionContext {
     private getDeepPropertyAccessCompletions(propertyPrefix: string, variableOrParameterDefinition: Json.ObjectValue, sourcesNameStack: string[], replaceSpan: language.Span): Completion.Item[] {
         const result: Completion.Item[] = [];
 
-        const sourcePropertyDefinition: Json.ObjectValue | null = Json.asObjectValue(variableOrParameterDefinition.getPropertyValueFromStack(sourcesNameStack));
-        if (sourcePropertyDefinition) {
+        const sourcePropertyDefinitionObject: Json.ObjectValue | null = Json.asObjectValue(variableOrParameterDefinition.getPropertyValueFromStack(sourcesNameStack));
+        if (sourcePropertyDefinitionObject) {
             let matchingPropertyNames: string[];
             if (!propertyPrefix) {
-                matchingPropertyNames = sourcePropertyDefinition.propertyNames;
+                matchingPropertyNames = sourcePropertyDefinitionObject.propertyNames;
             } else {
                 // We need to ignore casing when creating completions
                 const propertyPrefixLC = propertyPrefix.toLowerCase();
 
                 matchingPropertyNames = [];
-                for (const propertyName of sourcePropertyDefinition.propertyNames) {
+                for (const propertyName of sourcePropertyDefinitionObject.propertyNames) {
                     if (propertyName.toLowerCase().startsWith(propertyPrefixLC)) {
                         matchingPropertyNames.push(propertyName);
                     }
@@ -617,7 +581,7 @@ export class PositionContext {
                 }
 
                 // Is it a variable definition?
-                const variableDefinition: VariableDefinition | null = scope.getVariableDefinition(unquotedString);
+                const variableDefinition: IVariableDefinition | null = scope.getVariableDefinition(unquotedString);
                 if (variableDefinition && variableDefinition.nameValue === jsonStringValue) {
                     return this._deploymentTemplate.findReferences(variableDefinition);
                 }
@@ -731,7 +695,7 @@ export class PositionContext {
         const replaceSpanInfo: ReplaceSpanInfo = this.getReplaceSpanInfo(tleValue, tleCharacterIndex);
 
         const variableCompletions: Completion.Item[] = [];
-        const variableDefinitionMatches: VariableDefinition[] = scope.findVariableDefinitionsWithPrefix(prefix);
+        const variableDefinitionMatches: IVariableDefinition[] = scope.findVariableDefinitionsWithPrefix(prefix);
         for (const variableDefinition of variableDefinitionMatches) {
             variableCompletions.push(Completion.Item.fromVariableDefinition(variableDefinition, replaceSpanInfo.replaceSpan, replaceSpanInfo.includeRightParenthesisInCompletion));
         }
