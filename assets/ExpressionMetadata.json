@@ -344,48 +344,17 @@
             ]
         },
         {
-            "name": "listKeys",
-            "expectedUsage": "listKeys(resourceName\/resourceIdentifier, apiVersion)",
-            "description": "Returns the keys of a storage account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primary (key[0]) and secondary key (key[1]).",
+            "name": "listAuthKeys",
+            "expectedUsage": "listAuthKeys(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Retrieves the authentication keys for a DataFactory Integration Runtime. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the available authkeys.",
             "minimumArguments": 2,
             "maximumArguments": 2,
             "returnValueMembers": [
                 {
-                    "name": "keys"
-                }
-            ]
-        },
-        {
-            "name": "listPackage",
-            "expectedUsage": "listPackage(resourceName\/resourceIdentifier, apiVersion)",
-            "description": "Lists the virtual network gateway package. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
-            "minimumArguments": 2,
-            "maximumArguments": 2
-        },
-        {
-            "name": "listConnectionStrings",
-            "expectedUsage": "listConnectionStrings(resourceName\/resourceIdentifier, apiVersion)",
-            "description": "Lists the connection strings for the specified Azure Cosmos DB database account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
-            "minimumArguments": 2,
-            "maximumArguments": 2,
-            "returnValueMembers": [
-                {
-                    "name": "connectionStrings"
-                }
-            ]
-        },
-        {
-            "name": "listCredentials",
-            "expectedUsage": "listCredentials(resourceName\/resourceIdentifier, apiVersion)",
-            "description": "Lists the login credentials for the specified container registry. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
-            "minimumArguments": 2,
-            "maximumArguments": 2,
-            "returnValueMembers": [
-                {
-                    "name": "username"
+                    "name": "authKey1"
                 },
                 {
-                    "name": "passwords"
+                    "name": "authKey2"
                 }
             ]
         },
@@ -417,6 +386,88 @@
             ]
         },
         {
+            "name": "listClusterAdminCredential",
+            "expectedUsage": "listClusterAdminCredential(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Gets cluster admin credential of a managed cluster. Returns an array of objects with a 'name' and 'value' property. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "kubeconfigs"
+                }
+            ]
+        },
+        {
+            "name": "listConnectionStrings",
+            "expectedUsage": "listConnectionStrings(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Lists the connection strings for the specified Azure Cosmos DB database account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "connectionStrings"
+                }
+            ]
+        },
+        {
+            "name": "listCredentials",
+            "expectedUsage": "listCredentials(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Lists the login credentials for the specified container registry. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "username"
+                },
+                {
+                    "name": "passwords"
+                }
+            ]
+        },
+        {
+            "name": "listCredential",
+            "expectedUsage": "listCredential(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Gets the accessProfile for the specified role for a managed cluster. The properties object contains a 'kubeConfig' property. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "properties"
+                }
+            ]
+        },
+        {
+            "name": "listKeys",
+            "expectedUsage": "listKeys(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Returns the keys of a storage account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primary (key[0]) and secondary key (key[1]).",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "keys"
+                }
+            ]
+        },
+        {
+            "name": "listPackage",
+            "expectedUsage": "listPackage(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Lists the virtual network gateway package. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2
+        },
+        {
+            "name": "listQueryKeys",
+            "expectedUsage": "listQueryKeys(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Returns the list of query API keys for the given Azure Search service. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. The function returns an object array with a 'name' and 'key' property for each member.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "value"
+                }
+            ]
+        },
+        {
             "name": "listSecrets",
             "expectedUsage": "listSecrets(resourceName\/resourceIdentifier, apiVersion)",
             "description": "List the secrets of a key vault. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
@@ -432,6 +483,18 @@
             "returnValueMembers": [
                 {
                     "name": "serviceSasToken"
+                }
+            ]
+        },
+        {
+            "name": "listSyncFunctionTriggerStatus",
+            "expectedUsage": "listSyncFunctionTriggerStatus(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Returns the status of a function trigger. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "status"
                 }
             ]
         },
