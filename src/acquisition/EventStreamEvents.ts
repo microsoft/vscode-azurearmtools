@@ -69,15 +69,6 @@ export class DotnetAcquisitionCompleted implements IEvent {
     }
 }
 
-export abstract class DotnetAcquisitionUninstallStarted implements IEvent {
-    public readonly eventType: EventType = EventType.DotnetAcquisitionError;
-
-    constructor(public readonly version: string) {
-    }
-
-    public abstract getErrorMessage(): string;
-}
-
 export class DotnetAcquisitionMessage implements IEvent {
     public readonly eventType: EventType = EventType.DotnetAcquisitionMessage;
 
