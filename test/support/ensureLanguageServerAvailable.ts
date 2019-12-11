@@ -3,14 +3,14 @@
 // ----------------------------------------------------------------------------
 
 import { ext, LanguageServerState } from "../../extension.bundle";
-import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
+import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { delay } from "./delay";
 
 let isLanguageServerAvailable = false;
 
 export async function ensureLanguageServerAvailable(): Promise<void> {
-    if (DISABLE_LANGUAGE_SERVER_TESTS) {
-        throw new Error("DISABLE_LANGUAGE_SERVER_TESTS is set, but this test is trying to call ensureLanguageServerAvailable");
+    if (DISABLE_LANGUAGE_SERVER) {
+        throw new Error("DISABLE_LANGUAGE_SERVER is set, but this test is trying to call ensureLanguageServerAvailable");
     }
 
     if (!isLanguageServerAvailable) {

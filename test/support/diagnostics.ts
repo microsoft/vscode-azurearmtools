@@ -18,7 +18,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { commands, Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument, window, workspace } from "vscode";
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
-import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
+import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { getTempFilePath } from "./getTempFilePath";
 import { stringify } from "./stringify";
 
@@ -165,8 +165,8 @@ export async function getDiagnosticsForDocument(
     }
 
     const includesLanguageServerSource = filterSources.some(isSourceFromLanguageServer);
-    if (includesLanguageServerSource && DISABLE_LANGUAGE_SERVER_TESTS) {
-        throw new Error("DISABLE_LANGUAGE_SERVER_TESTS is set, but this test is trying to include a non-expressions diagnostic source");
+    if (includesLanguageServerSource && DISABLE_LANGUAGE_SERVER) {
+        throw new Error("DISABLE_LANGUAGE_SERVER is set, but this test is trying to include a non-expressions diagnostic source");
     }
 
     // tslint:disable-next-line:typedef promise-must-complete // (false positive for promise-must-complete)

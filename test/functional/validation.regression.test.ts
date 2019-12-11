@@ -6,8 +6,7 @@
 
 import * as os from 'os';
 import { testDiagnostics, testDiagnosticsFromFile } from "../support/diagnostics";
-import { testWithLanguageServer } from "../support/testWithLanguageServer";
-import { testWithRealFunctionMetadata } from "../TestData";
+import { testWithLanguageServer, testWithLanguageServerAndRealFunctionMetadata } from "../support/testWithLanguageServer";
 
 suite("Validation regression tests", () => {
     testWithLanguageServer("Template validation error for evaluated variables (https://github.com/microsoft/vscode-azurearmtools/issues/380)", async () =>
@@ -81,7 +80,7 @@ suite("Validation regression tests", () => {
                 "Warning: The variable 'NSGRules' is never used. (arm-template (expressions))"])
     );
 
-    testWithRealFunctionMetadata(
+    testWithLanguageServerAndRealFunctionMetadata(
         'validation fails using int() with parameter (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1016832)',
         async () =>
             testDiagnosticsFromFile(

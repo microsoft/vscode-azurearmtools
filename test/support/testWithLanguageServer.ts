@@ -3,22 +3,23 @@
 // ----------------------------------------------------------------------------
 
 import { ITest, ITestCallbackContext } from "mocha";
-import { DISABLE_LANGUAGE_SERVER_TESTS } from "../testConstants";
-import { diagnosticsTimeout } from "./diagnostics";
+import { armTest } from "./armTest";
 
 export function testWithLanguageServer(expectation: string, callback?: (this: ITestCallbackContext) => Promise<unknown>): ITest {
-    return test(
+    return armTest(
         expectation,
-        async function (this: ITestCallbackContext): Promise<unknown> {
-            if (DISABLE_LANGUAGE_SERVER_TESTS) {
-                console.log("Skipping test because DISABLE_LANGUAGE_SERVER_TESTS is enabled");
-                this.skip();
-            } else {
-                this.timeout(diagnosticsTimeout);
-                if (callback) {
-                    // tslint:disable-next-line: no-unsafe-any
-                    return await callback.call(this);
-                }
-            }
-        });
+        {
+            requiresLanguageServer: true
+        },
+        callback);
+}
+
+export function testWithLanguageServerAndRealFunctionMetadata(expectation: string, callback?: (this: ITestCallbackContext) => Promise<unknown>): ITest {
+    return armTest(
+        expectation,
+        {
+            requiresLanguageServer: true,
+            useRealFunctionMetadata: true
+        },
+        callback);
 }
