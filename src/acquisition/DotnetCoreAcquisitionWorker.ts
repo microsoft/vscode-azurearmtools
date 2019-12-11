@@ -54,10 +54,16 @@ export class DotnetCoreAcquisitionWorker {
         this.acquisitionPromises = {};
     }
 
+    private removeFolderRecursively(folderPath: string, dotnetVersion: string): void {
+        this.eventStream.post(new DotnetAcquisitionMessage(dotnetVersion, `Removing folder ${folderPath}`));
+        rimraf.sync(folderPath);
+        this.eventStream.post(new DotnetAcquisitionMessage(dotnetVersion, `Finished removing folder ${folderPath}`));
+    }
+
     public async uninstallAll(): Promise<void> {
         this.acquisitionPromises = {};
 
-        rimraf.sync(this.installDir);
+        this.removeFolderRecursively(this.installDir, "(all)");
 
         await this.extensionState.update(this.installingVersionsKey, []);
     }
@@ -104,7 +110,7 @@ export class DotnetCoreAcquisitionWorker {
             // uninstall everything and then re-install.
             telemetryProperties.partialInstallFound = "true";
 
-            this.eventStream.post(new DotnetAcquisitionMessage(version, `Found an incompletely-installed version of dotnet ${version}`));
+            this.eventStream.post(new DotnetAcquisitionMessage(version, `Found an incompletely-installed version of dotnet ${version}... Uninstalling.`));
             await this.uninstall(version);
         } else {
             telemetryProperties.partialInstallFound = "false";
@@ -162,7 +168,7 @@ export class DotnetCoreAcquisitionWorker {
         delete this.acquisitionPromises[version];
 
         const dotnetInstallDir = this.getDotnetInstallDir(version);
-        rimraf.sync(dotnetInstallDir);
+        this.removeFolderRecursively(dotnetInstallDir, version);
 
         const installingVersions = this.extensionState.get<string[]>(this.installingVersionsKey, []);
         const versionIndex = installingVersions.indexOf(version);

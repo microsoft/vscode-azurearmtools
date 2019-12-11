@@ -135,7 +135,7 @@
     "commands": [
       {
         "category": "Azure Resource Manager Tools",
-        "title": "Uninstall dotnet core for this extension",
+        "title": "Remove local dotnet core installation",
         "command": "azurerm-vscode-tools.uninstallDotnet"
       }
     ]

@@ -109,18 +109,18 @@ export async function uninstallDotnet(): Promise<void> {
     initializeDotnetAcquire();
 
     ext.outputChannel.show();
-    ext.outputChannel.appendLine("Uninstalling local dotnet core from extension...");
+    ext.outputChannel.appendLine("Removing local installation of dotnet core...");
 
     try {
         await acquisitionWorker.uninstallAll();
     } catch (error) {
         let message = parseError(error).message;
         if (message.includes('EPERM')) {
-            error = new Error(`dotnet core may be in use. Please close all deployment template files, then restart VS Code and try again. ${message}`);
+            error = new Error(`Dotnet core may be in use. Please close all deployment template files, then restart VS Code and try again. ${message}`);
         }
 
         throw error;
     }
 
-    ext.outputChannel.appendLine("Done.");
+    ext.outputChannel.appendLine("Done. Please restart VS Code.");
 }
