@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from "vscode";
-import { IAzureUserInput, ITelemetryReporter } from "vscode-azureextensionui";
+import { IAzExtOutputChannel, IAzureUserInput, ITelemetryReporter } from "vscode-azureextensionui";
+import { isWebpack } from "./constants";
 import { LanguageServerState } from "./languageclient/startArmLanguageServer";
 import { JsonOutlineProvider } from "./Treeview";
 
@@ -19,8 +20,9 @@ class ExtensionVariables {
     public context: vscode.ExtensionContext;
     public jsonOutlineProvider: JsonOutlineProvider;
     public reporter: ITelemetryReporter;
-    public outputChannel: vscode.OutputChannel;
+    public outputChannel: IAzExtOutputChannel;
     public ui: IAzureUserInput;
+    public ignoreBundle: boolean = !isWebpack;
 
     public languageServerState: LanguageServerState = LanguageServerState.NotStarted;
 

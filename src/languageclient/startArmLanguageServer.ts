@@ -170,7 +170,8 @@ async function acquireDotnet(dotnetExePath: string): Promise<string> {
         } else {
             actionContext.telemetry.properties.overriddenDotNetExePath = "false";
 
-            dotnetExePath = await dotnetAcquire(dotnetVersion, actionContext.telemetry.properties);
+            ext.outputChannel.appendLine(`This extension requires .NET Core for full functionality.`);
+            dotnetExePath = await dotnetAcquire(dotnetVersion, actionContext.telemetry.properties, actionContext.errorHandling.issueProperties);
             if (!(await isFile(dotnetExePath))) {
                 throw new Error(`The path returned for .net core does not exist: ${dotnetExePath}`);
             }
@@ -178,9 +179,9 @@ async function acquireDotnet(dotnetExePath: string): Promise<string> {
             // Telemetry: dotnet version actually used
             try {
                 // E.g. "c:\Users\<user>\AppData\Roaming\Code - Insiders\User\globalStorage\msazurermtools.azurerm-vscode-tools\.dotnet\2.2.5\dotnet.exe"
-                const verionMatch = dotnetExePath.match(/dotnet[\\/]([^\\/]+)[\\/]/);
+                const versionMatch = dotnetExePath.match(/dotnet[\\/]([^\\/]+)[\\/]/);
                 // tslint:disable-next-line: strict-boolean-expressions
-                const actualVersion = verionMatch && verionMatch[1] || 'unknown';
+                const actualVersion = versionMatch && versionMatch[1] || 'unknown';
                 actionContext.telemetry.properties.dotnetVersionInstalled = actualVersion;
             } catch (error) {
                 // ignore (telemetry only)
@@ -245,7 +246,8 @@ async function ensureDependencies(dotnetExePath: string, serverDllPath: string):
                 serverDllPath,
                 '--help'
             ],
-            actionContext.telemetry.properties);
+            actionContext.telemetry.properties,
+            actionContext.errorHandling.issueProperties);
     });
 }
 

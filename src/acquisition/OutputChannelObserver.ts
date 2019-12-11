@@ -5,7 +5,7 @@
 
 import * as os from 'os';
 import * as vscode from 'vscode';
-import { DotnetAcquisitionCompleted, DotnetAcquisitionError, DotnetAcquisitionStarted } from './EventStreamEvents';
+import { DotnetAcquisitionCompleted, DotnetAcquisitionError, DotnetAcquisitionMessage, DotnetAcquisitionStarted } from './EventStreamEvents';
 import { EventType } from './EventType';
 import { IEvent } from './IEvent';
 import { IEventStreamObserver } from './IEventStreamObserver';
@@ -13,8 +13,23 @@ import { IEventStreamObserver } from './IEventStreamObserver';
 export class OutputChannelObserver implements IEventStreamObserver {
     private readonly inProgressDownloads: string[] = [];
     private downloadProgressInterval: NodeJS.Timeout | undefined;
+    private _log: string = "";
 
     constructor(private readonly outputChannel: vscode.OutputChannel) {
+    }
+
+    public get log(): string {
+        return this._log;
+    }
+
+    private append(message: string): void {
+        this.outputChannel.append(message);
+        this._log += message;
+    }
+
+    private appendLine(message: string): void {
+        this.outputChannel.appendLine(message);
+        this._log += `${message}\n`; // Use OS-independent newline
     }
 
     public post(event: IEvent): void {
@@ -27,51 +42,57 @@ export class OutputChannelObserver implements IEventStreamObserver {
 
                     if (this.inProgressDownloads.length > 1) {
                         // Already a download in progress
-                        this.outputChannel.appendLine(` -- Concurrent download of '${acquisitionStarted.version}' started!`);
-                        this.outputChannel.appendLine('');
+                        this.appendLine(` -- Concurrent download of '${acquisitionStarted.version}' started!`);
+                        this.appendLine('');
                     } else {
                         this.outputChannel.show();
                         this.startDownloadIndicator();
                     }
 
                     const versionString = this.inProgressDownloads.join(', ');
-                    this.outputChannel.appendLine(`Installation command:${os.EOL}${acquisitionStarted.installCommand}`);
-                    this.outputChannel.append(`Downloading .NET Core tooling version(s) ${versionString} ...`);
+                    this.appendLine(`Using this command to install .NET Core version ${acquisitionStarted.version}:${os.EOL}${acquisitionStarted.installCommand}`);
+                    this.append(`Downloading .NET Core tooling version(s) ${versionString}...`);
                 }
                 break;
             case EventType.DotnetAcquisitionCompleted:
                 {
                     const acquisitionCompleted = event as DotnetAcquisitionCompleted;
-                    this.outputChannel.appendLine(' Done!');
-                    this.outputChannel.appendLine(`.NET Core ${acquisitionCompleted.version} executable path: ${acquisitionCompleted.dotnetPath}`);
-                    this.outputChannel.appendLine('');
+                    this.appendLine(' Done!');
+                    this.appendLine(`.NET Core ${acquisitionCompleted.version} executable path: ${acquisitionCompleted.dotnetPath}`);
+                    this.appendLine('');
 
                     this.inProgressVersionDone(acquisitionCompleted.version);
 
                     if (this.inProgressDownloads.length > 0) {
                         const versionString = `'${this.inProgressDownloads.join('\', \'')}'`;
-                        this.outputChannel.append(`Still downloading .NET Core tooling version(s) ${versionString} ...`);
+                        this.append(`Still downloading .NET Core tooling version(s) ${versionString} ...`);
                     } else {
-                        this.stopDownladIndicator();
+                        this.stopDownloadIndicator();
                     }
                 }
                 break;
             case EventType.DotnetAcquisitionError:
                 {
                     const error = event as DotnetAcquisitionError;
-                    this.outputChannel.appendLine(' Error!');
-                    this.outputChannel.appendLine(`Failed to download .NET Core tooling ${error.version}:`);
-                    this.outputChannel.appendLine(error.getErrorMessage());
-                    this.outputChannel.appendLine('');
+                    this.appendLine(' Error!');
+                    this.appendLine(`Failed to download .NET Core tooling ${error.version}:`);
+                    this.appendLine(error.getErrorMessage());
+                    this.appendLine('');
 
                     this.inProgressVersionDone(error.version);
 
                     if (this.inProgressDownloads.length > 0) {
                         const versionString = this.inProgressDownloads.join(', ');
-                        this.outputChannel.append(`Still downloading .NET Core tooling version(s) ${versionString} ...`);
+                        this.append(`Still downloading .NET Core tooling version(s) ${versionString} ...`);
                     } else {
-                        this.stopDownladIndicator();
+                        this.stopDownloadIndicator();
                     }
+                }
+                break;
+            case EventType.DotnetAcquisitionMessage:
+                {
+                    const msg = event as DotnetAcquisitionMessage;
+                    this.appendLine(msg.getMessage());
                 }
                 break;
             default:
@@ -81,10 +102,10 @@ export class OutputChannelObserver implements IEventStreamObserver {
     }
 
     private startDownloadIndicator(): void {
-        this.downloadProgressInterval = setInterval(() => this.outputChannel.append('.'), 1000);
+        this.downloadProgressInterval = setInterval(() => this.append('.'), 1000);
     }
 
-    private stopDownladIndicator(): void {
+    private stopDownloadIndicator(): void {
         if (this.downloadProgressInterval) {
             clearTimeout(this.downloadProgressInterval);
             this.downloadProgressInterval = undefined;
@@ -93,6 +114,8 @@ export class OutputChannelObserver implements IEventStreamObserver {
 
     private inProgressVersionDone(version: string): void {
         const index = this.inProgressDownloads.indexOf(version);
-        this.inProgressDownloads.splice(index, 1);
+        if (index >= 0) {
+            this.inProgressDownloads.splice(index, 1);
+        }
     }
 }

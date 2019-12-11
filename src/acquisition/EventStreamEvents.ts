@@ -68,3 +68,14 @@ export class DotnetAcquisitionCompleted implements IEvent {
     constructor(public readonly version: string, public readonly dotnetPath: string) {
     }
 }
+
+export class DotnetAcquisitionMessage implements IEvent {
+    public readonly eventType: EventType = EventType.DotnetAcquisitionMessage;
+
+    constructor(public readonly version: string, private readonly message: string) {
+    }
+
+    public getMessage(): string {
+        return `[dotnet ${this.version}]: ${this.message}`;
+    }
+}

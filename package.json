@@ -135,7 +135,7 @@
     "commands": [
       {
         "category": "Azure Resource Manager Tools",
-        "title": "Uninstall dotnet core for this extension",
+        "title": "Remove local dotnet core installation",
         "command": "azurerm-vscode-tools.uninstallDotnet"
       }
     ]
@@ -193,7 +193,7 @@
     "opn": "^5.5.0",
     "rimraf": "2.6.3",
     "shelljs": "^0.8.3",
-    "vscode-azureextensionui": "^0.26.5",
+    "vscode-azureextensionui": "^0.29.0",
     "vscode-jsonrpc": "^4.0.0",
     "vscode-languageclient": "^4.4.0"
   }

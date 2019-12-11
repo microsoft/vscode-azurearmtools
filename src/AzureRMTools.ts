@@ -8,7 +8,7 @@
 import * as assert from "assert";
 import * as path from 'path';
 import * as vscode from "vscode";
-import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
+import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import * as Completion from "./Completion";
 import { configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, languageId, outputWindowName, storageKeys } from "./constants";
@@ -37,7 +37,7 @@ import { getVSCodeRangeFromSpan } from "./util/vscodePosition";
 export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
     ext.context = context;
     ext.reporter = createTelemetryReporter(context);
-    ext.outputChannel = vscode.window.createOutputChannel(outputWindowName);
+    ext.outputChannel = createAzExtOutputChannel(outputWindowName, configPrefix);
     ext.ui = new AzureUserInput(context.globalState);
     registerUIExtensionVariables(ext);
 

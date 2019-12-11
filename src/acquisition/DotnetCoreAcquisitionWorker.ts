@@ -5,12 +5,13 @@
 
 import * as cp from 'child_process';
 import * as fs from 'fs';
+import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
 import { Memento } from 'vscode';
 import { EventStream } from './EventStream';
-import { DotnetAcquisitionCompleted, DotnetAcquisitionInstallError, DotnetAcquisitionScriptError, DotnetAcquisitionStarted, DotnetAcquisitionUnexpectedError } from './EventStreamEvents';
+import { DotnetAcquisitionCompleted, DotnetAcquisitionInstallError, DotnetAcquisitionMessage, DotnetAcquisitionScriptError, DotnetAcquisitionStarted, DotnetAcquisitionUnexpectedError } from './EventStreamEvents';
 
 // tslint:disable-next-line:no-require-imports
 import rimraf = require('rimraf');
@@ -43,20 +44,26 @@ export class DotnetCoreAcquisitionWorker {
         private readonly eventStream: EventStream
     ) {
         // tslint:disable-next-line: strict-boolean-expressions
-        const dotnetInstallFolder: string = process.env.ARM_DOTNET_INSTALL_FOLDER || '.dotnet';
+        const dotnetInstallFolderName: string = process.env.ARM_DOTNET_INSTALL_FOLDER || '.dotnet';
 
-        const script = os.platform() === 'win32' ? 'dotnet-install.cmd' : 'dotnet-install.sh';
-        this.scriptPath = path.join(this.scriptsPath, script);
-        this.installDir = path.join(this.storagePath, dotnetInstallFolder);
+        const scriptName = os.platform() === 'win32' ? 'dotnet-install.cmd' : 'dotnet-install.sh';
+        this.scriptPath = path.join(this.scriptsPath, scriptName);
+        this.installDir = path.join(this.storagePath, dotnetInstallFolderName);
         const dotnetExtension = os.platform() === 'win32' ? '.exe' : '';
         this.dotnetExecutable = `dotnet${dotnetExtension}`;
         this.acquisitionPromises = {};
     }
 
+    private removeFolderRecursively(folderPath: string, dotnetVersion: string): void {
+        this.eventStream.post(new DotnetAcquisitionMessage(dotnetVersion, `Removing folder ${folderPath}`));
+        rimraf.sync(folderPath);
+        this.eventStream.post(new DotnetAcquisitionMessage(dotnetVersion, `Finished removing folder ${folderPath}`));
+    }
+
     public async uninstallAll(): Promise<void> {
         this.acquisitionPromises = {};
 
-        rimraf.sync(this.installDir);
+        this.removeFolderRecursively(this.installDir, "(all)");
 
         await this.extensionState.update(this.installingVersionsKey, []);
     }
@@ -93,32 +100,34 @@ export class DotnetCoreAcquisitionWorker {
     }
 
     private async acquireCore(version: string, telemetryProperties: { [key: string]: string | undefined }): Promise<string> {
+        const dotnetInstallDir = this.getDotnetInstallDir(version);
+        const dotnetPath = path.join(dotnetInstallDir, this.dotnetExecutable);
         const installingVersions = this.extensionState.get<string[]>(this.installingVersionsKey, []);
 
-        telemetryProperties.partialInstallFound = "false";
         const partialInstall = installingVersions.indexOf(version) >= 0;
         if (partialInstall) {
             // Partial install, we never updated our extension to no longer be 'installing'.
             // uninstall everything and then re-install.
             telemetryProperties.partialInstallFound = "true";
+
+            this.eventStream.post(new DotnetAcquisitionMessage(version, `Found an incompletely-installed version of dotnet ${version}... Uninstalling.`));
             await this.uninstall(version);
+        } else {
+            telemetryProperties.partialInstallFound = "false";
         }
 
-        const dotnetInstallDir = this.getDotnetInstallDir(version);
-        const dotnetPath = path.join(dotnetInstallDir, this.dotnetExecutable);
-
-        telemetryProperties.alreadyInstalled = "false";
         if (fs.existsSync(dotnetPath)) {
             // Version requested has already been installed.
             telemetryProperties.alreadyInstalled = "true";
             return dotnetPath;
+        } else {
+            telemetryProperties.alreadyInstalled = "false";
         }
 
         // We update the extension state to indicate we're starting a .NET Core installation.
         installingVersions.push(version);
         await this.extensionState.update(this.installingVersionsKey, installingVersions);
 
-        //const dotnetInstallDirEscaped = dotnetInstallDir.replace("'", "''");
         let dotnetInstallDirEscaped: string;
         if (os.platform() === 'win32') {
             // Need to escape apostrophes with two apostrophes
@@ -132,7 +141,7 @@ export class DotnetCoreAcquisitionWorker {
 
         const args = [
             '-InstallDir', dotnetInstallDirEscaped,
-            '-Runtime', 'dotnet',
+            '-Runtime', 'dotnet', // Installs just the shared runtime, not the entire SDK (the Microsoft.NETCore.App shared runtime)
             '-Version', version,
         ];
 
@@ -154,10 +163,12 @@ export class DotnetCoreAcquisitionWorker {
     }
 
     private async uninstall(version: string): Promise<void> {
+        this.eventStream.post(new DotnetAcquisitionMessage(version, `Uninstalling dotnet version ${version}`));
+
         delete this.acquisitionPromises[version];
 
         const dotnetInstallDir = this.getDotnetInstallDir(version);
-        rimraf.sync(dotnetInstallDir);
+        this.removeFolderRecursively(dotnetInstallDir, version);
 
         const installingVersions = this.extensionState.get<string[]>(this.installingVersionsKey, []);
         const versionIndex = installingVersions.indexOf(version);
@@ -165,6 +176,8 @@ export class DotnetCoreAcquisitionWorker {
             installingVersions.splice(versionIndex, 1);
             await this.extensionState.update(this.installingVersionsKey, installingVersions);
         }
+
+        this.eventStream.post(new DotnetAcquisitionMessage(version, `Finished uninstalling dotnet version ${version}`));
     }
 
     private getDotnetInstallDir(version: string): string {
@@ -173,10 +186,17 @@ export class DotnetCoreAcquisitionWorker {
     }
 
     // tslint:disable-next-line: promise-function-async
-    private installDotnet(installCommand: string, version: string, dotnetPath: string): Promise<void> {
-        return new Promise<void>((resolve, reject): void => {
+    private async installDotnet(installCommand: string, version: string, dotnetPath: string): Promise<void> {
+        await new Promise<void>((resolve, reject): void => {
             try {
                 cp.exec(installCommand, { cwd: process.cwd(), maxBuffer: 500 * 1024 }, (error, stdout, stderr) => {
+                    if (stdout) {
+                        this.eventStream.post(new DotnetAcquisitionMessage(version, stdout));
+                    }
+                    if (stderr) {
+                        this.eventStream.post(new DotnetAcquisitionMessage(version, `STDERR: ${stderr}`));
+                    }
+
                     if (error) {
                         this.eventStream.post(new DotnetAcquisitionInstallError(error, version));
                         reject(error);
@@ -193,5 +213,31 @@ export class DotnetCoreAcquisitionWorker {
                 reject(error);
             }
         });
+
+        await this.validateDotnetInstall(version, dotnetPath);
+    }
+
+    private async validateDotnetInstall(version: string, dotnetPath: string): Promise<void> {
+        const dotnetValidationFailed = `Validation of .dotnet installation for version ${version} failed:`;
+
+        this.eventStream.post(new DotnetAcquisitionMessage(version, `Validating dotnet installation at ${dotnetPath}`));
+
+        const folder = path.dirname(dotnetPath);
+        const folderExists = await fse.pathExists(folder);
+        if (!folderExists) {
+            throw new Error(`${dotnetValidationFailed} Expected installation folder ${folder} does not exist.`);
+        }
+
+        const fileExists = await fse.pathExists(dotnetPath);
+        if (!fileExists) {
+            throw new Error(`${dotnetValidationFailed} Expected executable does not exist at "${dotnetPath}"`);
+        }
+
+        const stat = await fse.stat(dotnetPath);
+        if (!stat.isFile()) {
+            throw new Error(`${dotnetValidationFailed} Expected executable file exists but is not a file: "${dotnetPath}"`);
+        }
+
+        this.eventStream.post(new DotnetAcquisitionMessage(version, `Validation succeeded.`));
     }
 }
