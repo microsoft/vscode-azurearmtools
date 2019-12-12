@@ -4,16 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ext } from '../extensionVariables';
-import { ReloadShemasRequest } from './ReloadSchemasRequest';
 
 export async function reloadSchemas(): Promise<void> {
 
-    ext.outputChannel.appendLine("Reloading schemas...");
-
     if (ext.languageServerClient) {
-        const request = new ReloadShemasRequest();
-        await ext.languageServerClient.sendRequest<ReloadShemasRequest>('schema/reloadSchemas', request);
+        ext.outputChannel.appendLine("Reloading schemas");
+
+        await ext.languageServerClient.sendRequest('schema/reloadSchemas', {});
+    }
+    else {
+        ext.outputChannel.appendLine("Language server is not yet ready");
     }
 
-    ext.outputChannel.appendLine("Schemas reloaded");
 }

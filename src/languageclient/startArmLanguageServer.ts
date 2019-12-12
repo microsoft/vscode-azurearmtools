@@ -32,8 +32,9 @@ export async function stopArmLanguageServer(): Promise<void> {
     // Work-around for https://github.com/microsoft/vscode/issues/83254 - store languageServerState global via ext to keep it a singleton
     ext.languageServerState = LanguageServerState.Stopped;
     if (ext.languageServerClient) {
-        await ext.languageServerClient.stop();
+        let client: LanguageClient = ext.languageServerClient;
         ext.languageServerClient = undefined;
+        await client.stop();
     }
 
     ext.outputChannel.appendLine("Language server stopped");
@@ -126,7 +127,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         ext.outputChannel.appendLine(`Language server nuget version: ${langServerVersion}`);
         ext.outputChannel.appendLine(`Client options:${os.EOL}${JSON.stringify(clientOptions, undefined, 2)}`);
         ext.outputChannel.appendLine(`Server options:${os.EOL}${JSON.stringify(serverOptions, undefined, 2)}`);
-        ext.languageServerClient = new LanguageClient(
+        let client: LanguageClient = new LanguageClient(
             languageId,
             languageFriendlyName, // Used in the Output window combobox
             serverOptions,
@@ -134,18 +135,19 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         );
 
         // Use an error handler that sends telemetry
-        let defaultHandler = ext.languageServerClient.createDefaultErrorHandler();
-        ext.languageServerClient.clientOptions.errorHandler = new WrappedErrorHandler(defaultHandler);
+        let defaultHandler = client.createDefaultErrorHandler();
+        client.clientOptions.errorHandler = new WrappedErrorHandler(defaultHandler);
 
         if (waitForDebugger) {
             window.showWarningMessage(`The ${configPrefix}.languageServer.waitForDebugger option is set.  The language server will pause on startup until a debugger is attached.`);
         }
 
         try {
-            let disposable = ext.languageServerClient.start();
+            let disposable = client.start();
             ext.context.subscriptions.push(disposable);
 
-            await ext.languageServerClient.onReady();
+            await client.onReady();
+            ext.languageServerClient = client;
         } catch (error) {
             throw new Error(
                 `${languageServerName}: An error occurred starting the language server.${os.EOL}${os.EOL}${parseError(error).message}`
