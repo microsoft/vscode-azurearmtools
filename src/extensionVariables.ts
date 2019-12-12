@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from "vscode";
-import { IAzExtOutputChannel, IAzureUserInput, ITelemetryReporter } from "vscode-azureextensionui";
+import { IAzureUserInput, ITelemetryReporter } from "vscode-azureextensionui";
+import { LanguageClient } from "vscode-languageclient";
 import { isWebpack } from "./constants";
 import { LanguageServerState } from "./languageclient/startArmLanguageServer";
 import { JsonOutlineProvider } from "./Treeview";
@@ -24,6 +25,7 @@ class ExtensionVariables {
     public ui: IAzureUserInput;
     public ignoreBundle: boolean = !isWebpack;
 
+    public languageServerClient: LanguageClient | undefined;
     public languageServerState: LanguageServerState = LanguageServerState.NotStarted;
 
     // Suite support - lets us know when diagnostics have been completely published for a file
