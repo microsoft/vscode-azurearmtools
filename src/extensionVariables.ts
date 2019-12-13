@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from "vscode";
-import { IAzureUserInput, ITelemetryReporter } from "vscode-azureextensionui";
+import { IAzExtOutputChannel, IAzureUserInput, ITelemetryReporter } from "vscode-azureextensionui";
 import { LanguageClient } from "vscode-languageclient";
 import { isWebpack } from "./constants";
 import { LanguageServerState } from "./languageclient/startArmLanguageServer";
