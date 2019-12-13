@@ -13,7 +13,7 @@ export async function reloadSchemas(): Promise<void> {
         await ext.languageServerClient.sendRequest('schema/reloadSchemas', {});
     }
     else {
-        ext.outputChannel.appendLine("Language server is not yet ready");
+        throw new Error("Language server is not yet ready");
     }
 
 }
