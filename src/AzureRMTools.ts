@@ -90,7 +90,7 @@ export class AzureRMTools {
         });
         registerCommand("azurerm-vscode-tools.reloadSchemas", async () => {
             await reloadSchemas();
-        })
+        });
 
         vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
         vscode.workspace.onDidOpenTextDocument(this.onDocumentOpened, this, context.subscriptions);

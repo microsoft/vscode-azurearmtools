@@ -11,8 +11,7 @@ export async function reloadSchemas(): Promise<void> {
         ext.outputChannel.appendLine("Reloading schemas");
 
         await ext.languageServerClient.sendRequest('schema/reloadSchemas', {});
-    }
-    else {
+    } else {
         throw new Error("Language server is not yet ready");
     }
 
