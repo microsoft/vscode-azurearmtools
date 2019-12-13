@@ -43,7 +43,8 @@
     "onLanguage:arm-template",
     "onLanguage:json",
     "onLanguage:jsonc",
-    "onCommand:azurerm-vscode-tools.uninstallDotnet"
+    "onCommand:azurerm-vscode-tools.uninstallDotnet",
+    "onCommand:azurerm-vscode-tools.reloadSchemas"
   ],
   "contributes": {
     "grammars": [
@@ -135,10 +136,23 @@
     "commands": [
       {
         "category": "Azure Resource Manager Tools",
-        "title": "Remove local dotnet core installation",
+        "title": "Remove Local Dotnet Core Installation",
         "command": "azurerm-vscode-tools.uninstallDotnet"
+      },
+      {
+        "category": "Azure Resource Manager Tools",
+        "title": "Reload Cached Schemas",
+        "command": "azurerm-vscode-tools.reloadSchemas"
       }
-    ]
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "azurerm-vscode-tools.reloadSchemas",
+          "when": "editorLangId==arm-template"
+        }
+      ]
+    }
   },
   "main": "main",
   "scripts": {

@@ -20,6 +20,7 @@ import { DefinitionKind } from "./INamedDefinition";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 import * as Json from "./JSON";
 import * as language from "./Language";
+import { reloadSchemas } from "./languageclient/reloadSchemas";
 import { startArmLanguageServer, stopArmLanguageServer } from "./languageclient/startArmLanguageServer";
 import { IReferenceSite, PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
@@ -86,6 +87,9 @@ export class AzureRMTools {
         registerCommand('azurerm-vscode-tools.uninstallDotnet', async () => {
             await stopArmLanguageServer();
             await uninstallDotnet();
+        });
+        registerCommand("azurerm-vscode-tools.reloadSchemas", async () => {
+            await reloadSchemas();
         });
 
         vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);

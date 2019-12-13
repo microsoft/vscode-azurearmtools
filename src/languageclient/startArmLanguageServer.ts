@@ -27,15 +27,14 @@ export enum LanguageServerState {
     Started,
     Stopped,
 }
-let client: LanguageClient | undefined;
-
 export async function stopArmLanguageServer(): Promise<void> {
     ext.outputChannel.appendLine(`Stopping ${languageServerName}...`);
     // Work-around for https://github.com/microsoft/vscode/issues/83254 - store languageServerState global via ext to keep it a singleton
     ext.languageServerState = LanguageServerState.Stopped;
-    if (client) {
+    if (ext.languageServerClient) {
+        let client: LanguageClient = ext.languageServerClient;
+        ext.languageServerClient = undefined;
         await client.stop();
-        client = undefined;
     }
 
     ext.outputChannel.appendLine("Language server stopped");
@@ -128,7 +127,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         ext.outputChannel.appendLine(`Language server nuget version: ${langServerVersion}`);
         ext.outputChannel.appendLine(`Client options:${os.EOL}${JSON.stringify(clientOptions, undefined, 2)}`);
         ext.outputChannel.appendLine(`Server options:${os.EOL}${JSON.stringify(serverOptions, undefined, 2)}`);
-        client = new LanguageClient(
+        let client: LanguageClient = new LanguageClient(
             languageId,
             languageFriendlyName, // Used in the Output window combobox
             serverOptions,
@@ -148,6 +147,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
             ext.context.subscriptions.push(disposable);
 
             await client.onReady();
+            ext.languageServerClient = client;
         } catch (error) {
             throw new Error(
                 `${languageServerName}: An error occurred starting the language server.${os.EOL}${os.EOL}${parseError(error).message}`
