@@ -1,200 +1,214 @@
 {
-  "name": "azurerm-vscode-tools",
-  "displayName": "Azure Resource Manager (ARM) Tools",
-  "description": "Language server, editing tools and snippets for Azure Resource Manager (ARM) template files.",
-  "version": "0.8.3-alpha",
-  "publisher": "msazurermtools",
-  "config": {
-    "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.19611.6"
-  },
-  "categories": [
-    "Azure",
-    "Programming Languages",
-    "Linters",
-    "Formatters",
-    "Snippets"
-  ],
-  "keywords": [
-    "Azure Template",
-    "ARM",
-    "Resource Manager",
-    "Azure",
-    "Snippets"
-  ],
-  "repository": {
-    "url": "https://github.com/Microsoft/vscode-azurearmtools.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Microsoft/vscode-azurearmtools/issues"
-  },
-  "galleryBanner": {
-    "color": "E7F1FA",
-    "theme": "light"
-  },
-  "homepage": "https://github.com/Microsoft/vscode-azurearmtools/blob/master/README.md",
-  "license": "SEE LICENSE IN LICENSE.md",
-  "icon": "AzureRMTools128x128.png",
-  "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
-  "engines": {
-    "vscode": "^1.31.0"
-  },
-  "preview": true,
-  "activationEvents": [
-    "onLanguage:arm-template",
-    "onLanguage:json",
-    "onLanguage:jsonc",
-    "onCommand:azurerm-vscode-tools.uninstallDotnet"
-  ],
-  "contributes": {
-    "grammars": [
-      {
-        "language": "arm-template",
-        "scopeName": "source.json.arm-template",
-        "path": "dist/grammars/JSONC.arm.tmLanguage.json"
-      },
-      {
-        "scopeName": "source.tle.arm-template",
-        "path": "dist/grammars/arm-expression-string.tmLanguage.json"
-      }
-    ],
-    "snippets": [
-      {
-        "language": "arm-template",
-        "path": "./assets/armsnippets.jsonc"
-      },
-      {
-        "language": "json",
-        "path": "./assets/jsonsnippets.jsonc"
-      },
-      {
-        "language": "jsonc",
-        "path": "./assets/jsonsnippets.jsonc"
-      }
-    ],
-    "configuration": {
-      "type": "object",
-      "title": "Azure Resource Manager Tools",
-      "properties": {
-        "azureResourceManagerTools.autoDetectJsonTemplates": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enables auto-detection of deployment template files with the extension *.json or *.jsonc. If set to true (default), the editor language will automatically be set to Azure Resource Manager Template for any *.json/*.jsonc file which contains an appropriate Azure Resource Manager Template schema."
-        },
-        "azureResourceManagerTools.languageServer.path": {
-          "type": "string",
-          "description": "Override the default location of the language server assembly folder or file path (requires restart)"
-        },
-        "azureResourceManagerTools.languageServer.waitForDebugger": {
-          "type": "boolean",
-          "default": false,
-          "description": "If set to true, the language server process will wait in startup until a debugger is attached, and then will force a break (requires restart)"
-        },
-        "azureResourceManagerTools.languageServer.traceLevel": {
-          "type": "string",
-          "enum": [
-            "Trace",
-            "Debug",
-            "Information",
-            "Warning",
-            "Error",
-            "Critical",
-            "None"
-          ],
-          "default": "Warning",
-          "description": "Sets the trace level in the Output window for the Azure Template Language Server (requires restart)"
-        },
-        "azureResourceManagerTools.languageServer.dotnetExePath": {
-          "type": "string",
-          "description": "(Not recommended, requires restart) If specified, overrides the use of a local version of dotnet core the extension and instead points to another installed version of dotnet.exe (must match the version needed by the extension)"
-        },
-        "azureResourceManagerTools.checkForLatestSchema": {
-          "type": "boolean",
-          "description": "Check if the schema for deployment templates is using an out-of-date version and suggest updating",
-          "default": true
-        }
-      }
+    "name": "azurerm-vscode-tools",
+    "displayName": "Azure Resource Manager (ARM) Tools",
+    "description": "Language server, editing tools and snippets for Azure Resource Manager (ARM) template files.",
+    "version": "0.8.3",
+    "publisher": "msazurermtools",
+    "config": {
+        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.19612.6"
     },
-    "views": {
-      "explorer": [
-        {
-          "id": "azurerm-vscode-tools.template-outline",
-          "name": "ARM Template Outline",
-          "when": "showAzureTemplateView"
-        }
-      ]
+    "categories": [
+        "Azure",
+        "Programming Languages",
+        "Linters",
+        "Formatters",
+        "Snippets"
+    ],
+    "keywords": [
+        "Azure Template",
+        "ARM",
+        "Resource Manager",
+        "Azure",
+        "Snippets"
+    ],
+    "repository": {
+        "url": "https://github.com/Microsoft/vscode-azurearmtools.git"
     },
-    "languages": [
-      {
-        "id": "arm-template",
-        "aliases": [
-          "Azure Resource Manager Template"
+    "bugs": {
+        "url": "https://github.com/Microsoft/vscode-azurearmtools/issues"
+    },
+    "galleryBanner": {
+        "color": "E7F1FA",
+        "theme": "light"
+    },
+    "homepage": "https://github.com/Microsoft/vscode-azurearmtools/blob/master/README.md",
+    "license": "SEE LICENSE IN LICENSE.md",
+    "icon": "AzureRMTools128x128.png",
+    "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
+    "engines": {
+        "vscode": "^1.31.0"
+    },
+    "preview": true,
+    "activationEvents": [
+        "onLanguage:arm-template",
+        "onLanguage:json",
+        "onLanguage:jsonc",
+        "onCommand:azurerm-vscode-tools.uninstallDotnet",
+        "onCommand:azurerm-vscode-tools.reloadSchemas"
+    ],
+    "contributes": {
+        "grammars": [
+            {
+                "language": "arm-template",
+                "scopeName": "source.json.arm-template",
+                "path": "dist/grammars/JSONC.arm.tmLanguage.json"
+            },
+            {
+                "scopeName": "source.tle.arm-template",
+                "path": "dist/grammars/arm-expression-string.tmLanguage.json"
+            }
         ],
-        "configuration": "dist/grammars/jsonc.arm.language-configuration.json"
-      }
-    ],
-    "commands": [
-      {
-        "category": "Azure Resource Manager Tools",
-        "title": "Remove local dotnet core installation",
-        "command": "azurerm-vscode-tools.uninstallDotnet"
-      }
-    ]
-  },
-  "main": "main",
-  "scripts": {
-    "vscode:prepublish": "gulp error-vsce-package",
-    "compile": "gulp build-grammars && npm run get-language-server && gulp verify-test-uses-extension-bundle && tsc -watch -p ./",
-    "build": "gulp build-grammars && npm run get-language-server && gulp verify-test-uses-extension-bundle && tsc -p ./",
-    "get-language-server": "gulp get-language-server",
-    "lint": "tslint --project tsconfig.json -t verbose",
-    "lint-fix": "tslint --project tsconfig.json -t verbose --fix",
-    "package": "npm run webpack-prod && npm run get-language-server && gulp package",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "pretest": "npm run build && npm run webpack-prod",
-    "pretest-dev": "npm run build && npm run webpack",
-    "test": "gulp test",
-    "all": "npm i && npm test && npm    run lint",
-    "webpack": "gulp webpack-dev",
-    "webpack-prod": "gulp webpack-prod",
-    "webpack-profile": "webpack --profile --json --mode production > webpack-stats.json && echo Use http://webpack.github.io/analyse to analyze the stats",
-    "build-grammars": "gulp build-grammars",
-    "watch-grammars": "gulp watch-grammars",
-    "verify-test-uses-extension-bundle": "gulp verify-test-uses-extension-bundle"
-  },
-  "devDependencies": {
-    "@types/fs-extra": "^5.1.0",
-    "@types/gulp": "^4.0.6",
-    "@types/mocha": "^2.2.41",
-    "@types/node": "^12.7.8",
-    "@types/opn": "^5.5.0",
-    "@types/recursive-readdir": "^2.2.0",
-    "@types/rimraf": "2.0.2",
-    "@types/shelljs": "0.8.3",
-    "@types/webpack": "^4.39.1",
-    "gulp": "^4.0.2",
-    "mocha": "^5.2.0",
-    "mocha-junit-reporter": "^1.23.1",
-    "mocha-multi-reporters": "^1.1.7",
-    "recursive-readdir": "^2.2.2",
-    "ts-node": "^7.0.1",
-    "tslint": "^5.20.0",
-    "tslint-microsoft-contrib": "5.0.3",
-    "typescript": "^3.6.3",
-    "vsce": "^1.66.0",
-    "vscode": "^1.1.33",
-    "vscode-azureextensiondev": "^0.2.3",
-    "webpack": "4.28.1",
-    "webpack-cli": "^3.3.9"
-  },
-  "dependencies": {
-    "fs-extra": "^7.0.1",
-    "moment": "^2.24.0",
-    "nuget": "^2.0.2",
-    "opn": "^5.5.0",
-    "rimraf": "2.6.3",
-    "shelljs": "^0.8.3",
-    "vscode-azureextensionui": "^0.29.0",
-    "vscode-jsonrpc": "^4.0.0",
-    "vscode-languageclient": "^4.4.0"
-  }
+        "snippets": [
+            {
+                "language": "arm-template",
+                "path": "./assets/armsnippets.jsonc"
+            },
+            {
+                "language": "json",
+                "path": "./assets/jsonsnippets.jsonc"
+            },
+            {
+                "language": "jsonc",
+                "path": "./assets/jsonsnippets.jsonc"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "Azure Resource Manager Tools",
+            "properties": {
+                "azureResourceManagerTools.autoDetectJsonTemplates": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enables auto-detection of deployment template files with the extension *.json or *.jsonc. If set to true (default), the editor language will automatically be set to Azure Resource Manager Template for any *.json/*.jsonc file which contains an appropriate Azure Resource Manager Template schema."
+                },
+                "azureResourceManagerTools.languageServer.path": {
+                    "type": "string",
+                    "description": "Override the default location of the language server assembly folder or file path (requires restart)"
+                },
+                "azureResourceManagerTools.languageServer.waitForDebugger": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If set to true, the language server process will wait in startup until a debugger is attached, and then will force a break (requires restart)"
+                },
+                "azureResourceManagerTools.languageServer.traceLevel": {
+                    "type": "string",
+                    "enum": [
+                        "Trace",
+                        "Debug",
+                        "Information",
+                        "Warning",
+                        "Error",
+                        "Critical",
+                        "None"
+                    ],
+                    "default": "Warning",
+                    "description": "Sets the trace level in the Output window for the Azure Template Language Server (requires restart)"
+                },
+                "azureResourceManagerTools.languageServer.dotnetExePath": {
+                    "type": "string",
+                    "description": "(Not recommended, requires restart) If specified, overrides the use of a local version of dotnet core the extension and instead points to another installed version of dotnet.exe (must match the version needed by the extension)"
+                },
+                "azureResourceManagerTools.checkForLatestSchema": {
+                    "type": "boolean",
+                    "description": "Check if the schema for deployment templates is using an out-of-date version and suggest updating",
+                    "default": true
+                }
+            }
+        },
+        "views": {
+            "explorer": [
+                {
+                    "id": "azurerm-vscode-tools.template-outline",
+                    "name": "ARM Template Outline",
+                    "when": "showAzureTemplateView"
+                }
+            ]
+        },
+        "languages": [
+            {
+                "id": "arm-template",
+                "aliases": [
+                    "Azure Resource Manager Template"
+                ],
+                "configuration": "dist/grammars/jsonc.arm.language-configuration.json"
+            }
+        ],
+        "commands": [
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Remove Local Dotnet Core Installation",
+                "command": "azurerm-vscode-tools.uninstallDotnet"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Reload Cached Schemas",
+                "command": "azurerm-vscode-tools.reloadSchemas"
+            }
+        ],
+        "menus": {
+            "editor/context": [
+                {
+                    "command": "azurerm-vscode-tools.reloadSchemas",
+                    "when": "editorLangId==arm-template"
+                }
+            ]
+        }
+    },
+    "main": "main",
+    "scripts": {
+        "vscode:prepublish": "gulp error-vsce-package",
+        "compile": "gulp build-grammars && npm run get-language-server && gulp verify-test-uses-extension-bundle && tsc -watch -p ./",
+        "build": "gulp build-grammars && npm run get-language-server && gulp verify-test-uses-extension-bundle && tsc -p ./",
+        "get-language-server": "gulp get-language-server",
+        "lint": "tslint --project tsconfig.json -t verbose",
+        "lint-fix": "tslint --project tsconfig.json -t verbose --fix",
+        "package": "npm run webpack-prod && npm run get-language-server && gulp package",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "pretest": "npm run build && npm run webpack-prod",
+        "pretest-dev": "npm run build && npm run webpack",
+        "test": "gulp test",
+        "all": "npm i && npm test && npm    run lint",
+        "webpack": "gulp webpack-dev",
+        "webpack-prod": "gulp webpack-prod",
+        "webpack-profile": "webpack --profile --json --mode production > webpack-stats.json && echo Use http://webpack.github.io/analyse to analyze the stats",
+        "build-grammars": "gulp build-grammars",
+        "watch-grammars": "gulp watch-grammars",
+        "verify-test-uses-extension-bundle": "gulp verify-test-uses-extension-bundle"
+    },
+    "devDependencies": {
+        "@types/fs-extra": "^5.1.0",
+        "@types/gulp": "^4.0.6",
+        "@types/mocha": "^2.2.41",
+        "@types/node": "^12.7.8",
+        "@types/opn": "^5.5.0",
+        "@types/recursive-readdir": "^2.2.0",
+        "@types/rimraf": "2.0.2",
+        "@types/shelljs": "0.8.3",
+        "@types/webpack": "^4.39.1",
+        "gulp": "^4.0.2",
+        "mocha": "^5.2.0",
+        "mocha-junit-reporter": "^1.23.1",
+        "mocha-multi-reporters": "^1.1.7",
+        "recursive-readdir": "^2.2.2",
+        "ts-node": "^7.0.1",
+        "tslint": "^5.20.0",
+        "tslint-microsoft-contrib": "5.0.3",
+        "typescript": "^3.6.3",
+        "vsce": "^1.66.0",
+        "vscode": "^1.1.33",
+        "vscode-azureextensiondev": "^0.2.3",
+        "webpack": "4.28.1",
+        "webpack-cli": "^3.3.9"
+    },
+    "dependencies": {
+        "fs-extra": "^7.0.1",
+        "moment": "^2.24.0",
+        "nuget": "^2.0.2",
+        "opn": "^5.5.0",
+        "rimraf": "2.6.3",
+        "shelljs": "^0.8.3",
+        "vscode-azureextensionui": "^0.29.0",
+        "vscode-jsonrpc": "^4.0.0",
+        "vscode-languageclient": "^4.4.0"
+    }
 }
