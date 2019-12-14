@@ -316,7 +316,7 @@ export class AzureRMTools {
 
                 const yes: vscode.MessageItem = { title: "Use latest" };
                 const notNow: vscode.MessageItem = { title: "Not now" };
-                const neverForThisFile: vscode.MessageItem = { title: "Not for this file" };
+                const neverForThisFile: vscode.MessageItem = { title: "Never for this file" };
 
                 this._filesAskedToUpdateSchema.add(documentUri);
                 const response = await ext.ui.showWarningMessage(
