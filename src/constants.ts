@@ -47,6 +47,7 @@ export namespace templateKeys {
     export const parameters = 'parameters';
     export const resources = 'resources';
     export const variables = 'variables';
+    export const functions = 'functions';
     export const apiProfile = 'apiProfile';
 
     // Copy blocks

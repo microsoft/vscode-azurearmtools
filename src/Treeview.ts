@@ -21,6 +21,7 @@ const topLevelIcons: [string, string][] = [
     ["handler", "label.svg"],
     [templateKeys.parameters, "parameters.svg"],
     [templateKeys.variables, "variables.svg"],
+    [templateKeys.functions, "functions.svg"],
     ["resources", "resources.svg"],
     ["outputs", "outputs.svg"],
 ];
@@ -28,6 +29,7 @@ const topLevelIcons: [string, string][] = [
 const topLevelChildIconsByRootNode: [string, string][] = [
     [templateKeys.parameters, "parameters.svg"],
     [templateKeys.variables, "variables.svg"],
+    [templateKeys.functions, "functions.svg"],
     ["outputs", "outputs.svg"],
 ];
 

@@ -120,20 +120,8 @@ suite("TreeView", async (): Promise<void> => {
             await testTree(template, expected, ["label"]);
         }
 
-        async function testIcon(resourceType: string, expected: string): Promise<void> {
-            let template = `{
-                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                "contentVersion": "1.0.0.0",
-                "resources": [
-                    {
-                        "type": "${resourceType}"
-                    }
-                ]
-            }`;
-            await showNewTextDocument(template);
-            // tslint:disable-next-line:no-any
-            let rawTree = getTree(<any>null);
-            assert.strictEqual(rawTree[2].children![0].icon, expected);
+        async function testIcons(template: string, expected: Partial<ITestTreeItem>[]): Promise<void> {
+            await testTree(template, expected, ["icon"]);
         }
 
         function getTree(element?: string): ITestTreeItem[] {
@@ -188,27 +176,108 @@ suite("TreeView", async (): Promise<void> => {
 
         /////////////////////////
 
-        suite("Icons", () => {
-            function iconTest(resourceType: string, expectedIcon: string): void {
-                test(`getIcon: For ${resourceType}`, async () => {
-                    await testIcon(resourceType, expectedIcon);
-                });
+        test("getIcon: display correct icon", async () => {
+            interface IconObject {
+                icon: string;
+                children: ChildIconObject[];
+            }
+            interface ChildIconObject {
+                icon: string | undefined;
             }
 
-            iconTest("Microsoft.Compute/virtualMachines", "virtualmachines.svg");
-            iconTest("Microsoft.Storage/storageAccounts", "storageaccounts.svg");
-            iconTest("Microsoft.Network/virtualNetworks", "virtualnetworks.svg");
-            iconTest("Microsoft.Compute/virtualMachines/extensions", "extensions.svg");
-            iconTest("Microsoft.Network/networkSecurityGroups", "nsg.svg");
-            iconTest("Microsoft.Network/networkInterfaces", "nic.svg");
-            iconTest("Microsoft.Network/publicIPAddresses", "publicip.svg");
-            iconTest("Microsoft.Web/sites", "appservices.svg");
-            iconTest("config", "appconfiguration.svg");
-            iconTest("Microsoft.Insights/components", "applicationinsights.svg");
-            iconTest("Microsoft.KeyVault/vaults", "keyvaults.svg");
-            iconTest("Microsoft.KeyVault/vaults/secrets", "keyvaults.svg");
-            iconTest("Microsoft.Cdn/profiles", "cdnprofiles.svg");
+            function getIconObject(icon: string, childIcon: string | undefined): IconObject {
+                return { icon: icon, children: [{ icon: childIcon }] };
+            }
+
+            await testIcons(
+                `{
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "parameter1": {
+                        }
+                    },
+                    "variables": {
+                        "variable1": "value"
+                    },
+                    "functions": [
+                        {
+                            "namespace": "namespace-name"
+                        }
+                    ],
+                    "resources": [
+                        {
+                            "type": "Microsoft.Compute/virtualMachines",
+                        },
+                        {
+                            "type": "Microsoft.Storage/storageAccounts",
+                        },
+                        {
+                            "type": "Microsoft.Network/virtualNetworks",
+                        },
+                        {
+                            "type": "Microsoft.Compute/virtualMachines/extensions",
+                        },
+                        {
+                            "type": "Microsoft.Network/networkSecurityGroups",
+                        },
+                        {
+                            "type": "Microsoft.Network/networkInterfaces",
+                        },
+                        {
+                            "type": "Microsoft.Network/publicIPAddresses",
+                        },
+                        {
+                            "type": "Microsoft.Web/sites",
+                        },
+                        {
+                            "type": "config",
+                        },
+                        {
+                            "type": "Microsoft.Insights/components",
+                        },
+                        {
+                            "type": "Microsoft.KeyVault/vaults",
+                        },
+                        {
+                            "type": "Microsoft.KeyVault/vaults/secrets",
+                        },
+                        {
+                            "type": "Microsoft.Cdn/profiles",
+                        }
+                    ],
+                    "outputs": {
+                        "output1": {
+                        }
+                    }
+                }`,
+                [{ icon: "label.svg" },
+                { icon: "label.svg" },
+                getIconObject("parameters.svg", "parameters.svg"),
+                getIconObject("variables.svg", "variables.svg"),
+                { icon: "functions.svg", children: [{ icon: "functions.svg", children: [{ icon: undefined }] }] },
+                {
+                    icon: "resources.svg", children: [
+                        getIconObject("virtualmachines.svg", undefined),
+                        getIconObject("storageaccounts.svg", undefined),
+                        getIconObject("virtualnetworks.svg", undefined),
+                        getIconObject("extensions.svg", undefined),
+                        getIconObject("nsg.svg", undefined),
+                        getIconObject("nic.svg", undefined),
+                        getIconObject("publicip.svg", undefined),
+                        getIconObject("appservices.svg", undefined),
+                        getIconObject("appconfiguration.svg", undefined),
+                        getIconObject("applicationinsights.svg", undefined),
+                        getIconObject("keyvaults.svg", undefined),
+                        getIconObject("keyvaults.svg", undefined),
+                        getIconObject("cdnprofiles.svg", undefined)]
+                },
+                getIconObject("outputs.svg", "outputs.svg")]
+                ,
+            );
         });
+
+        /////////////////////////
 
         test("getLabel: displayName tag overrides name", async () => {
 
