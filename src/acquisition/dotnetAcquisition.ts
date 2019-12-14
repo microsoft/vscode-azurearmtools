@@ -11,6 +11,7 @@ import * as vscode from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
 import { assetsPath } from '../constants';
 import { ext } from '../extensionVariables';
+import { wrapError } from '../util/wrapError';
 import { DotnetCoreAcquisitionWorker } from './DotnetCoreAcquisitionWorker';
 import { DotnetCoreDependencyInstaller } from './DotnetCoreDependencyInstaller';
 import { EventStream } from './EventStream';
@@ -74,6 +75,10 @@ export async function dotnetAcquire(
             throw new Error(`Cannot acquire .NET Core version "${version}". Please provide a valid version.`);
         }
         return await acquisitionWorker.acquire(version, telemetryProperties);
+    } catch (err) {
+        const linkMessage = `>>>> This extension requires .NET Core for full functionality, but we were unable to download and install a local copy for the extension. If this error persists, please see https://aka.ms/vscode-armtools-dotnet for troubleshooting tips.`;
+        err = wrapError(linkMessage, err);
+        throw err;
     } finally {
         issueProperties.dotnetAcquireLog = getStreamLogs();
     }

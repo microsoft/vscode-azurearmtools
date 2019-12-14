@@ -59,6 +59,7 @@ export { UserFunctionNamespaceDefinition } from "./src/UserFunctionNamespaceDefi
 export { UserFunctionParameterDefinition } from "./src/UserFunctionParameterDefinition";
 export { mapJsonObjectValue } from "./src/util/mapJsonObjectValue";
 export { getVSCodePositionFromPosition } from "./src/util/vscodePosition";
+export { wrapError } from "./src/util/wrapError";
 export { isVariableDefinition, IVariableDefinition } from "./src/VariableDefinition";
 export { FindReferencesVisitor } from "./src/visitors/FindReferencesVisitor";
 export { FunctionCountVisitor } from "./src/visitors/FunctionCountVisitor";

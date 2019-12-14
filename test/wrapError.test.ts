@@ -1,0 +1,48 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+import * as assert from 'assert';
+import * as os from 'os';
+import { parseError } from 'vscode-azureextensionui';
+import { wrapError } from '../extension.bundle';
+
+suite("wrapError", () => {
+    test("outer string, inner string", () => {
+        let wrapped = wrapError('Outer error.', 'Inner error.');
+        assert(wrapped instanceof Error);
+        assert.equal(parseError(wrapped).message, `Outer error.${os.EOL}Inner error.`);
+    });
+
+    test("outer string, inner error", () => {
+        const inner = new Error('Inner error.');
+        let wrapped = wrapError('Outer error.', inner);
+        assert(wrapped instanceof Error);
+        assert.equal(parseError(wrapped).message, `Outer error.${os.EOL}Inner error.`);
+        assert.equal(wrapped.stack, inner.stack);
+        assert.equal(wrapped.name, inner.name);
+    });
+
+    test("read-only properties", () => {
+        const inner = new Error();
+        Object.defineProperty(inner, "message", {
+            value: "Inner message.",
+            writable: false
+        });
+
+        let isReadOnly: boolean = false;
+        try {
+            inner.message = "shouldn't be able to change message";
+        } catch (err) {
+            isReadOnly = true;
+        }
+        assert(isReadOnly);
+
+        let wrapped = wrapError('Outer error.', inner);
+        assert(wrapped instanceof Error);
+        assert.equal(parseError(wrapped).message, `Outer error.${os.EOL}Inner message.`);
+        assert.equal(wrapped.stack, inner.stack);
+        assert.equal(wrapped.name, inner.name);
+    });
+});
