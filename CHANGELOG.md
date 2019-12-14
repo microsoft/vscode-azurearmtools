@@ -1,6 +1,24 @@
 # Change Log
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.8.3 (2019-12-16)
+### Fixed
+- Cannot install extension with "'" in username/users path [#356](https://github.com/microsoft/vscode-azurearmtools/issues/356)
+- Error updating $schema if editor no longer has focus [#389](https://github.com/microsoft/vscode-azurearmtools/issues/389)
+- Should only ask once per vscode session to upgrade $schema if Not Now chosen [#391](https://github.com/microsoft/vscode-azurearmtools/issues/391)
+- We shouldn't allow renaming built-in functions [#385](https://github.com/microsoft/vscode-azurearmtools/issues/385)
+- Update API Version on Nested Deployment Snippet [#402](https://github.com/microsoft/vscode-azurearmtools/issues/402)
+- Improve diagnostics for dotnet acquisition failures
+- Added current schemas as cache in case schemas fail to download
+### Added
+- Intellisense support for additional runtime functions:
+  - listAuthKeys
+  - listClusterAdminCredential
+  - listCredential
+  - listQueryKeys
+  - listSyncFunctionTriggerStatus
+- New "Reload Cached Schemas" command
+
 ## Version 0.8.2 (2019-11-08)
 ### Fixed
 - Full template validation has been temporarily disabled until we can find a long-term solution for some bugs. This fixed:
