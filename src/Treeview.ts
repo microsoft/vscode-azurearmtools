@@ -40,7 +40,7 @@ const resourceIcons: [string, string][] = [
     ["Microsoft.Network/networkInterfaces", "nic.svg"],
     ["Microsoft.Network/publicIPAddresses", "publicip.svg"],
     ["Microsoft.Web/sites", "appservices.svg"],
-    ["config", "settings.svg"],
+    ["config", "appconfiguration.svg"],
     ["Microsoft.Insights/components", "applicationinsights.svg"],
     ["Microsoft.KeyVault/vaults", "keyvaults.svg"],
     ["Microsoft.KeyVault/vaults/secrets", "keyvaults.svg"],

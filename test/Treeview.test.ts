@@ -203,7 +203,7 @@ suite("TreeView", async (): Promise<void> => {
             iconTest("Microsoft.Network/networkInterfaces", "nic.svg");
             iconTest("Microsoft.Network/publicIPAddresses", "publicip.svg");
             iconTest("Microsoft.Web/sites", "appservices.svg");
-            iconTest("config", "settings.svg");
+            iconTest("config", "appconfiguration.svg");
             iconTest("Microsoft.Insights/components", "applicationinsights.svg");
             iconTest("Microsoft.KeyVault/vaults", "keyvaults.svg");
             iconTest("Microsoft.KeyVault/vaults/secrets", "keyvaults.svg");
