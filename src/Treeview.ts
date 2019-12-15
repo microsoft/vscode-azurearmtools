@@ -21,6 +21,7 @@ const topLevelIcons: [string, string][] = [
     ["handler", "label.svg"],
     [templateKeys.parameters, "parameters.svg"],
     [templateKeys.variables, "variables.svg"],
+    [templateKeys.functions, "functions.svg"],
     ["resources", "resources.svg"],
     ["outputs", "outputs.svg"],
 ];
@@ -28,6 +29,7 @@ const topLevelIcons: [string, string][] = [
 const topLevelChildIconsByRootNode: [string, string][] = [
     [templateKeys.parameters, "parameters.svg"],
     [templateKeys.variables, "variables.svg"],
+    [templateKeys.functions, "functions.svg"],
     ["outputs", "outputs.svg"],
 ];
 
@@ -38,8 +40,13 @@ const resourceIcons: [string, string][] = [
     ["Microsoft.Compute/virtualMachines/extensions", "extensions.svg"],
     ["Microsoft.Network/networkSecurityGroups", "nsg.svg"],
     ["Microsoft.Network/networkInterfaces", "nic.svg"],
-    ["Microsoft.Network/publicIPAddresses", "publicip.svg"]
-];
+    ["Microsoft.Network/publicIPAddresses", "publicip.svg"],
+    ["Microsoft.Web/sites", "appservices.svg"],
+    ["config", "appconfiguration.svg"],
+    ["Microsoft.Insights/components", "applicationinsights.svg"],
+    ["Microsoft.KeyVault/vaults", "keyvaults.svg"],
+    ["Microsoft.KeyVault/vaults/secrets", "keyvaults.svg"],
+    ["Microsoft.Cdn/profiles", "cdnprofiles.svg"]];
 
 export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     private tree: Json.ParseResult | undefined;
