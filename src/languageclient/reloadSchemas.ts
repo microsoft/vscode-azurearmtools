@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { window } from 'vscode';
 import { ext } from '../extensionVariables';
 
 export async function reloadSchemas(): Promise<void> {
@@ -11,8 +12,10 @@ export async function reloadSchemas(): Promise<void> {
         ext.outputChannel.appendLine("Reloading schemas");
 
         await ext.languageServerClient.sendRequest('schema/reloadSchemas', {});
+
+        await window.showInformationMessage("Azure schema cache has been cleared. Please restart Visual Studio Code to reload schemas.");
     } else {
-        throw new Error("Language server is not yet ready");
+        throw new Error("Language server is not yet ready. Please try again in a little while.");
     }
 
 }
