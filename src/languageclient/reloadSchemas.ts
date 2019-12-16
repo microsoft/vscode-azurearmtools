@@ -13,7 +13,7 @@ export async function reloadSchemas(): Promise<void> {
 
         await ext.languageServerClient.sendRequest('schema/reloadSchemas', {});
 
-        await window.showInformationMessage("Azure schema cache has been cleared. Please restart Visual Studio Code to reload schemas.");
+        window.showInformationMessage("Azure schema cache has been cleared. Please restart Visual Studio Code to reload schemas.");
     } else {
         throw new Error("Language server is not yet ready. Please try again in a little while.");
     }
