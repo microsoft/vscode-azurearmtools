@@ -18,6 +18,7 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
   - listQueryKeys
   - listSyncFunctionTriggerStatus
 - New "Reload Cached Schemas" command
+- Added six new resource icons (plus functions icons see [#421](https://github.com/microsoft/vscode-azurearmtools/issues/421)) for ARM Template Outline (thanks Nils Hedström @nilshedstrom!) [#417](https://github.com/microsoft/vscode-azurearmtools/pull/417)
 
 ## Version 0.8.2 (2019-11-08)
 ### Fixed
