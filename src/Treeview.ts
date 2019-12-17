@@ -29,8 +29,12 @@ const topLevelIcons: [string, string][] = [
 const topLevelChildIconsByRootNode: [string, string][] = [
     [templateKeys.parameters, "parameters.svg"],
     [templateKeys.variables, "variables.svg"],
-    [templateKeys.functions, "functions.svg"],
     ["outputs", "outputs.svg"],
+];
+
+const functionIcons: [string, string][] = [
+    [templateKeys.parameters, "parameters.svg"],
+    ["output", "outputs.svg"],
 ];
 
 const resourceIcons: [string, string][] = [
@@ -340,10 +344,11 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
 
         // If resourceType element is found on resource objects set to specific resourceType Icon or else a default resource icon
         // tslint:disable-next-line: strict-boolean-expressions
-        if (elementInfo.current.level && elementInfo.current.level > 1 && elementInfo.current.key.kind === Json.ValueKind.ObjectValue) {
+        if (elementInfo.current.level && elementInfo.current.level > 1) {
             const rootNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.root.key.start);
 
-            if (rootNode && rootNode.toString().toUpperCase() === "resources".toUpperCase() && keyOrResourceNode instanceof Json.ObjectValue) {
+            if (elementInfo.current.key.kind === Json.ValueKind.ObjectValue &&
+                rootNode && rootNode.toString().toUpperCase() === "resources".toUpperCase() && keyOrResourceNode instanceof Json.ObjectValue) {
                 // tslint:disable-next-line:one-variable-per-declaration
                 for (var i = 0, il = keyOrResourceNode.properties.length; i < il; i++) {
                     const name = keyOrResourceNode.properties[i].nameValue;
@@ -356,12 +361,36 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     }
                 }
             }
+
+            if (rootNode && rootNode.toString().toUpperCase() === "functions".toUpperCase()) {
+                icon = this.getFunctionsIcon(elementInfo, keyOrResourceNode);
+            }
         }
 
         if (icon) {
             return path.join(iconsPath, icon);
         }
 
+        return undefined;
+    }
+
+    private getFunctionsIcon(elementInfo: IElementInfo, node: Json.Value | null | undefined): string | undefined {
+        const level: number | undefined = elementInfo.current.level;
+        if (!elementInfo.current.collapsible || !node || level === undefined) {
+            return undefined;
+        }
+        if (level < 5) {
+            return this.getIcon(topLevelIcons, templateKeys.functions, "");
+        }
+        if (level === 5) {
+            return this.getIcon(functionIcons, node.toFriendlyString(), "");
+        }
+        if (elementInfo.current.level === 6 && elementInfo.parent.key.start !== undefined) {
+            const parentNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.parent.key.start);
+            if (parentNode) {
+                return this.getIcon(functionIcons, parentNode.toFriendlyString(), "");
+            }
+        }
         return undefined;
     }
 

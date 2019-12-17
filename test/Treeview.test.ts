@@ -276,13 +276,13 @@ suite("TreeView", async (): Promise<void> => {
                                 icon: undefined
                             },
                             {
-                                icon: undefined,
+                                icon: "functions.svg",
                                 children: [{
-                                    icon: undefined,
+                                    icon: "functions.svg",
                                     children: [{
-                                        icon: undefined,
+                                        icon: "parameters.svg",
                                         children: [{
-                                            icon: undefined,
+                                            icon: "parameters.svg",
                                             children: [{
                                                 icon: undefined
                                             },
@@ -292,7 +292,7 @@ suite("TreeView", async (): Promise<void> => {
                                         }],
                                     },
                                     {
-                                        icon: undefined,
+                                        icon: "outputs.svg",
                                         children: [
                                             {
                                                 icon: undefined
