@@ -392,6 +392,44 @@ suite("TreeView", async (): Promise<void> => {
 
         /////////////////////////
 
+        test("getLabel: namespace used if name and displayName is not present", async () => {
+
+            await testLabels(
+                `{
+                    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "Functions": [
+                      {
+                        "namespace": "udf",
+                      }
+                    ]
+                  }`,
+                [
+                    {
+                        label: "$schema: http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    },
+                    {
+                        label: "contentVersion: 1.0.0.0",
+                    },
+                    {
+                        label: "Functions",
+                        children: [
+                            {
+                                label: "udf",
+                                children: [
+                                    {
+                                        label: "namespace: udf",
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            );
+        });
+
+        /////////////////////////
+
         test("getChildren: Full tree: all default param types", async () => {
             await testTree(
                 templateAllParamDefaultTypes,

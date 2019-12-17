@@ -175,7 +175,6 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
 
         // Key is an object (e.g. a resource object)
         if (keyNode instanceof Json.ObjectValue) {
-            let foundName = false;
             // Object contains no elements
             if (keyNode.properties.length === 0) {
                 return "{}";
@@ -194,22 +193,18 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     }
                 }
 
-                // Look for name element
-                // tslint:disable-next-line:one-variable-per-declaration
-                for (var i = 0, l = keyNode.properties.length; i < l; i++) {
-                    let props = keyNode.properties[i];
-                    // If name element is found
-                    if (props.nameValue instanceof Json.StringValue && props.nameValue.toString().toUpperCase() === "name".toUpperCase()) {
-                        let name = toFriendlyString(props.value);
+                let label = this.getLabelFromProperties("name", keyNode);
+                if (label !== undefined) {
+                    return label;
+                }
 
-                        return shortenTreeLabel(name);
-                    }
+                label = this.getLabelFromProperties("namespace", keyNode);
+                if (label !== undefined) {
+                    return label;
                 }
 
                 // Object contains elements, but not a name element
-                if (!foundName) {
-                    return "{...}";
-                }
+                return "{...}";
             }
 
         } else if (elementInfo.current.value.kind === Json.ValueKind.ArrayValue || elementInfo.current.value.kind === Json.ValueKind.ObjectValue) {
@@ -223,6 +218,19 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         }
 
         return "";
+    }
+
+    private getLabelFromProperties(propertyName: string, keyNode: Json.ObjectValue): string | undefined {
+        // tslint:disable-next-line:one-variable-per-declaration
+        for (var i = 0, l = keyNode.properties.length; i < l; i++) {
+            let props = keyNode.properties[i];
+            // If element is found
+            if (props.nameValue instanceof Json.StringValue && props.nameValue.toString().toUpperCase() === propertyName.toUpperCase()) {
+                let name = toFriendlyString(props.value);
+                return shortenTreeLabel(name);
+            }
+        }
+        return undefined;
     }
 
     /**
