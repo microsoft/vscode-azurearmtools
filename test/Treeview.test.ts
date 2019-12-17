@@ -202,7 +202,19 @@ suite("TreeView", async (): Promise<void> => {
                     },
                     "functions": [
                         {
-                            "namespace": "namespace-name"
+                            "namespace": "udf",
+                            "members": {
+                                "storageUri": {
+                                  "parameters": [
+                                    {
+                                        "name": "storageAccountName",
+                                        "type": "string"
+                                    }],
+                                  "output": {
+                                    "value": "[parameters('storageAccountName')]"
+                                  }
+                                }
+                              }
                         }
                     ],
                     "resources": [
@@ -255,7 +267,43 @@ suite("TreeView", async (): Promise<void> => {
                 { icon: "label.svg" },
                 getIconObject("parameters.svg", "parameters.svg"),
                 getIconObject("variables.svg", "variables.svg"),
-                { icon: "functions.svg", children: [{ icon: "functions.svg", children: [{ icon: undefined }] }] },
+                {
+                    icon: "functions.svg",
+                    children: [{
+                        icon: "functions.svg",
+                        children: [
+                            {
+                                icon: undefined
+                            },
+                            {
+                                icon: undefined,
+                                children: [{
+                                    icon: undefined,
+                                    children: [{
+                                        icon: undefined,
+                                        children: [{
+                                            icon: undefined,
+                                            children: [{
+                                                icon: undefined
+                                            },
+                                            {
+                                                icon: undefined
+                                            }]
+                                        }],
+                                    },
+                                    {
+                                        icon: undefined,
+                                        children: [
+                                            {
+                                                icon: undefined
+                                            }
+                                        ]
+
+                                    }],
+                                }]
+                            }]
+                    }]
+                },
                 {
                     icon: "resources.svg", children: [
                         getIconObject("virtualmachines.svg", undefined),
