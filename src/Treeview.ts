@@ -384,20 +384,20 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
 
     private getFunctionsIcon(elementInfo: IElementInfo, node: Json.Value | null | undefined): string | undefined {
         const level: number | undefined = elementInfo.current.level;
-        if (!elementInfo.current.collapsible || !node || level === undefined) {
+        if (!node || level === undefined) {
+            return undefined;
+        }
+        if (level === 5) {
+            return this.getIcon(functionIcons, node.toFriendlyString(), "");
+        }
+        if (!elementInfo.current.collapsible) {
             return undefined;
         }
         if (level < 5) {
             return this.getIcon(topLevelIcons, templateKeys.functions, "");
         }
-        if (level === 5) {
-            return this.getIcon(functionIcons, node.toFriendlyString(), "");
-        }
-        if (elementInfo.current.level === 6 && elementInfo.parent.key.start !== undefined) {
-            const parentNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.parent.key.start);
-            if (parentNode) {
-                return this.getIcon(functionIcons, parentNode.toFriendlyString(), "");
-            }
+        if (elementInfo.current.level === 6) {
+            return this.getIcon(functionIcons, "parameters", "");
         }
         return undefined;
     }

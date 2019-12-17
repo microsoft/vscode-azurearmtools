@@ -213,7 +213,15 @@ suite("TreeView", async (): Promise<void> => {
                                   "output": {
                                     "value": "[parameters('storageAccountName')]"
                                   }
-                                }
+                                },
+                                "getSubscriptionId": {
+                                    "parameters": [
+                                    ],
+                                    "output": {
+                                      "type": "string",
+                                      "value": "[subscription().subscriptionId]"
+                                    }
+                                  }
                               }
                         }
                     ],
@@ -298,7 +306,22 @@ suite("TreeView", async (): Promise<void> => {
                                                 icon: undefined
                                             }
                                         ]
-
+                                    }],
+                                }, {
+                                    icon: "functions.svg",
+                                    children: [{
+                                        icon: "parameters.svg",
+                                    },
+                                    {
+                                        icon: "outputs.svg",
+                                        children: [
+                                            {
+                                                icon: undefined
+                                            },
+                                            {
+                                                icon: undefined
+                                            }
+                                        ]
                                     }],
                                 }]
                             }]
