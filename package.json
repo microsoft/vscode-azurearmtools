@@ -44,7 +44,8 @@
         "onLanguage:json",
         "onLanguage:jsonc",
         "onCommand:azurerm-vscode-tools.uninstallDotnet",
-        "onCommand:azurerm-vscode-tools.reloadSchemas"
+        "onCommand:azurerm-vscode-tools.reloadSchemas",
+        "onCommand:azurerm-vscode-tools.sortTemplate"
     ],
     "contributes": {
         "grammars": [
@@ -143,12 +144,21 @@
                 "category": "Azure Resource Manager Tools",
                 "title": "Reload Cached Schemas",
                 "command": "azurerm-vscode-tools.reloadSchemas"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort parameters, variables and outputs",
+                "command": "azurerm-vscode-tools.sortTemplate"
             }
         ],
         "menus": {
             "editor/context": [
                 {
                     "command": "azurerm-vscode-tools.reloadSchemas",
+                    "when": "editorLangId==arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortTemplate",
                     "when": "editorLangId==arm-template"
                 }
             ]
