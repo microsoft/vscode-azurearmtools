@@ -5,19 +5,21 @@
 
 import * as os from 'os';
 import * as vscode from "vscode";
-import { DeploymentTemplate } from "../DeploymentTemplate";
-import { ext } from '../extensionVariables';
-import { IParameterDefinition } from '../IParameterDefinition';
-import * as language from "../Language";
-import { IVariableDefinition } from '../VariableDefinition';
+import { DeploymentTemplate } from "./DeploymentTemplate";
+import { ext } from './extensionVariables';
+import { IParameterDefinition } from './IParameterDefinition';
+import * as language from "./Language";
+import { UserFunctionNamespaceDefinition } from './UserFunctionNamespaceDefinition';
+import { IVariableDefinition } from './VariableDefinition';
 
 export async function sortTemplate(template: DeploymentTemplate | undefined): Promise<void> {
     if (template === undefined) {
         return;
     }
     ext.outputChannel.appendLine("Sorting template");
-    await sortVariables(template);
     await sortParameters(template);
+    await sortVariables(template);
+    await sortFunctions(template);
     vscode.window.showInformationMessage("Done sorting template!");
 }
 
@@ -31,6 +33,12 @@ function sortParameters(template: DeploymentTemplate): Thenable<boolean> {
     return sortGeneric<IParameterDefinition>(
         template.topLevelScope.parameterDefinitions,
         x => x.nameValue.quotedValue, x => x.fullSpan);
+}
+
+function sortFunctions(template: DeploymentTemplate): Thenable<boolean> {
+    return sortGeneric<UserFunctionNamespaceDefinition>(
+        template.topLevelScope.namespaceDefinitions,
+        x => x.nameValue.quotedValue, x => x.span);
 }
 
 function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spanSelector: (value: T) => language.Span): Thenable<boolean> {
