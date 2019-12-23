@@ -11,6 +11,7 @@ import { ext } from './extensionVariables';
 import { IParameterDefinition } from './IParameterDefinition';
 import * as Json from "./JSON";
 import * as language from "./Language";
+import { UserFunctionDefinition } from './UserFunctionDefinition';
 import { UserFunctionNamespaceDefinition } from './UserFunctionNamespaceDefinition';
 import { IVariableDefinition } from './VariableDefinition';
 
@@ -21,14 +22,8 @@ export async function sortTemplate(template: DeploymentTemplate | undefined): Pr
     ext.outputChannel.appendLine("Sorting template");
     let rootValue = Json.asObjectValue(template.getJSONValueAtDocumentCharacterIndex(1));
     if (rootValue !== null) {
-        let resources = Json.asArrayValue(rootValue.getPropertyValue(templateKeys.resources));
-        if (resources !== null) {
-            await sortGeneric<Json.Value>(resources.elements, getNameFromResource, x => x.span);
-        }
-        let outputs = Json.asObjectValue(rootValue.getPropertyValue(templateKeys.outputs));
-        if (outputs !== null) {
-            await sortGeneric<Json.Property>(outputs.properties, x => x.nameValue.quotedValue, x => x.span);
-        }
+        await sortResources(template, rootValue);
+        await sortOutputs(template, rootValue);
     }
     await sortParameters(template);
     await sortVariables(template);
@@ -36,29 +31,46 @@ export async function sortTemplate(template: DeploymentTemplate | undefined): Pr
     vscode.window.showInformationMessage("Done sorting template!");
 }
 
-function sortVariables(template: DeploymentTemplate): Thenable<boolean> {
-    return sortGeneric<IVariableDefinition>(
+async function sortResources(template: DeploymentTemplate, rootValue: Json.ObjectValue): Promise<void> {
+    let outputs = Json.asObjectValue(rootValue.getPropertyValue(templateKeys.outputs));
+    if (outputs !== null) {
+        await sortGeneric<Json.Property>(outputs.properties, x => x.nameValue.quotedValue, x => x.span);
+    }
+}
+
+async function sortOutputs(template: DeploymentTemplate, rootValue: Json.ObjectValue): Promise<void> {
+    let resources = Json.asArrayValue(rootValue.getPropertyValue(templateKeys.resources));
+    if (resources !== null) {
+        await sortGeneric<Json.Value>(resources.elements, getNameFromResource, x => x.span);
+    }
+}
+
+async function sortVariables(template: DeploymentTemplate): Promise<void> {
+    await sortGeneric<IVariableDefinition>(
         template.topLevelScope.variableDefinitions,
         x => x.nameValue.quotedValue, x => x.span);
 }
 
-function sortParameters(template: DeploymentTemplate): Thenable<boolean> {
-    return sortGeneric<IParameterDefinition>(
+async function sortParameters(template: DeploymentTemplate): Promise<void> {
+    await sortGeneric<IParameterDefinition>(
         template.topLevelScope.parameterDefinitions,
         x => x.nameValue.quotedValue, x => x.fullSpan);
 }
 
-function sortFunctions(template: DeploymentTemplate): Thenable<boolean> {
-    return sortGeneric<UserFunctionNamespaceDefinition>(
+async function sortFunctions(template: DeploymentTemplate): Promise<void> {
+    await sortGeneric<UserFunctionNamespaceDefinition>(
         template.topLevelScope.namespaceDefinitions,
         x => x.nameValue.quotedValue, x => x.span);
+
+    await sortGenericDeep<UserFunctionNamespaceDefinition, UserFunctionDefinition>(
+        template.topLevelScope.namespaceDefinitions,
+        x => x.members, x => x.nameValue.quotedValue, x => x.span);
 }
 
-function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spanSelector: (value: T) => language.Span): Thenable<boolean> {
-    let promise = Promise.resolve(true);
+async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spanSelector: (value: T) => language.Span): Promise<void> {
     let textEditor = vscode.window.activeTextEditor;
     if (textEditor === undefined || list.length < 2) {
-        return promise;
+        return;
     }
     let document = textEditor.document;
     let selection = getSelection(spanSelector(list[0]), spanSelector(list[list.length - 1]), document);
@@ -66,11 +78,18 @@ function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spanSelec
     let sorted = list.sort((a, b) => sortSelector(a).localeCompare(sortSelector(b)));
     let orderAfter = list.map(sortSelector);
     if (arraysEqual<string>(orderBefore, orderAfter)) {
-        return promise;
+        return;
     }
     let indentText = getIndentText(spanSelector(list[0]), document);
     let joined = sorted.map(x => getText(spanSelector(x), document)).join(`,${os.EOL}${indentText}`);
-    return textEditor.edit(x => x.replace(selection, joined));
+    await textEditor.edit(x => x.replace(selection, joined));
+}
+
+async function sortGenericDeep<T, TChild>(list: T[], childSelector: (value: T) => TChild[], sortSelector: (value: TChild) => string, spanSelector: (value: TChild) => language.Span): Promise<void> {
+    for (let item of list) {
+        let children = childSelector(item);
+        await sortGeneric(children, sortSelector, spanSelector);
+    }
 }
 
 function getNameFromResource(value: Json.Value): string {

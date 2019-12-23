@@ -84,7 +84,7 @@ export class UserFunctionNamespaceDefinition implements INamedDefinition {
                     let name: Json.StringValue = member.nameValue;
                     let value = Json.asObjectValue(member.value);
                     if (value) {
-                        let func = new UserFunctionDefinition(this, name, value);
+                        let func = new UserFunctionDefinition(this, name, value, member.span);
                         membersResult.push(func);
                     }
                 }
