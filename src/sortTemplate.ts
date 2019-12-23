@@ -5,9 +5,11 @@
 
 import * as os from 'os';
 import * as vscode from "vscode";
+import { templateKeys } from './constants';
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from './extensionVariables';
 import { IParameterDefinition } from './IParameterDefinition';
+import * as Json from "./JSON";
 import * as language from "./Language";
 import { UserFunctionNamespaceDefinition } from './UserFunctionNamespaceDefinition';
 import { IVariableDefinition } from './VariableDefinition';
@@ -17,6 +19,17 @@ export async function sortTemplate(template: DeploymentTemplate | undefined): Pr
         return;
     }
     ext.outputChannel.appendLine("Sorting template");
+    let rootValue = Json.asObjectValue(template.getJSONValueAtDocumentCharacterIndex(1));
+    if (rootValue !== null) {
+        let resources = Json.asArrayValue(rootValue.getPropertyValue(templateKeys.resources));
+        if (resources !== null) {
+            await sortGeneric<Json.Value>(resources.elements, getNameFromResource, x => x.span);
+        }
+        let outputs = Json.asObjectValue(rootValue.getPropertyValue(templateKeys.outputs));
+        if (outputs !== null) {
+            await sortGeneric<Json.Property>(outputs.properties, x => x.nameValue.quotedValue, x => x.span);
+        }
+    }
     await sortParameters(template);
     await sortVariables(template);
     await sortFunctions(template);
@@ -58,6 +71,19 @@ function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spanSelec
     let indentText = getIndentText(spanSelector(list[0]), document);
     let joined = sorted.map(x => getText(spanSelector(x), document)).join(`,${os.EOL}${indentText}`);
     return textEditor.edit(x => x.replace(selection, joined));
+}
+
+function getNameFromResource(value: Json.Value): string {
+    let objectValue = Json.asObjectValue(value);
+    if (objectValue === null) {
+        return "";
+    }
+    let nameProperty = objectValue.getPropertyValue("name");
+    if (nameProperty === null) {
+        return "";
+    }
+    let name = nameProperty.toFriendlyString();
+    return name;
 }
 
 function getIndentText(span: language.Span, document: vscode.TextDocument): String {
