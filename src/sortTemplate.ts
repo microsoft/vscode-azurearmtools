@@ -31,17 +31,19 @@ export async function sortTemplate(template: DeploymentTemplate | undefined): Pr
     vscode.window.showInformationMessage("Done sorting template!");
 }
 
-async function sortResources(template: DeploymentTemplate, rootValue: Json.ObjectValue): Promise<void> {
+async function sortOutputs(template: DeploymentTemplate, rootValue: Json.ObjectValue): Promise<void> {
     let outputs = Json.asObjectValue(rootValue.getPropertyValue(templateKeys.outputs));
     if (outputs !== null) {
         await sortGeneric<Json.Property>(outputs.properties, x => x.nameValue.quotedValue, x => x.span);
     }
 }
 
-async function sortOutputs(template: DeploymentTemplate, rootValue: Json.ObjectValue): Promise<void> {
+async function sortResources(template: DeploymentTemplate, rootValue: Json.ObjectValue): Promise<void> {
     let resources = Json.asArrayValue(rootValue.getPropertyValue(templateKeys.resources));
     if (resources !== null) {
         await sortGeneric<Json.Value>(resources.elements, getNameFromResource, x => x.span);
+        await sortGenericDeep<Json.Value, Json.Value>(resources.elements, getResourcesFromResource,
+            getNameFromResource, x => x.span);
     }
 }
 
@@ -85,10 +87,12 @@ async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spa
     await textEditor.edit(x => x.replace(selection, joined));
 }
 
-async function sortGenericDeep<T, TChild>(list: T[], childSelector: (value: T) => TChild[], sortSelector: (value: TChild) => string, spanSelector: (value: TChild) => language.Span): Promise<void> {
+async function sortGenericDeep<T, TChild>(list: T[], childSelector: (value: T) => TChild[] | null, sortSelector: (value: TChild) => string, spanSelector: (value: TChild) => language.Span): Promise<void> {
     for (let item of list) {
         let children = childSelector(item);
-        await sortGeneric(children, sortSelector, spanSelector);
+        if (children !== null) {
+            await sortGeneric(children, sortSelector, spanSelector);
+        }
     }
 }
 
@@ -103,6 +107,18 @@ function getNameFromResource(value: Json.Value): string {
     }
     let name = nameProperty.toFriendlyString();
     return name;
+}
+
+function getResourcesFromResource(value: Json.Property): Json.Value[] | null {
+    let objectValue = Json.asObjectValue(value);
+    if (objectValue === null) {
+        return null;
+    }
+    let resources = Json.asArrayValue(objectValue.getPropertyValue("resources"));
+    if (resources === null) {
+        return null;
+    }
+    return resources.elements;
 }
 
 function getIndentText(span: language.Span, document: vscode.TextDocument): String {
