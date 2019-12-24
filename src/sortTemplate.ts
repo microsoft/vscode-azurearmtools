@@ -81,10 +81,8 @@ async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spa
     if (arraysEqual<string>(orderBefore, orderAfter)) {
         return;
     }
-    // let indentText = getIndentText(spanSelector(list[0]), document);
     let sortedTexts = sorted.map((value, i) => getText(spanSelector(value), document));
     let joined = joinTexts(sortedTexts, intendentTexts);
-    // let joined = sorted.map((value, i) => getText(spanSelector(value), document)).join(`,${os.EOL}${indentText}`);
     await textEditor.edit(x => x.replace(selection, joined));
 }
 
@@ -140,14 +138,6 @@ function getIndentTexts<T>(list: T[], spanSelector: (value: T) => language.Span,
         indentTexts.push(intendentText);
     }
     return indentTexts;
-}
-
-function getIndentText(span: language.Span, document: vscode.TextDocument): String {
-    let start = span.startIndex;
-    let startPosition = document.positionAt(start);
-    let startOfLine = new vscode.Position(startPosition.line, 0);
-    let indentText = document.getText(new vscode.Range(startOfLine, startPosition)).replace(/\S/g, ' ');
-    return indentText;
 }
 
 function getRange(span: language.Span, document: vscode.TextDocument): vscode.Range {
