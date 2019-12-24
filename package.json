@@ -147,7 +147,7 @@
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Sort parameters, variables and outputs",
+                "title": "Sort template or parameter file",
                 "command": "azurerm-vscode-tools.sortTemplate"
             }
         ],
