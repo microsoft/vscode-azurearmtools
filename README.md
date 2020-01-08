@@ -94,3 +94,4 @@ VS Code collects usage data and sends it to Microsoft to help improve our produc
 The source code in our [public repository](https://github.com/Microsoft/vscode-azurearmtools) is licensed under the [MIT license](LICENSE.md). The public source code currently contains functionality related to the parsing and validation of template expression strings, but does not contain functionality related to JSON parsing and validation or backend template validation.
 
 The extension as it is built in Azure DevOps and [published](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) to the VS Code Marketplace is a distribution of the public repository and is bundled with the Azure Resource Manager language service binaries. The published extension and language service binaries are licensed under a traditional Microsoft product license.
+
