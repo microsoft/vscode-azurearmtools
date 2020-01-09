@@ -46,7 +46,7 @@ export function asPropertyAccessValue(value: Value | null): PropertyAccess | nul
  * The Value class is the generic base class that all other TLE values inherit from.
  */
 export abstract class Value {
-    private _parent: ParentValue | null; // should be in constructor?
+    private _parent: ParentValue | null = null; // CONSIDER: should be in constructor?
 
     public get parent(): ParentValue | null {
         return this._parent;
@@ -1090,14 +1090,11 @@ export class ParseResult {
  * A TLE tokenizer that generates tokens from a TLE string.
  */
 export class Tokenizer {
-    private _basicTokenizer: basic.Tokenizer;
-    private _text: string;
-
-    private _current: Token | null;
+    private _current: Token | null = null;
     // This offset (+1) is because we trimmed off the initial quote character.
     private _currentTokenStartIndex: number = 1;
 
-    private constructor() {
+    private constructor(private _basicTokenizer: basic.Tokenizer, private _text: string) {
     }
 
     public static fromString(stringValue: string): Tokenizer {
@@ -1109,9 +1106,7 @@ export class Tokenizer {
         const trimmedLength: number = stringValue.length - (stringValue.endsWith(initialQuoteCharacter) ? 2 : 1);
         const trimmedString: string = stringValue.substr(1, trimmedLength);
 
-        const tt = new Tokenizer();
-        tt._basicTokenizer = new basic.Tokenizer(trimmedString);
-        tt._text = stringValue;
+        const tt = new Tokenizer(new basic.Tokenizer(trimmedString), stringValue);
         return tt;
     }
 
@@ -1252,15 +1247,13 @@ export class Token {
     private _span: language.Span;
     private _stringValue: string;
 
-    private static create(tokenType: TokenType, startIndex: number, stringValue: string): Token {
+    public constructor(tokenType: TokenType, startIndex: number, stringValue: string) {
         assert(typeof tokenType === "number");
         assert(typeof stringValue === "string");
 
-        let t = new Token();
-        t._type = tokenType;
-        t._span = new language.Span(startIndex, stringValue.length);
-        t._stringValue = stringValue;
-        return t;
+        this._type = tokenType;
+        this._span = new language.Span(startIndex, stringValue.length);
+        this._stringValue = stringValue;
     }
 
     public getType(): TokenType {
@@ -1280,34 +1273,34 @@ export class Token {
     }
 
     public static createLeftParenthesis(startIndex: number): Token {
-        return Token.create(TokenType.LeftParenthesis, startIndex, "(");
+        return new Token(TokenType.LeftParenthesis, startIndex, "(");
     }
 
     public static createRightParenthesis(startIndex: number): Token {
-        return Token.create(TokenType.RightParenthesis, startIndex, ")");
+        return new Token(TokenType.RightParenthesis, startIndex, ")");
     }
 
     public static createLeftSquareBracket(startIndex: number): Token {
-        return Token.create(TokenType.LeftSquareBracket, startIndex, "[");
+        return new Token(TokenType.LeftSquareBracket, startIndex, "[");
     }
 
     public static createRightSquareBracket(startIndex: number): Token {
-        return Token.create(TokenType.RightSquareBracket, startIndex, "]");
+        return new Token(TokenType.RightSquareBracket, startIndex, "]");
     }
 
     public static createComma(startIndex: number): Token {
-        return Token.create(TokenType.Comma, startIndex, ",");
+        return new Token(TokenType.Comma, startIndex, ",");
     }
 
     public static createPeriod(startIndex: number): Token {
-        return Token.create(TokenType.Period, startIndex, ".");
+        return new Token(TokenType.Period, startIndex, ".");
     }
 
     public static createWhitespace(startIndex: number, stringValue: string): Token {
         assert(stringValue);
         assert(1 <= stringValue.length);
 
-        return Token.create(TokenType.Whitespace, startIndex, stringValue);
+        return new Token(TokenType.Whitespace, startIndex, stringValue);
     }
 
     public static createQuotedString(startIndex: number, stringValue: string): Token {
@@ -1315,7 +1308,7 @@ export class Token {
         assert(1 <= stringValue.length);
         assert(Utilities.isQuoteCharacter(stringValue[0]));
 
-        return Token.create(TokenType.QuotedString, startIndex, stringValue);
+        return new Token(TokenType.QuotedString, startIndex, stringValue);
     }
 
     public static createNumber(startIndex: number, stringValue: string): Token {
@@ -1323,18 +1316,18 @@ export class Token {
         assert(1 <= stringValue.length);
         assert(stringValue[0] === "-" || Utilities.isDigit(stringValue[0]));
 
-        return Token.create(TokenType.Number, startIndex, stringValue);
+        return new Token(TokenType.Number, startIndex, stringValue);
     }
 
     public static createLiteral(startIndex: number, stringValue: string): Token {
         assert(stringValue != null);
         assert(1 <= stringValue.length);
 
-        return Token.create(TokenType.Literal, startIndex, stringValue);
+        return new Token(TokenType.Literal, startIndex, stringValue);
     }
 
     public static createEmptyLiteral(startIndex: number): Token {
-        return Token.create(TokenType.Literal, startIndex, "");
+        return new Token(TokenType.Literal, startIndex, "");
     }
 }
 

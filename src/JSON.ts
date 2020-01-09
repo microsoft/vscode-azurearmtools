@@ -323,7 +323,7 @@ export function readNumber(iterator: utilities.Iterator<basic.Token>): basic.Tok
  */
 export class Tokenizer {
     private _innerTokenizer: basic.Tokenizer;
-    private _current: Token | null;
+    private _current: Token | null = null;
     private _currentTokenStartIndex: number;
     private _lineLengths: number[] = [0];
     private _commentsCount: number = 0;
