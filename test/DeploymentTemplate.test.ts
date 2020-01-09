@@ -295,7 +295,7 @@ suite("DeploymentTemplate", () => {
                   ]
                 }`,
                 "id");
-            const expectedErrors = [
+            const expectedErrors: string[] = [
             ];
             return dt.errorsPromise.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, expectedErrors);

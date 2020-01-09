@@ -256,8 +256,8 @@ suite("TLE", () => {
             test("with null namespaceToken", () => {
                 let name = TLE.Token.createLiteral(1, "test");
                 let leftParenthesis = TLE.Token.createLeftParenthesis(5);
-                let commaTokens = [];
-                let args = [];
+                let commaTokens: TLE.Token[] = [];
+                let args: (TLE.Value|null)[] = [];
                 let rightParenthesis = TLE.Token.createRightParenthesis(10);
                 let f = new TLE.FunctionCallValue(null, null, name, leftParenthesis, commaTokens, args, rightParenthesis, emptyScope);
                 assert.deepStrictEqual(name, f.nameToken);
@@ -270,8 +270,8 @@ suite("TLE", () => {
 
             test("with null _leftParenthesisToken", () => {
                 let name = TLE.Token.createLiteral(1, "test");
-                let commaTokens = [];
-                let args = [];
+                let commaTokens : TLE.Token[] = [];
+                let args : (TLE.Value|null)[] = [];
                 let rightParenthesis = TLE.Token.createRightParenthesis(10);
 
                 let f = new TLE.FunctionCallValue(null, null, name, null, commaTokens, args, rightParenthesis, emptyScope);
@@ -284,7 +284,7 @@ suite("TLE", () => {
 
             test("with null _argumentExpressions", () => {
                 let name = TLE.Token.createLiteral(1, "test");
-                let commaTokens = [];
+                let commaTokens: TLE.Token[] = [];
                 let leftParenthesis = TLE.Token.createLeftParenthesis(5);
                 let rightParenthesis = TLE.Token.createRightParenthesis(10);
 
@@ -294,9 +294,9 @@ suite("TLE", () => {
 
             test("with null _rightParenthesisToken", () => {
                 let name = TLE.Token.createLiteral(1, "test");
-                let commaTokens = [];
+                let commaTokens : TLE.Token[] = [];
                 let leftParenthesis = TLE.Token.createLeftParenthesis(5);
-                let args = [];
+                let args : (TLE.Value|null)[] = [];
 
                 let f = new TLE.FunctionCallValue(null, null, name, leftParenthesis, commaTokens, args, null, emptyScope);
 

@@ -1033,7 +1033,7 @@ suite("PositionContext", () => {
 
                 // tslint:disable-next-line:no-constant-condition
                 while (true) {
-                    let tokenPos = document.indexOf("!");
+                    let tokenPos: number = document.indexOf("!");
                     if (tokenPos < 0) {
                         break;
                     }
