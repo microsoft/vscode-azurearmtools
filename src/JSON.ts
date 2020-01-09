@@ -166,24 +166,24 @@ export function Unrecognized(startIndex: number, basicToken: basic.Token): Token
     return new Token(TokenType.Unrecognized, startIndex, [basicToken]);
 }
 
-export function asObjectValue(value: Value | null): ObjectValue | null {
-    return value instanceof ObjectValue ? value : null;
+export function asObjectValue(value: Value | undefined): ObjectValue | undefined {
+    return value instanceof ObjectValue ? value : undefined;
 }
 
-export function asArrayValue(value: Value | null): ArrayValue | null {
-    return value instanceof ArrayValue ? value : null;
+export function asArrayValue(value: Value | undefined): ArrayValue | undefined {
+    return value instanceof ArrayValue ? value : undefined;
 }
 
-export function asStringValue(value: Value | null): StringValue | null {
-    return value instanceof StringValue ? value : null;
+export function asStringValue(value: Value | undefined): StringValue | undefined {
+    return value instanceof StringValue ? value : undefined;
 }
 
-export function asNumberValue(value: Value | null): NumberValue | null {
-    return value instanceof NumberValue ? value : null;
+export function asNumberValue(value: Value | undefined): NumberValue | undefined {
+    return value instanceof NumberValue ? value : undefined;
 }
 
-export function asBooleanValue(value: Value | null): BooleanValue | null {
-    return value instanceof BooleanValue ? value : null;
+export function asBooleanValue(value: Value | undefined): BooleanValue | undefined {
+    return value instanceof BooleanValue ? value : undefined;
 }
 
 /**
@@ -591,7 +591,7 @@ export abstract class Value {
  */
 export class ObjectValue extends Value {
     // Last set with the same (case-insensitive) key wins (just like in Azure template deployment)
-    private _caseInsensitivePropertyMap: CachedValue<CaseInsensitiveMap<string, Value | null>> = new CachedValue<CaseInsensitiveMap<string, Value | null>>();
+    private _caseInsensitivePropertyMap: CachedValue<CaseInsensitiveMap<string, Value | undefined>> = new CachedValue<CaseInsensitiveMap<string, Value | undefined>>();
 
     constructor(span: language.Span, private _properties: Property[]) {
         super(span);
@@ -606,9 +606,9 @@ export class ObjectValue extends Value {
      * Get the map of property names to property values for this ObjectValue. This mapping is
      * created lazily.
      */
-    private get caseInsensitivePropertyMap(): CaseInsensitiveMap<string, Value | null> {
+    private get caseInsensitivePropertyMap(): CaseInsensitiveMap<string, Value | undefined> {
         return this._caseInsensitivePropertyMap.getOrCacheValue(() => {
-            const caseInsensitivePropertyMap = new CaseInsensitiveMap<string, Value | null>();
+            const caseInsensitivePropertyMap = new CaseInsensitiveMap<string, Value | undefined>();
 
             if (this._properties.length > 0) {
                 for (const property of this._properties) {
@@ -635,26 +635,26 @@ export class ObjectValue extends Value {
      * Get the property value for the provided property name. If no property exists with the
      * provided name (case-insensitive), then undefined will be returned.
      */
-    public getPropertyValue(propertyName: string): Value | null {
+    public getPropertyValue(propertyName: string): Value | undefined {
         const result = this.caseInsensitivePropertyMap.get(propertyName);
-        return result ? result : null;
+        return result ? result : undefined;
     }
 
     /**
      * Get the property value that is at the chain of properties in the provided property name
      * stack. If the provided property name stack is empty, then return this value.
      */
-    public getPropertyValueFromStack(propertyNameStack: string[]): Value | null {
+    public getPropertyValueFromStack(propertyNameStack: string[]): Value | undefined {
         // tslint:disable-next-line:no-this-assignment
-        let result: Value | null = <Value | null>this;
+        let result: Value | undefined = <Value | undefined>this;
 
         while (result && propertyNameStack.length > 0) {
-            const objectValue: ObjectValue | null = asObjectValue(result);
+            const objectValue: ObjectValue | undefined = asObjectValue(result);
 
             // We only handle evaluating properties in objects (e.g. not arrays)
             if (objectValue) {
                 const propertyName = propertyNameStack.pop();
-                result = propertyName ? objectValue.getPropertyValue(propertyName) : null;
+                result = propertyName ? objectValue.getPropertyValue(propertyName) : undefined;
             } else {
                 assert(false);
             }
@@ -690,7 +690,7 @@ export class ObjectValue extends Value {
  * A property in a JSON ObjectValue.
  */
 export class Property extends Value {
-    constructor(span: language.Span, private _name: StringValue, private _value: Value | null) {
+    constructor(span: language.Span, private _name: StringValue, private _value: Value | undefined) {
         super(span);
     }
 
@@ -708,7 +708,7 @@ export class Property extends Value {
     /**
      * The value of the property.
      */
-    public get value(): Value | null {
+    public get value(): Value | undefined {
         return this._value;
     }
 
@@ -904,7 +904,7 @@ export class NullValue extends Value {
 export class ParseResult {
     private readonly _debugText: string; // Used only for debugging - copy of the original text being parsed
 
-    constructor(private _tokens: Token[], private _lineLengths: number[], private _value: Value | null, text: string, public readonly commentCount: number) {
+    constructor(private _tokens: Token[], private _lineLengths: number[], private _value: Value | undefined, text: string, public readonly commentCount: number) {
         assert(_tokens !== null);
         assert(_tokens !== undefined);
         assert(_lineLengths !== null);
@@ -939,7 +939,7 @@ export class ParseResult {
     }
 
     // The top-level value, if any
-    public get value(): Value | null {
+    public get value(): Value | undefined {
         return this._value;
     }
 
@@ -1098,7 +1098,7 @@ export function parse(stringValue: string): ParseResult {
 
     const tokens: Token[] = [];
     const jt = new Tokenizer(stringValue);
-    const value: Value | null = parseValue(jt, tokens);
+    const value: Value | undefined = parseValue(jt, tokens);
 
     // Read the rest of the Tokens so that they will be put into the tokens array.
     while (jt.current) {
@@ -1113,8 +1113,8 @@ export function parse(stringValue: string): ParseResult {
  * All of the Tokens that are read will be placed into the provided
  * tokens array.
  */
-function parseValue(tokenizer: Tokenizer, tokens: Token[]): Value | null {
-    let value: Value | null = null;
+function parseValue(tokenizer: Tokenizer, tokens: Token[]): Value | undefined {
+    let value: Value | undefined;
 
     if (!tokenizer.hasStarted()) {
         next(tokenizer, tokens);
@@ -1196,7 +1196,7 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
             assert(foundColon);
             assert(propertyName);
 
-            const propertyValue: Value | null = parseValue(tokenizer, tokens);
+            const propertyValue: Value | undefined = parseValue(tokenizer, tokens);
             if (propertyValue) {
                 propertySpan = propertySpan ? propertySpan.union(propertyValue.span) : propertyValue.span;
                 objectSpan = objectSpan.union(propertyValue.span);
@@ -1233,7 +1233,7 @@ function parseArray(tokenizer: Tokenizer, tokens: Token[]): ArrayValue {
             next(tokenizer, tokens);
             break;
         } else if (expectElement) {
-            const element: Value | null = parseValue(tokenizer, tokens);
+            const element: Value | undefined = parseValue(tokenizer, tokens);
             if (element) {
                 span = span.union(element.span);
 
