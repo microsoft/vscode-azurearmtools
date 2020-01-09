@@ -7,8 +7,12 @@
         "sourceMap": true,
         "noUnusedLocals": true,
         "strict": false, // TODO
+        "noImplicitAny": true,
         "strictNullChecks": true,
-        "strictPropertyInitialization": true
+        "strictPropertyInitialization": true,
+        "strictBindCallApply": true,
+        "strictFunctionTypes": true,
+        "alwaysStrict": true
     },
     "exclude": [
         "node_modules"

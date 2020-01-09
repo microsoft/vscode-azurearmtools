@@ -19,7 +19,7 @@ suite("Template tests", () => {
             useRealFunctionMetadata();
             try {
                 const dt = new DeploymentTemplate(typeof template === "string" ? template : stringify(template), "id");
-                const expectedErrors = [
+                const expectedErrors: string[] = [
                 ];
                 let errors = await dt.errorsPromise;
                 assert.deepStrictEqual(errors, expectedErrors, "Expected no errors in template");
