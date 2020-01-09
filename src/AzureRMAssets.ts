@@ -6,6 +6,7 @@ import * as fse from 'fs-extra';
 import * as path from "path";
 import { assetsPath } from './constants';
 import { ExpressionType } from './ExpressionType';
+import { assert } from './fixed_assert';
 import { IUsageInfo } from './Hover';
 import { IFunctionMetadata, IFunctionParameterMetadata } from './IFunctionMetadata';
 import { DefinitionKind, INamedDefinition } from './INamedDefinition';
@@ -104,9 +105,11 @@ export class BuiltinFunctionMetadata implements IFunctionMetadata, INamedDefinit
         private readonly _usage: string,
         private readonly _description: string,
         private readonly _minimumArguments: number,
-        private readonly _maximumArguments: number,
+        private readonly _maximumArguments: number | undefined,
         private readonly _returnValueMembers: string[]
     ) {
+        assert(_maximumArguments !== null, "Use undefined, not null");
+
         // tslint:disable-next-line: strict-boolean-expressions
         this._name = name || '';
         this._lowerCaseName = this._name.toLowerCase();
@@ -164,7 +167,7 @@ export class BuiltinFunctionMetadata implements IFunctionMetadata, INamedDefinit
         return this._minimumArguments;
     }
 
-    public get maximumArguments(): number {
+    public get maximumArguments(): number | undefined {
         return this._maximumArguments;
     }
 
@@ -207,7 +210,7 @@ export class BuiltinFunctionMetadata implements IFunctionMetadata, INamedDefinit
                         functionMetadata.expectedUsage,
                         functionMetadata.description,
                         functionMetadata.minimumArguments,
-                        functionMetadata.maximumArguments,
+                        functionMetadata.maximumArguments ?? undefined,
                         returnValueMembers));
                 }
             }
@@ -224,7 +227,7 @@ interface FunctionMetadataContract {
         expectedUsage: string;
         description: string;
         minimumArguments: number;
-        maximumArguments: number;
+        maximumArguments: number | null;
         returnValueMembers?: {
             name: string;
         }[];

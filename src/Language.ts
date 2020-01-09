@@ -63,11 +63,11 @@ export class Span {
 
     /**
      * Create a new span that is a union of this Span and the provided Span.
-     * If the provided Span is null, then this Span will be returned.
+     * If the provided Span is undefined, then this Span will be returned.
      */
-    public union(rhs: Span | null): Span {
+    public union(rhs: Span | undefined): Span {
         let result: Span;
-        if (rhs !== null) {
+        if (!!rhs) {
             let minStart = Math.min(this.startIndex, rhs.startIndex);
             let maxAfterEndIndex = Math.max(this.afterEndIndex, rhs.afterEndIndex);
             result = new Span(minStart, maxAfterEndIndex - minStart);
@@ -79,15 +79,15 @@ export class Span {
 
     /**
      * Create a new span that is a union of the given spans.
-     * If both are null, null will be returned
+     * If both are undefined, undefined will be returned
      */
-    public static union(lhs: Span | null, rhs: Span | null): Span | null {
+    public static union(lhs: Span | undefined, rhs: Span | undefined): Span | undefined {
         if (lhs) {
             return lhs.union(rhs);
         } else if (rhs) {
             return rhs;
         } else {
-            return null;
+            return undefined;
         }
     }
 

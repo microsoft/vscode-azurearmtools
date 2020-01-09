@@ -38,7 +38,7 @@ export class ParameterDefinition implements IParameterDefinition {
         return undefined;
     }
 
-    // Returns null if not a valid expression type
+    // Returns undefined if not a valid expression type
     public get validType(): ExpressionType | undefined {
         return this.type ? toValidExpressionType(this.type.toString()) : undefined;
     }

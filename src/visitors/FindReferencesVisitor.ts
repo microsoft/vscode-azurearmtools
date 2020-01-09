@@ -44,7 +44,7 @@ export class FindReferencesVisitor extends Visitor {
         switch (this._definition.definitionKind) {
             case DefinitionKind.UserFunction:
                 if (tleFunction.nameToken && tleFunction.name && tleFunction.namespace) {
-                    const userFunctionDefinition: UserFunctionDefinition | null = tleFunction.scope.getUserFunctionDefinition(tleFunction.namespace, tleFunction.name);
+                    const userFunctionDefinition: UserFunctionDefinition | undefined = tleFunction.scope.getUserFunctionDefinition(tleFunction.namespace, tleFunction.name);
                     if (userFunctionDefinition === this._definition) {
                         this._references.add(tleFunction.nameToken.span);
                     }
@@ -112,7 +112,7 @@ export class FindReferencesVisitor extends Visitor {
         super.visitFunctionCall(tleFunction);
     }
 
-    public static visit(tleValue: Value | null, definition: INamedDefinition, metadata: FunctionsMetadata): FindReferencesVisitor {
+    public static visit(tleValue: Value | undefined, definition: INamedDefinition, metadata: FunctionsMetadata): FindReferencesVisitor {
         const visitor = new FindReferencesVisitor(definition, metadata);
         if (tleValue) {
             tleValue.accept(visitor);

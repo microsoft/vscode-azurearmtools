@@ -54,7 +54,7 @@ suite("Language", () => {
         suite("union()", () => {
             test("With null", () => {
                 let s = new Language.Span(5, 7);
-                assert.deepStrictEqual(s, s.union(null));
+                assert.deepStrictEqual(s, s.union(undefined));
             });
 
             test("With same span", () => {

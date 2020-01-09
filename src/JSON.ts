@@ -12,6 +12,7 @@
 // Because the JSON/ARM parsers catch these errors, it doesn't make too much difference for the end user
 //   so might not be worth fixing.
 
+import { isNullOrUndefined } from "util";
 import { CachedValue } from "./CachedValue";
 import { CaseInsensitiveMap } from "./CaseInsensitiveMap";
 import { assert } from "./fixed_assert";
@@ -323,7 +324,7 @@ export function readNumber(iterator: utilities.Iterator<basic.Token>): basic.Tok
  */
 export class Tokenizer {
     private _innerTokenizer: basic.Tokenizer;
-    private _current: Token | null = null;
+    private _current: Token | undefined;
     private _currentTokenStartIndex: number;
     private _lineLengths: number[] = [0];
     private _commentsCount: number = 0;
@@ -337,7 +338,7 @@ export class Tokenizer {
         return this._innerTokenizer.hasStarted();
     }
 
-    public get current(): Token | null {
+    public get current(): Token | undefined {
         return this._current;
     }
 
@@ -397,7 +398,7 @@ export class Tokenizer {
             this._currentTokenStartIndex += this.current.length();
         }
 
-        this._current = null;
+        this._current = undefined;
         if (this.currentBasicToken()) {
             switch (this.currentBasicTokenType()) {
                 case basic.TokenType.LeftCurlyBracket:
@@ -905,11 +906,8 @@ export class ParseResult {
     private readonly _debugText: string; // Used only for debugging - copy of the original text being parsed
 
     constructor(private _tokens: Token[], private _lineLengths: number[], private _value: Value | undefined, text: string, public readonly commentCount: number) {
-        assert(_tokens !== null);
-        assert(_tokens !== undefined);
-        assert(_lineLengths !== null);
-        assert(_lineLengths !== undefined);
-        assert(_value !== undefined);
+        assert(!isNullOrUndefined(_tokens));
+        assert(!isNullOrUndefined(_lineLengths));
 
         this._debugText = text;
         this._debugText = this._debugText; // Make compiler happy
@@ -1015,17 +1013,17 @@ export class ParseResult {
     /**
      * Get the JSON Token that contains the provided characterIndex, if any (e.g. returns null if at whitespace)
      */
-    public getTokenAtCharacterIndex(characterIndex: number): Token | null {
+    public getTokenAtCharacterIndex(characterIndex: number): Token | undefined {
         assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);
 
-        let token: Token | null = null;
+        let token: Token | undefined;
 
-        if (this.lastToken !== null && this.lastToken.span.afterEndIndex === characterIndex) {
+        if (!!this.lastToken && this.lastToken.span.afterEndIndex === characterIndex) {
             token = this.lastToken;
         } else {
             let minTokenIndex = 0;
             let maxTokenIndex = this.tokenCount - 1;
-            while (token === null && minTokenIndex <= maxTokenIndex) {
+            while (!token && minTokenIndex <= maxTokenIndex) {
                 let midTokenIndex = Math.floor((maxTokenIndex + minTokenIndex) / 2);
                 let currentToken = this.getToken(midTokenIndex);
                 let currentTokenSpan = currentToken.span;
@@ -1093,8 +1091,7 @@ export class ParseResult {
  * Parse the provided JSON string.
  */
 export function parse(stringValue: string): ParseResult {
-    assert(stringValue !== null);
-    assert(stringValue !== undefined);
+    assert(!isNullOrUndefined(stringValue));
 
     const tokens: Token[] = [];
     const jt = new Tokenizer(stringValue);
@@ -1165,8 +1162,8 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
 
     next(tokenizer, tokens);
 
-    let propertySpan: language.Span | null = null;
-    let propertyName: StringValue | null = null;
+    let propertySpan: language.Span | undefined;
+    let propertyName: StringValue | undefined;
     let foundColon: boolean = false;
     // tslint:disable-next-line: strict-boolean-expressions
     while (tokenizer.current) {
@@ -1175,7 +1172,7 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
         if (tokenizer.current.type === TokenType.RightCurlyBracket) {
             next(tokenizer, tokens);
             break;
-        } else if (propertyName === null) {
+        } else if (!propertyName) {
             if (tokenizer.current.type === TokenType.QuotedString) {
                 propertySpan = tokenizer.current.span;
                 propertyName = new StringValue(propertySpan, tokenizer.current.toString());
@@ -1189,7 +1186,7 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
                 foundColon = true;
                 next(tokenizer, tokens);
             } else {
-                propertyName = null;
+                propertyName = undefined;
             }
         } else {
             // Shouldn't be able to reach here without these two assertions being true
@@ -1205,8 +1202,8 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
             // tslint:disable-next-line: strict-boolean-expressions no-non-null-assertion // Asserted propertyName
             properties.push(new Property(propertySpan || objectSpan, propertyName!, propertyValue));
 
-            propertySpan = null;
-            propertyName = null;
+            propertySpan = undefined;
+            propertyName = undefined;
             foundColon = false;
         }
     }
@@ -1269,7 +1266,7 @@ function next(tokenizer: Tokenizer, tokens: Token[]): void {
  * Traverses every node in a given Value tree
  */
 export abstract class Visitor {
-    public visitProperty(property: Property | null): void {
+    public visitProperty(property: Property | undefined): void {
         if (property) {
             assert(property.nameValue);
             property.nameValue.accept(this);
@@ -1292,7 +1289,7 @@ export abstract class Visitor {
         // Nothing to do
     }
 
-    public visitObjectValue(objectValue: ObjectValue | null): void {
+    public visitObjectValue(objectValue: ObjectValue | undefined): void {
         if (objectValue) {
             for (const property of objectValue.properties) {
                 property.accept(this);
@@ -1300,7 +1297,7 @@ export abstract class Visitor {
         }
     }
 
-    public visitArrayValue(arrayValue: ArrayValue | null): void {
+    public visitArrayValue(arrayValue: ArrayValue | undefined): void {
         if (arrayValue) {
             for (const element of arrayValue.elements) {
                 assert(element);

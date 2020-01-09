@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { isNullOrUndefined } from "util";
 import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { CachedPromise } from "./CachedPromise";
 import { CachedValue } from "./CachedValue";
@@ -58,9 +59,8 @@ export class DeploymentTemplate {
      * @param _documentId A unique identifier for this document. Usually this will be a URI to the document.
      */
     constructor(private _documentText: string, private _documentId: string) {
-        assert(_documentText !== null);
-        assert(_documentText !== undefined);
-        assert(_documentId);
+        assert(!isNullOrUndefined(_documentText));
+        assert(!!_documentId); // Can't be empty, either
 
         this._jsonParseResult = Json.parse(_documentText);
         this._topLevelValue = Json.asObjectValue(this._jsonParseResult.value);
@@ -81,7 +81,7 @@ export class DeploymentTemplate {
         return isArmSchema(this.schemaUri);
     }
 
-    public get apiProfile(): string | null {
+    public get apiProfile(): string | undefined {
         if (this._topLevelValue) {
             const apiProfileValue = Json.asStringValue(this._topLevelValue.getPropertyValue(templateKeys.apiProfile));
             if (apiProfileValue) {
@@ -89,7 +89,7 @@ export class DeploymentTemplate {
             }
         }
 
-        return null;
+        return undefined;
     }
 
     /**
@@ -123,7 +123,7 @@ export class DeploymentTemplate {
             return jsonStringValueToTleParseResultMap;
 
             // (local function) Parse all substrings of the given JSON value node
-            function parseSubstrings(value: Json.Value | null, scope: TemplateScope): void {
+            function parseSubstrings(value: Json.Value | undefined, scope: TemplateScope): void {
                 if (value) {
                     GenericStringVisitor.visit(
                         value,
@@ -153,9 +153,9 @@ export class DeploymentTemplate {
         return this._documentId;
     }
 
-    public get schemaUri(): string | null {
+    public get schemaUri(): string | undefined {
         const schema = this.schemaValue;
-        return schema ? schema.unquotedValue : null;
+        return schema ? schema.unquotedValue : undefined;
     }
 
     public get schemaValue(): Json.StringValue | undefined {
@@ -185,14 +185,14 @@ export class DeploymentTemplate {
                         //const jsonTokenStartIndex: number = jsonQuotedStringToken.span.startIndex;
                         const jsonTokenStartIndex = jsonStringValue.span.startIndex;
 
-                        const tleParseResult: TLE.ParseResult | null = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
+                        const tleParseResult: TLE.ParseResult | undefined = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
                         const expressionScope: TemplateScope = tleParseResult.scope;
 
                         for (const error of tleParseResult.errors) {
                             parseErrors.push(error.translate(jsonTokenStartIndex));
                         }
 
-                        const tleExpression: TLE.Value | null = tleParseResult.expression;
+                        const tleExpression: TLE.Value | undefined = tleParseResult.expression;
 
                         // Undefined parameter/variable references
                         const tleUndefinedParameterAndVariableVisitor =
@@ -372,7 +372,7 @@ export class DeploymentTemplate {
                     const resourceType = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceType));
                     if (resourceType) {
                         const apiVersion = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceApiVersion));
-                        let apiVersionString: string | null = apiVersion ? apiVersion.unquotedValue.trim().toLowerCase() : null;
+                        let apiVersionString: string | undefined = apiVersion ? apiVersion.unquotedValue.trim().toLowerCase() : undefined;
                         if (!apiVersionString) {
                             apiVersionString = apiProfileString;
                         } else {
@@ -568,7 +568,7 @@ export class DeploymentTemplate {
         return this._jsonParseResult.getPositionFromCharacterIndex(documentCharacterIndex);
     }
 
-    public getJSONTokenAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Token | null {
+    public getJSONTokenAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Token | undefined {
         return this._jsonParseResult.getTokenAtCharacterIndex(documentCharacterIndex);
     }
 
@@ -614,7 +614,7 @@ export class DeploymentTemplate {
 
         // Find and add references that match the definition we're looking for
         this.visitAllReachableStringValues(jsonStringValue => {
-            const tleParseResult: TLE.ParseResult | null = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
+            const tleParseResult: TLE.ParseResult | undefined = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
             if (tleParseResult.expression) {
                 // tslint:disable-next-line:no-non-null-assertion // Guaranteed by if
                 const visitor = FindReferencesVisitor.visit(tleParseResult.expression, definition, functions);

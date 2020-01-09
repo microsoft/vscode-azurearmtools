@@ -480,7 +480,7 @@ export class AzureRMTools {
                     unrecognized.add(issue.functionName);
                 } else if (issue instanceof IncorrectArgumentsCountIssue) {
                     // Encode function name as "funcname(<actual-args>)[<min-expected>..<max-expected>]"
-                    let encodedName = `${issue.functionName}(${issue.actual})[${issue.minExpected}..${issue.maxExpected}]`;
+                    let encodedName = `${issue.functionName}(${issue.actual})[${issue.minExpected}..${issue.maxExpected}]`; //asdf what if maxExpected is undefined?
                     incorrectArgCounts.add(encodedName);
                 }
             }
@@ -550,7 +550,7 @@ export class AzureRMTools {
                 const properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>actionContext.telemetry.properties;
 
                 const context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                const hoverInfo: Hover.HoverInfo | null = context.getHoverInfo();
+                const hoverInfo: Hover.HoverInfo | undefined = context.getHoverInfo();
 
                 if (hoverInfo) {
                     properties.hoverType = hoverInfo.friendlyType;
@@ -648,7 +648,7 @@ export class AzureRMTools {
                 const locationUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
                 const positionContext: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
-                const references: ReferenceList | null = positionContext.getReferences();
+                const references: ReferenceList | undefined = positionContext.getReferences();
                 if (references && references.length > 0) {
                     actionContext.telemetry.properties.referenceType = references.kind;
 
@@ -671,7 +671,7 @@ export class AzureRMTools {
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
-                let functionSignatureHelp: TLE.FunctionSignatureHelp | null = context.getSignatureHelp();
+                let functionSignatureHelp: TLE.FunctionSignatureHelp | undefined = context.getSignatureHelp();
                 let signatureHelp: vscode.SignatureHelp | undefined;
 
                 if (functionSignatureHelp) {
@@ -702,12 +702,12 @@ export class AzureRMTools {
                 const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                const referenceSiteInfo: IReferenceSite | null = context.getReferenceSiteInfo();
+                const referenceSiteInfo: IReferenceSite | undefined = context.getReferenceSiteInfo();
                 if (referenceSiteInfo && referenceSiteInfo.definition.definitionKind === DefinitionKind.BuiltinFunction) {
                     throw new Error("Built-in functions cannot be renamed.");
                 }
 
-                const referenceList: ReferenceList | null = context.getReferences();
+                const referenceList: ReferenceList | undefined = context.getReferences();
                 if (referenceList) {
                     // When trying to rename a parameter or variable reference inside of a TLE, the
                     // textbox that pops up when you press F2 contains more than just the variable

@@ -14,7 +14,7 @@ export interface IFunctionMetadata {
     parameters: IFunctionParameterMetadata[];
     description: string;
     minimumArguments: number;
-    maximumArguments: number;
+    maximumArguments: number | undefined;   // Undefined if number of args is unlimited
     returnType: ExpressionType | undefined; // Undefined if unknown
     returnValueMembers: string[]; // Used if returnType == 'object' or 'secureobject'
 }
