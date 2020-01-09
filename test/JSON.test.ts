@@ -256,11 +256,11 @@ suite("JSON", () => {
             assert.deepStrictEqual(result.tokenCount, 5);
             assert.deepStrictEqual(result.lineLengths, [17]);
 
-            const v1: Json.ObjectValue | null = Json.asObjectValue(result.value);
+            const v1: Json.ObjectValue | undefined = Json.asObjectValue(result.value);
             if (!v1) { throw new Error("failed"); }
             assert.deepStrictEqual(v1.propertyNames, ["name"]);
 
-            const v2: Json.StringValue | null = Json.asStringValue(v1.getPropertyValue("name"));
+            const v2: Json.StringValue | undefined = Json.asStringValue(v1.getPropertyValue("name"));
             if (!v2) { throw new Error("failed"); }
             assert.deepStrictEqual(v2.span, new Language.Span(10, 5));
             assert.deepStrictEqual(v2.toString(), "Dan");
@@ -271,16 +271,16 @@ suite("JSON", () => {
             assert.deepStrictEqual(9, result.tokenCount);
             assert.deepStrictEqual([21], result.lineLengths);
 
-            const top: Json.ObjectValue | null = Json.asObjectValue(result.value);
+            const top: Json.ObjectValue | undefined = Json.asObjectValue(result.value);
             if (!top) { throw new Error("failed"); }
             assert.deepStrictEqual(top.propertyNames, ["a", "b"]);
 
-            const a: Json.StringValue | null = Json.asStringValue(top.getPropertyValue("a"));
+            const a: Json.StringValue | undefined = Json.asStringValue(top.getPropertyValue("a"));
             if (!a) { throw new Error("failed"); }
             assert.deepStrictEqual(a.span, new Language.Span(7, 3));
             assert.deepStrictEqual(a.toString(), "A");
 
-            const b: Json.NumberValue | null = Json.asNumberValue(top.getPropertyValue("b"));
+            const b: Json.NumberValue | undefined = Json.asNumberValue(top.getPropertyValue("b"));
             if (!b) { throw new Error("failed"); }
             assert.deepStrictEqual(b.span, new Language.Span(17, 2));
         });
@@ -290,17 +290,17 @@ suite("JSON", () => {
             assert.deepStrictEqual(9, result.tokenCount);
             assert.deepStrictEqual([22], result.lineLengths);
 
-            const top: Json.ObjectValue | null = Json.asObjectValue(result.value);
+            const top: Json.ObjectValue | undefined = Json.asObjectValue(result.value);
             if (!top) { throw new Error("failed"); }
             assert.deepStrictEqual(top.span, new Language.Span(0, 22));
             assert.deepStrictEqual(top.propertyNames, ["a", "b"]);
 
-            const a: Json.BooleanValue | null = Json.asBooleanValue(top.getPropertyValue("a"));
+            const a: Json.BooleanValue | undefined = Json.asBooleanValue(top.getPropertyValue("a"));
             if (!a) { throw new Error("failed"); }
             assert.deepStrictEqual(a.span, new Language.Span(7, 4));
             assert.deepStrictEqual(a.toBoolean(), true);
 
-            const b: Json.NumberValue | null = Json.asNumberValue(top.getPropertyValue("b"));
+            const b: Json.NumberValue | undefined = Json.asNumberValue(top.getPropertyValue("b"));
             if (!b) { throw new Error("failed"); }
             assert.deepStrictEqual(b.span, new Language.Span(18, 2));
         });
@@ -310,17 +310,17 @@ suite("JSON", () => {
             assert.deepStrictEqual(9, result.tokenCount);
             assert.deepStrictEqual([21], result.lineLengths);
 
-            const top: Json.ObjectValue | null = Json.asObjectValue(result.value);
+            const top: Json.ObjectValue | undefined = Json.asObjectValue(result.value);
             if (!top) { throw new Error("failed"); }
             assert.deepStrictEqual(top.span, new Language.Span(0, 21));
             assert.deepStrictEqual(top.propertyNames, ["a"]);
 
-            const a: Json.ObjectValue | null = Json.asObjectValue(top.getPropertyValue("a"));
+            const a: Json.ObjectValue | undefined = Json.asObjectValue(top.getPropertyValue("a"));
             if (!a) { throw new Error("failed"); }
             assert.deepStrictEqual(a.span, new Language.Span(7, 12));
             assert.deepStrictEqual(a.propertyNames, ["b"]);
 
-            const b: Json.StringValue | null = Json.asStringValue(a.getPropertyValue("b"));
+            const b: Json.StringValue | undefined = Json.asStringValue(a.getPropertyValue("b"));
             if (!b) { throw new Error("failed"); }
             assert.deepStrictEqual(b.span, new Language.Span(14, 3));
             assert.deepStrictEqual(b.toString(), "B");
@@ -331,11 +331,11 @@ suite("JSON", () => {
             assert.deepStrictEqual(6, result.tokenCount);
             assert.deepStrictEqual([11], result.lineLengths);
 
-            const top: Json.ObjectValue | null = Json.asObjectValue(result.value);
+            const top: Json.ObjectValue | undefined = Json.asObjectValue(result.value);
             if (!top) { throw new Error("failed"); }
             assert.deepStrictEqual(top.propertyNames, ["a"]);
 
-            const a: Json.ArrayValue | null = Json.asArrayValue(top.getPropertyValue("a"));
+            const a: Json.ArrayValue | undefined = Json.asArrayValue(top.getPropertyValue("a"));
             if (!a) { throw new Error("failed"); }
             assert.deepStrictEqual(a.length, 0);
         });
@@ -345,17 +345,17 @@ suite("JSON", () => {
             assert.deepStrictEqual(7, result.tokenCount);
             assert.deepStrictEqual([16], result.lineLengths);
 
-            const top: Json.ObjectValue | null = Json.asObjectValue(result.value);
+            const top: Json.ObjectValue | undefined = Json.asObjectValue(result.value);
             if (!top) { throw new Error("failed"); }
             assert.deepStrictEqual(top.span, new Language.Span(0, 16));
             assert.deepStrictEqual(top.propertyNames, ["a"]);
 
-            const a: Json.ArrayValue | null = Json.asArrayValue(top.getPropertyValue("a"));
+            const a: Json.ArrayValue | undefined = Json.asArrayValue(top.getPropertyValue("a"));
             if (!a) { throw new Error("failed"); }
             assert.deepStrictEqual(a.span, new Language.Span(7, 7));
             assert.deepStrictEqual(a.length, 1);
 
-            const a0: Json.StringValue | null = Json.asStringValue(a.elements[0]);
+            const a0: Json.StringValue | undefined = Json.asStringValue(a.elements[0]);
             if (!a0) { throw new Error("failed"); }
             assert.deepStrictEqual(a0.span, new Language.Span(9, 3));
             assert.deepStrictEqual(a0.toString(), "A");
@@ -366,22 +366,22 @@ suite("JSON", () => {
             assert.deepStrictEqual(9, result.tokenCount);
             assert.deepStrictEqual([20], result.lineLengths);
 
-            const top: Json.ObjectValue | null = Json.asObjectValue(result.value);
+            const top: Json.ObjectValue | undefined = Json.asObjectValue(result.value);
             if (!top) { throw new Error("failed"); }
             assert.deepStrictEqual(top.span, new Language.Span(0, 20));
             assert.deepStrictEqual(top.propertyNames, ["a"]);
 
-            const a: Json.ArrayValue | null = Json.asArrayValue(top.getPropertyValue("a"));
+            const a: Json.ArrayValue | undefined = Json.asArrayValue(top.getPropertyValue("a"));
             if (!a) { throw new Error("failed"); }
             assert.deepStrictEqual(a.span, new Language.Span(7, 11));
             assert.deepStrictEqual(a.length, 2);
 
-            const a0: Json.StringValue | null = Json.asStringValue(a.elements[0]);
+            const a0: Json.StringValue | undefined = Json.asStringValue(a.elements[0]);
             if (!a0) { throw new Error("failed"); }
             assert.deepStrictEqual(a0.span, new Language.Span(9, 3));
             assert.deepStrictEqual(a0.toString(), "A");
 
-            const a1: Json.NumberValue | null = Json.asNumberValue(a.elements[1]);
+            const a1: Json.NumberValue | undefined = Json.asNumberValue(a.elements[1]);
             if (!a1) { throw new Error("failed"); }
             assert.deepStrictEqual(a1.span, new Language.Span(14, 2));
         });
@@ -391,17 +391,17 @@ suite("JSON", () => {
             assert.deepStrictEqual(8, result.tokenCount);
             assert.deepStrictEqual([21], result.lineLengths);
 
-            const top: Json.ObjectValue | null = Json.asObjectValue(result.value);
+            const top: Json.ObjectValue | undefined = Json.asObjectValue(result.value);
             if (!top) { throw new Error("failed"); }
             assert.deepStrictEqual(top.span, new Language.Span(0, 21));
             assert.deepStrictEqual(top.propertyNames, ["a"]);
 
-            const a: Json.ArrayValue | null = Json.asArrayValue(top.getPropertyValue("a"));
+            const a: Json.ArrayValue | undefined = Json.asArrayValue(top.getPropertyValue("a"));
             if (!a) { throw new Error("failed"); }
             assert.deepStrictEqual(a.span, new Language.Span(7, 12));
             assert.deepStrictEqual(a.length, 1);
 
-            const a0: Json.StringValue | null = Json.asStringValue(a.elements[0]);
+            const a0: Json.StringValue | undefined = Json.asStringValue(a.elements[0]);
             if (!a0) { throw new Error("failed"); }
             assert.deepStrictEqual(a0.span, new Language.Span(14, 3));
             assert.deepStrictEqual(a0.toString(), "A");
@@ -412,17 +412,17 @@ suite("JSON", () => {
             assert.deepStrictEqual(9, result.tokenCount);
             assert.deepStrictEqual([22], result.lineLengths);
 
-            const top: Json.ObjectValue | null = Json.asObjectValue(result.value);
+            const top: Json.ObjectValue | undefined = Json.asObjectValue(result.value);
             if (!top) { throw new Error("failed"); }
             assert.deepStrictEqual(top.span, new Language.Span(0, 22));
             assert.deepStrictEqual(top.propertyNames, ["a"]);
 
-            const a: Json.ArrayValue | null = Json.asArrayValue(top.getPropertyValue("a"));
+            const a: Json.ArrayValue | undefined = Json.asArrayValue(top.getPropertyValue("a"));
             if (!a) { throw new Error("failed"); }
             assert.deepStrictEqual(a.span, new Language.Span(7, 13));
             assert.deepStrictEqual(a.length, 1);
 
-            const a0: Json.StringValue | null = Json.asStringValue(a.elements[0]);
+            const a0: Json.StringValue | undefined = Json.asStringValue(a.elements[0]);
             if (!a0) { throw new Error("failed"); }
             assert.deepStrictEqual(a0.span, new Language.Span(15, 3));
             assert.deepStrictEqual(a0.toString(), "A");

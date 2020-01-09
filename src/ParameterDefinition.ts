@@ -29,46 +29,46 @@ export class ParameterDefinition implements IParameterDefinition {
     }
 
     // tslint:disable-next-line:no-reserved-keywords
-    public get type(): Json.Value | null {
-        const parameterDefinition: Json.ObjectValue | null = Json.asObjectValue(this._property.value);
+    public get type(): Json.Value | undefined {
+        const parameterDefinition: Json.ObjectValue | undefined = Json.asObjectValue(this._property.value);
         if (parameterDefinition) {
             return parameterDefinition.getPropertyValue("type");
         }
 
-        return null;
+        return undefined;
     }
 
     // Returns null if not a valid expression type
-    public get validType(): ExpressionType | null {
-        return this.type ? toValidExpressionType(this.type.toString()) : null;
+    public get validType(): ExpressionType | undefined {
+        return this.type ? toValidExpressionType(this.type.toString()) : undefined;
     }
 
     public get fullSpan(): language.Span {
         return this._property.span;
     }
 
-    public get description(): string | null {
-        const parameterDefinition: Json.ObjectValue | null = Json.asObjectValue(this._property.value);
+    public get description(): string | undefined {
+        const parameterDefinition: Json.ObjectValue | undefined = Json.asObjectValue(this._property.value);
         if (parameterDefinition) {
-            const metadata: Json.ObjectValue | null = Json.asObjectValue(parameterDefinition.getPropertyValue("metadata"));
+            const metadata: Json.ObjectValue | undefined = Json.asObjectValue(parameterDefinition.getPropertyValue("metadata"));
             if (metadata) {
-                const description: Json.StringValue | null = Json.asStringValue(metadata.getPropertyValue("description"));
+                const description: Json.StringValue | undefined = Json.asStringValue(metadata.getPropertyValue("description"));
                 if (description) {
                     return description.toString();
                 }
             }
         }
 
-        return null;
+        return undefined;
     }
 
-    public get defaultValue(): Json.Value | null {
-        const parameterDefinition: Json.ObjectValue | null = Json.asObjectValue(this._property.value);
+    public get defaultValue(): Json.Value | undefined {
+        const parameterDefinition: Json.ObjectValue | undefined = Json.asObjectValue(this._property.value);
         if (parameterDefinition) {
             return parameterDefinition.getPropertyValue("defaultValue");
         }
 
-        return null;
+        return undefined;
     }
 
     public get usageInfo(): IUsageInfo {

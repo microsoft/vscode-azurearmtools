@@ -65,7 +65,7 @@ export class PositionContext {
     private _givenDocumentCharacterIndex?: number;
     private _documentCharacterIndex: CachedValue<number> = new CachedValue<number>();
     private _jsonToken: CachedValue<Json.Token | null> = new CachedValue<Json.Token>();
-    private _jsonValue: CachedValue<Json.Value | null> = new CachedValue<Json.Value | null>();
+    private _jsonValue: CachedValue<Json.Value | undefined> = new CachedValue<Json.Value | undefined>();
     private _tleInfo: CachedValue<TleInfo | null> = new CachedValue<TleInfo | null>();
 
     private constructor(deploymentTemplate: DeploymentTemplate) {
@@ -152,7 +152,7 @@ export class PositionContext {
         });
     }
 
-    public get jsonValue(): Json.Value | null {
+    public get jsonValue(): Json.Value | undefined {
         return this._jsonValue.getOrCacheValue(() => {
             return this._deploymentTemplate.getJSONValueAtDocumentCharacterIndex(this.documentCharacterIndex);
         });
@@ -359,7 +359,7 @@ export class PositionContext {
             const sourcesNameStack: string[] = tleValue.sourcesNameStack;
             if (variableProperty) {
                 // If the variable's value is an object...
-                const sourceVariableDefinition: Json.ObjectValue | null = Json.asObjectValue(variableProperty.value);
+                const sourceVariableDefinition: Json.ObjectValue | undefined = Json.asObjectValue(variableProperty.value);
                 if (sourceVariableDefinition) {
                     return this.getDeepPropertyAccessCompletions(
                         propertyPrefix,
@@ -369,9 +369,9 @@ export class PositionContext {
                 }
             } else if (parameterProperty) {
                 // If the parameters's default value is an object...
-                const parameterDefValue: Json.ObjectValue | null = parameterProperty.defaultValue ? Json.asObjectValue(parameterProperty.defaultValue) : null;
+                const parameterDefValue: Json.ObjectValue | undefined = parameterProperty.defaultValue ? Json.asObjectValue(parameterProperty.defaultValue) : undefined;
                 if (parameterDefValue) {
-                    const sourcePropertyDefinition: Json.ObjectValue | null = Json.asObjectValue(parameterDefValue.getPropertyValueFromStack(sourcesNameStack));
+                    const sourcePropertyDefinition: Json.ObjectValue | undefined = Json.asObjectValue(parameterDefValue.getPropertyValueFromStack(sourcesNameStack));
                     if (sourcePropertyDefinition) {
                         return this.getDeepPropertyAccessCompletions(
                             propertyPrefix,
@@ -531,7 +531,7 @@ export class PositionContext {
     private getDeepPropertyAccessCompletions(propertyPrefix: string, variableOrParameterDefinition: Json.ObjectValue, sourcesNameStack: string[], replaceSpan: language.Span): Completion.Item[] {
         const result: Completion.Item[] = [];
 
-        const sourcePropertyDefinitionObject: Json.ObjectValue | null = Json.asObjectValue(variableOrParameterDefinition.getPropertyValueFromStack(sourcesNameStack));
+        const sourcePropertyDefinitionObject: Json.ObjectValue | undefined = Json.asObjectValue(variableOrParameterDefinition.getPropertyValueFromStack(sourcesNameStack));
         if (sourcePropertyDefinitionObject) {
             let matchingPropertyNames: string[];
             if (!propertyPrefix) {
@@ -571,7 +571,7 @@ export class PositionContext {
             }
 
             // Handle when we're directly on the name of a parameter/variable/etc definition (as opposed to a reference)
-            const jsonStringValue: Json.StringValue | null = Json.asStringValue(this.jsonValue);
+            const jsonStringValue: Json.StringValue | undefined = Json.asStringValue(this.jsonValue);
             if (jsonStringValue) {
                 const unquotedString = jsonStringValue.unquotedValue;
                 const scope = tleInfo.scope;

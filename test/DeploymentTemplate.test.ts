@@ -154,7 +154,7 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual(dt.topLevelScope.variableDefinitions.length, 1);
             assert.deepStrictEqual(dt.topLevelScope.variableDefinitions[0].nameValue.toString(), "a");
 
-            const variableDefinition: Json.StringValue | null = Json.asStringValue(dt.topLevelScope.variableDefinitions[0].value);
+            const variableDefinition: Json.StringValue | undefined = Json.asStringValue(dt.topLevelScope.variableDefinitions[0].value);
             if (!variableDefinition) { throw new Error("failed"); }
             assert.deepStrictEqual(variableDefinition.span, new Language.Span(22, 3));
             assert.deepStrictEqual(variableDefinition.toString(), "A");
@@ -167,13 +167,13 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual(dt.topLevelScope.variableDefinitions.length, 2);
 
             assert.deepStrictEqual(dt.topLevelScope.variableDefinitions[0].nameValue.toString(), "a");
-            const a: Json.StringValue | null = Json.asStringValue(dt.topLevelScope.variableDefinitions[0].value);
+            const a: Json.StringValue | undefined = Json.asStringValue(dt.topLevelScope.variableDefinitions[0].value);
             if (!a) { throw new Error("failed"); }
             assert.deepStrictEqual(a.span, new Language.Span(22, 3));
             assert.deepStrictEqual(a.toString(), "A");
 
             assert.deepStrictEqual(dt.topLevelScope.variableDefinitions[1].nameValue.toString(), "b");
-            const b: Json.NumberValue | null = Json.asNumberValue(dt.topLevelScope.variableDefinitions[1].value);
+            const b: Json.NumberValue | undefined = Json.asNumberValue(dt.topLevelScope.variableDefinitions[1].value);
             if (!b) { throw new Error("failed"); }
             assert.deepStrictEqual(b.span, new Language.Span(32, 1));
         });
@@ -894,7 +894,7 @@ suite("DeploymentTemplate", () => {
             if (!apples) { throw new Error("failed"); }
             assert.deepStrictEqual(apples.nameValue.toString(), "apples");
 
-            const value: Json.Value | null = Json.asStringValue(apples.value);
+            const value: Json.Value | undefined = Json.asStringValue(apples.value);
             if (!value) { throw new Error("failed"); }
             assert.deepStrictEqual(value.span, new Language.Span(27, 5));
             assert.deepStrictEqual(value.toString(), "yum");
@@ -907,7 +907,7 @@ suite("DeploymentTemplate", () => {
             if (!apples) { throw new Error("failed"); }
             assert.deepStrictEqual(apples.nameValue.toString(), "apples");
 
-            const value: Json.StringValue | null = Json.asStringValue(apples.value);
+            const value: Json.StringValue | undefined = Json.asStringValue(apples.value);
             if (!value) { throw new Error("failed"); }
             assert.deepStrictEqual(value.span, new Language.Span(27, 5));
             assert.deepStrictEqual(value.toString(), "yum");
@@ -920,7 +920,7 @@ suite("DeploymentTemplate", () => {
             if (!apples) { throw new Error("failed"); }
             assert.deepStrictEqual(apples.nameValue.toString(), "apples");
 
-            const value: Json.StringValue | null = Json.asStringValue(apples.value);
+            const value: Json.StringValue | undefined = Json.asStringValue(apples.value);
             if (!value) { throw new Error("failed"); }
             assert.deepStrictEqual(value.span, new Language.Span(27, 5));
             assert.deepStrictEqual(value.toString(), "yum");
@@ -933,7 +933,7 @@ suite("DeploymentTemplate", () => {
             if (!apples) { throw new Error("failed"); }
             assert.deepStrictEqual(apples.nameValue.toString(), "apples");
 
-            const value: Json.StringValue | null = Json.asStringValue(apples.value);
+            const value: Json.StringValue | undefined = Json.asStringValue(apples.value);
             if (!value) { throw new Error("failed"); }
             assert.deepStrictEqual(value.span, new Language.Span(27, 5));
             assert.deepStrictEqual(value.toString(), "yum");
@@ -947,7 +947,7 @@ suite("DeploymentTemplate", () => {
             if (!APPLES) { throw new Error("failed"); }
             assert.deepStrictEqual(APPLES.nameValue.toString(), "APPLES");
 
-            const applesValue: Json.StringValue | null = Json.asStringValue(APPLES.value);
+            const applesValue: Json.StringValue | undefined = Json.asStringValue(APPLES.value);
             if (!applesValue) { throw new Error("failed"); }
             assert.deepStrictEqual(applesValue.toString(), "good");
 
@@ -955,7 +955,7 @@ suite("DeploymentTemplate", () => {
             if (!apples) { throw new Error("failed"); }
             assert.deepStrictEqual(apples.nameValue.toString(), "APPLES");
 
-            const value: Json.StringValue | null = Json.asStringValue(apples.value);
+            const value: Json.StringValue | undefined = Json.asStringValue(apples.value);
             if (!value) { throw new Error("failed"); }
             assert.deepStrictEqual(value.toString(), "good");
         });
@@ -982,14 +982,14 @@ suite("DeploymentTemplate", () => {
 
             const apples: IVariableDefinition = definitions[0];
             assert.deepStrictEqual(apples.nameValue.toString(), "apples");
-            const applesValue: Json.StringValue | null = Json.asStringValue(apples.value);
+            const applesValue: Json.StringValue | undefined = Json.asStringValue(apples.value);
             if (!applesValue) { throw new Error("failed"); }
             assert.deepStrictEqual(applesValue.span, new Language.Span(27, 8));
             assert.deepStrictEqual(applesValue.toString(), "APPLES");
 
             const bananas: IVariableDefinition = definitions[1];
             assert.deepStrictEqual(bananas.nameValue.toString(), "bananas");
-            const bananasValue: Json.NumberValue | null = Json.asNumberValue(bananas.value);
+            const bananasValue: Json.NumberValue | undefined = Json.asNumberValue(bananas.value);
             assert.deepStrictEqual(bananasValue!.span, new Language.Span(48, 2));
         });
 
@@ -1001,7 +1001,7 @@ suite("DeploymentTemplate", () => {
 
             const apples: IVariableDefinition = definitions[0];
             assert.deepStrictEqual(apples.nameValue.toString(), "apples");
-            const applesValue: Json.StringValue | null = Json.asStringValue(apples.value);
+            const applesValue: Json.StringValue | undefined = Json.asStringValue(apples.value);
             if (!applesValue) { throw new Error("failed"); }
             assert.deepStrictEqual(applesValue.span, new Language.Span(27, 8));
             assert.deepStrictEqual(applesValue.toString(), "APPLES");
@@ -1136,9 +1136,9 @@ suite("DeploymentTemplate", () => {
             test("with TLE string with reference() call", () => {
                 const dt = new DeploymentTemplate(`{ "variables": { "a": "[reference('test')]" } }`, "id");
                 const visitor = new ReferenceInVariableDefinitionsVisitor(dt);
-                const dtObject: Json.ObjectValue | null = Json.asObjectValue(dt.jsonParseResult.value);
-                const variablesObject: Json.ObjectValue | null = Json.asObjectValue(dtObject!.getPropertyValue("variables"));
-                const tle: Json.StringValue | null = Json.asStringValue(variablesObject!.getPropertyValue("a"));
+                const dtObject: Json.ObjectValue | undefined = Json.asObjectValue(dt.jsonParseResult.value);
+                const variablesObject: Json.ObjectValue | undefined = Json.asObjectValue(dtObject!.getPropertyValue("variables"));
+                const tle: Json.StringValue | undefined = Json.asStringValue(variablesObject!.getPropertyValue("a"));
 
                 visitor.visitStringValue(tle!);
                 assert.deepStrictEqual(visitor.referenceSpans, [new Language.Span(24, 9)]);
@@ -1147,9 +1147,9 @@ suite("DeploymentTemplate", () => {
             test("with TLE string with reference() call inside concat() call", () => {
                 const dt = new DeploymentTemplate(`{ "variables": { "a": "[concat(reference('test'))]" } }`, "id");
                 const visitor = new ReferenceInVariableDefinitionsVisitor(dt);
-                const dtObject: Json.ObjectValue | null = Json.asObjectValue(dt.jsonParseResult.value);
-                const variablesObject: Json.ObjectValue | null = Json.asObjectValue(dtObject!.getPropertyValue("variables"));
-                const tle: Json.StringValue | null = Json.asStringValue(variablesObject!.getPropertyValue("a"));
+                const dtObject: Json.ObjectValue | undefined = Json.asObjectValue(dt.jsonParseResult.value);
+                const variablesObject: Json.ObjectValue | undefined = Json.asObjectValue(dtObject!.getPropertyValue("variables"));
+                const tle: Json.StringValue | undefined = Json.asStringValue(variablesObject!.getPropertyValue("a"));
 
                 visitor.visitStringValue(tle!);
                 assert.deepStrictEqual(visitor.referenceSpans, [new Language.Span(31, 9)]);

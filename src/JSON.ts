@@ -1043,16 +1043,16 @@ export class ParseResult {
         return token;
     }
 
-    public getValueAtCharacterIndex(characterIndex: number): Value | null {
+    public getValueAtCharacterIndex(characterIndex: number): Value | undefined {
         assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);
 
-        let result: Value | null = null;
+        let result: Value | undefined;
 
         // Find the Value at the given character index via a binary search through the value tree
         if (this.value && this.value.span.contains(characterIndex, true)) {
             let current: Value = this.value;
 
-            while (result === null) {
+            while (!result) {
                 const currentValue: Value = current;
 
                 if (currentValue instanceof Property) {
