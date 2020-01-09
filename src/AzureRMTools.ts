@@ -288,7 +288,7 @@ export class AzureRMTools {
     }
 
     private queryUseNewerSchema(editor: vscode.TextEditor, deploymentTemplate: DeploymentTemplate): void {
-        const schemaValue: Json.StringValue | null = deploymentTemplate.schemaValue;
+        const schemaValue: Json.StringValue | undefined = deploymentTemplate.schemaValue;
         // tslint:disable-next-line: strict-boolean-expressions
         const schemaUri: string | undefined = deploymentTemplate.schemaUri || undefined;
         const preferredSchemaUri: string | undefined = schemaUri && getPreferredSchema(schemaUri);
@@ -355,7 +355,7 @@ export class AzureRMTools {
 
         // The document might have changed since we asked, so find the $schema again
         const currentTemplate = new DeploymentTemplate(editor.document.getText(), `current ${deploymentTemplate.documentId}`);
-        const currentSchemaValue: Json.StringValue | null = currentTemplate.schemaValue;
+        const currentSchemaValue: Json.StringValue | undefined = currentTemplate.schemaValue;
         if (currentSchemaValue && currentSchemaValue.unquotedValue === previousSchema) {
             const range = getVSCodeRangeFromSpan(currentTemplate, currentSchemaValue.unquotedSpan);
             await editor.edit(edit => {

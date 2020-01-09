@@ -36,7 +36,7 @@ export class DeploymentTemplate {
     private _topLevelScope: TemplateScope;
 
     // The JSON node for the top-level JSON object (if the JSON is not empty or malformed)
-    private _topLevelValue: Json.ObjectValue | null;
+    private _topLevelValue: Json.ObjectValue | undefined;
 
     // A map from all JSON string value nodes to their cached TLE parse results
     private _jsonStringValueToTleParseResultMap: CachedValue<Map<Json.StringValue, TLE.ParseResult>> = new CachedValue<Map<Json.StringValue, TLE.ParseResult>>();
@@ -49,7 +49,7 @@ export class DeploymentTemplate {
     private _topLevelVariableDefinitions: CachedValue<IVariableDefinition[]> = new CachedValue<IVariableDefinition[]>();
     private _topLevelParameterDefinitions: CachedValue<ParameterDefinition[]> = new CachedValue<ParameterDefinition[]>();
 
-    private _schema: CachedValue<Json.StringValue | null> = new CachedValue<Json.StringValue | null>();
+    private _schema: CachedValue<Json.StringValue | undefined> = new CachedValue<Json.StringValue | undefined>();
 
     /**
      * Create a new DeploymentTemplate object.
@@ -158,17 +158,17 @@ export class DeploymentTemplate {
         return schema ? schema.unquotedValue : null;
     }
 
-    public get schemaValue(): Json.StringValue | null {
+    public get schemaValue(): Json.StringValue | undefined {
         return this._schema.getOrCacheValue(() => {
-            const value: Json.ObjectValue | null = Json.asObjectValue(this._jsonParseResult.value);
+            const value: Json.ObjectValue | undefined = Json.asObjectValue(this._jsonParseResult.value);
             if (value) {
-                const schema: Json.StringValue | null = Json.asStringValue(value.getPropertyValue("$schema"));
+                const schema: Json.StringValue | undefined = Json.asStringValue(value.getPropertyValue("$schema"));
                 if (schema) {
                     return schema;
                 }
             }
 
-            return null;
+            return undefined;
         });
     }
 
@@ -223,9 +223,9 @@ export class DeploymentTemplate {
                     });
 
                     // ReferenceInVariableDefinitionsVisitor
-                    const deploymentTemplateObject: Json.ObjectValue | null = Json.asObjectValue(this.jsonParseResult.value);
+                    const deploymentTemplateObject: Json.ObjectValue | undefined = Json.asObjectValue(this.jsonParseResult.value);
                     if (deploymentTemplateObject) {
-                        const variablesObject: Json.ObjectValue | null = Json.asObjectValue(deploymentTemplateObject.getPropertyValue(templateKeys.variables));
+                        const variablesObject: Json.ObjectValue | undefined = Json.asObjectValue(deploymentTemplateObject.getPropertyValue(templateKeys.variables));
                         if (variablesObject) {
                             const referenceInVariablesFinder = new ReferenceInVariableDefinitionsVisitor(this);
                             variablesObject.accept(referenceInVariablesFinder);
@@ -358,7 +358,7 @@ export class DeploymentTemplate {
         const apiProfileString = `(profile=${this.apiProfile || 'none'})`.toLowerCase();
 
         // Collect all resources used
-        const resources: Json.ArrayValue | null = this._topLevelValue ? Json.asArrayValue(this._topLevelValue.getPropertyValue(templateKeys.resources)) : null;
+        const resources: Json.ArrayValue | undefined = this._topLevelValue ? Json.asArrayValue(this._topLevelValue.getPropertyValue(templateKeys.resources)) : undefined;
         if (resources) {
             traverseResources(resources, undefined);
         }
@@ -459,7 +459,7 @@ export class DeploymentTemplate {
             const parameterDefinitions: ParameterDefinition[] = [];
 
             if (this._topLevelValue) {
-                const parameters: Json.ObjectValue | null = Json.asObjectValue(this._topLevelValue.getPropertyValue(templateKeys.parameters));
+                const parameters: Json.ObjectValue | undefined = Json.asObjectValue(this._topLevelValue.getPropertyValue(templateKeys.parameters));
                 if (parameters) {
                     for (const parameter of parameters.properties) {
                         parameterDefinitions.push(new ParameterDefinition(parameter));
@@ -474,7 +474,7 @@ export class DeploymentTemplate {
     private getTopLevelVariableDefinitions(): IVariableDefinition[] {
         return this._topLevelVariableDefinitions.getOrCacheValue(() => {
             if (this._topLevelValue) {
-                const variables: Json.ObjectValue | null = Json.asObjectValue(this._topLevelValue.getPropertyValue(templateKeys.variables));
+                const variables: Json.ObjectValue | undefined = Json.asObjectValue(this._topLevelValue.getPropertyValue(templateKeys.variables));
                 if (variables) {
                     const varDefs: IVariableDefinition[] = [];
                     for (let prop of variables.properties) {
@@ -494,7 +494,7 @@ export class DeploymentTemplate {
                             // ]
                             //
                             // Each element of the array is a TopLevelCopyBlockVariableDefinition
-                            const varsArray: Json.ArrayValue | null = Json.asArrayValue(prop.value);
+                            const varsArray: Json.ArrayValue | undefined = Json.asArrayValue(prop.value);
                             // tslint:disable-next-line: strict-boolean-expressions
                             for (let varElement of (varsArray && varsArray.elements) || []) {
                                 const def = TopLevelCopyBlockVariableDefinition.createIfValid(varElement);
@@ -542,7 +542,7 @@ export class DeploymentTemplate {
             //   ],
 
             if (this._topLevelValue) {
-                const functionNamespacesArray: Json.ArrayValue | null = Json.asArrayValue(this._topLevelValue.getPropertyValue("functions"));
+                const functionNamespacesArray: Json.ArrayValue | undefined = Json.asArrayValue(this._topLevelValue.getPropertyValue("functions"));
                 if (functionNamespacesArray) {
                     for (let namespaceElement of functionNamespacesArray.elements) {
                         const namespaceObject = Json.asObjectValue(namespaceElement);
