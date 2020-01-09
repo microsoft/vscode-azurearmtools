@@ -97,7 +97,7 @@ export class BuiltinFunctionMetadata implements IFunctionMetadata, INamedDefinit
 
     private readonly _name: string;
     private readonly _lowerCaseName: string;
-    private readonly _returnType: ExpressionType | null;
+    private readonly _returnType: ExpressionType | undefined;
 
     constructor(
         name: string,
@@ -113,7 +113,7 @@ export class BuiltinFunctionMetadata implements IFunctionMetadata, INamedDefinit
 
         // CONSIDER: Our metadata doesn't currently give the return type
         // ... Except if it has value members, it must be an object
-        this._returnType = this.returnValueMembers.length > 0 ? 'object' : null;
+        this._returnType = this.returnValueMembers.length > 0 ? 'object' : undefined;
     }
 
     public get fullName(): string {
@@ -149,7 +149,7 @@ export class BuiltinFunctionMetadata implements IFunctionMetadata, INamedDefinit
         const result: IFunctionParameterMetadata[] = [];
         if (parametersSubstring) {
             for (const parameter of parametersSubstring.split(",")) {
-                result.push({ name: parameter.trim(), type: null }); // CONSIDER: Our metadata doesn't currently give the parameter types
+                result.push({ name: parameter.trim(), type: undefined }); // CONSIDER: Our metadata doesn't currently give the parameter types
             }
         }
 
@@ -168,7 +168,7 @@ export class BuiltinFunctionMetadata implements IFunctionMetadata, INamedDefinit
         return this._maximumArguments;
     }
 
-    public get returnType(): ExpressionType | null {
+    public get returnType(): ExpressionType | undefined {
         return this._returnType;
     }
 
