@@ -1367,7 +1367,7 @@ suite("PositionContext", () => {
                             "User-defined function",
                             [
                                 { name: "p1", "type": "secureobject" },
-                                { name: "p2", "type": null }
+                                { name: "p2", "type": undefined }
                             ],
                             "int",
                             [])
@@ -1385,7 +1385,7 @@ suite("PositionContext", () => {
                             "User-defined function",
                             [
                             ],
-                            null,
+                            undefined,
                             [])
                     ));
             });

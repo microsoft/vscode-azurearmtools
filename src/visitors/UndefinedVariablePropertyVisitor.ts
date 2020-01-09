@@ -26,10 +26,10 @@ export class UndefinedVariablePropertyVisitor extends Visitor {
                 // Get the definition for the variable that's being referenced via a variables('v') call
                 const variableProperty: IVariableDefinition | null = this._scope.getVariableDefinitionFromFunctionCall(functionSource);
                 if (variableProperty) {
-                    const variableDefinition: Json.ObjectValue | null = Json.asObjectValue(variableProperty.value);
+                    const variableDefinition: Json.ObjectValue | undefined = Json.asObjectValue(variableProperty.value);
                     const sourcesNameStack: string[] = tlePropertyAccess.sourcesNameStack;
                     if (variableDefinition) {
-                        const sourcePropertyDefinition: Json.ObjectValue | null = Json.asObjectValue(variableDefinition.getPropertyValueFromStack(sourcesNameStack));
+                        const sourcePropertyDefinition: Json.ObjectValue | undefined = Json.asObjectValue(variableDefinition.getPropertyValueFromStack(sourcesNameStack));
                         if (sourcePropertyDefinition && !sourcePropertyDefinition.hasProperty(tlePropertyAccess.nameToken.stringValue)) {
                             this.addIssue(tlePropertyAccess);
                         }

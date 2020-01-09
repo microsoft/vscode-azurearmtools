@@ -14,16 +14,16 @@ export class OutputDefinition {
         assert(_value);
     }
 
-    public get outputType(): Json.StringValue | null {
+    public get outputType(): Json.StringValue | undefined {
         return Json.asStringValue(this._value.getPropertyValue("type"));
     }
 
     // Returns null if not a valid type
-    public get validOutputType(): ExpressionType | null {
+    public get validOutputType(): ExpressionType | undefined {
         return toValidExpressionType(this.outputType && this.outputType.unquotedValue);
     }
 
-    public get value(): Json.StringValue | null {
+    public get value(): Json.StringValue | undefined {
         return Json.asStringValue(this._value.getPropertyValue("value"));
     }
 }

@@ -572,7 +572,7 @@ export class DeploymentTemplate {
         return this._jsonParseResult.getTokenAtCharacterIndex(documentCharacterIndex);
     }
 
-    public getJSONValueAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Value | null {
+    public getJSONValueAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Value | undefined {
         return this._jsonParseResult.getValueAtCharacterIndex(documentCharacterIndex);
     }
 
