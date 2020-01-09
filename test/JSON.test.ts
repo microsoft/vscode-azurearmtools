@@ -175,21 +175,21 @@ suite("JSON", () => {
 
             test("with character index greater than the character count", () => {
                 let pr = Json.parse("51");
-                assert.deepStrictEqual(null, pr.getTokenAtCharacterIndex(3));
+                assert.deepStrictEqual(undefined, pr.getTokenAtCharacterIndex(3));
             });
 
             test("with character index inside character index range", () => {
                 let pr = Json.parse("{ 'hello': 42 }  ");
                 assert.deepStrictEqual(Json.LeftCurlyBracket(0), pr.getTokenAtCharacterIndex(0));
-                assert.deepStrictEqual(null, pr.getTokenAtCharacterIndex(1));
+                assert.deepStrictEqual(undefined, pr.getTokenAtCharacterIndex(1));
                 assert.deepStrictEqual(Json.QuotedString(2, parseBasicTokens("'hello'")), pr.getTokenAtCharacterIndex(2));
                 assert.deepStrictEqual(Json.Colon(9), pr.getTokenAtCharacterIndex(9));
-                assert.deepStrictEqual(null, pr.getTokenAtCharacterIndex(10));
+                assert.deepStrictEqual(undefined, pr.getTokenAtCharacterIndex(10));
                 assert.deepStrictEqual(parseNumber("42", 11), pr.getTokenAtCharacterIndex(11));
-                assert.deepStrictEqual(null, pr.getTokenAtCharacterIndex(13));
+                assert.deepStrictEqual(undefined, pr.getTokenAtCharacterIndex(13));
                 assert.deepStrictEqual(Json.RightCurlyBracket(14), pr.getTokenAtCharacterIndex(14));
                 assert.deepStrictEqual(Json.RightCurlyBracket(14), pr.getTokenAtCharacterIndex(15));
-                assert.deepStrictEqual(null, pr.getTokenAtCharacterIndex(16));
+                assert.deepStrictEqual(undefined, pr.getTokenAtCharacterIndex(16));
             });
         });
     });
@@ -199,7 +199,7 @@ suite("JSON", () => {
             let result: Json.ParseResult = Json.parse("");
             assert.deepStrictEqual(result.tokenCount, 0);
             assert.deepStrictEqual(result.lineLengths, [0]);
-            assert.deepStrictEqual(result.value, null);
+            assert.deepStrictEqual(result.value, undefined);
         });
 
         test("with quoted string", () => {
@@ -241,7 +241,7 @@ suite("JSON", () => {
             let result: Json.ParseResult = Json.parse("}");
             assert.deepStrictEqual(result.tokenCount, 1);
             assert.deepStrictEqual(result.lineLengths, [1]);
-            assert.deepStrictEqual(result.value, null);
+            assert.deepStrictEqual(result.value, undefined);
         });
 
         test("with empty object", () => {
@@ -450,7 +450,7 @@ suite("JSON", () => {
                     for (let i = 0; i < 2; ++i) {
                         assert.deepStrictEqual(tokenizer.moveNext(), false, "Expected next() to be false");
                         assert.deepStrictEqual(tokenizer.hasStarted(), true, "Expected hasStarted() to be true (after all expected tokens)");
-                        assert.deepStrictEqual(tokenizer.current, null, "Expected current to be null");
+                        assert.deepStrictEqual(tokenizer.current, undefined, "Expected current to be undefined");
                     }
                 });
             }

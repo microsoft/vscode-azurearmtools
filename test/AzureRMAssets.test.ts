@@ -62,12 +62,12 @@ suite("AzureRMAssets", () => {
 
             test("with one parameter in usage", () => {
                 const metadata = new BuiltinFunctionMetadata("a", "a(b)", "description", 1, 2, []);
-                assert.deepStrictEqual(metadata.parameters, [{ name: "b", type: null }]);
+                assert.deepStrictEqual(metadata.parameters, [{ name: "b", type: undefined }]);
             });
 
             test("with two parameters in usage", () => {
                 const metadata = new BuiltinFunctionMetadata("a", "a(b, c )", "description", 1, 2, []);
-                assert.deepStrictEqual(metadata.parameters, [{ name: "b", type: null }, { name: "c", type: null }]);
+                assert.deepStrictEqual(metadata.parameters, [{ name: "b", type: undefined }, { name: "c", type: undefined }]);
             });
         });
 
