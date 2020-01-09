@@ -844,7 +844,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
                 assert.deepStrictEqual(concat.rightParenthesisToken, TLE.Token.createRightParenthesis(15));
                 assert.deepStrictEqual(concat.commaTokens, []);
-                assert.deepStrictEqual(concat.parent, undefined);
+                assert.deepStrictEqual(concat.parent, null);
                 assert.deepStrictEqual(concat.argumentExpressions.length, 1);
                 const arg1: TLE.StringValue | null = TLE.asStringValue(concat.argumentExpressions[0]);
                 assert.deepStrictEqual(arg1!.parent, concat);
@@ -860,7 +860,7 @@ suite("TLE", () => {
 
                 const concat: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(pr.expression);
                 if (!concat) { throw new Error("failed"); }
-                assert.deepStrictEqual(concat.parent, undefined);
+                assert.deepStrictEqual(concat.parent, null);
                 assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
                 assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
                 assert.deepStrictEqual(concat.commaTokens, []);
@@ -885,7 +885,7 @@ suite("TLE", () => {
 
                 const concat: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(pr.expression);
                 if (!concat) { throw new Error("failed"); }
-                assert.deepStrictEqual(concat.parent, undefined);
+                assert.deepStrictEqual(concat.parent, null);
                 assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
                 assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
                 assert.deepStrictEqual(
@@ -916,7 +916,7 @@ suite("TLE", () => {
 
                 const concat: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(pr.expression);
                 if (!concat) { throw new Error("failed"); }
-                assert.deepStrictEqual(concat.parent, undefined);
+                assert.deepStrictEqual(concat.parent, null);
                 assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
                 assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
                 assert.deepStrictEqual(
@@ -948,7 +948,7 @@ suite("TLE", () => {
 
                 const concat: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(pr.expression);
                 if (!concat) { throw new Error("failed"); }
-                assert.deepStrictEqual(concat.parent, undefined);
+                assert.deepStrictEqual(concat.parent, null);
                 assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
                 assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
                 assert.deepStrictEqual(
@@ -1004,7 +1004,7 @@ suite("TLE", () => {
 
                 const concat: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(pr.expression);
                 if (!concat) { throw new Error("failed"); }
-                assert.deepStrictEqual(concat.parent, undefined);
+                assert.deepStrictEqual(concat.parent, null);
                 assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
                 assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
                 assert.deepStrictEqual(concat.rightParenthesisToken, TLE.Token.createRightParenthesis(17));
@@ -1033,7 +1033,7 @@ suite("TLE", () => {
 
                 const concat: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(pr.expression);
                 if (!concat) { throw new Error("failed"); }
-                assert.deepStrictEqual(concat.parent, undefined);
+                assert.deepStrictEqual(concat.parent, null);
                 assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
                 assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
                 assert.deepStrictEqual(concat.rightParenthesisToken, TLE.Token.createRightParenthesis(20));
@@ -1067,7 +1067,7 @@ suite("TLE", () => {
 
                 const concat: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(pr.expression);
                 if (!concat) { throw new Error("failed"); }
-                assert.deepStrictEqual(concat.parent, undefined);
+                assert.deepStrictEqual(concat.parent, null);
                 assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
                 assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
                 assert.deepStrictEqual(concat.rightParenthesisToken, TLE.Token.createRightParenthesis(26));
@@ -1122,7 +1122,7 @@ suite("TLE", () => {
 
                 const concat: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(pr.expression);
                 if (!concat) { throw new Error("failed"); }
-                assert.deepStrictEqual(concat!.parent, undefined);
+                assert.deepStrictEqual(concat!.parent, null);
                 assert.deepStrictEqual(concat!.nameToken, TLE.Token.createLiteral(2, "concat"));
                 assert.deepStrictEqual(concat!.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
                 assert.deepStrictEqual(concat!.rightParenthesisToken, null);
@@ -1147,7 +1147,7 @@ suite("TLE", () => {
 
                 const concat: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(pr.expression);
                 if (!concat) { throw new Error("failed"); }
-                assert.deepStrictEqual(concat!.parent, undefined);
+                assert.deepStrictEqual(concat!.parent, null);
                 assert.deepStrictEqual(concat!.nameToken, TLE.Token.createLiteral(2, "concat"));
                 assert.deepStrictEqual(concat!.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
                 assert.deepStrictEqual(concat!.rightParenthesisToken, TLE.Token.createRightParenthesis(18));
@@ -1173,7 +1173,7 @@ suite("TLE", () => {
 
                 const concat: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(pr.expression);
                 if (!concat) { throw new Error("failed"); }
-                assert.deepStrictEqual(concat.parent, undefined);
+                assert.deepStrictEqual(concat.parent, null);
                 assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
                 assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
                 assert.deepStrictEqual(concat.rightParenthesisToken, TLE.Token.createRightParenthesis(25));
@@ -1194,7 +1194,7 @@ suite("TLE", () => {
 
                 const propertyAccess: TLE.PropertyAccess | null = TLE.asPropertyAccessValue(pr.expression);
                 if (!propertyAccess) { throw new Error("failed"); }
-                assert.deepStrictEqual(propertyAccess!.parent, undefined);
+                assert.deepStrictEqual(propertyAccess!.parent, null);
                 assert.deepStrictEqual(propertyAccess!.nameToken, TLE.Token.createLiteral(18, "name"));
                 assert.deepStrictEqual(propertyAccess!.periodToken, TLE.Token.createPeriod(17));
                 const resourceGroup: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(propertyAccess.source);
@@ -1239,7 +1239,7 @@ suite("TLE", () => {
 
                 const propertyAccess: TLE.PropertyAccess | null = TLE.asPropertyAccessValue(pr.expression);
                 if (!propertyAccess) { throw new Error("failed"); }
-                assert.deepStrictEqual(propertyAccess.parent, undefined);
+                assert.deepStrictEqual(propertyAccess.parent, null);
                 assert.deepStrictEqual(propertyAccess.nameToken, null);
                 assert.deepStrictEqual(propertyAccess.periodToken, TLE.Token.createPeriod(17));
                 const resourceGroup: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(propertyAccess.source);
@@ -1265,7 +1265,7 @@ suite("TLE", () => {
 
                 const propertyAccess: TLE.PropertyAccess | null = TLE.asPropertyAccessValue(pr.expression);
                 if (!propertyAccess) { throw new Error("failed"); }
-                assert.deepStrictEqual(propertyAccess.parent, undefined);
+                assert.deepStrictEqual(propertyAccess.parent, null);
                 assert.deepStrictEqual(propertyAccess.nameToken, null);
                 assert.deepStrictEqual(propertyAccess.periodToken, TLE.Token.createPeriod(17));
                 const resourceGroup: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(propertyAccess.source);
@@ -1287,7 +1287,7 @@ suite("TLE", () => {
 
                 const length: TLE.PropertyAccess | null = TLE.asPropertyAccessValue(pr.expression);
                 if (!length) { throw new Error("failed"); }
-                assert.deepStrictEqual(length.parent, undefined);
+                assert.deepStrictEqual(length.parent, null);
                 assert.deepStrictEqual(length.nameToken, TLE.Token.createLiteral(23, "length"));
                 assert.deepStrictEqual(length.periodToken, TLE.Token.createPeriod(22));
                 const name: TLE.PropertyAccess | null = TLE.asPropertyAccessValue(length.source);
@@ -1380,7 +1380,7 @@ suite("TLE", () => {
 
                 const arrayAccess: TLE.ArrayAccessValue | null = TLE.asArrayAccessValue(pr.expression);
                 if (!arrayAccess) { throw new Error("failed"); }
-                assert.deepStrictEqual(arrayAccess.parent, undefined);
+                assert.deepStrictEqual(arrayAccess.parent, null);
                 assert.deepStrictEqual(arrayAccess.rightSquareBracketToken, TLE.Token.createRightSquareBracket(26));
                 assert.deepStrictEqual(arrayAccess.leftSquareBracketToken, TLE.Token.createLeftSquareBracket(16));
                 const add: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(arrayAccess.indexValue);

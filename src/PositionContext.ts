@@ -68,6 +68,10 @@ export class PositionContext {
     private _jsonValue: CachedValue<Json.Value | null> = new CachedValue<Json.Value | null>();
     private _tleInfo: CachedValue<TleInfo | null> = new CachedValue<TleInfo | null>();
 
+    private constructor(deploymentTemplate: DeploymentTemplate) {
+        this._deploymentTemplate = deploymentTemplate;
+    }
+
     public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number): PositionContext {
         assert(deploymentTemplate !== null, "deploymentTemplate cannot be null");
         assert(deploymentTemplate !== undefined, "deploymentTemplate cannot be undefined");
@@ -80,8 +84,7 @@ export class PositionContext {
         assert(documentColumnIndex >= 0, "documentColumnIndex cannot be negative");
         assert(documentColumnIndex <= deploymentTemplate.getMaxColumnIndex(documentLineIndex), `documentColumnIndex (${documentColumnIndex}) cannot be greater than the line's maximum index (${deploymentTemplate.getMaxColumnIndex(documentLineIndex)})`);
 
-        let context = new PositionContext();
-        context._deploymentTemplate = deploymentTemplate;
+        let context = new PositionContext(deploymentTemplate);
         context._givenDocumentPosition = new language.Position(documentLineIndex, documentColumnIndex);
         return context;
 
@@ -94,8 +97,7 @@ export class PositionContext {
         assert(documentCharacterIndex >= 0, "documentCharacterIndex cannot be negative");
         assert(documentCharacterIndex <= deploymentTemplate.maxCharacterIndex, `documentCharacterIndex (${documentCharacterIndex}) cannot be greater than the maximum character index (${deploymentTemplate.maxCharacterIndex})`);
 
-        let context = new PositionContext();
-        context._deploymentTemplate = deploymentTemplate;
+        let context = new PositionContext(deploymentTemplate);
         context._givenDocumentCharacterIndex = documentCharacterIndex;
         return context;
     }

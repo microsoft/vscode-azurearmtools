@@ -224,7 +224,7 @@ suite("PositionContext", () => {
             assert.deepStrictEqual(tleParseResult.rightSquareBracketToken, TLE.Token.createRightSquareBracket(13));
 
             const concat: TLE.FunctionCallValue = assertNotNull(TLE.asFunctionCallValue(tleParseResult.expression));
-            assert.deepStrictEqual(concat.parent, undefined);
+            assert.deepStrictEqual(concat.parent, null);
             assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
             assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
             assert.deepStrictEqual(concat.rightParenthesisToken, TLE.Token.createRightParenthesis(12));
@@ -249,7 +249,7 @@ suite("PositionContext", () => {
             assert.deepStrictEqual(tleParseResult.rightSquareBracketToken, null);
 
             const concat: TLE.FunctionCallValue = assertNotNull(TLE.asFunctionCallValue(tleParseResult.expression));
-            assert.deepStrictEqual(concat.parent, undefined);
+            assert.deepStrictEqual(concat.parent, null);
             assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
             assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
             assert.deepStrictEqual(concat.rightParenthesisToken, null);
