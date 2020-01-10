@@ -6,8 +6,7 @@
 // tslint:disable:no-non-null-assertion
 
 import * as assert from "assert";
-import { AzureRMAssets, BuiltinFunctionMetadata, DefinitionKind, DeploymentTemplate, FindReferencesVisitor, FunctionsMetadata, IncorrectArgumentsCountIssue, IncorrectFunctionArgumentCountVisitor, Language, PositionContext, ReferenceList, ScopeContext, TemplateScope, TLE, UndefinedParameterAndVariableVisitor, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue, UnrecognizedFunctionVisitor } from "../extension.bundle";
-import { assertNotNull } from "./support/assertNotNull";
+import { AzureRMAssets, BuiltinFunctionMetadata, DefinitionKind, DeploymentTemplate, FindReferencesVisitor, FunctionsMetadata, IncorrectArgumentsCountIssue, IncorrectFunctionArgumentCountVisitor, Language, nonNullValue, PositionContext, ReferenceList, ScopeContext, TemplateScope, TLE, UndefinedParameterAndVariableVisitor, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue, UnrecognizedFunctionVisitor } from "../extension.bundle";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 
@@ -728,7 +727,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(12), pr.rightSquareBracketToken);
                 assert.deepStrictEqual([], pr.errors);
 
-                const concat: TLE.FunctionCallValue = assertNotNull(TLE.asFunctionCallValue(pr.expression));
+                const concat: TLE.FunctionCallValue = nonNullValue(TLE.asFunctionCallValue(pr.expression));
                 assert.deepStrictEqual(concat.namespaceToken, undefined);
                 assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
                 assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
@@ -736,7 +735,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(concat.commaTokens, []);
                 assert.deepStrictEqual(concat.argumentExpressions.length, 1);
 
-                const arg1: TLE.NumberValue = assertNotNull(TLE.asNumberValue(concat.argumentExpressions[0]));
+                const arg1: TLE.NumberValue = nonNullValue(TLE.asNumberValue(concat.argumentExpressions[0]));
                 assert.deepStrictEqual(arg1.parent, concat);
                 assert.deepStrictEqual(arg1.token, TLE.Token.createNumber(9, "12"));
             });
@@ -748,7 +747,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(12), pr.rightSquareBracketToken);
                 assert.deepStrictEqual([], pr.errors);
 
-                const concat: TLE.FunctionCallValue = assertNotNull(TLE.asFunctionCallValue(pr.expression));
+                const concat: TLE.FunctionCallValue = nonNullValue(TLE.asFunctionCallValue(pr.expression));
                 assert.deepStrictEqual(concat.namespaceToken, TLE.Token.createLiteral(2, "con"));
                 assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(6, "at"));
                 assert.deepStrictEqual(concat.leftParenthesisToken, TLE.Token.createLeftParenthesis(8));
@@ -756,7 +755,7 @@ suite("TLE", () => {
                 assert.deepStrictEqual(concat.commaTokens, []);
                 assert.deepStrictEqual(concat.argumentExpressions.length, 1);
 
-                const arg1: TLE.NumberValue = assertNotNull(TLE.asNumberValue(concat.argumentExpressions[0]));
+                const arg1: TLE.NumberValue = nonNullValue(TLE.asNumberValue(concat.argumentExpressions[0]));
                 assert.deepStrictEqual(arg1.parent, concat);
                 assert.deepStrictEqual(arg1.token, TLE.Token.createNumber(9, "12"));
             });
@@ -1990,28 +1989,28 @@ suite("TLE", () => {
             });
 
             test("with concat() with zero arguments", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[concat()]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[concat()]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(visitor.errors, []);
             });
 
             test("with concat() with one argument", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[concat(12)]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[concat(12)]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(visitor.errors, []);
             });
 
             test("with concat() with two arguments", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[concat(12, 'test')]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[concat(12, 'test')]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(visitor.errors, []);
             });
 
             test("with add() with zero arguments", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[add()]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[add()]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(
@@ -2020,7 +2019,7 @@ suite("TLE", () => {
             });
 
             test("with add() with one argument", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[add(5)]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[add(5)]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(
@@ -2029,14 +2028,14 @@ suite("TLE", () => {
             });
 
             test("with add() with two arguments", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[add(5, 6)]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[add(5, 6)]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(visitor.errors, []);
             });
 
             test("with add() with three arguments", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[add(5, 6, 7)]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[add(5, 6, 7)]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(
@@ -2045,7 +2044,7 @@ suite("TLE", () => {
             });
 
             test("with add() with three arguments and different casing", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[Add(5, 6, 7)]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[Add(5, 6, 7)]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(
@@ -2054,7 +2053,7 @@ suite("TLE", () => {
             });
 
             test("with resourceId() with zero arguments", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[resourceId()]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[resourceId()]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(
@@ -2064,7 +2063,7 @@ suite("TLE", () => {
             });
 
             test("with resourceId() with one argument", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[resourceId(5)]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[resourceId(5)]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(
@@ -2074,21 +2073,21 @@ suite("TLE", () => {
             });
 
             test("with resourceId() with two arguments", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[resourceId(5, 6)]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[resourceId(5, 6)]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(visitor.errors, []);
             });
 
             test("with resourceId() with three arguments", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[resourceId(5, 6, 7)]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[resourceId(5, 6, 7)]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(visitor.errors, []);
             });
 
             test("with substring() with zero arguments", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[substring()]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[substring()]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(
@@ -2097,28 +2096,28 @@ suite("TLE", () => {
             });
 
             test("with substring() with one argument", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[substring('abc')]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[substring('abc')]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(visitor.errors, []);
             });
 
             test("with substring() with two arguments", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[substring('abc', 1)]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[substring('abc', 1)]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(visitor.errors, []);
             });
 
             test("with substring() with three arguments", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[substring('abc', 1, 1)]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[substring('abc', 1, 1)]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(visitor.errors, []);
             });
 
             test("with substring() with four arguments", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[substring('abc', 1, 1, 'blah')]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[substring('abc', 1, 1, 'blah')]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(
@@ -2127,7 +2126,7 @@ suite("TLE", () => {
             });
 
             test("user function with name matching a built-in, with zero arguments", () => {
-                const concat: TLE.Value = assertNotNull(parseExpressionWithScope(`"[Contoso.resourceId()]"`).expression);
+                const concat: TLE.Value = nonNullValue(parseExpressionWithScope(`"[Contoso.resourceId()]"`).expression);
                 const visitor = IncorrectFunctionArgumentCountVisitor.visit(concat, functions);
                 assert(visitor);
                 assert.deepStrictEqual(

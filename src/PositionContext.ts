@@ -4,7 +4,6 @@
 
 // tslint:disable:max-line-length
 
-import { isNullOrUndefined } from "util";
 import { Language } from "../extension.bundle";
 import { AzureRMAssets, BuiltinFunctionMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
@@ -25,6 +24,7 @@ import * as TLE from "./TLE";
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
 import { UserFunctionMetadata } from "./UserFunctionMetadata";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
+import { nonNullValue } from "./util/nonNull";
 import { IVariableDefinition } from "./VariableDefinition";
 
 /**
@@ -75,10 +75,10 @@ export class PositionContext {
 
     public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number): PositionContext {
         assert(deploymentTemplate);
-        assert(!isNullOrUndefined(documentLineIndex), "documentLineIndex cannot be null/undefined");
+        nonNullValue(documentLineIndex, "documentLineIndex");
         assert(documentLineIndex >= 0, "documentLineIndex cannot be negative");
         assert(documentLineIndex < deploymentTemplate.lineCount, `documentLineIndex (${documentLineIndex}) cannot be greater than or equal to the deployment template's line count (${deploymentTemplate.lineCount})`);
-        assert(!isNullOrUndefined(documentColumnIndex), "documentColumnIndex cannot be null/undefined");
+        nonNullValue(documentColumnIndex, "documentColumnIndex");
         assert(documentColumnIndex >= 0, "documentColumnIndex cannot be negative");
         assert(documentColumnIndex <= deploymentTemplate.getMaxColumnIndex(documentLineIndex), `documentColumnIndex (${documentColumnIndex}) cannot be greater than the line's maximum index (${deploymentTemplate.getMaxColumnIndex(documentLineIndex)})`);
 
@@ -88,8 +88,8 @@ export class PositionContext {
 
     }
     public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplate, documentCharacterIndex: number): PositionContext {
-        assert(!isNullOrUndefined(deploymentTemplate), "deploymentTemplate cannot be null/undefined");
-        assert(!isNullOrUndefined(documentCharacterIndex), "documentCharacterIndex cannot be null/undefined");
+        nonNullValue(deploymentTemplate, "deploymentTemplate");
+        nonNullValue(documentCharacterIndex, "documentCharacterIndex");
         assert(documentCharacterIndex >= 0, "documentCharacterIndex cannot be negative");
         assert(documentCharacterIndex <= deploymentTemplate.maxCharacterIndex, `documentCharacterIndex (${documentCharacterIndex}) cannot be greater than the maximum character index (${deploymentTemplate.maxCharacterIndex})`);
 

@@ -2,18 +2,18 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { isNullOrUndefined } from "util";
 import { assert } from "./fixed_assert";
 import { DefinitionKind } from "./INamedDefinition";
 import * as language from "./Language";
+import { nonNullValue } from "./util/nonNull";
 
 /**
  * A list of references that have been found.
  */
 export class ReferenceList {
     constructor(private _type: DefinitionKind, private _spans: language.Span[] = []) {
-        assert(!isNullOrUndefined(_type), "Cannot create a reference list from null/undefined.");
-        assert(!isNullOrUndefined(_spans), "Cannot create a reference list with a null spans array.");
+        nonNullValue(_type, "_type");
+        nonNullValue(_spans, "_spans");
     }
 
     public get length(): number {
