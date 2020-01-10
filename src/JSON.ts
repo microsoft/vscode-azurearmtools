@@ -1005,13 +1005,13 @@ export class ParseResult {
         return this._tokens[tokenIndex];
     }
 
-    private get lastToken(): Token | null {
+    private get lastToken(): Token | undefined {
         let tokenCount = this.tokenCount;
-        return tokenCount > 0 ? this.getToken(tokenCount - 1) : null;
+        return tokenCount > 0 ? this.getToken(tokenCount - 1) : undefined;
     }
 
     /**
-     * Get the JSON Token that contains the provided characterIndex, if any (e.g. returns null if at whitespace)
+     * Get the JSON Token that contains the provided characterIndex, if any (e.g. returns undefined if at whitespace)
      */
     public getTokenAtCharacterIndex(characterIndex: number): Token | undefined {
         assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);

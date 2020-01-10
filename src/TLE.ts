@@ -389,7 +389,7 @@ export class FunctionCallValue extends ParentValue {
         return this._commaTokens;
     }
 
-    // A null expression can indicate a missing parameter (e.g. concat('a', , 'c'))
+    // An undefined expression can indicate a missing parameter (e.g. concat('a', , 'c'))
     public get argumentExpressions(): (Value | undefined)[] {
         return this._argumentExpressions;
     }
