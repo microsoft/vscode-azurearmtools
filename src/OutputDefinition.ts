@@ -18,7 +18,7 @@ export class OutputDefinition {
         return Json.asStringValue(this._value.getPropertyValue("type"));
     }
 
-    // Returns null if not a valid type
+    // Returns undefined if not a valid type
     public get validOutputType(): ExpressionType | undefined {
         return toValidExpressionType(this.outputType && this.outputType.unquotedValue);
     }

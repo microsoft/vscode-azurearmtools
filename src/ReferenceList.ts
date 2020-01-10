@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { isNullOrUndefined } from "util";
 import { assert } from "./fixed_assert";
 import { DefinitionKind } from "./INamedDefinition";
 import * as language from "./Language";
@@ -11,9 +12,8 @@ import * as language from "./Language";
  */
 export class ReferenceList {
     constructor(private _type: DefinitionKind, private _spans: language.Span[] = []) {
-        assert(_type !== null, "Cannot create a reference list a null type.");
-        assert(_type !== undefined, "Cannot create a reference list an undefined type.");
-        assert(_spans, "Cannot create a reference list with a null spans array.");
+        assert(!isNullOrUndefined(_type), "Cannot create a reference list from null/undefined.");
+        assert(!isNullOrUndefined(_spans), "Cannot create a reference list with a null spans array.");
     }
 
     public get length(): number {
@@ -35,7 +35,7 @@ export class ReferenceList {
     }
 
     public addAll(list: ReferenceList): void {
-        assert(list, "Cannot add all of the references from a null or undefined list.");
+        assert(list);
         assert.deepStrictEqual(this._type, list.kind, "Cannot add references from a list of a different reference type.");
 
         for (const span of list.spans) {
@@ -44,8 +44,7 @@ export class ReferenceList {
     }
 
     public translate(movement: number): ReferenceList {
-        assert(movement !== null, "Cannot translate a reference list by a null amount.");
-        assert(movement !== undefined, "Cannot translate a reference list by an undefined amount.");
+        assert(movement);
 
         const result = new ReferenceList(this._type);
 

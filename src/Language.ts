@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
+import { isNullOrUndefined } from "util";
 
 /**
  * A span representing the character indexes that are contained by a JSONToken.
@@ -102,11 +103,9 @@ export class Span {
 
 export class Position {
     constructor(private _line: number, private _column: number) {
-        assert(_line !== null, "_line cannot be null");
-        assert(_line !== undefined, "_line cannot be undefined");
+        assert(!isNullOrUndefined(_line), "_line cannot be null/undefined");
         assert(_line >= 0, "_line cannot be less than 0");
-        assert(_column !== null, "_column cannot be null");
-        assert(_column !== undefined, "_column cannot be undefined");
+        assert(!isNullOrUndefined(_column), "_column cannot be null/undefined");
         assert(_column >= 0, "_column cannot be less than 0");
     }
 
@@ -146,11 +145,9 @@ export enum IssueKind {
  */
 export class Issue {
     constructor(private _span: Span, private _message: string, public kind: IssueKind) {
-        assert(_span !== null, "_span must not be null.");
-        assert(_span !== undefined, "_span must not be undefined.");
+        assert(_span, "_span must not be null/undefined");
         assert(1 <= _span.length, "_span's length must be greater than or equal to 1.");
-        assert(_message !== null, "_message must not be null.");
-        assert(_message !== undefined, "_message must not be undefined");
+        assert(!isNullOrUndefined(_message), "_message must not be null/undefined.");
         assert(_message !== "", "_message must not be empty.");
     }
 

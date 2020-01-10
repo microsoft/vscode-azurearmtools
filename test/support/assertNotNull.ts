@@ -5,9 +5,12 @@
 
 'use strict';
 
-export function assertNotNull<T>(v: T | undefined | null): T {
+export function assertNotNull<T>(v: T | undefined | null, argNameOrMessage?: string): T {
     if (v === undefined || v === null) {
-        throw new Error("Expecting non-null/non-unknown value");
+        throw new Error(
+            // tslint:disable-next-line:prefer-template
+            'Internal error: Expected value to be neither null nor undefined'
+            + (argNameOrMessage ? `: ${argNameOrMessage}` : ''));
     }
 
     return v;
