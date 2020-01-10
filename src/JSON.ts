@@ -12,12 +12,12 @@
 // Because the JSON/ARM parsers catch these errors, it doesn't make too much difference for the end user
 //   so might not be worth fixing.
 
-import { isNullOrUndefined } from "util";
 import { CachedValue } from "./CachedValue";
 import { CaseInsensitiveMap } from "./CaseInsensitiveMap";
 import { assert } from "./fixed_assert";
 import * as language from "./Language";
 import * as basic from "./Tokenizer";
+import { nonNullValue } from "./util/nonNull";
 import * as utilities from "./Utilities";
 
 export enum ValueKind {
@@ -906,8 +906,8 @@ export class ParseResult {
     private readonly _debugText: string; // Used only for debugging - copy of the original text being parsed
 
     constructor(private _tokens: Token[], private _lineLengths: number[], private _value: Value | undefined, text: string, public readonly commentCount: number) {
-        assert(!isNullOrUndefined(_tokens));
-        assert(!isNullOrUndefined(_lineLengths));
+        nonNullValue(_tokens, "_tokens");
+        nonNullValue(_lineLengths, "_lineLengths");
 
         this._debugText = text;
         this._debugText = this._debugText; // Make compiler happy
@@ -1091,7 +1091,7 @@ export class ParseResult {
  * Parse the provided JSON string.
  */
 export function parse(stringValue: string): ParseResult {
-    assert(!isNullOrUndefined(stringValue));
+    nonNullValue(stringValue, "stringValue");
 
     const tokens: Token[] = [];
     const jt = new Tokenizer(stringValue);

@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
-import { isNullOrUndefined } from "util";
+import { nonNullValue } from "./util/nonNull";
 
 /**
  * A span representing the character indexes that are contained by a JSONToken.
@@ -103,9 +103,9 @@ export class Span {
 
 export class Position {
     constructor(private _line: number, private _column: number) {
-        assert(!isNullOrUndefined(_line), "_line cannot be null/undefined");
+        nonNullValue(_line, "_line");
         assert(_line >= 0, "_line cannot be less than 0");
-        assert(!isNullOrUndefined(_column), "_column cannot be null/undefined");
+        nonNullValue(_column, "_column");
         assert(_column >= 0, "_column cannot be less than 0");
     }
 
@@ -145,9 +145,9 @@ export enum IssueKind {
  */
 export class Issue {
     constructor(private _span: Span, private _message: string, public kind: IssueKind) {
-        assert(_span, "_span must not be null/undefined");
+        nonNullValue(_span, "_span");
         assert(1 <= _span.length, "_span's length must be greater than or equal to 1.");
-        assert(!isNullOrUndefined(_message), "_message must not be null/undefined.");
+        nonNullValue(_message, "_message");
         assert(_message !== "", "_message must not be empty.");
     }
 

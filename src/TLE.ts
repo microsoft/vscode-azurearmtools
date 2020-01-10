@@ -9,7 +9,6 @@
 // tslint:disable:switch-default // Grandfathered in
 // tslint:disable:max-classes-per-file // Grandfathered in
 
-import { isNullOrUndefined } from "util";
 import { templateKeys } from "./constants";
 import { __debugMarkSubstring } from "./debugMarkStrings";
 import { assert } from "./fixed_assert";
@@ -19,6 +18,7 @@ import * as language from "./Language";
 import { PositionContext } from "./PositionContext";
 import { TemplateScope } from "./TemplateScope";
 import * as basic from "./Tokenizer";
+import { nonNullValue } from "./util/nonNull";
 import * as Utilities from "./Utilities";
 
 const tleSyntax: language.IssueKind = language.IssueKind.tleSyntax;
@@ -1303,7 +1303,7 @@ export class Token {
     }
 
     public static createQuotedString(startIndex: number, stringValue: string): Token {
-        assert(!isNullOrUndefined(stringValue));
+        nonNullValue(stringValue, "stringValue");
         assert(1 <= stringValue.length);
         assert(Utilities.isQuoteCharacter(stringValue[0]));
 
@@ -1311,7 +1311,7 @@ export class Token {
     }
 
     public static createNumber(startIndex: number, stringValue: string): Token {
-        assert(!isNullOrUndefined(stringValue));
+        nonNullValue(stringValue, "stringValue");
         assert(1 <= stringValue.length);
         assert(stringValue[0] === "-" || Utilities.isDigit(stringValue[0]));
 
@@ -1319,7 +1319,7 @@ export class Token {
     }
 
     public static createLiteral(startIndex: number, stringValue: string): Token {
-        assert(!isNullOrUndefined(stringValue));
+        nonNullValue(stringValue, "stringValue");
         assert(1 <= stringValue.length);
 
         return new Token(TokenType.Literal, startIndex, stringValue);

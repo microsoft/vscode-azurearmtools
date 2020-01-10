@@ -2,12 +2,10 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { isNullOrUndefined } from "util";
 import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { CachedPromise } from "./CachedPromise";
 import { CachedValue } from "./CachedValue";
 import { templateKeys } from "./constants";
-import { assert } from "./fixed_assert";
 import { Histogram } from "./Histogram";
 import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
@@ -19,6 +17,7 @@ import { isArmSchema } from "./schemas";
 import { ScopeContext, TemplateScope } from "./TemplateScope";
 import * as TLE from "./TLE";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
+import { nonNullOrEmptyValue } from "./util/nonNull";
 import { IVariableDefinition, TopLevelCopyBlockVariableDefinition, TopLevelVariableDefinition } from "./VariableDefinition";
 import { FindReferencesVisitor } from "./visitors/FindReferencesVisitor";
 import { FunctionCountVisitor } from "./visitors/FunctionCountVisitor";
@@ -59,8 +58,7 @@ export class DeploymentTemplate {
      * @param _documentId A unique identifier for this document. Usually this will be a URI to the document.
      */
     constructor(private _documentText: string, private _documentId: string) {
-        assert(!isNullOrUndefined(_documentText));
-        assert(!!_documentId); // Can't be empty, either
+        nonNullOrEmptyValue(_documentText, "_documentText");
 
         this._jsonParseResult = Json.parse(_documentText);
         this._topLevelValue = Json.asObjectValue(this._jsonParseResult.value);
