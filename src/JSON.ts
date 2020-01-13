@@ -656,7 +656,7 @@ export class ObjectValue extends Value {
                 const propertyName = propertyNameStack.pop();
                 result = propertyName ? objectValue.getPropertyValue(propertyName) : null;
             } else {
-                assert(false);
+                return null;
             }
         }
 
