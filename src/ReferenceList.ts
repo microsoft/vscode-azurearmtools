@@ -44,7 +44,7 @@ export class ReferenceList {
     }
 
     public translate(movement: number): ReferenceList {
-        assert(movement);
+        nonNullValue(movement, "movement");
 
         const result = new ReferenceList(this._type);
 
