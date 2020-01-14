@@ -74,7 +74,7 @@ export class PositionContext {
     }
 
     public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number): PositionContext {
-        assert(deploymentTemplate);
+        nonNullValue(deploymentTemplate, "deploymentTemplate");
         nonNullValue(documentLineIndex, "documentLineIndex");
         assert(documentLineIndex >= 0, "documentLineIndex cannot be negative");
         assert(documentLineIndex < deploymentTemplate.lineCount, `documentLineIndex (${documentLineIndex}) cannot be greater than or equal to the deployment template's line count (${deploymentTemplate.lineCount})`);

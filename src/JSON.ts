@@ -936,7 +936,7 @@ export class ParseResult {
         return result;
     }
 
-    // The top-level value, if any
+    // The top-level value, if any (e.g. the JSON could be blank or only comments)
     public get value(): Value | undefined {
         return this._value;
     }

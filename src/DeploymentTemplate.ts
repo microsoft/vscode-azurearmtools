@@ -58,7 +58,7 @@ export class DeploymentTemplate {
      * @param _documentId A unique identifier for this document. Usually this will be a URI to the document.
      */
     constructor(private _documentText: string, private _documentId: string) {
-        nonNullOrEmptyValue(_documentText, "_documentText");
+        nonNullOrEmptyValue(_documentId, "_documentId");
 
         this._jsonParseResult = Json.parse(_documentText);
         this._topLevelValue = Json.asObjectValue(this._jsonParseResult.value);
