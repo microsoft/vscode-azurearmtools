@@ -10,7 +10,7 @@ import * as os from 'os';
 import { Completion, DeploymentTemplate, FunctionSignatureHelp, HoverInfo, IParameterDefinition, IReferenceSite, isVariableDefinition, IVariableDefinition, Json, Language, nonNullValue, PositionContext, TLE, UserFunctionMetadata, Utilities } from "../extension.bundle";
 import * as jsonTest from "./JSON.test";
 import { IDeploymentTemplate } from "./support/diagnostics";
-import { parseTemplateWithMarkers } from "./support/parseTemplate";
+import { parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
 import { allTestDataCompletionNames, allTestDataExpectedCompletions, expectedConcatCompletion, expectedCopyIndexCompletion, expectedPadLeftCompletion, expectedParametersCompletion, expectedProvidersCompletion, expectedReferenceCompletion, expectedReplaceCompletion, expectedResourceGroupCompletion, expectedResourceIdCompletion, expectedSkipCompletion, expectedSplitCompletion, expectedStringCompletion, expectedSubCompletion, expectedSubscriptionCompletion, expectedSubstringCompletion, expectedVariablesCompletion, parameterCompletion, propertyCompletion, variableCompletion } from "./TestData";
 
@@ -1078,6 +1078,59 @@ suite("PositionContext", () => {
                     documentText,
                     dot,
                     [propertyCompletion("cc", dot, 0)]);
+            });
+
+            suite("Parameter defaultValue with array nested in object", () => {
+                let { documentText, tokens } = getDocumentAndMarkers({
+                    "parameters": {
+                        "location": {
+                            "type": "object",
+                            "defaultValue": {
+                                "a": [ // array inside an object
+                                    1
+                                ]
+                            }
+                        }
+                    },
+                    "outputs": {
+                        "output1": {
+                            "type": "bool",
+                            "value": "[parameters('location').a.b.!]"
+                        }
+                    }
+                });
+                let [dotB] = tokens;
+
+                completionItemsTest(
+                    documentText,
+                    dotB,
+                    // We should get any completions because we don't handle completions
+                    // for arrays (shouldn't throw, either)
+                    // See https://github.com/microsoft/vscode-azurearmtools/issues/441
+                    []);
+            });
+
+            suite("Variable value with array nested in object", () => {
+                test("variables('v1').a.b.c", async () => {
+                    // Shouldn't throw - see https://github.com/microsoft/vscode-azurearmtools/issues/441
+                    await parseTemplate(
+                        {
+                            "variables": {
+                                "v1": {
+                                    "a": [
+                                        1
+                                    ]
+                                }
+                            },
+                            "outputs": {
+                                "output1": {
+                                    "type": "bool",
+                                    "value": "[variables('v1').a.b.c]"
+                                }
+                            }
+                        },
+                        []);
+                });
             });
         }
     });
