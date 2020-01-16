@@ -21,29 +21,29 @@ const surveyPrompt = "Could you please take 2 minutes to tell us how well the Az
 // Wait for this amount of time since extension first used (this session) before
 // considering asking the survey (only if still interacting with extension)
 interface ISurveyConstants {
-    activeUsageTimeBeforeSurvey: number;
+    activeUsageMsBeforeSurvey: number;
     percentageOfUsersToSurvey: number;
-    timeToPostponeAfterYes: number;
-    timeToPostponeAfterLater: number;
-    timeToPostponeAfterNotSelected: number;
-    timeToPostponeAfterNotAccessible: number;
+    msToPostponeAfterYes: number;
+    msToPostponeAfterLater: number;
+    msToPostponeAfterNotSelected: number;
+    msToPostponeAfterNotAccessible: number;
 }
 
 const defaultSurveyConstants: ISurveyConstants = {
-    activeUsageTimeBeforeSurvey: hoursToMs(1),
+    activeUsageMsBeforeSurvey: hoursToMs(1),
     percentageOfUsersToSurvey: 0.25,
-    timeToPostponeAfterYes: weeksToMs(12),
-    timeToPostponeAfterLater: weeksToMs(1),
-    timeToPostponeAfterNotSelected: weeksToMs(12),
-    timeToPostponeAfterNotAccessible: hoursToMs(1)
+    msToPostponeAfterYes: weeksToMs(12),
+    msToPostponeAfterLater: weeksToMs(1),
+    msToPostponeAfterNotSelected: weeksToMs(12),
+    msToPostponeAfterNotAccessible: hoursToMs(1)
 };
 const debugSurveyConstants: ISurveyConstants = {
-    activeUsageTimeBeforeSurvey: minutesToMs(1),
+    activeUsageMsBeforeSurvey: minutesToMs(1),
     percentageOfUsersToSurvey: 0.5,
-    timeToPostponeAfterYes: minutesToMs(2),
-    timeToPostponeAfterLater: minutesToMs(1),
-    timeToPostponeAfterNotSelected: minutesToMs(0.5),
-    timeToPostponeAfterNotAccessible: minutesToMs(0.25)
+    msToPostponeAfterYes: minutesToMs(2),
+    msToPostponeAfterLater: minutesToMs(1),
+    msToPostponeAfterNotSelected: minutesToMs(0.5),
+    msToPostponeAfterNotAccessible: minutesToMs(0.25)
 };
 
 let surveyConstants: ISurveyConstants = defaultSurveyConstants;
@@ -88,7 +88,7 @@ export namespace survey {
 
                 const sessionLengthMs = getSessionLengthMs(context);
                 context.telemetry.properties.sessionLength = String(sessionLengthMs);
-                if (sessionLengthMs < surveyConstants.activeUsageTimeBeforeSurvey) {
+                if (sessionLengthMs < surveyConstants.activeUsageMsBeforeSurvey) {
                     return;
                 }
 
@@ -103,7 +103,7 @@ export namespace survey {
                 context.telemetry.properties.accessible = String(accessible);
                 if (!accessible) {
                     // Try again after a while
-                    await postponeSurvey(context, surveyConstants.timeToPostponeAfterNotAccessible);
+                    await postponeSurvey(context, surveyConstants.msToPostponeAfterNotAccessible);
                     return;
                 }
 
@@ -112,7 +112,7 @@ export namespace survey {
                 if (isSelected) {
                     await requestTakeSurvey(context);
                 } else {
-                    await postponeSurvey(context, surveyConstants.timeToPostponeAfterNotSelected);
+                    await postponeSurvey(context, surveyConstants.msToPostponeAfterNotSelected);
                 }
             } finally {
                 isReentrant = false;
@@ -151,13 +151,13 @@ async function requestTakeSurvey(context: IActionContext): Promise<void> {
     if (response === neverAsk) {
         await ext.context.globalState.update(stateKeys.neverShowSurvey, true);
     } else if (response === later) {
-        await postponeSurvey(context, surveyConstants.timeToPostponeAfterLater);
+        await postponeSurvey(context, surveyConstants.msToPostponeAfterLater);
     } else if (response === yes) {
-        await postponeSurvey(context, surveyConstants.timeToPostponeAfterYes);
+        await postponeSurvey(context, surveyConstants.msToPostponeAfterYes);
         await launchSurvey(context);
     } else {
         assert(response === dismissed, `Unexpected response: ${response.title}`);
-        await postponeSurvey(context, surveyConstants.timeToPostponeAfterLater);
+        await postponeSurvey(context, surveyConstants.msToPostponeAfterLater);
     }
 }
 
