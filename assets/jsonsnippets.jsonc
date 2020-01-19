@@ -1,6 +1,6 @@
 {
     "Azure Resource Manager (ARM) Template": {
-        "prefix": "arm!",
+        "prefix": "arm-deploy-rg",
         "body": [
             "{",
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#\",",
@@ -12,10 +12,10 @@
             "    \"functions\": []",
             "}"
         ],
-        "description": "Skeleton ARM Template"
+        "description": "Resource Group Deployment"
     },
     "Azure Resource Manager (ARM) Template Subscription": {
-        "prefix": "arm-sub!",
+        "prefix": "arm-deploy-sub",
         "body": [
             "{",
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#\",",
@@ -27,10 +27,10 @@
             "    \"functions\": []",
             "}"
         ],
-        "description": "Skeleton ARM Template for Subscription Scoped Deployments"
+        "description": "Subscription Deployment"
     },
     "Azure Resource Manager (ARM) Template Management Group": {
-        "prefix": "arm-mg!",
+        "prefix": "arm-deploy-mg",
         "body": [
             "{",
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#\",",
@@ -42,10 +42,25 @@
             "    \"functions\": []",
             "}"
         ],
-        "description": "Skeleton ARM Template for Management Group Scoped Deployments"
+        "description": "Management Group Deployment"
+    },
+    "Azure Resource Manager (ARM) Template Tenant": {
+        "prefix": "arm-deploy-tenant",
+        "body": [
+            "{",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-10-01/tenantDeploymentTemplate.json#\",",
+            "    \"contentVersion\": \"1.0.0.0\",",
+            "    \"parameters\": {},",
+            "    \"variables\": {},",
+            "    \"resources\": [],",
+            "    \"outputs\": {},",
+            "    \"functions\": []",
+            "}"
+        ],
+        "description": "Tanant Deployment"
     },
     "Azure Resource Manager (ARM) Parameters Template": {
-        "prefix": "armp!",
+        "prefix": "arm-param-file",
         "body": [
             "{",
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#\",",
@@ -53,7 +68,7 @@
             "    \"parameters\": {}",
             "}"
         ],
-        "description": "Skeleton ARM Parameters Template"
+        "description": "Parameters Template"
     },
     "Parameter Value": {
         "prefix": "arm-param-value",
@@ -62,28 +77,6 @@
             "    \"value\": \"${2:value}\"",
             "}"
         ],
-        "description": "ARM Template Parameter value used in a azuredeploy.parameters.json file"
-    },
-    "Azure Resource Manager (ARM) Parameters Template Subscription": {
-        "prefix": "armp-sub!",
-        "body": [
-            "{",
-            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentParameters.json#\",",
-            "    \"contentVersion\": \"1.0.0.0\",",
-            "    \"parameters\": {}",
-            "}"
-        ],
-        "description": "Skeleton ARM Parameters Template for Subscription Scoped Deployments"
-    },
-    "Azure Resource Manager (ARM) Parameters Template Management Group": {
-        "prefix": "armp-mg!",
-        "body": [
-            "{",
-            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentParameters.json#\",",
-            "    \"contentVersion\": \"1.0.0.0\",",
-            "    \"parameters\": {}",
-            "}"
-        ],
-        "description": "Skeleton ARM Parameters Template for Management Group Scoped Deployments"
+        "description": "Parameter Value"
     }
 }
