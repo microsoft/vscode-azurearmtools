@@ -1,6 +1,6 @@
 {
     "Azure Resource Manager (ARM) Template": {
-        "prefix": "arm-deploy-rg",
+        "prefix": "arm-deploy-file-rg",
         "body": [
             "{",
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\",",
@@ -15,7 +15,7 @@
         "description": "Resource Group Deployment"
     },
     "Azure Resource Manager (ARM) Template Subscription": {
-        "prefix": "arm-deploy-sub",
+        "prefix": "arm-deploy-file-sub",
         "body": [
             "{",
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#\",",
@@ -30,7 +30,7 @@
         "description": "Subscription Deployment"
     },
     "Azure Resource Manager (ARM) Template Management Group": {
-        "prefix": "arm-deploy-mg",
+        "prefix": "arm-deploy-file-mg",
         "body": [
             "{",
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#\",",
@@ -45,7 +45,7 @@
         "description": "Management Group Deployment"
     },
     "Azure Resource Manager (ARM) Template Tenant": {
-        "prefix": "arm-deploy-tenant",
+        "prefix": "arm-deploy-file-tenant",
         "body": [
             "{",
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#\",",
@@ -63,7 +63,7 @@
         "prefix": "arm-param-file",
         "body": [
             "{",
-            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#\",",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#\",",
             "    \"contentVersion\": \"1.0.0.0\",",
             "    \"parameters\": {}",
             "}"
