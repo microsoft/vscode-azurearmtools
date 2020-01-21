@@ -50,6 +50,7 @@ export { ParameterDefinition } from "./src/ParameterDefinition";
 export { IReferenceSite, PositionContext } from "./src/PositionContext";
 export { ReferenceList } from "./src/ReferenceList";
 export { containsArmSchema, getPreferredSchema, isArmSchema } from './src/schemas';
+export * from "./src/survey";
 export { ScopeContext, TemplateScope } from "./src/TemplateScope";
 export { FunctionSignatureHelp } from "./src/TLE";
 export { JsonOutlineProvider, shortenTreeLabel } from "./src/Treeview";
@@ -59,6 +60,7 @@ export { UserFunctionNamespaceDefinition } from "./src/UserFunctionNamespaceDefi
 export { UserFunctionParameterDefinition } from "./src/UserFunctionParameterDefinition";
 export { mapJsonObjectValue } from "./src/util/mapJsonObjectValue";
 export * from "./src/util/nonNull";
+export * from './src/util/time';
 export { getVSCodePositionFromPosition } from "./src/util/vscodePosition";
 export { wrapError } from "./src/util/wrapError";
 export { isVariableDefinition, IVariableDefinition } from "./src/VariableDefinition";
