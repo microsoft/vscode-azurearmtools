@@ -1,9 +1,9 @@
 {
     "Azure Resource Manager (ARM) Template": {
-        "prefix": "arm!",
+        "prefix": "arm-deploy-rg",
         "body": [
             "{",
-            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#\",",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\",",
             "    \"contentVersion\": \"1.0.0.0\",",
             "    \"parameters\": {},",
             "    \"variables\": {},",
@@ -12,10 +12,55 @@
             "    \"functions\": []",
             "}"
         ],
-        "description": "Skeleton ARM Template"
+        "description": "Resource Group Deployment"
+    },
+    "Azure Resource Manager (ARM) Template Subscription": {
+        "prefix": "arm-deploy-sub",
+        "body": [
+            "{",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#\",",
+            "    \"contentVersion\": \"1.0.0.0\",",
+            "    \"parameters\": {},",
+            "    \"variables\": {},",
+            "    \"resources\": [],",
+            "    \"outputs\": {},",
+            "    \"functions\": []",
+            "}"
+        ],
+        "description": "Subscription Deployment"
+    },
+    "Azure Resource Manager (ARM) Template Management Group": {
+        "prefix": "arm-deploy-mg",
+        "body": [
+            "{",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#\",",
+            "    \"contentVersion\": \"1.0.0.0\",",
+            "    \"parameters\": {},",
+            "    \"variables\": {},",
+            "    \"resources\": [],",
+            "    \"outputs\": {},",
+            "    \"functions\": []",
+            "}"
+        ],
+        "description": "Management Group Deployment"
+    },
+    "Azure Resource Manager (ARM) Template Tenant": {
+        "prefix": "arm-deploy-tenant",
+        "body": [
+            "{",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#\",",
+            "    \"contentVersion\": \"1.0.0.0\",",
+            "    \"parameters\": {},",
+            "    \"variables\": {},",
+            "    \"resources\": [],",
+            "    \"outputs\": {},",
+            "    \"functions\": []",
+            "}"
+        ],
+        "description": "Tanant Deployment"
     },
     "Azure Resource Manager (ARM) Parameters Template": {
-        "prefix": "armp!",
+        "prefix": "arm-param-file",
         "body": [
             "{",
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#\",",
@@ -33,7 +78,7 @@
         "description": "ARM Template Variable"
     },
     "Parameter": {
-        "prefix": "arm-param",
+        "prefix": "arm-param-value",
         "body": [
             "\"${1:parameter1}\": {",
             "   \"type\": \"${2|string,securestring,int,bool,object,secureobject,array|}\",",
