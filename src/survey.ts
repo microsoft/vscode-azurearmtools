@@ -10,6 +10,11 @@ import { assert } from './fixed_assert';
 import { httpGet } from "./httpGet";
 import { hoursToMs, minutesToMs, weeksToMs } from "./util/time";
 
+// Add the following to your settings file to put the survey into debug mode (using debugSurveyConstants):
+//
+//    "azureResourceManagerTools.debugSurvey": true
+//
+
 namespace stateKeys {
     export const neverShowSurvey = 'neverShowSurvey';
     export const surveyPostponedUntilTime = 'surveyPostponedUntilTime';
