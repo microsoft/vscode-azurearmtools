@@ -20,9 +20,9 @@ export class UnrecognizedFunctionVisitor extends Visitor {
         return this._errors;
     }
     public visitFunctionCall(tleFunction: FunctionCallValue): void {
-        const functionName: string | null = tleFunction.name;
+        const functionName: string | undefined = tleFunction.name;
         // tslint:disable-next-line: strict-boolean-expressions
-        const functionNameSpan: language.Span | null = tleFunction.nameToken && tleFunction.nameToken.span;
+        const functionNameSpan: language.Span | undefined = tleFunction.nameToken && tleFunction.nameToken.span;
         if (functionName && functionNameSpan) {
             if (tleFunction.namespaceToken) {
                 // User-defined function reference
@@ -50,7 +50,7 @@ export class UnrecognizedFunctionVisitor extends Visitor {
 
         super.visitFunctionCall(tleFunction);
     }
-    public static visit(scope: TemplateScope, tleValue: Value | null, tleFunctions: assets.FunctionsMetadata): UnrecognizedFunctionVisitor {
+    public static visit(scope: TemplateScope, tleValue: Value | undefined, tleFunctions: assets.FunctionsMetadata): UnrecognizedFunctionVisitor {
         let visitor = new UnrecognizedFunctionVisitor(scope, tleFunctions);
         if (tleValue) {
             tleValue.accept(visitor);

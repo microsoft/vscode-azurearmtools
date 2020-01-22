@@ -14,13 +14,13 @@ export interface IFunctionMetadata {
     parameters: IFunctionParameterMetadata[];
     description: string;
     minimumArguments: number;
-    maximumArguments: number;
-    returnType: ExpressionType | null;   // Undefined if unknown
+    maximumArguments: number | undefined;   // Undefined if number of args is unlimited
+    returnType: ExpressionType | undefined; // Undefined if unknown
     returnValueMembers: string[]; // Used if returnType == 'object' or 'secureobject'
 }
 
 export interface IFunctionParameterMetadata {
     name: string;
     // tslint:disable-next-line: no-reserved-keywords
-    type: ExpressionType | null;
+    type: ExpressionType | undefined;
 }

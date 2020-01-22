@@ -6,7 +6,6 @@ import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { CachedPromise } from "./CachedPromise";
 import { CachedValue } from "./CachedValue";
 import { templateKeys } from "./constants";
-import { assert } from "./fixed_assert";
 import { Histogram } from "./Histogram";
 import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
@@ -18,6 +17,7 @@ import { isArmSchema } from "./schemas";
 import { ScopeContext, TemplateScope } from "./TemplateScope";
 import * as TLE from "./TLE";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
+import { nonNullOrEmptyValue } from "./util/nonNull";
 import { IVariableDefinition, TopLevelCopyBlockVariableDefinition, TopLevelVariableDefinition } from "./VariableDefinition";
 import { FindReferencesVisitor } from "./visitors/FindReferencesVisitor";
 import { FunctionCountVisitor } from "./visitors/FunctionCountVisitor";
@@ -36,7 +36,7 @@ export class DeploymentTemplate {
     private _topLevelScope: TemplateScope;
 
     // The JSON node for the top-level JSON object (if the JSON is not empty or malformed)
-    private _topLevelValue: Json.ObjectValue | null;
+    private _topLevelValue: Json.ObjectValue | undefined;
 
     // A map from all JSON string value nodes to their cached TLE parse results
     private _jsonStringValueToTleParseResultMap: CachedValue<Map<Json.StringValue, TLE.ParseResult>> = new CachedValue<Map<Json.StringValue, TLE.ParseResult>>();
@@ -49,7 +49,7 @@ export class DeploymentTemplate {
     private _topLevelVariableDefinitions: CachedValue<IVariableDefinition[]> = new CachedValue<IVariableDefinition[]>();
     private _topLevelParameterDefinitions: CachedValue<ParameterDefinition[]> = new CachedValue<ParameterDefinition[]>();
 
-    private _schema: CachedValue<Json.StringValue | null> = new CachedValue<Json.StringValue | null>();
+    private _schema: CachedValue<Json.StringValue | undefined> = new CachedValue<Json.StringValue | undefined>();
 
     /**
      * Create a new DeploymentTemplate object.
@@ -58,9 +58,7 @@ export class DeploymentTemplate {
      * @param _documentId A unique identifier for this document. Usually this will be a URI to the document.
      */
     constructor(private _documentText: string, private _documentId: string) {
-        assert(_documentText !== null);
-        assert(_documentText !== undefined);
-        assert(_documentId);
+        nonNullOrEmptyValue(_documentId, "_documentId");
 
         this._jsonParseResult = Json.parse(_documentText);
         this._topLevelValue = Json.asObjectValue(this._jsonParseResult.value);
@@ -81,7 +79,7 @@ export class DeploymentTemplate {
         return isArmSchema(this.schemaUri);
     }
 
-    public get apiProfile(): string | null {
+    public get apiProfile(): string | undefined {
         if (this._topLevelValue) {
             const apiProfileValue = Json.asStringValue(this._topLevelValue.getPropertyValue(templateKeys.apiProfile));
             if (apiProfileValue) {
@@ -89,7 +87,7 @@ export class DeploymentTemplate {
             }
         }
 
-        return null;
+        return undefined;
     }
 
     /**
@@ -123,7 +121,7 @@ export class DeploymentTemplate {
             return jsonStringValueToTleParseResultMap;
 
             // (local function) Parse all substrings of the given JSON value node
-            function parseSubstrings(value: Json.Value | null, scope: TemplateScope): void {
+            function parseSubstrings(value: Json.Value | undefined, scope: TemplateScope): void {
                 if (value) {
                     GenericStringVisitor.visit(
                         value,
@@ -153,22 +151,22 @@ export class DeploymentTemplate {
         return this._documentId;
     }
 
-    public get schemaUri(): string | null {
+    public get schemaUri(): string | undefined {
         const schema = this.schemaValue;
-        return schema ? schema.unquotedValue : null;
+        return schema ? schema.unquotedValue : undefined;
     }
 
-    public get schemaValue(): Json.StringValue | null {
+    public get schemaValue(): Json.StringValue | undefined {
         return this._schema.getOrCacheValue(() => {
-            const value: Json.ObjectValue | null = Json.asObjectValue(this._jsonParseResult.value);
+            const value: Json.ObjectValue | undefined = Json.asObjectValue(this._jsonParseResult.value);
             if (value) {
-                const schema: Json.StringValue | null = Json.asStringValue(value.getPropertyValue("$schema"));
+                const schema: Json.StringValue | undefined = Json.asStringValue(value.getPropertyValue("$schema"));
                 if (schema) {
                     return schema;
                 }
             }
 
-            return null;
+            return undefined;
         });
     }
 
@@ -185,14 +183,14 @@ export class DeploymentTemplate {
                         //const jsonTokenStartIndex: number = jsonQuotedStringToken.span.startIndex;
                         const jsonTokenStartIndex = jsonStringValue.span.startIndex;
 
-                        const tleParseResult: TLE.ParseResult | null = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
+                        const tleParseResult: TLE.ParseResult | undefined = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
                         const expressionScope: TemplateScope = tleParseResult.scope;
 
                         for (const error of tleParseResult.errors) {
                             parseErrors.push(error.translate(jsonTokenStartIndex));
                         }
 
-                        const tleExpression: TLE.Value | null = tleParseResult.expression;
+                        const tleExpression: TLE.Value | undefined = tleParseResult.expression;
 
                         // Undefined parameter/variable references
                         const tleUndefinedParameterAndVariableVisitor =
@@ -223,9 +221,9 @@ export class DeploymentTemplate {
                     });
 
                     // ReferenceInVariableDefinitionsVisitor
-                    const deploymentTemplateObject: Json.ObjectValue | null = Json.asObjectValue(this.jsonParseResult.value);
+                    const deploymentTemplateObject: Json.ObjectValue | undefined = Json.asObjectValue(this.jsonParseResult.value);
                     if (deploymentTemplateObject) {
-                        const variablesObject: Json.ObjectValue | null = Json.asObjectValue(deploymentTemplateObject.getPropertyValue(templateKeys.variables));
+                        const variablesObject: Json.ObjectValue | undefined = Json.asObjectValue(deploymentTemplateObject.getPropertyValue(templateKeys.variables));
                         if (variablesObject) {
                             const referenceInVariablesFinder = new ReferenceInVariableDefinitionsVisitor(this);
                             variablesObject.accept(referenceInVariablesFinder);
@@ -358,7 +356,7 @@ export class DeploymentTemplate {
         const apiProfileString = `(profile=${this.apiProfile || 'none'})`.toLowerCase();
 
         // Collect all resources used
-        const resources: Json.ArrayValue | null = this._topLevelValue ? Json.asArrayValue(this._topLevelValue.getPropertyValue(templateKeys.resources)) : null;
+        const resources: Json.ArrayValue | undefined = this._topLevelValue ? Json.asArrayValue(this._topLevelValue.getPropertyValue(templateKeys.resources)) : undefined;
         if (resources) {
             traverseResources(resources, undefined);
         }
@@ -372,7 +370,7 @@ export class DeploymentTemplate {
                     const resourceType = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceType));
                     if (resourceType) {
                         const apiVersion = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceApiVersion));
-                        let apiVersionString: string | null = apiVersion ? apiVersion.unquotedValue.trim().toLowerCase() : null;
+                        let apiVersionString: string | undefined = apiVersion ? apiVersion.unquotedValue.trim().toLowerCase() : undefined;
                         if (!apiVersionString) {
                             apiVersionString = apiProfileString;
                         } else {
@@ -459,7 +457,7 @@ export class DeploymentTemplate {
             const parameterDefinitions: ParameterDefinition[] = [];
 
             if (this._topLevelValue) {
-                const parameters: Json.ObjectValue | null = Json.asObjectValue(this._topLevelValue.getPropertyValue(templateKeys.parameters));
+                const parameters: Json.ObjectValue | undefined = Json.asObjectValue(this._topLevelValue.getPropertyValue(templateKeys.parameters));
                 if (parameters) {
                     for (const parameter of parameters.properties) {
                         parameterDefinitions.push(new ParameterDefinition(parameter));
@@ -474,7 +472,7 @@ export class DeploymentTemplate {
     private getTopLevelVariableDefinitions(): IVariableDefinition[] {
         return this._topLevelVariableDefinitions.getOrCacheValue(() => {
             if (this._topLevelValue) {
-                const variables: Json.ObjectValue | null = Json.asObjectValue(this._topLevelValue.getPropertyValue(templateKeys.variables));
+                const variables: Json.ObjectValue | undefined = Json.asObjectValue(this._topLevelValue.getPropertyValue(templateKeys.variables));
                 if (variables) {
                     const varDefs: IVariableDefinition[] = [];
                     for (let prop of variables.properties) {
@@ -494,7 +492,7 @@ export class DeploymentTemplate {
                             // ]
                             //
                             // Each element of the array is a TopLevelCopyBlockVariableDefinition
-                            const varsArray: Json.ArrayValue | null = Json.asArrayValue(prop.value);
+                            const varsArray: Json.ArrayValue | undefined = Json.asArrayValue(prop.value);
                             // tslint:disable-next-line: strict-boolean-expressions
                             for (let varElement of (varsArray && varsArray.elements) || []) {
                                 const def = TopLevelCopyBlockVariableDefinition.createIfValid(varElement);
@@ -542,7 +540,7 @@ export class DeploymentTemplate {
             //   ],
 
             if (this._topLevelValue) {
-                const functionNamespacesArray: Json.ArrayValue | null = Json.asArrayValue(this._topLevelValue.getPropertyValue("functions"));
+                const functionNamespacesArray: Json.ArrayValue | undefined = Json.asArrayValue(this._topLevelValue.getPropertyValue("functions"));
                 if (functionNamespacesArray) {
                     for (let namespaceElement of functionNamespacesArray.elements) {
                         const namespaceObject = Json.asObjectValue(namespaceElement);
@@ -568,11 +566,11 @@ export class DeploymentTemplate {
         return this._jsonParseResult.getPositionFromCharacterIndex(documentCharacterIndex);
     }
 
-    public getJSONTokenAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Token | null {
+    public getJSONTokenAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Token | undefined {
         return this._jsonParseResult.getTokenAtCharacterIndex(documentCharacterIndex);
     }
 
-    public getJSONValueAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Value | null {
+    public getJSONValueAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Value | undefined {
         return this._jsonParseResult.getValueAtCharacterIndex(documentCharacterIndex);
     }
 
@@ -614,7 +612,7 @@ export class DeploymentTemplate {
 
         // Find and add references that match the definition we're looking for
         this.visitAllReachableStringValues(jsonStringValue => {
-            const tleParseResult: TLE.ParseResult | null = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
+            const tleParseResult: TLE.ParseResult | undefined = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
             if (tleParseResult.expression) {
                 // tslint:disable-next-line:no-non-null-assertion // Guaranteed by if
                 const visitor = FindReferencesVisitor.visit(tleParseResult.expression, definition, functions);

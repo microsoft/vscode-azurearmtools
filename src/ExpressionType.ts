@@ -4,7 +4,7 @@
 
 export type ExpressionType = "string" | "securestring" | "int" | "bool" | "object" | "secureobject" | "array";
 
-export function toValidExpressionType(typeName: string | null | undefined): ExpressionType | null {
+export function toValidExpressionType(typeName: string | null | undefined): ExpressionType | undefined {
     // tslint:disable-next-line: strict-boolean-expressions
     const lowered = (typeName || "").toLowerCase();
 
@@ -19,6 +19,6 @@ export function toValidExpressionType(typeName: string | null | undefined): Expr
             return <ExpressionType>lowered;
 
         default:
-            return null;
+            return undefined;
     }
 }

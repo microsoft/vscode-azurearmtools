@@ -22,7 +22,7 @@ suite("DeploymentTemplate", () => {
 
     function findReferences(dt: DeploymentTemplate, definitionKind: DefinitionKind, definitionName: string, scope: TemplateScope): ReferenceList {
         // tslint:disable-next-line: no-unnecessary-initializer
-        let definition: INamedDefinition | null | undefined;
+        let definition: INamedDefinition | undefined;
 
         // tslint:disable-next-line: switch-default
         switch (definitionKind) {
@@ -38,10 +38,11 @@ suite("DeploymentTemplate", () => {
             case DefinitionKind.Variable:
                 definition = scope.getVariableDefinition(definitionName);
                 break;
+            default:
+                assert.fail("Test scenario NYI");
         }
 
-        assert(definition !== undefined, "Test scenario NYI");
-        if (definition === null) {
+        if (!definition) {
             return new ReferenceList(definitionKind, []);
         }
 
@@ -51,7 +52,7 @@ suite("DeploymentTemplate", () => {
     suite("constructor(string)", () => {
         test("Null stringValue", () => {
             // tslint:disable-next-line:no-any
-            assert.throws(() => { new DeploymentTemplate(<any>null, "id"); });
+            assert.throws(() => { new DeploymentTemplate(<any>undefined, "id"); });
         });
 
         test("Undefined stringValue", () => {
@@ -97,11 +98,11 @@ suite("DeploymentTemplate", () => {
             const pd0: IParameterDefinition = parameterDefinitions[0];
             assert(pd0);
             assert.deepStrictEqual(pd0.nameValue.toString(), "num");
-            assert.deepStrictEqual(pd0.description, null);
+            assert.deepStrictEqual(pd0.description, undefined);
             assert.deepStrictEqual(pd0.fullSpan, new Language.Span(18, 27));
         });
 
-        test("JSON stringValue with one parameter definition with null description", () => {
+        test("JSON stringValue with one parameter definition with undefined description", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'num': { 'type': 'number', 'metadata': { 'description': null } } } }", "id");
             assert.deepStrictEqual("id", dt.documentId);
             const parameterDefinitions: IParameterDefinition[] = dt.topLevelScope.parameterDefinitions;
@@ -110,7 +111,7 @@ suite("DeploymentTemplate", () => {
             const pd0: IParameterDefinition = parameterDefinitions[0];
             assert(pd0);
             assert.deepStrictEqual(pd0.nameValue.toString(), "num");
-            assert.deepStrictEqual(pd0.description, null);
+            assert.deepStrictEqual(pd0.description, undefined);
             assert.deepStrictEqual(pd0.fullSpan, new Language.Span(18, 64));
         });
 
@@ -154,7 +155,7 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual(dt.topLevelScope.variableDefinitions.length, 1);
             assert.deepStrictEqual(dt.topLevelScope.variableDefinitions[0].nameValue.toString(), "a");
 
-            const variableDefinition: Json.StringValue | null = Json.asStringValue(dt.topLevelScope.variableDefinitions[0].value);
+            const variableDefinition: Json.StringValue | undefined = Json.asStringValue(dt.topLevelScope.variableDefinitions[0].value);
             if (!variableDefinition) { throw new Error("failed"); }
             assert.deepStrictEqual(variableDefinition.span, new Language.Span(22, 3));
             assert.deepStrictEqual(variableDefinition.toString(), "A");
@@ -167,13 +168,13 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual(dt.topLevelScope.variableDefinitions.length, 2);
 
             assert.deepStrictEqual(dt.topLevelScope.variableDefinitions[0].nameValue.toString(), "a");
-            const a: Json.StringValue | null = Json.asStringValue(dt.topLevelScope.variableDefinitions[0].value);
+            const a: Json.StringValue | undefined = Json.asStringValue(dt.topLevelScope.variableDefinitions[0].value);
             if (!a) { throw new Error("failed"); }
             assert.deepStrictEqual(a.span, new Language.Span(22, 3));
             assert.deepStrictEqual(a.toString(), "A");
 
             assert.deepStrictEqual(dt.topLevelScope.variableDefinitions[1].nameValue.toString(), "b");
-            const b: Json.NumberValue | null = Json.asNumberValue(dt.topLevelScope.variableDefinitions[1].value);
+            const b: Json.NumberValue | undefined = Json.asNumberValue(dt.topLevelScope.variableDefinitions[1].value);
             if (!b) { throw new Error("failed"); }
             assert.deepStrictEqual(b.span, new Language.Span(32, 1));
         });
@@ -295,7 +296,7 @@ suite("DeploymentTemplate", () => {
                   ]
                 }`,
                 "id");
-            const expectedErrors = [
+            const expectedErrors: string[] = [
             ];
             return dt.errorsPromise.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, expectedErrors);
@@ -589,8 +590,8 @@ suite("DeploymentTemplate", () => {
             assert.deepStrictEqual(dt.topLevelScope.parameterDefinitions, []);
         });
 
-        test("with null parameters property", () => {
-            const dt = new DeploymentTemplate("{ 'parameters': null }", "id");
+        test("with undefined parameters property", () => {
+            const dt = new DeploymentTemplate("{ 'parameters': undefined }", "id");
             assert.deepStrictEqual(dt.topLevelScope.parameterDefinitions, []);
         });
 
@@ -617,7 +618,7 @@ suite("DeploymentTemplate", () => {
             const pd0: IParameterDefinition = parameterDefinitions[0];
             assert(pd0);
             assert.deepStrictEqual(pd0.nameValue.toString(), "a");
-            assert.deepStrictEqual(pd0.description, null);
+            assert.deepStrictEqual(pd0.description, undefined);
             assert.deepStrictEqual(pd0.fullSpan, new Language.Span(18, 7));
         });
 
@@ -629,7 +630,7 @@ suite("DeploymentTemplate", () => {
             const pd0: IParameterDefinition = parameterDefinitions[0];
             assert(pd0);
             assert.deepStrictEqual(pd0.nameValue.toString(), "a");
-            assert.deepStrictEqual(pd0.description, null);
+            assert.deepStrictEqual(pd0.description, undefined);
             assert.deepStrictEqual(pd0.fullSpan, new Language.Span(18, 23));
         });
 
@@ -647,10 +648,10 @@ suite("DeploymentTemplate", () => {
     });
 
     suite("getParameterDefinition(string)", () => {
-        test("with null", () => {
+        test("with undefined", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'apples': { 'type': 'string' }, 'bananas': { 'type': 'integer' } } }", "id");
             // tslint:disable-next-line:no-any
-            assert.throws(() => { dt.topLevelScope.getParameterDefinition(<any>null); });
+            assert.throws(() => { dt.topLevelScope.getParameterDefinition(<any>undefined); });
         });
 
         test("with undefined", () => {
@@ -666,30 +667,30 @@ suite("DeploymentTemplate", () => {
 
         test("with no parameters definition", () => {
             const dt = new DeploymentTemplate("{}", "id");
-            assert.deepStrictEqual(null, dt.topLevelScope.getParameterDefinition("spam"));
+            assert.deepStrictEqual(undefined, dt.topLevelScope.getParameterDefinition("spam"));
         });
 
         test("with unquoted non-match", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'apples': { 'type': 'string' }, 'bananas': { 'type': 'integer' } } }", "id");
-            assert.deepStrictEqual(null, dt.topLevelScope.getParameterDefinition("spam"));
+            assert.deepStrictEqual(undefined, dt.topLevelScope.getParameterDefinition("spam"));
         });
 
         test("with one-sided-quote non-match", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'apples': { 'type': 'string' }, 'bananas': { 'type': 'integer' } } }", "id");
-            assert.deepStrictEqual(null, dt.topLevelScope.getParameterDefinition("'spam"));
+            assert.deepStrictEqual(undefined, dt.topLevelScope.getParameterDefinition("'spam"));
         });
 
         test("with quoted non-match", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'apples': { 'type': 'string' }, 'bananas': { 'type': 'integer' } } }", "id");
-            assert.deepStrictEqual(null, dt.topLevelScope.getParameterDefinition("'spam'"));
+            assert.deepStrictEqual(undefined, dt.topLevelScope.getParameterDefinition("'spam'"));
         });
 
         test("with unquoted match", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'apples': { 'type': 'string' }, 'bananas': { 'type': 'integer' } } }", "id");
-            const apples: IParameterDefinition | null = dt.topLevelScope.getParameterDefinition("apples");
+            const apples: IParameterDefinition | undefined = dt.topLevelScope.getParameterDefinition("apples");
             if (!apples) { throw new Error("failed"); }
             assert.deepStrictEqual(apples.nameValue.toString(), "apples");
-            assert.deepStrictEqual(apples.description, null);
+            assert.deepStrictEqual(apples.description, undefined);
             assert.deepStrictEqual(apples.fullSpan, new Language.Span(18, 30));
             assert.deepStrictEqual(apples.nameValue.span, new Language.Span(18, 8), "Wrong name.span");
             assert.deepStrictEqual(apples.nameValue.unquotedSpan, new Language.Span(19, 6), "Wrong name.unquotedSpan");
@@ -697,28 +698,28 @@ suite("DeploymentTemplate", () => {
 
         test("with one-sided-quote match", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'apples': { 'type': 'string' }, 'bananas': { 'type': 'integer' } } }", "id");
-            const apples: IParameterDefinition | null = dt.topLevelScope.getParameterDefinition("'apples");
+            const apples: IParameterDefinition | undefined = dt.topLevelScope.getParameterDefinition("'apples");
             if (!apples) { throw new Error("failed"); }
             assert.deepStrictEqual(apples.nameValue.toString(), "apples");
-            assert.deepStrictEqual(apples.description, null);
+            assert.deepStrictEqual(apples.description, undefined);
             assert.deepStrictEqual(apples.fullSpan, new Language.Span(18, 30));
         });
 
         test("with quoted match", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'apples': { 'type': 'string' }, 'bananas': { 'type': 'integer' } } }", "id");
-            const apples: IParameterDefinition | null = dt.topLevelScope.getParameterDefinition("'apples'");
+            const apples: IParameterDefinition | undefined = dt.topLevelScope.getParameterDefinition("'apples'");
             if (!apples) { throw new Error("failed"); }
             assert.deepStrictEqual(apples.nameValue.toString(), "apples");
-            assert.deepStrictEqual(apples.description, null);
+            assert.deepStrictEqual(apples.description, undefined);
             assert.deepStrictEqual(apples.fullSpan, new Language.Span(18, 30));
         });
 
         test("with case insensitive match", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'apples': { 'type': 'string' }, 'bananas': { 'type': 'integer' } } }", "id");
-            const apples: IParameterDefinition | null = dt.topLevelScope.getParameterDefinition("'APPLES'");
+            const apples: IParameterDefinition | undefined = dt.topLevelScope.getParameterDefinition("'APPLES'");
             if (!apples) { throw new Error("failed"); }
             assert.deepStrictEqual(apples.nameValue.toString(), "apples");
-            assert.deepStrictEqual(apples.description, null);
+            assert.deepStrictEqual(apples.description, undefined);
             assert.deepStrictEqual(apples.fullSpan, new Language.Span(18, 30));
         });
 
@@ -735,11 +736,11 @@ suite("DeploymentTemplate", () => {
                 "id");
 
             // Should always match the last one defined when multiple have the same name
-            const APPLES: IParameterDefinition | null = dt.topLevelScope.getParameterDefinition("'APPLES'");
+            const APPLES: IParameterDefinition | undefined = dt.topLevelScope.getParameterDefinition("'APPLES'");
             if (!APPLES) { throw new Error("failed"); }
             assert.deepStrictEqual(APPLES.nameValue.toString(), "Apples");
 
-            const apples: IParameterDefinition | null = dt.topLevelScope.getParameterDefinition("'APPles'");
+            const apples: IParameterDefinition | undefined = dt.topLevelScope.getParameterDefinition("'APPles'");
             if (!apples) { throw new Error("failed"); }
             assert.deepStrictEqual(apples.nameValue.toString(), "Apples");
         });
@@ -748,25 +749,25 @@ suite("DeploymentTemplate", () => {
         // test("with case insensitive match, Unicode", () => {
         //     // Should always match the last one defined when multiple have the same name
         //     const dt = new DeploymentTemplate("{ 'parameters': { 'Strasse': { 'type': 'string' }, 'Straße': { 'type': 'integer' } } }", "id");
-        //     const strasse: IParameterDefinition | null = dt.topLevelScope.getParameterDefinition("'Strasse'");
+        //     const strasse: IParameterDefinition | undefined = dt.topLevelScope.getParameterDefinition("'Strasse'");
         //     if (!strasse) { throw new Error("failed"); }
         //     assert.deepStrictEqual(strasse.nameValue.toString(), "Straße");
 
-        //     const straße: IParameterDefinition | null = dt.topLevelScope.getParameterDefinition("'Straße'");
+        //     const straße: IParameterDefinition | undefined = dt.topLevelScope.getParameterDefinition("'Straße'");
         //     if (!straße) { throw new Error("failed"); }
         //     assert.deepStrictEqual(straße.nameValue.toString(), "Straße");
 
-        //     const straße2: IParameterDefinition | null = dt.topLevelScope.getParameterDefinition("'STRASSE'");
+        //     const straße2: IParameterDefinition | undefined = dt.topLevelScope.getParameterDefinition("'STRASSE'");
         //     if (!straße2) { throw new Error("failed"); }
         //     assert.deepStrictEqual(straße2.nameValue.toString(), "Straße");
         // });
     });
 
     suite("findParameterDefinitionsWithPrefix(string)", () => {
-        test("with null", () => {
+        test("with undefined", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'apples': { 'type': 'string' }, 'bananas': { 'type': 'integer' } } }", "id");
             // tslint:disable-next-line:no-any
-            assert.throws(() => { dt.topLevelScope.findParameterDefinitionsWithPrefix(<any>null); });
+            assert.throws(() => { dt.topLevelScope.findParameterDefinitionsWithPrefix(<any>undefined); });
         });
 
         test("with undefined", () => {
@@ -785,13 +786,13 @@ suite("DeploymentTemplate", () => {
             const match0: IParameterDefinition = matches[0];
             assert(match0);
             assert.deepStrictEqual(match0.nameValue.toString(), "apples");
-            assert.deepStrictEqual(match0.description, null);
+            assert.deepStrictEqual(match0.description, undefined);
             assert.deepStrictEqual(match0.fullSpan, new Language.Span(18, 30));
 
             const match1: IParameterDefinition = matches[1];
             assert(match1);
             assert.deepStrictEqual(match1.nameValue.toString(), "bananas");
-            assert.deepStrictEqual(match1.description, null);
+            assert.deepStrictEqual(match1.description, undefined);
             assert.deepStrictEqual(match1.fullSpan, new Language.Span(50, 32));
         });
 
@@ -805,7 +806,7 @@ suite("DeploymentTemplate", () => {
             const match0: IParameterDefinition = matches[0];
             assert(match0);
             assert.deepStrictEqual(match0.nameValue.toString(), "apples");
-            assert.deepStrictEqual(match0.description, null);
+            assert.deepStrictEqual(match0.description, undefined);
             assert.deepStrictEqual(match0.fullSpan, new Language.Span(18, 30));
         });
 
@@ -824,7 +825,7 @@ suite("DeploymentTemplate", () => {
             const match0: IParameterDefinition = matches[0];
             assert(match0);
             assert.deepStrictEqual(match0.nameValue.toString(), "apples");
-            assert.deepStrictEqual(match0.description, null);
+            assert.deepStrictEqual(match0.description, undefined);
             assert.deepStrictEqual(match0.fullSpan, new Language.Span(18, 30));
         });
 
@@ -838,22 +839,22 @@ suite("DeploymentTemplate", () => {
             const match0: IParameterDefinition = matches[0];
             assert(match0);
             assert.deepStrictEqual(match0.nameValue.toString(), "apples");
-            assert.deepStrictEqual(match0.description, null);
+            assert.deepStrictEqual(match0.description, undefined);
             assert.deepStrictEqual(match0.fullSpan, new Language.Span(18, 30));
 
             const match1: IParameterDefinition = matches[1];
             assert(match1);
             assert.deepStrictEqual(match1.nameValue.toString(), "APPLES");
-            assert.deepStrictEqual(match1.description, null);
+            assert.deepStrictEqual(match1.description, undefined);
             assert.deepStrictEqual(match1.fullSpan, new Language.Span(50, 31));
         });
     });
 
     suite("getVariableDefinition(string)", () => {
-        test("with null", () => {
+        test("with undefined", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'apples': 'yum', 'bananas': 'good' } }", "id");
             // tslint:disable-next-line:no-any
-            assert.throws(() => { dt.topLevelScope.getVariableDefinition(<any>null); });
+            assert.throws(() => { dt.topLevelScope.getVariableDefinition(<any>undefined); });
         });
 
         test("with undefined", () => {
@@ -869,32 +870,32 @@ suite("DeploymentTemplate", () => {
 
         test("with no variables definition", () => {
             const dt = new DeploymentTemplate("{}", "id");
-            assert.deepStrictEqual(null, dt.topLevelScope.getVariableDefinition("spam"));
+            assert.deepStrictEqual(undefined, dt.topLevelScope.getVariableDefinition("spam"));
         });
 
         test("with unquoted non-match", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'apples': 'yum', 'bananas': 'good' } }", "id");
-            assert.deepStrictEqual(null, dt.topLevelScope.getVariableDefinition("spam"));
+            assert.deepStrictEqual(undefined, dt.topLevelScope.getVariableDefinition("spam"));
         });
 
         test("with one-sided-quote non-match", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'apples': 'yum', 'bananas': 'good' } }", "id");
-            assert.deepStrictEqual(null, dt.topLevelScope.getVariableDefinition("'spam"));
+            assert.deepStrictEqual(undefined, dt.topLevelScope.getVariableDefinition("'spam"));
         });
 
         test("with quoted non-match", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'apples': 'yum', 'bananas': 'good' } }", "id");
-            assert.deepStrictEqual(null, dt.topLevelScope.getVariableDefinition("'spam'"));
+            assert.deepStrictEqual(undefined, dt.topLevelScope.getVariableDefinition("'spam'"));
         });
 
         test("with unquoted match", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'apples': 'yum', 'bananas': 'good' } }", "id");
 
-            const apples: IVariableDefinition | null = dt.topLevelScope.getVariableDefinition("apples");
+            const apples: IVariableDefinition | undefined = dt.topLevelScope.getVariableDefinition("apples");
             if (!apples) { throw new Error("failed"); }
             assert.deepStrictEqual(apples.nameValue.toString(), "apples");
 
-            const value: Json.Value | null = Json.asStringValue(apples.value);
+            const value: Json.Value | undefined = Json.asStringValue(apples.value);
             if (!value) { throw new Error("failed"); }
             assert.deepStrictEqual(value.span, new Language.Span(27, 5));
             assert.deepStrictEqual(value.toString(), "yum");
@@ -903,11 +904,11 @@ suite("DeploymentTemplate", () => {
         test("with one-sided-quote match", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'apples': 'yum', 'bananas': 'good' } }", "id");
 
-            const apples: IVariableDefinition | null = dt.topLevelScope.getVariableDefinition("'apples");
+            const apples: IVariableDefinition | undefined = dt.topLevelScope.getVariableDefinition("'apples");
             if (!apples) { throw new Error("failed"); }
             assert.deepStrictEqual(apples.nameValue.toString(), "apples");
 
-            const value: Json.StringValue | null = Json.asStringValue(apples.value);
+            const value: Json.StringValue | undefined = Json.asStringValue(apples.value);
             if (!value) { throw new Error("failed"); }
             assert.deepStrictEqual(value.span, new Language.Span(27, 5));
             assert.deepStrictEqual(value.toString(), "yum");
@@ -916,11 +917,11 @@ suite("DeploymentTemplate", () => {
         test("with quoted match", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'apples': 'yum', 'bananas': 'good' } }", "id");
 
-            const apples: IVariableDefinition | null = dt.topLevelScope.getVariableDefinition("'apples'");
+            const apples: IVariableDefinition | undefined = dt.topLevelScope.getVariableDefinition("'apples'");
             if (!apples) { throw new Error("failed"); }
             assert.deepStrictEqual(apples.nameValue.toString(), "apples");
 
-            const value: Json.StringValue | null = Json.asStringValue(apples.value);
+            const value: Json.StringValue | undefined = Json.asStringValue(apples.value);
             if (!value) { throw new Error("failed"); }
             assert.deepStrictEqual(value.span, new Language.Span(27, 5));
             assert.deepStrictEqual(value.toString(), "yum");
@@ -929,11 +930,11 @@ suite("DeploymentTemplate", () => {
         test("with case insensitive match", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'apples': 'yum', 'bananas': 'good' } }", "id");
 
-            const apples: IVariableDefinition | null = dt.topLevelScope.getVariableDefinition("'APPLES");
+            const apples: IVariableDefinition | undefined = dt.topLevelScope.getVariableDefinition("'APPLES");
             if (!apples) { throw new Error("failed"); }
             assert.deepStrictEqual(apples.nameValue.toString(), "apples");
 
-            const value: Json.StringValue | null = Json.asStringValue(apples.value);
+            const value: Json.StringValue | undefined = Json.asStringValue(apples.value);
             if (!value) { throw new Error("failed"); }
             assert.deepStrictEqual(value.span, new Language.Span(27, 5));
             assert.deepStrictEqual(value.toString(), "yum");
@@ -943,29 +944,29 @@ suite("DeploymentTemplate", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'apples': 'yum', 'APPLES': 'good' } }", "id");
 
             // Should always find the last definition, because that's what Azure does
-            const APPLES: IVariableDefinition | null = dt.topLevelScope.getVariableDefinition("'APPLES'");
+            const APPLES: IVariableDefinition | undefined = dt.topLevelScope.getVariableDefinition("'APPLES'");
             if (!APPLES) { throw new Error("failed"); }
             assert.deepStrictEqual(APPLES.nameValue.toString(), "APPLES");
 
-            const applesValue: Json.StringValue | null = Json.asStringValue(APPLES.value);
+            const applesValue: Json.StringValue | undefined = Json.asStringValue(APPLES.value);
             if (!applesValue) { throw new Error("failed"); }
             assert.deepStrictEqual(applesValue.toString(), "good");
 
-            const apples: IVariableDefinition | null = dt.topLevelScope.getVariableDefinition("'APPles'");
+            const apples: IVariableDefinition | undefined = dt.topLevelScope.getVariableDefinition("'APPles'");
             if (!apples) { throw new Error("failed"); }
             assert.deepStrictEqual(apples.nameValue.toString(), "APPLES");
 
-            const value: Json.StringValue | null = Json.asStringValue(apples.value);
+            const value: Json.StringValue | undefined = Json.asStringValue(apples.value);
             if (!value) { throw new Error("failed"); }
             assert.deepStrictEqual(value.toString(), "good");
         });
     }); // end suite getVariableDefinition
 
     suite("findVariableDefinitionsWithPrefix(string)", () => {
-        test("with null", () => {
+        test("with undefined", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'apples': 'APPLES', 'bananas': 88 } }", "id");
             // tslint:disable-next-line:no-any
-            assert.throws(() => { dt.topLevelScope.findVariableDefinitionsWithPrefix(<any>null); });
+            assert.throws(() => { dt.topLevelScope.findVariableDefinitionsWithPrefix(<any>undefined); });
         });
 
         test("with undefined", () => {
@@ -982,14 +983,14 @@ suite("DeploymentTemplate", () => {
 
             const apples: IVariableDefinition = definitions[0];
             assert.deepStrictEqual(apples.nameValue.toString(), "apples");
-            const applesValue: Json.StringValue | null = Json.asStringValue(apples.value);
+            const applesValue: Json.StringValue | undefined = Json.asStringValue(apples.value);
             if (!applesValue) { throw new Error("failed"); }
             assert.deepStrictEqual(applesValue.span, new Language.Span(27, 8));
             assert.deepStrictEqual(applesValue.toString(), "APPLES");
 
             const bananas: IVariableDefinition = definitions[1];
             assert.deepStrictEqual(bananas.nameValue.toString(), "bananas");
-            const bananasValue: Json.NumberValue | null = Json.asNumberValue(bananas.value);
+            const bananasValue: Json.NumberValue | undefined = Json.asNumberValue(bananas.value);
             assert.deepStrictEqual(bananasValue!.span, new Language.Span(48, 2));
         });
 
@@ -1001,7 +1002,7 @@ suite("DeploymentTemplate", () => {
 
             const apples: IVariableDefinition = definitions[0];
             assert.deepStrictEqual(apples.nameValue.toString(), "apples");
-            const applesValue: Json.StringValue | null = Json.asStringValue(apples.value);
+            const applesValue: Json.StringValue | undefined = Json.asStringValue(apples.value);
             if (!applesValue) { throw new Error("failed"); }
             assert.deepStrictEqual(applesValue.span, new Language.Span(27, 8));
             assert.deepStrictEqual(applesValue.toString(), "APPLES");
@@ -1061,9 +1062,9 @@ suite("DeploymentTemplate", () => {
 
     suite("ReferenceInVariableDefinitionJSONVisitor", () => {
         suite("constructor(DeploymentTemplate)", () => {
-            test("with null", () => {
+            test("with undefined", () => {
                 // tslint:disable-next-line:no-any
-                assert.throws(() => { new ReferenceInVariableDefinitionsVisitor(<any>null); });
+                assert.throws(() => { new ReferenceInVariableDefinitionsVisitor(<any>undefined); });
             });
 
             test("with undefined", () => {
@@ -1111,11 +1112,11 @@ suite("DeploymentTemplate", () => {
         });
 
         suite("visitStringValue(Json.StringValue)", () => {
-            test("with null", () => {
+            test("with undefined", () => {
                 const dt = new DeploymentTemplate(`{ "variables": { "a": "[reference('test')]" } }`, "id");
                 const visitor = new ReferenceInVariableDefinitionsVisitor(dt);
                 // tslint:disable-next-line:no-any
-                assert.throws(() => { visitor.visitStringValue(<any>null); });
+                assert.throws(() => { visitor.visitStringValue(<any>undefined); });
             });
 
             test("with undefined", () => {
@@ -1136,9 +1137,9 @@ suite("DeploymentTemplate", () => {
             test("with TLE string with reference() call", () => {
                 const dt = new DeploymentTemplate(`{ "variables": { "a": "[reference('test')]" } }`, "id");
                 const visitor = new ReferenceInVariableDefinitionsVisitor(dt);
-                const dtObject: Json.ObjectValue | null = Json.asObjectValue(dt.jsonParseResult.value);
-                const variablesObject: Json.ObjectValue | null = Json.asObjectValue(dtObject!.getPropertyValue("variables"));
-                const tle: Json.StringValue | null = Json.asStringValue(variablesObject!.getPropertyValue("a"));
+                const dtObject: Json.ObjectValue | undefined = Json.asObjectValue(dt.jsonParseResult.value);
+                const variablesObject: Json.ObjectValue | undefined = Json.asObjectValue(dtObject!.getPropertyValue("variables"));
+                const tle: Json.StringValue | undefined = Json.asStringValue(variablesObject!.getPropertyValue("a"));
 
                 visitor.visitStringValue(tle!);
                 assert.deepStrictEqual(visitor.referenceSpans, [new Language.Span(24, 9)]);
@@ -1147,9 +1148,9 @@ suite("DeploymentTemplate", () => {
             test("with TLE string with reference() call inside concat() call", () => {
                 const dt = new DeploymentTemplate(`{ "variables": { "a": "[concat(reference('test'))]" } }`, "id");
                 const visitor = new ReferenceInVariableDefinitionsVisitor(dt);
-                const dtObject: Json.ObjectValue | null = Json.asObjectValue(dt.jsonParseResult.value);
-                const variablesObject: Json.ObjectValue | null = Json.asObjectValue(dtObject!.getPropertyValue("variables"));
-                const tle: Json.StringValue | null = Json.asStringValue(variablesObject!.getPropertyValue("a"));
+                const dtObject: Json.ObjectValue | undefined = Json.asObjectValue(dt.jsonParseResult.value);
+                const variablesObject: Json.ObjectValue | undefined = Json.asObjectValue(dtObject!.getPropertyValue("variables"));
+                const tle: Json.StringValue | undefined = Json.asStringValue(variablesObject!.getPropertyValue("a"));
 
                 visitor.visitStringValue(tle!);
                 assert.deepStrictEqual(visitor.referenceSpans, [new Language.Span(31, 9)]);
@@ -1490,7 +1491,7 @@ suite("DeploymentTemplate", () => {
             const dt = await parseTemplate({
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
             });
-            assert.equal(dt.apiProfile, null);
+            assert.equal(dt.apiProfile, undefined);
         });
 
         test("empty apiProfile", async () => {
@@ -1509,7 +1510,7 @@ suite("DeploymentTemplate", () => {
                 apiProfile: false
             });
 
-            assert.equal(dt.apiProfile, null);
+            assert.equal(dt.apiProfile, undefined);
         });
 
         test("valid apiProfile", async () => {

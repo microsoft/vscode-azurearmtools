@@ -128,7 +128,7 @@ suite("Variable iteration (copy blocks)", () => {
             assert(!!dt.topLevelScope.getVariableDefinition('diskNames'));
             const diskNames = dt.topLevelScope.getVariableDefinition('diskNames')!;
             assert(diskNames);
-            assert(diskNames.value === null);
+            assert(diskNames.value === undefined);
         });
 
         test("no name property", () => {
@@ -307,7 +307,7 @@ suite("Variable iteration (copy blocks)", () => {
         });
 
         test("'copy' not found as member of the variable's value", async () => {
-            assert.equal(Json.asObjectValue(variable.value)!.getPropertyValue('copy'), null);
+            assert.equal(Json.asObjectValue(variable.value)!.getPropertyValue('copy'), undefined);
         });
 
         test("copy block names are added as members of the variable", async () => {

@@ -54,7 +54,7 @@ export class UndefinedParameterAndVariableVisitor extends TLE.Visitor {
         }
     }
 
-    public static visit(tleValue: Value | null, scope: TemplateScope): UndefinedParameterAndVariableVisitor {
+    public static visit(tleValue: Value | undefined, scope: TemplateScope): UndefinedParameterAndVariableVisitor {
         const visitor = new UndefinedParameterAndVariableVisitor(scope);
         if (tleValue) {
             tleValue.accept(visitor);
