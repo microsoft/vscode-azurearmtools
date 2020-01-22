@@ -57,7 +57,7 @@
             "    \"functions\": []",
             "}"
         ],
-        "description": "Tanant Deployment"
+        "description": "Tenant Deployment"
     },
     "Azure Resource Manager (ARM) Parameters Template": {
         "prefix": "arm-param-file",
