@@ -12,7 +12,52 @@
             "    \"functions\": []",
             "}"
         ],
-        "description": "Skeleton ARM Template"
+        "description": "Resource Group Template"
+    },
+    "Azure Resource Manager (ARM) Template Subscription": {
+        "prefix": "arm!s",
+        "body": [
+            "{",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#\",",
+            "    \"contentVersion\": \"1.0.0.0\",",
+            "    \"parameters\": {},",
+            "    \"variables\": {},",
+            "    \"resources\": [],",
+            "    \"outputs\": {},",
+            "    \"functions\": []",
+            "}"
+        ],
+        "description": "Subscription Template"
+    },
+    "Azure Resource Manager (ARM) Template Management Group": {
+        "prefix": "arm!mg",
+        "body": [
+            "{",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#\",",
+            "    \"contentVersion\": \"1.0.0.0\",",
+            "    \"parameters\": {},",
+            "    \"variables\": {},",
+            "    \"resources\": [],",
+            "    \"outputs\": {},",
+            "    \"functions\": []",
+            "}"
+        ],
+        "description": "Management Group Template"
+    },
+    "Azure Resource Manager (ARM) Template Tenant": {
+        "prefix": "arm!t",
+        "body": [
+            "{",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#\",",
+            "    \"contentVersion\": \"1.0.0.0\",",
+            "    \"parameters\": {},",
+            "    \"variables\": {},",
+            "    \"resources\": [],",
+            "    \"outputs\": {},",
+            "    \"functions\": []",
+            "}"
+        ],
+        "description": "Tenant Template"
     },
     "Azure Resource Manager (ARM) Parameters Template": {
         "prefix": "armp!",
@@ -23,7 +68,7 @@
             "    \"parameters\": {}",
             "}"
         ],
-        "description": "Skeleton ARM Parameters Template"
+        "description": "Parameters Template"
     },
     "Parameter Value": {
         "prefix": "arm-param-value",
@@ -32,6 +77,6 @@
             "    \"value\": \"${2:value}\"",
             "}"
         ],
-        "description": "ARM Template Parameter value used in a azuredeploy.parameters.json file"
+        "description": "Parameter Value"
     }
 }
