@@ -14,8 +14,8 @@ export interface IParameterDefinition extends INamedDefinition {
     nameValue: Json.StringValue;
 
     // tslint:disable-next-line:no-reserved-keywords
-    type: Json.Value | null;
-    validType: ExpressionType | null;
+    type: Json.Value | undefined;
+    validType: ExpressionType | undefined;
 
     /**
      * The full span of the definition
@@ -23,6 +23,6 @@ export interface IParameterDefinition extends INamedDefinition {
     fullSpan: language.Span;
 
     // Description and defaultValue are only supported for top-level parameters
-    description: string | null;
-    defaultValue: Json.Value | null;
+    description: string | undefined;
+    defaultValue: Json.Value | undefined;
 }

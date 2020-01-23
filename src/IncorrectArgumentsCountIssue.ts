@@ -14,7 +14,7 @@ export class IncorrectArgumentsCountIssue extends language.Issue {
         private _functionName: string,
         private _actualArgumentsCount: number,
         private _minExpectedCount: number,
-        private _maxExpectedCount: number
+        private _maxExpectedCount: number | undefined
     ) {
         super(span, message, language.IssueKind.badArgsCount);
     }
@@ -41,7 +41,7 @@ export class IncorrectArgumentsCountIssue extends language.Issue {
         return this._minExpectedCount;
     }
 
-    public get maxExpected(): number {
+    public get maxExpected(): number | undefined {
         return this._maxExpectedCount;
     }
 }
