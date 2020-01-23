@@ -1,6 +1,6 @@
 {
     "Azure Resource Manager (ARM) Template": {
-        "prefix": "arm-deploy-file-rg",
+        "prefix": "arm!",
         "body": [
             "{",
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\",",
@@ -12,10 +12,10 @@
             "    \"functions\": []",
             "}"
         ],
-        "description": "Resource Group Deployment"
+        "description": "Resource Group Template"
     },
     "Azure Resource Manager (ARM) Template Subscription": {
-        "prefix": "arm-deploy-file-sub",
+        "prefix": "arm!s",
         "body": [
             "{",
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#\",",
@@ -27,10 +27,10 @@
             "    \"functions\": []",
             "}"
         ],
-        "description": "Subscription Deployment"
+        "description": "Subscription Template"
     },
     "Azure Resource Manager (ARM) Template Management Group": {
-        "prefix": "arm-deploy-file-mg",
+        "prefix": "arm!mg",
         "body": [
             "{",
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#\",",
@@ -42,10 +42,10 @@
             "    \"functions\": []",
             "}"
         ],
-        "description": "Management Group Deployment"
+        "description": "Management Group Template"
     },
     "Azure Resource Manager (ARM) Template Tenant": {
-        "prefix": "arm-deploy-file-tenant",
+        "prefix": "arm!t",
         "body": [
             "{",
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#\",",
@@ -57,10 +57,10 @@
             "    \"functions\": []",
             "}"
         ],
-        "description": "Tenant Deployment"
+        "description": "Tenant Template"
     },
     "Azure Resource Manager (ARM) Parameters Template": {
-        "prefix": "arm-param-file",
+        "prefix": "armp!",
         "body": [
             "{",
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#\",",
