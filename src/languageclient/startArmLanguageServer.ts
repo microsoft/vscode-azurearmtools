@@ -116,7 +116,10 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         let clientOptions: LanguageClientOptions = {
             documentSelector: armDeploymentDocumentSelector,
             diagnosticCollectionName: `${languageServerName} diagnostics`,
-            revealOutputChannelOn: RevealOutputChannelOn.Error
+            revealOutputChannelOn: RevealOutputChannelOn.Error,
+            synchronize: {
+                configurationSection: configPrefix
+            }
         };
 
         // Create the language client and start the client.

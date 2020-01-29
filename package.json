@@ -47,8 +47,7 @@
         "onCommand:azurerm-vscode-tools.reloadSchemas"
     ],
     "contributes": {
-        "grammars": [
-            {
+        "grammars": [{
                 "language": "arm-template",
                 "scopeName": "source.json.arm-template",
                 "path": "dist/grammars/JSONC.arm.tmLanguage.json"
@@ -58,8 +57,7 @@
                 "path": "dist/grammars/arm-expression-string.tmLanguage.json"
             }
         ],
-        "snippets": [
-            {
+        "snippets": [{
                 "language": "arm-template",
                 "path": "./assets/armsnippets.jsonc"
             },
@@ -102,7 +100,7 @@
                         "None"
                     ],
                     "default": "Warning",
-                    "description": "Sets the trace level in the Output window for the Azure Template Language Server (requires restart)"
+                    "description": "Sets the trace (log) level in the Output window for the Azure Template Language Server"
                 },
                 "azureResourceManagerTools.languageServer.dotnetExePath": {
                     "type": "string",
@@ -116,25 +114,20 @@
             }
         },
         "views": {
-            "explorer": [
-                {
-                    "id": "azurerm-vscode-tools.template-outline",
-                    "name": "ARM Template Outline",
-                    "when": "showAzureTemplateView"
-                }
-            ]
+            "explorer": [{
+                "id": "azurerm-vscode-tools.template-outline",
+                "name": "ARM Template Outline",
+                "when": "showAzureTemplateView"
+            }]
         },
-        "languages": [
-            {
-                "id": "arm-template",
-                "aliases": [
-                    "Azure Resource Manager Template"
-                ],
-                "configuration": "dist/grammars/jsonc.arm.language-configuration.json"
-            }
-        ],
-        "commands": [
-            {
+        "languages": [{
+            "id": "arm-template",
+            "aliases": [
+                "Azure Resource Manager Template"
+            ],
+            "configuration": "dist/grammars/jsonc.arm.language-configuration.json"
+        }],
+        "commands": [{
                 "category": "Azure Resource Manager Tools",
                 "title": "Remove Local Dotnet Core Installation",
                 "command": "azurerm-vscode-tools.uninstallDotnet"
@@ -146,12 +139,10 @@
             }
         ],
         "menus": {
-            "editor/context": [
-                {
-                    "command": "azurerm-vscode-tools.reloadSchemas",
-                    "when": "editorLangId==arm-template"
-                }
-            ]
+            "editor/context": [{
+                "command": "azurerm-vscode-tools.reloadSchemas",
+                "when": "editorLangId==arm-template"
+            }]
         }
     },
     "main": "main",
