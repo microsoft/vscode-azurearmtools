@@ -145,6 +145,11 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
             window.showWarningMessage(`The ${configPrefix}.languageServer.waitForDebugger option is set.  The language server will pause on startup until a debugger is attached.`);
         }
 
+        client.onTelemetry((telemetryData) => {
+            // tslint:disable-next-line: no-unsafe-any
+            ext.reporter.sendTelemetryEvent(telemetryData.eventName, telemetryData.properties);
+        });
+
         try {
             let disposable = client.start();
             ext.context.subscriptions.push(disposable);
