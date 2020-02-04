@@ -2,10 +2,10 @@
     "name": "azurerm-vscode-tools",
     "displayName": "Azure Resource Manager (ARM) Tools",
     "description": "Language server, editing tools and snippets for Azure Resource Manager (ARM) template files.",
-    "version": "0.8.4-alpha",
+    "version": "0.8.4",
     "publisher": "msazurermtools",
     "config": {
-        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20073.2"
+        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20104.5"
     },
     "categories": [
         "Azure",
@@ -114,20 +114,25 @@
             }
         },
         "views": {
-            "explorer": [{
-                "id": "azurerm-vscode-tools.template-outline",
-                "name": "ARM Template Outline",
-                "when": "showAzureTemplateView"
-            }]
+            "explorer": [
+                {
+                    "id": "azurerm-vscode-tools.template-outline",
+                    "name": "ARM Template Outline",
+                    "when": "showAzureTemplateView"
+                }
+            ]
         },
-        "languages": [{
-            "id": "arm-template",
-            "aliases": [
-                "Azure Resource Manager Template"
-            ],
-            "configuration": "dist/grammars/jsonc.arm.language-configuration.json"
-        }],
-        "commands": [{
+        "languages": [
+            {
+                "id": "arm-template",
+                "aliases": [
+                    "Azure Resource Manager Template"
+                ],
+                "configuration": "dist/grammars/jsonc.arm.language-configuration.json"
+            }
+        ],
+        "commands": [
+            {
                 "category": "Azure Resource Manager Tools",
                 "title": "Remove Local Dotnet Core Installation",
                 "command": "azurerm-vscode-tools.uninstallDotnet"
@@ -139,10 +144,12 @@
             }
         ],
         "menus": {
-            "editor/context": [{
-                "command": "azurerm-vscode-tools.reloadSchemas",
-                "when": "editorLangId==arm-template"
-            }]
+            "editor/context": [
+                {
+                    "command": "azurerm-vscode-tools.reloadSchemas",
+                    "when": "editorLangId==arm-template"
+                }
+            ]
         }
     },
     "main": "main",
