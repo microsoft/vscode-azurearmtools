@@ -25,6 +25,8 @@ export const languageServerStateSource = "arm-template";
 
 export const configPrefix = 'azureResourceManagerTools'; // Prefix for user settings
 
+export const dotnetVersion = '3.0';
+
 export namespace configKeys {
     export const autoDetectJsonTemplates = 'autoDetectJsonTemplates';
     export const dotnetExePath = 'languageServer.dotnetExePath';

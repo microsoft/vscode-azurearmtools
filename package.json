@@ -5,7 +5,7 @@
     "version": "0.8.4",
     "publisher": "msazurermtools",
     "config": {
-        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20106.3"
+        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20107.3"
     },
     "categories": [
         "Azure",
@@ -47,7 +47,8 @@
         "onCommand:azurerm-vscode-tools.reloadSchemas"
     ],
     "contributes": {
-        "grammars": [{
+        "grammars": [
+            {
                 "language": "arm-template",
                 "scopeName": "source.json.arm-template",
                 "path": "dist/grammars/JSONC.arm.tmLanguage.json"
@@ -57,7 +58,8 @@
                 "path": "dist/grammars/arm-expression-string.tmLanguage.json"
             }
         ],
-        "snippets": [{
+        "snippets": [
+            {
                 "language": "arm-template",
                 "path": "./assets/armsnippets.jsonc"
             },
@@ -114,20 +116,25 @@
             }
         },
         "views": {
-            "explorer": [{
-                "id": "azurerm-vscode-tools.template-outline",
-                "name": "ARM Template Outline",
-                "when": "showAzureTemplateView"
-            }]
+            "explorer": [
+                {
+                    "id": "azurerm-vscode-tools.template-outline",
+                    "name": "ARM Template Outline",
+                    "when": "showAzureTemplateView"
+                }
+            ]
         },
-        "languages": [{
-            "id": "arm-template",
-            "aliases": [
-                "Azure Resource Manager Template"
-            ],
-            "configuration": "dist/grammars/jsonc.arm.language-configuration.json"
-        }],
-        "commands": [{
+        "languages": [
+            {
+                "id": "arm-template",
+                "aliases": [
+                    "Azure Resource Manager Template"
+                ],
+                "configuration": "dist/grammars/jsonc.arm.language-configuration.json"
+            }
+        ],
+        "commands": [
+            {
                 "category": "Azure Resource Manager Tools",
                 "title": "Remove Local Dotnet Core Installation",
                 "command": "azurerm-vscode-tools.uninstallDotnet"
@@ -139,10 +146,12 @@
             }
         ],
         "menus": {
-            "editor/context": [{
-                "command": "azurerm-vscode-tools.reloadSchemas",
-                "when": "editorLangId==arm-template"
-            }]
+            "editor/context": [
+                {
+                    "command": "azurerm-vscode-tools.reloadSchemas",
+                    "when": "editorLangId==arm-template"
+                }
+            ]
         }
     },
     "main": "main",
