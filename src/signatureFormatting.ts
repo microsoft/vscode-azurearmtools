@@ -10,13 +10,13 @@ import { UserFunctionParameterDefinition } from "./UserFunctionParameterDefiniti
 export function getUserFunctionUsage(func: UserFunctionDefinition, includeNamespaceName: boolean = true): string {
     const name = includeNamespaceName ? func.fullName : func.nameValue.unquotedValue;
     const params: UserFunctionParameterDefinition[] = func.parameterDefinitions;
-    const outputType: ExpressionType | null = func.output ? func.output.validOutputType : null;
+    const outputType: ExpressionType | undefined = func.output ? func.output.validOutputType : undefined;
     return getFunctionUsage(name, params, outputType);
 }
 
 export function getFunctionUsage(name: string, params: IParameterDefinition[], outputTypeAsString: string | null | undefined): string {
     let usage: string = `${name}(${params.map(p => getFunctionParamUsage(p.nameValue.unquotedValue, p.validType)).join(", ")})`;
-    let outputType: ExpressionType | null = toValidExpressionType(outputTypeAsString);
+    let outputType: ExpressionType | undefined = toValidExpressionType(outputTypeAsString);
     if (outputType) {
         usage += ` [${outputType}]`;
     }
@@ -24,6 +24,6 @@ export function getFunctionUsage(name: string, params: IParameterDefinition[], o
 }
 
 export function getFunctionParamUsage(name: string, typeAsString: string | null | undefined): string {
-    const paramType: ExpressionType | null = toValidExpressionType(typeAsString);
+    const paramType: ExpressionType | undefined = toValidExpressionType(typeAsString);
     return paramType ? `${name} [${paramType}]` : name;
 }

@@ -50,7 +50,7 @@ export class TemplateScope {
     }
 
     // parameterName can be surrounded with single quotes or not.  Search is case-insensitive
-    public getParameterDefinition(parameterName: string): IParameterDefinition | null {
+    public getParameterDefinition(parameterName: string): IParameterDefinition | undefined {
         assert(parameterName, "parameterName cannot be null, undefined, or empty");
 
         const unquotedParameterName = Utilities.unquote(parameterName);
@@ -63,7 +63,7 @@ export class TemplateScope {
                 return pd;
             }
         }
-        return null;
+        return undefined;
     }
 
     // Search is case-insensitive
@@ -74,19 +74,19 @@ export class TemplateScope {
     }
 
     // Search is case-insensitive
-    public getUserFunctionDefinition(namespaceName: string, functionName: string): UserFunctionDefinition | null {
+    public getUserFunctionDefinition(namespaceName: string, functionName: string): UserFunctionDefinition | undefined {
         assert(!!functionName, "functionName cannot be null, undefined, or empty");
         let nd = this.getFunctionNamespaceDefinition(namespaceName);
         if (nd) {
             let result = nd.getMemberDefinition(functionName);
-            return result ? result : null;
+            return result ? result : undefined;
         }
 
-        return null;
+        return undefined;
     }
 
     // variableName can be surrounded with single quotes or not.  Search is case-insensitive
-    public getVariableDefinition(variableName: string): IVariableDefinition | null {
+    public getVariableDefinition(variableName: string): IVariableDefinition | undefined {
         assert(variableName, "variableName cannot be null, undefined, or empty");
 
         const unquotedVariableName = Utilities.unquote(variableName);
@@ -100,17 +100,17 @@ export class TemplateScope {
             }
         }
 
-        return null;
+        return undefined;
     }
 
     /**
      * If the function call is a variables() reference, return the related variable definition
      */
-    public getVariableDefinitionFromFunctionCall(tleFunction: TLE.FunctionCallValue): IVariableDefinition | null {
-        let result: IVariableDefinition | null = null;
+    public getVariableDefinitionFromFunctionCall(tleFunction: TLE.FunctionCallValue): IVariableDefinition | undefined {
+        let result: IVariableDefinition | undefined;
 
         if (tleFunction.isCallToBuiltinWithName(templateKeys.variables)) {
-            const variableName: TLE.StringValue | null = TLE.asStringValue(tleFunction.argumentExpressions[0]);
+            const variableName: TLE.StringValue | undefined = TLE.asStringValue(tleFunction.argumentExpressions[0]);
             if (variableName) {
                 result = this.getVariableDefinition(variableName.toString());
             }
@@ -122,13 +122,13 @@ export class TemplateScope {
     /**
      * If the function call is a parameters() reference, return the related parameter definition
      */
-    public getParameterDefinitionFromFunctionCall(tleFunction: TLE.FunctionCallValue): IParameterDefinition | null {
+    public getParameterDefinitionFromFunctionCall(tleFunction: TLE.FunctionCallValue): IParameterDefinition | undefined {
         assert(tleFunction);
 
-        let result: IParameterDefinition | null = null;
+        let result: IParameterDefinition | undefined;
 
         if (tleFunction.isCallToBuiltinWithName(templateKeys.parameters)) {
-            const propertyName: TLE.StringValue | null = TLE.asStringValue(tleFunction.argumentExpressions[0]);
+            const propertyName: TLE.StringValue | undefined = TLE.asStringValue(tleFunction.argumentExpressions[0]);
             if (propertyName) {
                 result = this.getParameterDefinition(propertyName.toString());
             }

@@ -28,7 +28,8 @@ function cloneError(error: Error): Error {
     const copy = new Error();
     for (const propName of Object.getOwnPropertyNames(error)) {
         try {
-            copy[propName] = error[propName];
+            // tslint:disable-next-line: no-any
+            (<any>copy)[propName] = (<any>error)[propName];
         } catch (err2) {
             // Ignore
         }

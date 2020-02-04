@@ -87,7 +87,8 @@ suite("TreeView", async (): Promise<void> => {
                 if (selectProperties) {
                     let newNode: Partial<ITestTreeItem> = {};
                     for (let prop of selectProperties) {
-                        newNode[prop] = node[prop];
+                        // tslint:disable-next-line: no-any
+                        (<any>newNode)[prop] = (<any>node)[prop];
                     }
                     return newNode;
                 } else {
@@ -107,7 +108,7 @@ suite("TreeView", async (): Promise<void> => {
             let newTree = tree.map<INode<T>>(node => {
                 let newNode = visit(node);
                 if (node.children) {
-                    newNode.children = treeMap(node.children, visit);
+                    newNode.children = treeMap(<T[]>node.children, visit);
                 }
 
                 return newNode;

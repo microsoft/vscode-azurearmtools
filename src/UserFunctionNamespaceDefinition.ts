@@ -54,13 +54,13 @@ export class UserFunctionNamespaceDefinition implements INamedDefinition {
         assert(_value);
     }
 
-    public static createIfValid(functionValue: Json.ObjectValue): UserFunctionNamespaceDefinition | null {
-        let nameValue: Json.StringValue | null = Json.asStringValue(functionValue.getPropertyValue("namespace"));
+    public static createIfValid(functionValue: Json.ObjectValue): UserFunctionNamespaceDefinition | undefined {
+        let nameValue: Json.StringValue | undefined = Json.asStringValue(functionValue.getPropertyValue("namespace"));
         if (nameValue) {
             return new UserFunctionNamespaceDefinition(nameValue, functionValue);
         }
 
-        return null;
+        return undefined;
     }
 
     /**
@@ -78,7 +78,7 @@ export class UserFunctionNamespaceDefinition implements INamedDefinition {
         return this._members.getOrCacheValue(() => {
             const membersResult: UserFunctionDefinition[] = [];
 
-            const members: Json.ObjectValue | null = Json.asObjectValue(this._value.getPropertyValue("members"));
+            const members: Json.ObjectValue | undefined = Json.asObjectValue(this._value.getPropertyValue("members"));
             if (members) {
                 for (let member of members.properties) {
                     let name: Json.StringValue = member.nameValue;

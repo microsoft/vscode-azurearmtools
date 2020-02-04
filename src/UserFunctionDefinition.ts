@@ -22,7 +22,7 @@ export function isUserFunctionDefinition(definition: INamedDefinition): definiti
  * This class represents the definition of a user-defined function in a deployment template.
  */
 export class UserFunctionDefinition implements INamedDefinition {
-    private readonly _output: CachedValue<OutputDefinition | null> = new CachedValue<OutputDefinition | null>();
+    private readonly _output: CachedValue<OutputDefinition | undefined> = new CachedValue<OutputDefinition | undefined>();
     private readonly _parameterDefinitions: CachedValue<UserFunctionParameterDefinition[]> = new CachedValue<UserFunctionParameterDefinition[]>();
     private readonly _scope: CachedValue<TemplateScope> = new CachedValue<TemplateScope>();
 
@@ -68,14 +68,14 @@ export class UserFunctionDefinition implements INamedDefinition {
         return `${this.namespace.nameValue.unquotedValue || "(none)"}.${this.nameValue.unquotedValue || "(none)"}`;
     }
 
-    public get output(): OutputDefinition | null {
+    public get output(): OutputDefinition | undefined {
         return this._output.getOrCacheValue(() => {
             let output = Json.asObjectValue(this.objectValue.getPropertyValue("output"));
             if (output) {
                 return new OutputDefinition(output);
             }
 
-            return null;
+            return undefined;
         });
     }
 
@@ -84,7 +84,7 @@ export class UserFunctionDefinition implements INamedDefinition {
             const parameterDefinitions: UserFunctionParameterDefinition[] = [];
 
             // User-function parameters are an ordered array, not an object
-            const parametersArray: Json.ArrayValue | null = Json.asArrayValue(this.objectValue.getPropertyValue(templateKeys.parameters));
+            const parametersArray: Json.ArrayValue | undefined = Json.asArrayValue(this.objectValue.getPropertyValue(templateKeys.parameters));
             if (parametersArray) {
                 for (const parameter of parametersArray.elements) {
                     const parameterObject = Json.asObjectValue(parameter);

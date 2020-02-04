@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
+import { nonNullValue } from "./util/nonNull";
 
 /**
  * A span representing the character indexes that are contained by a JSONToken.
@@ -63,11 +64,11 @@ export class Span {
 
     /**
      * Create a new span that is a union of this Span and the provided Span.
-     * If the provided Span is null, then this Span will be returned.
+     * If the provided Span is undefined, then this Span will be returned.
      */
-    public union(rhs: Span | null): Span {
+    public union(rhs: Span | undefined): Span {
         let result: Span;
-        if (rhs !== null) {
+        if (!!rhs) {
             let minStart = Math.min(this.startIndex, rhs.startIndex);
             let maxAfterEndIndex = Math.max(this.afterEndIndex, rhs.afterEndIndex);
             result = new Span(minStart, maxAfterEndIndex - minStart);
@@ -79,15 +80,15 @@ export class Span {
 
     /**
      * Create a new span that is a union of the given spans.
-     * If both are null, null will be returned
+     * If both are undefined, undefined will be returned
      */
-    public static union(lhs: Span | null, rhs: Span | null): Span | null {
+    public static union(lhs: Span | undefined, rhs: Span | undefined): Span | undefined {
         if (lhs) {
             return lhs.union(rhs);
         } else if (rhs) {
             return rhs;
         } else {
-            return null;
+            return undefined;
         }
     }
 
@@ -102,11 +103,9 @@ export class Span {
 
 export class Position {
     constructor(private _line: number, private _column: number) {
-        assert(_line !== null, "_line cannot be null");
-        assert(_line !== undefined, "_line cannot be undefined");
+        nonNullValue(_line, "_line");
         assert(_line >= 0, "_line cannot be less than 0");
-        assert(_column !== null, "_column cannot be null");
-        assert(_column !== undefined, "_column cannot be undefined");
+        nonNullValue(_column, "_column");
         assert(_column >= 0, "_column cannot be less than 0");
     }
 
@@ -146,11 +145,9 @@ export enum IssueKind {
  */
 export class Issue {
     constructor(private _span: Span, private _message: string, public kind: IssueKind) {
-        assert(_span !== null, "_span must not be null.");
-        assert(_span !== undefined, "_span must not be undefined.");
+        nonNullValue(_span, "_span");
         assert(1 <= _span.length, "_span's length must be greater than or equal to 1.");
-        assert(_message !== null, "_message must not be null.");
-        assert(_message !== undefined, "_message must not be undefined");
+        nonNullValue(_message, "_message");
         assert(_message !== "", "_message must not be empty.");
     }
 
