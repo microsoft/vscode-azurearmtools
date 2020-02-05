@@ -51,17 +51,29 @@ let emptyTemplate: string = `
 // These provide some snippet-specific instructions that can't be handled by the general test logic
 //
 
+// Snippets marked with true will have their test skipped
 const overrideSkipTests: { [name: string]: boolean } = {
     "Azure Resource Manager (ARM) Template": true, // TODO: Blocked by https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1005573
+    "Azure Resource Manager (ARM) Template Subscription": true, // TODO: Blocked by https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1005573
+    "Azure Resource Manager (ARM) Template Management Group": true, // TODO: Blocked by https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1005573
+    "Azure Resource Manager (ARM) Template Tenant": true, // TODO: Blocked by https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1005573
+
     "Azure Resource Manager (ARM) Parameters Template": true, // TODO: Blocked by https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1005573
 
     "Tag Section": true // Needs comma for no errors, and not complicated, just ignore
 };
 
+// Override the template file text to start with before inserting the snippet - default is resourceTemplate
 const overrideTemplateForSnippet: { [name: string]: string } = {
-    // Which template to start with - default is resourceTemplate
+    // These are template file templates, so the starting file contents should be empty
     "Azure Resource Manager (ARM) Template": emptyTemplate,
+    "Azure Resource Manager (ARM) Template Subscription": emptyTemplate,
+    "Azure Resource Manager (ARM) Template Management Group": emptyTemplate,
+    "Azure Resource Manager (ARM) Template Tenant": emptyTemplate,
+
+    // This is the params file template, so the starting file contents should be empty
     "Azure Resource Manager (ARM) Parameters Template": emptyTemplate,
+
     "User Function Namespace": `{
         "resources": [],
         "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
@@ -72,8 +84,8 @@ const overrideTemplateForSnippet: { [name: string]: string } = {
     }`
 };
 
+// Override where to insert the snippet during the test - default is to insert with the "Resources" section, at "Insert here: resource"
 const overrideInsertPosition: { [name: string]: string } = {
-    // Where to insert the template - default is "Insert here: resource"
     "Azure Resource Manager (ARM) Template": "// Insert here: empty",
     "Azure Resource Manager (ARM) Parameters Template": "// Insert here: empty",
     Variable: "// Insert here: variable",
@@ -83,8 +95,8 @@ const overrideInsertPosition: { [name: string]: string } = {
     "User Function Namespace": "// Insert here: namespace"
 };
 
+// Override expected errors/warnings for the snippet test - default is none
 const overrideExpectedDiagnostics: { [name: string]: string[] } = {
-    // Expected errors/warnings - default is none
     "Azure Resource Manager (ARM) Parameters Template":
         [
             "Template validation failed: Required property 'resources' not found in JSON. Path '', line 5, position 1."
@@ -178,7 +190,7 @@ const overrideExpectedDiagnostics: { [name: string]: string[] } = {
     ]
 };
 
-// Override to ignore schema validation
+// Override whether to ignore schema validation - default is to perform schema validation - mark with "true" to ignore schema validation
 // TODO: All items in this list indicate an error (either snippet or schema) and should eventually be removed
 // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/104239
 // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1042393

@@ -34,7 +34,8 @@ export namespace configKeys {
     export const checkForLatestSchema = 'checkForLatestSchema';
 }
 
-export namespace storageKeys {
+export namespace globalStateKeys {
+    // Set of files to not ask about using the newest schema
     export const dontAskAboutSchemaFiles = 'dontAskAboutSchemaFiles';
 }
 

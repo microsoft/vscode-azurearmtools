@@ -11,7 +11,7 @@ import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import * as Completion from "./Completion";
-import { configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, languageId, outputWindowName, storageKeys } from "./constants";
+import { configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, languageId, outputWindowName } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
@@ -29,6 +29,7 @@ import { getFunctionParamUsage } from "./signatureFormatting";
 import { sortTemplate } from "./sortTemplate";
 import { Stopwatch } from "./Stopwatch";
 import { armDeploymentDocumentSelector, mightBeDeploymentTemplate } from "./supported";
+import { survey } from "./survey";
 import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedBuiltinFunctionIssue } from "./UnrecognizedFunctionIssues";
@@ -191,6 +192,7 @@ export class AzureRMTools {
                     }
 
                     this.reportDeploymentTemplateErrors(document, deploymentTemplate);
+                    survey.registerActiveUse();
                 }
             }
 
@@ -316,7 +318,7 @@ export class AzureRMTools {
                 }
 
                 // tslint:disable-next-line: strict-boolean-expressions
-                const dontAskFiles = ext.context.globalState.get<string[]>(storageKeys.dontAskAboutSchemaFiles) || [];
+                const dontAskFiles = ext.context.globalState.get<string[]>(globalStateKeys.dontAskAboutSchemaFiles) || [];
                 if (dontAskFiles.includes(documentUri)) {
                     actionContext.telemetry.properties.isInDontAskList = 'true';
                     return;
@@ -347,7 +349,7 @@ export class AzureRMTools {
                         return;
                     case neverForThisFile.title:
                         dontAskFiles.push(documentUri);
-                        await ext.context.globalState.update(storageKeys.dontAskAboutSchemaFiles, dontAskFiles);
+                        await ext.context.globalState.update(globalStateKeys.dontAskAboutSchemaFiles, dontAskFiles);
                         break;
                     default:
                         assert("queryUseNewerSchema: Unexpected response");
