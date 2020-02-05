@@ -52,6 +52,38 @@ suite("SortTemplate", async (): Promise<void> => {
         }`);
     });
 
+    test("Parameters with comments", async () => {
+        await testSortTemplate(
+            `{
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "parameters": {
+                    //Comment for parameter 2
+                    "parameter2": {
+                       "type": "string"
+                    },
+                    //Comment for parameter 1
+                    "parameter1": {
+                       "type": "string"
+                    }
+                }
+            }`,
+            `{
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "parameters": {
+                    //Comment for parameter 1
+                    "parameter1": {
+                       "type": "string"
+                    },
+                    //Comment for parameter 2
+                    "parameter2": {
+                       "type": "string"
+                    }
+                }
+            }`);
+    });
+
     test("Variables", async () => {
         await testSortTemplate(
             `{
