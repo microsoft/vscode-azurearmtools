@@ -26,7 +26,7 @@ import { IReferenceSite, PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
 import { getPreferredSchema } from "./schemas";
 import { getFunctionParamUsage } from "./signatureFormatting";
-import { sortTemplate } from "./sortTemplate";
+import { getQuickPickItems, sortTemplate } from "./sortTemplate";
 import { Stopwatch } from "./Stopwatch";
 import { armDeploymentDocumentSelector, mightBeDeploymentTemplate } from "./supported";
 import { survey } from "./survey";
@@ -94,10 +94,11 @@ export class AzureRMTools {
             await reloadSchemas();
         });
         registerCommand("azurerm-vscode-tools.sortTemplate", async () => {
+            const sortType = await vscode.window.showQuickPick(getQuickPickItems(), { placeHolder: 'What do you want to sort' });
             const editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-            if (editor) {
+            if (editor && sortType) {
                 let deploymentTemplate = this.getDeploymentTemplate(editor.document);
-                await sortTemplate(deploymentTemplate);
+                await sortTemplate(deploymentTemplate, sortType.value);
             }
         });
 

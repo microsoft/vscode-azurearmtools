@@ -15,31 +15,96 @@ import { UserFunctionDefinition } from './UserFunctionDefinition';
 import { UserFunctionNamespaceDefinition } from './UserFunctionNamespaceDefinition';
 import { IVariableDefinition } from './VariableDefinition';
 
-export async function sortTemplate(template: DeploymentTemplate | undefined): Promise<void> {
+export enum SortType {
+    Resources,
+    Outputs,
+    Parameters,
+    Variables,
+    Functions,
+    TopLevel
+}
+
+export class SortQuickPickItem implements vscode.QuickPickItem {
+    public label: string;
+    public value: SortType;
+
+    constructor(label: string, value: SortType) {
+        this.label = label;
+        this.value = value;
+    }
+
+}
+
+export function getQuickPickItems(): SortQuickPickItem[] {
+    let items: SortQuickPickItem[] = [];
+    items.push(new SortQuickPickItem("Functions", SortType.Functions));
+    items.push(new SortQuickPickItem("Outputs", SortType.Outputs));
+    items.push(new SortQuickPickItem("Parameters", SortType.Parameters));
+    items.push(new SortQuickPickItem("Resources", SortType.Resources));
+    items.push(new SortQuickPickItem("Variables", SortType.Variables));
+    items.push(new SortQuickPickItem("Top level", SortType.TopLevel));
+    return items;
+}
+
+export async function sortTemplate(template: DeploymentTemplate | undefined, sortType: SortType): Promise<void> {
     if (template === undefined) {
         return;
     }
     ext.outputChannel.appendLine("Sorting template");
     let comments = createCommentsMap(template.jsonParseResult.tokens);
-    let rootValue = Json.asObjectValue(template.getJSONValueAtDocumentCharacterIndex(1));
-    if (rootValue !== undefined) {
-        await sortResources(template, rootValue, comments);
-        await sortOutputs(template, rootValue, comments);
+    switch (sortType) {
+        case SortType.Functions:
+            await sortFunctions(template, comments);
+            break;
+        case SortType.Outputs:
+            await sortOutputs(template, comments);
+            break;
+        case SortType.Parameters:
+            await sortParameters(template, comments);
+            break;
+        case SortType.Resources:
+            await sortResources(template, comments);
+            break;
+        case SortType.Variables:
+            await sortVariables(template, comments);
+            break;
+        case SortType.TopLevel:
+            await sortTopLevel(template, comments);
+            break;
+        default:
+            vscode.window.showWarningMessage("Unknown sort type!");
+
     }
-    await sortParameters(template, comments);
-    await sortVariables(template, comments);
-    await sortFunctions(template, comments);
     vscode.window.showInformationMessage("Done sorting template!");
 }
 
-async function sortOutputs(template: DeploymentTemplate, rootValue: Json.ObjectValue, comments: { [pos: number]: language.Span }): Promise<void> {
+async function sortOutputs(template: DeploymentTemplate, comments: { [pos: number]: language.Span }): Promise<void> {
+    let rootValue = Json.asObjectValue(template.getJSONValueAtDocumentCharacterIndex(1));
+    if (rootValue === undefined) {
+        return;
+    }
     let outputs = Json.asObjectValue(rootValue.getPropertyValue(templateKeys.outputs));
     if (outputs !== undefined) {
         await sortGeneric<Json.Property>(outputs.properties, x => x.nameValue.quotedValue, x => expandSpan(x.span, comments));
     }
 }
 
-async function sortResources(template: DeploymentTemplate, rootValue: Json.ObjectValue, comments: { [pos: number]: language.Span }): Promise<void> {
+async function sortTopLevel(template: DeploymentTemplate, comments: { [pos: number]: language.Span }): Promise<void> {
+    let rootValue = Json.asObjectValue(template.getJSONValueAtDocumentCharacterIndex(1));
+    if (rootValue === undefined) {
+        return;
+    }
+    // let outputs = Json.asObjectValue(rootValue.getPropertyValue(templateKeys.outputs));
+    // if (outputs !== undefined) {
+    //     await sortGeneric<Json.Property>(outputs.properties, x => x.nameValue.quotedValue, x => expandSpan(x.span, comments));
+    // }
+}
+
+async function sortResources(template: DeploymentTemplate, comments: { [pos: number]: language.Span }): Promise<void> {
+    let rootValue = Json.asObjectValue(template.getJSONValueAtDocumentCharacterIndex(1));
+    if (rootValue === undefined) {
+        return;
+    }
     let resources = Json.asArrayValue(rootValue.getPropertyValue(templateKeys.resources));
     if (resources !== undefined) {
         await sortGenericDeep<Json.Value, Json.Value>(
