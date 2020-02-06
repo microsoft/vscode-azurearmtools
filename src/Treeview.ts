@@ -134,6 +134,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         const end = elementInfo.current.value.end !== undefined ? document.positionAt(elementInfo.current.value.end) : start;
 
         let treeItem: vscode.TreeItem = {
+            contextValue: this.getContextValue(elementInfo),
             label: this.getTreeNodeLabel(elementInfo),
             collapsibleState: elementInfo.current.collapsible ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
             iconPath: this.getIconPath(elementInfo),
@@ -164,6 +165,12 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             this.text = document.getText();
             this.tree = Json.parse(this.text);
         }
+    }
+    private getContextValue(elementInfo: IElementInfo): string {
+        if (elementInfo.current.level === 1) {
+            return this.getTreeNodeLabel(elementInfo);
+        }
+        return "";
     }
 
     private getTreeNodeLabel(elementInfo: IElementInfo): string {

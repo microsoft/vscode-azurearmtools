@@ -20,8 +20,7 @@ export enum SortType {
     Outputs,
     Parameters,
     Variables,
-    Functions,
-    TopLevel
+    Functions
 }
 
 export class SortQuickPickItem implements vscode.QuickPickItem {
@@ -42,7 +41,6 @@ export function getQuickPickItems(): SortQuickPickItem[] {
     items.push(new SortQuickPickItem("Parameters", SortType.Parameters));
     items.push(new SortQuickPickItem("Resources", SortType.Resources));
     items.push(new SortQuickPickItem("Variables", SortType.Variables));
-    items.push(new SortQuickPickItem("Top level", SortType.TopLevel));
     return items;
 }
 
@@ -68,9 +66,6 @@ export async function sortTemplate(template: DeploymentTemplate | undefined, sor
         case SortType.Variables:
             await sortVariables(template, comments);
             break;
-        case SortType.TopLevel:
-            await sortTopLevel(template, comments);
-            break;
         default:
             vscode.window.showWarningMessage("Unknown sort type!");
 
@@ -87,17 +82,6 @@ async function sortOutputs(template: DeploymentTemplate, comments: { [pos: numbe
     if (outputs !== undefined) {
         await sortGeneric<Json.Property>(outputs.properties, x => x.nameValue.quotedValue, x => expandSpan(x.span, comments));
     }
-}
-
-async function sortTopLevel(template: DeploymentTemplate, comments: { [pos: number]: language.Span }): Promise<void> {
-    let rootValue = Json.asObjectValue(template.getJSONValueAtDocumentCharacterIndex(1));
-    if (rootValue === undefined) {
-        return;
-    }
-    // let outputs = Json.asObjectValue(rootValue.getPropertyValue(templateKeys.outputs));
-    // if (outputs !== undefined) {
-    //     await sortGeneric<Json.Property>(outputs.properties, x => x.nameValue.quotedValue, x => expandSpan(x.span, comments));
-    // }
 }
 
 async function sortResources(template: DeploymentTemplate, comments: { [pos: number]: language.Span }): Promise<void> {

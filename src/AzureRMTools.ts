@@ -26,7 +26,7 @@ import { IReferenceSite, PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
 import { getPreferredSchema } from "./schemas";
 import { getFunctionParamUsage } from "./signatureFormatting";
-import { getQuickPickItems, sortTemplate } from "./sortTemplate";
+import { getQuickPickItems, sortTemplate, SortType } from "./sortTemplate";
 import { Stopwatch } from "./Stopwatch";
 import { armDeploymentDocumentSelector, mightBeDeploymentTemplate } from "./supported";
 import { survey } from "./survey";
@@ -95,11 +95,24 @@ export class AzureRMTools {
         });
         registerCommand("azurerm-vscode-tools.sortTemplate", async () => {
             const sortType = await vscode.window.showQuickPick(getQuickPickItems(), { placeHolder: 'What do you want to sort' });
-            const editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-            if (editor && sortType) {
-                let deploymentTemplate = this.getDeploymentTemplate(editor.document);
-                await sortTemplate(deploymentTemplate, sortType.value);
+            if (sortType) {
+                await this.sortTemplate(sortType.value);
             }
+        });
+        registerCommand("azurerm-vscode-tools.sortFunctions", async () => {
+            await this.sortTemplate(SortType.Functions);
+        });
+        registerCommand("azurerm-vscode-tools.sortOutputs", async () => {
+            await this.sortTemplate(SortType.Outputs);
+        });
+        registerCommand("azurerm-vscode-tools.sortParameters", async () => {
+            await this.sortTemplate(SortType.Parameters);
+        });
+        registerCommand("azurerm-vscode-tools.sortResources", async () => {
+            await this.sortTemplate(SortType.Resources);
+        });
+        registerCommand("azurerm-vscode-tools.sortVariables", async () => {
+            await this.sortTemplate(SortType.Variables);
         });
 
         vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
@@ -112,6 +125,14 @@ export class AzureRMTools {
         const activeEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
         if (activeEditor) {
             this.updateDeploymentTemplate(activeEditor.document);
+        }
+    }
+
+    private async sortTemplate(sortType: SortType): Promise<void> {
+        const editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+        if (editor) {
+            let deploymentTemplate = this.getDeploymentTemplate(editor.document);
+            await sortTemplate(deploymentTemplate, sortType);
         }
     }
 
