@@ -5,8 +5,6 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 ### Fixed
 - An error in loading ARM schemas from 2014 Preview [#438](https://github.com/microsoft/vscode-azurearmtools/issues/438)
 - Fallback on zipped up schemas on Linux and MacOS
-### Added
-- Telemetry for schema load failures
 
 ## Version 0.8.3 (2019-12-16)
 ### Fixed
