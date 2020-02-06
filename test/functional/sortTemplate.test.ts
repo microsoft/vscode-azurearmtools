@@ -275,4 +275,37 @@ suite("SortTemplate", async (): Promise<void> => {
                 }]
             }`);
     });
+
+    test("Top level properties", async () => {
+        await testSortTemplate(
+            'azurerm-vscode-tools.sortTopLevel',
+            `{
+                // Outputs
+                "outputs": {},
+                "apiProfile": "...",
+                // Functions
+                "functions": [],
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                // Variables
+                "variables": {},
+                "contentVersion": "1.0.0.0",
+                // Resources
+                "resources": [],
+                "parameters": {}
+            }`,
+            `{
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "apiProfile": "...",
+                "parameters": {},
+                // Functions
+                "functions": [],
+                // Variables
+                "variables": {},
+                // Resources
+                "resources": [],
+                // Outputs
+                "outputs": {}
+            }`);
+    });
 });

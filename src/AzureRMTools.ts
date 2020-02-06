@@ -114,6 +114,9 @@ export class AzureRMTools {
         registerCommand("azurerm-vscode-tools.sortVariables", async () => {
             await this.sortTemplate(SortType.Variables);
         });
+        registerCommand("azurerm-vscode-tools.sortTopLevel", async () => {
+            await this.sortTemplate(SortType.TopLevel);
+        });
 
         vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
         vscode.workspace.onDidOpenTextDocument(this.onDocumentOpened, this, context.subscriptions);

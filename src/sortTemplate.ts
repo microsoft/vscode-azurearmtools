@@ -20,7 +20,8 @@ export enum SortType {
     Outputs,
     Parameters,
     Variables,
-    Functions
+    Functions,
+    TopLevel
 }
 
 export class SortQuickPickItem implements vscode.QuickPickItem {
@@ -41,6 +42,7 @@ export function getQuickPickItems(): SortQuickPickItem[] {
     items.push(new SortQuickPickItem("Parameters", SortType.Parameters));
     items.push(new SortQuickPickItem("Resources", SortType.Resources));
     items.push(new SortQuickPickItem("Variables", SortType.Variables));
+    items.push(new SortQuickPickItem("Top level", SortType.TopLevel));
     return items;
 }
 
@@ -64,6 +66,9 @@ export async function sortTemplate(template: DeploymentTemplate | undefined, sor
             break;
         case SortType.Variables:
             await sortVariables(template);
+            break;
+        case SortType.TopLevel:
+            await sortTopLevel(template);
             break;
         default:
             vscode.window.showWarningMessage("Unknown sort type!");
@@ -97,35 +102,18 @@ async function sortResources(template: DeploymentTemplate): Promise<void> {
     }
 }
 
+async function sortTopLevel(template: DeploymentTemplate): Promise<void> {
+    let rootValue = Json.asObjectValue(template.getJSONValueAtDocumentCharacterIndex(1));
+    if (rootValue === undefined) {
+        return;
+    }
+    await sortGeneric<Json.Property>(rootValue.properties, x => getTopLevelOrder(x.nameValue.quotedValue), x => x.span, template);
+}
+
 async function sortVariables(template: DeploymentTemplate): Promise<void> {
     await sortGeneric<IVariableDefinition>(
         template.topLevelScope.variableDefinitions,
         x => x.nameValue.quotedValue, x => x.span, template);
-}
-
-function createCommentsMap(tokens: Json.Token[], lastSpan: language.Span): { [pos: number]: language.Span } {
-    let commentsMap: { [pos: number]: language.Span } = {};
-    tokens.forEach((value, index) => {
-        if (value.type === 12) {
-            if (index < tokens.length - 1) {
-                let span = tokens[index + 1].span;
-                commentsMap[span.startIndex] = value.span;
-            }
-        }
-        if (value.span.startIndex > lastSpan.endIndex) {
-            return commentsMap;
-        }
-    });
-    return commentsMap;
-}
-
-function expandSpan(span: language.Span, comments: { [pos: number]: language.Span }): Language.Span {
-    let startIndex = span.startIndex;
-    let commentSpan = comments[startIndex];
-    if (commentSpan === undefined) {
-        return span;
-    }
-    return commentSpan.union(span);
 }
 
 async function sortParameters(template: DeploymentTemplate): Promise<void> {
@@ -141,6 +129,57 @@ async function sortFunctions(template: DeploymentTemplate): Promise<void> {
     await sortGeneric<UserFunctionNamespaceDefinition>(
         template.topLevelScope.namespaceDefinitions,
         x => x.nameValue.quotedValue, x => x.span, template);
+}
+
+function createCommentsMap(tokens: Json.Token[], lastSpan: language.Span): { [pos: number]: language.Span } {
+    let commentsMap: { [pos: number]: language.Span } = {};
+    tokens.forEach((token, index) => {
+        if (token.type === 12) {
+            if (index < tokens.length - 1) {
+                let span = tokens[index + 1].span;
+                commentsMap[span.startIndex] = token.span;
+            }
+        }
+        if (token.span.startIndex > lastSpan.endIndex) {
+            return commentsMap;
+        }
+    });
+    return commentsMap;
+}
+
+function expandSpan(span: language.Span, comments: { [pos: number]: language.Span }): Language.Span {
+    let startIndex = span.startIndex;
+    let commentSpan = comments[startIndex];
+    if (commentSpan === undefined) {
+        return span;
+    }
+    return commentSpan.union(span);
+}
+
+function getTopLevelOrder(key: string): string {
+    if (key === undefined) {
+        return "9";
+    }
+    switch (key.toLocaleLowerCase().replace(/\"/gi, "")) {
+        case "$schema":
+            return "0";
+        case "contentversion":
+            return "1";
+        case "apiprofile":
+            return "2";
+        case "parameters":
+            return "3";
+        case "functions":
+            return "4";
+        case "variables":
+            return "5";
+        case "resources":
+            return "6";
+        case "outputs":
+            return "7";
+        default:
+            return "9";
+    }
 }
 
 async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spanSelector: (value: T) => language.Span, template: DeploymentTemplate): Promise<void> {
