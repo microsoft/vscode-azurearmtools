@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.8.4 (2020-02-05)
+### Fixed
+- An error in loading ARM schemas from 2014 Preview [#438](https://github.com/microsoft/vscode-azurearmtools/issues/438)
+- Fallback on zipped up schemas on Linux and MacOS
+### Added
+- Telemetry for schema load failures
+
 ## Version 0.8.3 (2019-12-16)
 ### Fixed
 - Cannot install extension with "'" in username/users path [#356](https://github.com/microsoft/vscode-azurearmtools/issues/356)
