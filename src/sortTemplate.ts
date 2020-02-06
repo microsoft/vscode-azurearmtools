@@ -49,42 +49,42 @@ export async function sortTemplate(template: DeploymentTemplate | undefined, sor
         return;
     }
     ext.outputChannel.appendLine("Sorting template");
-    let comments = createCommentsMap(template.jsonParseResult.tokens);
     switch (sortType) {
         case SortType.Functions:
-            await sortFunctions(template, comments);
+            await sortFunctions(template);
             break;
         case SortType.Outputs:
-            await sortOutputs(template, comments);
+            await sortOutputs(template);
             break;
         case SortType.Parameters:
-            await sortParameters(template, comments);
+            await sortParameters(template);
             break;
         case SortType.Resources:
-            await sortResources(template, comments);
+            await sortResources(template);
             break;
         case SortType.Variables:
-            await sortVariables(template, comments);
+            await sortVariables(template);
             break;
         default:
             vscode.window.showWarningMessage("Unknown sort type!");
+            return;
 
     }
     vscode.window.showInformationMessage("Done sorting template!");
 }
 
-async function sortOutputs(template: DeploymentTemplate, comments: { [pos: number]: language.Span }): Promise<void> {
+async function sortOutputs(template: DeploymentTemplate): Promise<void> {
     let rootValue = Json.asObjectValue(template.getJSONValueAtDocumentCharacterIndex(1));
     if (rootValue === undefined) {
         return;
     }
     let outputs = Json.asObjectValue(rootValue.getPropertyValue(templateKeys.outputs));
     if (outputs !== undefined) {
-        await sortGeneric<Json.Property>(outputs.properties, x => x.nameValue.quotedValue, x => expandSpan(x.span, comments));
+        await sortGeneric<Json.Property>(outputs.properties, x => x.nameValue.quotedValue, x => x.span, template);
     }
 }
 
-async function sortResources(template: DeploymentTemplate, comments: { [pos: number]: language.Span }): Promise<void> {
+async function sortResources(template: DeploymentTemplate): Promise<void> {
     let rootValue = Json.asObjectValue(template.getJSONValueAtDocumentCharacterIndex(1));
     if (rootValue === undefined) {
         return;
@@ -92,18 +92,18 @@ async function sortResources(template: DeploymentTemplate, comments: { [pos: num
     let resources = Json.asArrayValue(rootValue.getPropertyValue(templateKeys.resources));
     if (resources !== undefined) {
         await sortGenericDeep<Json.Value, Json.Value>(
-            resources.elements, getResourcesFromResource, getNameFromResource, x => expandSpan(x.span, comments));
-        await sortGeneric<Json.Value>(resources.elements, getNameFromResource, x => expandSpan(x.span, comments));
+            resources.elements, getResourcesFromResource, getNameFromResource, x => x.span, template);
+        await sortGeneric<Json.Value>(resources.elements, getNameFromResource, x => x.span, template);
     }
 }
 
-async function sortVariables(template: DeploymentTemplate, comments: { [pos: number]: language.Span }): Promise<void> {
+async function sortVariables(template: DeploymentTemplate): Promise<void> {
     await sortGeneric<IVariableDefinition>(
         template.topLevelScope.variableDefinitions,
-        x => x.nameValue.quotedValue, x => expandSpan(x.span, comments));
+        x => x.nameValue.quotedValue, x => x.span, template);
 }
 
-function createCommentsMap(tokens: Json.Token[]): { [pos: number]: language.Span } {
+function createCommentsMap(tokens: Json.Token[], lastSpan: language.Span): { [pos: number]: language.Span } {
     let commentsMap: { [pos: number]: language.Span } = {};
     tokens.forEach((value, index) => {
         if (value.type === 12) {
@@ -111,6 +111,9 @@ function createCommentsMap(tokens: Json.Token[]): { [pos: number]: language.Span
                 let span = tokens[index + 1].span;
                 commentsMap[span.startIndex] = value.span;
             }
+        }
+        if (value.span.startIndex > lastSpan.endIndex) {
+            return commentsMap;
         }
     });
     return commentsMap;
@@ -125,45 +128,47 @@ function expandSpan(span: language.Span, comments: { [pos: number]: language.Spa
     return commentSpan.union(span);
 }
 
-async function sortParameters(template: DeploymentTemplate, comments: { [pos: number]: language.Span }): Promise<void> {
+async function sortParameters(template: DeploymentTemplate): Promise<void> {
     await sortGeneric<IParameterDefinition>(
         template.topLevelScope.parameterDefinitions,
-        x => x.nameValue.quotedValue, x => expandSpan(x.fullSpan, comments));
+        x => x.nameValue.quotedValue, x => x.fullSpan, template);
 }
 
-async function sortFunctions(template: DeploymentTemplate, comments: { [pos: number]: language.Span }): Promise<void> {
+async function sortFunctions(template: DeploymentTemplate): Promise<void> {
     await sortGenericDeep<UserFunctionNamespaceDefinition, UserFunctionDefinition>(
         template.topLevelScope.namespaceDefinitions,
-        x => x.members, x => x.nameValue.quotedValue, x => expandSpan(x.span, comments));
+        x => x.members, x => x.nameValue.quotedValue, x => x.span, template);
     await sortGeneric<UserFunctionNamespaceDefinition>(
         template.topLevelScope.namespaceDefinitions,
-        x => x.nameValue.quotedValue, x => expandSpan(x.span, comments));
+        x => x.nameValue.quotedValue, x => x.span, template);
 }
 
-async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spanSelector: (value: T) => language.Span): Promise<void> {
+async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spanSelector: (value: T) => language.Span, template: DeploymentTemplate): Promise<void> {
     let textEditor = vscode.window.activeTextEditor;
     if (textEditor === undefined || list.length < 2) {
         return;
     }
     let document = textEditor.document;
-    let selection = getSelection(spanSelector(list[0]), spanSelector(list[list.length - 1]), document);
-    let intendentTexts = getIndentTexts<T>(list, spanSelector, document);
+    let lastSpan = spanSelector(list[list.length - 1]);
+    let comments = createCommentsMap(template.jsonParseResult.tokens, lastSpan);
+    let selection = getSelection(expandSpan(spanSelector(list[0]), comments), expandSpan(lastSpan, comments), document);
+    let intendentTexts = getIndentTexts<T>(list, x => expandSpan(spanSelector(x), comments), document);
     let orderBefore = list.map(sortSelector);
     let sorted = list.sort((a, b) => sortSelector(a).localeCompare(sortSelector(b)));
     let orderAfter = list.map(sortSelector);
     if (arraysEqual<string>(orderBefore, orderAfter)) {
         return;
     }
-    let sortedTexts = sorted.map((value, i) => getText(spanSelector(value), document));
+    let sortedTexts = sorted.map((value, i) => getText(expandSpan(spanSelector(value), comments), document));
     let joined = joinTexts(sortedTexts, intendentTexts);
     await textEditor.edit(x => x.replace(selection, joined));
 }
 
-async function sortGenericDeep<T, TChild>(list: T[], childSelector: (value: T) => TChild[] | undefined, sortSelector: (value: TChild) => string, spanSelector: (value: TChild) => language.Span): Promise<void> {
+async function sortGenericDeep<T, TChild>(list: T[], childSelector: (value: T) => TChild[] | undefined, sortSelector: (value: TChild) => string, spanSelector: (value: TChild) => language.Span, template: DeploymentTemplate): Promise<void> {
     for (let item of list) {
         let children = childSelector(item);
         if (children !== undefined) {
-            await sortGeneric(children, sortSelector, spanSelector);
+            await sortGeneric(children, sortSelector, spanSelector, template);
         }
     }
 }

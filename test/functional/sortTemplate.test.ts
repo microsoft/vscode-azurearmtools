@@ -92,12 +92,12 @@ suite("SortTemplate", async (): Promise<void> => {
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
-                "variables": {"variable2": "value", "variable1": "value"}
+                "variables": {/*v2*/"variable2": "value", /*v1*/"variable1": "value"}
             }`,
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
-                "variables": {"variable1": "value", "variable2": "value"}
+                "variables": {/*v1*/"variable1": "value", /*v2*/"variable2": "value"}
             }`);
     });
 
@@ -107,10 +107,10 @@ suite("SortTemplate", async (): Promise<void> => {
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
-                "resources": [{ "name": "storageaccount2",
+                "resources": [/*s2*/{ "name": "storageaccount2",
                     "type": "Microsoft.Storage/storageAccounts",
                     "apiVersion": "2015-06-15"
-                },{ "name": "storageaccount1",
+                },/*s1*/{ "name": "storageaccount1",
                     "type": "Microsoft.Storage/storageAccounts",
                     "apiVersion": "2015-06-15"
                 }]
@@ -118,10 +118,10 @@ suite("SortTemplate", async (): Promise<void> => {
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
-                "resources": [{ "name": "storageaccount1",
+                "resources": [/*s1*/{ "name": "storageaccount1",
                     "type": "Microsoft.Storage/storageAccounts",
                     "apiVersion": "2015-06-15"
-                },{ "name": "storageaccount2",
+                },/*s2*/{ "name": "storageaccount2",
                     "type": "Microsoft.Storage/storageAccounts",
                     "apiVersion": "2015-06-15"
                 }]
@@ -134,18 +134,18 @@ suite("SortTemplate", async (): Promise<void> => {
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
-                "resources": [{"name": "storageaccount2",
+                "resources": [/*s2*/{"name": "storageaccount2",
                         "type": "Microsoft.Storage/storageAccounts",
                         "apiVersion": "2015-06-15",
-                        "resources": [{"name": "storageaccount22",
+                        "resources": [/*s22*/{"name": "storageaccount22",
                                 "type": "Microsoft.Storage/storageAccounts",
                                 "apiVersion": "2015-06-15"
                             },
-                            {"name": "storageaccount21","type": "Microsoft.Storage/storageAccounts",
+                            /*s21*/{"name": "storageaccount21","type": "Microsoft.Storage/storageAccounts",
                                 "apiVersion": "2015-06-15"
                             }
                         ]
-                    },{"name": "storageaccount1","type": "Microsoft.Storage/storageAccounts",
+                    },/*s1*/{"name": "storageaccount1","type": "Microsoft.Storage/storageAccounts",
                         "apiVersion": "2015-06-15"
                     }
                 ]
@@ -153,15 +153,15 @@ suite("SortTemplate", async (): Promise<void> => {
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
-                "resources": [{"name": "storageaccount1","type": "Microsoft.Storage/storageAccounts",
+                "resources": [/*s1*/{"name": "storageaccount1","type": "Microsoft.Storage/storageAccounts",
                         "apiVersion": "2015-06-15"
-                    },{"name": "storageaccount2",
+                    },/*s2*/{"name": "storageaccount2",
                         "type": "Microsoft.Storage/storageAccounts",
                         "apiVersion": "2015-06-15",
-                        "resources": [{"name": "storageaccount21","type": "Microsoft.Storage/storageAccounts",
+                        "resources": [/*s21*/{"name": "storageaccount21","type": "Microsoft.Storage/storageAccounts",
                                 "apiVersion": "2015-06-15"
                             },
-                            {"name": "storageaccount22",
+                            /*s22*/{"name": "storageaccount22",
                                 "type": "Microsoft.Storage/storageAccounts",
                                 "apiVersion": "2015-06-15"
                             }
@@ -177,10 +177,10 @@ suite("SortTemplate", async (): Promise<void> => {
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
-                "outputs": {"output2": {
+                "outputs": {/*o2*/"output2": {
                    "type": "string",
                    "value": "value"
-                }, "output1": {
+                }, /*o1*/"output1": {
                    "type": "string",
                    "value": "value"
                 }}
@@ -188,10 +188,10 @@ suite("SortTemplate", async (): Promise<void> => {
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
-                "outputs": {"output1": {
+                "outputs": {/*o1*/"output1": {
                    "type": "string",
                    "value": "value"
-                }, "output2": {
+                }, /*o2*/"output2": {
                    "type": "string",
                    "value": "value"
                 }}
@@ -204,7 +204,7 @@ suite("SortTemplate", async (): Promise<void> => {
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
-                "functions": [{
+                "functions": [/*ns2*/{
                     "namespace": "namespace2",
                     "members": {
                         "function": {"parameters": [],
@@ -212,7 +212,7 @@ suite("SortTemplate", async (): Promise<void> => {
                         }
                     }
                 },
-                {
+                /*ns1*/{
                     "namespace": "namespace1",
                     "members": {
                         "function": {"parameters": [],
@@ -224,7 +224,7 @@ suite("SortTemplate", async (): Promise<void> => {
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
-                "functions": [{
+                "functions": [/*ns1*/{
                     "namespace": "namespace1",
                     "members": {
                         "function": {"parameters": [],
@@ -232,7 +232,7 @@ suite("SortTemplate", async (): Promise<void> => {
                         }
                     }
                 },
-                {
+                /*ns2*/{
                     "namespace": "namespace2",
                     "members": {
                         "function": {"parameters": [],
@@ -252,9 +252,9 @@ suite("SortTemplate", async (): Promise<void> => {
                 "functions": [{
                     "namespace": "namespace2",
                     "members": {
-                        "function2": {"parameters": [],
+                        /*f2*/"function2": {"parameters": [],
                             "output": { "value": "Hello world", "type": "string" }
-                        },"function1": {"parameters": [],
+                        },/*f1*/"function1": {"parameters": [],
                             "output": { "value": "Hello world", "type": "string" }
                         }
                     }
@@ -266,9 +266,9 @@ suite("SortTemplate", async (): Promise<void> => {
                 "functions": [{
                     "namespace": "namespace2",
                     "members": {
-                        "function1": {"parameters": [],
+                        /*f1*/"function1": {"parameters": [],
                             "output": { "value": "Hello world", "type": "string" }
-                        },"function2": {"parameters": [],
+                        },/*f2*/"function2": {"parameters": [],
                             "output": { "value": "Hello world", "type": "string" }
                         }
                     }
