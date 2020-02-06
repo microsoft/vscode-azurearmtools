@@ -5,6 +5,7 @@
 This extension provides language support for Azure Resource Manager deployment templates and template language expressions.
 
 ## Features
+
 - Provides a language server that understands Azure Resource Manager deployment template files
 - ARM Template Outline view for easy navigation through large templates
 - Colorization for Template Language Expressions (TLE)
@@ -18,44 +19,53 @@ This extension provides language support for Azure Resource Manager deployment t
     - Schema validation now is case-insensitive and follows other conventions matching the Azure Resource Manager backend's behavior
     - Note: The Azure schemas (which are read and interpreted by this extension) are undergoing continual improvement
 - IntelliSense for string expressions
-    - [Built-in function names](https://go.microsoft.com/fwlink/?LinkID=733958)
-    - [Parameter references](https://go.microsoft.com/fwlink/?LinkID=733959)
-    - [Variable references](https://go.microsoft.com/fwlink/?LinkID=733960)
-    - [resourceGroup() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#resourcegroup)
-    - [subscription() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#subscription)
-    - Properties of references to variables that are objects
-    - [Signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
-    - [Go To Definition](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-definition) for variable and parameter references
-    - [Peek](https://code.visualstudio.com/docs/editor/editingevolved#_peek) for variable and parameter definitions
-    - Find all references (Shift + F12) for variables and parameters
-    - Rename all references (F2) for variables and parameters
-    - [Hover](https://code.visualstudio.com/docs/editor/editingevolved#_hover) for parameter description
-    - [TLE brace matching](https://code.visualstudio.com/docs/editor/editingevolved#_bracket-matching)
-    - Rename parameters and variables
-    - User-defined template functions, see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#functions)
-    - Variable iteration ("copy blocks"), see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration)
+
+  - [Built-in function names](https://go.microsoft.com/fwlink/?LinkID=733958)
+  - [Parameter references](https://go.microsoft.com/fwlink/?LinkID=733959)
+  - [Variable references](https://go.microsoft.com/fwlink/?LinkID=733960)
+  - [resourceGroup() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#resourcegroup)
+  - [subscription() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#subscription)
+  - Properties of references to variables that are objects
+  - [Signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
+  - [Go To Definition](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-definition) for variable and parameter references
+  - [Peek](https://code.visualstudio.com/docs/editor/editingevolved#_peek) for variable and parameter definitions
+  - Find all references (Shift + F12) for variables and parameters
+  - Rename all references (F2) for variables and parameters
+  - [Hover](https://code.visualstudio.com/docs/editor/editingevolved#_hover) for parameter description
+  - [TLE brace matching](https://code.visualstudio.com/docs/editor/editingevolved#_bracket-matching)
+  - Rename parameters and variables
+  - User-defined template functions, see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#functions)
+  - Variable iteration ("copy blocks"), see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration)
 
 - Snippets
-    Just type `arm` in the editor to see the available snippets
-    - Getting started with a new JSON/JSONC file
-        - `arm!` - Adds the framework for a full deployment template file.
+  Just type `arm` in the editor to see the available snippets
 
-            If you have not turned off auto detection of template files, you will now have access to all the snippets for "Azure Resource Manager Template" files
+  - Getting started with a new JSON/JSONC file
 
-        - `armp!` - Adds the framework for a full deployment template parameters file
+    - `arm!` - Adds the framework for a full deployment template file for resource group deployments
 
-            Then you can use the `arm-param-value` snippet to add new parameter values for deployment
+      If you have not turned off auto detection of template files, you will now have access to all the snippets for "Azure Resource Manager Template" files
 
-    - For existing Azure Resource Manage Template files
-        - `arm-param`, `arm-variable`, `arm-userfunc`, `arm-userfunc-namespace`
-        Add new parameters, variables, user functions and user namespaces.
-        - Resources - type `arm-` to see the other 70+ snippets for creating new resources of various types. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine.
+    - `arm!s` - Adds the framework for a full deployment template file for subscription deployments
+
+    - `arm!mg` - Adds the framework for a full deployment template file for management group deployments
+
+    - `arm!t` - Adds the framework for a full deployment template file for tenant deployments
+
+    - `armp!` - Adds the framework for a full deployment template parameters file
+
+      Then you can use the `arm-param-value` snippet to add new parameter values for deployment
+
+  - For existing Azure Resource Manage Template files
+    - `arm-param`, `arm-variable`, `arm-userfunc`, `arm-userfunc-namespace`
+      Add new parameters, variables, user functions and user namespaces.
+    - Resources - type `arm-` to see the other 70+ snippets for creating new resources of various types. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine.
 
 ## Automatic Detection of deployment template files
 
-By default, the extension recognizes a .json or .jsonc file as a deployment template file based on the $schema specified in the file (for instance, ```https://schema.management.azure.com/schemas/2018-05-01/deploymentTemplate.json#```) and will switch the editor language to "Azure Resource Manager Template" automatically.  If you do not want that behavior, you can set the ```azureResourceManagerTools.autoDetectJsonTemplates``` setting to false and use the below methods to determine which files to treat as deployment templates.
+By default, the extension recognizes a .json or .jsonc file as a deployment template file based on the \$schema specified in the file (for instance, `https://schema.management.azure.com/schemas/2018-05-01/deploymentTemplate.json#`) and will switch the editor language to "Azure Resource Manager Template" automatically. If you do not want that behavior, you can set the `azureResourceManagerTools.autoDetectJsonTemplates` setting to false and use the below methods to determine which files to treat as deployment templates.
 
-Besides automatic detection, you can also use the ```files.associations``` setting to set up your own specific mappings based on specific files paths or patterns to mark them as deployment templates, e.g.
+Besides automatic detection, you can also use the `files.associations` setting to set up your own specific mappings based on specific files paths or patterns to mark them as deployment templates, e.g.
 
 ```json
     "files.associations": {
@@ -69,10 +79,13 @@ Besides automatic detection, you can also use the ```files.associations``` setti
 - [Azure Quickstart Templates](https://go.microsoft.com/fwlink/?LinkID=734038)
 
 ## Contributing
+
 There are several ways you can contribute to our [repo](https://github.com/Microsoft/vscode-azurearmtools):
 
 - **Ideas, feature requests and bugs**: We are open to all ideas and we want to get rid of bugs! Use the [Issues](https://github.com/Microsoft/vscode-azurearmtools/issues) section to report a new issue, provide your ideas or contribute to existing threads.
 - **Documentation**: Found a typo or strangely worded sentences? Submit a PR!
+- **Snippets**: Have a fix for a snippet or a new snippet idea? File an [Issue](https://github.com/Microsoft/vscode-azurearmtools/issues) or submit a PR!
+  - See [our snippets file for ARM templates](https://github.com/microsoft/vscode-azurearmtools/blob/master/assets/armsnippets.jsonc)
 - **Code**: Contribute bug fixes, features or design changes:
   - Clone the repository locally and open in VS Code.
   - Install [TSLint for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=eg2.tslint).
@@ -81,12 +94,15 @@ There are several ways you can contribute to our [repo](https://github.com/Micro
   - Debug: press `F5` to start debugging the extension.
 
 ### Legal
+
 Before we can accept your pull request you will need to sign a **Contribution License Agreement**. All you need to do is to submit a pull request, then the PR will get appropriately labelled (e.g. `cla-required`, `cla-norequired`, `cla-signed`, `cla-already-signed`). If you already signed the agreement we will continue with reviewing the PR, otherwise system will tell you how you can sign the CLA. Once you sign the CLA all future PR's will be labeled as `cla-signed`.
 
 ### Code of Conduct
+
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
 ## Telemetry
+
 VS Code collects usage data and sends it to Microsoft to help improve our products and services. Read our [privacy statement](https://go.microsoft.com/fwlink/?LinkID=528096&clcid=0x409) to learn more. If you don’t wish to send usage data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false`. Learn more in our [FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
 
 ## License
