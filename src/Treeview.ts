@@ -29,8 +29,12 @@ const topLevelIcons: [string, string][] = [
 const topLevelChildIconsByRootNode: [string, string][] = [
     [templateKeys.parameters, "parameters.svg"],
     [templateKeys.variables, "variables.svg"],
-    [templateKeys.functions, "functions.svg"],
     ["outputs", "outputs.svg"],
+];
+
+const functionIcons: [string, string][] = [
+    [templateKeys.parameters, "parameters.svg"],
+    ["output", "outputs.svg"],
 ];
 
 const resourceIcons: [string, string][] = [
@@ -178,7 +182,6 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
 
         // Key is an object (e.g. a resource object)
         if (keyNode instanceof Json.ObjectValue) {
-            let foundName = false;
             // Object contains no elements
             if (keyNode.properties.length === 0) {
                 return "{}";
@@ -197,22 +200,18 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     }
                 }
 
-                // Look for name element
-                // tslint:disable-next-line:one-variable-per-declaration
-                for (var i = 0, l = keyNode.properties.length; i < l; i++) {
-                    let props = keyNode.properties[i];
-                    // If name element is found
-                    if (props.nameValue instanceof Json.StringValue && props.nameValue.toString().toUpperCase() === "name".toUpperCase()) {
-                        let name = toFriendlyString(props.value);
+                let label = this.getLabelFromProperties("name", keyNode);
+                if (label !== undefined) {
+                    return label;
+                }
 
-                        return shortenTreeLabel(name);
-                    }
+                label = this.getLabelFromProperties("namespace", keyNode);
+                if (label !== undefined) {
+                    return label;
                 }
 
                 // Object contains elements, but not a name element
-                if (!foundName) {
-                    return "{...}";
-                }
+                return "{...}";
             }
 
         } else if (elementInfo.current.value.kind === Json.ValueKind.ArrayValue || elementInfo.current.value.kind === Json.ValueKind.ObjectValue) {
@@ -226,6 +225,19 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         }
 
         return "";
+    }
+
+    private getLabelFromProperties(propertyName: string, keyNode: Json.ObjectValue): string | undefined {
+        // tslint:disable-next-line:one-variable-per-declaration
+        for (var i = 0, l = keyNode.properties.length; i < l; i++) {
+            let props = keyNode.properties[i];
+            // If element is found
+            if (props.nameValue instanceof Json.StringValue && props.nameValue.toString().toUpperCase() === propertyName.toUpperCase()) {
+                let name = toFriendlyString(props.value);
+                return shortenTreeLabel(name);
+            }
+        }
+        return undefined;
     }
 
     /**
@@ -347,10 +359,11 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
 
         // If resourceType element is found on resource objects set to specific resourceType Icon or else a default resource icon
         // tslint:disable-next-line: strict-boolean-expressions
-        if (elementInfo.current.level && elementInfo.current.level > 1 && elementInfo.current.key.kind === Json.ValueKind.ObjectValue) {
+        if (elementInfo.current.level && elementInfo.current.level > 1) {
             const rootNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.root.key.start);
 
-            if (rootNode && rootNode.toString().toUpperCase() === "resources".toUpperCase() && keyOrResourceNode instanceof Json.ObjectValue) {
+            if (elementInfo.current.key.kind === Json.ValueKind.ObjectValue &&
+                rootNode && rootNode.toString().toUpperCase() === "resources".toUpperCase() && keyOrResourceNode instanceof Json.ObjectValue) {
                 // tslint:disable-next-line:one-variable-per-declaration
                 for (var i = 0, il = keyOrResourceNode.properties.length; i < il; i++) {
                     const name = keyOrResourceNode.properties[i].nameValue;
@@ -363,12 +376,36 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     }
                 }
             }
+
+            if (rootNode && rootNode.toString().toUpperCase() === "functions".toUpperCase()) {
+                icon = this.getFunctionsIcon(elementInfo, keyOrResourceNode);
+            }
         }
 
         if (icon) {
             return path.join(iconsPath, icon);
         }
 
+        return undefined;
+    }
+
+    private getFunctionsIcon(elementInfo: IElementInfo, node: Json.Value | null | undefined): string | undefined {
+        const level: number | undefined = elementInfo.current.level;
+        if (!node || level === undefined) {
+            return undefined;
+        }
+        if (level === 5) {
+            return this.getIcon(functionIcons, node.toFriendlyString(), "");
+        }
+        if (!elementInfo.current.collapsible) {
+            return undefined;
+        }
+        if (level < 5) {
+            return this.getIcon(topLevelIcons, templateKeys.functions, "");
+        }
+        if (elementInfo.current.level === 6) {
+            return this.getIcon(functionIcons, "parameters", "");
+        }
         return undefined;
     }
 

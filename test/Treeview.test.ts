@@ -203,7 +203,27 @@ suite("TreeView", async (): Promise<void> => {
                     },
                     "functions": [
                         {
-                            "namespace": "namespace-name"
+                            "namespace": "udf",
+                            "members": {
+                                "storageUri": {
+                                  "parameters": [
+                                    {
+                                        "name": "storageAccountName",
+                                        "type": "string"
+                                    }],
+                                  "output": {
+                                    "value": "[parameters('storageAccountName')]"
+                                  }
+                                },
+                                "getSubscriptionId": {
+                                    "parameters": [
+                                    ],
+                                    "output": {
+                                      "type": "string",
+                                      "value": "[subscription().subscriptionId]"
+                                    }
+                                  }
+                              }
                         }
                     ],
                     "resources": [
@@ -256,7 +276,58 @@ suite("TreeView", async (): Promise<void> => {
                 { icon: "label.svg" },
                 getIconObject("parameters.svg", "parameters.svg"),
                 getIconObject("variables.svg", "variables.svg"),
-                { icon: "functions.svg", children: [{ icon: "functions.svg", children: [{ icon: undefined }] }] },
+                {
+                    icon: "functions.svg",
+                    children: [{
+                        icon: "functions.svg",
+                        children: [
+                            {
+                                icon: undefined
+                            },
+                            {
+                                icon: "functions.svg",
+                                children: [{
+                                    icon: "functions.svg",
+                                    children: [{
+                                        icon: "parameters.svg",
+                                        children: [{
+                                            icon: "parameters.svg",
+                                            children: [{
+                                                icon: undefined
+                                            },
+                                            {
+                                                icon: undefined
+                                            }]
+                                        }],
+                                    },
+                                    {
+                                        icon: "outputs.svg",
+                                        children: [
+                                            {
+                                                icon: undefined
+                                            }
+                                        ]
+                                    }],
+                                }, {
+                                    icon: "functions.svg",
+                                    children: [{
+                                        icon: "parameters.svg",
+                                    },
+                                    {
+                                        icon: "outputs.svg",
+                                        children: [
+                                            {
+                                                icon: undefined
+                                            },
+                                            {
+                                                icon: undefined
+                                            }
+                                        ]
+                                    }],
+                                }]
+                            }]
+                    }]
+                },
                 {
                     icon: "resources.svg", children: [
                         getIconObject("virtualmachines.svg", undefined),
@@ -334,6 +405,44 @@ suite("TreeView", async (): Promise<void> => {
                                                 label: "displayName: Swarm Display Name",
                                             }
                                         ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            );
+        });
+
+        /////////////////////////
+
+        test("getLabel: namespace used if name and displayName is not present", async () => {
+
+            await testLabels(
+                `{
+                    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "Functions": [
+                      {
+                        "namespace": "udf",
+                      }
+                    ]
+                  }`,
+                [
+                    {
+                        label: "$schema: http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    },
+                    {
+                        label: "contentVersion: 1.0.0.0",
+                    },
+                    {
+                        label: "Functions",
+                        children: [
+                            {
+                                label: "udf",
+                                children: [
+                                    {
+                                        label: "namespace: udf",
                                     }
                                 ]
                             }

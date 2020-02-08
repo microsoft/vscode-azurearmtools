@@ -2,10 +2,10 @@
     "name": "azurerm-vscode-tools",
     "displayName": "Azure Resource Manager (ARM) Tools",
     "description": "Language server, editing tools and snippets for Azure Resource Manager (ARM) template files.",
-    "version": "0.8.4-alpha",
+    "version": "0.8.5-alpha",
     "publisher": "msazurermtools",
     "config": {
-        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20073.2"
+        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20106.3"
     },
     "categories": [
         "Azure",
@@ -103,7 +103,7 @@
                         "None"
                     ],
                     "default": "Warning",
-                    "description": "Sets the trace level in the Output window for the Azure Template Language Server (requires restart)"
+                    "description": "Sets the trace (log) level in the Output window for the Azure Template Language Server"
                 },
                 "azureResourceManagerTools.languageServer.dotnetExePath": {
                     "type": "string",

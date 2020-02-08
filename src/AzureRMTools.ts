@@ -208,10 +208,14 @@ export class AzureRMTools {
 
                         // No guarantee that active editor is the one we're processing, ignore if not
                         if (editor && editor.document === document) {
-                            let queriedToUpdateSchema = this._filesAskedToUpdateSchema.has(documentUri);
-                            if (!queriedToUpdateSchema) { // Only ask to upgrade once per session per file
-                                // Are they using an older schema?  Ask to update.
-                                this.queryUseNewerSchema(editor, deploymentTemplate);
+                            // Only query to update schema for saved files, because we don't have an accurate
+                            //   URI that we can track yet.
+                            if (document.uri.scheme === 'file') {
+                                let queriedToUpdateSchema = this._filesAskedToUpdateSchema.has(documentUri);
+                                if (!queriedToUpdateSchema) { // Only ask to upgrade once per session per file
+                                    // Are they using an older schema?  Ask to update.
+                                    this.queryUseNewerSchema(editor, deploymentTemplate);
+                                }
                             }
                         }
                     }
