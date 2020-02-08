@@ -27,22 +27,23 @@ export enum SortType {
 export class SortQuickPickItem implements vscode.QuickPickItem {
     public label: string;
     public value: SortType;
+    public description: string;
 
-    constructor(label: string, value: SortType) {
+    constructor(label: string, value: SortType, description: string) {
         this.label = label;
         this.value = value;
+        this.description = description;
     }
-
 }
 
 export function getQuickPickItems(): SortQuickPickItem[] {
     let items: SortQuickPickItem[] = [];
-    items.push(new SortQuickPickItem("Functions", SortType.Functions));
-    items.push(new SortQuickPickItem("Outputs", SortType.Outputs));
-    items.push(new SortQuickPickItem("Parameters", SortType.Parameters));
-    items.push(new SortQuickPickItem("Resources", SortType.Resources));
-    items.push(new SortQuickPickItem("Variables", SortType.Variables));
-    items.push(new SortQuickPickItem("Top level", SortType.TopLevel));
+    items.push(new SortQuickPickItem("Functions", SortType.Functions, "Sort function namespaces and functions"));
+    items.push(new SortQuickPickItem("Outputs", SortType.Outputs, "Sort outputs"));
+    items.push(new SortQuickPickItem("Parameters", SortType.Parameters, "Sort parameters for the template"));
+    items.push(new SortQuickPickItem("Resources", SortType.Resources, "Sort resources based on the name including first level of child resources"));
+    items.push(new SortQuickPickItem("Variables", SortType.Variables, "Sort variables"));
+    items.push(new SortQuickPickItem("Top level", SortType.TopLevel, "Sort top level items based on recommended order (parameters, functions, variables, resources, outputs)"));
     return items;
 }
 
