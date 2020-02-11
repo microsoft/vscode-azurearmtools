@@ -63,6 +63,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     constructor(context: vscode.ExtensionContext) {
         context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(() => this.updateTreeState()));
         context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(() => this.updateTreeState()));
+        context.subscriptions.push(vscode.workspace.onDidOpenTextDocument(() => this.updateTreeState()));
 
         setTimeout(
             () => {
