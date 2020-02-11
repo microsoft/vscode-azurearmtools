@@ -20,13 +20,13 @@ export class UserFunctionParameterDefinition implements IParameterDefinition {
         assert(_objectValue);
     }
 
-    public static createIfValid(parameterObject: Json.ObjectValue): UserFunctionParameterDefinition | null {
+    public static createIfValid(parameterObject: Json.ObjectValue): UserFunctionParameterDefinition | undefined {
         const name = Json.asStringValue(parameterObject.getPropertyValue('name'));
         if (name) {
             return new UserFunctionParameterDefinition(name, parameterObject);
         }
 
-        return null;
+        return undefined;
     }
 
     public get nameValue(): Json.StringValue {
@@ -34,26 +34,26 @@ export class UserFunctionParameterDefinition implements IParameterDefinition {
     }
 
     // tslint:disable-next-line:no-reserved-keywords
-    public get type(): Json.StringValue | null {
-        const parameterDefinition: Json.ObjectValue | null = Json.asObjectValue(this._objectValue);
+    public get type(): Json.StringValue | undefined {
+        const parameterDefinition: Json.ObjectValue | undefined = Json.asObjectValue(this._objectValue);
         if (parameterDefinition) {
             return Json.asStringValue(parameterDefinition.getPropertyValue("type"));
         }
 
-        return null;
+        return undefined;
     }
 
-    // Returns null if not a valid expression type
-    public get validType(): ExpressionType | null {
-        return this.type ? toValidExpressionType(this.type.toString()) : null;
+    // Returns undefined if not a valid expression type
+    public get validType(): ExpressionType | undefined {
+        return this.type ? toValidExpressionType(this.type.toString()) : undefined;
     }
 
     public get fullSpan(): language.Span {
         return this._objectValue.span;
     }
 
-    public readonly description: string | null = null;
-    public readonly defaultValue: Json.Value | null = null;
+    public readonly description: string | undefined;
+    public readonly defaultValue: Json.Value | undefined;
 
     public get usageInfo(): IUsageInfo {
         return {

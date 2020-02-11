@@ -48,7 +48,7 @@ class ReferenceInVariableDefinitionTLEVisitor extends TLE.Visitor {
         return this._referenceSpans;
     }
 
-    public visitFunctionCall(functionValue: TLE.FunctionCallValue | null): void {
+    public visitFunctionCall(functionValue: TLE.FunctionCallValue | undefined): void {
         if (functionValue && functionValue.nameToken && functionValue.doesNameMatch("", "reference")) {
             this._referenceSpans.push(functionValue.nameToken.span);
         }

@@ -54,7 +54,7 @@ const resourceIcons: [string, string][] = [
 
 export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     private tree: Json.ParseResult | undefined;
-    private text: string;
+    private text: string | undefined;
 
     public readonly onDidChangeTreeDataEmitter: vscode.EventEmitter<string | null> =
         new vscode.EventEmitter<string | null>();

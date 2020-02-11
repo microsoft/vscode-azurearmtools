@@ -24,6 +24,7 @@ import * as TLE from "./TLE";
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
 import { UserFunctionMetadata } from "./UserFunctionMetadata";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
+import { nonNullValue } from "./util/nonNull";
 import { IVariableDefinition } from "./VariableDefinition";
 
 /**
@@ -33,7 +34,7 @@ class TleInfo implements ITleInfo {
     public constructor(
         public readonly tleParseResult: TLE.ParseResult,
         public readonly tleCharacterIndex: number,
-        public readonly tleValue: TLE.Value | null,
+        public readonly tleValue: TLE.Value | undefined,
         public readonly scope: TemplateScope
     ) {
     }
@@ -64,38 +65,35 @@ export class PositionContext {
     private _documentPosition: CachedValue<language.Position> = new CachedValue<language.Position>();
     private _givenDocumentCharacterIndex?: number;
     private _documentCharacterIndex: CachedValue<number> = new CachedValue<number>();
-    private _jsonToken: CachedValue<Json.Token | null> = new CachedValue<Json.Token>();
-    private _jsonValue: CachedValue<Json.Value | null> = new CachedValue<Json.Value | null>();
-    private _tleInfo: CachedValue<TleInfo | null> = new CachedValue<TleInfo | null>();
+    private _jsonToken: CachedValue<Json.Token | undefined> = new CachedValue<Json.Token>();
+    private _jsonValue: CachedValue<Json.Value | undefined> = new CachedValue<Json.Value | undefined>();
+    private _tleInfo: CachedValue<TleInfo | undefined> = new CachedValue<TleInfo | undefined>();
+
+    private constructor(deploymentTemplate: DeploymentTemplate) {
+        this._deploymentTemplate = deploymentTemplate;
+    }
 
     public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number): PositionContext {
-        assert(deploymentTemplate !== null, "deploymentTemplate cannot be null");
-        assert(deploymentTemplate !== undefined, "deploymentTemplate cannot be undefined");
-        assert(documentLineIndex !== null, "documentLineIndex cannot be null");
-        assert(documentLineIndex !== undefined, "documentLineIndex cannot be undefined");
+        nonNullValue(deploymentTemplate, "deploymentTemplate");
+        nonNullValue(documentLineIndex, "documentLineIndex");
         assert(documentLineIndex >= 0, "documentLineIndex cannot be negative");
         assert(documentLineIndex < deploymentTemplate.lineCount, `documentLineIndex (${documentLineIndex}) cannot be greater than or equal to the deployment template's line count (${deploymentTemplate.lineCount})`);
-        assert(documentColumnIndex !== null, "documentColumnIndex cannot be null");
-        assert(documentColumnIndex !== undefined, "documentColumnIndex cannot be undefined");
+        nonNullValue(documentColumnIndex, "documentColumnIndex");
         assert(documentColumnIndex >= 0, "documentColumnIndex cannot be negative");
         assert(documentColumnIndex <= deploymentTemplate.getMaxColumnIndex(documentLineIndex), `documentColumnIndex (${documentColumnIndex}) cannot be greater than the line's maximum index (${deploymentTemplate.getMaxColumnIndex(documentLineIndex)})`);
 
-        let context = new PositionContext();
-        context._deploymentTemplate = deploymentTemplate;
+        let context = new PositionContext(deploymentTemplate);
         context._givenDocumentPosition = new language.Position(documentLineIndex, documentColumnIndex);
         return context;
 
     }
     public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplate, documentCharacterIndex: number): PositionContext {
-        assert(deploymentTemplate !== null, "deploymentTemplate cannot be null");
-        assert(deploymentTemplate !== undefined, "deploymentTemplate cannot be undefined");
-        assert(documentCharacterIndex !== null, "documentCharacterIndex cannot be null");
-        assert(documentCharacterIndex !== undefined, "documentCharacterIndex cannot be undefined");
+        nonNullValue(deploymentTemplate, "deploymentTemplate");
+        nonNullValue(documentCharacterIndex, "documentCharacterIndex");
         assert(documentCharacterIndex >= 0, "documentCharacterIndex cannot be negative");
         assert(documentCharacterIndex <= deploymentTemplate.maxCharacterIndex, `documentCharacterIndex (${documentCharacterIndex}) cannot be greater than the maximum character index (${deploymentTemplate.maxCharacterIndex})`);
 
-        let context = new PositionContext();
-        context._deploymentTemplate = deploymentTemplate;
+        let context = new PositionContext(deploymentTemplate);
         context._givenDocumentCharacterIndex = documentCharacterIndex;
         return context;
     }
@@ -144,13 +142,13 @@ export class PositionContext {
         });
     }
 
-    public get jsonToken(): Json.Token | null {
+    public get jsonToken(): Json.Token | undefined {
         return this._jsonToken.getOrCacheValue(() => {
             return this._deploymentTemplate.getJSONTokenAtDocumentCharacterIndex(this.documentCharacterIndex);
         });
     }
 
-    public get jsonValue(): Json.Value | null {
+    public get jsonValue(): Json.Value | undefined {
         return this._jsonValue.getOrCacheValue(() => {
             return this._deploymentTemplate.getJSONValueAtDocumentCharacterIndex(this.documentCharacterIndex);
         });
@@ -165,7 +163,7 @@ export class PositionContext {
     /**
      * Retrieves TleInfo for the current position if it's inside a string
      */
-    public get tleInfo(): TleInfo | null {
+    public get tleInfo(): TleInfo | undefined {
         return this._tleInfo.getOrCacheValue(() => {
             //const tleParseResult = this._deploymentTemplate.getTLEParseResultFromJSONToken(this.jsonToken);
             const jsonToken = this.jsonToken;
@@ -180,7 +178,7 @@ export class PositionContext {
                 const tleValue = tleParseResult.getValueAtCharacterIndex(tleCharacterIndex);
                 return new TleInfo(tleParseResult, tleCharacterIndex, tleValue, tleParseResult.scope);
             }
-            return null;
+            return undefined;
         });
     }
 
@@ -192,13 +190,13 @@ export class PositionContext {
      * If this position is inside an expression, inside a reference to an interesting function/parameter/etc, then
      * return an object with information about this reference and the corresponding definition
      */
-    public getReferenceSiteInfo(): null | IReferenceSite {
+    public getReferenceSiteInfo(): IReferenceSite | undefined {
         const tleInfo = this.tleInfo;
         if (tleInfo) {
             const scope = tleInfo.scope;
             const tleCharacterIndex = tleInfo.tleCharacterIndex;
 
-            const tleFuncCall: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(tleInfo.tleValue);
+            const tleFuncCall: TLE.FunctionCallValue | undefined = TLE.asFunctionCallValue(tleInfo.tleValue);
             if (tleFuncCall) {
                 if (tleFuncCall.namespaceToken && tleFuncCall.namespaceToken.span.contains(tleCharacterIndex)) {
                     // Inside the namespace of a user-function reference
@@ -230,17 +228,17 @@ export class PositionContext {
                 }
             }
 
-            const tleStringValue: TLE.StringValue | null = TLE.asStringValue(tleInfo.tleValue);
+            const tleStringValue: TLE.StringValue | undefined = TLE.asStringValue(tleInfo.tleValue);
             if (tleStringValue instanceof TLE.StringValue) {
                 if (tleStringValue.isParametersArgument()) {
                     // Inside the 'xxx' of a parameters('xxx') reference
-                    const parameterDefinition: IParameterDefinition | null = scope.getParameterDefinition(tleStringValue.toString());
+                    const parameterDefinition: IParameterDefinition | undefined = scope.getParameterDefinition(tleStringValue.toString());
                     if (parameterDefinition) {
                         const referenceSpan: language.Span = tleStringValue.getSpan().translate(this.jsonTokenStartIndex);
                         return { definition: parameterDefinition, referenceSpan };
                     }
                 } else if (tleStringValue.isVariablesArgument()) {
-                    const variableDefinition: IVariableDefinition | null = scope.getVariableDefinition(tleStringValue.toString());
+                    const variableDefinition: IVariableDefinition | undefined = scope.getVariableDefinition(tleStringValue.toString());
                     if (variableDefinition) {
                         // Inside the 'xxx' of a variables('xxx') reference
                         const referenceSpan: language.Span = tleStringValue.getSpan().translate(this.jsonTokenStartIndex);
@@ -250,18 +248,18 @@ export class PositionContext {
             }
         }
 
-        return null;
+        return undefined;
     }
 
-    public getHoverInfo(): HoverInfo | null {
-        const reference: IReferenceSite | null = this.getReferenceSiteInfo();
+    public getHoverInfo(): HoverInfo | undefined {
+        const reference: IReferenceSite | undefined = this.getReferenceSiteInfo();
         if (reference) {
             const span = reference.referenceSpan;
             const definition = reference.definition;
             return new HoverInfo(definition.usageInfo, span);
         }
 
-        return null;
+        return undefined;
     }
 
     /**
@@ -278,7 +276,7 @@ export class PositionContext {
 
         // The function/string/number/etc at the current position inside the string expression,
         // or else the JSON string itself even it's not an expression
-        const tleValue: TLE.Value | null = tleInfo.tleValue;
+        const tleValue: TLE.Value | undefined = tleInfo.tleValue;
         const scope: TemplateScope = tleInfo.scope;
 
         if (!tleValue || !tleValue.contains(tleInfo.tleCharacterIndex)) {
@@ -286,7 +284,7 @@ export class PositionContext {
             if (PositionContext.isInsideSquareBrackets(tleInfo.tleParseResult, tleInfo.tleCharacterIndex)) {
                 // Inside brackets, so complete with all valid functions and namespaces
                 const replaceSpan = this.emptySpanAtDocumentCharacterIndex;
-                const functionCompletions = PositionContext.getMatchingFunctionCompletions(scope, null, "", replaceSpan);
+                const functionCompletions = PositionContext.getMatchingFunctionCompletions(scope, undefined, "", replaceSpan);
                 const namespaceCompletions = PositionContext.getMatchingNamespaceCompletions(scope, "", replaceSpan);
                 return functionCompletions.concat(namespaceCompletions);
             } else {
@@ -309,8 +307,8 @@ export class PositionContext {
      * *or* there is no square bracket yet
      */
     private static isInsideSquareBrackets(parseResult: TLE.ParseResult, characterIndex: number): boolean {
-        const leftSquareBracketToken: TLE.Token | null = parseResult.leftSquareBracketToken;
-        const rightSquareBracketToken: TLE.Token | null = parseResult.rightSquareBracketToken;
+        const leftSquareBracketToken: TLE.Token | undefined = parseResult.leftSquareBracketToken;
+        const rightSquareBracketToken: TLE.Token | undefined = parseResult.rightSquareBracketToken;
 
         if (leftSquareBracketToken && leftSquareBracketToken.span.afterEndIndex <= characterIndex &&
             (!rightSquareBracketToken || characterIndex <= rightSquareBracketToken.span.startIndex)) {
@@ -342,22 +340,22 @@ export class PositionContext {
      * Get completions when we're anywhere inside a property access, e.g. "resourceGroup().prop1.prop2"
      */
     private getPropertyAccessCompletions(tleValue: TLE.PropertyAccess, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
-        const functionSource: TLE.FunctionCallValue | null = tleValue.functionSource;
+        const functionSource: TLE.FunctionCallValue | undefined = tleValue.functionSource;
         if (functionSource) {
             let propertyPrefix: string = "";
             let replaceSpan: language.Span = this.emptySpanAtDocumentCharacterIndex;
-            const propertyNameToken: TLE.Token | null = tleValue.nameToken;
+            const propertyNameToken: TLE.Token | undefined = tleValue.nameToken;
             if (propertyNameToken) {
                 replaceSpan = propertyNameToken.span.translate(this.jsonTokenStartIndex);
                 propertyPrefix = propertyNameToken.stringValue.substring(0, tleCharacterIndex - propertyNameToken.span.startIndex).toLowerCase();
             }
 
-            const variableProperty: IVariableDefinition | null = scope.getVariableDefinitionFromFunctionCall(functionSource);
-            const parameterProperty: IParameterDefinition | null = scope.getParameterDefinitionFromFunctionCall(functionSource);
+            const variableProperty: IVariableDefinition | undefined = scope.getVariableDefinitionFromFunctionCall(functionSource);
+            const parameterProperty: IParameterDefinition | undefined = scope.getParameterDefinitionFromFunctionCall(functionSource);
             const sourcesNameStack: string[] = tleValue.sourcesNameStack;
             if (variableProperty) {
                 // If the variable's value is an object...
-                const sourceVariableDefinition: Json.ObjectValue | null = Json.asObjectValue(variableProperty.value);
+                const sourceVariableDefinition: Json.ObjectValue | undefined = Json.asObjectValue(variableProperty.value);
                 if (sourceVariableDefinition) {
                     return this.getDeepPropertyAccessCompletions(
                         propertyPrefix,
@@ -367,9 +365,9 @@ export class PositionContext {
                 }
             } else if (parameterProperty) {
                 // If the parameters's default value is an object...
-                const parameterDefValue: Json.ObjectValue | null = parameterProperty.defaultValue ? Json.asObjectValue(parameterProperty.defaultValue) : null;
+                const parameterDefValue: Json.ObjectValue | undefined = parameterProperty.defaultValue ? Json.asObjectValue(parameterProperty.defaultValue) : undefined;
                 if (parameterDefValue) {
-                    const sourcePropertyDefinition: Json.ObjectValue | null = Json.asObjectValue(parameterDefValue.getPropertyValueFromStack(sourcesNameStack));
+                    const sourcePropertyDefinition: Json.ObjectValue | undefined = Json.asObjectValue(parameterDefValue.getPropertyValueFromStack(sourcesNameStack));
                     if (sourcePropertyDefinition) {
                         return this.getDeepPropertyAccessCompletions(
                             propertyPrefix,
@@ -382,7 +380,7 @@ export class PositionContext {
                 // We don't allow multiple levels of property access
                 // (resourceGroup().prop1.prop2) on functions other than variables/parameters,
                 // therefore checking that sourcesNameStack.length === 0
-                const functionName: string | null = functionSource.name;
+                const functionName: string | undefined = functionSource.name;
                 if (functionName && !functionSource.namespaceToken) { // Don't currently support completions from a user function returning an object
                     let functionMetadataMatches: BuiltinFunctionMetadata[] = AzureRMAssets.getFunctionMetadataFromPrefix(functionName);
                     assert(functionMetadataMatches);
@@ -412,13 +410,13 @@ export class PositionContext {
     private getFunctionCallCompletions(tleValue: TLE.FunctionCallValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
         assert(tleValue.getSpan().contains(tleCharacterIndex, true), "Position should be inside the function call, or right after it");
 
-        const namespaceName: string | null = tleValue.namespaceToken ? tleValue.namespaceToken.stringValue : null;
+        const namespaceName: string | undefined = tleValue.namespaceToken ? tleValue.namespaceToken.stringValue : undefined;
         // tslint:disable-next-line: strict-boolean-expressions
-        const namespace: UserFunctionNamespaceDefinition | null = (namespaceName && scope.getFunctionNamespaceDefinition(namespaceName)) || null;
+        const namespace: UserFunctionNamespaceDefinition | undefined = (namespaceName && scope.getFunctionNamespaceDefinition(namespaceName)) || undefined;
 
         // The token (namespace or name) that the user is completing and will be replaced with the user's selection
-        // If null, we're just inserting at the current position, not replacing anything
-        let tleTokenToComplete: TLE.Token | null;
+        // If undefined, we're just inserting at the current position, not replacing anything
+        let tleTokenToComplete: TLE.Token | undefined;
 
         let completeNamespaces: boolean;
         let completeBuiltinFunctions: boolean;
@@ -482,7 +480,7 @@ export class PositionContext {
             //
             // Assume the user is starting a new function call and provide all completions at that location;
 
-            tleTokenToComplete = null;
+            tleTokenToComplete = undefined;
             completeNamespaces = true;
             completeBuiltinFunctions = true;
             completeUserFunctions = false;
@@ -516,7 +514,7 @@ export class PositionContext {
                 userFunctionCompletions = PositionContext.getMatchingFunctionCompletions(scope, namespace, completionPrefix, replaceSpan);
             }
             if (completeBuiltinFunctions) {
-                builtinCompletions = PositionContext.getMatchingFunctionCompletions(scope, null, completionPrefix, replaceSpan);
+                builtinCompletions = PositionContext.getMatchingFunctionCompletions(scope, undefined, completionPrefix, replaceSpan);
             }
         }
         if (completeNamespaces) {
@@ -529,7 +527,7 @@ export class PositionContext {
     private getDeepPropertyAccessCompletions(propertyPrefix: string, variableOrParameterDefinition: Json.ObjectValue, sourcesNameStack: string[], replaceSpan: language.Span): Completion.Item[] {
         const result: Completion.Item[] = [];
 
-        const sourcePropertyDefinitionObject: Json.ObjectValue | null = Json.asObjectValue(variableOrParameterDefinition.getPropertyValueFromStack(sourcesNameStack));
+        const sourcePropertyDefinitionObject: Json.ObjectValue | undefined = Json.asObjectValue(variableOrParameterDefinition.getPropertyValueFromStack(sourcesNameStack));
         if (sourcePropertyDefinitionObject) {
             let matchingPropertyNames: string[];
             if (!propertyPrefix) {
@@ -558,9 +556,9 @@ export class PositionContext {
         return Completion.Item.fromPropertyName(propertyName, replaceSpan);
     }
 
-    // Returns null if references are not supported at this location.
+    // Returns undefined if references are not supported at this location.
     // Returns empty list if supported but none found
-    public getReferences(): Reference.ReferenceList | null {
+    public getReferences(): Reference.ReferenceList | undefined {
         const tleInfo = this.tleInfo;
         if (tleInfo) { // If we're inside a string (whether an expression or not)
             const refInfo = this.getReferenceSiteInfo();
@@ -569,19 +567,19 @@ export class PositionContext {
             }
 
             // Handle when we're directly on the name of a parameter/variable/etc definition (as opposed to a reference)
-            const jsonStringValue: Json.StringValue | null = Json.asStringValue(this.jsonValue);
+            const jsonStringValue: Json.StringValue | undefined = Json.asStringValue(this.jsonValue);
             if (jsonStringValue) {
                 const unquotedString = jsonStringValue.unquotedValue;
                 const scope = tleInfo.scope;
 
                 // Is it a parameter definition?
-                const parameterDefinition: IParameterDefinition | null = scope.getParameterDefinition(unquotedString);
+                const parameterDefinition: IParameterDefinition | undefined = scope.getParameterDefinition(unquotedString);
                 if (parameterDefinition && parameterDefinition.nameValue === jsonStringValue) {
                     return this._deploymentTemplate.findReferences(parameterDefinition);
                 }
 
                 // Is it a variable definition?
-                const variableDefinition: IVariableDefinition | null = scope.getVariableDefinition(unquotedString);
+                const variableDefinition: IVariableDefinition | undefined = scope.getVariableDefinition(unquotedString);
                 if (variableDefinition && variableDefinition.nameValue === jsonStringValue) {
                     return this._deploymentTemplate.findReferences(variableDefinition);
                 }
@@ -594,7 +592,7 @@ export class PositionContext {
 
                 // Is it a user function definition inside any namespace?
                 for (let ns of scope.namespaceDefinitions) {
-                    const userFunctionDefinition: UserFunctionDefinition | null = scope.getUserFunctionDefinition(ns.nameValue.unquotedValue, unquotedString);
+                    const userFunctionDefinition: UserFunctionDefinition | undefined = scope.getUserFunctionDefinition(ns.nameValue.unquotedValue, unquotedString);
                     if (userFunctionDefinition && userFunctionDefinition.nameValue === jsonStringValue) {
                         return this._deploymentTemplate.findReferences(userFunctionDefinition);
                     }
@@ -602,13 +600,13 @@ export class PositionContext {
             }
         }
 
-        return null;
+        return undefined;
     }
 
-    public getSignatureHelp(): TLE.FunctionSignatureHelp | null {
-        const tleValue: TLE.Value | null = this.tleInfo && this.tleInfo.tleValue;
+    public getSignatureHelp(): TLE.FunctionSignatureHelp | undefined {
+        const tleValue: TLE.Value | undefined = this.tleInfo && this.tleInfo.tleValue;
         if (this.tleInfo && tleValue) {
-            let functionToHelpWith: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(tleValue);
+            let functionToHelpWith: TLE.FunctionCallValue | undefined = TLE.asFunctionCallValue(tleValue);
             if (!functionToHelpWith) {
                 functionToHelpWith = TLE.asFunctionCallValue(tleValue.parent);
             }
@@ -619,8 +617,8 @@ export class PositionContext {
                 if (functionToHelpWith.namespaceToken) {
                     // Call to user-defined function
                     const namespace: string = functionToHelpWith.namespaceToken.stringValue;
-                    const name: string | null = functionToHelpWith.name;
-                    const udfDefinition: UserFunctionDefinition | null = this.tleInfo.scope.getUserFunctionDefinition(namespace, name);
+                    const name: string | undefined = functionToHelpWith.name;
+                    const udfDefinition: UserFunctionDefinition | undefined = this.tleInfo.scope.getUserFunctionDefinition(namespace, name);
                     functionMetadata = udfDefinition ? UserFunctionMetadata.fromDefinition(udfDefinition) : undefined;
                 } else {
                     // Call to built-in function
@@ -648,14 +646,14 @@ export class PositionContext {
             }
         }
 
-        return null;
+        return undefined;
     }
 
     /**
      * Given a possible namespace name plus a function name prefix and replacement span, return a list
      * of completions for functions or namespaces starting with that prefix
      */
-    private static getMatchingFunctionCompletions(scope: TemplateScope, namespace: UserFunctionNamespaceDefinition | null, functionNamePrefix: string, replaceSpan: language.Span): Completion.Item[] {
+    private static getMatchingFunctionCompletions(scope: TemplateScope, namespace: UserFunctionNamespaceDefinition | undefined, functionNamePrefix: string, replaceSpan: language.Span): Completion.Item[] {
         let matches: IFunctionMetadata[];
 
         if (namespace) {
@@ -708,7 +706,7 @@ export class PositionContext {
         if (tleValue instanceof TLE.StringValue) {
             const stringSpan: language.Span = tleValue.getSpan();
             const stringStartIndex: number = stringSpan.startIndex;
-            const functionValue: TLE.FunctionCallValue | null = TLE.asFunctionCallValue(tleValue.parent);
+            const functionValue: TLE.FunctionCallValue | undefined = TLE.asFunctionCallValue(tleValue.parent);
 
             const rightParenthesisIndex: number = tleValue.toString().indexOf(")");
             const rightSquareBracketIndex: number = tleValue.toString().indexOf("]");
@@ -759,9 +757,9 @@ interface ITleInfo {
 
     /**
      * The outermost TLE value enclosing the current position, if we're inside a string
-     * (whether it's an expression or not). This can null if inside square brackets but before
+     * (whether it's an expression or not). This can undefined if inside square brackets but before
      * an expression, etc.
      */
-    tleValue: TLE.Value | null;
+    tleValue: TLE.Value | undefined;
 
 }

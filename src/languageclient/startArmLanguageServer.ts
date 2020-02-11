@@ -116,7 +116,10 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         let clientOptions: LanguageClientOptions = {
             documentSelector: armDeploymentDocumentSelector,
             diagnosticCollectionName: `${languageServerName} diagnostics`,
-            revealOutputChannelOn: RevealOutputChannelOn.Error
+            revealOutputChannelOn: RevealOutputChannelOn.Error,
+            synchronize: {
+                configurationSection: configPrefix
+            }
         };
 
         // Create the language client and start the client.
@@ -141,6 +144,11 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         if (waitForDebugger) {
             window.showWarningMessage(`The ${configPrefix}.languageServer.waitForDebugger option is set.  The language server will pause on startup until a debugger is attached.`);
         }
+
+        client.onTelemetry((telemetryData) => {
+            // tslint:disable-next-line: no-unsafe-any
+            ext.reporter.sendTelemetryEvent(telemetryData.eventName, telemetryData.properties);
+        });
 
         try {
             let disposable = client.start();

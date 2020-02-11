@@ -7,7 +7,8 @@ import { configKeys, configPrefix, languageId } from "./constants";
 import { containsArmSchema } from "./schemas";
 
 export const armDeploymentDocumentSelector = [
-    { language: languageId, scheme: 'file' }
+    { language: languageId, scheme: 'file' },
+    { language: languageId, scheme: 'untitled' } // unsaved files
 ];
 
 const maxLinesToDetectSchemaIn = 500;
@@ -19,7 +20,10 @@ function isJsonOrJsoncLangId(textDocument: TextDocument): boolean {
 // We keep track of arm-template files, of course,
 // but also JSON/JSONC (unless auto-detect is disabled) so we can check them for the ARM schema
 function shouldWatchDocument(textDocument: TextDocument): boolean {
-    if (textDocument.uri.scheme !== 'file') {
+    if (
+        textDocument.uri.scheme !== 'file'
+        && textDocument.uri.scheme !== 'untitled' // unsaved files
+    ) {
         return false;
     }
 

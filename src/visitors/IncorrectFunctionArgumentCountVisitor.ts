@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { isNullOrUndefined } from "util";
 import * as assets from "../AzureRMAssets";
 import { assert } from "../fixed_assert";
 import { IncorrectArgumentsCountIssue } from "../IncorrectArgumentsCountIssue";
@@ -25,10 +26,10 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
 
     public visitFunctionCall(tleFunction: FunctionCallValue): void {
         let actualFullFunctionName: string;
-        let minimumArguments: number | undefined;
+        let minimumArguments: number;
         let maximumArguments: number | undefined;
 
-        const functionName: string | null = tleFunction.name;
+        const functionName: string | undefined = tleFunction.name;
         if (!functionName) {
             return;
         }
@@ -59,7 +60,7 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
 
             minimumArguments = functionMetadata.minimumArguments;
             // tslint:disable-next-line:max-line-length
-            assert(minimumArguments !== null && minimumArguments !== undefined, `TLE function metadata for '${actualFullFunctionName}' has a null or undefined minimum argument value.`);
+            assert(!isNullOrUndefined(minimumArguments), `TLE function metadata for '${actualFullFunctionName}' has a null or undefined minimum argument value.`);
 
             maximumArguments = functionMetadata.maximumArguments;
             assert(tleFunction.argumentExpressions);
@@ -72,7 +73,7 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
             if (functionCallArgumentCount !== minimumArguments) {
                 message = `The function '${actualFullFunctionName}' takes ${minimumArguments} ${this.getArgumentsString(minimumArguments)}.`;
             }
-        } else if (maximumArguments === null || maximumArguments === undefined) {
+        } else if (isNullOrUndefined(maximumArguments)) {
             if (functionCallArgumentCount < minimumArguments) {
                 message = `The function '${actualFullFunctionName}' takes at least ${minimumArguments} ${this.getArgumentsString(minimumArguments)}.`;
             }
@@ -96,7 +97,7 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
         return `argument${argumentCount === 1 ? "" : "s"}`;
     }
 
-    public static visit(tleValue: Value | null, tleFunctions: assets.FunctionsMetadata): IncorrectFunctionArgumentCountVisitor {
+    public static visit(tleValue: Value | undefined, tleFunctions: assets.FunctionsMetadata): IncorrectFunctionArgumentCountVisitor {
         const visitor = new IncorrectFunctionArgumentCountVisitor(tleFunctions);
         if (tleValue) {
             tleValue.accept(visitor);

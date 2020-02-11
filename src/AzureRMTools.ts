@@ -11,7 +11,7 @@ import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import * as Completion from "./Completion";
-import { configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, languageId, outputWindowName, storageKeys } from "./constants";
+import { configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, languageId, outputWindowName } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
@@ -28,6 +28,7 @@ import { getPreferredSchema } from "./schemas";
 import { getFunctionParamUsage } from "./signatureFormatting";
 import { Stopwatch } from "./Stopwatch";
 import { armDeploymentDocumentSelector, mightBeDeploymentTemplate } from "./supported";
+import { survey } from "./survey";
 import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedBuiltinFunctionIssue } from "./UnrecognizedFunctionIssues";
@@ -174,15 +175,20 @@ export class AzureRMTools {
 
                         // No guarantee that active editor is the one we're processing, ignore if not
                         if (editor && editor.document === document) {
-                            let queriedToUpdateSchema = this._filesAskedToUpdateSchema.has(documentUri);
-                            if (!queriedToUpdateSchema) { // Only ask to upgrade once per session per file
-                                // Are they using an older schema?  Ask to update.
-                                this.queryUseNewerSchema(editor, deploymentTemplate);
+                            // Only query to update schema for saved files, because we don't have an accurate
+                            //   URI that we can track yet.
+                            if (document.uri.scheme === 'file') {
+                                let queriedToUpdateSchema = this._filesAskedToUpdateSchema.has(documentUri);
+                                if (!queriedToUpdateSchema) { // Only ask to upgrade once per session per file
+                                    // Are they using an older schema?  Ask to update.
+                                    this.queryUseNewerSchema(editor, deploymentTemplate);
+                                }
                             }
                         }
                     }
 
                     this.reportDeploymentTemplateErrors(document, deploymentTemplate);
+                    survey.registerActiveUse();
                 }
             }
 
@@ -288,7 +294,7 @@ export class AzureRMTools {
     }
 
     private queryUseNewerSchema(editor: vscode.TextEditor, deploymentTemplate: DeploymentTemplate): void {
-        const schemaValue: Json.StringValue | null = deploymentTemplate.schemaValue;
+        const schemaValue: Json.StringValue | undefined = deploymentTemplate.schemaValue;
         // tslint:disable-next-line: strict-boolean-expressions
         const schemaUri: string | undefined = deploymentTemplate.schemaUri || undefined;
         const preferredSchemaUri: string | undefined = schemaUri && getPreferredSchema(schemaUri);
@@ -308,7 +314,7 @@ export class AzureRMTools {
                 }
 
                 // tslint:disable-next-line: strict-boolean-expressions
-                const dontAskFiles = ext.context.globalState.get<string[]>(storageKeys.dontAskAboutSchemaFiles) || [];
+                const dontAskFiles = ext.context.globalState.get<string[]>(globalStateKeys.dontAskAboutSchemaFiles) || [];
                 if (dontAskFiles.includes(documentUri)) {
                     actionContext.telemetry.properties.isInDontAskList = 'true';
                     return;
@@ -339,7 +345,7 @@ export class AzureRMTools {
                         return;
                     case neverForThisFile.title:
                         dontAskFiles.push(documentUri);
-                        await ext.context.globalState.update(storageKeys.dontAskAboutSchemaFiles, dontAskFiles);
+                        await ext.context.globalState.update(globalStateKeys.dontAskAboutSchemaFiles, dontAskFiles);
                         break;
                     default:
                         assert("queryUseNewerSchema: Unexpected response");
@@ -355,7 +361,7 @@ export class AzureRMTools {
 
         // The document might have changed since we asked, so find the $schema again
         const currentTemplate = new DeploymentTemplate(editor.document.getText(), `current ${deploymentTemplate.documentId}`);
-        const currentSchemaValue: Json.StringValue | null = currentTemplate.schemaValue;
+        const currentSchemaValue: Json.StringValue | undefined = currentTemplate.schemaValue;
         if (currentSchemaValue && currentSchemaValue.unquotedValue === previousSchema) {
             const range = getVSCodeRangeFromSpan(currentTemplate, currentSchemaValue.unquotedSpan);
             await editor.edit(edit => {
@@ -480,7 +486,7 @@ export class AzureRMTools {
                     unrecognized.add(issue.functionName);
                 } else if (issue instanceof IncorrectArgumentsCountIssue) {
                     // Encode function name as "funcname(<actual-args>)[<min-expected>..<max-expected>]"
-                    let encodedName = `${issue.functionName}(${issue.actual})[${issue.minExpected}..${issue.maxExpected}]`;
+                    let encodedName = `${issue.functionName}(${issue.actual})[${issue.minExpected}..${issue.maxExpected}]`; //asdf what if maxExpected is undefined?
                     incorrectArgCounts.add(encodedName);
                 }
             }
@@ -550,7 +556,7 @@ export class AzureRMTools {
                 const properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>actionContext.telemetry.properties;
 
                 const context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                const hoverInfo: Hover.HoverInfo | null = context.getHoverInfo();
+                const hoverInfo: Hover.HoverInfo | undefined = context.getHoverInfo();
 
                 if (hoverInfo) {
                     properties.hoverType = hoverInfo.friendlyType;
@@ -648,7 +654,7 @@ export class AzureRMTools {
                 const locationUri: vscode.Uri = vscode.Uri.parse(deploymentTemplate.documentId);
                 const positionContext: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
-                const references: ReferenceList | null = positionContext.getReferences();
+                const references: ReferenceList | undefined = positionContext.getReferences();
                 if (references && references.length > 0) {
                     actionContext.telemetry.properties.referenceType = references.kind;
 
@@ -671,7 +677,7 @@ export class AzureRMTools {
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
-                let functionSignatureHelp: TLE.FunctionSignatureHelp | null = context.getSignatureHelp();
+                let functionSignatureHelp: TLE.FunctionSignatureHelp | undefined = context.getSignatureHelp();
                 let signatureHelp: vscode.SignatureHelp | undefined;
 
                 if (functionSignatureHelp) {
@@ -702,12 +708,12 @@ export class AzureRMTools {
                 const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
 
                 const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                const referenceSiteInfo: IReferenceSite | null = context.getReferenceSiteInfo();
+                const referenceSiteInfo: IReferenceSite | undefined = context.getReferenceSiteInfo();
                 if (referenceSiteInfo && referenceSiteInfo.definition.definitionKind === DefinitionKind.BuiltinFunction) {
                     throw new Error("Built-in functions cannot be renamed.");
                 }
 
-                const referenceList: ReferenceList | null = context.getReferences();
+                const referenceList: ReferenceList | undefined = context.getReferences();
                 if (referenceList) {
                     // When trying to rename a parameter or variable reference inside of a TLE, the
                     // textbox that pops up when you press F2 contains more than just the variable

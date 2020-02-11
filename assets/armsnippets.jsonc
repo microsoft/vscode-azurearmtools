@@ -3,7 +3,7 @@
         "prefix": "arm!",
         "body": [
             "{",
-            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#\",",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\",",
             "    \"contentVersion\": \"1.0.0.0\",",
             "    \"parameters\": {},",
             "    \"variables\": {},",
@@ -12,18 +12,63 @@
             "    \"functions\": []",
             "}"
         ],
-        "description": "Skeleton ARM Template"
+        "description": "Resource Group Template"
+    },
+    "Azure Resource Manager (ARM) Template Subscription": {
+        "prefix": "arm!s",
+        "body": [
+            "{",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#\",",
+            "    \"contentVersion\": \"1.0.0.0\",",
+            "    \"parameters\": {},",
+            "    \"variables\": {},",
+            "    \"resources\": [],",
+            "    \"outputs\": {},",
+            "    \"functions\": []",
+            "}"
+        ],
+        "description": "Subscription Template"
+    },
+    "Azure Resource Manager (ARM) Template Management Group": {
+        "prefix": "arm!mg",
+        "body": [
+            "{",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#\",",
+            "    \"contentVersion\": \"1.0.0.0\",",
+            "    \"parameters\": {},",
+            "    \"variables\": {},",
+            "    \"resources\": [],",
+            "    \"outputs\": {},",
+            "    \"functions\": []",
+            "}"
+        ],
+        "description": "Management Group Template"
+    },
+    "Azure Resource Manager (ARM) Template Tenant": {
+        "prefix": "arm!t",
+        "body": [
+            "{",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#\",",
+            "    \"contentVersion\": \"1.0.0.0\",",
+            "    \"parameters\": {},",
+            "    \"variables\": {},",
+            "    \"resources\": [],",
+            "    \"outputs\": {},",
+            "    \"functions\": []",
+            "}"
+        ],
+        "description": "Tenant Template"
     },
     "Azure Resource Manager (ARM) Parameters Template": {
         "prefix": "armp!",
         "body": [
             "{",
-            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#\",",
+            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#\",",
             "    \"contentVersion\": \"1.0.0.0\",",
             "    \"parameters\": {}",
             "}"
         ],
-        "description": "Skeleton ARM Parameters Template"
+        "description": "Parameters Template"
     },
     "Variable": {
         "prefix": "arm-variable",
@@ -33,7 +78,7 @@
         "description": "ARM Template Variable"
     },
     "Parameter": {
-        "prefix": "arm-param",
+        "prefix": "arm-param-value",
         "body": [
             "\"${1:parameter1}\": {",
             "   \"type\": \"${2|string,securestring,int,bool,object,secureobject,array|}\",",
@@ -2131,7 +2176,7 @@
             "{",
             "    \"name\": \"${1:webApp1}\",",
             "    \"type\": \"Microsoft.Web/sites\",",
-            "    \"apiVersion\": \"2016-08-01\",",
+            "    \"apiVersion\": \"2018-11-01\",",
             "    \"location\": \"[resourceGroup().location]\",",
             "    \"tags\": {",
             "        \"[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/${2:appServicePlan1}')]\": \"Resource\",",
@@ -2154,7 +2199,7 @@
             "{",
             "    \"name\": \"Deploy-${1:webApp1}\",",
             "    \"type\": \"Microsoft.Web/sites/extensions\",",
-            "    \"apiVersion\": \"2015-08-01\",",
+            "    \"apiVersion\": \"2018-11-01\",",
             "    \"location\": \"[resourceGroup().location]\",",
             "    \"dependsOn\": [",
             "        \"[resourceId('Microsoft.Web/sites', '${1:webApp1}')]\"",

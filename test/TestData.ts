@@ -212,7 +212,7 @@ export function expectedVariablesCompletion(startIndex: number, length: number):
 }
 
 export function parameterCompletion(parameterName: string, startIndex: number, length: number, includeRightParenthesis: boolean = true): Completion.Item {
-    return new Completion.Item(`'${parameterName}'`, `'${parameterName}'${includeRightParenthesis ? ")" : ""}$0`, new Language.Span(startIndex, length), "(parameter)", null, Completion.CompletionKind.Parameter);
+    return new Completion.Item(`'${parameterName}'`, `'${parameterName}'${includeRightParenthesis ? ")" : ""}$0`, new Language.Span(startIndex, length), "(parameter)", undefined, Completion.CompletionKind.Parameter);
 }
 
 export function propertyCompletion(propertyName: string, startIndex: number, length: number): Completion.Item {

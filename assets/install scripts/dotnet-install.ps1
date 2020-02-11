@@ -37,10 +37,7 @@
 .PARAMETER SharedRuntime
     This parameter is obsolete and may be removed in a future version of this script.
     The recommended alternative is '-Runtime dotnet'.
-
-    Default: false
     Installs just the shared runtime bits, not the entire SDK.
-    This is equivalent to specifying `-Runtime dotnet`.
 .PARAMETER Runtime
     Installs just a shared runtime, not the entire SDK.
     Possible values:
@@ -77,44 +74,48 @@
     Skips installing non-versioned files if they already exist, such as dotnet.exe.
 .PARAMETER NoCdn
     Disable downloading from the Azure CDN, and use the uncached feed directly.
+.PARAMETER JSonFile
+    Determines the SDK version from a user specified global.json file
+    Note: global.json must have a value for 'SDK:Version'
 #>
 [cmdletbinding()]
 param(
-   [string]$Channel="LTS",
-   [string]$Version="Latest",
-   [string]$InstallDir="<auto>",
-   [string]$Architecture="<auto>",
-   [ValidateSet("dotnet", "aspnetcore", "windowsdesktop", IgnoreCase = $false)]
-   [string]$Runtime,
-   [Obsolete("This parameter may be removed in a future version of this script. The recommended alternative is '-Runtime dotnet'.")]
-   [switch]$SharedRuntime,
-   [switch]$DryRun,
-   [switch]$NoPath,
-   [string]$AzureFeed="https://dotnetcli.azureedge.net/dotnet",
-   [string]$UncachedFeed="https://dotnetcli.blob.core.windows.net/dotnet",
-   [string]$FeedCredential,
-   [string]$ProxyAddress,
-   [switch]$ProxyUseDefaultCredentials,
-   [switch]$SkipNonVersionedFiles,
-   [switch]$NoCdn
+    [string]$Channel = "LTS",
+    [string]$Version = "Latest",
+    [string]$JSonFile,
+    [string]$InstallDir = "<auto>",
+    [string]$Architecture = "<auto>",
+    [ValidateSet("dotnet", "aspnetcore", "windowsdesktop", IgnoreCase = $false)]
+    [string]$Runtime,
+    [Obsolete("This parameter may be removed in a future version of this script. The recommended alternative is '-Runtime dotnet'.")]
+    [switch]$SharedRuntime,
+    [switch]$DryRun,
+    [switch]$NoPath,
+    [string]$AzureFeed = "https://dotnetcli.azureedge.net/dotnet",
+    [string]$UncachedFeed = "https://dotnetcli.blob.core.windows.net/dotnet",
+    [string]$FeedCredential,
+    [string]$ProxyAddress,
+    [switch]$ProxyUseDefaultCredentials,
+    [switch]$SkipNonVersionedFiles,
+    [switch]$NoCdn
 )
 
 Set-StrictMode -Version Latest
-$ErrorActionPreference="Stop"
-$ProgressPreference="SilentlyContinue"
+$ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
 
 if ($NoCdn) {
     $AzureFeed = $UncachedFeed
 }
 
-$BinFolderRelativePath=""
+$BinFolderRelativePath = ""
 
 if ($SharedRuntime -and (-not $Runtime)) {
     $Runtime = "dotnet"
 }
 
 # example path with regex: shared/1.0.0-beta-12345/somepath
-$VersionRegEx="/\d+\.\d+[^/]+/"
+$VersionRegEx = "/\d+\.\d+[^/]+/"
 $OverrideNonVersionedFiles = !$SkipNonVersionedFiles
 
 function Say($str) {
@@ -166,7 +167,7 @@ function Get-CLIArchitecture-From-Architecture([string]$Architecture) {
         { $_ -eq "x86" } { return "x86" }
         { $_ -eq "arm" } { return "arm" }
         { $_ -eq "arm64" } { return "arm64" }
-        default { throw "Architecture not supported. If you think this is a bug, report it at https://github.com/dotnet/cli/issues" }
+        default { throw "Architecture not supported. If you think this is a bug, report it at https://github.com/dotnet/sdk/issues" }
     }
 }
 
@@ -183,7 +184,7 @@ function Get-Version-Info-From-Version-Text([string]$VersionText) {
 
     $VersionInfo = @{
         CommitHash = $(if ($Data.Count -gt 1) { $Data[0] })
-        Version = $Data[-1] # last line is always the version number.
+        Version    = $Data[-1] # last line is always the version number.
     }
     return $VersionInfo
 }
@@ -198,66 +199,65 @@ function Load-Assembly([string] $Assembly) {
     }
 }
 
-function GetHTTPResponse([Uri] $Uri)
-{
+function GetHTTPResponse([Uri] $Uri) {
     Invoke-With-Retry(
-    {
+        {
 
-        $HttpClient = $null
+            $HttpClient = $null
 
-        try {
-            # HttpClient is used vs Invoke-WebRequest in order to support Nano Server which doesn't support the Invoke-WebRequest cmdlet.
-            Load-Assembly -Assembly System.Net.Http
+            try {
+                # HttpClient is used vs Invoke-WebRequest in order to support Nano Server which doesn't support the Invoke-WebRequest cmdlet.
+                Load-Assembly -Assembly System.Net.Http
 
-            if(-not $ProxyAddress) {
-                try {
-                    # Despite no proxy being explicitly specified, we may still be behind a default proxy
-                    $DefaultProxy = [System.Net.WebRequest]::DefaultWebProxy;
-                    if($DefaultProxy -and (-not $DefaultProxy.IsBypassed($Uri))) {
-                        $ProxyAddress = $DefaultProxy.GetProxy($Uri).OriginalString
-                        $ProxyUseDefaultCredentials = $true
+                if (-not $ProxyAddress) {
+                    try {
+                        # Despite no proxy being explicitly specified, we may still be behind a default proxy
+                        $DefaultProxy = [System.Net.WebRequest]::DefaultWebProxy;
+                        if ($DefaultProxy -and (-not $DefaultProxy.IsBypassed($Uri))) {
+                            $ProxyAddress = $DefaultProxy.GetProxy($Uri).OriginalString
+                            $ProxyUseDefaultCredentials = $true
+                        }
                     }
-                } catch {
-                    # Eat the exception and move forward as the above code is an attempt
-                    #    at resolving the DefaultProxy that may not have been a problem.
-                    $ProxyAddress = $null
-                    Say-Verbose("Exception ignored: $_.Exception.Message - moving forward...")
-                }
-            }
-
-            if($ProxyAddress) {
-                $HttpClientHandler = New-Object System.Net.Http.HttpClientHandler
-                $HttpClientHandler.Proxy =  New-Object System.Net.WebProxy -Property @{Address=$ProxyAddress;UseDefaultCredentials=$ProxyUseDefaultCredentials}
-                $HttpClient = New-Object System.Net.Http.HttpClient -ArgumentList $HttpClientHandler
-            }
-            else {
-
-                $HttpClient = New-Object System.Net.Http.HttpClient
-            }
-            # Default timeout for HttpClient is 100s.  For a 50 MB download this assumes 500 KB/s average, any less will time out
-            # 20 minutes allows it to work over much slower connections.
-            $HttpClient.Timeout = New-TimeSpan -Minutes 20
-            $Response = $HttpClient.GetAsync("${Uri}${FeedCredential}").Result
-            if (($Response -eq $null) -or (-not ($Response.IsSuccessStatusCode))) {
-                 # The feed credential is potentially sensitive info. Do not log FeedCredential to console output.
-                $ErrorMsg = "Failed to download $Uri."
-                if ($Response -ne $null) {
-                    $ErrorMsg += "  $Response"
+                    catch {
+                        # Eat the exception and move forward as the above code is an attempt
+                        #    at resolving the DefaultProxy that may not have been a problem.
+                        $ProxyAddress = $null
+                        Say-Verbose("Exception ignored: $_.Exception.Message - moving forward...")
+                    }
                 }
 
-                throw $ErrorMsg
-            }
+                if ($ProxyAddress) {
+                    $HttpClientHandler = New-Object System.Net.Http.HttpClientHandler
+                    $HttpClientHandler.Proxy = New-Object System.Net.WebProxy -Property @{Address = $ProxyAddress; UseDefaultCredentials = $ProxyUseDefaultCredentials }
+                    $HttpClient = New-Object System.Net.Http.HttpClient -ArgumentList $HttpClientHandler
+                }
+                else {
 
-             return $Response
-        }
-        finally {
-             if ($HttpClient -ne $null) {
-                $HttpClient.Dispose()
+                    $HttpClient = New-Object System.Net.Http.HttpClient
+                }
+                # Default timeout for HttpClient is 100s.  For a 50 MB download this assumes 500 KB/s average, any less will time out
+                # 20 minutes allows it to work over much slower connections.
+                $HttpClient.Timeout = New-TimeSpan -Minutes 20
+                $Response = $HttpClient.GetAsync("${Uri}${FeedCredential}").Result
+                if (($Response -eq $null) -or (-not ($Response.IsSuccessStatusCode))) {
+                    # The feed credential is potentially sensitive info. Do not log FeedCredential to console output.
+                    $ErrorMsg = "Failed to download $Uri."
+                    if ($Response -ne $null) {
+                        $ErrorMsg += "  $Response"
+                    }
+
+                    throw $ErrorMsg
+                }
+
+                return $Response
             }
-        }
-    })
+            finally {
+                if ($HttpClient -ne $null) {
+                    $HttpClient.Dispose()
+                }
+            }
+        })
 }
-
 
 function Get-Latest-Version-Info([string]$AzureFeed, [string]$Channel, [bool]$Coherent) {
     Say-Invocation $MyInvocation
@@ -304,20 +304,59 @@ function Get-Latest-Version-Info([string]$AzureFeed, [string]$Channel, [bool]$Co
     return $VersionInfo
 }
 
-
-function Get-Specific-Version-From-Version([string]$AzureFeed, [string]$Channel, [string]$Version) {
+function Parse-Jsonfile-For-Version([string]$JSonFile) {
     Say-Invocation $MyInvocation
 
-    switch ($Version.ToLower()) {
-        { $_ -eq "latest" } {
-            $LatestVersionInfo = Get-Latest-Version-Info -AzureFeed $AzureFeed -Channel $Channel -Coherent $False
-            return $LatestVersionInfo.Version
+    If (-Not (Test-Path $JSonFile)) {
+        throw "Unable to find '$JSonFile'"
+    }
+    try {
+        $JSonContent = Get-Content($JSonFile) -Raw | ConvertFrom-Json | Select-Object -expand "sdk" -ErrorAction SilentlyContinue
+    }
+    catch {
+        throw "Json file unreadable: '$JSonFile'"
+    }
+    if ($JSonContent) {
+        try {
+            $JSonContent.PSObject.Properties | ForEach-Object {
+                $PropertyName = $_.Name
+                if ($PropertyName -eq "version") {
+                    $Version = $_.Value
+                    Say-Verbose "Version = $Version"
+                }
+            }
         }
-        { $_ -eq "coherent" } {
-            $LatestVersionInfo = Get-Latest-Version-Info -AzureFeed $AzureFeed -Channel $Channel -Coherent $True
-            return $LatestVersionInfo.Version
+        catch {
+            throw "Unable to parse the SDK node in '$JSonFile'"
         }
-        default { return $Version }
+    }
+    else {
+        throw "Unable to find the SDK node in '$JSonFile'"
+    }
+    If ($Version -eq $null) {
+        throw "Unable to find the SDK:version node in '$JSonFile'"
+    }
+    return $Version
+}
+
+function Get-Specific-Version-From-Version([string]$AzureFeed, [string]$Channel, [string]$Version, [string]$JSonFile) {
+    Say-Invocation $MyInvocation
+
+    if (-not $JSonFile) {
+        switch ($Version.ToLower()) {
+            { $_ -eq "latest" } {
+                $LatestVersionInfo = Get-Latest-Version-Info -AzureFeed $AzureFeed -Channel $Channel -Coherent $False
+                return $LatestVersionInfo.Version
+            }
+            { $_ -eq "coherent" } {
+                $LatestVersionInfo = Get-Latest-Version-Info -AzureFeed $AzureFeed -Channel $Channel -Coherent $True
+                return $LatestVersionInfo.Version
+            }
+            default { return $Version }
+        }
+    }
+    else {
+        return Parse-Jsonfile-For-Version $JSonFile
     }
 }
 
@@ -382,28 +421,11 @@ function Resolve-Installation-Path([string]$InstallDir) {
     return $InstallDir
 }
 
-function Get-Version-Info-From-Version-File([string]$InstallRoot, [string]$RelativePathToVersionFile) {
-    Say-Invocation $MyInvocation
-
-    $VersionFile = Join-Path -Path $InstallRoot -ChildPath $RelativePathToVersionFile
-    Say-Verbose "Local version file: $VersionFile"
-
-    if (Test-Path $VersionFile) {
-        $VersionText = cat $VersionFile
-        Say-Verbose "Local version file text: $VersionText"
-        return Get-Version-Info-From-Version-Text $VersionText
-    }
-
-    Say-Verbose "Local version file not found."
-
-    return $null
-}
-
 function Is-Dotnet-Package-Installed([string]$InstallRoot, [string]$RelativePathToPackage, [string]$SpecificVersion) {
     Say-Invocation $MyInvocation
 
     $DotnetPackagePath = Join-Path -Path $InstallRoot -ChildPath $RelativePathToPackage | Join-Path -ChildPath $SpecificVersion
-    Say-Verbose "Is-Dotnet-Package-Installed: Path to a package: $DotnetPackagePath"
+    Say-Verbose "Is-Dotnet-Package-Installed: DotnetPackagePath=$DotnetPackagePath"
     return Test-Path $DotnetPackagePath -PathType Container
 }
 
@@ -473,7 +495,7 @@ function Extract-Dotnet-Package([string]$ZipPath, [string]$OutPath) {
             if (($PathWithVersion -eq $null) -Or ($DirectoriesToUnpack -contains $PathWithVersion)) {
                 $DestinationPath = Get-Absolute-Path $(Join-Path -Path $OutPath -ChildPath $entry.FullName)
                 $DestinationDir = Split-Path -Parent $DestinationPath
-                $OverrideFiles=$OverrideNonVersionedFiles -Or (-Not (Test-Path $DestinationPath))
+                $OverrideFiles = $OverrideNonVersionedFiles -Or (-Not (Test-Path $DestinationPath))
                 if ((-Not $DestinationPath.EndsWith("\")) -And $OverrideFiles) {
                     New-Item -ItemType Directory -Force -Path $DestinationDir | Out-Null
                     [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $DestinationPath, $OverrideNonVersionedFiles)
@@ -524,7 +546,8 @@ function Prepend-Sdk-InstallRoot-To-Path([string]$InstallRoot, [string]$BinFolde
         if (-Not $env:path.Contains($SuffixedBinPath)) {
             Say "Adding to current process PATH: `"$BinPath`". Note: This change will not be visible if PowerShell was run as a child process."
             $env:path = $SuffixedBinPath + $env:path
-        } else {
+        }
+        else {
             Say-Verbose "Current process PATH already contains `"$BinPath`""
         }
     }
@@ -534,7 +557,7 @@ function Prepend-Sdk-InstallRoot-To-Path([string]$InstallRoot, [string]$BinFolde
 }
 
 $CLIArchitecture = Get-CLIArchitecture-From-Architecture $Architecture
-$SpecificVersion = Get-Specific-Version-From-Version -AzureFeed $AzureFeed -Channel $Channel -Version $Version
+$SpecificVersion = Get-Specific-Version-From-Version -AzureFeed $AzureFeed -Channel $Channel -Version $Version -JSonFile $JSonFile
 $DownloadLink = Get-Download-Link -AzureFeed $AzureFeed -SpecificVersion $SpecificVersion -CLIArchitecture $CLIArchitecture
 $LegacyDownloadLink = Get-LegacyDownload-Link -AzureFeed $AzureFeed -SpecificVersion $SpecificVersion -CLIArchitecture $CLIArchitecture
 
@@ -550,14 +573,14 @@ if ($DryRun) {
     }
     $RepeatableCommand = ".\$ScriptName -Version `"$SpecificVersion`" -InstallDir `"$InstallRoot`" -Architecture `"$CLIArchitecture`""
     if ($Runtime -eq "dotnet") {
-       $RepeatableCommand+=" -Runtime `"dotnet`""
+        $RepeatableCommand += " -Runtime `"dotnet`""
     }
     elseif ($Runtime -eq "aspnetcore") {
-       $RepeatableCommand+=" -Runtime `"aspnetcore`""
+        $RepeatableCommand += " -Runtime `"aspnetcore`""
     }
     foreach ($key in $MyInvocation.BoundParameters.Keys) {
-        if (-not (@("Architecture","Channel","DryRun","InstallDir","Runtime","SharedRuntime","Version") -contains $key)) {
-            $RepeatableCommand+=" -$key `"$($MyInvocation.BoundParameters[$key])`""
+        if (-not (@("Architecture", "Channel", "DryRun", "InstallDir", "Runtime", "SharedRuntime", "Version") -contains $key)) {
+            $RepeatableCommand += " -$key `"$($MyInvocation.BoundParameters[$key])`""
         }
     }
     Say "Repeatable invocation: $RepeatableCommand"
@@ -636,8 +659,22 @@ if ($DownloadFailed) {
 Say "Extracting zip from $DownloadLink"
 Extract-Dotnet-Package -ZipPath $ZipPath -OutPath $InstallRoot
 
-#  Check if the SDK version is now installed; if not, fail the installation.
-$isAssetInstalled = Is-Dotnet-Package-Installed -InstallRoot $InstallRoot -RelativePathToPackage $dotnetPackageRelativePath -SpecificVersion $SpecificVersion
+#  Check if the SDK version is installed; if not, fail the installation.
+$isAssetInstalled = $false
+
+# if the version contains "RTM" or "servicing"; check if a 'release-type' SDK version is installed.
+if ($SpecificVersion -Match "rtm" -or $SpecificVersion -Match "servicing") {
+    $ReleaseVersion = $SpecificVersion.Split("-")[0]
+    Say-Verbose "Checking installation: version = $ReleaseVersion"
+    $isAssetInstalled = Is-Dotnet-Package-Installed -InstallRoot $InstallRoot -RelativePathToPackage $dotnetPackageRelativePath -SpecificVersion $ReleaseVersion
+}
+
+#  Check if the SDK version is installed.
+if (!$isAssetInstalled) {
+    Say-Verbose "Checking installation: version = $SpecificVersion"
+    $isAssetInstalled = Is-Dotnet-Package-Installed -InstallRoot $InstallRoot -RelativePathToPackage $dotnetPackageRelativePath -SpecificVersion $SpecificVersion
+}
+
 if (!$isAssetInstalled) {
     throw "`"$assetName`" with version = $SpecificVersion failed to install with an unknown error."
 }
