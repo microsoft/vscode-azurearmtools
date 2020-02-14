@@ -6,10 +6,10 @@
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\",",
             "    \"contentVersion\": \"1.0.0.0\",",
             "    \"parameters\": {},",
+            "    \"functions\": []",
             "    \"variables\": {},",
             "    \"resources\": [],",
             "    \"outputs\": {},",
-            "    \"functions\": []",
             "}"
         ],
         "description": "Resource Group Template"
@@ -21,10 +21,10 @@
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#\",",
             "    \"contentVersion\": \"1.0.0.0\",",
             "    \"parameters\": {},",
+            "    \"functions\": []",
             "    \"variables\": {},",
             "    \"resources\": [],",
             "    \"outputs\": {},",
-            "    \"functions\": []",
             "}"
         ],
         "description": "Subscription Template"
@@ -36,10 +36,10 @@
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#\",",
             "    \"contentVersion\": \"1.0.0.0\",",
             "    \"parameters\": {},",
+            "    \"functions\": []",
             "    \"variables\": {},",
             "    \"resources\": [],",
             "    \"outputs\": {},",
-            "    \"functions\": []",
             "}"
         ],
         "description": "Management Group Template"
@@ -51,10 +51,10 @@
             "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#\",",
             "    \"contentVersion\": \"1.0.0.0\",",
             "    \"parameters\": {},",
+            "    \"functions\": []",
             "    \"variables\": {},",
             "    \"resources\": [],",
             "    \"outputs\": {},",
-            "    \"functions\": []",
             "}"
         ],
         "description": "Tenant Template"
