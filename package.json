@@ -102,7 +102,7 @@
                         "None"
                     ],
                     "default": "Warning",
-                    "description": "Sets the trace (log) level in the Output window for the Azure Template Language Server"
+                    "description": "Sets the trace (log) level in the Output window for the Azure Template Language Server (requires restart)"
                 },
                 "azureResourceManagerTools.languageServer.dotnetExePath": {
                     "type": "string",
