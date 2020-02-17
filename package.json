@@ -177,6 +177,28 @@
             }
         ],
         "menus": {
+            "commandPalette": [
+                {
+                    "command": "azurerm-vscode-tools.sortFunctions",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortOutputs",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortParameters",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortResources",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortVariables",
+                    "when": "never"
+                }
+            ],
             "editor/context": [
                 {
                     "command": "azurerm-vscode-tools.reloadSchemas",
