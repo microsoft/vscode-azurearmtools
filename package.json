@@ -45,7 +45,12 @@
         "onLanguage:jsonc",
         "onCommand:azurerm-vscode-tools.uninstallDotnet",
         "onCommand:azurerm-vscode-tools.reloadSchemas",
-        "onCommand:azurerm-vscode-tools.sortTemplate"
+        "onCommand:azurerm-vscode-tools.sortTemplate",
+        "onCommand:azurerm-vscode-tools.sortFunctions",
+        "onCommand:azurerm-vscode-tools.sortOutputs",
+        "onCommand:azurerm-vscode-tools.sortParameters",
+        "onCommand:azurerm-vscode-tools.sortResources",
+        "onCommand:azurerm-vscode-tools.sortVariables"
     ],
     "contributes": {
         "grammars": [
