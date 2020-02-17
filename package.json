@@ -214,27 +214,33 @@
             "view/item/context": [
                 {
                     "command": "azurerm-vscode-tools.sortTemplate",
-                    "when": "azurerm-vscode-tools.template-outline.active == true"
+                    "when": "azurerm-vscode-tools.template-outline.active == true",
+                    "group": "arm-template"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortFunctions",
-                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == functions"
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == functions",
+                    "group": "arm-template"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortOutputs",
-                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == outputs"
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == outputs",
+                    "group": "arm-template"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortParameters",
-                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == parameters"
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == parameters",
+                    "group": "arm-template"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortResources",
-                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == resources"
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == resources",
+                    "group": "arm-template"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortVariables",
-                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == variables"
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == variables",
+                    "group": "arm-template"
                 }
             ]
         }
