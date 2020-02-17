@@ -202,11 +202,13 @@
             "editor/context": [
                 {
                     "command": "azurerm-vscode-tools.reloadSchemas",
-                    "when": "editorLangId==arm-template"
+                    "when": "editorLangId==arm-template",
+                    "group": "arm-template"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortTemplate",
-                    "when": "editorLangId==arm-template"
+                    "when": "editorLangId==arm-template",
+                    "group": "arm-template"
                 }
             ],
             "view/item/context": [
