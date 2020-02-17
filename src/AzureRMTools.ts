@@ -94,7 +94,7 @@ export class AzureRMTools {
             await reloadSchemas();
         });
         registerCommand("azurerm-vscode-tools.sortTemplate", async () => {
-            const sortType = await vscode.window.showQuickPick(getQuickPickItems(), { placeHolder: 'What do you want to sort' });
+            const sortType = await vscode.window.showQuickPick(getQuickPickItems(), { placeHolder: 'What do you want to sort?' });
             if (sortType) {
                 await this.sortTemplate(sortType.value);
             }
