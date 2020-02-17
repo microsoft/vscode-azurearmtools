@@ -147,32 +147,32 @@
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Sort template...",
+                "title": "Sort Template...",
                 "command": "azurerm-vscode-tools.sortTemplate"
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Sort functions",
+                "title": "Sort Functions",
                 "command": "azurerm-vscode-tools.sortFunctions"
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Sort outputs",
+                "title": "Sort Outputs",
                 "command": "azurerm-vscode-tools.sortOutputs"
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Sort parameters",
+                "title": "Sort Parameters",
                 "command": "azurerm-vscode-tools.sortParameters"
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Sort resources",
+                "title": "Sort Resources",
                 "command": "azurerm-vscode-tools.sortResources"
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Sort variables",
+                "title": "Sort Variables",
                 "command": "azurerm-vscode-tools.sortVariables"
             }
         ],
