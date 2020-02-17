@@ -150,6 +150,31 @@ suite("SortTemplate", async (): Promise<void> => {
             }`);
     });
 
+    test("Variables with multi line comments", async () => {
+        await testSortTemplate(
+            variablesCommand,
+            `{
+                "variables": {
+                    /* Multi
+                    line comment 2*/
+                    "variable2": "value2",
+                    /* Multi
+                    line comment 1*/
+                    "variable1": "value1"
+                }
+            }`,
+            `{
+                "variables": {
+                    /* Multi
+                    line comment 1*/
+                    "variable1": "value1",
+                    /* Multi
+                    line comment 2*/
+                    "variable2": "value2"
+                }
+            }`);
+    });
+
     test("Resources", async () => {
         await testSortTemplate(
             resourcesCommand,
@@ -215,6 +240,51 @@ suite("SortTemplate", async (): Promise<void> => {
                                 "apiVersion": "2015-06-15"
                             }
                         ]
+                    }
+                ]
+            }`);
+    });
+
+    test("Resources with multiple lines", async () => {
+        await testSortTemplate(
+            resourcesCommand,
+            `{
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "resources": [
+                    {
+                        "type": "Microsoft.Storage/storageAccounts",
+                        "apiVersion":"2019-06-01",
+                        "name": "[concat(
+                            'String 2',
+                            'String 1')]"
+                    },
+                    {
+                        "type": "Microsoft.Storage/storageAccounts",
+                        "apiVersion":"2019-06-01",
+                        "name": "[concat(
+                            'String 1',
+                            'String 2')]"
+                    }
+                ]
+            }`,
+            `{
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "resources": [
+                    {
+                        "type": "Microsoft.Storage/storageAccounts",
+                        "apiVersion":"2019-06-01",
+                        "name": "[concat(
+                            'String 1',
+                            'String 2')]"
+                    },
+                    {
+                        "type": "Microsoft.Storage/storageAccounts",
+                        "apiVersion":"2019-06-01",
+                        "name": "[concat(
+                            'String 2',
+                            'String 1')]"
                     }
                 ]
             }`);
