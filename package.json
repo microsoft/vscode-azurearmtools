@@ -147,7 +147,7 @@
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Sort template",
+                "title": "Sort template...",
                 "command": "azurerm-vscode-tools.sortTemplate"
             },
             {
