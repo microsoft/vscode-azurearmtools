@@ -14,6 +14,13 @@ import { commands, window, workspace } from "vscode";
 import { getTempFilePath } from "../support/getTempFilePath";
 
 suite("SortTemplate", async (): Promise<void> => {
+    const topLevelCommand = 'azurerm-vscode-tools.sortTopLevel';
+    const parameterCommand = 'azurerm-vscode-tools.sortParameters';
+    const variablesCommand = 'azurerm-vscode-tools.sortVariables';
+    const resourcesCommand = 'azurerm-vscode-tools.sortResources';
+    const outputsCommand = 'azurerm-vscode-tools.sortOutputs';
+    const functionsCommand = 'azurerm-vscode-tools.sortFunctions';
+
     async function testSortTemplate(command: string, template: String, expected: String): Promise<void> {
         const tempPath = getTempFilePath(`sortTemplate`, '.azrm');
 
@@ -31,7 +38,7 @@ suite("SortTemplate", async (): Promise<void> => {
 
     test("Parameters", async () => {
         await testSortTemplate(
-            'azurerm-vscode-tools.sortParameters',
+            parameterCommand,
             `{
             "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
             "contentVersion": "1.0.0.0",
@@ -54,7 +61,7 @@ suite("SortTemplate", async (): Promise<void> => {
 
     test("Parameters with comments", async () => {
         await testSortTemplate(
-            'azurerm-vscode-tools.sortParameters',
+            parameterCommand,
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -87,7 +94,7 @@ suite("SortTemplate", async (): Promise<void> => {
 
     test("Parameters with multiple comments", async () => {
         await testSortTemplate(
-            'azurerm-vscode-tools.sortParameters',
+            parameterCommand,
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -130,7 +137,7 @@ suite("SortTemplate", async (): Promise<void> => {
 
     test("Variables", async () => {
         await testSortTemplate(
-            'azurerm-vscode-tools.sortVariables',
+            variablesCommand,
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -145,7 +152,7 @@ suite("SortTemplate", async (): Promise<void> => {
 
     test("Resources", async () => {
         await testSortTemplate(
-            'azurerm-vscode-tools.sortResources',
+            resourcesCommand,
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -172,7 +179,7 @@ suite("SortTemplate", async (): Promise<void> => {
 
     test("Resources with child resources", async () => {
         await testSortTemplate(
-            'azurerm-vscode-tools.sortResources',
+            resourcesCommand,
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -215,7 +222,7 @@ suite("SortTemplate", async (): Promise<void> => {
 
     test("Outputs", async () => {
         await testSortTemplate(
-            'azurerm-vscode-tools.sortOutputs',
+            outputsCommand,
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -242,7 +249,7 @@ suite("SortTemplate", async (): Promise<void> => {
 
     test("Function namespaces", async () => {
         await testSortTemplate(
-            'azurerm-vscode-tools.sortFunctions',
+            functionsCommand,
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -287,7 +294,7 @@ suite("SortTemplate", async (): Promise<void> => {
 
     test("Functions inside namespace", async () => {
         await testSortTemplate(
-            'azurerm-vscode-tools.sortFunctions',
+            functionsCommand,
             `{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -320,7 +327,7 @@ suite("SortTemplate", async (): Promise<void> => {
 
     test("Top level properties", async () => {
         await testSortTemplate(
-            'azurerm-vscode-tools.sortTopLevel',
+            topLevelCommand,
             `{
                 // Outputs
                 "outputs": {},
@@ -349,5 +356,38 @@ suite("SortTemplate", async (): Promise<void> => {
                 // Outputs
                 "outputs": {}
             }`);
+    });
+
+    const emptyTemplate: string = `{
+        "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+        "contentVersion": "1.0.0.0"
+    }`;
+
+    test("Sort empty template (top level)", async () => {
+        await testSortTemplate(topLevelCommand, emptyTemplate, emptyTemplate);
+    });
+
+    test("Sort empty template (parameters)", async () => {
+        await testSortTemplate(parameterCommand, emptyTemplate, emptyTemplate);
+    });
+
+    test("Sort empty template (variables)", async () => {
+        await testSortTemplate(variablesCommand, emptyTemplate, emptyTemplate);
+    });
+
+    test("Sort empty template (resources)", async () => {
+        await testSortTemplate(resourcesCommand, emptyTemplate, emptyTemplate);
+    });
+
+    test("Sort empty template (parameters)", async () => {
+        await testSortTemplate(parameterCommand, emptyTemplate, emptyTemplate);
+    });
+
+    test("Sort empty template (outputs)", async () => {
+        await testSortTemplate(outputsCommand, emptyTemplate, emptyTemplate);
+    });
+
+    test("Sort empty template (functions)", async () => {
+        await testSortTemplate(functionsCommand, emptyTemplate, emptyTemplate);
     });
 });
