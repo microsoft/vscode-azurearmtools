@@ -134,11 +134,14 @@ async function sortFunctions(template: DeploymentTemplate): Promise<void> {
 
 function createCommentsMap(tokens: Json.Token[], lastSpan: language.Span): { [pos: number]: language.Span } {
     let commentsMap: { [pos: number]: language.Span } = {};
+    let commentsSpan: language.Span | undefined;
     tokens.forEach((token, index) => {
         if (token.type === 12) {
-            if (index < tokens.length - 1) {
-                let span = tokens[index + 1].span;
-                commentsMap[span.startIndex] = token.span;
+            commentsSpan = commentsSpan === undefined ? token.span : token.span.union(commentsSpan);
+        } else {
+            if (commentsSpan !== undefined) {
+                commentsMap[token.span.startIndex] = commentsSpan;
+                commentsSpan = undefined;
             }
         }
         if (token.span.startIndex > lastSpan.endIndex) {

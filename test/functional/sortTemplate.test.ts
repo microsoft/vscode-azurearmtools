@@ -85,6 +85,49 @@ suite("SortTemplate", async (): Promise<void> => {
             }`);
     });
 
+    test("Parameters with multiple comments", async () => {
+        await testSortTemplate(
+            'azurerm-vscode-tools.sortParameters',
+            `{
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "parameters": {
+                    //Comment for parameter 2.1
+                    /* Comment for parameter 2.2 */
+                    //Comment for parameter 2.3
+                    "parameter2": {
+                       "type": "string"
+                    },
+                    /* Comment for parameter 1.1 */
+                    //Comment for parameter 1.2
+                    //Comment for parameter 1.3
+                    "parameter1": {
+                       "type": "string"
+                    }
+                    //Comment that should not be sorted
+                }
+            }`,
+            `{
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "parameters": {
+                    /* Comment for parameter 1.1 */
+                    //Comment for parameter 1.2
+                    //Comment for parameter 1.3
+                    "parameter1": {
+                       "type": "string"
+                    },
+                    //Comment for parameter 2.1
+                    /* Comment for parameter 2.2 */
+                    //Comment for parameter 2.3
+                    "parameter2": {
+                       "type": "string"
+                    }
+                    //Comment that should not be sorted
+                }
+            }`);
+    });
+
     test("Variables", async () => {
         await testSortTemplate(
             'azurerm-vscode-tools.sortVariables',
