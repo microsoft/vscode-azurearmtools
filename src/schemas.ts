@@ -3,10 +3,15 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-export const containsArmSchemaRegexString =
+const containsArmSchemaRegexString =
     `https?:\/\/schema\.management\.azure\.com\/schemas\/[^"\/]+\/[a-zA-Z]*[dD]eploymentTemplate\.json#?`;
-export const containsArmSchemaRegex = new RegExp(containsArmSchemaRegexString, 'i');
-export const isArmSchemaRegex = new RegExp(`^${containsArmSchemaRegexString}$`, 'i');
+const containsArmSchemaRegex = new RegExp(containsArmSchemaRegexString, 'i');
+const isArmSchemaRegex = new RegExp(`^${containsArmSchemaRegexString}$`, 'i');
+
+const containsParamsSchemaRegexString =
+    `https?:\/\/schema\.management\.azure\.com\/schemas\/[^"\/]+\/[a-zA-Z]*[dD]eploymentParameters\.json#?`;
+const containsParamsSchemaRegex = new RegExp(containsParamsSchemaRegexString, 'i');
+const isParamsSchemaRegex = new RegExp(`^${containsParamsSchemaRegexString}$`, 'i');
 
 export function containsArmSchema(json: string): boolean {
     return !!json && containsArmSchemaRegex.test(json);
@@ -14,6 +19,14 @@ export function containsArmSchema(json: string): boolean {
 
 export function isArmSchema(json: string | undefined | null): boolean {
     return !!json && isArmSchemaRegex.test(json);
+}
+
+export function containsParamsSchema(json: string): boolean {
+    return !!json && containsParamsSchemaRegex.test(json);
+}
+
+export function isParamsSchema(json: string | undefined | null): boolean {
+    return !!json && isParamsSchemaRegex.test(json);
 }
 
 // Current root schemas:

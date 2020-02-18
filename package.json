@@ -2,7 +2,7 @@
     "name": "azurerm-vscode-tools",
     "displayName": "Azure Resource Manager (ARM) Tools",
     "description": "Language server, editing tools and snippets for Azure Resource Manager (ARM) template files.",
-    "version": "0.8.5-alpha",
+    "version": "0.9.0-alpha",
     "publisher": "msazurermtools",
     "config": {
         "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20121.3"
@@ -50,7 +50,10 @@
         "onCommand:azurerm-vscode-tools.sortOutputs",
         "onCommand:azurerm-vscode-tools.sortParameters",
         "onCommand:azurerm-vscode-tools.sortResources",
-        "onCommand:azurerm-vscode-tools.sortVariables"
+        "onCommand:azurerm-vscode-tools.sortVariables",
+        "onCommand:azurerm-vscode-tools.selectParameterFile",
+        "onCommand:azurerm-vscode-tools.openParameterFile",
+        "onCommand:azurerm-vscode-tools.resetGlobalState"
     ],
     "contributes": {
         "grammars": [
@@ -118,6 +121,19 @@
                     "type": "boolean",
                     "description": "Check if the schema for deployment templates is using an out-of-date version and suggest updating",
                     "default": true
+                },
+                "azureResourceManagerTools.checkForMatchingParamFiles": {
+                    "type": "boolean",
+                    "description": "Check if an opened template file has a matching params file and ask to use it",
+                    "default": true
+                },
+                "azureResourceManagerTools.parameterFiles": {
+                    "type": "object",
+                    "description": "Specifies which parameter file to associate with each given template file. Specifying the parameter file allows more thorough validation.",
+                    "default": {},
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -179,6 +195,23 @@
                 "category": "Azure Resource Manager Tools",
                 "title": "Sort Variables",
                 "command": "azurerm-vscode-tools.sortVariables"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Select Parameter File...",
+                "command": "azurerm-vscode-tools.selectParameterFile",
+                "enablement": "editorLangId==arm-template"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Open Associated Parameter File",
+                "command": "azurerm-vscode-tools.openParameterFile",
+                "enablement": "editorLangId==arm-template"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Reset Global State",
+                "command": "azurerm-vscode-tools.resetGlobalState"
             }
         ],
         "menus": {
@@ -207,13 +240,23 @@
             "editor/context": [
                 {
                     "command": "azurerm-vscode-tools.reloadSchemas",
-                    "when": "editorLangId==arm-template",
-                    "group": "arm-template"
+                    "group": "zzz_arm-template@1",
+                    "when": "editorLangId==arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.selectParameterFile",
+                    "group": "zzz_arm-template@2",
+                    "when": "editorLangId==arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.openParameterFile",
+                    "group": "zzz_arm-template@3",
+                    "when": "editorLangId==arm-template"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortTemplate",
                     "when": "editorLangId==arm-template",
-                    "group": "arm-template"
+                    "group": "zzz_arm-template@4"
                 }
             ],
             "view/item/context": [
@@ -246,6 +289,30 @@
                     "command": "azurerm-vscode-tools.sortVariables",
                     "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == variables",
                     "group": "arm-template"
+                }
+            ],
+            "editor/title": [
+                {
+                    "command": "azurerm-vscode-tools.selectParameterFile",
+                    "group": "zzz_arm-template@2",
+                    "when": "editorLangId==arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.openParameterFile",
+                    "group": "zzz_arm-template@3",
+                    "when": "editorLangId==arm-template"
+                }
+            ],
+            "editor/title/context": [
+                {
+                    "command": "azurerm-vscode-tools.selectParameterFile",
+                    "group": "zzz_arm-template@2",
+                    "when": "editorLangId==arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.openParameterFile",
+                    "group": "zzz_arm-template@3",
+                    "when": "editorLangId==arm-template"
                 }
             ]
         }
