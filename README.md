@@ -4,28 +4,27 @@
 
 This extension provides language support for Azure Resource Manager deployment templates and template language expressions.
 
+The Azure Resource Manage (ARM) Tools for Visual Studio Code provids language support, resource snipppets, and resource auto-completion to help you create and validate Azure Resource Manager templates.
+
+![ARM Tools creating web app](./images/arm-tools.gif)
+
 ## Features
 
-- Provides a language server that understands Azure Resource Manager deployment template files
+- Azure Resource Manager template language server for providing ARM template specific language completion, validation, and error guidance.
+- ARM template resources are validated against Azure schemas which narrow down validation based on the resource type and apiVersion properties for each resource.
 - ARM Template Outline view for easy navigation through large templates
 - Colorization for Template Language Expressions (TLE)
 - Analyze and validate JSON syntax, JSON schema conformance for Azure resources, string expressions issues that would affect deployment
-  - **NEW in 0.8.0!** Our new language server now has a better understanding of Azure Resource Manager templates and can therefore provide a better error and completion experience beyond that provided using standard JSON validation
-    - It narrows down its schema validation based on the resource type and apiVersion properties of each resource.
-    - No longer suggests changing the resource type if the apiVersion is not supported, or if a property is missing or invalid (as tools using standard JSON validation would do)
-    - Errors provide better guidance for what actually needs to be fixed in each resource to match the schema
-    - Greatly improved completion speed
-    - Greatly reduced memory usage
-    - Schema validation now is case-insensitive and follows other conventions matching the Azure Resource Manager backend's behavior
-    - Note: The Azure schemas (which are read and interpreted by this extension) are undergoing continual improvement
-- IntelliSense for string expressions
 
+- Intellisense for
   - [Built-in function names](https://go.microsoft.com/fwlink/?LinkID=733958)
   - [Parameter references](https://go.microsoft.com/fwlink/?LinkID=733959)
   - [Variable references](https://go.microsoft.com/fwlink/?LinkID=733960)
   - [resourceGroup() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#resourcegroup)
   - [subscription() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#subscription)
   - Properties of references to variables that are objects
+
+- Other features:
   - [Signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
   - [Go To Definition](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-definition) for variable and parameter references
   - [Peek](https://code.visualstudio.com/docs/editor/editingevolved#_peek) for variable and parameter definitions
@@ -44,7 +43,7 @@ This extension provides language support for Azure Resource Manager deployment t
 
     - `arm!` - Adds the framework for a full deployment template file for resource group deployments
 
-      If you have not turned off auto detection of template files, you will now have access to all the snippets for "Azure Resource Manager Template" files
+      If you have not turned off auto-detection of template files, you will now have access to all the snippets for "Azure Resource Manager Template" files
 
     - `arm!s` - Adds the framework for a full deployment template file for subscription deployments
 
@@ -61,6 +60,11 @@ This extension provides language support for Azure Resource Manager deployment t
       Add new parameters, variables, user functions and user namespaces.
     - Resources - type `arm-` to see the other 70+ snippets for creating new resources of various types. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine.
 
+
+## Troubleshooting
+
+
+
 ## Automatic Detection of deployment template files
 
 By default, the extension recognizes a .json or .jsonc file as a deployment template file based on the \$schema specified in the file (for instance, `https://schema.management.azure.com/schemas/2018-05-01/deploymentTemplate.json#`) and will switch the editor language to "Azure Resource Manager Template" automatically. If you do not want that behavior, you can set the `azureResourceManagerTools.autoDetectJsonTemplates` setting to false and use the below methods to determine which files to treat as deployment templates.
@@ -75,14 +79,14 @@ Besides automatic detection, you can also use the `files.associations` setting t
 
 ## Related Links
 
-- [VS Code Azure Resource Manager snippets and cross platform deployment scripts](https://go.microsoft.com/fwlink/?LinkID=733962)
+- [VS Code Azure Resource Manager snippets and cross-platform deployment scripts](https://go.microsoft.com/fwlink/?LinkID=733962)
 - [Azure Quickstart Templates](https://go.microsoft.com/fwlink/?LinkID=734038)
 
 ## Contributing
 
 There are several ways you can contribute to our [repo](https://github.com/Microsoft/vscode-azurearmtools):
 
-- **Ideas, feature requests and bugs**: We are open to all ideas and we want to get rid of bugs! Use the [Issues](https://github.com/Microsoft/vscode-azurearmtools/issues) section to report a new issue, provide your ideas or contribute to existing threads.
+- **Ideas, feature requests, and bugs**: We are open to all ideas and we want to get rid of bugs! Use the [Issues](https://github.com/Microsoft/vscode-azurearmtools/issues) section to report a new issue, provide your ideas or contribute to existing threads.
 - **Documentation**: Found a typo or strangely worded sentences? Submit a PR!
 - **Snippets**: Have a fix for a snippet or a new snippet idea? File an [Issue](https://github.com/Microsoft/vscode-azurearmtools/issues) or submit a PR!
   - See [our snippets file for ARM templates](https://github.com/microsoft/vscode-azurearmtools/blob/master/assets/armsnippets.jsonc)
@@ -95,7 +99,7 @@ There are several ways you can contribute to our [repo](https://github.com/Micro
 
 ### Legal
 
-Before we can accept your pull request you will need to sign a **Contribution License Agreement**. All you need to do is to submit a pull request, then the PR will get appropriately labelled (e.g. `cla-required`, `cla-norequired`, `cla-signed`, `cla-already-signed`). If you already signed the agreement we will continue with reviewing the PR, otherwise system will tell you how you can sign the CLA. Once you sign the CLA all future PR's will be labeled as `cla-signed`.
+Before we can accept your pull request you will need to sign a **Contribution License Agreement**. All you need to do is to submit a pull request, then the PR will get appropriately labeled (e.g. `cla-required`, `cla-norequired`, `cla-signed`, `cla-already-signed`). If you already signed the agreement we will continue with reviewing the PR, otherwise, the system will tell you how you can sign the CLA. Once you sign the CLA all future PR's will be labeled as `cla-signed`.
 
 ### Code of Conduct
 
@@ -107,6 +111,6 @@ VS Code collects usage data and sends it to Microsoft to help improve our produc
 
 ## License
 
-The source code in our [public repository](https://github.com/Microsoft/vscode-azurearmtools) is licensed under the [MIT license](LICENSE.md). The public source code currently contains functionality related to the parsing and validation of template expression strings, but does not contain functionality related to JSON parsing and validation or backend template validation.
+The source code in our [public repository](https://github.com/Microsoft/vscode-azurearmtools) is licensed under the [MIT license](LICENSE.md). The public source code currently contains functionality related to the parsing and validation of template expression strings but does not contain functionality related to JSON parsing and validation or backend template validation.
 
-The extension as it is built in Azure DevOps and [published](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) to the VS Code Marketplace is a distribution of the public repository and is bundled with the Azure Resource Manager language service binaries. The published extension and language service binaries are licensed under a traditional Microsoft product license.
+The extension as it is built-in Azure DevOps and [published](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) to the VS Code Marketplace is a distribution of the public repository and is bundled with the Azure Resource Manager language service binaries. The published extension and language service binaries are licensed under a traditional Microsoft product license.
