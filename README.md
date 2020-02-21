@@ -53,13 +53,6 @@ Snippets for deployment template and 70+ Azure resources.
 | `arm-userfunc-namespace` | Adds a user function namespace to a template. |
 | `arm-` | Displays 70+ snippets for creating Azure resources. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine. |
 
-## Troubleshooting
-
-Use the following wiki article to help troubleshoot these known issues.
-
-- [Could not find/download: ".NET Core Runtime" with version = 2.2.5](https://github.com/microsoft/vscode-azurearmtools/wiki/Troubleshooting-DotNet-Acquisition)
-- [Unrecognized Resource API Version](https://github.com/microsoft/vscode-azurearmtools/wiki/Unrecognized-Resource-API-Version)
-
 
 ## Automatic Detection of deployment template files
 
@@ -68,10 +61,17 @@ By default, the extension recognizes a .json or .jsonc file as a deployment temp
 Besides automatic detection, you can also use the `files.associations` setting to set up your own specific mappings based on specific files paths or patterns to mark them as deployment templates, e.g.
 
 ```json
-    "files.associations": {
-        "*.azrm.json": "arm-template" // Treat these files as deployment templates
-    }
+"files.associations": {
+    "*.azrm.json": "arm-template" // Treat these files as deployment templates
+}
 ```
+
+## Troubleshooting
+
+Use the following wiki article to help troubleshoot these known issues.
+
+- [Could not find/download: ".NET Core Runtime" with version = 2.2.5](https://github.com/microsoft/vscode-azurearmtools/wiki/Troubleshooting-DotNet-Acquisition)
+- [Unrecognized Resource API Version](https://github.com/microsoft/vscode-azurearmtools/wiki/Unrecognized-Resource-API-Version)
 
 ## Related Links
 
@@ -93,11 +93,11 @@ There are several ways you can contribute to our [repo](https://github.com/Micro
   - To build, press `F1` and type in `Tasks: Run Build Task`.
   - Debug: press `F5` to start debugging the extension.
 
-### Legal
+## Legal
 
 Before we can accept your pull request you will need to sign a **Contribution License Agreement**. All you need to do is to submit a pull request, then the PR will get appropriately labeled (e.g. `cla-required`, `cla-norequired`, `cla-signed`, `cla-already-signed`). If you already signed the agreement we will continue with reviewing the PR, otherwise, the system will tell you how you can sign the CLA. Once you sign the CLA all future PR's will be labeled as `cla-signed`.
 
-### Code of Conduct
+## Code of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
