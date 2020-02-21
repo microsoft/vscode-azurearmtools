@@ -40,21 +40,25 @@ The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language 
 
 Snippets for deployment template and 70+ Azure resources.
 
-| | |
+| Snippet | Description |
 |---|---|
 | `arm!` | Adds the framework for a full deployment template file for resource group deployments. |
 |`arm!s` | Adds the framework for a full deployment template file for subscription deployments. |
 | `arm!mg` | Adds the framework for a full deployment template file for management group deployments. |
 | `arm!t` | Adds the framework for a full deployment template file for tenant deployments. |
 | `armp!` | Adds the framework for a full deployment template parameters file. |
-| `arm-param` | |
-| `arm-variable` | |
-| `arm-userfunc` | |
-| `arm-userfunc-namespace` | |
-| `arm-` | Displays the other 70+ snippets for creating new resources of various types. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine. |
+| `arm-param` | Adds a parameter to a template. |
+| `arm-variable` | Adds a variable to a template. |
+| `arm-userfunc` | Adds a user function to a template. |
+| `arm-userfunc-namespace` | Adds a user function namespace to a template. |
+| `arm-` | Displays 70+ snippets for creating Azure resources. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine. |
 
 ## Troubleshooting
 
+Use the following wiki article to help troubleshoot these known issues.
+
+- [Could not find/download: ".NET Core Runtime" with version = 2.2.5](https://github.com/microsoft/vscode-azurearmtools/wiki/Troubleshooting-DotNet-Acquisition)
+- [Unrecognized Resource API Version](https://github.com/microsoft/vscode-azurearmtools/wiki/Unrecognized-Resource-API-Version)
 
 
 ## Automatic Detection of deployment template files
