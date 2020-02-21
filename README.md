@@ -2,17 +2,17 @@
 
 [![Version](https://vsmarketplacebadge.apphb.com/version/msazurermtools.azurerm-vscode-tools.svg)](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) [![Installs](https://vsmarketplacebadge.apphb.com/installs-short/msazurermtools.azurerm-vscode-tools.svg)](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) [![Build Status](https://dev.azure.com/ms-azuretools/AzCode/_apis/build/status/vscode-azurearmtools)](https://dev.azure.com/ms-azuretools/AzCode/_build/latest?definitionId=10)
 
-The Azure Resource Manage (ARM) Tools for Visual Studio Code provids language support, resource snipppets, and resource auto-completion to help you create and validate Azure Resource Manager templates.
+The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language support, resource snippets, and resource auto-completion to help you create and validate Azure Resource Manager templates.
 
 ![ARM Tools creating web app](./images/arm-tools.gif)
 
-## Features
+## Language Server
 
-- Azure Resource Manager template language server for providing ARM template specific language completion, validation, and error guidance.
-- ARM template resources are validated against Azure schemas which narrow down validation based on the resource type and apiVersion properties for each resource.
+- Azure Resource Manager template language server for providing ARM template language completion, validation, and error guidance.
+- Resources are validated against Azure schemas which provides validation against resource type and apiVersion properties.
 - ARM Template Outline view for easy navigation through large templates
 - Colorization for Template Language Expressions (TLE)
-- Analyze and validate JSON syntax, JSON schema conformance for Azure resources, string expressions issues that would affect deployment
+- Analyze and validate JSON syntax, JSON schema conformance, and string expressions.
 
 ## Intellisense
 
@@ -38,21 +38,20 @@ The Azure Resource Manage (ARM) Tools for Visual Studio Code provids language su
 
 ## Snippets
 
-Type `arm` in the editor to see the available snippets
+Snippets for deployment template and 70+ Azure resources.
 
-- `arm!` - Adds the framework for a full deployment template file for resource group deployments
-- `arm!s` - Adds the framework for a full deployment template file for subscription deployments
-- `arm!mg` - Adds the framework for a full deployment template file for management group deployments
-- `arm!t` - Adds the framework for a full deployment template file for tenant deployments
-- `armp!` - Adds the framework for a full deployment template parameters file
-
-      Then you can use the `arm-param-value` snippet to add new parameter values for deployment
-
-  - For existing Azure Resource Manage Template files
-    - `arm-param`, `arm-variable`, `arm-userfunc`, `arm-userfunc-namespace`
-      Add new parameters, variables, user functions and user namespaces.
-    - Resources - type `arm-` to see the other 70+ snippets for creating new resources of various types. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine.
-
+| | |
+|---|---|
+| `arm!` | Adds the framework for a full deployment template file for resource group deployments. |
+|`arm!s` | Adds the framework for a full deployment template file for subscription deployments. |
+| `arm!mg` | Adds the framework for a full deployment template file for management group deployments. |
+| `arm!t` | Adds the framework for a full deployment template file for tenant deployments. |
+| `armp!` | Adds the framework for a full deployment template parameters file. |
+| `arm-param` | |
+| `arm-variable` | |
+| `arm-userfunc` | |
+| `arm-userfunc-namespace` | |
+| `arm-` | Displays the other 70+ snippets for creating new resources of various types. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine. |
 
 ## Troubleshooting
 
