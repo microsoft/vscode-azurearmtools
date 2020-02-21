@@ -2,8 +2,6 @@
 
 [![Version](https://vsmarketplacebadge.apphb.com/version/msazurermtools.azurerm-vscode-tools.svg)](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) [![Installs](https://vsmarketplacebadge.apphb.com/installs-short/msazurermtools.azurerm-vscode-tools.svg)](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) [![Build Status](https://dev.azure.com/ms-azuretools/AzCode/_apis/build/status/vscode-azurearmtools)](https://dev.azure.com/ms-azuretools/AzCode/_build/latest?definitionId=10)
 
-This extension provides language support for Azure Resource Manager deployment templates and template language expressions.
-
 The Azure Resource Manage (ARM) Tools for Visual Studio Code provids language support, resource snipppets, and resource auto-completion to help you create and validate Azure Resource Manager templates.
 
 ![ARM Tools creating web app](./images/arm-tools.gif)
@@ -16,7 +14,8 @@ The Azure Resource Manage (ARM) Tools for Visual Studio Code provids language su
 - Colorization for Template Language Expressions (TLE)
 - Analyze and validate JSON syntax, JSON schema conformance for Azure resources, string expressions issues that would affect deployment
 
-- Intellisense for
+## Intellisense
+
   - [Built-in function names](https://go.microsoft.com/fwlink/?LinkID=733958)
   - [Parameter references](https://go.microsoft.com/fwlink/?LinkID=733959)
   - [Variable references](https://go.microsoft.com/fwlink/?LinkID=733960)
@@ -24,7 +23,8 @@ The Azure Resource Manage (ARM) Tools for Visual Studio Code provids language su
   - [subscription() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#subscription)
   - Properties of references to variables that are objects
 
-- Other features:
+## Other features:
+
   - [Signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
   - [Go To Definition](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-definition) for variable and parameter references
   - [Peek](https://code.visualstudio.com/docs/editor/editingevolved#_peek) for variable and parameter definitions
@@ -36,22 +36,15 @@ The Azure Resource Manage (ARM) Tools for Visual Studio Code provids language su
   - User-defined template functions, see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#functions)
   - Variable iteration ("copy blocks"), see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration)
 
-- Snippets
-  Just type `arm` in the editor to see the available snippets
+## Snippets
 
-  - Getting started with a new JSON/JSONC file
+Type `arm` in the editor to see the available snippets
 
-    - `arm!` - Adds the framework for a full deployment template file for resource group deployments
-
-      If you have not turned off auto-detection of template files, you will now have access to all the snippets for "Azure Resource Manager Template" files
-
-    - `arm!s` - Adds the framework for a full deployment template file for subscription deployments
-
-    - `arm!mg` - Adds the framework for a full deployment template file for management group deployments
-
-    - `arm!t` - Adds the framework for a full deployment template file for tenant deployments
-
-    - `armp!` - Adds the framework for a full deployment template parameters file
+- `arm!` - Adds the framework for a full deployment template file for resource group deployments
+- `arm!s` - Adds the framework for a full deployment template file for subscription deployments
+- `arm!mg` - Adds the framework for a full deployment template file for management group deployments
+- `arm!t` - Adds the framework for a full deployment template file for tenant deployments
+- `armp!` - Adds the framework for a full deployment template parameters file
 
       Then you can use the `arm-param-value` snippet to add new parameter values for deployment
 
