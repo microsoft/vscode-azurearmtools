@@ -101,23 +101,23 @@ export class AzureRMTools {
                 await this.sortTemplate(sortType.value, uri, editor);
             }
         });
-        registerCommand("azurerm-vscode-tools.sortFunctions", async (_context: IActionContext, uri?: vscode.Uri) => {
-            await this.sortTemplate(SortType.Functions, uri);
+        registerCommand("azurerm-vscode-tools.sortFunctions", async () => {
+            await this.sortTemplate(SortType.Functions);
         });
-        registerCommand("azurerm-vscode-tools.sortOutputs", async (_context: IActionContext, uri?: vscode.Uri) => {
-            await this.sortTemplate(SortType.Outputs, uri);
+        registerCommand("azurerm-vscode-tools.sortOutputs", async () => {
+            await this.sortTemplate(SortType.Outputs);
         });
-        registerCommand("azurerm-vscode-tools.sortParameters", async (_context: IActionContext, uri?: vscode.Uri) => {
-            await this.sortTemplate(SortType.Parameters, uri);
+        registerCommand("azurerm-vscode-tools.sortParameters", async () => {
+            await this.sortTemplate(SortType.Parameters);
         });
-        registerCommand("azurerm-vscode-tools.sortResources", async (_context: IActionContext, uri?: vscode.Uri) => {
-            await this.sortTemplate(SortType.Resources, uri);
+        registerCommand("azurerm-vscode-tools.sortResources", async () => {
+            await this.sortTemplate(SortType.Resources);
         });
-        registerCommand("azurerm-vscode-tools.sortVariables", async (_context: IActionContext, uri?: vscode.Uri) => {
-            await this.sortTemplate(SortType.Variables, uri);
+        registerCommand("azurerm-vscode-tools.sortVariables", async () => {
+            await this.sortTemplate(SortType.Variables);
         });
-        registerCommand("azurerm-vscode-tools.sortTopLevel", async (_context: IActionContext, uri?: vscode.Uri) => {
-            await this.sortTemplate(SortType.TopLevel, uri);
+        registerCommand("azurerm-vscode-tools.sortTopLevel", async () => {
+            await this.sortTemplate(SortType.TopLevel);
         });
 
         vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
