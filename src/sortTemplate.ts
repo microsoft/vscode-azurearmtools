@@ -154,7 +154,8 @@ function createCommentsMap(tokens: Json.Token[], lastSpan: language.Span): { [po
 function expandSpan(span: language.Span, comments: { [pos: number]: language.Span }): Language.Span {
     let startIndex = span.startIndex;
     let commentSpan = comments[startIndex];
-    if (commentSpan === undefined) {
+    // tslint:disable-next-line: strict-boolean-expressions
+    if (!commentSpan) {
         return span;
     }
     return commentSpan.union(span);
@@ -282,7 +283,8 @@ function arraysEqual<T>(a: T[], b: T[]): boolean {
     if (a === b) {
         return true;
     }
-    if (a == null || b == null) {
+    // tslint:disable-next-line: strict-boolean-expressions
+    if (!a || !b) {
         return false;
     }
     if (a.length !== b.length) {
