@@ -129,7 +129,7 @@ async function sortFunctions(template: DeploymentTemplate, textEditor: vscode.Te
         x => x.members, x => x.nameValue.quotedValue, x => x.span, template, textEditor);
     await sortGeneric<UserFunctionNamespaceDefinition>(
         template.topLevelScope.namespaceDefinitions,
-        x => x.nameValue.quotedValue, x => x.span, template);
+        x => x.nameValue.quotedValue, x => x.span, template, textEditor);
 }
 
 function createCommentsMap(tokens: Json.Token[], lastSpan: language.Span): { [pos: number]: language.Span } {
