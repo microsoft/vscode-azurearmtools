@@ -93,10 +93,12 @@ export class AzureRMTools {
         registerCommand("azurerm-vscode-tools.reloadSchemas", async () => {
             await reloadSchemas();
         });
-        registerCommand("azurerm-vscode-tools.sortTemplate", async (_context: IActionContext, uri?: vscode.Uri) => {
-            const sortType = await vscode.window.showQuickPick(getQuickPickItems(), { placeHolder: 'What do you want to sort?' });
-            if (sortType) {
-                await this.sortTemplate(sortType.value, uri);
+        registerCommand("azurerm-vscode-tools.sortTemplate", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
+            editor = editor || vscode.window.activeTextEditor;
+            uri = uri || vscode.window.activeTextEditor?.document.uri;
+            if (uri && editor) {
+                const sortType = await ext.ui.showQuickPick(getQuickPickItems(), { placeHolder: 'What do you want to sort?' });
+                await this.sortTemplate(sortType.value, uri, editor);
             }
         });
         registerCommand("azurerm-vscode-tools.sortFunctions", async (_context: IActionContext, uri?: vscode.Uri) => {
@@ -131,11 +133,12 @@ export class AzureRMTools {
         }
     }
 
-    private async sortTemplate(sortType: SortType, uri: vscode.Uri | undefined): Promise<void> {
-        const editor = uri?.scheme === 'file' ? await vscode.window.showTextDocument(uri) : vscode.window.activeTextEditor;
-        if (editor) {
+    private async sortTemplate(sortType: SortType, documentUri?: vscode.Uri, editor?: vscode.TextEditor): Promise<void> {
+        editor = editor || vscode.window.activeTextEditor;
+        documentUri = documentUri || editor?.document.uri;
+        if (editor && documentUri && editor.document.uri.fsPath === documentUri.fsPath) {
             let deploymentTemplate = this.getDeploymentTemplate(editor.document);
-            await sortTemplate(deploymentTemplate, sortType);
+            await sortTemplate(deploymentTemplate, sortType, editor);
         }
     }
 
