@@ -48,7 +48,7 @@ export function getQuickPickItems(): SortQuickPickItem[] {
 }
 
 export async function sortTemplate(template: DeploymentTemplate | undefined, sortType: SortType): Promise<void> {
-    if (template === undefined) {
+    if (!template) {
         return;
     }
     ext.outputChannel.appendLine("Sorting template");
@@ -80,23 +80,23 @@ export async function sortTemplate(template: DeploymentTemplate | undefined, sor
 }
 
 async function sortOutputs(template: DeploymentTemplate): Promise<void> {
-    let rootValue = Json.asObjectValue(template.getJSONValueAtDocumentCharacterIndex(1));
-    if (rootValue === undefined) {
+    let rootValue = template.topLevelValue;
+    if (!rootValue) {
         return;
     }
     let outputs = Json.asObjectValue(rootValue.getPropertyValue(templateKeys.outputs));
-    if (outputs !== undefined) {
+    if (outputs) {
         await sortGeneric<Json.Property>(outputs.properties, x => x.nameValue.quotedValue, x => x.span, template);
     }
 }
 
 async function sortResources(template: DeploymentTemplate): Promise<void> {
-    let rootValue = Json.asObjectValue(template.getJSONValueAtDocumentCharacterIndex(1));
-    if (rootValue === undefined) {
+    let rootValue = template.topLevelValue;
+    if (!rootValue) {
         return;
     }
     let resources = Json.asArrayValue(rootValue.getPropertyValue(templateKeys.resources));
-    if (resources !== undefined) {
+    if (resources) {
         await sortGenericDeep<Json.Value, Json.Value>(
             resources.elements, getResourcesFromResource, getNameFromResource, x => x.span, template);
         await sortGeneric<Json.Value>(resources.elements, getNameFromResource, x => x.span, template);
@@ -104,8 +104,8 @@ async function sortResources(template: DeploymentTemplate): Promise<void> {
 }
 
 async function sortTopLevel(template: DeploymentTemplate): Promise<void> {
-    let rootValue = Json.asObjectValue(template.getJSONValueAtDocumentCharacterIndex(1));
-    if (rootValue === undefined) {
+    let rootValue = template.topLevelValue;
+    if (!rootValue) {
         return;
     }
     await sortGeneric<Json.Property>(rootValue.properties, x => getTopLevelOrder(x.nameValue.quotedValue), x => x.span, template);
@@ -137,9 +137,9 @@ function createCommentsMap(tokens: Json.Token[], lastSpan: language.Span): { [po
     let commentsSpan: language.Span | undefined;
     tokens.forEach((token, index) => {
         if (token.type === 12) {
-            commentsSpan = commentsSpan === undefined ? token.span : token.span.union(commentsSpan);
+            commentsSpan = !commentsSpan ? token.span : token.span.union(commentsSpan);
         } else {
-            if (commentsSpan !== undefined) {
+            if (commentsSpan) {
                 commentsMap[token.span.startIndex] = commentsSpan;
                 commentsSpan = undefined;
             }
@@ -161,7 +161,7 @@ function expandSpan(span: language.Span, comments: { [pos: number]: language.Spa
 }
 
 function getTopLevelOrder(key: string): string {
-    if (key === undefined) {
+    if (!key) {
         return "9";
     }
     switch (key.toLocaleLowerCase().replace(/\"/gi, "")) {
@@ -188,7 +188,7 @@ function getTopLevelOrder(key: string): string {
 
 async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spanSelector: (value: T) => language.Span, template: DeploymentTemplate): Promise<void> {
     let textEditor = vscode.window.activeTextEditor;
-    if (textEditor === undefined || list.length < 2) {
+    if (!textEditor || list.length < 2) {
         return;
     }
     let document = textEditor.document;
@@ -210,7 +210,7 @@ async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spa
 async function sortGenericDeep<T, TChild>(list: T[], childSelector: (value: T) => TChild[] | undefined, sortSelector: (value: TChild) => string, spanSelector: (value: TChild) => language.Span, template: DeploymentTemplate): Promise<void> {
     for (let item of list) {
         let children = childSelector(item);
-        if (children !== undefined) {
+        if (children) {
             await sortGeneric(children, sortSelector, spanSelector, template);
         }
     }
@@ -218,11 +218,11 @@ async function sortGenericDeep<T, TChild>(list: T[], childSelector: (value: T) =
 
 function getNameFromResource(value: Json.Value): string {
     let objectValue = Json.asObjectValue(value);
-    if (objectValue === undefined) {
+    if (!objectValue) {
         return "";
     }
     let nameProperty = objectValue.getPropertyValue("name");
-    if (nameProperty === undefined) {
+    if (!nameProperty) {
         return "";
     }
     let name = nameProperty.toFriendlyString();
@@ -231,11 +231,11 @@ function getNameFromResource(value: Json.Value): string {
 
 function getResourcesFromResource(value: Json.Value): Json.Value[] | undefined {
     let objectValue = Json.asObjectValue(value);
-    if (objectValue === undefined) {
+    if (!objectValue) {
         return undefined;
     }
     let resources = Json.asArrayValue(objectValue.getPropertyValue("resources"));
-    if (resources === undefined) {
+    if (!resources) {
         return undefined;
     }
     return resources.elements;
