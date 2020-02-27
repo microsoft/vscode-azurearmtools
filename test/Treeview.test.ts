@@ -228,43 +228,391 @@ suite("TreeView", async (): Promise<void> => {
                     ],
                     "resources": [
                         {
-                            "type": "Microsoft.Compute/virtualMachines",
+                            "type": "Microsoft.Automation/automationAccounts"
                         },
                         {
-                            "type": "Microsoft.Storage/storageAccounts",
+                            "type": "Microsoft.Automation/automationAccounts/certificates"
                         },
                         {
-                            "type": "Microsoft.Network/virtualNetworks",
+                            "type": "Microsoft.Automation/automationAccounts/compilationjobs"
                         },
                         {
-                            "type": "Microsoft.Compute/virtualMachines/extensions",
+                            "type": "Microsoft.Automation/automationAccounts/configurations"
                         },
                         {
-                            "type": "Microsoft.Network/networkSecurityGroups",
+                            "type": "Microsoft.Automation/automationAccounts/connectionTypes"
                         },
                         {
-                            "type": "Microsoft.Network/networkInterfaces",
+                            "type": "Microsoft.Automation/automationAccounts/connections"
                         },
                         {
-                            "type": "Microsoft.Network/publicIPAddresses",
+                            "type": "Microsoft.Automation/automationAccounts/credentials"
                         },
                         {
-                            "type": "Microsoft.Web/sites",
+                            "type": "Microsoft.Automation/automationAccounts/jobSchedules"
                         },
                         {
-                            "type": "config",
+                            "type": "Microsoft.Automation/automationAccounts/jobs"
                         },
                         {
-                            "type": "Microsoft.Insights/components",
+                            "type": "Microsoft.Automation/automationAccounts/modules"
                         },
                         {
-                            "type": "Microsoft.KeyVault/vaults",
+                            "type": "Microsoft.Automation/automationAccounts/nodeConfigurations"
                         },
                         {
-                            "type": "Microsoft.KeyVault/vaults/secrets",
+                            "type": "Microsoft.Automation/automationAccounts/python2Packages"
                         },
                         {
-                            "type": "Microsoft.Cdn/profiles",
+                            "type": "Microsoft.Automation/automationAccounts/runbooks"
+                        },
+                        {
+                            "type": "Microsoft.Automation/automationAccounts/schedules"
+                        },
+                        {
+                            "type": "Microsoft.Automation/automationAccounts/softwareUpdateConfigurations"
+                        },
+                        {
+                            "type": "Microsoft.Automation/automationAccounts/sourceControls"
+                        },
+                        {
+                            "type": "Microsoft.Automation/automationAccounts/sourceControls/sourceControlSyncJobs"
+                        },
+                        {
+                            "type": "Microsoft.Automation/automationAccounts/variables"
+                        },
+                        {
+                            "type": "Microsoft.Automation/automationAccounts/watchers"
+                        },
+                        {
+                            "type": "Microsoft.Automation/automationAccounts/webhooks"
+                        },
+                        {
+                            "type": "Microsoft.Cdn/profiles"
+                        },
+                        {
+                            "type": "Microsoft.Compute/virtualMachines"
+                        },
+                        {
+                            "type": "Microsoft.Compute/virtualMachines/extensions"
+                        },
+                        {
+                            "type": "Microsoft.ContainerInstance/containerGroups"
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts"
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/apis/databases"
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/apis/databases/collections"
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/apis/databases/containers"
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/apis/databases/graphs"
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/apis/keyspaces"
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/apis/tables"
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/cassandraKeyspaces"
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/gremlinDatabases"
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/mongodbDatabases/collections"
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases"
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers"
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/storedProcedures"
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/triggers"
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/userDefinedFunctions"
+                        },
+                        {
+                            "type": "Microsoft.DocumentDB/databaseAccounts/tables"
+                        },
+                        {
+                            "type": "Microsoft.Insights/QueryPacks/queries"
+                        },
+                        {
+                            "type": "Microsoft.Insights/actionGroups"
+                        },
+                        {
+                            "type": "Microsoft.Insights/activityLogAlerts"
+                        },
+                        {
+                            "type": "Microsoft.Insights/alertrules"
+                        },
+                        {
+                            "type": "Microsoft.Insights/autoscalesettings"
+                        },
+                        {
+                            "type": "Microsoft.Insights/components"
+                        },
+                        {
+                            "type": "Microsoft.Insights/components/ProactiveDetectionConfigs"
+                        },
+                        {
+                            "type": "Microsoft.Insights/diagnosticSettings"
+                        },
+                        {
+                            "type": "Microsoft.Insights/guestDiagnosticSettings"
+                        },
+                        {
+                            "type": "Microsoft.Insights/guestDiagnosticSettingsAssociation"
+                        },
+                        {
+                            "type": "Microsoft.Insights/logprofiles"
+                        },
+                        {
+                            "type": "Microsoft.Insights/metricAlerts"
+                        },
+                        {
+                            "type": "Microsoft.Insights/queryPacks"
+                        },
+                        {
+                            "type": "Microsoft.Insights/scheduledQueryRules"
+                        },
+                        {
+                            "type": "Microsoft.Insights/webtests"
+                        },
+                        {
+                            "type": "Microsoft.Insights/workbooks"
+                        },
+                        {
+                            "type": "Microsoft.KeyVault/vaults"
+                        },
+                        {
+                            "type": "Microsoft.KeyVault/vaults/secrets"
+                        },
+                        {
+                            "type": "Microsoft.Media/mediaServices"
+                        },
+                        {
+                            "type": "Microsoft.Network/azureFirewalls"
+                        },
+                        {
+                            "type": "Microsoft.Network/networkInterfaces"
+                        },
+                        {
+                            "type": "Microsoft.Network/networkSecurityGroups"
+                        },
+                        {
+                            "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+                        },
+                        {
+                            "type": "Microsoft.Network/publicIPAddresses"
+                        },
+                        {
+                            "type": "Microsoft.Network/publicIPPrefixes"
+                        },
+                        {
+                            "type": "Microsoft.Network/routeTables/routes"
+                        },
+                        {
+                            "type": "Microsoft.Network/trafficManagerProfiles"
+                        },
+                        {
+                            "type": "Microsoft.Network/virtualNetworkGateways"
+                        },
+                        {
+                            "type": "Microsoft.Network/virtualNetworks"
+                        },
+                        {
+                            "type": "Microsoft.Sql/instancePools"
+                        },
+                        {
+                            "type": "Microsoft.Sql/locations/instanceFailoverGroups"
+                        },
+                        {
+                            "type": "Microsoft.Sql/managedInstances"
+                        },
+                        {
+                            "type": "Microsoft.Sql/managedInstances/administrators"
+                        },
+                        {
+                            "type": "Microsoft.Sql/managedInstances/databases"
+                        },
+                        {
+                            "type": "Microsoft.Sql/managedInstances/databases/backupShortTermRetentionPolicies"
+                        },
+                        {
+                            "type": "Microsoft.Sql/managedInstances/databases/schemas/tables/columns/sensitivityLabels"
+                        },
+                        {
+                            "type": "Microsoft.Sql/managedInstances/databases/securityAlertPolicies"
+                        },
+                        {
+                            "type": "Microsoft.Sql/managedInstances/databases/vulnerabilityAssessments"
+                        },
+                        {
+                            "type": "Microsoft.Sql/managedInstances/databases/vulnerabilityAssessments/rules/baselines"
+                        },
+                        {
+                            "type": "Microsoft.Sql/managedInstances/encryptionProtector"
+                        },
+                        {
+                            "type": "Microsoft.Sql/managedInstances/keys"
+                        },
+                        {
+                            "type": "Microsoft.Sql/managedInstances/restorableDroppedDatabases/backupShortTermRetentionPolicies"
+                        },
+                        {
+                            "type": "Microsoft.Sql/managedInstances/securityAlertPolicies"
+                        },
+                        {
+                            "type": "Microsoft.Sql/managedInstances/vulnerabilityAssessments"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/administrators"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/auditingSettings"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/backupLongTermRetentionVaults"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/communicationLinks"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/connectionPolicies"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/databases"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/databases/auditingSettings"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/databases/backupLongTermRetentionPolicies"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/databases/backupShortTermRetentionPolicies"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/databases/connectionPolicies"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/databases/dataMaskingPolicies"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/databases/dataMaskingPolicies/rules"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/databases/extendedAuditingSettings"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/databases/extensions"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/databases/geoBackupPolicies"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/databases/schemas/tables/columns/sensitivityLabels"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/databases/securityAlertPolicies	"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/databases/syncGroups"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/databases/syncGroups/syncMembers"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/databases/transparentDataEncryption"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/databases/vulnerabilityAssessments"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/databases/vulnerabilityAssessments/rules/baselines"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/disasterRecoveryConfiguration"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/dnsAliases"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/elasticPools"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/encryptionProtector"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/extendedAuditingSettings"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/failoverGroups"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/firewallRules"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/jobAgents"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/jobAgents/credentials"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/jobAgents/jobs"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/jobAgents/jobs/executions"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/jobAgents/jobs/steps"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/jobAgents/targetGroups"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/keys"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/privateEndpointConnections"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/securityAlertPolicies"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/syncAgents"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/virtualNetworkRules"
+                        },
+                        {
+                            "type": "Microsoft.Sql/servers/vulnerabilityAssessments"
+                        },
+                        {
+                            "type": "Microsoft.Storage/storageAccounts"
+                        },
+                        {
+                            "type": "Microsoft.Web/sites"
+                        },
+                        {
+                            "type": "config"
                         }
                     ],
                     "outputs": {
@@ -330,19 +678,135 @@ suite("TreeView", async (): Promise<void> => {
                 },
                 {
                     icon: "resources.svg", children: [
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("automation.svg", undefined),
+                        getIconObject("cdnprofiles.svg", undefined),
                         getIconObject("virtualmachines.svg", undefined),
-                        getIconObject("storageaccounts.svg", undefined),
-                        getIconObject("virtualnetworks.svg", undefined),
                         getIconObject("extensions.svg", undefined),
-                        getIconObject("nsg.svg", undefined),
-                        getIconObject("nic.svg", undefined),
-                        getIconObject("publicip.svg", undefined),
-                        getIconObject("appservices.svg", undefined),
-                        getIconObject("appconfiguration.svg", undefined),
+                        getIconObject("containerinstances.svg", undefined),
+                        getIconObject("cosmosdb.svg", undefined),
+                        getIconObject("cosmosdb.svg", undefined),
+                        getIconObject("cosmosdb.svg", undefined),
+                        getIconObject("cosmosdb.svg", undefined),
+                        getIconObject("cosmosdb.svg", undefined),
+                        getIconObject("cosmosdb.svg", undefined),
+                        getIconObject("cosmosdb.svg", undefined),
+                        getIconObject("cosmosdb.svg", undefined),
+                        getIconObject("cosmosdb.svg", undefined),
+                        getIconObject("cosmosdb.svg", undefined),
+                        getIconObject("cosmosdb.svg", undefined),
+                        getIconObject("cosmosdb.svg", undefined),
+                        getIconObject("cosmosdb.svg", undefined),
+                        getIconObject("cosmosdb.svg", undefined),
+                        getIconObject("cosmosdb.svg", undefined),
+                        getIconObject("cosmosdb.svg", undefined),
+                        getIconObject("applicationinsights.svg", undefined),
+                        getIconObject("applicationinsights.svg", undefined),
+                        getIconObject("applicationinsights.svg", undefined),
+                        getIconObject("applicationinsights.svg", undefined),
+                        getIconObject("applicationinsights.svg", undefined),
+                        getIconObject("applicationinsights.svg", undefined),
+                        getIconObject("applicationinsights.svg", undefined),
+                        getIconObject("applicationinsights.svg", undefined),
+                        getIconObject("applicationinsights.svg", undefined),
+                        getIconObject("applicationinsights.svg", undefined),
+                        getIconObject("applicationinsights.svg", undefined),
+                        getIconObject("applicationinsights.svg", undefined),
+                        getIconObject("applicationinsights.svg", undefined),
+                        getIconObject("applicationinsights.svg", undefined),
+                        getIconObject("applicationinsights.svg", undefined),
                         getIconObject("applicationinsights.svg", undefined),
                         getIconObject("keyvaults.svg", undefined),
                         getIconObject("keyvaults.svg", undefined),
-                        getIconObject("cdnprofiles.svg", undefined)]
+                        getIconObject("mediaservices.svg", undefined),
+                        getIconObject("firewall.svg", undefined),
+                        getIconObject("nic.svg", undefined),
+                        getIconObject("nsg.svg", undefined),
+                        getIconObject("nsg.svg", undefined),
+                        getIconObject("publicip.svg", undefined),
+                        getIconObject("publicip.svg", undefined),
+                        getIconObject("routetables.svg", undefined),
+                        getIconObject("trafficmanagerprofiles.svg", undefined),
+                        getIconObject("virtualnetworkgateways.svg", undefined),
+                        getIconObject("virtualnetworks.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("sqlservers.svg", undefined),
+                        getIconObject("storageaccounts.svg", undefined),
+                        getIconObject("appservices.svg", undefined),
+                        getIconObject("appconfiguration.svg", undefined)]
                 },
                 getIconObject("outputs.svg", "outputs.svg")]
                 ,
@@ -1138,7 +1602,7 @@ suite("TreeView", async (): Promise<void> => {
                             {
                                 label: "<name>",
                                 collapsibleState: 1,
-                                icon: "resources.svg",
+                                icon: "virtualnetworkgateways.svg",
                                 children: [
                                     {
                                         label: "apiVersion: 2017-06-01",
