@@ -136,7 +136,7 @@ function createCommentsMap(tokens: Json.Token[], lastSpan: language.Span): { [po
     let commentsMap: { [pos: number]: language.Span } = {};
     let commentsSpan: language.Span | undefined;
     tokens.forEach((token, index) => {
-        if (token.type === 12) {
+        if (token.type === Json.TokenType.Comment) {
             commentsSpan = !commentsSpan ? token.span : token.span.union(commentsSpan);
         } else {
             if (commentsSpan) {
@@ -202,7 +202,7 @@ async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spa
     if (arraysEqual<string>(orderBefore, orderAfter)) {
         return;
     }
-    let sortedTexts = sorted.map((value, i) => getText(expandSpan(spanSelector(value), comments), document));
+    let sortedTexts = sorted.map(value => getText(expandSpan(spanSelector(value), comments), document));
     let joined = joinTexts(sortedTexts, intendentTexts);
     await textEditor.edit(x => x.replace(selection, joined));
 }
