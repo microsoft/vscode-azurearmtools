@@ -9,14 +9,14 @@ The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language 
 ## Language Server
 
 - Azure Resource Manager template language server for providing ARM template language completion, validation, and error guidance.
-- Resources are validated against Azure schemas which provides validation against resource type and apiVersion properties.
+- Resources are validated against Azure schemas which provides validation based on resource type and apiVersion.
 - ARM Template Outline view for easy navigation through large templates
 - Colorization for Template Language Expressions (TLE)
 - Analyze and validate JSON syntax, JSON schema conformance, and string expressions.
 
 ## Intellisense
 
-  - [Built-in function names](https://go.microsoft.com/fwlink/?LinkID=733958)
+  - [Built-in functions](https://go.microsoft.com/fwlink/?LinkID=733958)
   - [Parameter references](https://go.microsoft.com/fwlink/?LinkID=733959)
   - [Variable references](https://go.microsoft.com/fwlink/?LinkID=733960)
   - [resourceGroup() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#resourcegroup)
@@ -32,7 +32,6 @@ The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language 
   - Rename all references (F2) for variables and parameters
   - [Hover](https://code.visualstudio.com/docs/editor/editingevolved#_hover) for parameter description
   - [TLE brace matching](https://code.visualstudio.com/docs/editor/editingevolved#_bracket-matching)
-  - Rename parameters and variables
   - User-defined template functions, see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#functions)
   - Variable iteration ("copy blocks"), see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration)
 
@@ -109,4 +108,4 @@ VS Code collects usage data and sends it to Microsoft to help improve our produc
 
 The source code in our [public repository](https://github.com/Microsoft/vscode-azurearmtools) is licensed under the [MIT license](LICENSE.md). The public source code currently contains functionality related to the parsing and validation of template expression strings but does not contain functionality related to JSON parsing and validation or backend template validation.
 
-The extension as it is built-in Azure DevOps and [published](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) to the VS Code Marketplace is a distribution of the public repository and is bundled with the Azure Resource Manager language service binaries. The published extension and language service binaries are licensed under a traditional Microsoft product license.
+The extension is built with Azure DevOps and [published](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) to the VS Code Marketplace. The extension is a distribution of the public repository and the Azure Resource Manager language service binaries. The published extension and language service binaries are licensed under a traditional Microsoft product license.
