@@ -9,7 +9,7 @@ The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language 
 ## Language Server
 
 - Azure Resource Manager template language server for providing ARM template language completion, validation, and error guidance.
-- Resources are validated against Azure schemas which provides validation based on resource type and apiVersion.
+- Resources are validated against Azure schemas, which provide validation based on resource type and apiVersion.
 - ARM Template Outline view for easy navigation through large templates
 - Colorization for Template Language Expressions (TLE)
 - Analyze and validate JSON syntax, JSON schema conformance, and string expressions.
@@ -106,6 +106,6 @@ VS Code collects usage data and sends it to Microsoft to help improve our produc
 
 ## License
 
-The source code in our [public repository](https://github.com/Microsoft/vscode-azurearmtools) is licensed under the [MIT license](LICENSE.md). The public source code currently contains functionality related to the parsing and validation of template expression strings but does not contain functionality related to JSON parsing and validation or backend template validation.
+The source code in our [public repository](https://github.com/Microsoft/vscode-azurearmtools) is licensed under the [MIT license](LICENSE.md) and may be locally built and used in accordance with this license. The public source code contains functionality related to the parsing and validation of template expression strings but does not contain functionality related to JSON parsing and validation or backend template validation, as these are subject to a different license
 
-The extension is built with Azure DevOps and [published](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) to the VS Code Marketplace. The extension is a distribution of the public repository and the Azure Resource Manager language service binaries. The published extension and language service binaries are licensed under a traditional Microsoft product license.
+When the extension is [published](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) to the VS Code Marketplace, it is bundled with the Azure Resource Manager language service binaries. The extension as bundled and published this way is licensed under a traditional Microsoft product license.
