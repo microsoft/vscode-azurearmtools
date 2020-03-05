@@ -135,10 +135,12 @@ async function sortFunctions(template: DeploymentTemplate, textEditor: vscode.Te
         x => x.nameValue.quotedValue, x => x.span, template, textEditor);
 }
 
-function createCommentsMap(tokens: Json.Token[], lastSpan: language.Span): CommentsMap {
+function createCommentsMap(tokens: Json.Token[], commentTokens: Json.Token[], lastSpan: language.Span): CommentsMap {
     let commentsMap: CommentsMap = new Map<number, language.Span>();
     let currentCommentsSpan: language.Span | undefined;
-    tokens.forEach((token, index) => {
+    let allTokens = tokens.concat(commentTokens);
+    allTokens.sort((a, b) => a.span.startIndex - b.span.startIndex);
+    allTokens.forEach((token, index) => {
         if (token.type === Json.TokenType.Comment) {
             currentCommentsSpan = !currentCommentsSpan ? token.span : token.span.union(currentCommentsSpan);
         } else {
@@ -197,7 +199,7 @@ async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spa
     }
     let document = textEditor.document;
     let lastSpan = spanSelector(list[list.length - 1]);
-    let comments = createCommentsMap(template.jsonParseResult.tokens, lastSpan);
+    let comments = createCommentsMap(template.jsonParseResult.tokens, template.jsonParseResult.commentTokens, lastSpan);
     let selectionWithComments = getSelection(expandSpanToPrecedingComments(spanSelector(list[0]), comments), expandSpanToPrecedingComments(lastSpan, comments), document);
     let indentedTexts = getIndentTexts<T>(list, x => expandSpanToPrecedingComments(spanSelector(x), comments), document);
     let orderBefore = list.map(sortSelector);
