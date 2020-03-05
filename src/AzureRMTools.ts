@@ -93,29 +93,31 @@ export class AzureRMTools {
         registerCommand("azurerm-vscode-tools.reloadSchemas", async () => {
             await reloadSchemas();
         });
-        registerCommand("azurerm-vscode-tools.sortTemplate", async (_context: IActionContext, uri?: vscode.Uri) => {
-            const sortType = await vscode.window.showQuickPick(getQuickPickItems(), { placeHolder: 'What do you want to sort?' });
-            if (sortType) {
-                await this.sortTemplate(sortType.value, uri);
+        registerCommand("azurerm-vscode-tools.sortTemplate", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
+            editor = editor || vscode.window.activeTextEditor;
+            uri = uri || vscode.window.activeTextEditor?.document.uri;
+            if (uri && editor) {
+                const sortType = await ext.ui.showQuickPick(getQuickPickItems(), { placeHolder: 'What do you want to sort?' });
+                await this.sortTemplate(sortType.value, uri, editor);
             }
         });
-        registerCommand("azurerm-vscode-tools.sortFunctions", async (_context: IActionContext, uri?: vscode.Uri) => {
-            await this.sortTemplate(SortType.Functions, uri);
+        registerCommand("azurerm-vscode-tools.sortFunctions", async () => {
+            await this.sortTemplate(SortType.Functions);
         });
-        registerCommand("azurerm-vscode-tools.sortOutputs", async (_context: IActionContext, uri?: vscode.Uri) => {
-            await this.sortTemplate(SortType.Outputs, uri);
+        registerCommand("azurerm-vscode-tools.sortOutputs", async () => {
+            await this.sortTemplate(SortType.Outputs);
         });
-        registerCommand("azurerm-vscode-tools.sortParameters", async (_context: IActionContext, uri?: vscode.Uri) => {
-            await this.sortTemplate(SortType.Parameters, uri);
+        registerCommand("azurerm-vscode-tools.sortParameters", async () => {
+            await this.sortTemplate(SortType.Parameters);
         });
-        registerCommand("azurerm-vscode-tools.sortResources", async (_context: IActionContext, uri?: vscode.Uri) => {
-            await this.sortTemplate(SortType.Resources, uri);
+        registerCommand("azurerm-vscode-tools.sortResources", async () => {
+            await this.sortTemplate(SortType.Resources);
         });
-        registerCommand("azurerm-vscode-tools.sortVariables", async (_context: IActionContext, uri?: vscode.Uri) => {
-            await this.sortTemplate(SortType.Variables, uri);
+        registerCommand("azurerm-vscode-tools.sortVariables", async () => {
+            await this.sortTemplate(SortType.Variables);
         });
-        registerCommand("azurerm-vscode-tools.sortTopLevel", async (_context: IActionContext, uri?: vscode.Uri) => {
-            await this.sortTemplate(SortType.TopLevel, uri);
+        registerCommand("azurerm-vscode-tools.sortTopLevel", async () => {
+            await this.sortTemplate(SortType.TopLevel);
         });
 
         vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
@@ -131,11 +133,12 @@ export class AzureRMTools {
         }
     }
 
-    private async sortTemplate(sortType: SortType, uri: vscode.Uri | undefined): Promise<void> {
-        const editor = uri?.scheme === 'file' ? await vscode.window.showTextDocument(uri) : vscode.window.activeTextEditor;
-        if (editor) {
+    private async sortTemplate(sortType: SortType, documentUri?: vscode.Uri, editor?: vscode.TextEditor): Promise<void> {
+        editor = editor || vscode.window.activeTextEditor;
+        documentUri = documentUri || editor?.document.uri;
+        if (editor && documentUri && editor.document.uri.fsPath === documentUri.fsPath) {
             let deploymentTemplate = this.getDeploymentTemplate(editor.document);
-            await sortTemplate(deploymentTemplate, sortType);
+            await sortTemplate(deploymentTemplate, sortType, editor);
         }
     }
 

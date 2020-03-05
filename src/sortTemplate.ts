@@ -47,29 +47,29 @@ export function getQuickPickItems(): SortQuickPickItem[] {
     return items;
 }
 
-export async function sortTemplate(template: DeploymentTemplate | undefined, sortType: SortType): Promise<void> {
+export async function sortTemplate(template: DeploymentTemplate | undefined, sortType: SortType, textEditor: vscode.TextEditor): Promise<void> {
     if (!template) {
         return;
     }
     ext.outputChannel.appendLine("Sorting template");
     switch (sortType) {
         case SortType.Functions:
-            await sortFunctions(template);
+            await sortFunctions(template, textEditor);
             break;
         case SortType.Outputs:
-            await sortOutputs(template);
+            await sortOutputs(template, textEditor);
             break;
         case SortType.Parameters:
-            await sortParameters(template);
+            await sortParameters(template, textEditor);
             break;
         case SortType.Resources:
-            await sortResources(template);
+            await sortResources(template, textEditor);
             break;
         case SortType.Variables:
-            await sortVariables(template);
+            await sortVariables(template, textEditor);
             break;
         case SortType.TopLevel:
-            await sortTopLevel(template);
+            await sortTopLevel(template, textEditor);
             break;
         default:
             vscode.window.showWarningMessage("Unknown sort type!");
@@ -79,18 +79,18 @@ export async function sortTemplate(template: DeploymentTemplate | undefined, sor
     vscode.window.showInformationMessage("Done sorting template!");
 }
 
-async function sortOutputs(template: DeploymentTemplate): Promise<void> {
+async function sortOutputs(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
     let rootValue = template.topLevelValue;
     if (!rootValue) {
         return;
     }
     let outputs = Json.asObjectValue(rootValue.getPropertyValue(templateKeys.outputs));
     if (outputs) {
-        await sortGeneric<Json.Property>(outputs.properties, x => x.nameValue.quotedValue, x => x.span, template);
+        await sortGeneric<Json.Property>(outputs.properties, x => x.nameValue.quotedValue, x => x.span, template, textEditor);
     }
 }
 
-async function sortResources(template: DeploymentTemplate): Promise<void> {
+async function sortResources(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
     let rootValue = template.topLevelValue;
     if (!rootValue) {
         return;
@@ -98,38 +98,38 @@ async function sortResources(template: DeploymentTemplate): Promise<void> {
     let resources = Json.asArrayValue(rootValue.getPropertyValue(templateKeys.resources));
     if (resources) {
         await sortGenericDeep<Json.Value, Json.Value>(
-            resources.elements, getResourcesFromResource, getNameFromResource, x => x.span, template);
-        await sortGeneric<Json.Value>(resources.elements, getNameFromResource, x => x.span, template);
+            resources.elements, getResourcesFromResource, getNameFromResource, x => x.span, template, textEditor);
+        await sortGeneric<Json.Value>(resources.elements, getNameFromResource, x => x.span, template, textEditor);
     }
 }
 
-async function sortTopLevel(template: DeploymentTemplate): Promise<void> {
+async function sortTopLevel(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
     let rootValue = template.topLevelValue;
     if (!rootValue) {
         return;
     }
-    await sortGeneric<Json.Property>(rootValue.properties, x => getTopLevelOrder(x.nameValue.quotedValue), x => x.span, template);
+    await sortGeneric<Json.Property>(rootValue.properties, x => getTopLevelOrder(x.nameValue.quotedValue), x => x.span, template, textEditor);
 }
 
-async function sortVariables(template: DeploymentTemplate): Promise<void> {
+async function sortVariables(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
     await sortGeneric<IVariableDefinition>(
         template.topLevelScope.variableDefinitions,
-        x => x.nameValue.quotedValue, x => x.span, template);
+        x => x.nameValue.quotedValue, x => x.span, template, textEditor);
 }
 
-async function sortParameters(template: DeploymentTemplate): Promise<void> {
+async function sortParameters(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
     await sortGeneric<IParameterDefinition>(
         template.topLevelScope.parameterDefinitions,
-        x => x.nameValue.quotedValue, x => x.fullSpan, template);
+        x => x.nameValue.quotedValue, x => x.fullSpan, template, textEditor);
 }
 
-async function sortFunctions(template: DeploymentTemplate): Promise<void> {
+async function sortFunctions(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
     await sortGenericDeep<UserFunctionNamespaceDefinition, UserFunctionDefinition>(
         template.topLevelScope.namespaceDefinitions,
-        x => x.members, x => x.nameValue.quotedValue, x => x.span, template);
+        x => x.members, x => x.nameValue.quotedValue, x => x.span, template, textEditor);
     await sortGeneric<UserFunctionNamespaceDefinition>(
         template.topLevelScope.namespaceDefinitions,
-        x => x.nameValue.quotedValue, x => x.span, template);
+        x => x.nameValue.quotedValue, x => x.span, template, textEditor);
 }
 
 function createCommentsMap(tokens: Json.Token[], lastSpan: language.Span): { [pos: number]: language.Span } {
@@ -187,9 +187,8 @@ function getTopLevelOrder(key: string): string {
     }
 }
 
-async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spanSelector: (value: T) => language.Span, template: DeploymentTemplate): Promise<void> {
-    let textEditor = vscode.window.activeTextEditor;
-    if (!textEditor || list.length < 2) {
+async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spanSelector: (value: T) => language.Span, template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
+    if (list.length < 2) {
         return;
     }
     let document = textEditor.document;
@@ -208,11 +207,11 @@ async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spa
     await textEditor.edit(x => x.replace(selection, joined));
 }
 
-async function sortGenericDeep<T, TChild>(list: T[], childSelector: (value: T) => TChild[] | undefined, sortSelector: (value: TChild) => string, spanSelector: (value: TChild) => language.Span, template: DeploymentTemplate): Promise<void> {
+async function sortGenericDeep<T, TChild>(list: T[], childSelector: (value: T) => TChild[] | undefined, sortSelector: (value: TChild) => string, spanSelector: (value: TChild) => language.Span, template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
     for (let item of list) {
         let children = childSelector(item);
         if (children) {
-            await sortGeneric(children, sortSelector, spanSelector, template);
+            await sortGeneric(children, sortSelector, spanSelector, template, textEditor);
         }
     }
 }
@@ -279,6 +278,7 @@ function getSelection(start: language.Span, end: language.Span, document: vscode
     return selection;
 }
 
+// Performs shallow, reference comparison for the array entries
 function arraysEqual<T>(a: T[], b: T[]): boolean {
     if (a === b) {
         return true;
