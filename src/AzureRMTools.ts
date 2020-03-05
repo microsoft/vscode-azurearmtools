@@ -96,6 +96,10 @@ export class AzureRMTools {
         registerCommand("azurerm-vscode-tools.sortTemplate", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
             editor = editor || vscode.window.activeTextEditor;
             uri = uri || vscode.window.activeTextEditor?.document.uri;
+            // If "Sort template..." was called from the context menu for ARM template outline
+            if (typeof uri === "string") {
+                uri = vscode.window.activeTextEditor?.document.uri;
+            }
             if (uri && editor) {
                 const sortType = await ext.ui.showQuickPick(getQuickPickItems(), { placeHolder: 'What do you want to sort?' });
                 await this.sortTemplate(sortType.value, uri, editor);
