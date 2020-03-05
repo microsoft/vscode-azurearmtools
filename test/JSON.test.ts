@@ -191,6 +191,23 @@ suite("JSON", () => {
                 assert.deepStrictEqual(Json.RightCurlyBracket(14), pr.getTokenAtCharacterIndex(15));
                 assert.deepStrictEqual(undefined, pr.getTokenAtCharacterIndex(16));
             });
+
+            test("with character index inside character index range and comments", () => {
+                let pr = Json.parse("{ /* comment */ 'hello': /* comment */ 42 }  ");
+                assert.deepStrictEqual(Json.LeftCurlyBracket(0), pr.getTokenAtCharacterIndex(0));
+                assert.deepStrictEqual(undefined, pr.getTokenAtCharacterIndex(1)); // space
+                assert(pr.getTokenAtCharacterIndex(2)?.type === Json.TokenType.Comment); // comment
+                assert.deepStrictEqual(Json.QuotedString(16, parseBasicTokens("'hello'")), pr.getTokenAtCharacterIndex(16));
+                assert.deepStrictEqual(Json.Colon(23), pr.getTokenAtCharacterIndex(23));
+                assert.deepStrictEqual(undefined, pr.getTokenAtCharacterIndex(24)); // space
+                assert(pr.getTokenAtCharacterIndex(25)?.type === Json.TokenType.Comment);
+                assert.deepStrictEqual(undefined, pr.getTokenAtCharacterIndex(38)); // space
+                assert.deepStrictEqual(parseNumber("42", 39), pr.getTokenAtCharacterIndex(39));
+                assert.deepStrictEqual(undefined, pr.getTokenAtCharacterIndex(41)); // space
+                assert.deepStrictEqual(Json.RightCurlyBracket(42), pr.getTokenAtCharacterIndex(42));
+                assert.deepStrictEqual(Json.RightCurlyBracket(42), pr.getTokenAtCharacterIndex(43));
+                assert.deepStrictEqual(undefined, pr.getTokenAtCharacterIndex(44));
+            });
         });
     });
 
@@ -506,6 +523,12 @@ suite("JSON", () => {
                     Json.RightSquareBracket(1)
                 ]);
             nextTest("[ ]",
+                [
+                    Json.LeftSquareBracket(0),
+                    parseWhitespace(" ", 1),
+                    Json.RightSquareBracket(2)
+                ]);
+            nextTest("[ /* comment */ ]",
                 [
                     Json.LeftSquareBracket(0),
                     parseWhitespace(" ", 1),

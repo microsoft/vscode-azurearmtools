@@ -1254,8 +1254,11 @@ function next(tokenizer: Tokenizer, tokens: Token[]): void {
     while (tokenizer.moveNext()) {
         // tslint:disable-next-line: no-non-null-assertion // Guaranteed by tokenizer.moveNext() returning true
         const current: Token = tokenizer.current!;
-        if (current.type !== TokenType.Whitespace &&
-            current.type !== TokenType.Comment) {
+        if (current.type !== TokenType.Whitespace) { // && current.type !== TokenType.Comment) {
+            if (current.type === TokenType.Comment) {
+                let a = 1;
+                a = 2;
+            }
             tokens.push(current);
             break;
         }
