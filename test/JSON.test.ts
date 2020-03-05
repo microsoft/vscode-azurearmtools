@@ -528,12 +528,6 @@ suite("JSON", () => {
                     parseWhitespace(" ", 1),
                     Json.RightSquareBracket(2)
                 ]);
-            nextTest("[ /* comment */ ]",
-                [
-                    Json.LeftSquareBracket(0),
-                    parseWhitespace(" ", 1),
-                    Json.RightSquareBracket(2)
-                ]);
 
             function nextTestWithNumber(numberText: string): void {
                 nextTest(numberText, parseNumber(numberText));

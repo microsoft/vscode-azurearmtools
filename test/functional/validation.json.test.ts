@@ -16,7 +16,7 @@ suite("JSON validation", () => {
             },
             [
                 'Error: The object is unclosed, \'}\' expected. (arm-template (syntax))',
-                "Error: Template validation failed: Unexpected end when deserializing object. Path 'resources', line 3, position 27. (arm-template (validation))"
+                "Error: Template validation failed: Unexpected end when deserializing object. Path 'resources', line 4, position 27. (arm-template (validation))"
             ])
     );
 });
