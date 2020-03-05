@@ -256,6 +256,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         const end = elementInfo.current.value.end !== undefined ? document.positionAt(elementInfo.current.value.end) : start;
 
         let treeItem: vscode.TreeItem = {
+            contextValue: this.getContextValue(elementInfo),
             label: this.getTreeNodeLabel(elementInfo),
             collapsibleState: elementInfo.current.collapsible ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
             iconPath: this.getIconPath(elementInfo),
@@ -286,6 +287,20 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             this.text = document.getText();
             this.tree = Json.parse(this.text);
         }
+    }
+
+    /**
+     * Retrieves the context value of the tree item, which can be used in the "where" clause of an view/item/context
+     * menu, as viewItem == <contextValue>
+     */
+    private getContextValue(elementInfo: IElementInfo): string | undefined {
+        if (elementInfo.current.level === 1) {
+            const keyNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.key.start);
+            if (keyNode instanceof Json.StringValue) {
+                return keyNode.unquotedValue;
+            }
+        }
+        return undefined;
     }
 
     private getTreeNodeLabel(elementInfo: IElementInfo): string {

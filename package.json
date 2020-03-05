@@ -44,7 +44,13 @@
         "onLanguage:json",
         "onLanguage:jsonc",
         "onCommand:azurerm-vscode-tools.uninstallDotnet",
-        "onCommand:azurerm-vscode-tools.reloadSchemas"
+        "onCommand:azurerm-vscode-tools.reloadSchemas",
+        "onCommand:azurerm-vscode-tools.sortTemplate",
+        "onCommand:azurerm-vscode-tools.sortFunctions",
+        "onCommand:azurerm-vscode-tools.sortOutputs",
+        "onCommand:azurerm-vscode-tools.sortParameters",
+        "onCommand:azurerm-vscode-tools.sortResources",
+        "onCommand:azurerm-vscode-tools.sortVariables"
     ],
     "contributes": {
         "grammars": [
@@ -143,13 +149,103 @@
                 "category": "Azure Resource Manager Tools",
                 "title": "Reload Cached Schemas",
                 "command": "azurerm-vscode-tools.reloadSchemas"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort Template...",
+                "command": "azurerm-vscode-tools.sortTemplate"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort Functions",
+                "command": "azurerm-vscode-tools.sortFunctions"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort Outputs",
+                "command": "azurerm-vscode-tools.sortOutputs"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort Parameters",
+                "command": "azurerm-vscode-tools.sortParameters"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort Resources",
+                "command": "azurerm-vscode-tools.sortResources"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort Variables",
+                "command": "azurerm-vscode-tools.sortVariables"
             }
         ],
         "menus": {
+            "commandPalette": [
+                {
+                    "command": "azurerm-vscode-tools.sortFunctions",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortOutputs",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortParameters",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortResources",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortVariables",
+                    "when": "never"
+                }
+            ],
             "editor/context": [
                 {
                     "command": "azurerm-vscode-tools.reloadSchemas",
-                    "when": "editorLangId==arm-template"
+                    "when": "editorLangId==arm-template",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortTemplate",
+                    "when": "editorLangId==arm-template",
+                    "group": "arm-template"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "azurerm-vscode-tools.sortTemplate",
+                    "when": "azurerm-vscode-tools.template-outline.active == true",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortFunctions",
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == functions",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortOutputs",
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == outputs",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortParameters",
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == parameters",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortResources",
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == resources",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortVariables",
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == variables",
+                    "group": "arm-template"
                 }
             ]
         }
