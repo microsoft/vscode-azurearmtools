@@ -75,6 +75,10 @@ export class DeploymentTemplate {
         return this._topLevelScope;
     }
 
+    public get topLevelValue(): Json.ObjectValue | undefined {
+        return this._topLevelValue;
+    }
+
     public hasArmSchemaUri(): boolean {
         return isArmSchema(this.schemaUri);
     }

@@ -2,6 +2,12 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.8.5-alpha
+
+### Added
+
+## Filtering for child resource type name and apiVersion values
+
 ## Version 0.8.4 (2020-02-05)
 
 ### Added
