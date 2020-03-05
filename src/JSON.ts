@@ -1254,6 +1254,9 @@ function next(tokenizer: Tokenizer, tokens: Token[]): void {
     while (tokenizer.moveNext()) {
         // tslint:disable-next-line: no-non-null-assertion // Guaranteed by tokenizer.moveNext() returning true
         const current: Token = tokenizer.current!;
+
+        // Don't place whitespace into the list of tokens that we've read.  This has the effect of not associating the
+        //   whitespace with items that are parsed, plus slightly reducing the tokens array size
         if (current.type !== TokenType.Whitespace) {
             tokens.push(current);
             break;
