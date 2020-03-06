@@ -905,7 +905,7 @@ export class NullValue extends Value {
 export class ParseResult {
     private readonly _debugText: string; // Used only for debugging - copy of the original text being parsed
 
-    constructor(private _tokens: Token[], private _lineLengths: number[], private _value: Value | undefined, text: string, public readonly commentCount: number) {
+    constructor(private _tokens: Token[], private _commentTokens: Token[], private _lineLengths: number[], private _value: Value | undefined, text: string, public readonly commentCount: number) {
         nonNullValue(_tokens, "_tokens");
         nonNullValue(_lineLengths, "_lineLengths");
 
@@ -919,6 +919,10 @@ export class ParseResult {
 
     public get tokens(): Token[] {
         return this._tokens;
+    }
+
+    public get commentTokens(): Token[] {
+        return this._commentTokens;
     }
 
     public get lineLengths(): number[] {
@@ -1094,57 +1098,58 @@ export function parse(stringValue: string): ParseResult {
     nonNullValue(stringValue, "stringValue");
 
     const tokens: Token[] = [];
+    const commentTokens: Token[] = [];
     const jt = new Tokenizer(stringValue);
-    const value: Value | undefined = parseValue(jt, tokens);
+    const value: Value | undefined = parseValue(jt, tokens, commentTokens);
 
     // Read the rest of the Tokens so that they will be put into the tokens array.
     while (jt.current) {
-        next(jt, tokens);
+        next(jt, tokens, commentTokens);
     }
 
-    return new ParseResult(tokens, jt.lineLengths, value, stringValue, jt.commentsCount);
+    return new ParseResult(tokens, commentTokens, jt.lineLengths, value, stringValue, jt.commentsCount);
 }
 
 /**
  * Read a JSON object from the provided tokenizer's stream of Tokens.
  * All of the Tokens that are read will be placed into the provided
- * tokens array.
+ * tokens arrays.
  */
-function parseValue(tokenizer: Tokenizer, tokens: Token[]): Value | undefined {
+function parseValue(tokenizer: Tokenizer, tokens: Token[], commentTokens: Token[]): Value | undefined {
     let value: Value | undefined;
 
     if (!tokenizer.hasStarted()) {
-        next(tokenizer, tokens);
+        next(tokenizer, tokens, commentTokens);
     }
 
     if (tokenizer.current) {
         switch (tokenizer.current.type) {
             case TokenType.QuotedString:
                 value = new StringValue(tokenizer.current.span, tokenizer.current.toString());
-                next(tokenizer, tokens);
+                next(tokenizer, tokens, commentTokens);
                 break;
 
             case TokenType.Number:
                 value = new NumberValue(tokenizer.current.span, tokenizer.current.toString());
-                next(tokenizer, tokens);
+                next(tokenizer, tokens, commentTokens);
                 break;
 
             case TokenType.Boolean:
                 value = new BooleanValue(tokenizer.current.span, tokenizer.current.toString() === "true");
-                next(tokenizer, tokens);
+                next(tokenizer, tokens, commentTokens);
                 break;
 
             case TokenType.LeftCurlyBracket:
-                value = parseObject(tokenizer, tokens);
+                value = parseObject(tokenizer, tokens, commentTokens);
                 break;
 
             case TokenType.LeftSquareBracket:
-                value = parseArray(tokenizer, tokens);
+                value = parseArray(tokenizer, tokens, commentTokens);
                 break;
 
             case TokenType.Null:
                 value = new NullValue(tokenizer.current.span);
-                next(tokenizer, tokens);
+                next(tokenizer, tokens, commentTokens);
                 break;
         }
     }
@@ -1152,7 +1157,7 @@ function parseValue(tokenizer: Tokenizer, tokens: Token[]): Value | undefined {
     return value;
 }
 
-function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
+function parseObject(tokenizer: Tokenizer, tokens: Token[], commentTokens: Token[]): ObjectValue {
     if (!tokenizer.current) {
         throw new Error("Precondition failed");
     }
@@ -1160,7 +1165,7 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
     let objectSpan: language.Span = tokenizer.current.span;
     const properties: Property[] = [];
 
-    next(tokenizer, tokens);
+    next(tokenizer, tokens, commentTokens);
 
     let propertySpan: language.Span | undefined;
     let propertyName: StringValue | undefined;
@@ -1170,21 +1175,21 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
         objectSpan = objectSpan.union(tokenizer.current.span);
 
         if (tokenizer.current.type === TokenType.RightCurlyBracket) {
-            next(tokenizer, tokens);
+            next(tokenizer, tokens, commentTokens);
             break;
         } else if (!propertyName) {
             if (tokenizer.current.type === TokenType.QuotedString) {
                 propertySpan = tokenizer.current.span;
                 propertyName = new StringValue(propertySpan, tokenizer.current.toString());
-                next(tokenizer, tokens);
+                next(tokenizer, tokens, commentTokens);
             } else {
-                next(tokenizer, tokens);
+                next(tokenizer, tokens, commentTokens);
             }
         } else if (!foundColon) {
             propertySpan = propertySpan ? propertySpan.union(tokenizer.current.span) : tokenizer.current.span;
             if (tokenizer.current.type === TokenType.Colon) {
                 foundColon = true;
-                next(tokenizer, tokens);
+                next(tokenizer, tokens, commentTokens);
             } else {
                 propertyName = undefined;
             }
@@ -1193,7 +1198,7 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
             assert(foundColon);
             assert(propertyName);
 
-            const propertyValue: Value | undefined = parseValue(tokenizer, tokens);
+            const propertyValue: Value | undefined = parseValue(tokenizer, tokens, commentTokens);
             if (propertyValue) {
                 propertySpan = propertySpan ? propertySpan.union(propertyValue.span) : propertyValue.span;
                 objectSpan = objectSpan.union(propertyValue.span);
@@ -1211,7 +1216,7 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
     return new ObjectValue(objectSpan, properties);
 }
 
-function parseArray(tokenizer: Tokenizer, tokens: Token[]): ArrayValue {
+function parseArray(tokenizer: Tokenizer, tokens: Token[], commentTokens: Token[]): ArrayValue {
     if (!tokenizer.current) {
         throw new Error("Precondition failed");
     }
@@ -1219,7 +1224,7 @@ function parseArray(tokenizer: Tokenizer, tokens: Token[]): ArrayValue {
     let span: language.Span = tokenizer.current.span;
     const elements: Value[] = [];
 
-    next(tokenizer, tokens);
+    next(tokenizer, tokens, commentTokens);
 
     let expectElement: boolean = true;
     // tslint:disable-next-line: strict-boolean-expressions
@@ -1227,34 +1232,36 @@ function parseArray(tokenizer: Tokenizer, tokens: Token[]): ArrayValue {
         span = span.union(tokenizer.current.span);
 
         if (tokenizer.current.type === TokenType.RightSquareBracket) {
-            next(tokenizer, tokens);
+            next(tokenizer, tokens, commentTokens);
             break;
         } else if (expectElement) {
-            const element: Value | undefined = parseValue(tokenizer, tokens);
+            const element: Value | undefined = parseValue(tokenizer, tokens, commentTokens);
             if (element) {
                 span = span.union(element.span);
 
                 elements.push(element);
                 expectElement = false;
             } else {
-                next(tokenizer, tokens);
+                next(tokenizer, tokens, commentTokens);
             }
         } else {
             if (tokenizer.current.type === TokenType.Comma) {
                 expectElement = true;
             }
-            next(tokenizer, tokens);
+            next(tokenizer, tokens, commentTokens);
         }
     }
 
     return new ArrayValue(span, elements);
 }
 
-function next(tokenizer: Tokenizer, tokens: Token[]): void {
+function next(tokenizer: Tokenizer, tokens: Token[], commentTokens: Token[]): void {
     while (tokenizer.moveNext()) {
         // tslint:disable-next-line: no-non-null-assertion // Guaranteed by tokenizer.moveNext() returning true
         const current: Token = tokenizer.current!;
-        if (current.type !== TokenType.Whitespace) {
+        if (current.type === TokenType.Comment) {
+            commentTokens.push(current);
+        } else if (current.type !== TokenType.Whitespace) {
             tokens.push(current);
             break;
         }
