@@ -24,6 +24,9 @@ export enum SortType {
     TopLevel
 }
 
+// A map of [token starting index] to [span of all comments before that token]
+type CommentsMap = Map<number, language.Span>;
+
 export class SortQuickPickItem implements vscode.QuickPickItem {
     public label: string;
     public value: SortType;
@@ -132,16 +135,19 @@ async function sortFunctions(template: DeploymentTemplate, textEditor: vscode.Te
         x => x.nameValue.quotedValue, x => x.span, template, textEditor);
 }
 
-function createCommentsMap(tokens: Json.Token[], lastSpan: language.Span): { [pos: number]: language.Span } {
-    let commentsMap: { [pos: number]: language.Span } = {};
-    let commentsSpan: language.Span | undefined;
-    tokens.forEach((token, index) => {
+function createCommentsMap(tokens: Json.Token[], commentTokens: Json.Token[], lastSpan: language.Span): CommentsMap {
+    let commentsMap: CommentsMap = new Map<number, language.Span>();
+    let currentCommentsSpan: language.Span | undefined;
+    let allTokens = tokens.concat(commentTokens);
+    allTokens.sort((a, b) => a.span.startIndex - b.span.startIndex);
+    allTokens.forEach((token, index) => {
         if (token.type === Json.TokenType.Comment) {
-            commentsSpan = !commentsSpan ? token.span : token.span.union(commentsSpan);
+            currentCommentsSpan = !currentCommentsSpan ? token.span : token.span.union(currentCommentsSpan);
         } else {
-            if (commentsSpan) {
-                commentsMap[token.span.startIndex] = commentsSpan;
-                commentsSpan = undefined;
+            if (currentCommentsSpan) {
+                // This token has comments before it, place comments span into map keyed with the token's starting index
+                commentsMap.set(token.span.startIndex, currentCommentsSpan);
+                currentCommentsSpan = undefined;
             }
         }
         if (token.span.startIndex > lastSpan.endIndex) {
@@ -151,9 +157,9 @@ function createCommentsMap(tokens: Json.Token[], lastSpan: language.Span): { [po
     return commentsMap;
 }
 
-function expandSpan(span: language.Span, comments: { [pos: number]: language.Span }): Language.Span {
+function expandSpanToPrecedingComments(span: language.Span, comments: CommentsMap): Language.Span {
     let startIndex = span.startIndex;
-    let commentSpan = comments[startIndex];
+    let commentSpan = comments.get(startIndex);
     // tslint:disable-next-line: strict-boolean-expressions
     if (!commentSpan) {
         return span;
@@ -193,18 +199,18 @@ async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spa
     }
     let document = textEditor.document;
     let lastSpan = spanSelector(list[list.length - 1]);
-    let comments = createCommentsMap(template.jsonParseResult.tokens, lastSpan);
-    let selection = getSelection(expandSpan(spanSelector(list[0]), comments), expandSpan(lastSpan, comments), document);
-    let intendentTexts = getIndentTexts<T>(list, x => expandSpan(spanSelector(x), comments), document);
+    let comments = createCommentsMap(template.jsonParseResult.tokens, template.jsonParseResult.commentTokens, lastSpan);
+    let selectionWithComments = getSelection(expandSpanToPrecedingComments(spanSelector(list[0]), comments), expandSpanToPrecedingComments(lastSpan, comments), document);
+    let indentedTexts = getIndentTexts<T>(list, x => expandSpanToPrecedingComments(spanSelector(x), comments), document);
     let orderBefore = list.map(sortSelector);
     let sorted = list.sort((a, b) => sortSelector(a).localeCompare(sortSelector(b)));
     let orderAfter = list.map(sortSelector);
     if (arraysEqual<string>(orderBefore, orderAfter)) {
         return;
     }
-    let sortedTexts = sorted.map(value => getText(expandSpan(spanSelector(value), comments), document));
-    let joined = joinTexts(sortedTexts, intendentTexts);
-    await textEditor.edit(x => x.replace(selection, joined));
+    let sortedTexts = sorted.map(value => getText(expandSpanToPrecedingComments(spanSelector(value), comments), document));
+    let joined = joinTexts(sortedTexts, indentedTexts);
+    await textEditor.edit(x => x.replace(selectionWithComments, joined));
 }
 
 async function sortGenericDeep<T, TChild>(list: T[], childSelector: (value: T) => TChild[] | undefined, sortSelector: (value: TChild) => string, spanSelector: (value: TChild) => language.Span, template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
