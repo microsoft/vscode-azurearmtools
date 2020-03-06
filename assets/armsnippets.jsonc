@@ -116,7 +116,7 @@
             "    }",
             "}"
         ],
-        "description": "Linked Deployment"
+        "description": "Nested Deployment"
     },
     "App Service Plan (Server Farm)": {
         "prefix": "arm-plan",
