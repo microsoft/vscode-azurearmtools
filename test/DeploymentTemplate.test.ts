@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length insecure-random
-// tslint:disable:object-literal-key-quotes no-function-expression no-non-null-assertion align
+// tslint:disable:object-literal-key-quotes no-function-expression no-non-null-assertion align no-http-string
 
 import * as assert from "assert";
 import { randomBytes } from "crypto";
@@ -581,6 +581,29 @@ suite("DeploymentTemplate", () => {
             const dt = new DeploymentTemplate("{}", "id");
             assert(dt.jsonParseResult);
             assert.equal(2, dt.jsonParseResult.tokenCount);
+        });
+
+        test("With comments", () => {
+            const dt = new DeploymentTemplate(
+                `// Look, Ma
+                    {
+                        // No hands!
+                        /* This is not the right schema
+                        "$schema": "http://schema.ohwell.azure.com/schemas/2015-01-01/wrongTemplate.json#",
+                        */
+                        "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                        "contentVersion": "1.0.0.0",
+                        "parameters": {
+                            "storageAccountName": {
+                                "type": "string"
+                            }
+                        }
+                    }`,
+                "id"
+            );
+
+            assert.equal(dt.schemaUri, "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#");
+            assert.notEqual(dt.topLevelScope.getParameterDefinition("storageAccountName"), null);
         });
     });
 

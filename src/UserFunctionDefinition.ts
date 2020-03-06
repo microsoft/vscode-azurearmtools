@@ -7,6 +7,7 @@ import { templateKeys } from "./constants";
 import { IUsageInfo } from "./Hover";
 import { DefinitionKind, INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
+import * as language from "./Language";
 import { OutputDefinition } from "./OutputDefinition";
 import { getUserFunctionUsage } from "./signatureFormatting";
 import { ScopeContext, TemplateScope } from "./TemplateScope";
@@ -30,7 +31,8 @@ export class UserFunctionDefinition implements INamedDefinition {
     constructor(
         public readonly namespace: UserFunctionNamespaceDefinition,
         public readonly nameValue: Json.StringValue,
-        public readonly objectValue: Json.ObjectValue
+        public readonly objectValue: Json.ObjectValue,
+        public readonly spanValue: language.Span
     ) { }
 
     /**
@@ -55,6 +57,10 @@ export class UserFunctionDefinition implements INamedDefinition {
                 `'${this.fullName}' (UDF) scope`
             );
         });
+    }
+
+    public get span(): language.Span {
+        return this.spanValue;
     }
 
     public get fullName(): string {

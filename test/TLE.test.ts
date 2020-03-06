@@ -98,6 +98,11 @@ suite("TLE", () => {
                 const value: TLE.NumberValue = new TLE.NumberValue(TLE.Token.createNumber(3, "1237"));
                 assert(value.contains(7));
             });
+
+            test("ends with comments and whitespace", () => {
+                const value: TLE.NumberValue = new TLE.NumberValue(TLE.Token.createNumber(3, "1237 /* there */"));
+                assert(value.contains(7));
+            });
         });
     });
 
