@@ -23,7 +23,7 @@ import * as Json from "./JSON";
 import * as language from "./Language";
 import { reloadSchemas } from "./languageclient/reloadSchemas";
 import { startArmLanguageServer, stopArmLanguageServer } from "./languageclient/startArmLanguageServer";
-import { considerQueryingForParameterFile, findMappedParamFileForTemplate, getFriendlyPathToParamFile, openParameterFile, selectParameterFile } from "./parameterFiles";
+import { considerQueryingForParameterFile, findMappedParameterFileForTemplate, getFriendlyPathToParameterFile, openParameterFile, selectParameterFile } from "./parameterFiles";
 import { IReferenceSite, PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
 import { resetGlobalState } from "./resetGlobalState";
@@ -137,7 +137,7 @@ export class AzureRMTools {
         vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
         vscode.workspace.onDidOpenTextDocument(this.onDocumentOpened, this, context.subscriptions);
         vscode.workspace.onDidChangeTextDocument(this.onDocumentChanged, this, context.subscriptions);
-        vscode.workspace.onDidChangeConfiguration(this.updateParamFileInStatusBar, this, context.subscriptions);
+        vscode.workspace.onDidChangeConfiguration(this.updateParameterFileInStatusBar, this, context.subscriptions);
 
         this._diagnosticsCollection = vscode.languages.createDiagnosticCollection("azurerm-tools-expressions");
         context.subscriptions.push(this._diagnosticsCollection);
@@ -230,7 +230,7 @@ export class AzureRMTools {
                             // Are they using an older schema?  Ask to update.
                             // tslint:disable-next-line: no-suspicious-comment
                             // TODO: Move to separate file
-                            this.considerQueryNewerSchema(editor, deploymentTemplate);
+                            this.considerQueryingForNewerSchema(editor, deploymentTemplate);
 
                             // Is there a possibly-matching params file they might want to associate?
                             considerQueryingForParameterFile(document);
@@ -255,7 +255,7 @@ export class AzureRMTools {
             }
 
             // tslint:disable-next-line: no-floating-promises
-            this.updateParamFileInStatusBar();
+            this.updateParameterFileInStatusBar();
         });
     }
 
@@ -312,7 +312,7 @@ export class AzureRMTools {
                 commentCount: deploymentTemplate.getCommentCount(),
                 extErrorsCount: errors.length,
                 extWarnCount: warnings.length,
-                linkedParameterFiles: findMappedParamFileForTemplate(document.uri) ? 1 : 0
+                linkedParameterFiles: findMappedParameterFileForTemplate(document.uri) ? 1 : 0
             });
 
         this.logFunctionCounts(deploymentTemplate);
@@ -347,7 +347,7 @@ export class AzureRMTools {
         });
     }
 
-    private considerQueryNewerSchema(editor: vscode.TextEditor, deploymentTemplate: DeploymentTemplate): void {
+    private considerQueryingForNewerSchema(editor: vscode.TextEditor, deploymentTemplate: DeploymentTemplate): void {
         // Only deal with saved files, because we don't have an accurate
         //   URI that we can track for unsaved files, and it's a better user experience.
         if (editor.document.uri.scheme !== 'file') {
@@ -519,15 +519,15 @@ export class AzureRMTools {
         startArmLanguageServer();
     }
 
-    private async updateParamFileInStatusBar(): Promise<void> {
+    private async updateParameterFileInStatusBar(): Promise<void> {
         const activeDocument = vscode.window.activeTextEditor?.document;
         if (activeDocument) {
             const deploymentTemplate = this.getDeploymentTemplate(activeDocument);
             if (deploymentTemplate) {
-                const paramFileUri = findMappedParamFileForTemplate(activeDocument.uri);
+                const paramFileUri = findMappedParameterFileForTemplate(activeDocument.uri);
                 if (paramFileUri) {
                     const doesParamFileExist = await fse.pathExists(paramFileUri?.fsPath);
-                    let text = `Parameters: ${getFriendlyPathToParamFile(activeDocument.uri, paramFileUri)}`;
+                    let text = `Parameters: ${getFriendlyPathToParameterFile(activeDocument.uri, paramFileUri)}`;
                     if (!doesParamFileExist) {
                         text += " $(error) Not found";
                     }
@@ -856,7 +856,7 @@ export class AzureRMTools {
             }
 
             // tslint:disable-next-line: no-floating-promises
-            this.updateParamFileInStatusBar();
+            this.updateParameterFileInStatusBar();
         });
     }
 

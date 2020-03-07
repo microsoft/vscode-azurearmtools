@@ -122,7 +122,7 @@
                     "description": "Check if the schema for deployment templates is using an out-of-date version and suggest updating",
                     "default": true
                 },
-                "azureResourceManagerTools.checkForMatchingParamFiles": {
+                "azureResourceManagerTools.checkForMatchingParameterFiles": {
                     "type": "boolean",
                     "description": "Check if an opened template file has a matching params file and ask to use it",
                     "default": true
@@ -294,24 +294,24 @@
             "editor/title": [
                 {
                     "command": "azurerm-vscode-tools.selectParameterFile",
-                    "group": "zzz_arm-template@2",
+                    "group": "zzz_arm-template@1",
                     "when": "editorLangId==arm-template"
                 },
                 {
                     "command": "azurerm-vscode-tools.openParameterFile",
-                    "group": "zzz_arm-template@3",
+                    "group": "zzz_arm-template@2",
                     "when": "editorLangId==arm-template"
                 }
             ],
             "editor/title/context": [
                 {
                     "command": "azurerm-vscode-tools.selectParameterFile",
-                    "group": "zzz_arm-template@2",
+                    "group": "zzz_arm-template@1",
                     "when": "editorLangId==arm-template"
                 },
                 {
                     "command": "azurerm-vscode-tools.openParameterFile",
-                    "group": "zzz_arm-template@3",
+                    "group": "zzz_arm-template@2",
                     "when": "editorLangId==arm-template"
                 }
             ]

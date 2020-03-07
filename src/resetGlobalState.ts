@@ -15,7 +15,7 @@ export async function resetGlobalState(actionContext: IActionContext): Promise<v
         DialogResponses.cancel)
     ) {
         ext.context.globalState.update(globalStateKeys.dontAskAboutSchemaFiles, undefined);
-        ext.context.globalState.update(globalStateKeys.dontAskAboutParamFiles, undefined);
+        ext.context.globalState.update(globalStateKeys.dontAskAboutParameterFiles, undefined);
         ext.context.globalState.update(globalStateKeys.survey.neverShowSurvey, undefined);
         ext.context.globalState.update(globalStateKeys.survey.surveyPostponedUntilTime, undefined);
 

@@ -39,7 +39,7 @@ export namespace configKeys {
     export const waitForDebugger = 'languageServer.waitForDebugger';
     export const langServerPath = 'languageServer.path';
     export const checkForLatestSchema = 'checkForLatestSchema';
-    export const checkForMatchingParamFiles = 'checkForMatchingParamFiles';
+    export const checkForMatchingParameterFiles = 'checkForMatchingParameterFiles';
     export const parameterFiles = 'parameterFiles';
 }
 
@@ -47,7 +47,7 @@ export namespace globalStateKeys {
     // Set of files to not ask about using the newest schema
     export const dontAskAboutSchemaFiles = 'dontAskAboutSchemaFiles';
     // Set of files to not automatically search for params files for
-    export const dontAskAboutParamFiles = 'dontAskAboutParamFiles';
+    export const dontAskAboutParameterFiles = 'dontAskAboutParameterFiles';
 
     export namespace survey {
         export const neverShowSurvey = 'neverShowSurvey';

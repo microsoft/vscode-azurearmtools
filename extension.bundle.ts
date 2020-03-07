@@ -47,7 +47,7 @@ export { IParameterDefinition } from "./src/IParameterDefinition";
 export * from "./src/Language";
 export { LanguageServerState } from "./src/languageclient/startArmLanguageServer";
 export { ParameterDefinition } from "./src/ParameterDefinition";
-export { mayBeMatchingParamFile } from "./src/parameterFiles";
+export { mayBeMatchingParameterFile } from "./src/parameterFiles";
 export { IReferenceSite, PositionContext } from "./src/PositionContext";
 export { ReferenceList } from "./src/ReferenceList";
 export { containsArmSchema, getPreferredSchema, isArmSchema } from './src/schemas';
@@ -78,3 +78,4 @@ export { Language };
 export { basic };
 export { Utilities };
 export { TLE };
+

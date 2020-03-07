@@ -8,10 +8,10 @@ const containsArmSchemaRegexString =
 const containsArmSchemaRegex = new RegExp(containsArmSchemaRegexString, 'i');
 const isArmSchemaRegex = new RegExp(`^${containsArmSchemaRegexString}$`, 'i');
 
-const containsParamsSchemaRegexString =
+const containsParametersSchemaRegexString =
     `https?:\/\/schema\.management\.azure\.com\/schemas\/[^"\/]+\/[a-zA-Z]*[dD]eploymentParameters\.json#?`;
-const containsParamsSchemaRegex = new RegExp(containsParamsSchemaRegexString, 'i');
-const isParamsSchemaRegex = new RegExp(`^${containsParamsSchemaRegexString}$`, 'i');
+const containsParametersSchemaRegex = new RegExp(containsParametersSchemaRegexString, 'i');
+const isParametersSchemaRegex = new RegExp(`^${containsParametersSchemaRegexString}$`, 'i');
 
 export function containsArmSchema(json: string): boolean {
     return !!json && containsArmSchemaRegex.test(json);
@@ -21,12 +21,12 @@ export function isArmSchema(json: string | undefined | null): boolean {
     return !!json && isArmSchemaRegex.test(json);
 }
 
-export function containsParamsSchema(json: string): boolean {
-    return !!json && containsParamsSchemaRegex.test(json);
+export function containsParametersSchema(json: string): boolean {
+    return !!json && containsParametersSchemaRegex.test(json);
 }
 
-export function isParamsSchema(json: string | undefined | null): boolean {
-    return !!json && isParamsSchemaRegex.test(json);
+export function isParametersSchema(json: string | undefined | null): boolean {
+    return !!json && isParametersSchemaRegex.test(json);
 }
 
 // Current root schemas:

@@ -3,13 +3,13 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
-import { mayBeMatchingParamFile } from "../extension.bundle";
+import { mayBeMatchingParameterFile } from "../extension.bundle";
 
 suite("ParameterFiles", () => {
     suite("mayBeMatchingParamFile", () => {
         function testIsLikelyMatch(expected: boolean, templateFileName: string, possibleParamFileName: string): void {
             test(`(${templateFileName}, ${possibleParamFileName})`, () => {
-                const result = mayBeMatchingParamFile(templateFileName, possibleParamFileName);
+                const result = mayBeMatchingParameterFile(templateFileName, possibleParamFileName);
                 assert.equal(result, expected);
             });
         }
