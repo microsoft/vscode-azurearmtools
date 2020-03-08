@@ -341,6 +341,8 @@ export class PositionContext {
      */
     private getPropertyAccessCompletions(tleValue: TLE.PropertyAccess, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
         const functionSource: TLE.FunctionCallValue | undefined = tleValue.functionSource;
+
+        // Property accesses always start with a function call (might be 'variables'/'parameters')
         if (functionSource) {
             let propertyPrefix: string = "";
             let replaceSpan: language.Span = this.emptySpanAtDocumentCharacterIndex;
@@ -354,7 +356,9 @@ export class PositionContext {
             const parameterProperty: IParameterDefinition | undefined = scope.getParameterDefinitionFromFunctionCall(functionSource);
             const sourcesNameStack: string[] = tleValue.sourcesNameStack;
             if (variableProperty) {
-                // If the variable's value is an object...
+                // [variables('xxx').prop]
+
+                // Is the variable's value is an object?
                 const sourceVariableDefinition: Json.ObjectValue | undefined = Json.asObjectValue(variableProperty.value);
                 if (sourceVariableDefinition) {
                     return this.getDeepPropertyAccessCompletions(
@@ -364,7 +368,9 @@ export class PositionContext {
                         replaceSpan);
                 }
             } else if (parameterProperty) {
-                // If the parameters's default value is an object...
+                // [parameters('xxx').prop]
+
+                // Is the parameters's default valuean object?
                 const parameterDefValue: Json.ObjectValue | undefined = parameterProperty.defaultValue ? Json.asObjectValue(parameterProperty.defaultValue) : undefined;
                 if (parameterDefValue) {
                     const sourcePropertyDefinition: Json.ObjectValue | undefined = Json.asObjectValue(parameterDefValue.getPropertyValueFromStack(sourcesNameStack));
@@ -377,17 +383,21 @@ export class PositionContext {
                     }
                 }
             } else if (sourcesNameStack.length === 0) {
+                // [function(...).prop]
+
                 // We don't allow multiple levels of property access
                 // (resourceGroup().prop1.prop2) on functions other than variables/parameters,
                 // therefore checking that sourcesNameStack.length === 0
                 const functionName: string | undefined = functionSource.name;
-                if (functionName && !functionSource.namespaceToken) { // Don't currently support completions from a user function returning an object
-                    let functionMetadataMatches: BuiltinFunctionMetadata[] = AzureRMAssets.getFunctionMetadataFromPrefix(functionName);
-                    assert(functionMetadataMatches);
 
-                    const result: Completion.Item[] = [];
-                    if (functionMetadataMatches.length === 1) {
-                        const functionMetadata: BuiltinFunctionMetadata = functionMetadataMatches[0];
+                // Don't currently support completions from a user function returning an object,
+                // so there must be no function namespace
+                if (functionName && !functionSource.namespaceToken) {
+                    let functionMetadata: BuiltinFunctionMetadata | undefined = AzureRMAssets.getFunctionMetadataFromName(functionName);
+                    if (functionMetadata) {
+                        // Property completion off of a built-in function. Completions will consist of the
+                        //   returnValueMembers of the function, if any.
+                        const result: Completion.Item[] = [];
                         for (const returnValueMember of functionMetadata.returnValueMembers) {
                             if (propertyPrefix === "" || returnValueMember.toLowerCase().startsWith(propertyPrefix)) {
                                 result.push(PositionContext.createPropertyCompletionItem(returnValueMember, replaceSpan));
