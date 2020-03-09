@@ -74,6 +74,8 @@ async function getLangServerVersion(): Promise<string | undefined> {
 }
 
 export async function startLanguageClient(serverDllPath: string, dotnetExePath: string): Promise<void> {
+    // tslint:disable-next-line: no-suspicious-comment
+    // tslint:disable-next-line: max-func-body-length // TODO: Refactor function
     await callWithTelemetryAndErrorHandling('startArmLanguageClient', async (actionContext: IActionContext) => {
         actionContext.errorHandling.rethrow = true;
 

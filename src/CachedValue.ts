@@ -15,6 +15,6 @@ export class CachedValue<T> {
             this._isCached = true;
         }
 
-        return <T>this._value;
+        return this._value;
     }
 }

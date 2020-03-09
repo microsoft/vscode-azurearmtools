@@ -76,7 +76,7 @@ export async function dotnetAcquire(
         }
         return await acquisitionWorker.acquire(version, telemetryProperties);
     } catch (err) {
-        const linkMessage = `>>>> This extension requires .NET Core for full functionality, but we were unable to download and install a local copy for the extension. If this error persists, please see https://aka.ms/vscode-armtools-dotnet for troubleshooting tips.`;
+        const linkMessage = `>>>> This extension requires .NET Core for full functionality, but we were unable to download and install a local copy for the extension. If this error persists, please see https://aka.ms/vscode-armtools-dotnet for troubleshooting tips. `;
         err = wrapError(linkMessage, err);
         throw err;
     } finally {

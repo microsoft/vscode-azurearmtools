@@ -4,7 +4,7 @@
 
 import { commands, MessageItem, Uri, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, IActionContext } from "vscode-azureextensionui";
-import { configPrefix } from './constants';
+import { configPrefix, globalStateKeys } from './constants';
 import { ext } from "./extensionVariables";
 import { assert } from './fixed_assert';
 import { httpGet } from "./httpGet";
@@ -15,13 +15,10 @@ import { hoursToMs, minutesToMs, weeksToMs } from "./util/time";
 //    "azureResourceManagerTools.debugSurvey": true
 //
 
-namespace stateKeys {
-    export const neverShowSurvey = 'neverShowSurvey';
-    export const surveyPostponedUntilTime = 'surveyPostponedUntilTime';
-}
-
 const linkToSurvey = 'https://aka.ms/arm-tools-survey';
 const surveyPrompt = "Could you please take 2 minutes to tell us how well the Azure Resource Manager Tools extension is working for you?";
+
+const stateKeys = globalStateKeys.survey;
 
 // Wait for this amount of time since extension first used (this session) before
 // considering asking the survey (only if still interacting with extension)

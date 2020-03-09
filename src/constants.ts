@@ -3,10 +3,14 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as os from 'os';
 import * as path from 'path';
 
 // tslint:disable-next-line: strict-boolean-expressions
 export const isWebpack: boolean = /^(false|0)?$/i.test(process.env.AZCODE_ARM_IGNORE_BUNDLE || '');
+
+export const isWin32: boolean = os.platform() === 'win32';
+export const isCaseSensitiveFileSystem: boolean = !isWin32;
 
 export const assetsPath = path.join(__dirname, isWebpack ? "" : "..", "..", "assets");
 export const iconsPath = path.join(__dirname, isWebpack ? "" : "..", "..", "icons");
@@ -15,7 +19,8 @@ export const languageServerName = 'ARM Template Language Server';
 export const languageFriendlyName = 'Azure Resource Manager Template';
 export const languageId = 'arm-template';
 export const languageServerFolderName = 'languageServer';
-export const outputWindowName = 'Azure Resource Manager Tools';
+export const extensionName = 'Azure Resource Manager Tools';
+export const outputWindowName = extensionName;
 
 // String that shows up in our errors as the source in parentheses
 export const expressionsDiagnosticsSource = "arm-template (expressions)";
@@ -34,11 +39,20 @@ export namespace configKeys {
     export const waitForDebugger = 'languageServer.waitForDebugger';
     export const langServerPath = 'languageServer.path';
     export const checkForLatestSchema = 'checkForLatestSchema';
+    export const checkForMatchingParameterFiles = 'checkForMatchingParameterFiles';
+    export const parameterFiles = 'parameterFiles';
 }
 
 export namespace globalStateKeys {
     // Set of files to not ask about using the newest schema
     export const dontAskAboutSchemaFiles = 'dontAskAboutSchemaFiles';
+    // Set of files to not automatically search for params files for
+    export const dontAskAboutParameterFiles = 'dontAskAboutParameterFiles';
+
+    export namespace survey {
+        export const neverShowSurvey = 'neverShowSurvey';
+        export const surveyPostponedUntilTime = 'surveyPostponedUntilTime';
+    }
 }
 
 // For testing: We create a diagnostic with this message during testing to indicate when all (expression) diagnostics have been calculated

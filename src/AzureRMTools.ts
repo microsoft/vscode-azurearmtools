@@ -6,12 +6,13 @@
 // tslint:disable:promise-function-async max-line-length // Grandfathered in
 
 import * as assert from "assert";
+import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import * as Completion from "./Completion";
-import { configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, languageId, outputWindowName } from "./constants";
+import { configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, extensionName, globalStateKeys, languageId } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
@@ -22,8 +23,10 @@ import * as Json from "./JSON";
 import * as language from "./Language";
 import { reloadSchemas } from "./languageclient/reloadSchemas";
 import { startArmLanguageServer, stopArmLanguageServer } from "./languageclient/startArmLanguageServer";
+import { considerQueryingForParameterFile, findMappedParameterFileForTemplate, getFriendlyPathToParameterFile, openParameterFile, selectParameterFile } from "./parameterFiles";
 import { IReferenceSite, PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
+import { resetGlobalState } from "./resetGlobalState";
 import { getPreferredSchema } from "./schemas";
 import { getFunctionParamUsage } from "./signatureFormatting";
 import { getQuickPickItems, sortTemplate, SortType } from "./sortTemplate";
@@ -40,7 +43,7 @@ import { getVSCodeRangeFromSpan } from "./util/vscodePosition";
 export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
     ext.context = context;
     ext.reporter = createTelemetryReporter(context);
-    ext.outputChannel = createAzExtOutputChannel(outputWindowName, configPrefix);
+    ext.outputChannel = createAzExtOutputChannel(extensionName, configPrefix);
     ext.ui = new AzureUserInput(context.globalState);
     registerUIExtensionVariables(ext);
 
@@ -61,7 +64,8 @@ export function deactivateInternal(): void {
 export class AzureRMTools {
     private readonly _diagnosticsCollection: vscode.DiagnosticCollection;
     private readonly _deploymentTemplates: Map<string, DeploymentTemplate> = new Map<string, DeploymentTemplate>();
-    private readonly _filesAskedToUpdateSchema: Set<string> = new Set<string>();
+    private readonly _filesAskedToUpdateSchemaThisSession: Set<string> = new Set<string>();
+    private readonly _paramsStatusBarItem: vscode.StatusBarItem;
     private _areDeploymentTemplateEventsHookedUp: boolean = false;
     private _diagnosticsVersion: number = 0;
 
@@ -123,17 +127,25 @@ export class AzureRMTools {
         registerCommand("azurerm-vscode-tools.sortTopLevel", async () => {
             await this.sortTemplate(SortType.TopLevel);
         });
+        registerCommand("azurerm-vscode-tools.selectParameterFile", selectParameterFile);
+        registerCommand("azurerm-vscode-tools.openParameterFile", openParameterFile);
+        registerCommand("azurerm-vscode-tools.resetGlobalState", resetGlobalState);
+
+        this._paramsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+        ext.context.subscriptions.push(this._paramsStatusBarItem);
 
         vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
         vscode.workspace.onDidOpenTextDocument(this.onDocumentOpened, this, context.subscriptions);
         vscode.workspace.onDidChangeTextDocument(this.onDocumentChanged, this, context.subscriptions);
+        vscode.workspace.onDidChangeConfiguration(this.updateParameterFileInStatusBar, this, context.subscriptions);
 
         this._diagnosticsCollection = vscode.languages.createDiagnosticCollection("azurerm-tools-expressions");
         context.subscriptions.push(this._diagnosticsCollection);
 
         const activeEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
         if (activeEditor) {
-            this.updateDeploymentTemplate(activeEditor.document);
+            const activeDocument = activeEditor.document;
+            this.updateDeploymentTemplate(activeDocument);
         }
     }
 
@@ -172,7 +184,7 @@ export class AzureRMTools {
 
             let treatAsDeploymentTemplate = false;
             let isNewlyOpened = false; // As opposed to already opened and simply being made active
-            const documentUri: string = document.uri.toString();
+            const documentPath: string = document.uri.toString();
 
             if (document.languageId === languageId) {
                 // Lang ID is set to arm-template, whether auto or manual, respect the setting
@@ -184,12 +196,12 @@ export class AzureRMTools {
                 // If the documentUri is not in our dictionary of deployment templates, then we
                 // know that this document was just opened (as opposed to changed/updated).
                 // Note that it might have been opened, then closed, then reopened.
-                if (!this._deploymentTemplates.has(documentUri)) {
+                if (!this._deploymentTemplates.has(documentPath)) {
                     isNewlyOpened = true;
                 }
 
                 // Do a full parse
-                let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(document.getText(), documentUri);
+                let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(document.getText(), documentPath);
                 if (deploymentTemplate.hasArmSchemaUri()) {
                     treatAsDeploymentTemplate = true;
                 }
@@ -197,7 +209,7 @@ export class AzureRMTools {
 
                 if (treatAsDeploymentTemplate) {
                     this.ensureDeploymentTemplateEventsHookedUp();
-                    this._deploymentTemplates.set(documentUri, deploymentTemplate);
+                    this._deploymentTemplates.set(documentPath, deploymentTemplate);
 
                     if (isNewlyOpened) {
                         // A deployment template has been opened (as opposed to having been tabbed to)
@@ -215,15 +227,13 @@ export class AzureRMTools {
 
                         // No guarantee that active editor is the one we're processing, ignore if not
                         if (editor && editor.document === document) {
-                            // Only query to update schema for saved files, because we don't have an accurate
-                            //   URI that we can track yet.
-                            if (document.uri.scheme === 'file') {
-                                let queriedToUpdateSchema = this._filesAskedToUpdateSchema.has(documentUri);
-                                if (!queriedToUpdateSchema) { // Only ask to upgrade once per session per file
-                                    // Are they using an older schema?  Ask to update.
-                                    this.queryUseNewerSchema(editor, deploymentTemplate);
-                                }
-                            }
+                            // Are they using an older schema?  Ask to update.
+                            // tslint:disable-next-line: no-suspicious-comment
+                            // TODO: Move to separate file
+                            this.considerQueryingForNewerSchema(editor, deploymentTemplate);
+
+                            // Is there a possibly-matching params file they might want to associate?
+                            considerQueryingForParameterFile(document);
                         }
                     }
 
@@ -243,6 +253,9 @@ export class AzureRMTools {
                 // remove the deployment template from our cache.
                 this.closeDeploymentTemplate(document);
             }
+
+            // tslint:disable-next-line: no-floating-promises
+            this.updateParameterFileInStatusBar();
         });
     }
 
@@ -298,7 +311,8 @@ export class AzureRMTools {
                 multilineStringCount: deploymentTemplate.getMultilineStringCount(),
                 commentCount: deploymentTemplate.getCommentCount(),
                 extErrorsCount: errors.length,
-                extWarnCount: warnings.length
+                extWarnCount: warnings.length,
+                linkedParameterFiles: findMappedParameterFileForTemplate(document.uri) ? 1 : 0
             });
 
         this.logFunctionCounts(deploymentTemplate);
@@ -333,13 +347,27 @@ export class AzureRMTools {
         });
     }
 
-    private queryUseNewerSchema(editor: vscode.TextEditor, deploymentTemplate: DeploymentTemplate): void {
+    private considerQueryingForNewerSchema(editor: vscode.TextEditor, deploymentTemplate: DeploymentTemplate): void {
+        // Only deal with saved files, because we don't have an accurate
+        //   URI that we can track for unsaved files, and it's a better user experience.
+        if (editor.document.uri.scheme !== 'file') {
+            return;
+        }
+
+        // Only ask to upgrade once per session per file
+        const document = editor.document;
+        const documentPath = document.uri.fsPath;
+        let queriedToUpdateSchema = this._filesAskedToUpdateSchemaThisSession.has(documentPath);
+        if (queriedToUpdateSchema) {
+            return;
+        }
+
+        this._filesAskedToUpdateSchemaThisSession.add(documentPath);
+
         const schemaValue: Json.StringValue | undefined = deploymentTemplate.schemaValue;
         // tslint:disable-next-line: strict-boolean-expressions
         const schemaUri: string | undefined = deploymentTemplate.schemaUri || undefined;
         const preferredSchemaUri: string | undefined = schemaUri && getPreferredSchema(schemaUri);
-        const document = editor.document;
-        const documentUri = document.uri.toString();
         const checkForLatestSchema = !!vscode.workspace.getConfiguration(configPrefix).get<boolean>(configKeys.checkForLatestSchema);
 
         if (preferredSchemaUri && schemaValue) {
@@ -355,7 +383,7 @@ export class AzureRMTools {
 
                 // tslint:disable-next-line: strict-boolean-expressions
                 const dontAskFiles = ext.context.globalState.get<string[]>(globalStateKeys.dontAskAboutSchemaFiles) || [];
-                if (dontAskFiles.includes(documentUri)) {
+                if (dontAskFiles.includes(documentPath)) {
                     actionContext.telemetry.properties.isInDontAskList = 'true';
                     return;
                 }
@@ -364,7 +392,6 @@ export class AzureRMTools {
                 const notNow: vscode.MessageItem = { title: "Not now" };
                 const neverForThisFile: vscode.MessageItem = { title: "Never for this file" };
 
-                this._filesAskedToUpdateSchema.add(documentUri);
                 const response = await ext.ui.showWarningMessage(
                     `Would you like to use the latest schema for deployment template "${path.basename(document.uri.path)}" (note: some tools may be unable to process the latest schema)?`,
                     {
@@ -384,7 +411,7 @@ export class AzureRMTools {
                     case notNow.title:
                         return;
                     case neverForThisFile.title:
-                        dontAskFiles.push(documentUri);
+                        dontAskFiles.push(documentPath);
                         await ext.context.globalState.update(globalStateKeys.dontAskAboutSchemaFiles, dontAskFiles);
                         break;
                     default:
@@ -395,7 +422,7 @@ export class AzureRMTools {
         }
     }
 
-    private async  replaceSchema(uri: vscode.Uri, deploymentTemplate: DeploymentTemplate, previousSchema: string, newSchema: string): Promise<void> {
+    private async replaceSchema(uri: vscode.Uri, deploymentTemplate: DeploymentTemplate, previousSchema: string, newSchema: string): Promise<void> {
         // Editor might have been closed or tabbed away from, so make sure it's visible
         const editor = await vscode.window.showTextDocument(uri);
 
@@ -492,6 +519,31 @@ export class AzureRMTools {
         startArmLanguageServer();
     }
 
+    private async updateParameterFileInStatusBar(): Promise<void> {
+        const activeDocument = vscode.window.activeTextEditor?.document;
+        if (activeDocument) {
+            const deploymentTemplate = this.getDeploymentTemplate(activeDocument);
+            if (deploymentTemplate) {
+                const paramFileUri = findMappedParameterFileForTemplate(activeDocument.uri);
+                if (paramFileUri) {
+                    const doesParamFileExist = await fse.pathExists(paramFileUri?.fsPath);
+                    let text = `Parameters: ${getFriendlyPathToParameterFile(activeDocument.uri, paramFileUri)}`;
+                    if (!doesParamFileExist) {
+                        text += " $(error) Not found";
+                    }
+                    this._paramsStatusBarItem.text = text;
+                } else {
+                    this._paramsStatusBarItem.text = "Select Parameter File...";
+                }
+                this._paramsStatusBarItem.command = "azurerm-vscode-tools.selectParameterFile";
+                this._paramsStatusBarItem.show();
+                return;
+            }
+        }
+
+        this._paramsStatusBarItem.hide();
+    }
+
     /**
      * Logs telemetry with information about the functions used in a template. Only meaningful if called
      * in a relatively stable state, such as after first opening
@@ -526,7 +578,7 @@ export class AzureRMTools {
                     unrecognized.add(issue.functionName);
                 } else if (issue instanceof IncorrectArgumentsCountIssue) {
                     // Encode function name as "funcname(<actual-args>)[<min-expected>..<max-expected>]"
-                    let encodedName = `${issue.functionName}(${issue.actual})[${issue.minExpected}..${issue.maxExpected}]`; //asdf what if maxExpected is undefined?
+                    let encodedName = `${issue.functionName}(${issue.actual})[${issue.minExpected}..${issue.maxExpected}]`;
                     incorrectArgCounts.add(encodedName);
                 }
             }
@@ -796,12 +848,15 @@ export class AzureRMTools {
             actionContext.errorHandling.suppressDisplay = true;
             actionContext.telemetry.suppressIfSuccessful = true;
 
-            if (editor) {
-                const document = editor.document;
-                if (!this.getDeploymentTemplate(document)) {
-                    this.updateDeploymentTemplate(document);
+            let activeDocument: vscode.TextDocument | undefined = editor?.document;
+            if (activeDocument) {
+                if (!this.getDeploymentTemplate(activeDocument)) {
+                    this.updateDeploymentTemplate(activeDocument);
                 }
             }
+
+            // tslint:disable-next-line: no-floating-promises
+            this.updateParameterFileInStatusBar();
         });
     }
 
