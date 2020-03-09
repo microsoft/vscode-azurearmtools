@@ -243,27 +243,33 @@ function normalizePath(filePath: Uri | string): string {
 export async function findSuggestedParameterFiles(templateUri: Uri): Promise<IPossibleParameterFile[]> {
   let paths: IPossibleParameterFile[] = [];
 
-  // Current logic is simple: Find all .json/c files in the same folder as the template file and check
-  //   if they're a parameter file
-  try {
-    const folder = path.dirname(templateUri.fsPath);
-    const fileNames: string[] = await fse.readdir(folder);
-    for (let paramFileName of fileNames) {
-      const fullPath: string = path.join(folder, paramFileName);
-      const uri: Uri = Uri.file(fullPath);
-      if (await isParameterFile(fullPath)) {
-        paths.push({
-          uri,
-          friendlyPath: getFriendlyPathToParameterFile(templateUri, uri),
-          isCloseNameMatch: mayBeMatchingParameterFile(templateUri.fsPath, fullPath)
-        });
-      }
-    }
-  } catch (error) {
-    // Ignore
-  }
+  return await callWithTelemetryAndErrorHandling('findSuggestedParameterFiles', async (actionContext: IActionContext) => {
+    actionContext.errorHandling.rethrow = false;
 
-  return paths;
+    // Current logic is simple: Find all .json/c files in the same folder as the template file and check
+    //   if they're a parameter file
+    try {
+      const folder = path.dirname(templateUri.fsPath);
+      const fileNames: string[] = await fse.readdir(folder);
+      for (let paramFileName of fileNames) {
+        const fullPath: string = path.join(folder, paramFileName);
+        const uri: Uri = Uri.file(fullPath);
+        if (await isParameterFile(fullPath)) {
+          paths.push({
+            uri,
+            friendlyPath: getFriendlyPathToParameterFile(templateUri, uri),
+            isCloseNameMatch: mayBeMatchingParameterFile(templateUri.fsPath, fullPath)
+          });
+        }
+      }
+    } catch (error) {
+      // Ignore
+    }
+
+    return paths;
+  })
+    // tslint:disable-next-line: strict-boolean-expressions
+    || [];
 }
 
 async function isParameterFile(filePath: string): Promise<boolean> {
