@@ -24,7 +24,7 @@ let resourceTemplate: string = `{
     "resources": [
         // Insert here: resource
     ],
-    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "variables": {
         // Insert here: variable
@@ -107,11 +107,6 @@ const overrideExpectedDiagnostics: { [name: string]: string[] } = {
     ],
     Parameter: [
         "The parameter 'parameter1' is never used."
-    ],
-    Function: [
-        "Undefined variable reference: 'applicationInsightsName'",
-        // Full validation temporarily disabled, so we don't currently get this error
-        // "Template validation failed: The template variable 'applicationInsightsName' is not found. Please see https://aka.ms/arm-template/#variables for usage details."
     ],
     "User Function": [
         "Template validation failed: The template function 'function-name' at line '19' and column '30' is not valid. The function name contains invalid characters '-'. Please see https://aka.ms/arm-template/#functions for usage details.",
