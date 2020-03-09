@@ -117,6 +117,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         let clientOptions: LanguageClientOptions = {
             documentSelector: armDeploymentDocumentSelector,
             diagnosticCollectionName: `${languageServerName} diagnostics`,
+            outputChannel: ext.outputChannel, // Use the same output channel as the extension does
             revealOutputChannelOn: RevealOutputChannelOn.Error,
             synchronize: {
                 configurationSection: configPrefix
