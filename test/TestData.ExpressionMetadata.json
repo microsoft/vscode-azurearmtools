@@ -256,6 +256,14 @@
             "$testData": true
         },
         {
+            "$comment": "This is important to include because it starts with 'subscription' which is also a function name and that has caused bugs before",
+            "name": "subscriptionResourceId",
+            "expectedUsage": "subscriptionResourceId([subscriptionId], resourceType, resourceName1, [resourceName2]...)",
+            "description": "Returns the unique resource identifier of a subscription scoped resource. You use this function to create a resourceId for a given resource as required by a property value.",
+            "minimumArguments": 2,
+            "maximumArguments": null
+        },
+        {
             "name": "substring",
             "expectedUsage": "substring(stringToParse, startIndex, length)",
             "description": "Returns a substring that starts at the specified character position and contains the specified number of characters.",
