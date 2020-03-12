@@ -2,11 +2,36 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
-## Version 0.9.0
+## Version 0.9.0 (2020-04-03)
 
 ### Added
 
-## Filtering for child resource type name and apiVersion values
+- First round of support for parameter files
+  * Specify a parameter file to associate with a template file
+  * Parameter file will be used to enable additional validation
+  * Create new parameter file from parameters within the template
+- Support filtering for child resource type name and apiVersion values
+- Template sorting (**implemented by Nils Hedström @nilshedstrom, thanks!**)
+- Snippet improvements
+  * apiVersions updated
+  * various fixes and standardization
+- Added more resource type icons for ARM TEMPLATE OUTLINE view (thanks Nils Hedström @nilshedstrom!) [#253](https://github.com/microsoft/vscode-azurearmtools/issues/253)
+
+### Changed
+
+- Now using a single output for extension and language server
+
+### Fixed
+
+- "Found more than 1 match" (oneOf error) in some ARM templates
+- Reading schemas from .zip file does not work on Mac
+- Arm Template Outline doesn't show up when you first open a file, but does when you tab back to it (thanks Nils Hedström @nilshedstrom!) [#470](https://github.com/microsoft/vscode-azurearmtools/issues/470)
+- Snippets should follow the recommendations in https://github.com/Azure/azure-quickstart-templates/blob/master/1-CONTRIBUTION-GUIDE/best-practices.md [#456](https://github.com/microsoft/vscode-azurearmtools/issues/456)
+- Not getting any completion for subscription().xxx [#526](https://github.com/microsoft/vscode-azurearmtools/issues/526)
+- autocomplete list for child resources should be filtered based on the parent [#350](https://github.com/microsoft/vscode-azurearmtools/issues/350)
+- autocomplete list for apiVersions on child resources is empty [#351](https://github.com/microsoft/vscode-azurearmtools/issues/351)
+- Null ref exception in validation with empty doc or doc containing only a comment
+- Add space after colon with IntelliSense [#460](https://github.com/microsoft/vscode-azurearmtools/issues/460)
 
 ## Version 0.8.5 (2020-03-30)
 
