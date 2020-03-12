@@ -198,7 +198,7 @@
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Select Parameter File...",
+                "title": "Select/Create Parameter File...",
                 "command": "azurerm-vscode-tools.selectParameterFile",
                 "enablement": "editorLangId==arm-template"
             },
@@ -239,24 +239,24 @@
             ],
             "editor/context": [
                 {
-                    "command": "azurerm-vscode-tools.reloadSchemas",
+                    "command": "azurerm-vscode-tools.selectParameterFile",
                     "group": "zzz_arm-template@1",
                     "when": "editorLangId==arm-template"
                 },
                 {
-                    "command": "azurerm-vscode-tools.selectParameterFile",
-                    "group": "zzz_arm-template@2",
-                    "when": "editorLangId==arm-template"
-                },
-                {
                     "command": "azurerm-vscode-tools.openParameterFile",
-                    "group": "zzz_arm-template@3",
+                    "group": "zzz_arm-template@2",
                     "when": "editorLangId==arm-template"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortTemplate",
                     "when": "editorLangId==arm-template",
-                    "group": "zzz_arm-template@4"
+                    "group": "zzz_arm-template@3"
+                },
+                {
+                    "command": "azurerm-vscode-tools.reloadSchemas",
+                    "group": "zzz_arm-template@4",
+                    "when": "editorLangId==arm-template"
                 }
             ],
             "view/item/context": [

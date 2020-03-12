@@ -36,6 +36,7 @@ export { configKeys, configPrefix, diagnosticsCompletePrefix, expressionsDiagnos
 export { __debugMarkPositionInString, __debugMarkSubstring } from "./src/debugMarkStrings";
 export { DeploymentTemplate } from "./src/DeploymentTemplate";
 export { Duration } from './src/Duration';
+export { createParameterFileContents, createParameterProperty } from './src/editParameterFile';
 export { ExpressionType } from "./src/ExpressionType";
 export { ext } from './src/extensionVariables';
 export { Histogram } from "./src/Histogram";
@@ -60,6 +61,7 @@ export { UserFunctionMetadata } from "./src/UserFunctionMetadata";
 export { UserFunctionNamespaceDefinition } from "./src/UserFunctionNamespaceDefinition";
 export { UserFunctionParameterDefinition } from "./src/UserFunctionParameterDefinition";
 export { mapJsonObjectValue } from "./src/util/mapJsonObjectValue";
+export { indentMultilineString } from "./src/util/multilineStrings";
 export * from "./src/util/nonNull";
 export * from './src/util/time';
 export { getVSCodePositionFromPosition } from "./src/util/vscodePosition";
