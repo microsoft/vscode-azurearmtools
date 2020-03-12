@@ -5,9 +5,9 @@
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length no-http-string no-suspicious-comment
 // tslint:disable:no-non-null-assertion
 
+import * as assert from 'assert';
 import * as os from 'os';
 import { indentMultilineString } from "../../extension.bundle";
-import { assert } from "../../src/fixed_assert";
 import { removeIndentation } from '../../src/util/multilineStrings';
 
 const EOL = os.EOL;
