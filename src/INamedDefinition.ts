@@ -11,6 +11,9 @@ export enum DefinitionKind {
     Namespace = "Namespace",
     UserFunction = "UserFunction",
     BuiltinFunction = "BuiltinFunction",
+
+    // Parameter files
+    ParameterValue = "ParameterValue",
 }
 
 /**

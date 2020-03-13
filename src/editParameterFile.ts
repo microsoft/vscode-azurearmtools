@@ -87,7 +87,7 @@ ${tab}"parameters": {
     return contents;
 }
 
-export function createParameterProperty(template: DeploymentTemplate, parameter: IParameterDefinition, indent: number): string {
+export function createParameterProperty(template: DeploymentTemplate, parameter: IParameterDefinition, indent: number = defaultIndent): string {
     /* e.g.
 
     "parameters": {
@@ -112,6 +112,15 @@ export function createParameterProperty(template: DeploymentTemplate, parameter:
         + `${makeIndent(indent)}"value": ${valueIndentedAfterFirstLine}` + os.EOL
         + `}`;
 }
+
+// export async function addParameterToParameterFile(editor: TextEditor, template: DeploymentTemplate, parameter: IParameterDefinition): Promise<void> {
+//     const parameterText: string = createParameterProperty(template, parameter, defaultIndent);
+//     appendPropertyTextIntoObject(editor, parameterText);
+// }
+
+// function appendPropertyTextIntoObject(editor: TextEditor, text: string, jsonObject: Json.ObjectValue) {
+
+// }
 
 function getDefaultValueFromType(propType: ExpressionType | undefined, indent: number): string {
     const comment = "// TODO: Fill in parameter value";

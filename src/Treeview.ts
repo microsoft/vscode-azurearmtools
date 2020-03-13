@@ -10,7 +10,7 @@
 
 import * as path from 'path';
 import * as vscode from "vscode";
-import { iconsPath, languageId, templateKeys } from "./constants";
+import { armTemplateLanguageId, iconsPath, templateKeys } from "./constants";
 import { assert } from './fixed_assert';
 import * as Json from "./JSON";
 
@@ -550,7 +550,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
 
     private shouldShowTreeForDocument(document: vscode.TextDocument): boolean {
         // Only show view if the language is set to Azure Resource Manager Template
-        return document.languageId === languageId;
+        return document.languageId === armTemplateLanguageId;
     }
 
     private setTreeViewContext(visible: boolean): void {
