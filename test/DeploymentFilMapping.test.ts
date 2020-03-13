@@ -7,11 +7,11 @@
 
 import * as assert from 'assert';
 import { Uri } from "vscode";
-import { DeploymentFileMapping } from "../src/parameterFiles/DeploymentFileMapping";
-import { TestConfiguration } from "../src/util/configuration";
+import { DeploymentFileMapping } from "../extension.bundle";
+import { TestConfiguration } from "./support/TestConfiguration";
 
 suite("DeploymentFileMapping", () => {
-    const param1 = Uri.parse("http://1.params.json");
+    const param1 = Uri.file("c:\\temp");
     const template1 = Uri.parse("http://1.json");
 
     test("a", async () => {

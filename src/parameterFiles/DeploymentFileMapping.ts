@@ -4,8 +4,8 @@
 
 import * as path from 'path';
 import { ConfigurationTarget, Uri } from 'vscode';
+import { IConfiguration } from '../Configuration';
 import { configKeys } from '../constants';
-import { IConfiguration } from '../util/configuration';
 import { normalizePath } from '../util/normalizePath';
 import { getFriendlyPathToParameterFile } from './parameterFiles';
 
