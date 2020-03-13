@@ -9,12 +9,14 @@ import { commands, ConfigurationTarget, MessageItem, TextDocument, Uri, ViewColu
 import { callWithTelemetryAndErrorHandling, DialogResponses, IActionContext, IAzureQuickPickItem, UserCancelledError } from 'vscode-azureextensionui';
 import { configKeys, configPrefix, globalStateKeys, isWin32 } from './constants';
 import { DeploymentTemplate } from './DeploymentTemplate';
+import { queryCreateParameterFile } from './editParameterFile';
 import { ext } from './extensionVariables';
 import { containsParametersSchema } from './schemas';
 
 const readAtMostBytesToFindParamsSchema = 4 * 1024;
 const currentMessage = "Current";
 const similarFilenameMessage = "Similar filename";
+const fileNotFoundMessage = "File not found";
 const howToMessage = `You can manually associate a parameter file with this template at any time by clicking "Select Parameter File..." in the status bar or the editor context menu.`;
 
 // Not worrying about Win32 case-insensitivity here because
@@ -27,6 +29,7 @@ interface IPossibleParameterFile {
   uri: Uri;
   friendlyPath: string;
   isCloseNameMatch: boolean;
+  fileNotFound?: boolean;
 }
 
 // tslint:disable-next-line: max-func-body-length
@@ -94,6 +97,12 @@ export async function selectParameterFile(actionContext: IActionContext, sourceU
 
     // Map to the browsed file
     await setMappedParameterFileForTemplate(templateUri, selectedParamsPath);
+  } else if (result === quickPickList.newFile) {
+    // New parameter file
+
+    let newUri: Uri = await queryCreateParameterFile(actionContext, templateUri, template);
+    await setMappedParameterFileForTemplate(templateUri, newUri);
+    await commands.executeCommand('azurerm-vscode-tools.openParameterFile', templateUri, newUri);
   } else if (result === quickPickList.openCurrent) {
     // Open current
 
@@ -112,9 +121,9 @@ export async function selectParameterFile(actionContext: IActionContext, sourceU
   }
 }
 
-export async function openParameterFile(actionContext: IActionContext, sourceUri: Uri | undefined): Promise<void> {
+export async function openParameterFile(actionContext: IActionContext, sourceUri?: Uri, parameterUri?: Uri): Promise<void> {
   if (sourceUri) {
-    let paramFile: Uri | undefined = findMappedParameterFileForTemplate(sourceUri);
+    let paramFile: Uri | undefined = parameterUri || findMappedParameterFileForTemplate(sourceUri);
     if (!paramFile) {
       throw new Error(`There is no parameter file currently associated with template file "${sourceUri.fsPath}"`);
     }
@@ -141,6 +150,7 @@ interface IQuickPickList {
   items: IAzureQuickPickItem<IPossibleParameterFile | undefined>[];
   currentParamFile: IPossibleParameterFile | undefined;
   none: IAzureQuickPickItem<IPossibleParameterFile | undefined>;
+  newFile: IAzureQuickPickItem<IPossibleParameterFile | undefined>;
   browse: IAzureQuickPickItem<IPossibleParameterFile | undefined>;
   openCurrent: IAzureQuickPickItem<IPossibleParameterFile | undefined>;
 }
@@ -156,6 +166,14 @@ async function createParameterFileQuickPickList(templateUri: Uri): Promise<IQuic
   if (currentParamUri && !currentParamFile) {
     // There is a current parameter file, but it wasn't among the list we came up with.  We must add it to the list.
     currentParamFile = { isCloseNameMatch: false, uri: currentParamUri, friendlyPath: getFriendlyPathToParameterFile(templateUri, currentParamUri) };
+    let exists = false;
+    try {
+      exists = await fse.pathExists(currentParamUri.fsPath);
+    } catch (err) {
+      // Ignore
+    }
+    currentParamFile.fileNotFound = !exists;
+
     suggestions = suggestions.concat(currentParamFile);
   }
 
@@ -170,7 +188,7 @@ async function createParameterFileQuickPickList(templateUri: Uri): Promise<IQuic
     pickItems = [currentItem].concat(pickItems.filter(ppf => ppf !== currentItem));
   }
 
-  // Add None at top, Browse/Open Current at bottom
+  // Add None at top, New/Browse/Open Current at bottom
   const none: IAzureQuickPickItem<IPossibleParameterFile | undefined> = {
     label: "$(circle-slash) None",
     description: !!currentParamUri ? undefined : currentMessage,
@@ -181,10 +199,14 @@ async function createParameterFileQuickPickList(templateUri: Uri): Promise<IQuic
     data: undefined
   };
   const openCurrent: IAzureQuickPickItem<IPossibleParameterFile | undefined> = {
-    label: '$(split-horizontal) Open Current',
+    label: '$(go-to-file) Open Current',
     data: undefined
   };
-  pickItems = [none].concat(pickItems).concat([browse]);
+  const newFile: IAzureQuickPickItem<IPossibleParameterFile | undefined> = {
+    label: '$(new-file) New...',
+    data: undefined
+  };
+  pickItems = [none].concat(pickItems).concat([newFile, browse]);
 
   if (currentItem) {
     pickItems = pickItems.concat([openCurrent]);
@@ -195,7 +217,8 @@ async function createParameterFileQuickPickList(templateUri: Uri): Promise<IQuic
     currentParamFile,
     none,
     browse,
-    openCurrent
+    openCurrent,
+    newFile
   };
 }
 
@@ -221,8 +244,9 @@ function createQuickPickItem(paramFile: IPossibleParameterFile, current: IPossib
     label: `${isCurrent ? '$(check) ' : '$(json) '} ${paramFile.friendlyPath}`,
     data: paramFile,
     description: isCurrent ? currentMessage
-      : paramFile.isCloseNameMatch ? similarFilenameMessage
-        : undefined
+      : paramFile.fileNotFound ? fileNotFoundMessage
+        : paramFile.isCloseNameMatch ? similarFilenameMessage
+          : undefined
   };
 }
 
