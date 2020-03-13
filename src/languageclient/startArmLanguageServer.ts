@@ -10,7 +10,7 @@ import { ProgressLocation, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
 import { dotnetAcquire, ensureDotnetDependencies } from '../acquisition/dotnetAcquisition';
-import { configKeys, configPrefix, dotnetVersion, languageFriendlyName, languageId, languageServerFolderName, languageServerName } from '../constants';
+import { armTemplateLanguageId, configKeys, configPrefix, dotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName } from '../constants';
 import { ext } from '../extensionVariables';
 import { assert } from '../fixed_assert';
 import { armDeploymentDocumentSelector } from '../supported';
@@ -133,7 +133,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         ext.outputChannel.appendLine(`Client options:${os.EOL}${JSON.stringify(clientOptions, undefined, 2)}`);
         ext.outputChannel.appendLine(`Server options:${os.EOL}${JSON.stringify(serverOptions, undefined, 2)}`);
         let client: LanguageClient = new LanguageClient(
-            languageId,
+            armTemplateLanguageId,
             languageFriendlyName, // Used in the Output window combobox
             serverOptions,
             clientOptions

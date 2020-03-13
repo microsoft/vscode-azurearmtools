@@ -3,23 +3,34 @@
 // ----------------------------------------------------------------------------
 
 import { ITest, ITestCallbackContext } from "mocha";
-import { armTest } from "./armTest";
+import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
+import { UseRealFunctionMetadata } from "../TestData";
+import { diagnosticsTimeout } from "./diagnostics";
+import { ITestPreparation, ITestPreparationResult, testWithPrep } from "./testWithPrep";
+
+export class RequiresLanguageServer implements ITestPreparation {
+    public static readonly instance: RequiresLanguageServer = new RequiresLanguageServer();
+
+    public pretest(this: ITestCallbackContext): ITestPreparationResult {
+        if (DISABLE_LANGUAGE_SERVER) {
+            return {
+                skipTest: "DISABLE_LANGUAGE_SERVER is set"
+            };
+        } else {
+            this.timeout(diagnosticsTimeout);
+            return {};
+        }
+    }
+}
 
 export function testWithLanguageServer(expectation: string, callback?: (this: ITestCallbackContext) => Promise<unknown>): ITest {
-    return armTest(
-        expectation,
-        {
-            requiresLanguageServer: true
-        },
-        callback);
+    return testWithPrep(expectation, [RequiresLanguageServer.instance], callback);
 }
 
 export function testWithLanguageServerAndRealFunctionMetadata(expectation: string, callback?: (this: ITestCallbackContext) => Promise<unknown>): ITest {
-    return armTest(
+    return testWithPrep(
         expectation,
-        {
-            requiresLanguageServer: true,
-            useRealFunctionMetadata: true
-        },
+        [UseRealFunctionMetadata.instance,
+        RequiresLanguageServer.instance],
         callback);
 }

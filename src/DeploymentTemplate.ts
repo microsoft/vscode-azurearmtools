@@ -6,6 +6,7 @@ import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { CachedPromise } from "./CachedPromise";
 import { CachedValue } from "./CachedValue";
 import { templateKeys } from "./constants";
+import { DeploymentFile } from "./DeploymentFile";
 import { Histogram } from "./Histogram";
 import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
@@ -28,15 +29,9 @@ import { UndefinedParameterAndVariableVisitor } from "./visitors/UndefinedParame
 import * as UndefinedVariablePropertyVisitor from "./visitors/UndefinedVariablePropertyVisitor";
 import * as UnrecognizedFunctionVisitor from "./visitors/UnrecognizedFunctionVisitor";
 
-export class DeploymentTemplate {
-    // Parse result for the template JSON document as a whole
-    private _jsonParseResult: Json.ParseResult;
-
+export class DeploymentTemplate extends DeploymentFile {
     // The top-level parameters and variables (as opposed to those in user functions and deployment resources)
     private _topLevelScope: TemplateScope;
-
-    // The JSON node for the top-level JSON object (if the JSON is not empty or malformed)
-    private _topLevelValue: Json.ObjectValue | undefined;
 
     // A map from all JSON string value nodes to their cached TLE parse results
     private _jsonStringValueToTleParseResultMap: CachedValue<Map<Json.StringValue, TLE.ParseResult>> = new CachedValue<Map<Json.StringValue, TLE.ParseResult>>();
@@ -49,19 +44,15 @@ export class DeploymentTemplate {
     private _topLevelVariableDefinitions: CachedValue<IVariableDefinition[]> = new CachedValue<IVariableDefinition[]>();
     private _topLevelParameterDefinitions: CachedValue<ParameterDefinition[]> = new CachedValue<ParameterDefinition[]>();
 
-    private _schema: CachedValue<Json.StringValue | undefined> = new CachedValue<Json.StringValue | undefined>();
-
     /**
      * Create a new DeploymentTemplate object.
      *
      * @param _documentText The string text of the document.
      * @param _documentId A unique identifier for this document. Usually this will be a URI to the document.
      */
-    constructor(private _documentText: string, private _documentId: string) {
-        nonNullOrEmptyValue(_documentId, "_documentId");
-
-        this._jsonParseResult = Json.parse(_documentText);
-        this._topLevelValue = Json.asObjectValue(this._jsonParseResult.value);
+    constructor(documentText: string, documentId: string) {
+        super(documentText, documentId);
+        nonNullOrEmptyValue(documentId, "documentId");
 
         this._topLevelScope = new TemplateScope(
             ScopeContext.TopLevel,
@@ -75,17 +66,13 @@ export class DeploymentTemplate {
         return this._topLevelScope;
     }
 
-    public get topLevelValue(): Json.ObjectValue | undefined {
-        return this._topLevelValue;
-    }
-
     public hasArmSchemaUri(): boolean {
         return isArmSchema(this.schemaUri);
     }
 
     public get apiProfile(): string | undefined {
-        if (this._topLevelValue) {
-            const apiProfileValue = Json.asStringValue(this._topLevelValue.getPropertyValue(templateKeys.apiProfile));
+        if (this.topLevelValue) {
+            const apiProfileValue = Json.asStringValue(this.topLevelValue.getPropertyValue(templateKeys.apiProfile));
             if (apiProfileValue) {
                 return apiProfileValue.unquotedValue;
             }
@@ -138,39 +125,6 @@ export class DeploymentTemplate {
                         });
                 }
             }
-        });
-    }
-
-    /**
-     * Get the document text as a string.
-     */
-    public get documentText(): string {
-        return this._documentText;
-    }
-
-    /**
-     * The unique identifier for this deployment template. Usually this will be a URI to the document.
-     */
-    public get documentId(): string {
-        return this._documentId;
-    }
-
-    public get schemaUri(): string | undefined {
-        const schema = this.schemaValue;
-        return schema ? schema.unquotedValue : undefined;
-    }
-
-    public get schemaValue(): Json.StringValue | undefined {
-        return this._schema.getOrCacheValue(() => {
-            const value: Json.ObjectValue | undefined = Json.asObjectValue(this._jsonParseResult.value);
-            if (value) {
-                const schema: Json.StringValue | undefined = Json.asStringValue(value.getPropertyValue("$schema"));
-                if (schema) {
-                    return schema;
-                }
-            }
-
-            return undefined;
         });
     }
 
@@ -360,7 +314,7 @@ export class DeploymentTemplate {
         const apiProfileString = `(profile=${this.apiProfile || 'none'})`.toLowerCase();
 
         // Collect all resources used
-        const resources: Json.ArrayValue | undefined = this._topLevelValue ? Json.asArrayValue(this._topLevelValue.getPropertyValue(templateKeys.resources)) : undefined;
+        const resources: Json.ArrayValue | undefined = this.topLevelValue ? Json.asArrayValue(this.topLevelValue.getPropertyValue(templateKeys.resources)) : undefined;
         if (resources) {
             traverseResources(resources, undefined);
         }
@@ -403,21 +357,6 @@ export class DeploymentTemplate {
         }
     }
 
-    public getMaxLineLength(): number {
-        let max = 0;
-        for (let len of this.jsonParseResult.lineLengths) {
-            if (len > max) {
-                max = len;
-            }
-        }
-
-        return max;
-    }
-
-    public getCommentCount(): number {
-        return this.jsonParseResult.commentCount;
-    }
-
     public getMultilineStringCount(): number {
         let count = 0;
         this.visitAllReachableStringValues(jsonStringValue => {
@@ -429,39 +368,12 @@ export class DeploymentTemplate {
         return count;
     }
 
-    public get jsonParseResult(): Json.ParseResult {
-        return this._jsonParseResult;
-    }
-
-    /**
-     * Get the number of lines that are in the file.
-     */
-    public get lineCount(): number {
-        return this._jsonParseResult.lineLengths.length;
-    }
-
-    /**
-     * Get the maximum column index for the provided line. For the last line in the file,
-     * the maximum column index is equal to the line length. For every other line in the file,
-     * the maximum column index is less than the line length.
-     */
-    public getMaxColumnIndex(lineIndex: number): number {
-        return this._jsonParseResult.getMaxColumnIndex(lineIndex);
-    }
-
-    /**
-     * Get the maximum document character index for this deployment template.
-     */
-    public get maxCharacterIndex(): number {
-        return this._jsonParseResult.maxCharacterIndex;
-    }
-
     private getTopLevelParameterDefinitions(): ParameterDefinition[] {
         return this._topLevelParameterDefinitions.getOrCacheValue(() => {
             const parameterDefinitions: ParameterDefinition[] = [];
 
-            if (this._topLevelValue) {
-                const parameters: Json.ObjectValue | undefined = Json.asObjectValue(this._topLevelValue.getPropertyValue(templateKeys.parameters));
+            if (this.topLevelValue) {
+                const parameters: Json.ObjectValue | undefined = Json.asObjectValue(this.topLevelValue.getPropertyValue(templateKeys.parameters));
                 if (parameters) {
                     for (const parameter of parameters.properties) {
                         parameterDefinitions.push(new ParameterDefinition(parameter));
@@ -475,8 +387,8 @@ export class DeploymentTemplate {
 
     private getTopLevelVariableDefinitions(): IVariableDefinition[] {
         return this._topLevelVariableDefinitions.getOrCacheValue(() => {
-            if (this._topLevelValue) {
-                const variables: Json.ObjectValue | undefined = Json.asObjectValue(this._topLevelValue.getPropertyValue(templateKeys.variables));
+            if (this.topLevelValue) {
+                const variables: Json.ObjectValue | undefined = Json.asObjectValue(this.topLevelValue.getPropertyValue(templateKeys.variables));
                 if (variables) {
                     const varDefs: IVariableDefinition[] = [];
                     for (let prop of variables.properties) {
@@ -543,8 +455,8 @@ export class DeploymentTemplate {
             //     }
             //   ],
 
-            if (this._topLevelValue) {
-                const functionNamespacesArray: Json.ArrayValue | undefined = Json.asArrayValue(this._topLevelValue.getPropertyValue("functions"));
+            if (this.topLevelValue) {
+                const functionNamespacesArray: Json.ArrayValue | undefined = Json.asArrayValue(this.topLevelValue.getPropertyValue("functions"));
                 if (functionNamespacesArray) {
                     for (let namespaceElement of functionNamespacesArray.elements) {
                         const namespaceObject = Json.asObjectValue(namespaceElement);
@@ -560,22 +472,6 @@ export class DeploymentTemplate {
 
             return namespaceDefinitions;
         });
-    }
-
-    public getDocumentCharacterIndex(documentLineIndex: number, documentColumnIndex: number): number {
-        return this._jsonParseResult.getCharacterIndex(documentLineIndex, documentColumnIndex);
-    }
-
-    public getDocumentPosition(documentCharacterIndex: number): language.Position {
-        return this._jsonParseResult.getPositionFromCharacterIndex(documentCharacterIndex);
-    }
-
-    public getJSONTokenAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Token | undefined {
-        return this._jsonParseResult.getTokenAtCharacterIndex(documentCharacterIndex);
-    }
-
-    public getJSONValueAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Value | undefined {
-        return this._jsonParseResult.getValueAtCharacterIndex(documentCharacterIndex);
     }
 
     // CONSIDER: Move this to PositionContext since PositionContext depends on DeploymentTemplate
@@ -628,7 +524,7 @@ export class DeploymentTemplate {
     }
 
     private visitAllReachableStringValues(onStringValue: (stringValue: Json.StringValue) => void): void {
-        let value = this._topLevelValue;
+        let value = this.topLevelValue;
         if (value) {
             GenericStringVisitor.visit(value, onStringValue);
         }

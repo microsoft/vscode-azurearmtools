@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import { ITest, ITestCallbackContext } from 'mocha';
 import * as path from 'path';
 import { AzureRMAssets, Completion, Language } from "../extension.bundle";
-import { armTest } from './support/armTest';
+import { ITestPreparation, ITestPreparationResult, testWithPrep } from './support/testWithPrep';
 
 // By default we use the test metadata for tests
 export function useTestFunctionMetadata(): void {
@@ -20,6 +20,17 @@ export function useRealFunctionMetadata(): void {
     console.log("Re-installing real function metadata");
 }
 
+export class UseRealFunctionMetadata implements ITestPreparation {
+    public static readonly instance: UseRealFunctionMetadata = new UseRealFunctionMetadata();
+
+    public pretest(this: ITestCallbackContext): ITestPreparationResult {
+        useRealFunctionMetadata();
+        return {
+            postTest: useTestFunctionMetadata
+        };
+    }
+}
+
 export async function runWithRealFunctionMetadata(callback: () => Promise<unknown>): Promise<unknown> {
     try {
         useRealFunctionMetadata();
@@ -31,12 +42,7 @@ export async function runWithRealFunctionMetadata(callback: () => Promise<unknow
 }
 
 export function testWithRealFunctionMetadata(expectation: string, callback?: (this: ITestCallbackContext) => Promise<unknown>): ITest {
-    return armTest(
-        expectation,
-        {
-            useRealFunctionMetadata: true
-        },
-        callback);
+    return testWithPrep(expectation, [UseRealFunctionMetadata.instance], callback);
 }
 
 export const allTestDataCompletionNames = new Set<string>(allTestDataExpectedCompletions(0, 0).map(item => item.name));

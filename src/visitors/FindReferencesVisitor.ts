@@ -104,9 +104,12 @@ export class FindReferencesVisitor extends Visitor {
                 }
                 break;
 
+            case DefinitionKind.ParameterValue:
+                //asdf
+                break;
+
             default:
                 assertNever(this._definition.definitionKind);
-                break;
         }
 
         super.visitFunctionCall(tleFunction);
