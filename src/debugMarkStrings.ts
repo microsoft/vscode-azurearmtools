@@ -7,7 +7,13 @@
  * and truncates the beginning and end of a long string.
  */
 // tslint:disable-next-line:function-name
-export function __debugMarkPositionInString(text: string, position: number, insertTextAtPosition: string, charactersBeforeIndex: number = 25, charactersAfterPosition: number = 50): string {
+export function __debugMarkPositionInString(
+    text: string,
+    position: number,
+    insertTextAtPosition: string = '<CURSOR>',
+    charactersBeforeIndex: number = 25,
+    charactersAfterPosition: number = 50
+): string {
     const preTextIndex = position - charactersBeforeIndex;
     const preText = `${(preTextIndex > 0 ? "..." : "")}${text.slice(preTextIndex >= 0 ? preTextIndex : 0, position)}`;
 
@@ -17,8 +23,19 @@ export function __debugMarkPositionInString(text: string, position: number, inse
     return `${preText}${insertTextAtPosition}${postTextIndex}`;
 }
 
+/**
+ * Same as __debugMarkPositionInString, but specifying a range instead of a position
+ */
 // tslint:disable-next-line:function-name
-export function __debugMarkSubstring(text: string, position: number, length: number, leftMarker: string = "<<", rightMarker: string = ">>", charactersBeforeIndex: number = 25, charactersAfterPosition: number = 50): string {
+export function __debugMarkRangeInString(
+    text: string,
+    position: number,
+    length: number,
+    leftMarker: string = "<<",
+    rightMarker: string = ">>",
+    charactersBeforeIndex: number = 25,
+    charactersAfterPosition: number = 50
+): string {
     const preTextIndex = position - charactersBeforeIndex;
     const preText = `${(preTextIndex > 0 ? "..." : "")}${text.slice(preTextIndex >= 0 ? preTextIndex : 0, position)}`;
 

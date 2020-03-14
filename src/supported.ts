@@ -6,12 +6,12 @@ import { Position, Range, TextDocument } from "vscode";
 import { armTemplateLanguageId } from "./constants";
 import { containsArmSchema, containsParametersSchema } from "./schemas";
 
-export const armDeploymentDocumentSelector = [
+export const deploymentDocumentSelector = [
     { language: armTemplateLanguageId, scheme: 'file' },
     { language: armTemplateLanguageId, scheme: 'untitled' } // unsaved files
 ];
 
-export const parametersDocumentSelector = [ //asdf
+export const parameterDocumentSelector = [
     { language: 'json', scheme: 'file' },
     { language: 'json', scheme: 'untitled' },
     { language: 'jsonc', scheme: 'file' },

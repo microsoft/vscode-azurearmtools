@@ -24,7 +24,7 @@ export class RequiresLanguageServer implements ITestPreparation {
 }
 
 export function testWithLanguageServer(expectation: string, callback?: (this: ITestCallbackContext) => Promise<unknown>): ITest {
-    return testWithPrep(expectation, [RequiresLanguageServer.instance], callback);
+    return testWithLanguageServerAndRealFunctionMetadata(expectation, callback);
 }
 
 export function testWithLanguageServerAndRealFunctionMetadata(expectation: string, callback?: (this: ITestCallbackContext) => Promise<unknown>): ITest {

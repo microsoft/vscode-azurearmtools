@@ -19,6 +19,7 @@ import { ParameterValueDefinition } from "./ParameterValueDefinition";
  */
 export class DeploymentParameters extends DeploymentFile {
     private _parameterValueDefinitions: CachedValue<ParameterValueDefinition[]> = new CachedValue<ParameterValueDefinition[]>();
+    private _parametersObject: CachedValue<Json.ObjectValue | undefined> = new CachedValue<Json.ObjectValue | undefined>();
 
     /**
      * Create a new DeploymentParameters instance
@@ -39,16 +40,18 @@ export class DeploymentParameters extends DeploymentFile {
         return this._parameterValueDefinitions.getOrCacheValue(() => {
             const parameterDefinitions: ParameterValueDefinition[] = [];
 
-            if (this.topLevelValue) {
-                const parameters: Json.ObjectValue | undefined = Json.asObjectValue(this.topLevelValue.getPropertyValue(templateKeys.parameters));
-                if (parameters) {
-                    for (const parameter of parameters.properties) {
-                        parameterDefinitions.push(new ParameterValueDefinition(parameter));
-                    }
-                }
+            // tslint:disable-next-line: strict-boolean-expressions
+            for (const parameter of this.parametersObjectValue?.properties || []) {
+                parameterDefinitions.push(new ParameterValueDefinition(parameter));
             }
 
             return parameterDefinitions;
+        });
+    }
+
+    public get parametersObjectValue(): Json.ObjectValue | undefined {
+        return this._parametersObject.getOrCacheValue(() => {
+            return Json.asObjectValue(this.topLevelValue?.getPropertyValue(templateKeys.parameters));
         });
     }
 

@@ -925,12 +925,50 @@ export class ParseResult {
         return this._commentTokens;
     }
 
+    public get commentTokenCount(): number {
+        return this._commentTokens.length;
+    }
+
     public get lineLengths(): number[] {
         return this._lineLengths;
     }
 
+    public getAllTokensIncludingComments(): Token[] {
+        const tokens = this.tokens.concat(this.commentTokens);
+        tokens.sort((a, b) => a.span.startIndex - b.span.startIndex);
+        return tokens;
+    }
+
+    public getLastTokenOnLine(line: number, includeCommentTokens: boolean): Token | undefined {
+        //asdf test
+        const startOfLineIndex = this.getCharacterIndex(line, 0);
+        const lastLine = this.lineLengths.length - 1;
+
+        const tokens = includeCommentTokens ? this.getAllTokensIncludingComments() : this.tokens;
+        if (line === lastLine) {
+            // On last line, so return very last token
+            return tokens[this._tokens.length - 1];
+        }
+
+        const nextLineIndex = this.getCharacterIndex(line + 1, 0);
+
+        let prevToken;
+        for (let token of tokens) {
+            if (token.span.startIndex >= nextLineIndex) {
+                if (prevToken && prevToken.span.endIndex >= startOfLineIndex) {
+                    return prevToken;
+                } else {
+                    return undefined;
+                }
+            }
+            prevToken = token;
+        }
+
+        return undefined;
+    }
+
     /**
-     * Get the last character index in this JSON parse result.
+     * Get the highest character index of any line in this JSON parse result.
      */
     public get maxCharacterIndex(): number {
         let result = 0;
@@ -1002,34 +1040,45 @@ export class ParseResult {
         return maxColumnIndex;
     }
 
-    private getToken(tokenIndex: number): Token {
+    private static getToken(tokens: Token[], tokenIndex: number): Token {
         // tslint:disable-next-line:max-line-length
-        assert(0 <= tokenIndex && tokenIndex < this.tokenCount, `The tokenIndex (${tokenIndex}) must always be between 0 and the token count - 1 (${this.tokenCount - 1}).`);
+        assert(0 <= tokenIndex && tokenIndex < tokens.length, `The tokenIndex (${tokenIndex}) must always be between 0 and the token count - 1 (${tokens.length - 1}).`);
 
-        return this._tokens[tokenIndex];
+        return tokens[tokenIndex];
     }
 
-    private get lastToken(): Token | undefined {
-        let tokenCount = this.tokenCount;
-        return tokenCount > 0 ? this.getToken(tokenCount - 1) : undefined;
+    private static getLastToken(tokens: Token[]): Token | undefined {
+        // Returns undefined if no tokens
+        return tokens[tokens.length - 1];
     }
 
     /**
-     * Get the JSON Token that contains the provided characterIndex, if any (e.g. returns undefined if at whitespace)
+     * Get the JSON Token that contains the provided characterIndex, if any (e.g. returns undefined if at whitespace or comment)
      */
-    public getTokenAtCharacterIndex(characterIndex: number): Token | undefined {
+    public getTokenAtCharacterIndex(characterIndex: number, includeCommentTokens: boolean = false): Token | undefined {
         assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);
 
-        let token: Token | undefined;
+        const tokens = includeCommentTokens ? this.getAllTokensIncludingComments() : this.tokens;
+        return ParseResult.getTokenAtCharacterIndex(tokens, characterIndex);
+    }
 
-        if (!!this.lastToken && this.lastToken.span.afterEndIndex === characterIndex) {
-            token = this.lastToken;
+    private static getTokenAtCharacterIndex(tokens: Token[], characterIndex: number): Token | undefined {
+        assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);
+
+        const tokenCount: number = tokens.length;
+        const lastToken: Token | undefined = ParseResult.getLastToken(tokens);
+
+        let token: Token | undefined;
+        // tslint:disable-next-line: strict-boolean-expressions
+        if (!!lastToken && lastToken.span.afterEndIndex === characterIndex) {
+            token = lastToken;
         } else {
+            // Perform a binary search
             let minTokenIndex = 0;
-            let maxTokenIndex = this.tokenCount - 1;
+            let maxTokenIndex = tokenCount - 1;
             while (!token && minTokenIndex <= maxTokenIndex) {
                 let midTokenIndex = Math.floor((maxTokenIndex + minTokenIndex) / 2);
-                let currentToken = this.getToken(midTokenIndex);
+                let currentToken = ParseResult.getToken(tokens, midTokenIndex);
                 let currentTokenSpan = currentToken.span;
 
                 if (characterIndex < currentTokenSpan.startIndex) {

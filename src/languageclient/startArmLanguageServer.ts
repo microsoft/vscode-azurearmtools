@@ -13,7 +13,7 @@ import { dotnetAcquire, ensureDotnetDependencies } from '../acquisition/dotnetAc
 import { armTemplateLanguageId, configKeys, configPrefix, dotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName } from '../constants';
 import { ext } from '../extensionVariables';
 import { assert } from '../fixed_assert';
-import { armDeploymentDocumentSelector } from '../supported';
+import { deploymentDocumentSelector } from '../supported';
 import { WrappedErrorHandler } from './WrappedErrorHandler';
 
 const languageServerDllName = 'Microsoft.ArmLanguageServer.dll';
@@ -115,7 +115,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
 
         // Options to control the language client
         let clientOptions: LanguageClientOptions = {
-            documentSelector: armDeploymentDocumentSelector,
+            documentSelector: deploymentDocumentSelector,
             diagnosticCollectionName: `${languageServerName} diagnostics`,
             outputChannel: ext.outputChannel, // Use the same output channel as the extension does
             revealOutputChannelOn: RevealOutputChannelOn.Error,

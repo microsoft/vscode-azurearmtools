@@ -7,7 +7,7 @@ import { CachedValue } from "../CachedValue";
 import * as Completion from "../Completion";
 import { __debugMarkPositionInString } from "../debugMarkStrings";
 import { DeploymentTemplate } from "../DeploymentTemplate";
-import { createParameterProperty } from "../editParameterFile";
+import { createParameterFromTemplateParameter } from "../editParameterFile";
 import { assert } from '../fixed_assert';
 import { HoverInfo } from "../Hover";
 import * as Json from "../JSON";
@@ -15,6 +15,8 @@ import * as language from "../Language";
 import { IReferenceSite } from "../PositionContext";
 import { nonNullValue } from "../util/nonNull";
 import { DeploymentParameters } from "./DeploymentParameters";
+
+//asdf refactor out a base class
 
 //asdf
 // /**
@@ -45,7 +47,6 @@ export class ParametersPositionContext {
     private _documentCharacterIndex: CachedValue<number> = new CachedValue<number>();
     private _jsonToken: CachedValue<Json.Token | undefined> = new CachedValue<Json.Token>();
     private _jsonValue: CachedValue<Json.Value | undefined> = new CachedValue<Json.Value | undefined>();
-    // asdf private _tleInfo: CachedValue<TleInfo | undefined> = new CachedValue<TleInfo | undefined>();
 
     private constructor(deploymentParameters: DeploymentParameters, deploymentTemplate: DeploymentTemplate | undefined) {
         this._deploymentParameters = deploymentParameters;
@@ -225,27 +226,159 @@ export class ParametersPositionContext {
      * Get completion items for our position in the document
      */
     public getCompletionItems(): Completion.Item[] {
+        let completions: Completion.Item[] = [];
 
+        if (this.canAddPropertyHere) {
+            completions.push(... this.getCompletionsForMissingParameters());
+            completions.push(this.getCompletionForNewParameter());
+        }
+
+        return completions;
+    }
+
+    private getCompletionForNewParameter(): Completion.Item {
+        // tslint:disable-next-line:prefer-template
+        //const paramOnly = createParameterFromTemplateParameter(this._deploymentTemplate, param);
+        // asdf const replacement = `,${EOL}${paramOnly}`;
+        //const replacement = paramOnly;
+        const detail = "Insert new parameter and value";
+        const snippet =
+            // tslint:disable-next-line:prefer-template
+            `"\${1:parameter1}": {` + EOL
+            + `\t"value": "\${2:value}"` + EOL
+            + `}` + EOL;
+        const documentation = "documentation";
+
+        return new Completion.Item(
+            "New parameter value",
+            snippet,
+            this.emptySpanAtDocumentCharacterIndex,
+            Completion.CompletionKind.NewPropertyValue,
+            detail,
+            documentation);
+    }
+
+    /**
+     * Get completion items for our position in the document
+     */
+    private getCompletionsForMissingParameters(): Completion.Item[] {
         const completions: Completion.Item[] = [];
         if (this._deploymentTemplate) {
+            const paramsInParameterFile: string[] = this._deploymentParameters.parameterValues.map(
+                pv => pv.nameValue.unquotedValue.toLowerCase());
+
+            // For each parameter in the template
             for (let param of this._deploymentTemplate.topLevelScope.parameterDefinitions) {
+                // Is this already in the parameter file?
+                const paramNameLC = param.nameValue.unquotedValue.toLowerCase();
+                if (paramsInParameterFile.includes(paramNameLC)) {
+                    continue;
+                }
+
                 // tslint:disable-next-line:prefer-template
-                const text = createParameterProperty(this._deploymentTemplate, param);
-                const replacement = `,${EOL}${text}`;
-                const detail = `Insert a value for parameter "${param.nameValue.unquotedValue}"`;
-                const description = text;
+                const paramText = createParameterFromTemplateParameter(this._deploymentTemplate, param);
+                const replacement = paramText;
+                const documentation = `Insert a value for parameter '${param.nameValue.unquotedValue}' from the template file"`;
+                const detail = paramText;
 
                 completions.push(
                     new Completion.Item(
                         param.nameValue.quotedValue,
                         replacement,
                         this.emptySpanAtDocumentCharacterIndex,
+                        Completion.CompletionKind.PropertyValue,
                         detail,
-                        description,
-                        Completion.CompletionKind.Parameter /*asdf*/));
+                        documentation));
             }
         }
 
         return completions;
+    }
+
+    // True if inside the "parameters" object, but not inside any properties
+    // within it.
+    public get canAddPropertyHere(): boolean {
+        if (!this._deploymentParameters.parametersObjectValue) {
+            // No "parameters" section
+            return false;
+        }
+
+        //const jsonValueRightAfterCursor = this.jsonValue;
+        if (this.documentCharacterIndex === 0) {
+            return false;
+        }
+
+        const jsonValueRightAfterCursor = this._deploymentParameters.jsonParseResult.getValueAtCharacterIndex(
+            this.documentCharacterIndex - 1);
+
+        if (jsonValueRightAfterCursor !== this._deploymentParameters.parametersObjectValue) {
+            // JSON value at the cursor is not the "parameters" object (either it's
+            // outside it, or it's within a subvalue like an existing parameter)
+            return false;
+        }
+
+        // // When the cursor is directly on the beginning curly brace of the "parameters"
+        // // object:
+        // //
+        // //    "parameters": <HERE>{
+        // //    }
+        // //
+        // // ... the jsonValue at <HERE> will be the parameters object, but you can' start
+        // // inserting a new parameter until *after* the beginning brace.
+        // if (jsonValueRightAfterCursor.startIndex === this.documentCharacterIndex) {
+        //     return false;
+        // }
+
+        // // When the cursor is directly after the end curly brace of the "parameters"
+        // // object:
+        // //
+        // //    "parameters": {
+        // //    }<HERE>
+        // //
+        // // ... the jsonValue at <HERE> will still be the parameters object (seems surprising asdf),
+        // // but obviously should return false
+        // if (this.documentCharacterIndex > jsonValueRightAfterCursor.span.endIndex) {
+        //     return false;
+        // }
+
+        // Check if we're past the start of a comment
+        //assert(this.documentCharacterIndex > 0);
+        const currentRightAfterCursor = this._deploymentParameters.jsonParseResult.getTokenAtCharacterIndex(//ASDF
+            // Use -1 because we want to allow inserting at <HERE> below, but that position is "in"
+            //   the comment asdf remove
+            //
+            //    "parameters": {
+            //        <HERE>// This is a comment
+            //    }
+            this.documentCharacterIndex - 1, //asdf
+            true // includeCommentTokens
+        );
+        if (currentRightAfterCursor && currentRightAfterCursor.type === Json.TokenType.Comment) {
+            {
+                if (currentRightAfterCursor.span.startIndex === this.documentCharacterIndex) {
+                    return true;
+                }
+                if (this.documentCharacterIndex > currentRightAfterCursor.span.endIndex) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Are we after a line comment on the same line (i.e. on the \r or \n after it)
+        const lastTokenOnLine = this._deploymentParameters.jsonParseResult.getLastTokenOnLine(
+            this.documentLineIndex,
+            true  // includeCommentTokens
+        );
+        if (lastTokenOnLine
+            && lastTokenOnLine.type === Json.TokenType.Comment
+            && lastTokenOnLine.toString().startsWith('//')
+            && lastTokenOnLine.span.startIndex < this.documentCharacterIndex
+        ) {
+            return false;
+        }
+
+        return true;
     }
 }
