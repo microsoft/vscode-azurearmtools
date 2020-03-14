@@ -26,7 +26,7 @@ import { reloadSchemas } from "./languageclient/reloadSchemas";
 import { startArmLanguageServer, stopArmLanguageServer } from "./languageclient/startArmLanguageServer";
 import { DeploymentFileMapping } from "./parameterFiles/DeploymentFileMapping";
 import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
-import { considerQueryingForParameterFile, getFriendlyPathToParameterFile, openParameterFile, selectParameterFile } from "./parameterFiles/parameterFiles";
+import { considerQueryingForParameterFile, getFriendlyPathToFile, openParameterFile, openTemplateFile, selectParameterFile } from "./parameterFiles/parameterFiles";
 import { ParametersPositionContext } from "./parameterFiles/ParametersPositionContext";
 import { IReferenceSite, PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
@@ -35,12 +35,14 @@ import { getPreferredSchema } from "./schemas";
 import { getFunctionParamUsage } from "./signatureFormatting";
 import { getQuickPickItems, sortTemplate, SortType } from "./sortTemplate";
 import { Stopwatch } from "./Stopwatch";
-import { armDeploymentDocumentSelector, mightBeDeploymentParameters, mightBeDeploymentTemplate, parametersDocumentSelector } from "./supported";
+import { deploymentDocumentSelector, mightBeDeploymentParameters, mightBeDeploymentTemplate, parameterDocumentSelector } from "./supported";
 import { survey } from "./survey";
 import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedBuiltinFunctionIssue } from "./UnrecognizedFunctionIssues";
-import { getVSCodeRangeFromSpan, getVSCodeRangeFromSpan2asdf } from "./util/vscodePosition";
+import { normalizePath } from "./util/normalizePath";
+import { toVsCodeCompletionItem } from "./util/toVsCodeCompletionItem";
+import { getVSCodeRangeFromSpan } from "./util/vscodePosition";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -95,6 +97,9 @@ export class AzureRMTools {
         context.subscriptions.push(vscode.window.registerTreeDataProvider("azurerm-vscode-tools.template-outline", jsonOutline));
 
         registerCommand("azurerm-vscode-tools.treeview.goto", (_actionContext: IActionContext, range: vscode.Range) => jsonOutline.goToDefinition(range));
+        registerCommand("azurerm-vscode-tools.snippet-activated", (actionContext: IActionContext, args: unknown[]) => {
+            vscode.window.showWarningMessage(`snippet telemetry: ${args}`); //asdf
+        });
         registerCommand('azurerm-vscode-tools.uninstallDotnet', async () => {
             await stopArmLanguageServer();
             await uninstallDotnet();
@@ -137,8 +142,18 @@ export class AzureRMTools {
                 await selectParameterFile(actionContext, this._mapping, source);
             });
         registerCommand(
-            "azurerm-vscode-tools.openParameterFile", async (actionContext: IActionContext, source?: vscode.Uri) => {
+            "azurerm-vscode-tools.openParameterFile", async (_actionContext: IActionContext, source?: vscode.Uri) => {
+                source = source ?? vscode.window.activeTextEditor?.document.uri;
                 await openParameterFile(this._mapping, source, undefined);
+            });
+        // registerCommand( asdf
+        //     "azurerm-vscode-tools.selectTemplateFile", async (actionContext: IActionContext, source?: vscode.Uri) => {
+        //         //asdf await selectParameterFile(actionContext, this._mapping, source);
+        //     });
+        registerCommand(
+            "azurerm-vscode-tools.openTemplateFile", async (_actionContext: IActionContext, source?: vscode.Uri) => {
+                source = source ?? vscode.window.activeTextEditor?.document.uri;
+                await openTemplateFile(this._mapping, source, undefined);
             });
         registerCommand("azurerm-vscode-tools.resetGlobalState", resetGlobalState);
 
@@ -148,7 +163,14 @@ export class AzureRMTools {
         vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
         vscode.workspace.onDidOpenTextDocument(this.onDocumentOpened, this, context.subscriptions);
         vscode.workspace.onDidChangeTextDocument(this.onDocumentChanged, this, context.subscriptions);
-        vscode.workspace.onDidChangeConfiguration(this.updateParameterFileInStatusBar, this, context.subscriptions);
+        vscode.workspace.onDidChangeConfiguration(
+            async () => {
+                this._mapping.resetCache();
+                // tslint:disable-next-line: no-floating-promises
+                this.updateStatusBar();
+            },
+            this,
+            context.subscriptions);
 
         this._diagnosticsCollection = vscode.languages.createDiagnosticCollection("azurerm-tools-expressions");
         context.subscriptions.push(this._diagnosticsCollection);
@@ -156,7 +178,7 @@ export class AzureRMTools {
         const activeEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
         if (activeEditor) {
             const activeDocument = activeEditor.document;
-            this.updateDeploymentTemplate(activeDocument);
+            this.updateDeploymentFile(activeDocument);
         }
     }
 
@@ -176,25 +198,38 @@ export class AzureRMTools {
         });
     }
 
-    private getDeploymentFile(document: vscode.TextDocument): DeploymentFile | undefined {
-        assert(document);
-        return this._deploymentFiles.get(document.uri.toString());
+    private setDeploymentFile(documentUri: vscode.Uri, deploymentFile: DeploymentFile | undefined): void {
+        assert(documentUri);
+        assert(deploymentFile);
+        const normalizedPath = normalizePath(documentUri);
+        if (deploymentFile) {
+            this._deploymentFiles.set(normalizedPath, deploymentFile);
+        } else {
+            this._deploymentFiles.delete(normalizedPath);
+        }
     }
 
-    private getDeploymentTemplate(document: vscode.TextDocument): DeploymentTemplate | undefined {
-        const file = this.getDeploymentFile(document);
+    private getDeploymentFile(documentOrUri: vscode.TextDocument | vscode.Uri): DeploymentFile | undefined {
+        assert(documentOrUri);
+        const uri = documentOrUri instanceof vscode.Uri ? documentOrUri : documentOrUri.uri;
+        const normalizedPath = normalizePath(uri);
+        return this._deploymentFiles.get(normalizedPath);
+    }
+
+    private getDeploymentTemplate(documentOrUri: vscode.TextDocument | vscode.Uri): DeploymentTemplate | undefined {
+        const file = this.getDeploymentFile(documentOrUri);
         return file instanceof DeploymentTemplate ? file : undefined;
     }
 
-    private getDeploymentParameters(document: vscode.TextDocument): DeploymentParameters | undefined {
-        const file = this.getDeploymentFile(document);
+    private getDeploymentParameters(documentOrUri: vscode.TextDocument | vscode.Uri): DeploymentParameters | undefined {
+        const file = this.getDeploymentFile(documentOrUri);
         return file instanceof DeploymentParameters ? file : undefined;
     }
 
-    // tslint:disable-next-line:max-func-body-length asdf
-    private updateDeploymentTemplate(document: vscode.TextDocument): void { //asdf
+    // tslint:disable-next-line:max-func-body-length asdf refactor
+    private updateDeploymentFile(document: vscode.TextDocument): void {
         // tslint:disable-next-line:max-func-body-length cyclomatic-complexity asdf
-        callWithTelemetryAndErrorHandlingSync('updateDeploymentTemplate'/*asdf*/, (actionContext: IActionContext): void => {
+        callWithTelemetryAndErrorHandlingSync('updateDeploymentFile'/*asdf*/, (actionContext: IActionContext): void => {
             actionContext.errorHandling.suppressDisplay = true;
             actionContext.telemetry.suppressIfSuccessful = true;
             actionContext.telemetry.properties.isActivationEvent = 'true';
@@ -207,23 +242,24 @@ export class AzureRMTools {
 
             let treatAsDeploymentTemplate = false;
             let treatAsDeploymentParameters = false;
-            let isNewlyOpened = false; // As opposed to already opened and simply being made active
-            const documentPath: string = document.uri.toString();
+            const documentUri = document.uri;
+            const documentPath: string = documentUri.fsPath;
 
             if (document.languageId === armTemplateLanguageId) {
                 // Lang ID is set to arm-template, whether auto or manual, respect the setting
                 treatAsDeploymentTemplate = true;
             }
 
+            // If the documentUri is not in our dictionary of deployment templates, then either
+            //   it's not a deployment file, or else this document was just opened (as opposed
+            //   to changed/updated).
+            // Note that it might have been opened, then closed, then reopened, or it
+            //   might have had its schema changed in the editor to make it a deployment file.
+            const isNewlyOpened: boolean = !this.getDeploymentFile(documentUri);
+
+            // Is it a deployment template file?
             let shouldParseFile = treatAsDeploymentTemplate || mightBeDeploymentTemplate(document);
             if (shouldParseFile) {
-                // If the documentUri is not in our dictionary of deployment templates, then we
-                // know that this document was just opened (as opposed to changed/updated).
-                // Note that it might have been opened, then closed, then reopened.
-                if (!this._deploymentFiles.has(documentPath)) {
-                    isNewlyOpened = true;
-                }
-
                 // Do a full parse
                 let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(document.getText(), documentPath);
                 if (deploymentTemplate.hasArmSchemaUri()) {
@@ -232,8 +268,8 @@ export class AzureRMTools {
                 actionContext.telemetry.measurements.parseDurationInMilliseconds = stopwatch.duration.totalMilliseconds;
 
                 if (treatAsDeploymentTemplate) {
-                    this.ensureDeploymentTemplateEventsHookedUp();
-                    this._deploymentFiles.set(documentPath, deploymentTemplate);
+                    this.ensureDeploymentFileEventsHookedUp();
+                    this.setDeploymentFile(documentUri, deploymentTemplate);
 
                     if (isNewlyOpened) {
                         // A deployment template has been opened (as opposed to having been tabbed to)
@@ -267,26 +303,21 @@ export class AzureRMTools {
             }
 
             if (!treatAsDeploymentTemplate) {
+                // Is it a parameter file?
                 let shouldParseParameterFile = treatAsDeploymentTemplate || mightBeDeploymentParameters(document);
                 if (shouldParseParameterFile) {
-                    //asdf
-                    // If the documentUri is not in our dictionary of deployment templates, then we
-                    // know that this document was just opened (as opposed to changed/updated).
-                    // Note that it might have been opened, then closed, then reopened.
-                    if (!this._deploymentFiles.has(documentPath)) {
-                        isNewlyOpened = true;
-                    }
-
                     // Do a full parse
                     let deploymentParameters: DeploymentParameters = new DeploymentParameters(document.getText(), documentPath);
                     if (deploymentParameters.hasParametersUri()) {
                         treatAsDeploymentParameters = true;
                     }
-                    actionContext.telemetry.measurements.parseParamsDurationInMilliseconds = stopwatch.duration.totalMilliseconds; //asdf
+
+                    // This could theoretically include time for parsing for a deployment template as well but isn't likely
+                    actionContext.telemetry.measurements.parseDurationInMilliseconds = stopwatch.duration.totalMilliseconds; //asdf
 
                     if (treatAsDeploymentParameters) {
-                        this.ensureDeploymentTemplateEventsHookedUp(); //asdf
-                        this._deploymentFiles.set(documentPath, deploymentParameters);
+                        this.ensureDeploymentFileEventsHookedUp();
+                        this.setDeploymentFile(documentUri, deploymentParameters);
 
                         if (isNewlyOpened) {
                             // A deployment template has been opened (as opposed to having been tabbed to) //asdf
@@ -309,19 +340,19 @@ export class AzureRMTools {
                 }
 
                 if (!treatAsDeploymentTemplate && !treatAsDeploymentParameters) {
-                    // If the document is not a deployment template, then we need asdf
-                    // to remove it from our deployment template cache. It doesn't
+                    // If the document is not a deployment file, then we need
+                    // to remove it from our deployment file cache. It doesn't
                     // matter if the document is a JSON file and was never a
-                    // deployment template, or if the document was a deployment
-                    // template and then was modified to no longer be a deployment
-                    // template (the $schema property changed to not be a
-                    // deployment template schema). In either case, we should
-                    // remove the deployment template from our cache.
-                    this.closeDeploymentTemplate(document);
+                    // deployment file, or if the document was a deployment
+                    // file and then was modified to no longer be a deployment
+                    // file (the $schema property changed to not be a
+                    // template/params schema). In either case, we should
+                    // remove it from our cache.
+                    this.closeDeploymentFile(document);
                 }
 
                 // tslint:disable-next-line: no-floating-promises
-                this.updateParameterFileInStatusBar();
+                this.updateStatusBar();
             }
         });
     }
@@ -530,7 +561,7 @@ export class AzureRMTools {
      * Hook up events related to template files (as opposed to plain JSON files). This is only called when
      * actual template files are open, to avoid slowing performance when simple JSON files are opened.
      */
-    private ensureDeploymentTemplateEventsHookedUp(): void {
+    private ensureDeploymentFileEventsHookedUp(): void {
         if (this._areDeploymentTemplateEventsHookedUp) {
             return;
         }
@@ -545,56 +576,79 @@ export class AzureRMTools {
                 return this.onProvideHover(document, position, token);
             }
         };
-        ext.context.subscriptions.push(vscode.languages.registerHoverProvider(armDeploymentDocumentSelector, hoverProvider));
+        ext.context.subscriptions.push(vscode.languages.registerHoverProvider(deploymentDocumentSelector, hoverProvider));
 
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO: Move to new file
         const completionProvider: vscode.CompletionItemProvider = {
             provideCompletionItems: async (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList | undefined> => {
-                return await this.onProvideCompletionItems(document, position, token);
+                return await this.onProvideDeploymentCompletions(document, position, token);
             }
         };
-        ext.context.subscriptions.push(vscode.languages.registerCompletionItemProvider(parametersDocumentSelector/*asdf armDeploymentDocumentSelector*/, completionProvider, "'", "[", "."));
+        ext.context.subscriptions.push(
+            vscode.languages.registerCompletionItemProvider(
+                deploymentDocumentSelector,
+                completionProvider,
+                "'", "[", "." //asdf
+            ));
+
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO: Move to new file
+        const paramFileCompletionProvider: vscode.CompletionItemProvider = {
+            provideCompletionItems: async (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList | undefined> => {
+                return await this.onProvideParameterFileCompletions(document, position, token);
+            }/*asdf,
+            resolveCompletionItem: async (item: vscode.CompletionItem, token: vscode.CancellationToken): Promise<vscode.CompletionItem> => {
+                // tslint:disable-next-line:no-console
+                console.log(`resolve ${item.label}`);
+                item.insertText = "hello";
+                item = item;
+                return item;
+            }*/
+        };
+        ext.context.subscriptions.push(vscode.languages.registerCompletionItemProvider(parameterDocumentSelector, paramFileCompletionProvider, "'", "[", "."));
 
         const definitionProvider: vscode.DefinitionProvider = {
             provideDefinition: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Definition | undefined => {
                 return this.onProvideDefinition(document, position, token);
             }
         };
-        ext.context.subscriptions.push(vscode.languages.registerDefinitionProvider(armDeploymentDocumentSelector, definitionProvider));
+        ext.context.subscriptions.push(vscode.languages.registerDefinitionProvider(deploymentDocumentSelector, definitionProvider));
 
         const referenceProvider: vscode.ReferenceProvider = {
             provideReferences: async (document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): Promise<vscode.Location[] | undefined> => {
                 return this.onProvideReferences(document, position, context, token);
             }
         };
-        ext.context.subscriptions.push(vscode.languages.registerReferenceProvider(armDeploymentDocumentSelector, referenceProvider));
+        ext.context.subscriptions.push(vscode.languages.registerReferenceProvider(deploymentDocumentSelector, referenceProvider));
 
         const signatureHelpProvider: vscode.SignatureHelpProvider = {
             provideSignatureHelp: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.SignatureHelp | undefined => {
                 return this.onProvideSignatureHelp(document, position, token);
             }
         };
-        ext.context.subscriptions.push(vscode.languages.registerSignatureHelpProvider(armDeploymentDocumentSelector, signatureHelpProvider, ",", "(", "\n"));
+        ext.context.subscriptions.push(vscode.languages.registerSignatureHelpProvider(deploymentDocumentSelector, signatureHelpProvider, ",", "(", "\n"));
 
         const renameProvider: vscode.RenameProvider = {
             provideRenameEdits: async (document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): Promise<vscode.WorkspaceEdit | undefined> => {
                 return await this.onProvideRename(document, position, newName, token);
             }
         };
-        ext.context.subscriptions.push(vscode.languages.registerRenameProvider(armDeploymentDocumentSelector, renameProvider));
+        ext.context.subscriptions.push(vscode.languages.registerRenameProvider(deploymentDocumentSelector, renameProvider));
 
         // tslint:disable-next-line:no-floating-promises // Don't wait
         startArmLanguageServer();
     }
 
-    private async updateParameterFileInStatusBar(): Promise<void> {
+    private async updateStatusBar(): Promise<void> {
         const activeDocument = vscode.window.activeTextEditor?.document;
         if (activeDocument) {
-            const deploymentTemplate = this.getDeploymentTemplate(activeDocument);
-            if (deploymentTemplate) {
+            const deploymentTemplate = this.getDeploymentFile(activeDocument);
+            if (deploymentTemplate instanceof DeploymentTemplate) {
                 const paramFileUri = this._mapping.getParameterFile(activeDocument.uri);
                 if (paramFileUri) {
                     const doesParamFileExist = await fse.pathExists(paramFileUri?.fsPath);
-                    let text = `Parameters: ${getFriendlyPathToParameterFile(activeDocument.uri, paramFileUri)}`;
+                    let text = `Parameters: ${getFriendlyPathToFile(paramFileUri)}`;
                     if (!doesParamFileExist) {
                         text += " $(error) Not found";
                     }
@@ -603,6 +657,23 @@ export class AzureRMTools {
                     this._paramsStatusBarItem.text = "Select Parameter File...";
                 }
                 this._paramsStatusBarItem.command = "azurerm-vscode-tools.selectParameterFile";
+                this._paramsStatusBarItem.show();
+                return;
+            } else if (deploymentTemplate instanceof DeploymentParameters) {
+                const templateFileUri = this._mapping.getTemplateFile(activeDocument.uri);
+                if (templateFileUri) {
+                    const doesTemplateFileExist = await fse.pathExists(templateFileUri?.fsPath);
+                    let text = `Template file: ${getFriendlyPathToFile(templateFileUri)}`;
+                    if (!doesTemplateFileExist) {
+                        text += " $(error) Not found";
+                    }
+                    this._paramsStatusBarItem.text = text;
+                } else {
+                    this._paramsStatusBarItem.hide();
+                    return;
+                    //this._paramsStatusBarItem.text = "Select Template File...";
+                }
+                this._paramsStatusBarItem.command = "azurerm-vscode-tools.openTemplateFile";
                 this._paramsStatusBarItem.show();
                 return;
             }
@@ -700,11 +771,10 @@ export class AzureRMTools {
         return diagnostic;
     }
 
-    private closeDeploymentTemplate(document: vscode.TextDocument): void {
+    private closeDeploymentFile(document: vscode.TextDocument): void {
         assert(document);
         this._diagnosticsCollection.delete(document.uri);
-
-        this._deploymentFiles.delete(document.uri.toString());
+        this.setDeploymentFile(document.uri, undefined);
     }
 
     private onProvideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Hover | undefined {
@@ -729,9 +799,7 @@ export class AzureRMTools {
         }
     }
 
-    // asdf make into two functions
-    // tslint:disable-next-line:max-func-body-length
-    private async onProvideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList | undefined> {
+    private async onProvideDeploymentCompletions(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList | undefined> {
         const deploymentTemplate = this.getDeploymentTemplate(document);
         if (deploymentTemplate) {
             return callWithTelemetryAndErrorHandlingSync('provideCompletionItems', (actionContext: IActionContext): vscode.CompletionList | undefined => {
@@ -749,7 +817,7 @@ export class AzureRMTools {
                     completionToAdd.range = insertRange;
                     completionToAdd.insertText = new vscode.SnippetString(completion.insertText);
                     completionToAdd.detail = completion.detail;
-                    completionToAdd.documentation = completion.description ? completion.description : undefined;
+                    completionToAdd.documentation = completion.documention ? completion.documention : undefined;
 
                     switch (completion.kind) {
                         case Completion.CompletionKind.Function:
@@ -782,11 +850,13 @@ export class AzureRMTools {
                 return new vscode.CompletionList(completionItems, true);
             });
         }
+    }
 
-        //asdf
-        const deploymentParameters = this.getDeploymentParameters(document); //asdf;
+    //asdf refactor with above
+    private async onProvideParameterFileCompletions(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList | undefined> {
+        const deploymentParameters = this.getDeploymentParameters(document);
         if (deploymentParameters) {
-            return await callWithTelemetryAndErrorHandling('provideParamCompletionItems'/*asdf*/, async (actionContext: IActionContext): Promise<vscode.CompletionList | undefined> => {
+            return await callWithTelemetryAndErrorHandling('provideParamCompletionItems', async (actionContext: IActionContext): Promise<vscode.CompletionList | undefined> => {
                 let properties = <TelemetryProperties & { completionKind?: string }>actionContext.telemetry.properties;
                 actionContext.telemetry.suppressIfSuccessful = true;
                 actionContext.errorHandling.suppressDisplay = true;
@@ -795,56 +865,32 @@ export class AzureRMTools {
                 if (!templateUri) {
                     return;
                 }
-                let template = this._deploymentFiles.get(templateUri.toString()); // normalize/insensitive asdf
-                if (!(template instanceof DeploymentTemplate)) {
-                    template = undefined;
-                    try {
-                        const contents = (await fse.readFile(templateUri.fsPath, { encoding: 'utf8' })).toString();
-                        template = new DeploymentTemplate(contents, templateUri.toString());
-                    } catch (error) {
-                        // asdf
-                    }
+                let template = this.getDeploymentTemplate(templateUri);
+                if (!template) {
+                    const contents = (await fse.readFile(templateUri.fsPath, { encoding: 'utf8' })).toString();
+                    template = new DeploymentTemplate(contents, templateUri.toString());
                 }
 
-                const context: ParametersPositionContext = deploymentParameters.getContextFromDocumentLineAndColumnIndexes(position.line, position.character, <DeploymentTemplate>template); //asdf
+                const context: ParametersPositionContext = deploymentParameters.getContextFromDocumentLineAndColumnIndexes(position.line, position.character, template);
                 let completionItemArray: Completion.Item[] = context.getCompletionItems();
                 const completionItems: vscode.CompletionItem[] = [];
+
+                // asdf consolidate
                 for (const completion of completionItemArray) {
-                    const insertRange: vscode.Range = getVSCodeRangeFromSpan2asdf(deploymentParameters, completion.insertSpan);
+                    const vscodeItem = toVsCodeCompletionItem(deploymentParameters, completion);
+                    vscodeItem.command = { //asdf
+                        command: "azurerm-vscode-tools.snippet-activated",
+                        title: "title",
+                        arguments: [
+                            completion.name
+                        ]
 
-                    const completionToAdd = new vscode.CompletionItem(completion.name);
-                    completionToAdd.range = insertRange;
-                    completionToAdd.insertText = new vscode.SnippetString(completion.insertText);
-                    completionToAdd.detail = completion.detail;
-                    completionToAdd.documentation = completion.description ? completion.description : undefined;
+                    };
 
-                    switch (completion.kind) {
-                        case Completion.CompletionKind.Function:
-                            completionToAdd.kind = vscode.CompletionItemKind.Function;
-                            break;
+                    // Add completion kind to telemetry asdf
+                    properties.completionKind = typeof vscodeItem.kind === "number" ? vscode.CompletionItemKind[vscodeItem.kind] : undefined;
 
-                        case Completion.CompletionKind.Parameter:
-                        case Completion.CompletionKind.Variable:
-                            completionToAdd.kind = vscode.CompletionItemKind.Variable;
-                            break;
-
-                        case Completion.CompletionKind.Property:
-                            completionToAdd.kind = vscode.CompletionItemKind.Field;
-                            break;
-
-                        case Completion.CompletionKind.Namespace:
-                            completionToAdd.kind = vscode.CompletionItemKind.Unit;
-                            break;
-
-                        default:
-                            assert.fail(`Unrecognized Completion.Type: ${completion.kind}`);
-                            break;
-                    }
-
-                    // Add completion kind to telemetry
-                    properties.completionKind = typeof completionToAdd.kind === "number" ? vscode.CompletionItemKind[completionToAdd.kind] : undefined;
-
-                    completionItems.push(completionToAdd);
+                    completionItems.push(vscodeItem);
                 }
                 return new vscode.CompletionList(completionItems, true);
             });
@@ -987,12 +1033,12 @@ export class AzureRMTools {
             let activeDocument: vscode.TextDocument | undefined = editor?.document;
             if (activeDocument) {
                 if (!this.getDeploymentFile(activeDocument)) {
-                    this.updateDeploymentTemplate(activeDocument);
+                    this.updateDeploymentFile(activeDocument);
                 }
             }
 
             // tslint:disable-next-line: no-floating-promises
-            this.updateParameterFileInStatusBar();
+            this.updateStatusBar();
         });
     }
 
@@ -1023,11 +1069,11 @@ export class AzureRMTools {
     }
 
     private onDocumentChanged(event: vscode.TextDocumentChangeEvent): void {
-        this.updateDeploymentTemplate(event.document);
+        this.updateDeploymentFile(event.document);
     }
 
     private onDocumentOpened(openedDocument: vscode.TextDocument): void {
-        this.updateDeploymentTemplate(openedDocument);
+        this.updateDeploymentFile(openedDocument);
     }
 
     private onDocumentClosed(closedDocument: vscode.TextDocument): void {
@@ -1036,7 +1082,7 @@ export class AzureRMTools {
             actionContext.telemetry.suppressIfSuccessful = true;
             actionContext.errorHandling.suppressDisplay = true;
 
-            this.closeDeploymentTemplate(closedDocument);
+            this.closeDeploymentFile(closedDocument);
         });
     }
 }

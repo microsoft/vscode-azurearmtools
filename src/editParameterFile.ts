@@ -87,7 +87,10 @@ ${tab}"parameters": {
     return contents;
 }
 
-export function createParameterProperty(template: DeploymentTemplate, parameter: IParameterDefinition, indent: number = defaultIndent): string {
+/**
+ * Creates text for a property using information for that property in a template file
+ */
+export function createParameterFromTemplateParameter(template: DeploymentTemplate, parameter: IParameterDefinition, indent: number = defaultIndent): string {
     /* e.g.
 
     "parameters": {
@@ -155,7 +158,7 @@ function createParameters(template: DeploymentTemplate, indent: number, onlyRequ
 
     for (let paramDef of template.topLevelScope.parameterDefinitions) {
         if (!onlyRequiredParameters || !paramDef.defaultValue) {
-            params.set(paramDef.nameValue.unquotedValue, createParameterProperty(template, paramDef, indent));
+            params.set(paramDef.nameValue.unquotedValue, createParameterFromTemplateParameter(template, paramDef, indent));
         }
     }
 

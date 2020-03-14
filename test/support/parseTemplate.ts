@@ -3,8 +3,9 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from 'assert';
-import { DeploymentTemplate } from "../../extension.bundle";
+import { DeploymentParameters, DeploymentTemplate } from "../../extension.bundle";
 import { Issue } from '../../src/Language';
+import { IDeploymentParametersFile } from './diagnostics';
 import { stringify } from "./stringify";
 
 /**
@@ -34,8 +35,8 @@ export async function parseTemplateWithMarkers(
     expectedDiagnosticMessages?: string[],
     options?: { ignoreWarnings: boolean }
 ): Promise<{ dt: DeploymentTemplate; markers: Markers }> {
-    const { text: templateWithoutMarkers, markers } = getDocumentMarkers(template);
-    const dt: DeploymentTemplate = new DeploymentTemplate(templateWithoutMarkers, "parseTemplate() template");
+    const { unmarkedText, markers } = getDocumentMarkers(template);
+    const dt: DeploymentTemplate = new DeploymentTemplate(unmarkedText, "parseTemplate() template");
 
     // Always run these even if not checking against expected, to verify nothing throws
     const errors: Issue[] = await dt.errorsPromise;
@@ -55,16 +56,36 @@ export async function parseTemplateWithMarkers(
 }
 
 /**
+ * Pass in a templateasdf with positions marked using the notation <!tagname!>
+ * Returns the parsed document without the tags, plus a dictionary of the tags and their positions
+ */
+export async function parseParametersWithMarkers(
+    json: string | Partial<IDeploymentParametersFile>
+): Promise<{ dp: DeploymentParameters; unmarkedText: string; markers: Markers }> {
+    const { unmarkedText, markers } = getDocumentMarkers(json);
+    const dp: DeploymentParameters = new DeploymentParameters(unmarkedText, "test parameter file");
+
+    // Always run these even if not checking against expected, to verify nothing throws asdf
+    // const errors: Issue[] = await dt.errorsPromise;
+    // const warnings: Issue[] = dt.warnings;
+    // const errorMessages = errors.map(e => `Error: ${e.message}`);
+    // const warningMessages = warnings.map(e => `Warning: ${e.message}`);
+
+    return { dp, unmarkedText, markers };
+}
+
+/**
  * Pass in a template with positions marked using the notation <!tagname!>
  * Returns the document without the tags, plus a dictionary of the tags and their positions
  */
-export function getDocumentMarkers(template: object | string): { text: string; markers: Markers } {
+export function getDocumentMarkers(doc: object | string): { unmarkedText: string; markers: Markers } {
     let markers: Markers = {};
-    template = typeof template === "string" ? template : stringify(template);
+    doc = typeof doc === "string" ? doc : stringify(doc);
+    let modified = doc;
 
     // tslint:disable-next-line:no-constant-condition
     while (true) {
-        let match: RegExpMatchArray | null = template.match(/<!([a-zA-Z][a-zA-Z0-9]*)!>/);
+        let match: RegExpMatchArray | null = modified.match(/<!([a-zA-Z][a-zA-Z0-9]*)!>/);
         if (!match) {
             break;
         }
@@ -76,18 +97,29 @@ export function getDocumentMarkers(template: object | string): { text: string; m
         markers[marker.name] = marker;
 
         // Remove marker from the document
-        template = template.slice(0, marker.index) + template.slice(index + match[0].length);
+        modified = modified.slice(0, marker.index) + modified.slice(index + match[0].length);
     }
 
     // Also look for shortcut marker "!" with id "bang" used in some tests
-    let bangIndex = template.indexOf('!');
+    let bangIndex = modified.indexOf('!');
     if (bangIndex >= 0) {
         markers.bang = { name: 'bang', index: bangIndex };
-        template = template.slice(0, bangIndex) + template.slice(bangIndex + 1);
+        modified = modified.slice(0, bangIndex) + modified.slice(bangIndex + 1);
+    }
+
+    const malformed =
+        modified.match(/<?!?([a-zA-Z][a-zA-Z0-9]*)>!/)
+        || modified.match(/!<([a-zA-Z][a-zA-Z0-9]*)!?>?/)
+        || modified.match(/<!?([a-zA-Z][a-zA-Z0-9]*)!?>/)
+        || modified.match(/<?!([a-zA-Z][a-zA-Z0-9]*)!>?/)
+        || modified.match(/<?!?([a-zA-Z][a-zA-Z0-9]*)!>/)
+        ;
+    if (malformed) {
+        throw new Error(`Malformed marker "${malformed[0]}" in text: ${doc}`);
     }
 
     return {
-        text: template,
+        unmarkedText: modified,
         markers
     };
 }

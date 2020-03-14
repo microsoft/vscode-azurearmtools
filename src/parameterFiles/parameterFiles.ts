@@ -123,11 +123,11 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
   }
 }
 
-export async function openParameterFile(mapping: DeploymentFileMapping, sourceUri: Uri | undefined, parameterUri: Uri | undefined): Promise<void> {
-  if (sourceUri) {
-    let paramFile: Uri | undefined = parameterUri || mapping.getParameterFile(sourceUri);
+export async function openParameterFile(mapping: DeploymentFileMapping, templateUri: Uri | undefined, parameterUri: Uri | undefined): Promise<void> {
+  if (templateUri) {
+    let paramFile: Uri | undefined = parameterUri || mapping.getParameterFile(templateUri);
     if (!paramFile) {
-      throw new Error(`There is no parameter file currently associated with template file "${sourceUri.fsPath}"`);
+      throw new Error(`There is no parameter file currently associated with template file "${templateUri.fsPath}"`);
     }
 
     let doc: TextDocument = await workspace.openTextDocument(paramFile);
@@ -135,17 +135,43 @@ export async function openParameterFile(mapping: DeploymentFileMapping, sourceUr
   }
 }
 
-/**
- * If the params file is inside the workspace folder, use the path relative to its template file. Otherwise, return the
- * absolute path to the params file. This is intended to make the path most logical to the user.
- */
-export function getFriendlyPathToParameterFile(templateUri: Uri, paramFileUri: Uri): string {
-  const workspaceFolder = workspace.getWorkspaceFolder(paramFileUri);
-  if (workspaceFolder) {
-    return path.relative(path.dirname(templateUri.fsPath), paramFileUri.fsPath);
-  } else {
-    return paramFileUri.fsPath;
+export async function openTemplateFile(mapping: DeploymentFileMapping, parameterUri: Uri | undefined, templateUri: Uri | undefined): Promise<void> {
+  if (parameterUri) {
+    let templateFile: Uri | undefined = templateUri || mapping.getTemplateFile(parameterUri);
+    if (!templateFile) {
+      throw new Error(`There is no template file currently associated with parameter file "${parameterUri.fsPath}"`);
+    }
+
+    let doc: TextDocument = await workspace.openTextDocument(templateFile);
+    await window.showTextDocument(doc);
   }
+}
+
+/**
+ * If the file is inside the workspace folder, use the path relative to that, otherwise
+ * use the absolute path.  This is intended for UI only.
+ */
+export function getFriendlyPathToFile(uri: Uri): string {
+  const workspaceFolder = workspace.getWorkspaceFolder(uri); //asdftestpoint
+
+  if (workspaceFolder) {
+    return path.relative(path.dirname(workspaceFolder.uri.fsPath), uri.fsPath);
+  } else {
+    return uri.fsPath;
+  }
+}
+
+export function getRelativeParameterFilePath(templateUri: Uri, parameterUri: Uri): string {
+  const templatePath = normalizePath(templateUri);
+  const paramPath = normalizePath(parameterUri);
+
+  return path.relative(path.dirname(templatePath), paramPath);
+}
+
+export function resolveParameterFilePath(templatePath: string, parameterPathRelativeToTemplate: string): string {
+  assert(path.isAbsolute(templatePath));
+  const resolved = path.resolve(path.dirname(templatePath), parameterPathRelativeToTemplate);
+  return resolved;
 }
 
 interface IQuickPickList {
@@ -167,7 +193,7 @@ async function createParameterFileQuickPickList(mapping: DeploymentFileMapping, 
   let currentParamFile: IPossibleParameterFile | undefined = suggestions.find(pf => normalizePath(pf.uri) === currentParamPathNormalized);
   if (currentParamUri && !currentParamFile) {
     // There is a current parameter file, but it wasn't among the list we came up with.  We must add it to the list.
-    currentParamFile = { isCloseNameMatch: false, uri: currentParamUri, friendlyPath: getFriendlyPathToParameterFile(templateUri, currentParamUri) };
+    currentParamFile = { isCloseNameMatch: false, uri: currentParamUri, friendlyPath: getRelativeParameterFilePath(templateUri, currentParamUri) };
     let exists = false;
     try {
       exists = await fse.pathExists(currentParamUri.fsPath);
@@ -272,7 +298,7 @@ export async function findSuggestedParameterFiles(templateUri: Uri): Promise<IPo
         if (await isParameterFile(fullPath)) {
           paths.push({
             uri,
-            friendlyPath: getFriendlyPathToParameterFile(templateUri, uri),
+            friendlyPath: getRelativeParameterFilePath(templateUri, uri), //asdf
             isCloseNameMatch: mayBeMatchingParameterFile(templateUri.fsPath, fullPath)
           });
         }

@@ -52,7 +52,9 @@
         "onCommand:azurerm-vscode-tools.sortResources",
         "onCommand:azurerm-vscode-tools.sortVariables",
         "onCommand:azurerm-vscode-tools.selectParameterFile",
+        "onCommand:azurerm-vscode-tools.selectTemplateFile",
         "onCommand:azurerm-vscode-tools.openParameterFile",
+        "onCommand:azurerm-vscode-tools.openTemplateFile",
         "onCommand:azurerm-vscode-tools.resetGlobalState"
     ],
     "contributes": {
@@ -157,9 +159,15 @@
         ],
         "commands": [
             {
+                "$comment": "============= General commands =============",
                 "category": "Azure Resource Manager Tools",
                 "title": "Remove Local Dotnet Core Installation",
                 "command": "azurerm-vscode-tools.uninstallDotnet"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Reset Global State",
+                "command": "azurerm-vscode-tools.resetGlobalState"
             },
             {
                 "category": "Azure Resource Manager Tools",
@@ -167,6 +175,7 @@
                 "command": "azurerm-vscode-tools.reloadSchemas"
             },
             {
+                "$comment": "============= Template sorting =============",
                 "category": "Azure Resource Manager Tools",
                 "title": "Sort Template...",
                 "command": "azurerm-vscode-tools.sortTemplate"
@@ -197,6 +206,7 @@
                 "command": "azurerm-vscode-tools.sortVariables"
             },
             {
+                "$comment": "============= Template file commands =============",
                 "category": "Azure Resource Manager Tools",
                 "title": "Select/Create Parameter File...",
                 "command": "azurerm-vscode-tools.selectParameterFile",
@@ -209,9 +219,19 @@
                 "enablement": "editorLangId==arm-template"
             },
             {
+                "$comment": "============= Parameter file commands =============",
                 "category": "Azure Resource Manager Tools",
-                "title": "Reset Global State",
-                "command": "azurerm-vscode-tools.resetGlobalState"
+                "title": "Select Template File...",
+                "command": "azurerm-vscode-tools.selectTemplateFile",
+                "enablement": "editorLangId=~/jsonc?/",
+                "$asdf": "only if params file"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Open Associated Template File",
+                "command": "azurerm-vscode-tools.openTemplateFile",
+                "enablement": "editorLangId=~/jsonc?/",
+                "$asdf": "only if params file"
             }
         ],
         "menus": {
@@ -239,6 +259,7 @@
             ],
             "editor/context": [
                 {
+                    "$comment": "============= Template file commands =============",
                     "command": "azurerm-vscode-tools.selectParameterFile",
                     "group": "zzz_arm-template@1",
                     "when": "editorLangId==arm-template"
@@ -257,10 +278,24 @@
                     "command": "azurerm-vscode-tools.reloadSchemas",
                     "group": "zzz_arm-template@4",
                     "when": "editorLangId==arm-template"
+                },
+                {
+                    "$comment": "============= Parameter file commands =============",
+                    "command": "azurerm-vscode-tools.selectTemplateFile",
+                    "group": "zzz_arm-params@1",
+                    "when": "editorLangId=~/jsonc?/",
+                    "$asdf": "when"
+                },
+                {
+                    "command": "azurerm-vscode-tools.openTemplateFile",
+                    "group": "zzz_arm-params@2",
+                    "when": "editorLangId=~/jsonc?/",
+                    "$asdf": "when"
                 }
             ],
             "view/item/context": [
                 {
+                    "$comment": "============= Treeview commands =============",
                     "command": "azurerm-vscode-tools.sortTemplate",
                     "when": "azurerm-vscode-tools.template-outline.active == true",
                     "group": "arm-template"
@@ -293,6 +328,7 @@
             ],
             "editor/title": [
                 {
+                    "$comment": "============= Template file commands =============",
                     "command": "azurerm-vscode-tools.selectParameterFile",
                     "group": "zzz_arm-template@1",
                     "when": "editorLangId==arm-template"
@@ -301,10 +337,24 @@
                     "command": "azurerm-vscode-tools.openParameterFile",
                     "group": "zzz_arm-template@2",
                     "when": "editorLangId==arm-template"
+                },
+                {
+                    "$comment": "============= Parameter file commands =============",
+                    "command": "azurerm-vscode-tools.selectTemplateFile",
+                    "group": "zzz_arm-params@1",
+                    "when": "editorLangId=~/jsonc?/",
+                    "$asdf": "when"
+                },
+                {
+                    "command": "azurerm-vscode-tools.openTemplateFile",
+                    "group": "zzz_arm-params@2",
+                    "when": "editorLangId=~/jsonc?/",
+                    "$asdf": "when"
                 }
             ],
             "editor/title/context": [
                 {
+                    "$comment": "============= Template file commands =============",
                     "command": "azurerm-vscode-tools.selectParameterFile",
                     "group": "zzz_arm-template@1",
                     "when": "editorLangId==arm-template"
@@ -313,6 +363,19 @@
                     "command": "azurerm-vscode-tools.openParameterFile",
                     "group": "zzz_arm-template@2",
                     "when": "editorLangId==arm-template"
+                },
+                {
+                    "$comment": "============= Parameter file commands =============",
+                    "command": "azurerm-vscode-tools.selectTemplateFile",
+                    "group": "zzz_arm-params@1",
+                    "when": "editorLangId=~/jsonc?/",
+                    "$asdf": "when"
+                },
+                {
+                    "command": "azurerm-vscode-tools.openParameterFile",
+                    "group": "zzz_arm-params@2",
+                    "when": "editorLangId=~/jsonc?/",
+                    "$asdf": "when"
                 }
             ]
         }

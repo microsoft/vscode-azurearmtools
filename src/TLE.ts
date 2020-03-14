@@ -10,7 +10,7 @@
 // tslint:disable:max-classes-per-file // Grandfathered in
 
 import { templateKeys } from "./constants";
-import { __debugMarkSubstring } from "./debugMarkStrings";
+import { __debugMarkRangeInString } from "./debugMarkStrings";
 import { assert } from "./fixed_assert";
 import { IFunctionMetadata } from "./IFunctionMetadata";
 import * as Json from "./JSON";
@@ -1113,7 +1113,7 @@ export class Tokenizer {
      * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
      */
     public get __debugDisplay(): string {
-        return __debugMarkSubstring(this._text, this._currentTokenStartIndex, this._current ? this._current.toString().length : 0);
+        return __debugMarkRangeInString(this._text, this._currentTokenStartIndex, this._current ? this._current.toString().length : 0);
     }
 
     public hasStarted(): boolean {

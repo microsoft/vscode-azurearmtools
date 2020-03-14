@@ -4,18 +4,26 @@
 
 import { ConfigurationTarget } from "vscode";
 import { IConfiguration } from "../../extension.bundle";
+import { assert } from "../../src/fixed_assert";
 
 export class TestConfiguration implements IConfiguration {
+    // tslint:disable-next-line:variable-name
+    public Test_globalValues: Map<string, unknown> = new Map<string, unknown>();
+
     // tslint:disable-next-line:no-reserved-keywords
     public get<T>(key: string): T | undefined {
-        throw new Error("Method not implemented.");
+        return <T>this.Test_globalValues.get(key);
     }
 
     public inspect<T>(key: string): { globalValue?: T | undefined } | undefined {
-        throw new Error("Method not implemented.");
+        const value = <T>this.Test_globalValues.get(key);
+        return {
+            globalValue: value
+        };
     }
 
     public async update(section: string, value: unknown, configurationTarget?: ConfigurationTarget): Promise<void> {
-        throw new Error("Method not implemented.");
+        assert(configurationTarget === ConfigurationTarget.Global, "NYI");
+        this.Test_globalValues.set(section, value);
     }
 }

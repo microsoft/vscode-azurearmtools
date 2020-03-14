@@ -75,6 +75,18 @@ export interface IDeploymentNamespaceDefinition {
     };
 }
 
+export interface IDeploymentParameterValue {
+    value: unknown;
+}
+
+export interface IDeploymentParametersFile {
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#\"";
+    contentVersion: string;
+    parameters?: {
+        [key: string]: IDeploymentParameterValue;
+    };
+}
+
 export interface IDeploymentTemplate {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#" | "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
     | string;

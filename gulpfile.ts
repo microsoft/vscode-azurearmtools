@@ -303,7 +303,7 @@ async function packageVsix(): Promise<void> {
 // When webpacked, the tests cannot touch any code under src/, or it will end up getting loaded
 // twice (because it's also in the bundle), which causes problems with objects that are supposed to
 // be singletons.  The test errors are somewhat mysterious, so verify that condition here during build.
-async function verifyTestReferencesOnlyExtensionBundle(testFolder: string): Promise<void> {
+async function verifyTestsReferenceOnlyExtensionBundle(testFolder: string): Promise<void> {
     const errors: string[] = [];
 
     for (let filePath of await recursiveReadDir(testFolder)) {
@@ -320,7 +320,7 @@ async function verifyTestReferencesOnlyExtensionBundle(testFolder: string): Prom
                     errors.push(
                         os.EOL +
                         `${path.relative(__dirname, file)}: error: Test code may not import from the src folder, it should import from '../extension.bundle'${os.EOL}` +
-                        `Imported here: ${match}${os.EOL}`
+                        `  Error is here: ===> ${match}${os.EOL}`
                     );
                     console.error(match);
                 }
@@ -341,4 +341,4 @@ exports['watch-grammars'] = (): unknown => gulp.watch('grammars/**', buildGramma
 exports['get-language-server'] = getLanguageServer;
 exports.package = packageVsix;
 exports['error-vsce-package'] = (): never => { throw new Error(`Please do not run vsce package, instead use 'npm run package`); };
-exports['verify-test-uses-extension-bundle'] = (): Promise<void> => verifyTestReferencesOnlyExtensionBundle(path.resolve("test"));
+exports['verify-test-uses-extension-bundle'] = (): Promise<void> => verifyTestsReferenceOnlyExtensionBundle(path.resolve("test"));
