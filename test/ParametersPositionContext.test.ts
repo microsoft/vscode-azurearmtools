@@ -187,16 +187,16 @@ suite("ParametersPositionContext", () => {
                 $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
                 "contentVersion": "1.0.0.0",
                 "parameters": {<!true!>
-                    <!false!>"p1": {
+                    "<!false!>p1": {
                         "value": {
                             "abc": "def"
-                        }<!true!>
+                        }
                     <!false!>}<!true!>,
 
-                    <!false!>"p1": {
+                    "<!false!>p1": {
                         "value": "ghi"
                     }<!true!>
-                }
+                }<!false!>
             }`);
     });
 });

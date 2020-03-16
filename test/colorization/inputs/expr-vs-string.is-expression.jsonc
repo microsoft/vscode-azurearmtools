@@ -9,8 +9,12 @@
     // Multi-line expressions - the colorization can't peek onto another line to determine whether the
     // string ends with "]" (and therefore know it's an expression and not a string), so assume it is an expression
     // if a multi-line string starts with "["
-    "$TEST10": "[concat('This is a ', 1, '-line ', 'expression ', 4, 'you!')]", //asdf
+    "$TEST10": "[concat('This is a ', 1, '-line ', 'expression ', 4, 'you!')]",
     "$TEST11": "[concat('This is a ',
-        3, '-line ',
-        'expression ', 4, ' you!')]"
+    3,
+    '-line ',
+    'expression ',
+    4,
+    ' you!') ]
+    "
 }

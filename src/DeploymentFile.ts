@@ -127,8 +127,8 @@ export abstract class DeploymentFile {
         return this._jsonParseResult.getTokenAtCharacterIndex(documentCharacterIndex);
     }
 
-    public getJSONValueAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Value | undefined {
-        return this._jsonParseResult.getValueAtCharacterIndex(documentCharacterIndex);
+    public getJSONValueAtDocumentCharacterIndex(documentCharacterIndex: number, containsBehavior: language.Contains): Json.Value | undefined {
+        return this._jsonParseResult.getValueAtCharacterIndex(documentCharacterIndex, containsBehavior);
     }
 
     public abstract findReferences(definition: INamedDefinition): ReferenceList;

@@ -9,8 +9,8 @@ import { commands, MessageItem, TextDocument, Uri, ViewColumn, window, workspace
 import { callWithTelemetryAndErrorHandling, DialogResponses, IActionContext, IAzureQuickPickItem, UserCancelledError } from 'vscode-azureextensionui';
 import { configKeys, configPrefix, globalStateKeys } from '../constants';
 import { DeploymentTemplate } from '../DeploymentTemplate';
-import { queryCreateParameterFile } from '../editParameterFile';
 import { ext } from '../extensionVariables';
+import { queryCreateParameterFile } from '../parameterFileGeneration';
 import { containsParametersSchema } from '../schemas';
 import { normalizePath } from '../util/normalizePath';
 import { DeploymentFileMapping } from './DeploymentFileMapping';

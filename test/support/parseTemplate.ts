@@ -56,7 +56,7 @@ export async function parseTemplateWithMarkers(
 }
 
 /**
- * Pass in a templateasdf with positions marked using the notation <!tagname!>
+ * Pass in a parameter file with positions marked using the notation <!tagname!>
  * Returns the parsed document without the tags, plus a dictionary of the tags and their positions
  */
 export async function parseParametersWithMarkers(
@@ -65,11 +65,11 @@ export async function parseParametersWithMarkers(
     const { unmarkedText, markers } = getDocumentMarkers(json);
     const dp: DeploymentParameters = new DeploymentParameters(unmarkedText, Uri.file("https://test parameter file"));
 
-    // Always run these even if not checking against expected, to verify nothing throws asdf
-    // const errors: Issue[] = await dt.errorsPromise;
-    // const warnings: Issue[] = dt.warnings;
-    // const errorMessages = errors.map(e => `Error: ${e.message}`);
-    // const warningMessages = warnings.map(e => `Warning: ${e.message}`);
+    // Always run these even if not checking against expected, to verify nothing throws
+    // tslint:disable-next-line:no-unused-expression
+    dp.parametersObjectValue;
+    // tslint:disable-next-line:no-unused-expression
+    dp.parameterValues;;
 
     return { dp, unmarkedText, markers };
 }
@@ -110,8 +110,7 @@ export function getDocumentMarkers(doc: object | string): { unmarkedText: string
     const malformed =
         modified.match(/<?!?([a-zA-Z][a-zA-Z0-9]*)>!/)
         || modified.match(/!<([a-zA-Z][a-zA-Z0-9]*)!?>?/)
-        || modified.match(/<!?([a-zA-Z][a-zA-Z0-9]*)!?>/)
-        || modified.match(/<?!([a-zA-Z][a-zA-Z0-9]*)!>?/)
+        || modified.match(/<!([a-zA-Z][a-zA-Z0-9]*)!?>?/)
         || modified.match(/<?!?([a-zA-Z][a-zA-Z0-9]*)!>/)
         ;
     if (malformed) {

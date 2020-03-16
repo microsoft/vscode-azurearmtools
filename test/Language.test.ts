@@ -8,6 +8,7 @@
 import * as assert from "assert";
 import { Language } from "../extension.bundle";
 
+const Contains = Language.Contains;
 const IssueKind = Language.IssueKind;
 
 suite("Language", () => {
@@ -30,24 +31,76 @@ suite("Language", () => {
         });
 
         suite("contains()", () => {
-            test("With index less than startIndex", () => {
-                assert.deepStrictEqual(false, new Language.Span(3, 4).contains(2));
+            suite("Contains.strict", () => {
+                test("With index less than startIndex", () => {
+                    assert.deepStrictEqual(false, new Language.Span(3, 4).contains(2, Contains.strict));
+                });
+
+                test("With index equal to startIndex", () => {
+                    assert(new Language.Span(3, 4).contains(3, Contains.strict));
+                });
+
+                test("With index between the start and end indexes", () => {
+                    assert(new Language.Span(3, 4).contains(5, Contains.strict));
+                });
+
+                test("With index equal to endIndex", () => {
+                    assert(new Language.Span(3, 4).contains(6, Contains.strict));
+                });
+
+                test("With index directly after end index", () => {
+                    assert.deepStrictEqual(false, new Language.Span(3, 4).contains(7, Contains.strict));
+                });
             });
 
-            test("With index equal to startIndex", () => {
-                assert(new Language.Span(3, 4).contains(3));
+            suite("Contains.extended", () => {
+                test("With index less than startIndex", () => {
+                    assert.deepStrictEqual(false, new Language.Span(3, 4).contains(2, Contains.extended));
+                });
+
+                test("With index equal to startIndex", () => {
+                    assert(new Language.Span(3, 4).contains(3, Contains.extended));
+                });
+
+                test("With index between the start and end indexes", () => {
+                    assert(new Language.Span(3, 4).contains(5, Contains.extended));
+                });
+
+                test("With index equal to endIndex", () => {
+                    assert(new Language.Span(3, 4).contains(6, Contains.extended));
+                });
+
+                test("With index directly after end index", () => {
+                    // Extended, so this should be true
+                    assert.deepStrictEqual(true, new Language.Span(3, 4).contains(7, Contains.extended));
+                });
+
+                test("With index two after end index", () => {
+                    assert.deepStrictEqual(false, new Language.Span(3, 4).contains(8, Contains.extended));
+                });
             });
 
-            test("With index between the start and end indexes", () => {
-                assert(new Language.Span(3, 4).contains(5));
-            });
+            suite("Contains.enclosed", () => {
+                test("With index less than startIndex", () => {
+                    assert.deepStrictEqual(false, new Language.Span(3, 4).contains(2, Contains.enclosed));
+                });
 
-            test("With index equal to endIndex", () => {
-                assert(new Language.Span(3, 4).contains(6));
-            });
+                test("With index equal to startIndex", () => {
+                    // With enclosed, this should be false
+                    assert.equal(new Language.Span(3, 4).contains(3, Contains.enclosed), false);
+                });
 
-            test("With index directly after end index", () => {
-                assert.deepStrictEqual(false, new Language.Span(3, 4).contains(7));
+                test("With index between the start and end indexes", () => {
+                    assert(new Language.Span(3, 4).contains(5, Contains.enclosed));
+                });
+
+                test("With index equal to endIndex", () => {
+                    assert(new Language.Span(3, 4).contains(6, Contains.enclosed));
+                });
+
+                test("With index directly after end index", () => {
+                    assert.deepStrictEqual(false, new Language.Span(3, 4).contains(7, Contains.enclosed));
+                });
             });
         });
 

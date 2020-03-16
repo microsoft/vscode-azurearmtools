@@ -28,9 +28,6 @@ suite("Parameter file completions", () => {
         options: {
             cursorIndex?: number;
         },
-        // Contains the text of the expression. '!' indicates the cursor location
-        //asdf find: string,
-        //asdf replacementWithBang: string,
         // Can either be an array of completion names, or an array of
         //   [completion name, insert text] tuples
         expectedNamesAndInsertTexts: ([string, string][]) | (string[])
@@ -39,11 +36,6 @@ suite("Parameter file completions", () => {
         test(fullName, async () => {
             let dt: DeploymentTemplate | undefined = template ? await parseTemplate(template) : undefined;
 
-            //params = stringify(params);//asdf .replace(find, replacementWithBang);
-
-            //asdf
-            // const { dp, markers: { bang } } = await parseTemplateWithMarkers(template);
-            // assert(bang, "Didn't find ! marker in text");
             const { dp, markers: { bang } } = await parseParametersWithMarkers(params);
             const cursorIndex = !isNullOrUndefined(options.cursorIndex) ? options.cursorIndex : bang.index;
             if (isNullOrUndefined(cursorIndex)) {

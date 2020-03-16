@@ -59,6 +59,8 @@ export abstract class Value {
 
     public abstract getSpan(): language.Span;
 
+    // CONSIDER: This always includes the character after the Value as well (i.e., uses
+    //   Span.contains(, true)). asdf
     public abstract contains(characterIndex: number): boolean;
 
     public abstract toString(): string;
@@ -113,7 +115,7 @@ export class StringValue extends Value {
     }
 
     public contains(characterIndex: number): boolean {
-        return this.getSpan().contains(characterIndex, true);
+        return this.getSpan().contains(characterIndex, language.Contains.extended);
     }
 
     public hasCloseQuote(): boolean {
@@ -175,7 +177,7 @@ export class NumberValue extends Value {
     }
 
     public contains(characterIndex: number): boolean {
-        return this.getSpan().contains(characterIndex, true);
+        return this.getSpan().contains(characterIndex, language.Contains.extended);
     }
 
     public accept(visitor: Visitor): void {
@@ -253,7 +255,7 @@ export class ArrayAccessValue extends ParentValue {
     }
 
     public contains(characterIndex: number): boolean {
-        return this.getSpan().contains(characterIndex, !this._rightSquareBracketToken);
+        return this.getSpan().contains(characterIndex, this._rightSquareBracketToken ? language.Contains.strict : language.Contains.extended);
     }
 
     public accept(visitor: Visitor): void {
@@ -434,7 +436,7 @@ export class FunctionCallValue extends ParentValue {
     }
 
     public contains(characterIndex: number): boolean {
-        return this.getSpan().contains(characterIndex, !this._rightParenthesisToken);
+        return this.getSpan().contains(characterIndex, this._rightParenthesisToken ? language.Contains.strict : language.Contains.extended);
     }
 
     public accept(visitor: Visitor): void {
@@ -470,7 +472,7 @@ export class FunctionCallValue extends ParentValue {
  */
 export class PropertyAccess extends ParentValue {
     // We need to allow creating a property access expresion whether the property name
-    //   was correctly given or note, so we can have proper intellisense/etc.
+    //   was correctly given or not, so we can have proper intellisense/etc.
     // I.e., we require the period, but after that might be empty or an error.
     constructor(private _source: Value, private _periodToken: Token, private _nameToken: Token | undefined) {
         super();
@@ -538,7 +540,7 @@ export class PropertyAccess extends ParentValue {
     }
 
     public contains(characterIndex: number): boolean {
-        return this.getSpan().contains(characterIndex, true);
+        return this.getSpan().contains(characterIndex, language.Contains.extended);
     }
 
     public accept(visitor: Visitor): void {
