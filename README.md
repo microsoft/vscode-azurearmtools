@@ -42,7 +42,7 @@ The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language 
   - [TLE brace matching](https://code.visualstudio.com/docs/editor/editingevolved#_bracket-matching)
   - User-defined template functions, see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#functions)
   - Variable iteration ("copy blocks"), see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration)
-  - Sort template and template sections alphabetically (thanks Nils Hedström @nilshedstrom!)
+  - Sort template and template sections alphabetically
 
 ## Snippets
 
