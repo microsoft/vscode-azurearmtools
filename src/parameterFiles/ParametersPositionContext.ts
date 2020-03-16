@@ -276,6 +276,8 @@ export class ParametersPositionContext {
                 }
 
                 // tslint:disable-next-line:prefer-template
+                const isRequired = !param.defaultValue;
+                const label = `${param.nameValue.quotedValue} ${isRequired ? "(required)" : "(optional)"}`;
                 const paramText = createParameterFromTemplateParameter(this._deploymentTemplate, param);
                 const replacement = paramText;
                 const documentation = `Insert a value for parameter '${param.nameValue.unquotedValue}' from the template file"`;
@@ -283,7 +285,7 @@ export class ParametersPositionContext {
 
                 completions.push(
                     new Completion.Item(
-                        param.nameValue.quotedValue,
+                        label,
                         replacement,
                         this.emptySpanAtDocumentCharacterIndex,
                         Completion.CompletionKind.PropertyValue,

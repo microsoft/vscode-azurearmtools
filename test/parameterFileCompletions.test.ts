@@ -170,8 +170,8 @@ suite("Parameter file completions", () => {
                 },
                 {},
                 [
-                    `"p10"`,
-                    `"p2"`, //asdf order?
+                    `"p10" (required)`,
+                    `"p2" (required)`, //asdf order?
                     newParamCompletionLabel
                 ]);
 
@@ -182,7 +182,7 @@ suite("Parameter file completions", () => {
                         "contentVersion": "1.0.0.0",
                         "parameters": {
                             "p2": {
-                                "type": "string"
+                                "value": "string"
                             },
                             !
                         }
@@ -201,22 +201,22 @@ suite("Parameter file completions", () => {
                 {},
                 [
                     // p2 already exists in param file
-                    `"p10"`,
+                    `"p10" (required)`,
                     newParamCompletionLabel
                 ]);
 
             createParamsCompletionsTest(
                 "2 in template, 1 in params, different casing",
                 `{
-                            $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-                            "contentVersion": "1.0.0.0",
-                            "parameters": {
-                                "PARAmeter2": {
-                                    "type": "string"
-                                },
-                                !
-                            }
-                        }`,
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "PARAmeter2": {
+                            "value": "string"
+                        },
+                        !
+                    }
+                }`,
                 {
                     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                     "parameters": {
@@ -231,7 +231,7 @@ suite("Parameter file completions", () => {
                 {},
                 [
                     // parameter2 already exists in param file
-                    `"Parameter10"`, // Use casing in template file
+                    `"Parameter10" (required)`, // Use casing in template file
                     newParamCompletionLabel
                 ]);
 
@@ -242,11 +242,11 @@ suite("Parameter file completions", () => {
                         "contentVersion": "1.0.0.0",
                         "parameters": {
                             "Parameter2": {
-                                "type": "string"
+                                "value": "string"
                             },
                             !
                             "Parameter10": {
-                                "type": "string"
+                                "value": "string"
                             }
                         }
                     }`,
@@ -267,25 +267,25 @@ suite("Parameter file completions", () => {
                 {},
                 [
                     // parameter2 already exists in param file
-                    `"Parameter30"`,
+                    `"Parameter30" (required)`,
                     newParamCompletionLabel
                 ]);
 
             createParamsCompletionsTest(
-                "2 in template, all of the in param file already",
+                "2 in template, all of them in param file already",
                 `{
-                                $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-                                "contentVersion": "1.0.0.0",
-                                "parameters": {
-                                    "Parameter2": {
-                                        "type": "string"
-                                    },
-                                    "Parameter10": {
-                                        "type": "string"
-                                    },
-                                    !
-                                }
-                            }`,
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "Parameter2": {
+                            "value": "string"
+                        },
+                        "Parameter10": {
+                            "value": "string"
+                        },
+                        !
+                    }
+                }`,
                 {
                     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                     "parameters": {
@@ -299,6 +299,34 @@ suite("Parameter file completions", () => {
                 },
                 {},
                 [
+                    newParamCompletionLabel
+                ]);
+
+            createParamsCompletionsTest(
+                "1 optional, 1 required",
+                `{
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        !
+                    }
+                }`,
+                {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "parameters": {
+                        "p1optional": {
+                            "type": "string",
+                            "defaultValue": "a"
+                        },
+                        "p2required": {
+                            "type": "string"
+                        }
+                    }
+                },
+                {},
+                [
+                    `"p1optional" (optional)`,
+                    `"p2required" (required)`,
                     newParamCompletionLabel
                 ]);
         });
