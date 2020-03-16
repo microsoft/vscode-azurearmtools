@@ -16,12 +16,20 @@ The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language 
 
 ## Intellisense
 
-  - [Built-in functions](https://go.microsoft.com/fwlink/?LinkID=733958)
-  - [Parameter references](https://go.microsoft.com/fwlink/?LinkID=733959)
-  - [Variable references](https://go.microsoft.com/fwlink/?LinkID=733960)
-  - [resourceGroup() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#resourcegroup)
-  - [subscription() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#subscription)
-  - Properties of references to variables that are objects
+- [Built-in functions](https://go.microsoft.com/fwlink/?LinkID=733958)
+- [Parameter references](https://go.microsoft.com/fwlink/?LinkID=733959)
+- [Variable references](https://go.microsoft.com/fwlink/?LinkID=733960)
+- [resourceGroup() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#resourcegroup)
+- [subscription() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#subscription)
+- Properties of references to variables that are objects
+
+## Parameter files
+
+- Associate a parameter file with a template for validation of both
+- Open associated parameter files from the template
+- Create a new parameter file from parameters defined within a template
+
+![Associate a parameters file with template](./images/arm-tools.gif)
 
 ## Other features:
 
@@ -34,6 +42,7 @@ The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language 
   - [TLE brace matching](https://code.visualstudio.com/docs/editor/editingevolved#_bracket-matching)
   - User-defined template functions, see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#functions)
   - Variable iteration ("copy blocks"), see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration)
+  - Sort template and template sections alphabetically (thanks Nils Hedström @nilshedstrom!)
 
 ## Snippets
 
@@ -51,7 +60,6 @@ Snippets for deployment template and 70+ Azure resources.
 | `arm-userfunc` | Adds a user function to a template. |
 | `arm-userfunc-namespace` | Adds a user function namespace to a template. |
 | `arm-` | Displays 70+ snippets for creating Azure resources. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine. |
-
 
 ## Automatic Detection of deployment template files
 
