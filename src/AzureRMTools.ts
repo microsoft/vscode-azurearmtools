@@ -589,7 +589,7 @@ export class AzureRMTools {
             vscode.languages.registerCompletionItemProvider(
                 deploymentDocumentSelector,
                 completionProvider,
-                "'", "[", "." //asdf
+                "'", "[", ".", '"'
             ));
 
         // tslint:disable-next-line:no-suspicious-comment
@@ -606,7 +606,12 @@ export class AzureRMTools {
                 return item;
             }*/
         };
-        ext.context.subscriptions.push(vscode.languages.registerCompletionItemProvider(parameterDocumentSelector, paramFileCompletionProvider, "'", "[", "."));
+        ext.context.subscriptions.push(
+            vscode.languages.registerCompletionItemProvider(
+                parameterDocumentSelector,
+                paramFileCompletionProvider,
+                "'", "[", ".", '"'
+            ));
 
         const definitionProvider: vscode.DefinitionProvider = {
             provideDefinition: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Definition | undefined => {

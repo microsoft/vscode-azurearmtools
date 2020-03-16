@@ -17,6 +17,7 @@ import { CaseInsensitiveMap } from "./CaseInsensitiveMap";
 import { assert } from "./fixed_assert";
 import * as language from "./Language";
 import * as basic from "./Tokenizer";
+import { assertNever } from "./util/assertNever";
 import { nonNullValue } from "./util/nonNull";
 import * as utilities from "./Utilities";
 
@@ -48,6 +49,14 @@ export enum TokenType {
     Null,
     Comment,
     Unrecognized
+}
+
+export enum Comments {
+    /**
+     * Default (parser generally ignores comments)
+     */
+    ignoreCommentTokens,
+    includeCommentTokens
 }
 
 /**
@@ -723,7 +732,7 @@ export class Property extends Value {
 
     public get __debugDisplay(): string {
         // tslint:disable-next-line: prefer-template
-        return this._name.toString() + ":" + (this.value instanceof Value ? this.value.__debugDisplay : String(this.value));
+        return this._name.quotedValue + ":" + (this.value instanceof Value ? this.value.__debugDisplay : String(this.value));
     }
 }
 
@@ -933,18 +942,23 @@ export class ParseResult {
         return this._lineLengths;
     }
 
-    public getAllTokensIncludingComments(): Token[] {
-        const tokens = this.tokens.concat(this.commentTokens);
-        tokens.sort((a, b) => a.span.startIndex - b.span.startIndex);
-        return tokens;
+    // Does no necessarily make a copy
+    public getTokens(commentBehavior: Comments): Token[] {
+        if (commentBehavior === Comments.includeCommentTokens) {
+            const tokens = this.tokens.concat(this.commentTokens);
+            tokens.sort((a, b) => a.span.startIndex - b.span.startIndex);
+            return tokens;
+        } else {
+            return this.tokens;
+        }
     }
 
-    public getLastTokenOnLine(line: number, includeCommentTokens: boolean): Token | undefined {
+    public getLastTokenOnLine(line: number, commentBehavior: Comments = Comments.ignoreCommentTokens): Token | undefined {
         //asdf test
         const startOfLineIndex = this.getCharacterIndex(line, 0);
         const lastLine = this.lineLengths.length - 1;
 
-        const tokens = includeCommentTokens ? this.getAllTokensIncludingComments() : this.tokens;
+        const tokens = this.getTokens(commentBehavior);
         if (line === lastLine) {
             // On last line, so return very last token
             return tokens[this._tokens.length - 1];
@@ -1052,13 +1066,67 @@ export class ParseResult {
         return tokens[tokens.length - 1];
     }
 
+    // Unlike getTokenAtCharacterIndex by itself, also handles the
+    // case of being at the end of a line comment ("// comment")
+    public getCommentTokenAtDocumentIndex(
+        characterIndex: number,
+        containsBehavior: language.Contains
+    ): Token | undefined {
+        // Check if we're inside a comment token
+        const token = this.getTokenAtCharacterIndex(
+            characterIndex,
+            Comments.includeCommentTokens);
+        if (token?.type === TokenType.Comment) {
+            switch (containsBehavior) {
+                case language.Contains.strict:
+                    return token; //asdf
+
+                case language.Contains.extended:
+                    return token; //asdf
+
+                case language.Contains.enclosed: //asdf test
+                    if (token.span.startIndex === characterIndex) {
+                        return undefined;
+                    }
+                    // if (characterIndex > token.span.endIndex) {
+                    //     return undefined; //asdf not getting hit
+                    // }
+                    return token;
+
+                default:
+                    assertNever(containsBehavior);
+            }
+        }
+
+        // Are we after a line comment on the same line (if we're on the \r or \n after
+        //   a line comment, the enclosing token is a whitespace token)
+        const line = this.getPositionFromCharacterIndex(characterIndex).line;
+        const lastTokenOnLineIncludingComments = this.getLastTokenOnLine(
+            line,
+            Comments.includeCommentTokens);
+        if (lastTokenOnLineIncludingComments
+            && lastTokenOnLineIncludingComments.type === TokenType.Comment
+            && lastTokenOnLineIncludingComments.toString().startsWith('//')
+            && lastTokenOnLineIncludingComments.span.startIndex < characterIndex
+        ) {
+            return lastTokenOnLineIncludingComments;
+        }
+
+        return undefined;
+    }
+
     /**
-     * Get the JSON Token that contains the provided characterIndex, if any (e.g. returns undefined if at whitespace or comment)
+     * Get the JSON Token that contains the provided characterIndex
+     * if any (returns undefined if at whitespace or comment)
+     * asdf what containsBehavior?
      */
-    public getTokenAtCharacterIndex(characterIndex: number, includeCommentTokens: boolean = false): Token | undefined {
+    public getTokenAtCharacterIndex(
+        characterIndex: number,
+        commentBehavior: Comments = Comments.includeCommentTokens
+    ): Token | undefined {
         assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);
 
-        const tokens = includeCommentTokens ? this.getAllTokensIncludingComments() : this.tokens;
+        const tokens = this.getTokens(commentBehavior);
         return ParseResult.getTokenAtCharacterIndex(tokens, characterIndex);
     }
 
@@ -1094,29 +1162,32 @@ export class ParseResult {
         return token;
     }
 
-    public getValueAtCharacterIndex(characterIndex: number): Value | undefined {
+    public getValueAtCharacterIndex(characterIndex: number, containsBehavior: language.Contains): Value | undefined {
         assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);
 
         let result: Value | undefined;
 
-        // Find the Value at the given character index via a binary search through the value tree
-        if (this.value && this.value.span.contains(characterIndex, true)) {
+        // Find the Value at the given character index by starting at the outside and finding the innermost
+        //   child that contains the point.
+        if (this.value && this.value.span.contains(characterIndex, containsBehavior)) {
             let current: Value = this.value;
 
             while (!result) {
                 const currentValue: Value = current;
 
+                // tslint:disable-next-line:no-suspicious-comment
+                // TODO: This should not depend on knowledge of the various value types' implementations
                 if (currentValue instanceof Property) {
-                    if (currentValue.nameValue.span.contains(characterIndex, true)) {
+                    if (currentValue.nameValue.span.contains(characterIndex, containsBehavior)) {
                         current = currentValue.nameValue;
-                    } else if (currentValue.value && currentValue.value.span.contains(characterIndex, true)) {
+                    } else if (currentValue.value && currentValue.value.span.contains(characterIndex, containsBehavior)) {
                         current = currentValue.value;
                     }
                 } else if (currentValue instanceof ObjectValue) {
                     assert(currentValue.properties);
                     for (const property of currentValue.properties) {
                         assert(property);
-                        if (property.span.contains(characterIndex, true)) {
+                        if (property.span.contains(characterIndex, containsBehavior)) {
                             current = property;
                         }
                     }
@@ -1124,7 +1195,7 @@ export class ParseResult {
                     assert(currentValue.elements);
                     for (const element of currentValue.elements) {
                         assert(element);
-                        if (element.span.contains(characterIndex, true)) {
+                        if (element.span.contains(characterIndex, containsBehavior)) {
                             current = element;
                         }
                     }

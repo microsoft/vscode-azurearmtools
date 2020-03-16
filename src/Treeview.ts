@@ -13,6 +13,9 @@ import * as vscode from "vscode";
 import { armTemplateLanguageId, iconsPath, templateKeys } from "./constants";
 import { assert } from './fixed_assert';
 import * as Json from "./JSON";
+import * as language from "./Language";
+
+const Contains = language.Contains;
 
 const topLevelIcons: [string, string][] = [
     ["$schema", "label.svg"],
@@ -215,7 +218,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     }
                 } else {
                     let elementInfo = <IElementInfo>JSON.parse(element);
-                    let valueNode = elementInfo.current.value.start !== undefined ? this.tree.getValueAtCharacterIndex(elementInfo.current.value.start) : undefined;
+                    let valueNode = elementInfo.current.value.start !== undefined ? this.tree.getValueAtCharacterIndex(elementInfo.current.value.start, Contains.strict) : undefined;
 
                     // Value is an object and is collapsible
                     if (valueNode instanceof Json.ObjectValue && elementInfo.current.collapsible) {
@@ -295,7 +298,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
      */
     private getContextValue(elementInfo: IElementInfo): string | undefined {
         if (elementInfo.current.level === 1) {
-            const keyNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.key.start);
+            const keyNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.key.start, Contains.strict);
             if (keyNode instanceof Json.StringValue) {
                 return keyNode.unquotedValue;
             }
@@ -304,7 +307,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     }
 
     private getTreeNodeLabel(elementInfo: IElementInfo): string {
-        const keyNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.key.start);
+        const keyNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.key.start, Contains.strict);
 
         // Key is an object (e.g. a resource object)
         if (keyNode instanceof Json.ObjectValue) {
@@ -345,7 +348,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             return toFriendlyString(keyNode);
         } else if (elementInfo.current.value.start !== undefined) {
             // For other value types, display key and value since they won't be expandable
-            const valueNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.value.start);
+            const valueNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.value.start, Contains.strict);
 
             return `${keyNode instanceof Json.StringValue ? toFriendlyString(keyNode) : "?"}: ${toFriendlyString(valueNode)}`;
         }
@@ -466,7 +469,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     private getIconPath(elementInfo: IElementInfo): string | undefined {
 
         let icon: string | undefined;
-        const keyOrResourceNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.key.start);
+        const keyOrResourceNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.key.start, Contains.strict);
 
         // Is current element a root element?
         if (elementInfo.current.level === 1) {
@@ -477,7 +480,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             // Is current element an element of a root element?
 
             // Get root value
-            const rootNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.root.key.start);
+            const rootNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.root.key.start, Contains.strict);
             if (rootNode) {
                 icon = this.getIcon(topLevelChildIconsByRootNode, rootNode.toString(), "");
             }
@@ -486,7 +489,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         // If resourceType element is found on resource objects set to specific resourceType Icon or else a default resource icon
         // tslint:disable-next-line: strict-boolean-expressions
         if (elementInfo.current.level && elementInfo.current.level > 1) {
-            const rootNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.root.key.start);
+            const rootNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.root.key.start, Contains.strict);
 
             if (elementInfo.current.key.kind === Json.ValueKind.ObjectValue &&
                 rootNode && rootNode.toString().toUpperCase() === "resources".toUpperCase() && keyOrResourceNode instanceof Json.ObjectValue) {

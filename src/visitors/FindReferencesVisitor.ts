@@ -105,7 +105,8 @@ export class FindReferencesVisitor extends Visitor {
                 break;
 
             case DefinitionKind.ParameterValue:
-                //asdf
+                // tslint:disable-next-line:no-suspicious-comment
+                // TODO: To implement
                 break;
 
             default:

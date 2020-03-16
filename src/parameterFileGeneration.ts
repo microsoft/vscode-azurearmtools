@@ -116,6 +116,7 @@ export function createParameterFromTemplateParameter(template: DeploymentTemplat
         + `}`;
 }
 
+//asdf
 // export async function addParameterToParameterFile(editor: TextEditor, template: DeploymentTemplate, parameter: IParameterDefinition): Promise<void> {
 //     const parameterText: string = createParameterProperty(template, parameter, defaultIndent);
 //     appendPropertyTextIntoObject(editor, parameterText);

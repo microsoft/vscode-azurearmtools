@@ -37,7 +37,6 @@ export { armTemplateLanguageId as armDeploymentLanguageId, armTemplateLanguageId
 export { __debugMarkPositionInString, __debugMarkRangeInString as __debugMarkSubstring } from "./src/debugMarkStrings";
 export { DeploymentTemplate } from "./src/DeploymentTemplate";
 export { Duration } from './src/Duration';
-export { createParameterFileContents, createParameterFromTemplateParameter as createParameterProperty } from './src/editParameterFile';
 export { ExpressionType } from "./src/ExpressionType";
 export { ext } from './src/extensionVariables';
 export { Histogram } from "./src/Histogram";
@@ -49,6 +48,7 @@ export { IParameterDefinition } from "./src/IParameterDefinition";
 export * from "./src/Language";
 export { LanguageServerState } from "./src/languageclient/startArmLanguageServer";
 export { ParameterDefinition } from "./src/ParameterDefinition";
+export { createParameterFileContents, createParameterFromTemplateParameter as createParameterProperty } from './src/parameterFileGeneration';
 export { DeploymentFileMapping } from "./src/parameterFiles/DeploymentFileMapping";
 export { DeploymentParameters } from "./src/parameterFiles/DeploymentParameters";
 export { mayBeMatchingParameterFile } from "./src/parameterFiles/parameterFiles";

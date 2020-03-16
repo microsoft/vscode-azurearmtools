@@ -142,15 +142,17 @@ export class PositionContext {
         });
     }
 
+    // NOTE: Includes character after end index //asdf?
     public get jsonToken(): Json.Token | undefined {
         return this._jsonToken.getOrCacheValue(() => {
             return this._deploymentTemplate.getJSONTokenAtDocumentCharacterIndex(this.documentCharacterIndex);
         });
     }
 
+    // NOTE: Includes character after end index
     public get jsonValue(): Json.Value | undefined {
         return this._jsonValue.getOrCacheValue(() => {
-            return this._deploymentTemplate.getJSONValueAtDocumentCharacterIndex(this.documentCharacterIndex);
+            return this._deploymentTemplate.getJSONValueAtDocumentCharacterIndex(this.documentCharacterIndex, language.Contains.extended);
         });
     }
 
@@ -198,7 +200,7 @@ export class PositionContext {
 
             const tleFuncCall: TLE.FunctionCallValue | undefined = TLE.asFunctionCallValue(tleInfo.tleValue);
             if (tleFuncCall) {
-                if (tleFuncCall.namespaceToken && tleFuncCall.namespaceToken.span.contains(tleCharacterIndex)) {
+                if (tleFuncCall.namespaceToken && tleFuncCall.namespaceToken.span.contains(tleCharacterIndex, language.Contains.strict)) {
                     // Inside the namespace of a user-function reference
                     const ns = tleFuncCall.namespaceToken.stringValue;
                     const nsDefinition = scope.getFunctionNamespaceDefinition(ns);
@@ -206,7 +208,7 @@ export class PositionContext {
                         const referenceSpan: language.Span = tleFuncCall.namespaceToken.span.translate(this.jsonTokenStartIndex);
                         return { definition: nsDefinition, referenceSpan };
                     }
-                } else if (tleFuncCall.nameToken && tleFuncCall.nameToken.span.contains(tleCharacterIndex)) {
+                } else if (tleFuncCall.nameToken && tleFuncCall.nameToken.span.contains(tleCharacterIndex, language.Contains.strict)) {
                     if (tleFuncCall.namespaceToken) {
                         // Inside the name of a user-function reference
                         const ns = tleFuncCall.namespaceToken.stringValue;
@@ -418,7 +420,7 @@ export class PositionContext {
      */
     // tslint:disable-next-line: max-func-body-length cyclomatic-complexity // Pretty straightforward, don't think further refactoring is important
     private getFunctionCallCompletions(tleValue: TLE.FunctionCallValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
-        assert(tleValue.getSpan().contains(tleCharacterIndex, true), "Position should be inside the function call, or right after it");
+        assert(tleValue.getSpan().contains(tleCharacterIndex, language.Contains.extended), "Position should be inside the function call, or right after it");
 
         const namespaceName: string | undefined = tleValue.namespaceToken ? tleValue.namespaceToken.stringValue : undefined;
         // tslint:disable-next-line: strict-boolean-expressions
@@ -432,7 +434,7 @@ export class PositionContext {
         let completeBuiltinFunctions: boolean;
         let completeUserFunctions: boolean;
 
-        if (tleValue.nameToken && tleValue.nameToken.span.contains(tleCharacterIndex, true)) {
+        if (tleValue.nameToken && tleValue.nameToken.span.contains(tleCharacterIndex, language.Contains.extended)) {
             // The caret is inside the function's name (or a namespace before the period has been typed), so one of
             // three possibilities.
             tleTokenToComplete = tleValue.nameToken;
@@ -464,7 +466,7 @@ export class PositionContext {
             completeNamespaces = false;
             completeBuiltinFunctions = false;
             completeUserFunctions = true;
-        } else if (tleValue.namespaceToken && tleValue.periodToken && tleValue.namespaceToken.span.contains(tleCharacterIndex, true)) {
+        } else if (tleValue.namespaceToken && tleValue.periodToken && tleValue.namespaceToken.span.contains(tleCharacterIndex, language.Contains.extended)) {
             // "name<CURSOR>space.function"
             //   The caret is inside the UDF's namespace (e.g., the namespace and at least a period already exist in the call).
             //

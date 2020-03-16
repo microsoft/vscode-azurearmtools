@@ -7,11 +7,11 @@ import { CachedValue } from "../CachedValue";
 import * as Completion from "../Completion";
 import { __debugMarkPositionInString } from "../debugMarkStrings";
 import { DeploymentTemplate } from "../DeploymentTemplate";
-import { createParameterFromTemplateParameter } from "../editParameterFile";
 import { assert } from '../fixed_assert';
 import { HoverInfo } from "../Hover";
 import * as Json from "../JSON";
 import * as language from "../Language";
+import { createParameterFromTemplateParameter } from "../parameterFileGeneration";
 import { IReferenceSite } from "../PositionContext";
 import { nonNullValue } from "../util/nonNull";
 import { DeploymentParameters } from "./DeploymentParameters";
@@ -122,15 +122,17 @@ export class ParametersPositionContext {
         });
     }
 
+    // NOTE: Includes character after end index asdf ??
     public get jsonToken(): Json.Token | undefined {
         return this._jsonToken.getOrCacheValue(() => {
             return this._deploymentParameters.getJSONTokenAtDocumentCharacterIndex(this.documentCharacterIndex);
         });
     }
 
+    // NOTE: Includes character after end index
     public get jsonValue(): Json.Value | undefined {
         return this._jsonValue.getOrCacheValue(() => {
-            return this._deploymentParameters.getJSONValueAtDocumentCharacterIndex(this.documentCharacterIndex);
+            return this._deploymentParameters.getJSONValueAtDocumentCharacterIndex(this.documentCharacterIndex, language.Contains.extended);
         });
     }
 
@@ -305,78 +307,20 @@ export class ParametersPositionContext {
             return false;
         }
 
-        //const jsonValueRightAfterCursor = this.jsonValue;
-        if (this.documentCharacterIndex === 0) {
+        const enclosingJsonValue = this._deploymentParameters.jsonParseResult.getValueAtCharacterIndex(
+            this.documentCharacterIndex,
+            language.Contains.enclosed);
+
+        if (enclosingJsonValue !== this._deploymentParameters.parametersObjectValue) {
+            // Directly-enclosing JSON value/object at the cursor is not the "parameters" object
+            // (either it's outside it, or it's within a subvalue like an existing parameter)
             return false;
         }
 
-        const jsonValueRightAfterCursor = this._deploymentParameters.jsonParseResult.getValueAtCharacterIndex(
-            this.documentCharacterIndex - 1);
-
-        if (jsonValueRightAfterCursor !== this._deploymentParameters.parametersObjectValue) {
-            // JSON value at the cursor is not the "parameters" object (either it's
-            // outside it, or it's within a subvalue like an existing parameter)
-            return false;
-        }
-
-        // // When the cursor is directly on the beginning curly brace of the "parameters"
-        // // object:
-        // //
-        // //    "parameters": <HERE>{
-        // //    }
-        // //
-        // // ... the jsonValue at <HERE> will be the parameters object, but you can' start
-        // // inserting a new parameter until *after* the beginning brace.
-        // if (jsonValueRightAfterCursor.startIndex === this.documentCharacterIndex) {
-        //     return false;
-        // }
-
-        // // When the cursor is directly after the end curly brace of the "parameters"
-        // // object:
-        // //
-        // //    "parameters": {
-        // //    }<HERE>
-        // //
-        // // ... the jsonValue at <HERE> will still be the parameters object (seems surprising asdf),
-        // // but obviously should return false
-        // if (this.documentCharacterIndex > jsonValueRightAfterCursor.span.endIndex) {
-        //     return false;
-        // }
-
-        // Check if we're past the start of a comment
-        //assert(this.documentCharacterIndex > 0);
-        const currentRightAfterCursor = this._deploymentParameters.jsonParseResult.getTokenAtCharacterIndex(//ASDF
-            // Use -1 because we want to allow inserting at <HERE> below, but that position is "in"
-            //   the comment asdf remove
-            //
-            //    "parameters": {
-            //        <HERE>// This is a comment
-            //    }
-            this.documentCharacterIndex - 1, //asdf
-            true // includeCommentTokens
-        );
-        if (currentRightAfterCursor && currentRightAfterCursor.type === Json.TokenType.Comment) {
-            {
-                if (currentRightAfterCursor.span.startIndex === this.documentCharacterIndex) {
-                    return true;
-                }
-                if (this.documentCharacterIndex > currentRightAfterCursor.span.endIndex) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        // Are we after a line comment on the same line (i.e. on the \r or \n after it)
-        const lastTokenOnLine = this._deploymentParameters.jsonParseResult.getLastTokenOnLine(
-            this.documentLineIndex,
-            true  // includeCommentTokens
-        );
-        if (lastTokenOnLine
-            && lastTokenOnLine.type === Json.TokenType.Comment
-            && lastTokenOnLine.toString().startsWith('//')
-            && lastTokenOnLine.span.startIndex < this.documentCharacterIndex
+        // Check if we're inside a comment
+        if (!!this._deploymentParameters.jsonParseResult.getCommentTokenAtDocumentIndex(
+            this.documentCharacterIndex,
+            language.Contains.enclosed)
         ) {
             return false;
         }
