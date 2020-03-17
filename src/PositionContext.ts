@@ -4,11 +4,13 @@
 
 // tslint:disable:max-line-length
 
+import { Uri } from "vscode";
 import { Language } from "../extension.bundle";
 import { AzureRMAssets, BuiltinFunctionMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
 import * as Completion from "./Completion";
 import { templateKeys } from "./constants";
+import { DeploymentDoc } from "./DeploymentDoc";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { assert } from './fixed_assert';
 import { IFunctionMetadata, IFunctionParameterMetadata } from "./IFunctionMetadata";
@@ -51,6 +53,11 @@ export interface IReferenceSite {
      * The definition that the reference refers to
      */
     definition: INamedDefinition;
+
+    /**
+     * The document that contains the definition
+     */
+    definitionDoc: DeploymentDoc;
 }
 
 // tslint:disable-next-line:no-suspicious-comment
@@ -75,7 +82,7 @@ export class PositionContext extends DocumentPositionContext {
     }
 
     public get document(): DeploymentTemplate {
-        return <DeploymentTemplate>this._document;
+        return <DeploymentTemplate>super.document;
     }
 
     /**
@@ -109,6 +116,7 @@ export class PositionContext extends DocumentPositionContext {
         if (tleInfo) {
             const scope = tleInfo.scope;
             const tleCharacterIndex = tleInfo.tleCharacterIndex;
+            const definitionUri: Uri = this.document.documentId;
 
             const tleFuncCall: TLE.FunctionCallValue | undefined = TLE.asFunctionCallValue(tleInfo.tleValue);
             if (tleFuncCall) {
@@ -118,7 +126,7 @@ export class PositionContext extends DocumentPositionContext {
                     const nsDefinition = scope.getFunctionNamespaceDefinition(ns);
                     if (nsDefinition) {
                         const referenceSpan: language.Span = tleFuncCall.namespaceToken.span.translate(this.jsonTokenStartIndex);
-                        return { definition: nsDefinition, referenceSpan };
+                        return { definition: nsDefinition, referenceSpan, definitionUri };
                     }
                 } else if (tleFuncCall.nameToken && tleFuncCall.nameToken.span.contains(tleCharacterIndex, language.Contains.strict)) {
                     if (tleFuncCall.namespaceToken) {
@@ -129,14 +137,14 @@ export class PositionContext extends DocumentPositionContext {
                         const userFunctiondefinition = scope.getUserFunctionDefinition(ns, name);
                         if (nsDefinition && userFunctiondefinition) {
                             const referenceSpan: language.Span = tleFuncCall.nameToken.span.translate(this.jsonTokenStartIndex);
-                            return { definition: userFunctiondefinition, referenceSpan };
+                            return { definition: userFunctiondefinition, referenceSpan, definitionUri };
                         }
                     } else {
                         // Inside a reference to a built-in function
                         const functionMetadata: BuiltinFunctionMetadata | undefined = AzureRMAssets.getFunctionMetadataFromName(tleFuncCall.nameToken.stringValue);
                         if (functionMetadata) {
                             const referenceSpan: language.Span = tleFuncCall.nameToken.span.translate(this.jsonTokenStartIndex);
-                            return { definition: functionMetadata, referenceSpan };
+                            return { definition: functionMetadata, referenceSpan, definitionUri };
                         }
                     }
                 }
@@ -149,14 +157,14 @@ export class PositionContext extends DocumentPositionContext {
                     const parameterDefinition: IParameterDefinition | undefined = scope.getParameterDefinition(tleStringValue.toString());
                     if (parameterDefinition) {
                         const referenceSpan: language.Span = tleStringValue.getSpan().translate(this.jsonTokenStartIndex);
-                        return { definition: parameterDefinition, referenceSpan };
+                        return { definition: parameterDefinition, referenceSpan, definitionUri };
                     }
                 } else if (tleStringValue.isVariablesArgument()) {
                     const variableDefinition: IVariableDefinition | undefined = scope.getVariableDefinition(tleStringValue.toString());
                     if (variableDefinition) {
                         // Inside the 'xxx' of a variables('xxx') reference
                         const referenceSpan: language.Span = tleStringValue.getSpan().translate(this.jsonTokenStartIndex);
-                        return { definition: variableDefinition, referenceSpan };
+                        return { definition: variableDefinition, referenceSpan, definitionUri };
                     }
                 }
             }
@@ -165,9 +173,6 @@ export class PositionContext extends DocumentPositionContext {
         return undefined;
     }
 
-    /**
-     * Get completion items for our position in the document
-     */
     public getCompletionItems(): Completion.Item[] {
         const tleInfo = this.tleInfo;
         if (!tleInfo) {

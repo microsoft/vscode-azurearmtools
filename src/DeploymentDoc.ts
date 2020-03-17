@@ -2,12 +2,13 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { Uri } from "vscode";
 import { CachedValue } from "./CachedValue";
 import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { ReferenceList } from "./ReferenceList";
-import { nonNullOrEmptyValue } from "./util/nonNull";
+import { nonNullValue } from "./util/nonNull";
 
 /**
  * Represents a deployment-related JSON file
@@ -27,8 +28,8 @@ export abstract class DeploymentDoc {
      * @param _documentText The string text of the document.
      * @param _documentId A unique identifier for this document. Usually this will be a URI to the document.
      */
-    constructor(private _documentText: string, private _documentId: string) {
-        nonNullOrEmptyValue(_documentId, "_documentId");
+    constructor(private _documentText: string, private _documentId: Uri) {
+        nonNullValue(_documentId, "_documentId");
 
         this._jsonParseResult = Json.parse(_documentText);
         this._topLevelValue = Json.asObjectValue(this._jsonParseResult.value);
@@ -44,7 +45,7 @@ export abstract class DeploymentDoc {
     /**
      * The unique identifier for this deployment template. Usually this will be a URI to the document.
      */
-    public get documentId(): string {
+    public get documentId(): Uri {
         return this._documentId;
     }
 
