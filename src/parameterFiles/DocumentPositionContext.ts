@@ -11,6 +11,7 @@ import { HoverInfo } from "../Hover";
 import * as Json from "../JSON";
 import * as language from "../Language";
 import { IReferenceSite } from "../PositionContext";
+import { ReferenceList } from "../ReferenceList";
 import { InitializeBeforeUse } from "../util/InitializeBeforeUse";
 import { nonNullValue } from "../util/nonNull";
 
@@ -26,7 +27,7 @@ export abstract class DocumentPositionContext {
     private _jsonToken: CachedValue<Json.Token | undefined> = new CachedValue<Json.Token>();
     private _jsonValue: CachedValue<Json.Value | undefined> = new CachedValue<Json.Value | undefined>();
 
-    protected constructor(protected _document: DeploymentDoc) {
+    protected constructor(private _document: DeploymentDoc) {
         nonNullValue(this._document, "document");
     }
 
@@ -49,6 +50,10 @@ export abstract class DocumentPositionContext {
 
         this._documentCharacterIndex.setValue(documentCharacterIndex);
         this._documentPosition.setValue(this._document.getDocumentPosition(documentCharacterIndex));
+    }
+
+    public get document(): DeploymentDoc {
+        return this._document;
     }
 
     /**
@@ -111,6 +116,10 @@ export abstract class DocumentPositionContext {
      * return an object with information about this reference and the corresponding definition
      */
     public abstract getReferenceSiteInfo(): IReferenceSite | undefined;
+
+    // Returns undefined if references are not supported at this location.
+    // Returns empty list if supported but none found
+    public abstract getReferences(): ReferenceList | undefined;
 
     public getHoverInfo(): HoverInfo | undefined {
         const reference: IReferenceSite | undefined = this.getReferenceSiteInfo();

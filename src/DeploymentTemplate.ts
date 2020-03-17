@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { Uri } from "vscode";
 import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { CachedPromise } from "./CachedPromise";
 import { CachedValue } from "./CachedValue";
@@ -18,7 +19,6 @@ import { isArmSchema } from "./schemas";
 import { ScopeContext, TemplateScope } from "./TemplateScope";
 import * as TLE from "./TLE";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
-import { nonNullOrEmptyValue } from "./util/nonNull";
 import { IVariableDefinition, TopLevelCopyBlockVariableDefinition, TopLevelVariableDefinition } from "./VariableDefinition";
 import { FindReferencesVisitor } from "./visitors/FindReferencesVisitor";
 import { FunctionCountVisitor } from "./visitors/FunctionCountVisitor";
@@ -50,9 +50,8 @@ export class DeploymentTemplate extends DeploymentDoc {
      * @param _documentText The string text of the document.
      * @param _documentId A unique identifier for this document. Usually this will be a URI to the document.
      */
-    constructor(documentText: string, documentId: string) {
+    constructor(documentText: string, documentId: Uri) {
         super(documentText, documentId);
-        nonNullOrEmptyValue(documentId, "documentId");
 
         this._topLevelScope = new TemplateScope(
             ScopeContext.TopLevel,

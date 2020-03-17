@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { Uri } from "vscode";
 import { CachedValue } from "../CachedValue";
 import { templateKeys } from "../constants";
 import { DeploymentDoc } from "../DeploymentDoc";
@@ -10,7 +11,6 @@ import { INamedDefinition } from "../INamedDefinition";
 import * as Json from "../JSON";
 import { ReferenceList } from "../ReferenceList";
 import { isParametersSchema } from "../schemas";
-import { nonNullOrEmptyValue } from "../util/nonNull";
 import { ParametersPositionContext } from "./ParametersPositionContext";
 import { ParameterValueDefinition } from "./ParameterValueDefinition";
 
@@ -27,9 +27,8 @@ export class DeploymentParameters extends DeploymentDoc {
      * @param _documentText The string text of the document.
      * @param _documentId A unique identifier for this document. Usually this will be a URI to the document.
      */
-    constructor(documentText: string, documentId: string) {
+    constructor(documentText: string, documentId: Uri) {
         super(documentText, documentId);
-        nonNullOrEmptyValue(documentId, "documentId");
     }
 
     public hasParametersUri(): boolean {
@@ -64,6 +63,12 @@ export class DeploymentParameters extends DeploymentDoc {
     }
 
     public findReferences(definition: INamedDefinition): ReferenceList {
-        return new ReferenceList(definition.definitionKind);
+        const results: ReferenceList = new ReferenceList(definition.definitionKind);
+
+        // The only reference possible is the definition itself (from the template file)
+        if (definition.nameValue) {
+            results.add(definition.nameValue.unquotedSpan);
+        }
+        return results;
     }
 }

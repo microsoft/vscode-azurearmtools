@@ -8,6 +8,7 @@ import { DeploymentTemplate } from "../DeploymentTemplate";
 import * as language from "../Language";
 import { createParameterFromTemplateParameter } from "../parameterFileGeneration";
 import { IReferenceSite } from "../PositionContext";
+import { ReferenceList } from "../ReferenceList";
 import { DeploymentParameters } from "./DeploymentParameters";
 import { DocumentPositionContext } from "./DocumentPositionContext";
 
@@ -53,22 +54,49 @@ export class ParametersPositionContext extends DocumentPositionContext {
     }
 
     public get document(): DeploymentParameters {
-        return <DeploymentParameters>this._document;
+        return <DeploymentParameters>super.document;
     }
 
-    /**
+    /** asdf test
      * If this position is inside an expression, inside a reference to an interesting function/parameter/etc, then
      * return an object with information about this reference and the corresponding definition
      */
     public getReferenceSiteInfo(): IReferenceSite | undefined {
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO
+        if (!this._associatedTemplate) {
+            return undefined;
+        }
+
+        for (let paramValue of this.document.parameterValues) {
+            // Are we inside the name of a parameter?
+            if (paramValue.nameValue.span.contains(this.documentCharacterIndex, language.Contains.extended)) {
+                // Does it have an associated parameter definition in the template?
+                const paramDef = this._associatedTemplate?.topLevelScope.getParameterDefinition(paramValue.nameValue.unquotedValue);
+                if (paramDef) {
+                    return {
+                        referenceSpan: paramValue.nameValue.span,
+                        definition: paramDef,
+                        definitionDoc: this._associatedTemplate
+                    };
+                }
+
+                break;
+            }
+        }
+
         return undefined;
     }
 
-    /**
-     * Get completion items for our position in the document
-     */
+    // Returns undefined if references are not supported at this location.
+    // Returns empty list if supported but none found asdf test
+    public getReferences(): ReferenceList | undefined {
+        const refInfo = this.getReferenceSiteInfo();
+        if (refInfo) {
+            return this.document.findReferences(refInfo.definition);
+        }
+
+        return undefined;
+    }
+
     public getCompletionItems(): Completion.Item[] {
         let completions: Completion.Item[] = [];
 

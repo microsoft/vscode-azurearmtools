@@ -48,7 +48,7 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
 
   // Verify it's a template file (have to read in entire file to do full validation)
   const contents = (await fse.readFile(templateUri.fsPath, { encoding: "utf8" })).toString();
-  const template: DeploymentTemplate = new DeploymentTemplate(contents, "Check file is template");
+  const template: DeploymentTemplate = new DeploymentTemplate(contents, Uri.file("Check file is template"));
   if (!template.hasArmSchemaUri()) {
     throw new Error(`"${templateUri.fsPath}" does not appear to be an Azure Resource Manager deployment template file.`);
   }
