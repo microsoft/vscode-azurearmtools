@@ -1776,7 +1776,7 @@ suite("User functions", () => {
             }
         };
 
-        const allBuiltinsExpectedCompletions = allTestDataExpectedCompletions(0, 0).map(c => <[string, string]>[c.name, c.insertText]);
+        const allBuiltinsExpectedCompletions = allTestDataExpectedCompletions(0, 0).map(c => <[string, string]>[c.label, c.insertText]);
         const allNamespaceExpectedCompletions: [string, string][] = [["mixedCaseNamespace", "mixedCaseNamespace.$0"], ["udf", "udf.$0"]];
         const allUdfNsFunctionsCompletions: [string, string][] = [
             ["udf.mixedCaseFunc", "mixedCaseFunc()$0"],

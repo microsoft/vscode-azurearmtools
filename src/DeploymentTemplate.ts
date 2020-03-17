@@ -6,7 +6,7 @@ import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { CachedPromise } from "./CachedPromise";
 import { CachedValue } from "./CachedValue";
 import { templateKeys } from "./constants";
-import { DeploymentFile } from "./DeploymentFile";
+import { DeploymentDoc } from "./DeploymentDoc";
 import { Histogram } from "./Histogram";
 import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
@@ -29,7 +29,7 @@ import { UndefinedParameterAndVariableVisitor } from "./visitors/UndefinedParame
 import * as UndefinedVariablePropertyVisitor from "./visitors/UndefinedVariablePropertyVisitor";
 import * as UnrecognizedFunctionVisitor from "./visitors/UnrecognizedFunctionVisitor";
 
-export class DeploymentTemplate extends DeploymentFile {
+export class DeploymentTemplate extends DeploymentDoc {
     // The top-level parameters and variables (as opposed to those in user functions and deployment resources)
     private _topLevelScope: TemplateScope;
 

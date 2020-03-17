@@ -9,22 +9,20 @@ import { AzureRMAssets, BuiltinFunctionMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
 import * as Completion from "./Completion";
 import { templateKeys } from "./constants";
-import { __debugMarkPositionInString } from "./debugMarkStrings";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { assert } from './fixed_assert';
-import { HoverInfo } from "./Hover";
 import { IFunctionMetadata, IFunctionParameterMetadata } from "./IFunctionMetadata";
 import { INamedDefinition } from "./INamedDefinition";
 import { IParameterDefinition } from "./IParameterDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
+import { DocumentPositionContext } from "./parameterFiles/DocumentPositionContext";
 import * as Reference from "./ReferenceList";
 import { TemplateScope } from "./TemplateScope";
 import * as TLE from "./TLE";
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
 import { UserFunctionMetadata } from "./UserFunctionMetadata";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
-import { nonNullValue } from "./util/nonNull";
 import { IVariableDefinition } from "./VariableDefinition";
 
 /**
@@ -55,111 +53,29 @@ export interface IReferenceSite {
     definition: INamedDefinition;
 }
 
+// tslint:disable-next-line:no-suspicious-comment
+// TODO: Rename to DeploymentTemplatePositionContext
 /**
  * Represents a position inside the snapshot of a deployment template, plus all related information
  * that can be parsed and analyzed about it
  */
-export class PositionContext {
-    private _deploymentTemplate: DeploymentTemplate;
-    private _givenDocumentPosition?: language.Position;
-    private _documentPosition: CachedValue<language.Position> = new CachedValue<language.Position>();
-    private _givenDocumentCharacterIndex?: number;
-    private _documentCharacterIndex: CachedValue<number> = new CachedValue<number>();
-    private _jsonToken: CachedValue<Json.Token | undefined> = new CachedValue<Json.Token>();
-    private _jsonValue: CachedValue<Json.Value | undefined> = new CachedValue<Json.Value | undefined>();
+export class PositionContext extends DocumentPositionContext {
     private _tleInfo: CachedValue<TleInfo | undefined> = new CachedValue<TleInfo | undefined>();
 
-    private constructor(deploymentTemplate: DeploymentTemplate) {
-        this._deploymentTemplate = deploymentTemplate;
-    }
-
     public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number): PositionContext {
-        nonNullValue(deploymentTemplate, "deploymentTemplate");
-        nonNullValue(documentLineIndex, "documentLineIndex");
-        assert(documentLineIndex >= 0, "documentLineIndex cannot be negative");
-        assert(documentLineIndex < deploymentTemplate.lineCount, `documentLineIndex (${documentLineIndex}) cannot be greater than or equal to the deployment template's line count (${deploymentTemplate.lineCount})`);
-        nonNullValue(documentColumnIndex, "documentColumnIndex");
-        assert(documentColumnIndex >= 0, "documentColumnIndex cannot be negative");
-        assert(documentColumnIndex <= deploymentTemplate.getMaxColumnIndex(documentLineIndex), `documentColumnIndex (${documentColumnIndex}) cannot be greater than the line's maximum index (${deploymentTemplate.getMaxColumnIndex(documentLineIndex)})`);
-
         let context = new PositionContext(deploymentTemplate);
-        context._givenDocumentPosition = new language.Position(documentLineIndex, documentColumnIndex);
+        context.initFromDocumentLineAndColumnIndices(documentLineIndex, documentColumnIndex);
         return context;
-
     }
+
     public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplate, documentCharacterIndex: number): PositionContext {
-        nonNullValue(deploymentTemplate, "deploymentTemplate");
-        nonNullValue(documentCharacterIndex, "documentCharacterIndex");
-        assert(documentCharacterIndex >= 0, "documentCharacterIndex cannot be negative");
-        assert(documentCharacterIndex <= deploymentTemplate.maxCharacterIndex, `documentCharacterIndex (${documentCharacterIndex}) cannot be greater than the maximum character index (${deploymentTemplate.maxCharacterIndex})`);
-
         let context = new PositionContext(deploymentTemplate);
-        context._givenDocumentCharacterIndex = documentCharacterIndex;
+        context.initFromDocumentCharacterIndex(documentCharacterIndex);
         return context;
     }
 
-    /**
-     * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
-     */
-    public get __debugDisplay(): string {
-        let docText: string = this._deploymentTemplate.documentText;
-        return __debugMarkPositionInString(docText, this.documentCharacterIndex, "<CURSOR>");
-    }
-
-    /**
-     * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
-     */
-    public get __debugFullDisplay(): string {
-        let docText: string = this._deploymentTemplate.documentText;
-        return __debugMarkPositionInString(docText, this.documentCharacterIndex, "<CURSOR>", Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
-    }
-
-    public get documentPosition(): language.Position {
-        return this._documentPosition.getOrCacheValue(() => {
-            if (this._givenDocumentPosition) {
-                return this._givenDocumentPosition;
-            } else {
-                return this._deploymentTemplate.getDocumentPosition(this.documentCharacterIndex);
-            }
-        });
-    }
-
-    public get documentLineIndex(): number {
-        return this.documentPosition.line;
-    }
-
-    public get documentColumnIndex(): number {
-        return this.documentPosition.column;
-    }
-
-    public get documentCharacterIndex(): number {
-        return this._documentCharacterIndex.getOrCacheValue(() => {
-            if (typeof this._givenDocumentCharacterIndex === "number") {
-                return this._givenDocumentCharacterIndex;
-            } else {
-                return this._deploymentTemplate.getDocumentCharacterIndex(this.documentLineIndex, this.documentColumnIndex);
-            }
-        });
-    }
-
-    // NOTE: Includes character after end index //asdf?
-    public get jsonToken(): Json.Token | undefined {
-        return this._jsonToken.getOrCacheValue(() => {
-            return this._deploymentTemplate.getJSONTokenAtDocumentCharacterIndex(this.documentCharacterIndex);
-        });
-    }
-
-    // NOTE: Includes character after end index
-    public get jsonValue(): Json.Value | undefined {
-        return this._jsonValue.getOrCacheValue(() => {
-            return this._deploymentTemplate.getJSONValueAtDocumentCharacterIndex(this.documentCharacterIndex, language.Contains.extended);
-        });
-    }
-
-    public get jsonTokenStartIndex(): number {
-        assert(!!this.jsonToken, "The jsonTokenStartIndex can only be requested when the PositionContext is inside a JSONToken.");
-        // tslint:disable-next-line:no-non-null-assertion no-unnecessary-type-assertion // Asserted
-        return this.jsonToken!.span.startIndex;
+    public get document(): DeploymentTemplate {
+        return <DeploymentTemplate>this._document;
     }
 
     /**
@@ -175,17 +91,13 @@ export class PositionContext {
                 && this.jsonValue
                 && this.jsonValue instanceof Json.StringValue
             ) {
-                const tleParseResult = this._deploymentTemplate.getTLEParseResultFromJsonStringValue(this.jsonValue);
+                const tleParseResult = this.document.getTLEParseResultFromJsonStringValue(this.jsonValue);
                 const tleCharacterIndex = this.documentCharacterIndex - this.jsonTokenStartIndex;
                 const tleValue = tleParseResult.getValueAtCharacterIndex(tleCharacterIndex);
                 return new TleInfo(tleParseResult, tleCharacterIndex, tleValue, tleParseResult.scope);
             }
             return undefined;
         });
-    }
-
-    public get emptySpanAtDocumentCharacterIndex(): language.Span {
-        return new language.Span(this.documentCharacterIndex, 0);
     }
 
     /**
@@ -248,17 +160,6 @@ export class PositionContext {
                     }
                 }
             }
-        }
-
-        return undefined;
-    }
-
-    public getHoverInfo(): HoverInfo | undefined {
-        const reference: IReferenceSite | undefined = this.getReferenceSiteInfo();
-        if (reference) {
-            const span = reference.referenceSpan;
-            const definition = reference.definition;
-            return new HoverInfo(definition.usageInfo, span);
         }
 
         return undefined;
@@ -575,7 +476,7 @@ export class PositionContext {
         if (tleInfo) { // If we're inside a string (whether an expression or not)
             const refInfo = this.getReferenceSiteInfo();
             if (refInfo) {
-                return this._deploymentTemplate.findReferences(refInfo.definition);
+                return this.document.findReferences(refInfo.definition);
             }
 
             // Handle when we're directly on the name of a parameter/variable/etc definition (as opposed to a reference)
@@ -587,26 +488,26 @@ export class PositionContext {
                 // Is it a parameter definition?
                 const parameterDefinition: IParameterDefinition | undefined = scope.getParameterDefinition(unquotedString);
                 if (parameterDefinition && parameterDefinition.nameValue === jsonStringValue) {
-                    return this._deploymentTemplate.findReferences(parameterDefinition);
+                    return this.document.findReferences(parameterDefinition);
                 }
 
                 // Is it a variable definition?
                 const variableDefinition: IVariableDefinition | undefined = scope.getVariableDefinition(unquotedString);
                 if (variableDefinition && variableDefinition.nameValue === jsonStringValue) {
-                    return this._deploymentTemplate.findReferences(variableDefinition);
+                    return this.document.findReferences(variableDefinition);
                 }
 
                 // Is it a user namespace definition?
                 const namespaceDefinition: UserFunctionNamespaceDefinition | undefined = scope.getFunctionNamespaceDefinition(unquotedString);
                 if (namespaceDefinition && namespaceDefinition.nameValue === jsonStringValue) {
-                    return this._deploymentTemplate.findReferences(namespaceDefinition);
+                    return this.document.findReferences(namespaceDefinition);
                 }
 
                 // Is it a user function definition inside any namespace?
                 for (let ns of scope.namespaceDefinitions) {
                     const userFunctionDefinition: UserFunctionDefinition | undefined = scope.getUserFunctionDefinition(ns.nameValue.unquotedValue, unquotedString);
                     if (userFunctionDefinition && userFunctionDefinition.nameValue === jsonStringValue) {
-                        return this._deploymentTemplate.findReferences(userFunctionDefinition);
+                        return this.document.findReferences(userFunctionDefinition);
                     }
                 }
             }

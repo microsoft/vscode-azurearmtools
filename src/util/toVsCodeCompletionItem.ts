@@ -4,15 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
+import { IActionContext } from 'vscode-azureextensionui';
 import * as Completion from '../Completion';
-import { DeploymentFile } from '../DeploymentFile';
-import { assert } from "../fixed_assert";
+import { DeploymentDoc } from '../DeploymentDoc';
+import { assertNever } from './assertNever';
 import { getVSCodeRangeFromSpan } from './vscodePosition';
 
-export function toVsCodeCompletionItem(deploymentFile: DeploymentFile, item: Completion.Item): vscode.CompletionItem {
+interface ICompletionActivated {
+    completionKind: string;
+    snippetName: string;
+}
+
+export function toVsCodeCompletionItem(deploymentFile: DeploymentDoc, item: Completion.Item): vscode.CompletionItem {
     const insertRange: vscode.Range = getVSCodeRangeFromSpan(deploymentFile, item.insertSpan);
 
-    const vscodeItem = new vscode.CompletionItem(item.name);
+    const vscodeItem = new vscode.CompletionItem(item.label);
     vscodeItem.range = insertRange;
     vscodeItem.insertText = new vscode.SnippetString(item.insertText);
     vscodeItem.detail = item.detail;
@@ -45,9 +51,26 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentFile, item: Com
             break;
 
         default:
-            assert.fail(`Unrecognized Completion.Type: ${item.kind}`);
-            break;
+            assertNever(item.kind);
     }
 
+    // Add a command to let us know when activated so we can send telemetry
+    vscodeItem.command = {
+        command: "azurerm-vscode-tools.completion-activated",
+        title: "completion activated", // won't ever be shown to the user
+        arguments: [
+            {
+                snippetName: item.snippetName,
+                completionKind: item.kind
+            }
+        ]
+    };
+
     return vscodeItem;
+}
+
+export function onCompletionActivated(actionContext: IActionContext, args: object): void {
+    const options = <ICompletionActivated>args ?? {};
+    actionContext.telemetry.properties.snippetName = options.snippetName;
+    actionContext.telemetry.properties.completionKind = options.completionKind;
 }

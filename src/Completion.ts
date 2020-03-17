@@ -13,7 +13,7 @@ import { IVariableDefinition } from "./VariableDefinition";
  */
 export class Item {
     constructor(
-        public readonly name: string,
+        public readonly label: string,
         public readonly insertText: string,
         public readonly insertSpan: language.Span,
         public readonly kind: CompletionKind,
@@ -25,7 +25,8 @@ export class Item {
         /**
          * A human-readable string that represents a doc-comment.
          */
-        public readonly documention?: string
+        public readonly documention?: string,
+        public readonly snippetName?: string
     ) {
     }
 

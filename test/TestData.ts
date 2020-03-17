@@ -45,7 +45,7 @@ export function testWithRealFunctionMetadata(expectation: string, callback?: (th
     return testWithPrep(expectation, [UseRealFunctionMetadata.instance], callback);
 }
 
-export const allTestDataCompletionNames = new Set<string>(allTestDataExpectedCompletions(0, 0).map(item => item.name));
+export const allTestDataCompletionNames = new Set<string>(allTestDataExpectedCompletions(0, 0).map(item => item.label));
 
 export function allTestDataExpectedCompletions(startIndex: number, length: number): Completion.Item[] {
     return [
