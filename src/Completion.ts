@@ -111,6 +111,6 @@ export enum CompletionKind {
     Namespace = "Namespace",
 
     // Parameter file completions
-    PropertyValue = "PropertyValue", //asdf
-    NewPropertyValue = "NewPropertyValue"//asdf
+    PropertyValue = "PropertyValue", // Parameter from the template file
+    NewPropertyValue = "NewPropertyValue" // New, unnamed parameter
 }

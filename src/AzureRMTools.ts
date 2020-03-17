@@ -11,7 +11,6 @@ import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
-import * as Completion from "./Completion";
 import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, extensionName, globalStateKeys } from "./constants";
 import { DeploymentDoc } from "./DeploymentDoc";
 import { DeploymentTemplate } from "./DeploymentTemplate";
@@ -200,7 +199,6 @@ export class AzureRMTools {
 
     private setDeploymentDoc(documentUri: vscode.Uri, deploymentDoc: DeploymentDoc | undefined): void {
         assert(documentUri);
-        assert(deploymentDoc);
         const normalizedPath = normalizePath(documentUri);
         if (deploymentDoc) {
             this._deploymentDocs.set(normalizedPath, deploymentDoc);
@@ -226,9 +224,11 @@ export class AzureRMTools {
         return file instanceof DeploymentParameters ? file : undefined;
     }
 
-    // tslint:disable-next-line:max-func-body-length asdf refactor
+    // tslint:disable-next-line:no-suspicious-comment
+    // TODO: refactor
+    // tslint:disable-next-line:max-func-body-length
     private updateDeploymentDoc(document: vscode.TextDocument): void {
-        // tslint:disable-next-line:max-func-body-length cyclomatic-complexity asdf
+        // tslint:disable-next-line:max-func-body-length cyclomatic-complexity
         callWithTelemetryAndErrorHandlingSync('updateDeploymentDocument', (actionContext: IActionContext): void => {
             actionContext.errorHandling.suppressDisplay = true;
             actionContext.telemetry.suppressIfSuccessful = true;
@@ -313,18 +313,18 @@ export class AzureRMTools {
                     }
 
                     // This could theoretically include time for parsing for a deployment template as well but isn't likely
-                    actionContext.telemetry.measurements.parseDurationInMilliseconds = stopwatch.duration.totalMilliseconds; //asdf
+                    actionContext.telemetry.measurements.parseDurationInMilliseconds = stopwatch.duration.totalMilliseconds;
 
                     if (treatAsDeploymentParameters) {
                         this.ensureDeploymentDocEventsHookedUp();
                         this.setDeploymentDoc(documentUri, deploymentParameters);
 
                         if (isNewlyOpened) {
-                            // A deployment template has been opened (as opposed to having been tabbed to) //asdf
+                            // A deployment template has been opened (as opposed to having been tabbed to)
 
                             // Telemetry for parameter file opened
                             // tslint:disable-next-line: no-floating-promises // Don't wait
-                            //asdf this.reportTemplateOpenedTelemetry(document, deploymentTemplate, stopwatch);
+                            this.reportParameterFileOpenedTelemetry(document, deploymentParameters, stopwatch);
 
                             // No guarantee that active editor is the one we're processing, ignore if not
                             if (editor && editor.document === document) {
@@ -334,7 +334,6 @@ export class AzureRMTools {
                             }
                         }
 
-                        //asdf this.reportDeploymentTemplateErrors(document, deploymentTemplate);
                         survey.registerActiveUse();
                     }
                 }
@@ -415,6 +414,29 @@ export class AzureRMTools {
 
         this.logFunctionCounts(deploymentTemplate);
         this.logResourceUsage(deploymentTemplate);
+    }
+
+    private async reportParameterFileOpenedTelemetry(
+        document: vscode.TextDocument,
+        deploymentParameters: DeploymentParameters,
+        stopwatch: Stopwatch
+    ): Promise<void> {
+        ext.reporter.sendTelemetryEvent(
+            "Parameter File Opened",
+            {
+                docLangId: document.languageId,
+                docExtension: path.extname(document.fileName),
+                schema: deploymentParameters.schemaUri ?? ""
+            },
+            {
+                documentSizeInCharacters: document.getText().length,
+                parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds,
+                lineCount: deploymentParameters.lineCount,
+                maxLineLength: deploymentParameters.getMaxLineLength(),
+                paramsCount: deploymentParameters.parametersObjectValue?.length ?? 0,
+                commentCount: deploymentParameters.getCommentCount(),
+                linkedTemplateFiles: this._mapping.getTemplateFile(document.uri) ? 1 : 0
+            });
     }
 
     private reportDeploymentTemplateErrors(document: vscode.TextDocument, deploymentTemplate: DeploymentTemplate): void {
@@ -808,33 +830,22 @@ export class AzureRMTools {
         const deploymentTemplate = this.getDeploymentTemplate(document);
         if (deploymentTemplate) {
             return callWithTelemetryAndErrorHandlingSync('provideCompletionItems', (actionContext: IActionContext): vscode.CompletionList | undefined => {
-                let properties = <TelemetryProperties & { completionKind?: string }>actionContext.telemetry.properties;
                 actionContext.telemetry.suppressIfSuccessful = true;
                 actionContext.errorHandling.suppressDisplay = true;
 
-                const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                let completionItemArray: Completion.Item[] = context.getCompletionItems();
-                const completionItems: vscode.CompletionItem[] = [];
-
-                // asdf consolidate
-                for (const completion of completionItemArray) {
-                    const vscodeItem = toVsCodeCompletionItem(deploymentTemplate, completion);
-                    properties.completionKind = typeof vscodeItem.kind === "number" ? vscode.CompletionItemKind[vscodeItem.kind] : undefined;
-
-                    completionItems.push(vscodeItem);
-
-                    return new vscode.CompletionList(completionItems, true);
-                }
+                const pc: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
+                const completionItems: vscode.CompletionItem[] =
+                    pc.getCompletionItems()
+                        .map(completion => toVsCodeCompletionItem(deploymentTemplate, completion));
+                return new vscode.CompletionList(completionItems, true);
             });
         }
     }
 
-    //asdf refactor with above
     private async onProvideParameterFileCompletions(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList | undefined> {
         const deploymentParameters = this.getDeploymentParameters(document);
         if (deploymentParameters) {
             return await callWithTelemetryAndErrorHandling('provideParamCompletionItems', async (actionContext: IActionContext): Promise<vscode.CompletionList | undefined> => {
-                let properties = <TelemetryProperties & { completionKind?: string }>actionContext.telemetry.properties;
                 actionContext.telemetry.suppressIfSuccessful = true;
                 actionContext.errorHandling.suppressDisplay = true;
 
@@ -848,18 +859,10 @@ export class AzureRMTools {
                     template = new DeploymentTemplate(contents, templateUri.toString());
                 }
 
-                const context: ParametersPositionContext = deploymentParameters.getContextFromDocumentLineAndColumnIndexes(position.line, position.character, template);
-                let completionItemArray: Completion.Item[] = context.getCompletionItems();
-                const completionItems: vscode.CompletionItem[] = [];
-
-                // asdf consolidate
-                for (const completion of completionItemArray) {
-                    const vscodeItem = toVsCodeCompletionItem(deploymentParameters, completion);
-                    // Add completion kind to telemetry asdf
-                    properties.completionKind = typeof vscodeItem.kind === "number" ? vscode.CompletionItemKind[vscodeItem.kind] : undefined;
-
-                    completionItems.push(vscodeItem);
-                }
+                const pc: ParametersPositionContext = deploymentParameters.getContextFromDocumentLineAndColumnIndexes(position.line, position.character, template);
+                const completionItems = pc.getCompletionItems()
+                    .map(
+                        completion => toVsCodeCompletionItem(deploymentParameters, completion));
                 return new vscode.CompletionList(completionItems, true);
             });
         }
