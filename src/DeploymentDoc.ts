@@ -12,7 +12,7 @@ import { nonNullOrEmptyValue } from "./util/nonNull";
 /**
  * Represents a deployment-related JSON file
  */
-export abstract class DeploymentFile {
+export abstract class DeploymentDoc {
     // Parse result for the template JSON document as a whole
     private _jsonParseResult: Json.ParseResult;
 

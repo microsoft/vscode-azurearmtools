@@ -4,18 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { DeploymentFile } from '../DeploymentFile';
+import { DeploymentDoc } from '../DeploymentDoc';
 import { assert } from "../fixed_assert";
 import * as language from "../Language";
 
-export function getVSCodeRangeFromSpan(deploymentFile: DeploymentFile, span: language.Span): vscode.Range {
+export function getVSCodeRangeFromSpan(deploymentDoc: DeploymentDoc, span: language.Span): vscode.Range {
     assert(span);
-    assert(deploymentFile);
+    assert(deploymentDoc);
 
-    const startPosition: language.Position = deploymentFile.getDocumentPosition(span.startIndex);
+    const startPosition: language.Position = deploymentDoc.getDocumentPosition(span.startIndex);
     const vscodeStartPosition = new vscode.Position(startPosition.line, startPosition.column);
 
-    const endPosition: language.Position = deploymentFile.getDocumentPosition(span.afterEndIndex);
+    const endPosition: language.Position = deploymentDoc.getDocumentPosition(span.afterEndIndex);
     const vscodeEndPosition = new vscode.Position(endPosition.line, endPosition.column);
 
     return new vscode.Range(vscodeStartPosition, vscodeEndPosition);

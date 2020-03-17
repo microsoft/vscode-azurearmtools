@@ -13,7 +13,7 @@ suite("Completion", () => {
             assert.deepStrictEqual(item.detail, "c");
             assert.deepStrictEqual(item.insertSpan, new Language.Span(1, 2));
             assert.deepStrictEqual(item.insertText, "b");
-            assert.deepStrictEqual(item.name, "a");
+            assert.deepStrictEqual(item.label, "a");
             assert.deepStrictEqual(item.kind, Completion.CompletionKind.Function);
         });
     });

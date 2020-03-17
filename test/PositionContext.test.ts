@@ -466,19 +466,19 @@ suite("PositionContext", () => {
         }
 
         function compareTestableCompletionItems(actualItems: Completion.Item[], expectedItems: Completion.Item[]): void {
-            let isFunctionCompletions = expectedItems.some(item => allTestDataCompletionNames.has(item.name));
+            let isFunctionCompletions = expectedItems.some(item => allTestDataCompletionNames.has(item.label));
 
             // Ignore functions that aren't in our testing list
             if (isFunctionCompletions) {
                 // Unless it's an empty list - then we want to ensure the actual list is empty, too
                 if (expectedItems.length > 0) {
-                    actualItems = actualItems.filter(item => allTestDataCompletionNames.has(item.name));
+                    actualItems = actualItems.filter(item => allTestDataCompletionNames.has(item.label));
                 }
             }
 
             // Make it easier to see missing names quickly
-            let actualNames = actualItems.map(item => item.name);
-            let expectedNames = expectedItems.map(item => typeof item === 'string' ? item : item.name);
+            let actualNames = actualItems.map(item => item.label);
+            let expectedNames = expectedItems.map(item => typeof item === 'string' ? item : item.label);
             assert.deepStrictEqual(actualNames, expectedNames, "Names in the completion items did not match");
 
             assert.deepStrictEqual(actualItems, expectedItems);

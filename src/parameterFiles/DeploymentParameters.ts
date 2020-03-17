@@ -4,7 +4,7 @@
 
 import { CachedValue } from "../CachedValue";
 import { templateKeys } from "../constants";
-import { DeploymentFile } from "../DeploymentFile";
+import { DeploymentDoc } from "../DeploymentDoc";
 import { DeploymentTemplate } from "../DeploymentTemplate";
 import { INamedDefinition } from "../INamedDefinition";
 import * as Json from "../JSON";
@@ -17,7 +17,7 @@ import { ParameterValueDefinition } from "./ParameterValueDefinition";
 /**
  * Represents a deployment parameter file
  */
-export class DeploymentParameters extends DeploymentFile {
+export class DeploymentParameters extends DeploymentDoc {
     private _parameterValueDefinitions: CachedValue<ParameterValueDefinition[]> = new CachedValue<ParameterValueDefinition[]>();
     private _parametersObject: CachedValue<Json.ObjectValue | undefined> = new CachedValue<Json.ObjectValue | undefined>();
 
@@ -57,7 +57,7 @@ export class DeploymentParameters extends DeploymentFile {
 
     // CONSIDER: Move this to ParametersPositionContext since that depends on DeploymentTemplate asdf
     public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, deploymentTemplate: DeploymentTemplate | undefined): ParametersPositionContext {
-        return ParametersPositionContext.fromDocumentLineAndColumnIndexes(this, documentLineIndex, documentColumnIndex, deploymentTemplate);
+        return ParametersPositionContext.fromDocumentLineAndColumnIndices(this, documentLineIndex, documentColumnIndex, deploymentTemplate);
     }
 
     // CONSIDER: Move this to ParametersPositionContext since that depends on DeploymentTemplate asdf
