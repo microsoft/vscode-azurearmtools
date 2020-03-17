@@ -25,8 +25,8 @@ The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language 
 
 ## Parameter files
 
-- Associate a parameter file with a template for validation of both
-- Open associated parameter files from the template
+- Associate a parameter file with a template for full validation of both
+- Open associated parameter file from the template
 - Create a new parameter file from parameters defined within a template
 
 ![Associate a parameters file with template](./images/params-support.gif)
