@@ -55,12 +55,10 @@ export class DeploymentParameters extends DeploymentDoc {
         });
     }
 
-    // CONSIDER: Move this to ParametersPositionContext since that depends on DeploymentTemplate asdf
     public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, deploymentTemplate: DeploymentTemplate | undefined): ParametersPositionContext {
         return ParametersPositionContext.fromDocumentLineAndColumnIndices(this, documentLineIndex, documentColumnIndex, deploymentTemplate);
     }
 
-    // CONSIDER: Move this to ParametersPositionContext since that depends on DeploymentTemplate asdf
     public getContextFromDocumentCharacterIndex(documentCharacterIndex: number, deploymentTemplate: DeploymentTemplate | undefined): ParametersPositionContext {
         return ParametersPositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex, deploymentTemplate);
     }

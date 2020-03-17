@@ -474,12 +474,10 @@ export class DeploymentTemplate extends DeploymentDoc {
         });
     }
 
-    // CONSIDER: Move this to PositionContext since PositionContext depends on DeploymentTemplate
     public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number): PositionContext {
         return PositionContext.fromDocumentLineAndColumnIndexes(this, documentLineIndex, documentColumnIndex);
     }
 
-    // CONSIDER: Move this to PositionContext since PositionContext depends on DeploymentTemplate
     public getContextFromDocumentCharacterIndex(documentCharacterIndex: number): PositionContext {
         return PositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex);
     }

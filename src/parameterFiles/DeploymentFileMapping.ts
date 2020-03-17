@@ -120,9 +120,9 @@ export class DeploymentFileMapping {
         // Copy existing entries that don't match (might be multiple entries with different casing, so can't do simple delete)
         const newMap: { [key: string]: string | undefined } = {};
 
-        for (let templatePath of Object.getOwnPropertyNames(map)) {//asdftestpoint
-            if (normalizePath(templatePath) !== normalizedTemplatePath) {//asdftestpoint
-                newMap[templatePath] = map[templatePath]; //asdftestpoint
+        for (let templatePath of Object.getOwnPropertyNames(map)) {
+            if (normalizePath(templatePath) !== normalizedTemplatePath) {
+                newMap[templatePath] = map[templatePath]; //asdf not hit in tests
             }
         }
 

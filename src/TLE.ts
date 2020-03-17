@@ -59,8 +59,8 @@ export abstract class Value {
 
     public abstract getSpan(): language.Span;
 
-    // CONSIDER: This always includes the character after the Value as well (i.e., uses
-    //   Span.contains(, true)). asdf
+    // Note: This always includes the character after the Value as well (i.e., uses
+    //   Contains.extended).
     public abstract contains(characterIndex: number): boolean;
 
     public abstract toString(): string;
