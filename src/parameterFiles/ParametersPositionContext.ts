@@ -180,7 +180,12 @@ export class ParametersPositionContext extends DocumentPositionContext {
                         span, //this.emptySpanAtDocumentCharacterIndex,
                         Completion.CompletionKind.PropertyValue,
                         detail,
-                        documentation));
+                        documentation,
+                        undefined,
+                        [{
+                            span: new language.Span(0, 30),
+                            insertText: "hello"
+                        }]));
             }
         }
 

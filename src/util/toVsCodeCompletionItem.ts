@@ -54,6 +54,15 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDoc, item: Comp
             assertNever(item.kind);
     }
 
+    if (item.additionalEdits) {
+        vscodeItem.additionalTextEdits = item.additionalEdits.map(
+            e => new vscode.TextEdit(
+                getVSCodeRangeFromSpan(deploymentFile, e.span),
+                e.insertText
+            )
+        );
+    }
+
     // Add a command to let us know when activated so we can send telemetry
     vscodeItem.command = {
         command: "azurerm-vscode-tools.completion-activated",

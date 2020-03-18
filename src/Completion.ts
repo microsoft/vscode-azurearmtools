@@ -26,7 +26,8 @@ export class Item {
          * A human-readable string that represents a doc-comment.
          */
         public readonly documention?: string,
-        public readonly snippetName?: string
+        public readonly snippetName?: string,
+        public readonly additionalEdits?: { span: language.Span; insertText: string }[]
     ) {
     }
 
