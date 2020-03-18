@@ -151,21 +151,26 @@ export class ParametersPositionContext extends DocumentPositionContext {
                 const isRequired = !param.defaultValue;
                 const label = `${param.nameValue.quotedValue} ${isRequired ? "(required)" : "(optional)"}`;
                 const paramText = createParameterFromTemplateParameter(this._associatedTemplate, param);
-                const replacement = paramText;
+                let replacement = paramText;
                 const documentation = `Insert a value for parameter '${param.nameValue.unquotedValue}' from the template file"`;
                 const detail = paramText;
 
                 //let span = new language.Span(this.documentCharacterIndex - 1, 2);
                 let span = this.emptySpanAtDocumentCharacterIndex;
 
-                // asdf add comma before/after?
-
-                //asdf
+                // If the completion is triggered inside double quotes, or from a trigger character of a double quotes (
+                // which ends up adding '""' first, then triggering the completion inside the quotes), then
+                // the insert range needs to subsume those quotes so they get deleted when the new param is inserted.
                 if (this.document.documentText.charAt(this.documentCharacterIndex - 1) === '"') { //asdf
                     span = span.extendLeft(1);
                 }
                 if (this.document.documentText.charAt(this.documentCharacterIndex) === '"') {
                     span = span.extendRight(1);
+                }
+
+                // If there are any parameters after the one being inserted, we need to add a comma after the new one
+                if (this.document.parameterValues.some(p => p.fullSpan.startIndex >= this.documentCharacterIndex)) {
+                    replacement += ',';
                 }
 
                 completions.push(
@@ -175,7 +180,12 @@ export class ParametersPositionContext extends DocumentPositionContext {
                         span, //this.emptySpanAtDocumentCharacterIndex,
                         Completion.CompletionKind.PropertyValue,
                         detail,
-                        documentation));
+                        documentation,
+                        undefined,
+                        [{
+                            span: new language.Span(0, 30),
+                            insertText: "hello"
+                        }]));
             }
         }
 
@@ -211,7 +221,8 @@ export class ParametersPositionContext extends DocumentPositionContext {
         return true;
     }
 
-    // CONSIDER: The concept of a single location isn't used for this function
+    // CONSIDER: The concept of the document location location isn't applicable to this function because it requires
+    //   a range of effect
     public async getCodeActions(range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]> {
         const actions: (Command | CodeAction)[] = [];
         const parametersProperty = this.document.parametersProperty;
