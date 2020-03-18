@@ -162,8 +162,8 @@ suite("Parameter file completions", () => {
                 },
                 {},
                 [
+                    `"p2" (required)`,
                     `"p10" (required)`,
-                    `"p2" (required)`, //asdf order?
                     newParamCompletionLabel
                 ]);
 
