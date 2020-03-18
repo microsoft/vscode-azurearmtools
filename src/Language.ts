@@ -189,6 +189,14 @@ export class Span {
     public toString(): string {
         return `[${this.startIndex}, ${this.afterEndIndex})`;
     }
+
+    public extendLeft(extendLeft: number): Span {
+        return new Span(this.startIndex - extendLeft, this.length + extendLeft);
+    }
+
+    public extendRight(extendRight: number): Span {
+        return new Span(this.startIndex, this.length + extendRight);
+    }
 }
 
 export class Position {

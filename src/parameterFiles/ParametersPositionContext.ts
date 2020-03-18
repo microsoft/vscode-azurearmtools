@@ -155,11 +155,24 @@ export class ParametersPositionContext extends DocumentPositionContext {
                 const documentation = `Insert a value for parameter '${param.nameValue.unquotedValue}' from the template file"`;
                 const detail = paramText;
 
+                //let span = new language.Span(this.documentCharacterIndex - 1, 2);
+                let span = this.emptySpanAtDocumentCharacterIndex;
+
+                // asdf add comma before/after?
+
+                //asdf
+                if (this.document.documentText.charAt(this.documentCharacterIndex - 1) === '"') { //asdf
+                    span = span.extendLeft(1);
+                }
+                if (this.document.documentText.charAt(this.documentCharacterIndex) === '"') {
+                    span = span.extendRight(1);
+                }
+
                 completions.push(
                     new Completion.Item(
                         label,
                         replacement,
-                        this.emptySpanAtDocumentCharacterIndex,
+                        span, //this.emptySpanAtDocumentCharacterIndex,
                         Completion.CompletionKind.PropertyValue,
                         detail,
                         documentation));
