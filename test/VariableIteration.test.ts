@@ -6,12 +6,15 @@
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name no-constant-condition no-any
 
 import * as assert from 'assert';
+import { Uri } from 'vscode';
 import { DeploymentTemplate, IVariableDefinition, Json } from "../extension.bundle";
 import { createCompletionsTest } from './support/createCompletionsTest';
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
 import { testGetReferences } from './support/testGetReferences';
+
+const fakeId = Uri.file("https://fake-id");
 
 suite("Variable iteration (copy blocks)", () => {
 
@@ -107,7 +110,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }]
                     }
                 }),
-                "id");
+                fakeId);
             assert(!!dt.topLevelScope.getVariableDefinition('diskNames'));
         });
 
@@ -121,7 +124,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }]
                     }
                 }),
-                "id");
+                fakeId);
 
             // Right now we still create the variable
             // CONSIDER: Instead add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)
@@ -141,7 +144,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }]
                     }
                 }),
-                "id");
+                fakeId);
 
             // Right now we just don't create the variable
             // CONSIDER: Instead add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)
@@ -158,7 +161,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }]
                     }
                 }),
-                "id");
+                fakeId);
 
             // Right now we just don't create the variable
             // CONSIDER: Instead add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)
@@ -180,7 +183,7 @@ suite("Variable iteration (copy blocks)", () => {
                         "var2": "hello 2",
                     }
                 }),
-                "id");
+                fakeId);
 
             assert.deepStrictEqual(
                 dt.topLevelScope.variableDefinitions.map(v => v.nameValue.unquotedValue),
@@ -391,7 +394,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }
                     }
                 }),
-                "id");
+                fakeId);
             assert.deepStrictEqual(Json.asObjectValue(dt2.topLevelScope.getVariableDefinition('object')!.value)!.propertyNames, ["array1"]);
         });
 
@@ -409,7 +412,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }
                     }
                 }),
-                "id");
+                fakeId);
 
             // Right now we don't process as a copy block.  Backend does and gives an error.
             // CONSIDER: Add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)
@@ -431,7 +434,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }
                     }
                 }),
-                "id");
+                fakeId);
 
             // Right now we just don't process as a copy block
             // CONSIDER: Instead add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)
@@ -452,7 +455,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }
                     }
                 }),
-                "id");
+                fakeId);
 
             // Right now we just don't process as a copy block
             // CONSIDER: Instead add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)

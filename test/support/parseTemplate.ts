@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from 'assert';
+import { Uri } from 'vscode';
 import { DeploymentParameters, DeploymentTemplate } from "../../extension.bundle";
 import { Issue } from '../../src/Language';
 import { IDeploymentParametersFile } from './diagnostics';
@@ -36,7 +37,7 @@ export async function parseTemplateWithMarkers(
     options?: { ignoreWarnings: boolean }
 ): Promise<{ dt: DeploymentTemplate; markers: Markers }> {
     const { unmarkedText, markers } = getDocumentMarkers(template);
-    const dt: DeploymentTemplate = new DeploymentTemplate(unmarkedText, "parseTemplate() template");
+    const dt: DeploymentTemplate = new DeploymentTemplate(unmarkedText, Uri.file("parseTemplate() template"));
 
     // Always run these even if not checking against expected, to verify nothing throws
     const errors: Issue[] = await dt.errorsPromise;
@@ -63,7 +64,7 @@ export async function parseParametersWithMarkers(
     json: string | Partial<IDeploymentParametersFile>
 ): Promise<{ dp: DeploymentParameters; unmarkedText: string; markers: Markers }> {
     const { unmarkedText, markers } = getDocumentMarkers(json);
-    const dp: DeploymentParameters = new DeploymentParameters(unmarkedText, "test parameter file");
+    const dp: DeploymentParameters = new DeploymentParameters(unmarkedText, Uri.file("test parameter file"));
 
     // Always run these even if not checking against expected, to verify nothing throws
     // tslint:disable-next-line:no-unused-expression
