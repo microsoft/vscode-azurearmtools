@@ -9,7 +9,7 @@ import * as assert from "assert";
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as vscode from "vscode";
-import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
+import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties, UserCancelledError } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, extensionName, globalStateKeys } from "./constants";
 import { DeploymentDoc } from "./DeploymentDoc";
@@ -601,6 +601,28 @@ export class AzureRMTools {
         };
         ext.context.subscriptions.push(vscode.languages.registerHoverProvider(templateDocumentSelector, hoverProvider));
 
+        // Code actions provider
+        const codeActionProvider: vscode.CodeActionProvider = {
+            provideCodeActions: async (
+                document: vscode.TextDocument,
+                range: vscode.Range | vscode.Selection,
+                context: vscode.CodeActionContext,
+                token: vscode.CancellationToken
+            ): Promise<(vscode.Command | vscode.CodeAction)[] | undefined> => {
+                return await this.onProvideCodeActions(document, range, context, token);
+            }
+        };
+        ext.context.subscriptions.push(
+            vscode.languages.registerCodeActionsProvider(
+                templateOrParameterDocumentSelector,
+                codeActionProvider,
+                {
+                    providedCodeActionKinds: [
+                        vscode.CodeActionKind.QuickFix //asdf
+                    ]
+                }
+            ));
+
         // tslint:disable-next-line:no-suspicious-comment
         const completionProvider: vscode.CompletionItemProvider = {
             provideCompletionItems: async (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList | undefined> => {
@@ -833,20 +855,6 @@ export class AzureRMTools {
         }
 
         if (doc instanceof DeploymentTemplate) {
-            //asdf
-            // // It's a template file - find the associated parameter file, if any
-            // let params: DeploymentParameters | undefined;
-            // const paramUri: vscode.Uri | undefined = this._mapping.getTemplateFile(document.uri);
-            // if (paramUri) {
-            //     // Is it already opened?
-            //     params = this.getDeploymentParameters(paramUri);
-            //     if (!params) {
-            //         // Nope, have to read it from disk asdf error handling
-            //         const contents = (await fse.readFile(paramUri.fsPath, { encoding: 'utf8' })).toString();
-            //         params = new DeploymentParameters(contents, paramUri.toString());
-            //     }
-            // }
-
             return doc.getContextFromDocumentLineAndColumnIndexes(
                 position.line,
                 position.character);
@@ -931,6 +939,44 @@ export class AzureRMTools {
                 return results;
             });
         }
+    }
+
+    /**
+     * Provide commands for the given document and range.
+     *
+     * @param document The document in which the command was invoked.
+     * @param range The selector or range for which the command was invoked. This will always be a selection if
+     * there is a currently active editor.
+     * @param context Context carrying additional information.
+     * @param token A cancellation token.
+     * @return An array of commands, quick fixes, or refactorings or a thenable of such. The lack of a result can be
+     * signaled by returning `undefined`, `null`, or an empty array.
+     */
+    private async onProvideCodeActions(
+        document: vscode.TextDocument,
+        range: vscode.Range | vscode.Selection,
+        context: vscode.CodeActionContext,
+        token: vscode.CancellationToken
+    ): Promise<(vscode.Command | vscode.CodeAction)[] | undefined> {
+        return await callWithTelemetryAndErrorHandling('Provide code actions', async (actionContext: IActionContext): Promise<(vscode.Command | vscode.CodeAction)[]> => {
+            actionContext.errorHandling.suppressDisplay = true;
+
+            if (token.isCancellationRequested) {
+                throw new UserCancelledError();
+            }
+
+            const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(document, range.start);
+
+            if (token.isCancellationRequested) {
+                throw new UserCancelledError();
+            }
+
+            if (pc) {
+                return await pc.getCodeActions(range, context);
+            }
+
+            return [];
+        });
     }
 
     private onProvideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.SignatureHelp | undefined {

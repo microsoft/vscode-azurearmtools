@@ -3,12 +3,15 @@
 // ----------------------------------------------------------------------------
 
 import { EOL } from "os";
+import { CodeAction, CodeActionContext, CodeActionKind, Command, Range, Selection } from "vscode";
 import * as Completion from "../Completion";
 import { DeploymentTemplate } from "../DeploymentTemplate";
+import { IParameterDefinition } from "../IParameterDefinition";
 import * as language from "../Language";
 import { createParameterFromTemplateParameter } from "../parameterFileGeneration";
 import { IReferenceSite } from "../PositionContext";
 import { ReferenceList } from "../ReferenceList";
+import { getVSCodeRangeFromSpan } from "../util/vscodePosition";
 import { DeploymentParameters } from "./DeploymentParameters";
 import { DocumentPositionContext } from "./DocumentPositionContext";
 
@@ -35,6 +38,7 @@ import { DocumentPositionContext } from "./DocumentPositionContext";
  * that can be parsed and analyzed about it from that position.
  */
 export class ParametersPositionContext extends DocumentPositionContext {
+    // asdf pass in function to *get* deployment template
     private _associatedTemplate: DeploymentTemplate | undefined;
 
     private constructor(deploymentParameters: DeploymentParameters, associatedTemplate: DeploymentTemplate | undefined) {
@@ -192,5 +196,67 @@ export class ParametersPositionContext extends DocumentPositionContext {
         }
 
         return true;
+    }
+
+    // CONSIDER: The concept of a single location isn't used for this function
+    public async getCodeActions(range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]> {
+        const actions: (Command | CodeAction)[] = [];
+        const parametersProperty = this.document.parametersProperty;
+        if (parametersProperty && this.doOverlap(range, parametersProperty.nameValue.span)) {
+            const missingParameters: IParameterDefinition[] = this.getMissingParameters();
+
+            // Add all missing parameters
+            if (missingParameters.length > 0) {
+                const action = new CodeAction("Add all missing parameters", CodeActionKind.QuickFix);
+                action.command = {
+                    command: 'azurerm-vscode-tools.codeAction.addAllMissingParameters',
+                    title: action.title
+                    // arguments: [
+                    //     this.document.documentId
+                    // ]
+                };
+                actions.push(action);
+            }
+
+            // Add missing required parameters
+            if (missingParameters.some(p => this.isParameterRequired(p))) {
+                const action = new CodeAction("Add missing required parameters", CodeActionKind.QuickFix);
+                action.command = {
+                    command: 'azurerm-vscode-tools.codeAction.addMissingRequiredParameters',
+                    title: action.title
+                    // arguments: [
+                    //     this.document.documentId
+                    // ]
+                };
+                actions.push(action);
+            }
+        }
+
+        return actions;
+    }
+
+    private isParameterRequired(paramDef: IParameterDefinition): boolean {
+        return !paramDef.defaultValue;
+    }
+
+    private getMissingParameters(): IParameterDefinition[] {
+        if (!this._associatedTemplate) {
+            return [];
+        }
+
+        const results: IParameterDefinition[] = [];
+        for (let paramDef of this._associatedTemplate?.topLevelScope.parameterDefinitions) {
+            const paramValue = this.document.getParameterValue(paramDef.nameValue.unquotedValue);
+            if (!paramValue) {
+                results.push(paramDef);
+            }
+        }
+
+        return results;
+    }
+
+    private doOverlap(range: Range | Selection, span: language.Span): boolean { //asdf test
+        const spanAsRange = getVSCodeRangeFromSpan(this.document, span);
+        return !!range.intersection(spanAsRange);
     }
 }
