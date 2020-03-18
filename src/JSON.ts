@@ -601,7 +601,7 @@ export abstract class Value {
  */
 export class ObjectValue extends Value {
     // Last set with the same (case-insensitive) key wins (just like in Azure template deployment)
-    private _caseInsensitivePropertyMap: CachedValue<CaseInsensitiveMap<string, Value | undefined>> = new CachedValue<CaseInsensitiveMap<string, Value | undefined>>();
+    private _caseInsensitivePropertyMap: CachedValue<CaseInsensitiveMap<string, Property | undefined>> = new CachedValue<CaseInsensitiveMap<string, Property | undefined>>();
 
     constructor(span: language.Span, private _properties: Property[]) {
         super(span);
@@ -613,16 +613,16 @@ export class ObjectValue extends Value {
     }
 
     /**
-     * Get the map of property names to property values for this ObjectValue. This mapping is
+     * Get the map of property names to properties for this ObjectValue. This mapping is
      * created lazily.
      */
-    private get caseInsensitivePropertyMap(): CaseInsensitiveMap<string, Value | undefined> {
+    private get caseInsensitivePropertyMap(): CaseInsensitiveMap<string, Property | undefined> {
         return this._caseInsensitivePropertyMap.getOrCacheValue(() => {
-            const caseInsensitivePropertyMap = new CaseInsensitiveMap<string, Value | undefined>();
+            const caseInsensitivePropertyMap = new CaseInsensitiveMap<string, Property | undefined>();
 
             if (this._properties.length > 0) {
                 for (const property of this._properties) {
-                    caseInsensitivePropertyMap.set(property.nameValue.toString(), property.value);
+                    caseInsensitivePropertyMap.set(property.nameValue.toString(), property);
                 }
             }
 
@@ -646,7 +646,16 @@ export class ObjectValue extends Value {
      * provided name (case-insensitive), then undefined will be returned.
      */
     public getPropertyValue(propertyName: string): Value | undefined {
-        const result = this.caseInsensitivePropertyMap.get(propertyName);
+        const result: Property | undefined = this.caseInsensitivePropertyMap.get(propertyName);
+        return result ? result.value : undefined;
+    }
+
+    /**
+     * Get the property for the provided property name. If no property exists with the
+     * provided name (case-insensitive), then undefined will be returned.
+     */
+    public getProperty(propertyName: string): Property | undefined {
+        const result: Property | undefined = this.caseInsensitivePropertyMap.get(propertyName);
         return result ? result : undefined;
     }
 

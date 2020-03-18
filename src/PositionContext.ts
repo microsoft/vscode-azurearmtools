@@ -4,7 +4,7 @@
 
 // tslint:disable:max-line-length
 
-import { Uri } from "vscode";
+import { CodeAction, CodeActionContext, Command, Range, Selection } from "vscode";
 import { Language } from "../extension.bundle";
 import { AzureRMAssets, BuiltinFunctionMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
@@ -116,7 +116,7 @@ export class PositionContext extends DocumentPositionContext {
         if (tleInfo) {
             const scope = tleInfo.scope;
             const tleCharacterIndex = tleInfo.tleCharacterIndex;
-            const definitionUri: Uri = this.document.documentId;
+            const definitionDoc = this.document;
 
             const tleFuncCall: TLE.FunctionCallValue | undefined = TLE.asFunctionCallValue(tleInfo.tleValue);
             if (tleFuncCall) {
@@ -126,7 +126,7 @@ export class PositionContext extends DocumentPositionContext {
                     const nsDefinition = scope.getFunctionNamespaceDefinition(ns);
                     if (nsDefinition) {
                         const referenceSpan: language.Span = tleFuncCall.namespaceToken.span.translate(this.jsonTokenStartIndex);
-                        return { definition: nsDefinition, referenceSpan, definitionUri };
+                        return { definition: nsDefinition, referenceSpan, definitionDoc };
                     }
                 } else if (tleFuncCall.nameToken && tleFuncCall.nameToken.span.contains(tleCharacterIndex, language.Contains.strict)) {
                     if (tleFuncCall.namespaceToken) {
@@ -137,14 +137,14 @@ export class PositionContext extends DocumentPositionContext {
                         const userFunctiondefinition = scope.getUserFunctionDefinition(ns, name);
                         if (nsDefinition && userFunctiondefinition) {
                             const referenceSpan: language.Span = tleFuncCall.nameToken.span.translate(this.jsonTokenStartIndex);
-                            return { definition: userFunctiondefinition, referenceSpan, definitionUri };
+                            return { definition: userFunctiondefinition, referenceSpan, definitionDoc };
                         }
                     } else {
                         // Inside a reference to a built-in function
                         const functionMetadata: BuiltinFunctionMetadata | undefined = AzureRMAssets.getFunctionMetadataFromName(tleFuncCall.nameToken.stringValue);
                         if (functionMetadata) {
                             const referenceSpan: language.Span = tleFuncCall.nameToken.span.translate(this.jsonTokenStartIndex);
-                            return { definition: functionMetadata, referenceSpan, definitionUri };
+                            return { definition: functionMetadata, referenceSpan, definitionDoc };
                         }
                     }
                 }
@@ -157,14 +157,14 @@ export class PositionContext extends DocumentPositionContext {
                     const parameterDefinition: IParameterDefinition | undefined = scope.getParameterDefinition(tleStringValue.toString());
                     if (parameterDefinition) {
                         const referenceSpan: language.Span = tleStringValue.getSpan().translate(this.jsonTokenStartIndex);
-                        return { definition: parameterDefinition, referenceSpan, definitionUri };
+                        return { definition: parameterDefinition, referenceSpan, definitionDoc };
                     }
                 } else if (tleStringValue.isVariablesArgument()) {
                     const variableDefinition: IVariableDefinition | undefined = scope.getVariableDefinition(tleStringValue.toString());
                     if (variableDefinition) {
                         // Inside the 'xxx' of a variables('xxx') reference
                         const referenceSpan: language.Span = tleStringValue.getSpan().translate(this.jsonTokenStartIndex);
-                        return { definition: variableDefinition, referenceSpan, definitionUri };
+                        return { definition: variableDefinition, referenceSpan, definitionDoc };
                     }
                 }
             }
@@ -654,6 +654,10 @@ export class PositionContext extends DocumentPositionContext {
             includeRightParenthesisInCompletion: includeRightParenthesisInCompletion,
             replaceSpan: replaceSpan
         };
+    }
+
+    public async getCodeActions(range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]> {
+        return [];
     }
 }
 

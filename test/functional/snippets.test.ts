@@ -13,7 +13,7 @@ import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import { ITestCallbackContext } from 'mocha';
 import * as path from 'path';
-import { commands, Diagnostic, Selection, window, workspace } from "vscode";
+import { commands, Diagnostic, Selection, Uri, window, workspace } from "vscode";
 import { DeploymentTemplate, getVSCodePositionFromPosition } from '../../extension.bundle';
 import { delay } from '../support/delay';
 import { getDiagnosticsForDocument, sources, testFolder } from '../support/diagnostics';
@@ -384,7 +384,7 @@ suite("Snippets functional tests", () => {
         const snippetInsertComment: string = overrideInsertPosition[snippetName] || "// Insert here: resource";
         const snippetInsertIndex: number = template.indexOf(snippetInsertComment);
         assert(snippetInsertIndex >= 0, `Couldn't find location to insert snippet (looking for "${snippetInsertComment}")`);
-        const snippetInsertPos = getVSCodePositionFromPosition(new DeploymentTemplate(template, "fake template").getContextFromDocumentCharacterIndex(snippetInsertIndex).documentPosition);
+        const snippetInsertPos = getVSCodePositionFromPosition(new DeploymentTemplate(template, Uri.file("fake template")).getContextFromDocumentCharacterIndex(snippetInsertIndex).documentPosition);
 
         const tempPath = getTempFilePath(`snippet ${snippetName}`, '.azrm');
 

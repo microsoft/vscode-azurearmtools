@@ -150,6 +150,38 @@ export class Span {
         }
     }
 
+    /**
+     * Create a new span that is the intersection of this and a given span.
+     * If the provided span is undefined, or they do no intersect, undefined will be returned
+     */
+    public intersect(rhs: Span | undefined): Span | undefined {
+        if (!!rhs) {
+            // tslint:disable-next-line:no-this-assignment
+            let lhs: Span = this;
+            if (rhs.startIndex < this.startIndex) {
+                [lhs, rhs] = [rhs, lhs];
+            }
+
+            if (lhs.endIndex <= rhs.startIndex) {
+                return new Span(rhs.startIndex, lhs.endIndex);
+            }
+        }
+
+        return undefined;
+    }
+
+    /** asdf test
+     * Create a new span that is the intersection of the given spans.
+     * If either is undefined, or they do no intersect, undefined will be returned
+     */
+    public static intersect(lhs: Span | undefined, rhs: Span | undefined): Span | undefined {
+        if (lhs) {
+            return lhs.intersect(rhs);
+        } else {
+            return undefined;
+        }
+    }
+
     public translate(movement: number): Span {
         return movement === 0 ? this : new Span(this._startIndex + movement, this._length);
     }

@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { Uri } from "vscode";
+import { CodeAction, CodeActionContext, Command, Uri } from "vscode";
 import { CachedValue } from "./CachedValue";
 import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
@@ -133,4 +133,6 @@ export abstract class DeploymentDoc {
     }
 
     public abstract findReferences(definition: INamedDefinition): ReferenceList;
+
+    public abstract async onProvideCodeActions(range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]>;
 }

@@ -5,6 +5,7 @@
 // tslint:disable:no-unused-expression max-func-body-length max-line-length object-literal-key-quotes
 
 import * as assert from "assert";
+import { Uri } from "vscode";
 import { DeploymentTemplate } from "../extension.bundle";
 import { stringify } from "./support/stringify";
 import { useRealFunctionMetadata, useTestFunctionMetadata } from "./TestData";
@@ -18,7 +19,7 @@ suite("Template tests", () => {
         async function verifyTemplateHasNoErrors(template: string | object): Promise<void> {
             useRealFunctionMetadata();
             try {
-                const dt = new DeploymentTemplate(typeof template === "string" ? template : stringify(template), "id");
+                const dt = new DeploymentTemplate(typeof template === "string" ? template : stringify(template), Uri.file("id"));
                 const expectedErrors: string[] = [
                 ];
                 let errors = await dt.errorsPromise;
