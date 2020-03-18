@@ -66,35 +66,35 @@ suite("DeploymentTemplate", () => {
         test("Empty stringValue", () => {
             const dt = new DeploymentTemplate("", fakeId);
             assert.deepStrictEqual("", dt.documentText);
-            assert.deepStrictEqual("id", dt.documentId);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
             assert.deepStrictEqual([], dt.topLevelScope.parameterDefinitions);
         });
 
         test("Non-JSON stringValue", () => {
             const dt = new DeploymentTemplate("I'm not a JSON file", fakeId);
             assert.deepStrictEqual("I'm not a JSON file", dt.documentText);
-            assert.deepStrictEqual("id", dt.documentId);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
             assert.deepStrictEqual([], dt.topLevelScope.parameterDefinitions);
         });
 
         test("JSON stringValue with number parameters definition", () => {
             const dt = new DeploymentTemplate("{ 'parameters': 21 }", fakeId);
             assert.deepStrictEqual("{ 'parameters': 21 }", dt.documentText);
-            assert.deepStrictEqual("id", dt.documentId);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
             assert.deepStrictEqual([], dt.topLevelScope.parameterDefinitions);
         });
 
         test("JSON stringValue with empty object parameters definition", () => {
             const dt = new DeploymentTemplate("{ 'parameters': {} }", fakeId);
             assert.deepStrictEqual("{ 'parameters': {} }", dt.documentText);
-            assert.deepStrictEqual("id", dt.documentId);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
             assert.deepStrictEqual([], dt.topLevelScope.parameterDefinitions);
         });
 
         test("JSON stringValue with one parameter definition", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'num': { 'type': 'number' } } }", fakeId);
             assert.deepStrictEqual("{ 'parameters': { 'num': { 'type': 'number' } } }", dt.documentText);
-            assert.deepStrictEqual("id", dt.documentId);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
             const parameterDefinitions: IParameterDefinition[] = dt.topLevelScope.parameterDefinitions;
             assert(parameterDefinitions);
             assert.deepStrictEqual(parameterDefinitions.length, 1);
@@ -107,7 +107,7 @@ suite("DeploymentTemplate", () => {
 
         test("JSON stringValue with one parameter definition with undefined description", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'num': { 'type': 'number', 'metadata': { 'description': null } } } }", fakeId);
-            assert.deepStrictEqual("id", dt.documentId);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
             const parameterDefinitions: IParameterDefinition[] = dt.topLevelScope.parameterDefinitions;
             assert(parameterDefinitions);
             assert.deepStrictEqual(parameterDefinitions.length, 1);
@@ -120,7 +120,7 @@ suite("DeploymentTemplate", () => {
 
         test("JSON stringValue with one parameter definition with empty description", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'num': { 'type': 'number', 'metadata': { 'description': '' } } } }", fakeId);
-            assert.deepStrictEqual("id", dt.documentId);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
             const parameterDefinitions: IParameterDefinition[] = dt.topLevelScope.parameterDefinitions;
             assert(parameterDefinitions);
             assert.deepStrictEqual(parameterDefinitions.length, 1);
@@ -133,7 +133,7 @@ suite("DeploymentTemplate", () => {
 
         test("JSON stringValue with one parameter definition with non-empty description", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'num': { 'type': 'number', 'metadata': { 'description': 'num description' } } } }", fakeId);
-            assert.deepStrictEqual("id", dt.documentId);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
             const parameterDefinitions: IParameterDefinition[] = dt.topLevelScope.parameterDefinitions;
             assert(parameterDefinitions);
             assert.deepStrictEqual(parameterDefinitions.length, 1);
@@ -146,7 +146,7 @@ suite("DeploymentTemplate", () => {
 
         test("JSON stringValue with number variable definitions", () => {
             const dt = new DeploymentTemplate("{ 'variables': 12 }", fakeId);
-            assert.deepStrictEqual("id", dt.documentId);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
             assert.deepStrictEqual("{ 'variables': 12 }", dt.documentText);
             assert.deepStrictEqual([], dt.topLevelScope.variableDefinitions);
         });
@@ -166,7 +166,7 @@ suite("DeploymentTemplate", () => {
 
         test("JSON stringValue with two variable definitions", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'a': 'A', 'b': 2 } }", fakeId);
-            assert.deepStrictEqual("id", dt.documentId);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
             assert.deepStrictEqual("{ 'variables': { 'a': 'A', 'b': 2 } }", dt.documentText);
             assert.deepStrictEqual(dt.topLevelScope.variableDefinitions.length, 2);
 
