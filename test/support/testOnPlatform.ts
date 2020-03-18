@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { ITest, ITestCallbackContext } from "mocha";
-import { isWin32 } from "../../src/constants";
+import { isWin32 } from "../../extension.bundle";
 import { diagnosticsTimeout } from "./diagnostics";
 import { ITestPreparation, ITestPreparationResult, testWithPrep } from "./testWithPrep";
 
