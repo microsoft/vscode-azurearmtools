@@ -625,7 +625,12 @@ export class AzureRMTools {
 
         // tslint:disable-next-line:no-suspicious-comment
         const completionProvider: vscode.CompletionItemProvider = {
-            provideCompletionItems: async (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList | undefined> => {
+            provideCompletionItems: async (
+                document: vscode.TextDocument,
+                position: vscode.Position,
+                token: vscode.CancellationToken,
+                context: vscode.CompletionContext
+            ): Promise<vscode.CompletionList | undefined> => {
                 return await this.onProvideCompletions(document, position, token);
             }
         };
