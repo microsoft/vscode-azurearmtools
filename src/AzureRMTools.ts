@@ -11,7 +11,6 @@ import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties, UserCancelledError } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
-import * as Completion from "./Completion";
 import { CompletionsSpy } from "./CompletionsSpy";
 import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, extensionName, globalStateKeys } from "./constants";
 import { DeploymentDoc } from "./DeploymentDoc";
@@ -42,7 +41,7 @@ import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedBuiltinFunctionIssue } from "./UnrecognizedFunctionIssues";
 import { normalizePath } from "./util/normalizePath";
-import { onCompletionActivated, toVsCodeCompletionItem } from "./util/toVsCodeCompletionItem";
+import { onCompletionActivated } from "./util/toVsCodeCompletionItem";
 import { getVSCodeRangeFromSpan } from "./util/vscodePosition";
 
 // This method is called when your extension is activated
@@ -844,28 +843,25 @@ export class AzureRMTools {
     }
 
     private async onProvideCompletions(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList | undefined> {
-        return await callWithTelemetryAndErrorHandlingSync('provideCompletionItems', async (actionContext: IActionContext): Promise<vscode.CompletionList | undefined> => {
-            actionContext.telemetry.suppressIfSuccessful = true;
-            actionContext.errorHandling.suppressDisplay = true;
+        const oneBefore = new vscode.Position(position.line, position.character - 1);
+        const oneAfter = new vscode.Position(position.line, position.character - 1);
+        const one = new vscode.CompletionItem(`New parameter one - empty range`);
+        const two = new vscode.CompletionItem(`New parameter two - len 2 range`);
+        const three = new vscode.CompletionItem(`New parameter three - len 2 range, "quote in label`);
 
-            const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(document, position);
-            if (pc) {
-                const items: Completion.Item[] = pc.getCompletionItems();
-                const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c));
-                ext.completionItemsSpy.postCompletionItemsResult(pc.document, items, vsCodeItems);
+        one.range = new vscode.Range(position, position);
+        one.insertText = `"one`;
+        one.kind = vscode.CompletionItemKind.Snippet;
 
-                // vscode requires all spans to include the original position and be on the same line, otherwise
-                //   it ignores it.  Verify that here.
-                for (let item of vsCodeItems) {
-                    assert(item.range, "Completion item doesn't have a range");
-                    assert(item.range?.contains(position), "Completion item range doesn't include cursor");
-                    assert(item.range?.isSingleLine, "Completion item range must be a single line");
-                }
-                return new vscode.CompletionList(vsCodeItems, true);
-            }
+        two.range = new vscode.Range(oneBefore, oneAfter);
+        two.insertText = "two";
+        two.kind = vscode.CompletionItemKind.Snippet;
 
-            return undefined;
-        });
+        three.range = new vscode.Range(position, oneAfter);
+        three.insertText = "three";
+        three.kind = vscode.CompletionItemKind.Snippet;
+
+        return new vscode.CompletionList([one, two, three]);
     }
 
     private onResolveCompletionItem(item: vscode.CompletionItem, _token: vscode.CancellationToken): vscode.CompletionItem {

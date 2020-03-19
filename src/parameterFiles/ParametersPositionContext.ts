@@ -8,7 +8,6 @@ import * as Completion from "../Completion";
 import { DeploymentTemplate } from "../DeploymentTemplate";
 import { IParameterDefinition } from "../IParameterDefinition";
 import * as language from "../Language";
-import { createParameterFromTemplateParameter } from "../parameterFileGeneration";
 import { ReferenceList } from "../ReferenceList";
 import { IReferenceSite } from "../TemplatePositionContext";
 import { getVSCodeRangeFromSpan } from "../util/vscodePosition";
@@ -87,8 +86,8 @@ export class ParametersPositionContext extends DocumentPositionContext {
         let completions: Completion.Item[] = [];
 
         if (this.canAddPropertyHere) {
-            completions.push(... this.getCompletionsForMissingParameters());
-            completions.push(this.getCompletionForNewParameter());
+            //completions.push(... this.getCompletionsForMissingParameters());
+            completions.push(...this.getCompletionForNewParameter());
         }
 
         // completions[2].insertSpan = completions[0].insertSpan;
@@ -102,7 +101,7 @@ export class ParametersPositionContext extends DocumentPositionContext {
         return completions;
     }
 
-    private getCompletionForNewParameter(): Completion.Item {
+    private getCompletionForNewParameter(): Completion.Item[] {
         const detail = "Insert new parameter";
         let snippet =
             // tslint:disable-next-line:prefer-template
@@ -115,75 +114,57 @@ export class ParametersPositionContext extends DocumentPositionContext {
             snippet += ',';
         }
 
-        return new Completion.Item(
-            `New parameter`,
+        const completions: Completion.Item[] = [];
+        completions.push(new Completion.Item(
+            `One`,
             `"snippet"`,
-            this.determineCompletionSpan(),
+            this.emptySpanAtDocumentCharacterIndex,
             Completion.CompletionKind.NewPropertyValue,
             detail,
-            documentation);
-    }
+            documentation));
 
-    /**
-     * Get completion items for our position in the document
-     */
-    private getCompletionsForMissingParameters(): Completion.Item[] {
-        const completions: Completion.Item[] = [];
-        if (this._associatedTemplate) {
-            const paramsInParameterFile: string[] = this.document.parameterValues.map(
-                pv => pv.nameValue.unquotedValue.toLowerCase());
+        completions.push(new Completion.Item(
+            `Two`,
+            `"snippet"`,
+            this.emptySpanAtDocumentCharacterIndex,
+            Completion.CompletionKind.NewPropertyValue,
+            detail,
+            documentation));
 
-            // For each parameter in the template
-            for (let param of this._associatedTemplate.topLevelScope.parameterDefinitions) {
-                // Is this already in the parameter file?
-                const paramNameLC = param.nameValue.unquotedValue.toLowerCase();
-                if (paramsInParameterFile.includes(paramNameLC)) {
-                    continue;
-                }
+        completions.push(new Completion.Item(
+            `Three`,
+            `"snippet"`,
+            this.emptySpanAtDocumentCharacterIndex,
+            Completion.CompletionKind.NewPropertyValue,
+            detail,
+            documentation));
 
-                // tslint:disable-next-line:prefer-template
-                const isRequired = !param.defaultValue;
-                const label = `${param.nameValue.quotedValue} ${isRequired ? "(required)" : "(optional)"}`;
-                const paramText = createParameterFromTemplateParameter(this._associatedTemplate, param);
-                let replacement = paramText;
-                const documentation = `Insert a value for parameter '${param.nameValue.unquotedValue}' from the template file"`;
-                const detail = paramText;
-
-                let span = this.determineCompletionSpan();
-
-                if (this.needsCommaAfterCompletion()) {
-                    replacement += ',';
-                }
-
-                completions.push(
-                    new Completion.Item(
-                        label,
-                        replacement,
-                        span, //this.emptySpanAtDocumentCharacterIndex,
-                        Completion.CompletionKind.PropertyValue,
-                        detail,
-                        documentation));
-            }
-        }
+        completions.push(new Completion.Item(
+            `Four`,
+            `"snippet"`,
+            this.emptySpanAtDocumentCharacterIndex,
+            Completion.CompletionKind.NewPropertyValue,
+            detail,
+            documentation));
 
         return completions;
     }
 
-    private determineCompletionSpan(): language.Span {
-        let span = this.emptySpanAtDocumentCharacterIndex;
+    // private determineCompletionSpan(): language.Span {
+    //     let span = this.emptySpanAtDocumentCharacterIndex;
 
-        // If the completion is triggered inside double quotes, or from a trigger character of a double quotes (
-        // which ends up adding '""' first, then triggering the completion inside the quotes), then
-        // the insert range needs to subsume those quotes so they get deleted when the new param is inserted.
-        if (this.document.documentText.charAt(this.documentCharacterIndex - 1) === '"') { //asdf
-            //span = span.extendLeft(1);
-        }
-        if (this.document.documentText.charAt(this.documentCharacterIndex) === '"') {
-            span = span.extendRight(1);
-        }
+    //     // If the completion is triggered inside double quotes, or from a trigger character of a double quotes (
+    //     // which ends up adding '""' first, then triggering the completion inside the quotes), then
+    //     // the insert range needs to subsume those quotes so they get deleted when the new param is inserted.
+    //     if (this.document.documentText.charAt(this.documentCharacterIndex - 1) === '"') { //asdf
+    //         //span = span.extendLeft(1);
+    //     }
+    //     if (this.document.documentText.charAt(this.documentCharacterIndex) === '"') {
+    //         span = span.extendRight(1);
+    //     }
 
-        return span;
-    }
+    //     return span;
+    // }
 
     private needsCommaAfterCompletion(): boolean {
         // If there are any parameters after the one being inserted, we need to add a comma after the new one
