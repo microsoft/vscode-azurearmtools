@@ -13,21 +13,21 @@ import { IVariableDefinition } from "./VariableDefinition";
  */
 export class Item {
     constructor(
-        public readonly label: string,
-        public readonly insertText: string,
-        public readonly insertSpan: language.Span,
-        public readonly kind: CompletionKind,
+        public label: string,
+        public insertText: string,
+        public insertSpan: language.Span,
+        public kind: CompletionKind,
         /**
          * A human-readable string with additional information
          * about this item, like type or symbol information.
          */
-        public readonly detail?: string,
+        public detail?: string,
         /**
          * A human-readable string that represents a doc-comment.
          */
-        public readonly documention?: string,
-        public readonly snippetName?: string,
-        public readonly additionalEdits?: { span: language.Span; insertText: string }[]
+        public documention?: string,
+        public snippetName?: string,
+        public additionalEdits?: { span: language.Span; insertText: string }[]
     ) {
     }
 

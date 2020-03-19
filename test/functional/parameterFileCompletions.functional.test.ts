@@ -10,7 +10,7 @@ import { commands, Selection } from 'vscode';
 import { assert } from '../../src/fixed_assert';
 import { delay } from '../support/delay';
 import { IDeploymentParametersFile, IDeploymentTemplate } from "../support/diagnostics";
-import { getCompletionItemsPromise, getDocumentChangedPromise } from '../support/getEventPromise';
+import { getCompletionItemResolutionPromise, getCompletionItemsPromise, getDocumentChangedPromise } from '../support/getEventPromise';
 import { openTextInNewEditor } from '../support/openTextInNewEditor';
 import { getDocumentMarkers, removeEOLMarker } from "../support/parseTemplate";
 import { testWithLanguageServer } from '../support/testWithLanguageServer';
@@ -34,31 +34,39 @@ suite("Functional parameter file completions", () => {
 
             await delay(1);
 
+            // Move cursor to the "!" in the document
             const position = editor.document.positionAt(bang.index);
             editor.selection = new Selection(position, position);
             await delay(1);
 
-            const documentChangedPromise = getDocumentChangedPromise(document);
+            // Trigger completion UI
             const completionItemsPromise = getCompletionItemsPromise(document);
-
             await commands.executeCommand('editor.action.triggerSuggest');
-            const completions = await completionItemsPromise;
 
-            // Give time for suggestions to show (ick)
-            // CONSIDER: Use completion resolution events to figure out when the UI is ready
-            await delay(1);
+            // Wait for our code to return completion items
+            const { vsCodeCompletionItems } = await completionItemsPromise;
 
-            const insertSuggestionIndex = completions.findIndex(c => c.label.startsWith(insertSuggestionPrefix));
+            // Analyze completions to find the one we're interested in
+            const insertSuggestionIndex = vsCodeCompletionItems.findIndex(c => c.label.startsWith(insertSuggestionPrefix));
             if (insertSuggestionIndex < 0) {
                 assert.fail(`Did not find a completion item starting with "${insertSuggestionIndex}"`);
             }
 
+            // Wait for any resolution to be sure the UI is ready
+            await delay(3000);
+            const firstCompletion = vsCodeCompletionItems[0];
+            await getCompletionItemResolutionPromise(firstCompletion);
+
+            const documentChangedPromise = getDocumentChangedPromise(document);
+
+            // Select the item we want and select it
             await commands.executeCommand('selectFirstSuggestion');
             for (let i = 0; i < insertSuggestionIndex; ++i) {
                 await commands.executeCommand('selectNextSuggestion');
             }
-
             await commands.executeCommand('acceptSelectedSuggestion');
+
+            // Wait for it to get inserted
             const actualResult = await documentChangedPromise;
             assert.equal(actualResult, expectedResult);
 

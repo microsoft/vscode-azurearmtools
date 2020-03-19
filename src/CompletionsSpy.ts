@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { Event, EventEmitter } from "vscode";
+import { CompletionItem, Event, EventEmitter } from "vscode";
 import { Completion } from "../extension.bundle";
 import { DeploymentDoc } from "./DeploymentDoc";
 import { IFunctionMetadata } from "./IFunctionMetadata";
@@ -121,23 +121,34 @@ export enum CompletionKind {
 
 export interface ICompletionsSpyResult {
     document: DeploymentDoc;
-    result: Completion.Item[];
+    completionItems: Completion.Item[];
+    vsCodeCompletionItems: CompletionItem[];
 }
 
 export class CompletionsSpy {
-    private readonly _emitter: EventEmitter<ICompletionsSpyResult> =
-        new EventEmitter<ICompletionsSpyResult>();
+    private readonly _completionsEmitter: EventEmitter<ICompletionsSpyResult> = new EventEmitter<ICompletionsSpyResult>();
+    private readonly _resolveEmitter: EventEmitter<CompletionItem> = new EventEmitter<CompletionItem>();
 
-    public readonly onCompletionItems: Event<ICompletionsSpyResult> = this._emitter.event;
+    public readonly onCompletionItems: Event<ICompletionsSpyResult> = this._completionsEmitter.event;
+    public readonly onCompletionItemResolved: Event<CompletionItem> = this._resolveEmitter.event;
 
-    public postCompletionItemsResult(document: DeploymentDoc, result: Completion.Item[]): void {
-        this._emitter.fire({
+    public postCompletionItemsResult(
+        document: DeploymentDoc,
+        completionItems: Completion.Item[],
+        vsCodeCompletionItems: CompletionItem[]
+    ): void {
+        this._completionsEmitter.fire({
             document,
-            result
+            completionItems,
+            vsCodeCompletionItems
         });
     }
 
+    public postCompletionItemResolution(item: CompletionItem): void {
+        this._resolveEmitter.fire(item);
+    }
+
     public dispose(): void {
-        this._emitter.dispose();
+        this._completionsEmitter.dispose();
     }
 }
