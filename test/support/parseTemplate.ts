@@ -74,6 +74,12 @@ export async function parseParametersWithMarkers(
     return { dp, unmarkedText, markers };
 }
 
+export function removeEOLMarker(s: string): string {
+    // Remove {EOL} markers (as convenience for some test results expressed as strings to
+    //   express in a literal string where the end of line is, etc.)
+    return s.replace(/{EOL}/g, '');
+}
+
 /**
  * Pass in a template with positions marked using the notation <!tagname!>
  * Returns the document without the tags, plus a dictionary of the tags and their positions
@@ -82,6 +88,8 @@ export function getDocumentMarkers(doc: object | string): { unmarkedText: string
     let markers: Markers = {};
     doc = typeof doc === "string" ? doc : stringify(doc);
     let modified = doc;
+
+    modified = removeEOLMarker(modified);
 
     // tslint:disable-next-line:no-constant-condition
     while (true) {

@@ -66,17 +66,17 @@ export interface IReferenceSite {
  * Represents a position inside the snapshot of a deployment template, plus all related information
  * that can be parsed and analyzed about it
  */
-export class PositionContext extends DocumentPositionContext {
+export class TemplatePositionContext extends DocumentPositionContext {
     private _tleInfo: CachedValue<TleInfo | undefined> = new CachedValue<TleInfo | undefined>();
 
-    public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number): PositionContext {
-        let context = new PositionContext(deploymentTemplate);
+    public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number): TemplatePositionContext {
+        let context = new TemplatePositionContext(deploymentTemplate);
         context.initFromDocumentLineAndColumnIndices(documentLineIndex, documentColumnIndex);
         return context;
     }
 
-    public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplate, documentCharacterIndex: number): PositionContext {
-        let context = new PositionContext(deploymentTemplate);
+    public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplate, documentCharacterIndex: number): TemplatePositionContext {
+        let context = new TemplatePositionContext(deploymentTemplate);
         context.initFromDocumentCharacterIndex(documentCharacterIndex);
         return context;
     }
@@ -173,7 +173,7 @@ export class PositionContext extends DocumentPositionContext {
         return undefined;
     }
 
-    public getCompletionItems(): Completion.Item[] {
+    protected getCompletionItemsCore(): Completion.Item[] {
         const tleInfo = this.tleInfo;
         if (!tleInfo) {
             // No string at this position
@@ -189,11 +189,11 @@ export class PositionContext extends DocumentPositionContext {
 
         if (!tleValue || !tleValue.contains(tleInfo.tleCharacterIndex)) {
             // No TLE value here. For instance, expression is empty, or before/after/on the square brackets
-            if (PositionContext.isInsideSquareBrackets(tleInfo.tleParseResult, tleInfo.tleCharacterIndex)) {
+            if (TemplatePositionContext.isInsideSquareBrackets(tleInfo.tleParseResult, tleInfo.tleCharacterIndex)) {
                 // Inside brackets, so complete with all valid functions and namespaces
                 const replaceSpan = this.emptySpanAtDocumentCharacterIndex;
-                const functionCompletions = PositionContext.getMatchingFunctionCompletions(scope, undefined, "", replaceSpan);
-                const namespaceCompletions = PositionContext.getMatchingNamespaceCompletions(scope, "", replaceSpan);
+                const functionCompletions = TemplatePositionContext.getMatchingFunctionCompletions(scope, undefined, "", replaceSpan);
+                const namespaceCompletions = TemplatePositionContext.getMatchingNamespaceCompletions(scope, "", replaceSpan);
                 return functionCompletions.concat(namespaceCompletions);
             } else {
                 return [];
@@ -308,7 +308,7 @@ export class PositionContext extends DocumentPositionContext {
                         const result: Completion.Item[] = [];
                         for (const returnValueMember of functionMetadata.returnValueMembers) {
                             if (propertyPrefix === "" || returnValueMember.toLowerCase().startsWith(propertyPrefix)) {
-                                result.push(PositionContext.createPropertyCompletionItem(returnValueMember, replaceSpan));
+                                result.push(TemplatePositionContext.createPropertyCompletionItem(returnValueMember, replaceSpan));
                             }
                         }
 
@@ -429,14 +429,14 @@ export class PositionContext extends DocumentPositionContext {
 
         if (completeBuiltinFunctions || completeUserFunctions) {
             if (completeUserFunctions && namespace) {
-                userFunctionCompletions = PositionContext.getMatchingFunctionCompletions(scope, namespace, completionPrefix, replaceSpan);
+                userFunctionCompletions = TemplatePositionContext.getMatchingFunctionCompletions(scope, namespace, completionPrefix, replaceSpan);
             }
             if (completeBuiltinFunctions) {
-                builtinCompletions = PositionContext.getMatchingFunctionCompletions(scope, undefined, completionPrefix, replaceSpan);
+                builtinCompletions = TemplatePositionContext.getMatchingFunctionCompletions(scope, undefined, completionPrefix, replaceSpan);
             }
         }
         if (completeNamespaces) {
-            namespaceCompletions = PositionContext.getMatchingNamespaceCompletions(scope, completionPrefix, replaceSpan);
+            namespaceCompletions = TemplatePositionContext.getMatchingNamespaceCompletions(scope, completionPrefix, replaceSpan);
         }
 
         return builtinCompletions.concat(namespaceCompletions).concat(userFunctionCompletions);
@@ -463,7 +463,7 @@ export class PositionContext extends DocumentPositionContext {
             }
 
             for (const matchingPropertyName of matchingPropertyNames) {
-                result.push(PositionContext.createPropertyCompletionItem(matchingPropertyName, replaceSpan));
+                result.push(TemplatePositionContext.createPropertyCompletionItem(matchingPropertyName, replaceSpan));
             }
         }
 

@@ -13,9 +13,9 @@ import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { ParameterDefinition } from "./ParameterDefinition";
-import { PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
 import { isArmSchema } from "./schemas";
+import { TemplatePositionContext } from "./TemplatePositionContext";
 import { ScopeContext, TemplateScope } from "./TemplateScope";
 import * as TLE from "./TLE";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
@@ -473,12 +473,12 @@ export class DeploymentTemplate extends DeploymentDoc {
         });
     }
 
-    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number): PositionContext {
-        return PositionContext.fromDocumentLineAndColumnIndexes(this, documentLineIndex, documentColumnIndex);
+    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number): TemplatePositionContext {
+        return TemplatePositionContext.fromDocumentLineAndColumnIndexes(this, documentLineIndex, documentColumnIndex);
     }
 
-    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number): PositionContext {
-        return PositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex);
+    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number): TemplatePositionContext {
+        return TemplatePositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex);
     }
 
     /**

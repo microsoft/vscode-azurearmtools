@@ -7,6 +7,7 @@ import * as os from 'os';
 import * as vscode from "vscode";
 import { IAzExtOutputChannel, IAzureUserInput, ITelemetryReporter } from "vscode-azureextensionui";
 import { LanguageClient } from "vscode-languageclient";
+import { CompletionItemsSpy } from "./Completion";
 import { IConfiguration, VsCodeConfiguration } from "./Configuration";
 import { configPrefix, isWebpack } from "./constants";
 import { LanguageServerState } from "./languageclient/startArmLanguageServer";
@@ -25,6 +26,7 @@ class ExtensionVariables {
     private _reporter: InitializeBeforeUse<ITelemetryReporter> = new InitializeBeforeUse<ITelemetryReporter>();
     private _outputChannel: InitializeBeforeUse<IAzExtOutputChannel> = new InitializeBeforeUse<IAzExtOutputChannel>();
     private _ui: InitializeBeforeUse<IAzureUserInput> = new InitializeBeforeUse<IAzureUserInput>();
+    private _completionItemsSpy: InitializeBeforeUse<CompletionItemsSpy> = new InitializeBeforeUse<CompletionItemsSpy>();
 
     public set context(context: vscode.ExtensionContext) {
         this._context.setValue(context);
@@ -72,6 +74,7 @@ class ExtensionVariables {
     public addCompletedDiagnostic: boolean = false;
 
     public readonly configuration: IConfiguration = new VsCodeConfiguration(configPrefix);
+
 }
 
 // tslint:disable-next-line: no-any

@@ -11,6 +11,7 @@ import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties, UserCancelledError } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
+import { CompletionItemsSpy } from "./Completion";
 import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, extensionName, globalStateKeys } from "./constants";
 import { DeploymentDoc } from "./DeploymentDoc";
 import { DeploymentTemplate } from "./DeploymentTemplate";
@@ -27,7 +28,6 @@ import { DeploymentFileMapping } from "./parameterFiles/DeploymentFileMapping";
 import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
 import { DocumentPositionContext } from "./parameterFiles/DocumentPositionContext";
 import { considerQueryingForParameterFile, getFriendlyPathToFile, openParameterFile, openTemplateFile, selectParameterFile } from "./parameterFiles/parameterFiles";
-import { IReferenceSite, PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
 import { resetGlobalState } from "./resetGlobalState";
 import { getPreferredSchema } from "./schemas";
@@ -36,6 +36,7 @@ import { getQuickPickItems, sortTemplate, SortType } from "./sortTemplate";
 import { Stopwatch } from "./Stopwatch";
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, templateDocumentSelector, templateOrParameterDocumentSelector } from "./supported";
 import { survey } from "./survey";
+import { IReferenceSite, TemplatePositionContext } from "./TemplatePositionContext";
 import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedBuiltinFunctionIssue } from "./UnrecognizedFunctionIssues";
@@ -50,6 +51,8 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     ext.reporter = createTelemetryReporter(context);
     ext.outputChannel = createAzExtOutputChannel(extensionName, configPrefix);
     ext.ui = new AzureUserInput(context.globalState);
+    ext.completionItemsSpy = new CompletionItemsSpy();
+    context.subscriptions.push(ext.completionItemsSpy);
     registerUIExtensionVariables(ext);
 
     await callWithTelemetryAndErrorHandling('activate', async (actionContext: IActionContext): Promise<void> => {
@@ -929,7 +932,7 @@ export class AzureRMTools {
             return callWithTelemetryAndErrorHandlingSync('Find References', (actionContext: IActionContext): vscode.Location[] => {
                 const results: vscode.Location[] = [];
                 const locationUri: vscode.Uri = deploymentTemplate.documentId;
-                const positionContext: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
+                const positionContext: TemplatePositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
                 const references: ReferenceList | undefined = positionContext.getReferences();
                 if (references && references.length > 0) {
@@ -990,7 +993,7 @@ export class AzureRMTools {
             return callWithTelemetryAndErrorHandlingSync('provideSignatureHelp', (actionContext: IActionContext): vscode.SignatureHelp | undefined => {
                 actionContext.errorHandling.suppressDisplay = true;
 
-                const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
+                const context: TemplatePositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
 
                 let functionSignatureHelp: TLE.FunctionSignatureHelp | undefined = context.getSignatureHelp();
                 let signatureHelp: vscode.SignatureHelp | undefined;
@@ -1022,7 +1025,7 @@ export class AzureRMTools {
             return await callWithTelemetryAndErrorHandling('Rename', async () => {
                 const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
 
-                const context: PositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
+                const context: TemplatePositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
                 const referenceSiteInfo: IReferenceSite | undefined = context.getReferenceSiteInfo();
                 if (referenceSiteInfo && referenceSiteInfo.definition.definitionKind === DefinitionKind.BuiltinFunction) {
                     throw new Error("Built-in functions cannot be renamed.");
