@@ -7,6 +7,7 @@
 
 import * as assert from "assert";
 import * as fse from 'fs-extra';
+import { EOL } from "os";
 import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties, UserCancelledError } from "vscode-azureextensionui";
@@ -842,23 +843,25 @@ export class AzureRMTools {
         }
     }
 
+    // tslint:disable:prefer-template
+
     private async onProvideCompletions(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList | undefined> {
         const oneBefore = new vscode.Position(position.line, position.character - 1);
-        const oneAfter = new vscode.Position(position.line, position.character - 1);
+        const oneAfter = new vscode.Position(position.line, position.character + 1);
         const one = new vscode.CompletionItem(`New parameter one - empty range`);
-        const two = new vscode.CompletionItem(`New parameter two - len 2 range`);
-        const three = new vscode.CompletionItem(`New parameter three - len 2 range, "quote in label`);
+        const two = new vscode.CompletionItem(`New parameter two - range includes quotes`);
+        const three = new vscode.CompletionItem(`New parameter three - range includes quotes, "quote in label`);
 
         one.range = new vscode.Range(position, position);
-        one.insertText = `"one`;
+        one.insertText = `"parameter1": {` + EOL + `\t"value": "hello"` + EOL + `}`;
         one.kind = vscode.CompletionItemKind.Snippet;
 
         two.range = new vscode.Range(oneBefore, oneAfter);
-        two.insertText = "two";
+        two.insertText = `"parameter1": {` + EOL + `\t"value": "hello"` + EOL + `}`;
         two.kind = vscode.CompletionItemKind.Snippet;
 
-        three.range = new vscode.Range(position, oneAfter);
-        three.insertText = "three";
+        three.range = new vscode.Range(oneBefore, oneAfter);
+        three.insertText = `"parameter1": {` + EOL + `\t"value": "hello"` + EOL + `}`;
         three.kind = vscode.CompletionItemKind.Snippet;
 
         return new vscode.CompletionList([one, two, three]);
