@@ -851,9 +851,8 @@ export class AzureRMTools {
             const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(document, position);
             if (pc) {
                 const items: Completion.Item[] = pc.getCompletionItems();
-                ext.completionItemsSpy.postCompletionItemsResult(pc.document, items);
-
                 const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c));
+                ext.completionItemsSpy.postCompletionItemsResult(pc.document, items, vsCodeItems);
                 return new vscode.CompletionList(vsCodeItems, true);
             }
 
@@ -862,6 +861,7 @@ export class AzureRMTools {
     }
 
     private onResolveCompletionItem(item: vscode.CompletionItem, _token: vscode.CancellationToken): vscode.CompletionItem {
+        ext.completionItemsSpy.postCompletionItemResolution(item);
         return item;
     }
 

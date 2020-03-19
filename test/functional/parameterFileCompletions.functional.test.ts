@@ -10,7 +10,7 @@ import { commands, Selection } from 'vscode';
 import { assert } from '../../src/fixed_assert';
 import { delay } from '../support/delay';
 import { IDeploymentParametersFile, IDeploymentTemplate } from "../support/diagnostics";
-import { getCompletionItemsPromise, getDocumentChangedPromise } from '../support/getEventPromise';
+import { getCompletionItemResolutionPromise, getCompletionItemsPromise, getDocumentChangedPromise } from '../support/getEventPromise';
 import { openTextInNewEditor } from '../support/openTextInNewEditor';
 import { getDocumentMarkers, removeEOLMarker } from "../support/parseTemplate";
 import { testWithLanguageServer } from '../support/testWithLanguageServer';
@@ -42,23 +42,26 @@ suite("Functional parameter file completions", () => {
             const completionItemsPromise = getCompletionItemsPromise(document);
 
             await commands.executeCommand('editor.action.triggerSuggest');
-            const completions = await completionItemsPromise;
+            const { vsCodeCompletionItems } = await completionItemsPromise;
 
-            // Give time for suggestions to show (ick)
-            // CONSIDER: Use completion resolution events to figure out when the UI is ready
-            await delay(1);
-
-            const insertSuggestionIndex = completions.findIndex(c => c.label.startsWith(insertSuggestionPrefix));
+            // Analyze completions to find the one we're interested in
+            const insertSuggestionIndex = vsCodeCompletionItems.findIndex(c => c.label.startsWith(insertSuggestionPrefix));
             if (insertSuggestionIndex < 0) {
                 assert.fail(`Did not find a completion item starting with "${insertSuggestionIndex}"`);
             }
 
+            // Wait for any resolution to be sure the UI is ready
+            const firstCompletion = vsCodeCompletionItems[0];
+            await getCompletionItemResolutionPromise(firstCompletion);
+
+            // Select the item we want and select it
             await commands.executeCommand('selectFirstSuggestion');
             for (let i = 0; i < insertSuggestionIndex; ++i) {
                 await commands.executeCommand('selectNextSuggestion');
             }
-
             await commands.executeCommand('acceptSelectedSuggestion');
+
+            // Wait for it to get inserted
             const actualResult = await documentChangedPromise;
             assert.equal(actualResult, expectedResult);
 
