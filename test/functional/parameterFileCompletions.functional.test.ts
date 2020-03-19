@@ -15,7 +15,7 @@ import { openTextInNewEditor } from '../support/openTextInNewEditor';
 import { getDocumentMarkers, removeEOLMarker } from "../support/parseTemplate";
 import { testWithLanguageServer } from '../support/testWithLanguageServer';
 
-const newParamCompletionLabel = "New parameter value";
+const newParamCompletionLabel = `"<new parameter>"`;
 
 suite("Functional parameter file completions", () => {
 
@@ -49,11 +49,11 @@ suite("Functional parameter file completions", () => {
             // Analyze completions to find the one we're interested in
             const insertSuggestionIndex = vsCodeCompletionItems.findIndex(c => c.label.startsWith(insertSuggestionPrefix));
             if (insertSuggestionIndex < 0) {
-                assert.fail(`Did not find a completion item starting with "${insertSuggestionIndex}"`);
+                assert.fail(`Did not find a completion item starting with "${insertSuggestionPrefix}"`);
             }
 
             // Wait for any resolution to be sure the UI is ready
-            await delay(3000);
+            await delay(1);
             const firstCompletion = vsCodeCompletionItems[0];
             await getCompletionItemResolutionPromise(firstCompletion);
 

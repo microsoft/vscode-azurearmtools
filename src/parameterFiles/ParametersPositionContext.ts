@@ -73,7 +73,7 @@ export class ParametersPositionContext extends DocumentPositionContext {
     }
 
     // Returns undefined if references are not supported at this location.
-    // Returns empty list if supported but none found asdf test
+    // Returns empty list if supported but none found
     public getReferences(): ReferenceList | undefined {
         const refInfo = this.getReferenceSiteInfo();
         if (refInfo) {
@@ -91,14 +91,6 @@ export class ParametersPositionContext extends DocumentPositionContext {
             completions.push(this.getCompletionForNewParameter());
         }
 
-        // completions[2].insertSpan = completions[0].insertSpan;
-        // completions[2].insertText = completions[0].insertText;
-        // completions[2].detail = completions[0].detail;
-        // completions[2].kind = completions[0].kind;
-        // completions[2].insertSpan = completions[0].insertSpan;
-        // completions[2].documention = completions[0].documention;
-        // completions[2].snippetName = completions[0].snippetName;
-        //completions[2].label = completions[0].label;
         return completions;
     }
 
@@ -116,8 +108,10 @@ export class ParametersPositionContext extends DocumentPositionContext {
         }
 
         return new Completion.Item(
-            `New parameter`,
-            `"snippet"`,
+            // Want just "New parameter", but https://github.com/microsoft/vscode/issues/93054 requires
+            // there be a double quote in the label
+            `"<new parameter>"`,
+            snippet,
             this.determineCompletionSpan(),
             Completion.CompletionKind.NewPropertyValue,
             detail,
@@ -176,7 +170,7 @@ export class ParametersPositionContext extends DocumentPositionContext {
         // which ends up adding '""' first, then triggering the completion inside the quotes), then
         // the insert range needs to subsume those quotes so they get deleted when the new param is inserted.
         if (this.document.documentText.charAt(this.documentCharacterIndex - 1) === '"') { //asdf
-            //span = span.extendLeft(1);
+            span = span.extendLeft(1);
         }
         if (this.document.documentText.charAt(this.documentCharacterIndex) === '"') {
             span = span.extendRight(1);
