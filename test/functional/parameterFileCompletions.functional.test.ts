@@ -48,7 +48,7 @@ function getCompletionItemsPromise(document: TextDocument, timeout: number = 600
     });
 }
 
-suite("Function parameter file completions", () => {
+suite("Functional parameter file completions", () => {
 
     function createCompletionsFunctionalTest(
         testName: string,

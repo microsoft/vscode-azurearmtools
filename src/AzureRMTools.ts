@@ -11,7 +11,7 @@ import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties, UserCancelledError } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
-import { CompletionItemsSpy } from "./Completion";
+import * as Completion from "./Completion";
 import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, extensionName, globalStateKeys } from "./constants";
 import { DeploymentDoc } from "./DeploymentDoc";
 import { DeploymentTemplate } from "./DeploymentTemplate";
@@ -51,7 +51,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     ext.reporter = createTelemetryReporter(context);
     ext.outputChannel = createAzExtOutputChannel(extensionName, configPrefix);
     ext.ui = new AzureUserInput(context.globalState);
-    ext.completionItemsSpy = new CompletionItemsSpy();
+    ext.completionItemsSpy = new Completion.CompletionItemsSpy();
     context.subscriptions.push(ext.completionItemsSpy);
     registerUIExtensionVariables(ext);
 
@@ -846,10 +846,11 @@ export class AzureRMTools {
 
             const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(document, position);
             if (pc) {
-                const completionItems: vscode.CompletionItem[] =
-                    pc.getCompletionItems()
-                        .map(completion => toVsCodeCompletionItem(pc.document, completion));
-                return new vscode.CompletionList(completionItems, true);
+                const items: Completion.Item[] = pc.getCompletionItems();
+                ext.completionItemsSpy.postCompletionItemsResult(pc.document, items);
+
+                const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c));
+                return new vscode.CompletionList(vsCodeItems, true);
             }
 
             return undefined;
