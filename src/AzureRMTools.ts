@@ -12,6 +12,7 @@ import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties, UserCancelledError } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import * as Completion from "./Completion";
+import { CompletionsSpy } from "./CompletionsSpy";
 import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, extensionName, globalStateKeys } from "./constants";
 import { DeploymentDoc } from "./DeploymentDoc";
 import { DeploymentTemplate } from "./DeploymentTemplate";
@@ -51,7 +52,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     ext.reporter = createTelemetryReporter(context);
     ext.outputChannel = createAzExtOutputChannel(extensionName, configPrefix);
     ext.ui = new AzureUserInput(context.globalState);
-    ext.completionItemsSpy = new Completion.CompletionItemsSpy();
+    ext.completionItemsSpy = new CompletionsSpy();
     context.subscriptions.push(ext.completionItemsSpy);
     registerUIExtensionVariables(ext);
 
@@ -635,6 +636,9 @@ export class AzureRMTools {
                 context: vscode.CompletionContext
             ): Promise<vscode.CompletionList | undefined> => {
                 return await this.onProvideCompletions(document, position, token);
+            },
+            resolveCompletionItem: (item: vscode.CompletionItem, token: vscode.CancellationToken): vscode.CompletionItem => {
+                return this.onResolveCompletionItem(item, token);
             }
         };
         ext.context.subscriptions.push(
@@ -855,6 +859,10 @@ export class AzureRMTools {
 
             return undefined;
         });
+    }
+
+    private onResolveCompletionItem(item: vscode.CompletionItem, _token: vscode.CancellationToken): vscode.CompletionItem {
+        return item;
     }
 
     private async getDocumentPositionContext(document: vscode.TextDocument, position: vscode.Position): Promise<DocumentPositionContext | undefined> {

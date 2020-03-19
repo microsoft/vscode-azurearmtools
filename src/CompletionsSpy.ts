@@ -2,6 +2,9 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { Event, EventEmitter } from "vscode";
+import { Completion } from "../extension.bundle";
+import { DeploymentDoc } from "./DeploymentDoc";
 import { IFunctionMetadata } from "./IFunctionMetadata";
 import { IParameterDefinition } from "./IParameterDefinition";
 import * as language from "./Language";
@@ -114,4 +117,27 @@ export enum CompletionKind {
     // Parameter file completions
     PropertyValue = "PropertyValue", // Parameter from the template file
     NewPropertyValue = "NewPropertyValue" // New, unnamed parameter
+}
+
+export interface ICompletionsSpyResult {
+    document: DeploymentDoc;
+    result: Completion.Item[];
+}
+
+export class CompletionsSpy {
+    private readonly _emitter: EventEmitter<ICompletionsSpyResult> =
+        new EventEmitter<ICompletionsSpyResult>();
+
+    public readonly onCompletionItems: Event<ICompletionsSpyResult> = this._emitter.event;
+
+    public postCompletionItemsResult(document: DeploymentDoc, result: Completion.Item[]): void {
+        this._emitter.fire({
+            document,
+            result
+        });
+    }
+
+    public dispose(): void {
+        this._emitter.dispose();
+    }
 }
