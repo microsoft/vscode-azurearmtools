@@ -15,7 +15,7 @@ import { assert } from "./fixed_assert";
 import { IFunctionMetadata } from "./IFunctionMetadata";
 import * as Json from "./JSON";
 import * as language from "./Language";
-import { PositionContext } from "./PositionContext";
+import { TemplatePositionContext } from "./TemplatePositionContext";
 import { TemplateScope } from "./TemplateScope";
 import * as basic from "./Tokenizer";
 import { nonNullValue } from "./util/nonNull";
@@ -560,7 +560,7 @@ export class PropertyAccess extends ParentValue {
  * A set of functions that pertain to getting highlight character indexes for a TLE string.
  */
 export class BraceHighlighter {
-    public static getHighlightCharacterIndexes(context: PositionContext): number[] {
+    public static getHighlightCharacterIndexes(context: TemplatePositionContext): number[] {
         assert(context);
 
         let highlightCharacterIndexes: number[] = [];

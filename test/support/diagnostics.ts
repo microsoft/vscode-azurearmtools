@@ -16,10 +16,10 @@ const DEBUG_BREAK_AFTER_DIAGNOSTICS_COMPLETE = false;
 import * as assert from "assert";
 import * as fs from 'fs';
 import * as path from 'path';
-import { commands, Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument, window, workspace } from "vscode";
+import { Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument } from "vscode";
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
-import { getTempFilePath } from "./getTempFilePath";
+import { openTextInNewEditor } from "./openTextInNewEditor";
 import { stringify } from "./stringify";
 
 export const diagnosticsTimeout = 2 * 60 * 1000; // CONSIDER: Use this long timeout only for first test, or for suite setup
@@ -80,7 +80,7 @@ export interface IDeploymentParameterValue {
 }
 
 export interface IDeploymentParametersFile {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#\"";
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
     contentVersion: string;
     parameters?: {
         [key: string]: IDeploymentParameterValue;
@@ -290,7 +290,6 @@ export async function getDiagnosticsForTemplate(
     options?: IGetDiagnosticsOptions
 ): Promise<Diagnostic[]> {
     let templateContents: string | undefined;
-    let fileToDelete: string | undefined;
     // tslint:disable-next-line: strict-boolean-expressions
     options = options || {};
 
@@ -319,28 +318,12 @@ export async function getDiagnosticsForTemplate(
         templateContents = newContents;
     }
 
-    // Write to temp file
-    let tempPath = getTempFilePath();
-    fs.writeFileSync(tempPath, templateContents);
-    fileToDelete = tempPath;
+    let { document, dispose } = await openTextInNewEditor(templateContents);
 
-    let doc = await workspace.openTextDocument(tempPath);
-    await window.showTextDocument(doc);
-
-    let diagnostics: Diagnostic[] = await getDiagnosticsForDocument(doc, options);
+    let diagnostics: Diagnostic[] = await getDiagnosticsForDocument(document, options);
     assert(diagnostics);
 
-    // NOTE: Even though we request the editor to be closed,
-    // there's no way to request the document actually be closed,
-    //   and when you open it via an API, it doesn't close for a while,
-    //   so the diagnostics won't go away
-    // See https://github.com/Microsoft/vscode/issues/43056
-    await commands.executeCommand('workbench.action.closeAllEditors');
-
-    if (fileToDelete) {
-        fs.unlinkSync(fileToDelete);
-    }
-
+    await dispose();
     return diagnostics;
 }
 

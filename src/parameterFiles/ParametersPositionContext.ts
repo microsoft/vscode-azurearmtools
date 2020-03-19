@@ -9,8 +9,8 @@ import { DeploymentTemplate } from "../DeploymentTemplate";
 import { IParameterDefinition } from "../IParameterDefinition";
 import * as language from "../Language";
 import { createParameterFromTemplateParameter } from "../parameterFileGeneration";
-import { IReferenceSite } from "../PositionContext";
 import { ReferenceList } from "../ReferenceList";
+import { IReferenceSite } from "../TemplatePositionContext";
 import { getVSCodeRangeFromSpan } from "../util/vscodePosition";
 import { DeploymentParameters } from "./DeploymentParameters";
 import { DocumentPositionContext } from "./DocumentPositionContext";
@@ -101,7 +101,7 @@ export class ParametersPositionContext extends DocumentPositionContext {
         return undefined;
     }
 
-    public getCompletionItems(): Completion.Item[] {
+    protected getCompletionItemsCore(): Completion.Item[] {
         let completions: Completion.Item[] = [];
 
         if (this.canAddPropertyHere) {
@@ -180,12 +180,7 @@ export class ParametersPositionContext extends DocumentPositionContext {
                         span, //this.emptySpanAtDocumentCharacterIndex,
                         Completion.CompletionKind.PropertyValue,
                         detail,
-                        documentation,
-                        undefined,
-                        [{
-                            span: new language.Span(0, 30),
-                            insertText: "hello"
-                        }]));
+                        documentation));
             }
         }
 
