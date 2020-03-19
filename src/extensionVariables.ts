@@ -7,7 +7,7 @@ import * as os from 'os';
 import * as vscode from "vscode";
 import { IAzExtOutputChannel, IAzureUserInput, ITelemetryReporter } from "vscode-azureextensionui";
 import { LanguageClient } from "vscode-languageclient";
-import { CompletionItemsSpy } from "./Completion";
+import { CompletionsSpy } from "./CompletionsSpy";
 import { IConfiguration, VsCodeConfiguration } from "./Configuration";
 import { configPrefix, isWebpack } from "./constants";
 import { LanguageServerState } from "./languageclient/startArmLanguageServer";
@@ -26,7 +26,7 @@ class ExtensionVariables {
     private _reporter: InitializeBeforeUse<ITelemetryReporter> = new InitializeBeforeUse<ITelemetryReporter>();
     private _outputChannel: InitializeBeforeUse<IAzExtOutputChannel> = new InitializeBeforeUse<IAzExtOutputChannel>();
     private _ui: InitializeBeforeUse<IAzureUserInput> = new InitializeBeforeUse<IAzureUserInput>();
-    private _completionItemsSpy: InitializeBeforeUse<CompletionItemsSpy> = new InitializeBeforeUse<CompletionItemsSpy>();
+    private _completionItemsSpy: InitializeBeforeUse<CompletionsSpy> = new InitializeBeforeUse<CompletionsSpy>();
 
     public set context(context: vscode.ExtensionContext) {
         this._context.setValue(context);

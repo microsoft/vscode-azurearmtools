@@ -2,6 +2,9 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { Event, EventEmitter } from "vscode";
+import { Completion } from "../extension.bundle";
+import { DeploymentDoc } from "./DeploymentDoc";
 import { IFunctionMetadata } from "./IFunctionMetadata";
 import { IParameterDefinition } from "./IParameterDefinition";
 import * as language from "./Language";
@@ -34,12 +37,16 @@ export class Item {
     public static fromFunctionMetadata(metadata: IFunctionMetadata, replaceSpan: language.Span): Item {
         // We want to show the fully-qualified name in the completion's title, but we only need to insert the
         // unqualified name, since the namespace is already there (if any)
-        const insertText: string = metadata.unqualifiedName;
+        let insertText: string = metadata.unqualifiedName;
+        // CONSIDER: Adding parentheses is wrong if they're already there
+        if (metadata.maximumArguments === 0) {
+            // Cursor should go after the parentheses if no args
+            insertText += "()$0";
+        } else {
+            // ... or between them if there are args
+            insertText += "($0)";
+        }
 
-        // Note: We do *not* automtically add parentheses after the function name. This actually
-        // disrupts the normal flow that customers are expecting. Also, this means users will
-        // need to type "(" themselves, which will then open up the intellisense completion
-        // for the arguments, which otherwise wouldn't happen.
         return new Item(
             metadata.fullName,
             insertText,
@@ -52,7 +59,7 @@ export class Item {
 
     public static fromNamespaceDefinition(namespace: UserFunctionNamespaceDefinition, replaceSpan: language.Span): Item {
         const name: string = namespace.nameValue.unquotedValue;
-        let insertText: string = `${name}`;
+        let insertText: string = `${name}.$0`;
 
         return new Item(
             name,
@@ -67,7 +74,7 @@ export class Item {
     public static fromPropertyName(propertyName: string, replaceSpan: language.Span): Item {
         return new Item(
             propertyName,
-            `${propertyName}`,
+            `${propertyName}$0`,
             replaceSpan,
             CompletionKind.Property,
             "(property)", // detail  // CONSIDER: Add type, default value, etc.
@@ -79,7 +86,7 @@ export class Item {
         const name: string = `'${parameter.nameValue.unquotedValue}'`;
         return new Item(
             name,
-            `${name}${includeRightParenthesisInCompletion ? ")" : ""}`, //asdf
+            `${name}${includeRightParenthesisInCompletion ? ")" : ""}$0`,
             replaceSpan,
             CompletionKind.Parameter,
             `(parameter)`, // detail // CONSIDER: Add type, default value, etc. from property definition
@@ -91,7 +98,7 @@ export class Item {
         const variableName: string = `'${variable.nameValue.unquotedValue}'`;
         return new Item(
             variableName,
-            `${variableName}${includeRightParenthesisInCompletion ? ")" : ""}`,
+            `${variableName}${includeRightParenthesisInCompletion ? ")" : ""}$0`,
             replaceSpan,
             CompletionKind.Variable,
             `(variable)`, // detail
@@ -110,4 +117,27 @@ export enum CompletionKind {
     // Parameter file completions
     PropertyValue = "PropertyValue", // Parameter from the template file
     NewPropertyValue = "NewPropertyValue" // New, unnamed parameter
+}
+
+export interface ICompletionsSpyResult {
+    document: DeploymentDoc;
+    result: Completion.Item[];
+}
+
+export class CompletionsSpy {
+    private readonly _emitter: EventEmitter<ICompletionsSpyResult> =
+        new EventEmitter<ICompletionsSpyResult>();
+
+    public readonly onCompletionItems: Event<ICompletionsSpyResult> = this._emitter.event;
+
+    public postCompletionItemsResult(document: DeploymentDoc, result: Completion.Item[]): void {
+        this._emitter.fire({
+            document,
+            result
+        });
+    }
+
+    public dispose(): void {
+        this._emitter.dispose();
+    }
 }

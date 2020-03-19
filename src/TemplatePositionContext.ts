@@ -173,7 +173,7 @@ export class TemplatePositionContext extends DocumentPositionContext {
         return undefined;
     }
 
-    protected getCompletionItemsCore(): Completion.Item[] {
+    public getCompletionItems(): Completion.Item[] {
         const tleInfo = this.tleInfo;
         if (!tleInfo) {
             // No string at this position

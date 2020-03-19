@@ -101,7 +101,7 @@ export class ParametersPositionContext extends DocumentPositionContext {
         return undefined;
     }
 
-    protected getCompletionItemsCore(): Completion.Item[] {
+    public getCompletionItems(): Completion.Item[] {
         let completions: Completion.Item[] = [];
 
         if (this.canAddPropertyHere) {

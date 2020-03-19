@@ -6,49 +6,18 @@
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name no-constant-condition
 // tslint:disable:prefer-template
 
-import { commands, Selection, TextDocument, workspace } from 'vscode';
-import { Completion } from "../../extension.bundle";
-import { ext } from '../../src/extensionVariables';
+import { commands, Selection } from 'vscode';
 import { assert } from '../../src/fixed_assert';
 import { delay } from '../support/delay';
 import { IDeploymentParametersFile, IDeploymentTemplate } from "../support/diagnostics";
+import { getCompletionItemsPromise, getDocumentChangedPromise } from '../support/getEventPromise';
 import { openTextInNewEditor } from '../support/openTextInNewEditor';
 import { getDocumentMarkers, removeEOLMarker } from "../support/parseTemplate";
 import { testWithLanguageServer } from '../support/testWithLanguageServer';
 
 const newParamCompletionLabel = "New parameter value";
 
-function getDocumentChangedPromise(document: TextDocument, timeout: number = 60000): Promise<string> {
-    // tslint:disable-next-line:typedef
-    return new Promise(async (resolve, reject) => {
-        const disposable = workspace.onDidChangeTextDocument(e => {
-            if (e.document === document) {
-                disposable.dispose();
-                resolve(document.getText());
-            }
-        });
-
-        await delay(timeout);
-        reject("timeout");
-    });
-}
-
-function getCompletionItemsPromise(document: TextDocument, timeout: number = 60000): Promise<Completion.Item[]> {
-    // tslint:disable-next-line:typedef
-    return new Promise(async (resolve, reject) => {
-        const disposable = ext.completionItemsSpy.onCompletionItems(e => {
-            if (e.document.documentId.fsPath === document.uri.fsPath) {
-                disposable.dispose();
-                resolve(e.result);
-            }
-        });
-
-        await delay(timeout);
-        reject("timeout");
-    });
-}
-
-suite("Function parameter file completions", () => {
+suite("Functional parameter file completions", () => {
 
     function createCompletionsFunctionalTest(
         testName: string,
@@ -77,7 +46,7 @@ suite("Function parameter file completions", () => {
 
             // Give time for suggestions to show (ick)
             // CONSIDER: Use completion resolution events to figure out when the UI is ready
-            await delay(1000);
+            await delay(1);
 
             const insertSuggestionIndex = completions.findIndex(c => c.label.startsWith(insertSuggestionPrefix));
             if (insertSuggestionIndex < 0) {

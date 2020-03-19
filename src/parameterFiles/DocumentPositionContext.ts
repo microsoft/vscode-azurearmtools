@@ -7,7 +7,6 @@ import { CachedValue } from "../CachedValue";
 import * as Completion from "../Completion";
 import { __debugMarkPositionInString } from "../debugMarkStrings";
 import { DeploymentDoc as DeploymentDoc } from "../DeploymentDoc";
-import { ext } from "../extensionVariables";
 import { assert } from '../fixed_assert';
 import { HoverInfo } from "../Hover";
 import * as Json from "../JSON";
@@ -134,16 +133,7 @@ export abstract class DocumentPositionContext {
         return undefined;
     }
 
-    /**
-     * Get completion items for our position in the document
-     */
-    public getCompletionItems(): Completion.Item[] {
-        const items = this.getCompletionItemsCore();
-        ext.completionItemsSpy.postCompletionItemsResult(this.document, items);
-        return items;
-    }
-
-    protected abstract getCompletionItemsCore(): Completion.Item[];
+    public abstract getCompletionItems(): Completion.Item[];
 
     /**
      * Provide commands for the given document and range.
