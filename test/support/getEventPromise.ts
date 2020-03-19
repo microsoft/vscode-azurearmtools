@@ -11,7 +11,7 @@ import { ICompletionsSpyResult } from '../../src/CompletionsSpy';
 import { ext } from '../../src/extensionVariables';
 import { delay } from '../support/delay';
 
-const defaultTimeout: number = 60 * 1000;
+const defaultTimeout: number = 5000; //asdf 60 * 1000;
 
 export function getEventPromise<T>(
     eventName: string,
@@ -20,13 +20,22 @@ export function getEventPromise<T>(
     // tslint:disable-next-line:promise-must-complete
     return new Promise<T>(
         async (resolve: (value?: T | PromiseLike<T>) => void, reject: (reason?: unknown) => void): Promise<void> => {
+            let completed = false;
             executor(
-                resolve,
-                reject
+                (value?: T | PromiseLike<T>) => {
+                    completed = true;
+                    resolve(value);
+                },
+                (reason?: unknown) => {
+                    completed = true;
+                    reject(reason);
+                }
             );
 
             await delay(timeout);
-            reject(`Timed out waiting for event "${eventName}"`);
+            if (!completed) {
+                reject(new Error(`Timed out waiting for event "${eventName}"`));
+            }
         });
 }
 
@@ -60,7 +69,7 @@ export function getCompletionItemsPromise(document: TextDocument, timeout: numbe
 
 export function getCompletionItemResolutionPromise(item?: CompletionItem, timeout: number = defaultTimeout): Promise<CompletionItem> {
     return getEventPromise(
-        "onCompletionItems",
+        "onCompletionItemResolved",
         (resolve, reject) => {
             const disposable = ext.completionItemsSpy.onCompletionItemResolved(e => {
                 if (!item || e === item) {

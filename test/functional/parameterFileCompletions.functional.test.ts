@@ -34,14 +34,16 @@ suite("Functional parameter file completions", () => {
 
             await delay(1);
 
+            // Move cursor to the "!" in the document
             const position = editor.document.positionAt(bang.index);
             editor.selection = new Selection(position, position);
             await delay(1);
 
-            const documentChangedPromise = getDocumentChangedPromise(document);
+            // Trigger completion UI
             const completionItemsPromise = getCompletionItemsPromise(document);
-
             await commands.executeCommand('editor.action.triggerSuggest');
+
+            // Wait for our code to return completion items
             const { vsCodeCompletionItems } = await completionItemsPromise;
 
             // Analyze completions to find the one we're interested in
@@ -51,8 +53,11 @@ suite("Functional parameter file completions", () => {
             }
 
             // Wait for any resolution to be sure the UI is ready
+            await delay(3000);
             const firstCompletion = vsCodeCompletionItems[0];
             await getCompletionItemResolutionPromise(firstCompletion);
+
+            const documentChangedPromise = getDocumentChangedPromise(document);
 
             // Select the item we want and select it
             await commands.executeCommand('selectFirstSuggestion');

@@ -43,11 +43,11 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDoc, item: Comp
             break;
 
         case Completion.CompletionKind.PropertyValue:
-            vscodeItem.kind = vscode.CompletionItemKind.Variable; //asdf
+            vscodeItem.kind = vscode.CompletionItemKind.Property; //asdf
             break;
 
         case Completion.CompletionKind.NewPropertyValue:
-            vscodeItem.kind = vscode.CompletionItemKind.Variable; //asdf
+            vscodeItem.kind = vscode.CompletionItemKind.Property; //asdf
             break;
 
         default:

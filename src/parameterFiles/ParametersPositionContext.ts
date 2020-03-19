@@ -15,24 +15,6 @@ import { getVSCodeRangeFromSpan } from "../util/vscodePosition";
 import { DeploymentParameters } from "./DeploymentParameters";
 import { DocumentPositionContext } from "./DocumentPositionContext";
 
-//asdf refactor out a base class
-
-//asdf
-// /**
-//  * Information about a reference site (function call, parameter reference, etc.)
-//  */
-// export interface IReferenceSite {
-//     /**
-//      * Where the reference occurs in the template
-//      */
-//     referenceSpan: Language.Span;
-
-//     /**
-//      * The definition that the reference refers to
-//      */
-//     definition: INamedDefinition;
-// }
-
 /**
  * Represents a position inside the snapshot of a deployment parameter file, plus all related information
  * that can be parsed and analyzed about it from that position.
@@ -61,7 +43,7 @@ export class ParametersPositionContext extends DocumentPositionContext {
         return <DeploymentParameters>super.document;
     }
 
-    /** asdf test
+    /**
      * If this position is inside an expression, inside a reference to an interesting function/parameter/etc, then
      * return an object with information about this reference and the corresponding definition
      */
@@ -109,11 +91,19 @@ export class ParametersPositionContext extends DocumentPositionContext {
             completions.push(this.getCompletionForNewParameter());
         }
 
+        // completions[2].insertSpan = completions[0].insertSpan;
+        // completions[2].insertText = completions[0].insertText;
+        // completions[2].detail = completions[0].detail;
+        // completions[2].kind = completions[0].kind;
+        // completions[2].insertSpan = completions[0].insertSpan;
+        // completions[2].documention = completions[0].documention;
+        // completions[2].snippetName = completions[0].snippetName;
+        //completions[2].label = completions[0].label;
         return completions;
     }
 
     private getCompletionForNewParameter(): Completion.Item {
-        const detail = "Insert new parameter and value";
+        const detail = "Insert new parameter";
         let snippet =
             // tslint:disable-next-line:prefer-template
             `"\${1:parameter1}": {` + EOL
@@ -126,9 +116,9 @@ export class ParametersPositionContext extends DocumentPositionContext {
         }
 
         return new Completion.Item(
-            "New parameter value",
-            snippet,
-            this.emptySpanAtDocumentCharacterIndex,
+            `New parameter`,
+            `"snippet"`,
+            this.determineCompletionSpan(),
             Completion.CompletionKind.NewPropertyValue,
             detail,
             documentation);
@@ -159,17 +149,7 @@ export class ParametersPositionContext extends DocumentPositionContext {
                 const documentation = `Insert a value for parameter '${param.nameValue.unquotedValue}' from the template file"`;
                 const detail = paramText;
 
-                let span = this.emptySpanAtDocumentCharacterIndex;
-
-                // If the completion is triggered inside double quotes, or from a trigger character of a double quotes (
-                // which ends up adding '""' first, then triggering the completion inside the quotes), then
-                // the insert range needs to subsume those quotes so they get deleted when the new param is inserted.
-                if (this.document.documentText.charAt(this.documentCharacterIndex - 1) === '"') { //asdf
-                    span = span.extendLeft(1);
-                }
-                if (this.document.documentText.charAt(this.documentCharacterIndex) === '"') {
-                    span = span.extendRight(1);
-                }
+                let span = this.determineCompletionSpan();
 
                 if (this.needsCommaAfterCompletion()) {
                     replacement += ',';
@@ -187,6 +167,22 @@ export class ParametersPositionContext extends DocumentPositionContext {
         }
 
         return completions;
+    }
+
+    private determineCompletionSpan(): language.Span {
+        let span = this.emptySpanAtDocumentCharacterIndex;
+
+        // If the completion is triggered inside double quotes, or from a trigger character of a double quotes (
+        // which ends up adding '""' first, then triggering the completion inside the quotes), then
+        // the insert range needs to subsume those quotes so they get deleted when the new param is inserted.
+        if (this.document.documentText.charAt(this.documentCharacterIndex - 1) === '"') { //asdf
+            //span = span.extendLeft(1);
+        }
+        if (this.document.documentText.charAt(this.documentCharacterIndex) === '"') {
+            span = span.extendRight(1);
+        }
+
+        return span;
     }
 
     private needsCommaAfterCompletion(): boolean {
