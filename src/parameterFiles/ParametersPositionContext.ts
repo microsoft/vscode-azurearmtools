@@ -114,12 +114,16 @@ export class ParametersPositionContext extends DocumentPositionContext {
 
     private getCompletionForNewParameter(): Completion.Item {
         const detail = "Insert new parameter and value";
-        const snippet =
+        let snippet =
             // tslint:disable-next-line:prefer-template
             `"\${1:parameter1}": {` + EOL
             + `\t"value": "\${2:value}"` + EOL
-            + `}` + EOL;
+            + `}`;
         const documentation = "documentation";
+
+        if (this.needsCommaAfterCompletion()) {
+            snippet += ',';
+        }
 
         return new Completion.Item(
             "New parameter value",
@@ -155,7 +159,6 @@ export class ParametersPositionContext extends DocumentPositionContext {
                 const documentation = `Insert a value for parameter '${param.nameValue.unquotedValue}' from the template file"`;
                 const detail = paramText;
 
-                //let span = new language.Span(this.documentCharacterIndex - 1, 2);
                 let span = this.emptySpanAtDocumentCharacterIndex;
 
                 // If the completion is triggered inside double quotes, or from a trigger character of a double quotes (
@@ -168,8 +171,7 @@ export class ParametersPositionContext extends DocumentPositionContext {
                     span = span.extendRight(1);
                 }
 
-                // If there are any parameters after the one being inserted, we need to add a comma after the new one
-                if (this.document.parameterValues.some(p => p.fullSpan.startIndex >= this.documentCharacterIndex)) {
+                if (this.needsCommaAfterCompletion()) {
                     replacement += ',';
                 }
 
@@ -185,6 +187,15 @@ export class ParametersPositionContext extends DocumentPositionContext {
         }
 
         return completions;
+    }
+
+    private needsCommaAfterCompletion(): boolean {
+        // If there are any parameters after the one being inserted, we need to add a comma after the new one
+        if (this.document.parameterValues.some(p => p.fullSpan.startIndex >= this.documentCharacterIndex)) {
+            return true;
+        }
+
+        return false;
     }
 
     // True if inside the "parameters" object, but not inside any properties

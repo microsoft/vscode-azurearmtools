@@ -50,24 +50,20 @@ function getCompletionItemsPromise(document: TextDocument, timeout: number = 600
 
 suite("Function parameter file completions", () => {
 
-    function createParamsCompletionsFunctionalTest(
+    function createCompletionsFunctionalTest(
         testName: string,
         params: string | Partial<IDeploymentParametersFile>,
         template: string | Partial<IDeploymentTemplate> | undefined,
         insertSuggestionPrefix: string, // Insert the suggestion starting with this string
-        // Can either be an array of completion names, or an array of
-        //   [completion name, insert text] tuples
         expectedResult: string
     ): void {
         testWithLanguageServer(testName, async () => {
-            //let dt: DeploymentTemplate | undefined = template ? await parseTemplate(template) : undefined;
-
             const { markers: { bang }, unmarkedText } = getDocumentMarkers(params);
             expectedResult = removeEOLMarker(expectedResult);
 
             let { editor, document, dispose } = await openTextInNewEditor(unmarkedText);
 
-            await delay(1000);
+            await delay(1);
 
             const position = editor.document.positionAt(bang.index);
             editor.selection = new Selection(position, position);
@@ -79,7 +75,8 @@ suite("Function parameter file completions", () => {
             await commands.executeCommand('editor.action.triggerSuggest');
             const completions = await completionItemsPromise;
 
-            // Give suggestions UI time to show up (ick)
+            // Give time for suggestions to show (ick)
+            // CONSIDER: Use completion resolution events to figure out when the UI is ready
             await delay(1000);
 
             const insertSuggestionIndex = completions.findIndex(c => c.label.startsWith(insertSuggestionPrefix));
@@ -92,8 +89,6 @@ suite("Function parameter file completions", () => {
                 await commands.executeCommand('selectNextSuggestion');
             }
 
-            await delay(1000);
-
             await commands.executeCommand('acceptSelectedSuggestion');
             const actualResult = await documentChangedPromise;
             assert.equal(actualResult, expectedResult);
@@ -102,37 +97,33 @@ suite("Function parameter file completions", () => {
         });
     }
 
-    // /**asdf
-    //  * Given a deployment template and a character index into it, verify that getReferences on the template
-    //  * returns the expected set of locations.
-    //  *
-    //  * Usually parseTemplateWithMarkers will be used to parse the document and find the indices of a set of locations
-    //  * Example:
-    //  *
-    //  *      const { dt, markers: { apiVersionDef, apiVersionReference } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
-    //  *      // Cursor at reference to "apiVersion" inside resources
-    //  *      await testFindReferences(dt, apiVersionReference.index, [apiVersionReference.index, apiVersionDef.index]);
-    //  */
-    // export async function testParamCompletions(
-    //     dt: DeploymentTemplate,
-    //     dp: DeploymentParameters,
-    //     cursorIndex: number,
-    //     expectedReferenceIndices: number[]
-    // ): Promise<void> {
-    //     const pc = dt.getContextFromDocumentCharacterIndex(cursorIndex);
-    //     // tslint:disable-next-line: no-non-null-assertion
-    //     const references: ReferenceList = pc.getReferences()!;
-    //     assert(references, "Expected non-empty list of references");
+    suite("No template file", () => {
+        suite("Completions for new parameters", async () => {
+            createCompletionsFunctionalTest(
+                "No template file, new parameter in blank section",
+                `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        !{EOL}
+    }
+}`,
+                undefined,
+                newParamCompletionLabel,
+                `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "parameter1": {
+            "value": "value"
+        }
+    }
+}`
+            );
 
-    //     const indices = references.spans.map(r => r.startIndex).sort();
-    //     expectedReferenceIndices = expectedReferenceIndices.sort();
-
-    //     assert.deepStrictEqual(indices, expectedReferenceIndices);
-    // }
-    suite("Completions for new parameters", async () => {
-        createParamsCompletionsFunctionalTest(
-            "asdf",
-            `{
+            createCompletionsFunctionalTest(
+                "No template file, new parameter after an existing one, comma already exists",
+                `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
@@ -142,19 +133,9 @@ suite("Function parameter file completions", () => {
         !{EOL}
     }
 }`,
-            {
-                "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                "parameters": {
-                    "Parameter10": {
-                        "type": "int"
-                    },
-                    "Parameter2": {
-                        "type": "string"
-                    }
-                }
-            },
-            newParamCompletionLabel,
-            `{
+                undefined,
+                newParamCompletionLabel,
+                `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
@@ -164,33 +145,59 @@ suite("Function parameter file completions", () => {
         "parameter1": {
             "value": "value"
         }
-        {EOL}
     }
 }`
-        );
+            );
+
+            createCompletionsFunctionalTest(
+                "No template file, new parameter before an existing one, automatically adds comma after new parameter",
+                `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        !{EOL}
+        "PARAmeter2": {
+            "value": "string"
+        }
+    }
+}`,
+                undefined,
+                newParamCompletionLabel,
+                `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "parameter1": {
+            "value": "value"
+        },
+        "PARAmeter2": {
+            "value": "string"
+        }
+    }
+}`
+            );
+
+            createCompletionsFunctionalTest(
+                "No template file, inside existing double quotes (or double quote trigger), removes double quotes when inserting",
+                `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "!"
+    }
+}`,
+                undefined,
+                newParamCompletionLabel,
+                `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "parameter1": {
+            "value": "value"
+        }
+    }
+}`
+            );
+        });
     });
 });
-
-// export async function acceptFirstSuggestion(uri: vscode.Uri, _disposables: vscode.Disposable[]) {
-// 	const didChangeDocument = onChangedDocument(uri, _disposables);
-// 	await vscode.commands.executeCommand('editor.action.triggerSuggest');
-// 	await wait(1000); // Give time for suggestions to show
-// 	await vscode.commands.executeCommand('acceptSelectedSuggestion');
-// 	return didChangeDocument;
-// }
-
-// export async function typeCommitCharacter(uri: vscode.Uri, character: string, _disposables: vscode.Disposable[]) {
-// 	const didChangeDocument = onChangedDocument(uri, _disposables);
-// 	await vscode.commands.executeCommand('editor.action.triggerSuggest');
-// 	await wait(1000); // Give time for suggestions to show
-// 	await vscode.commands.executeCommand('type', { text: character });
-// 	return await didChangeDocument;
-// }
-
-// export function onChangedDocument(documentUri: Uri, disposables: Disposable[]) {
-// 	return new Promise<TextDocument>(resolve => workspace.onDidChangeTextDocument(e => {
-// 		if (e.document.uri.toString() === documentUri.toString()) {
-// 			resolve(e.document);
-// 		}
-// 	}, undefined, disposables));
-// };
