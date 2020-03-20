@@ -17,7 +17,7 @@ const readAtMostBytesToFindParamsSchema = 4 * 1024;
 const currentMessage = "Current";
 const similarFilenameMessage = "Similar filename";
 const fileNotFoundMessage = "File not found";
-const howToMessage = `You can manually associate a parameter file with this template at any time by clicking "Select Parameter File..." in the status bar or the editor context menu.`;
+const howToMessage = `You can manually select the parameter file for this template at any time by clicking "Select Parameter File..." in the status bar or the editor context menu.`;
 
 // Not worrying about Win32 case-insensitivity here because
 // it's this vscode instance and local only and thus likely to be the
@@ -57,7 +57,7 @@ export async function selectParameterFile(actionContext: IActionContext, sourceU
     quickPickList.items,
     {
       canPickMany: false,
-      placeHolder: `Select a parameter file to associate with "${path.basename(templateUri.fsPath)}"`,
+      placeHolder: `Select a parameter file for "${path.basename(templateUri.fsPath)}"`,
       suppressPersistence: true
     });
 
@@ -125,7 +125,7 @@ export async function openParameterFile(actionContext: IActionContext, sourceUri
   if (sourceUri) {
     let paramFile: Uri | undefined = parameterUri || findMappedParameterFileForTemplate(sourceUri);
     if (!paramFile) {
-      throw new Error(`There is no parameter file currently associated with template file "${sourceUri.fsPath}"`);
+      throw new Error(`There is currently no parameter file for template file "${sourceUri.fsPath}"`);
     }
 
     let doc: TextDocument = await workspace.openTextDocument(paramFile);
@@ -401,7 +401,7 @@ export function considerQueryingForParameterFile(document: TextDocument): void {
     const another: MessageItem = { title: "Choose File..." };
 
     const response: MessageItem | undefined = await window.showInformationMessage(
-      `A parameter file "${closestMatch.friendlyPath}" has been detected. Do you want to associate it with template file "${path.basename(templatPath)}"? Having a parameter file association enables additional functionality, such as more complete validation.`,
+      `A parameter file "${closestMatch.friendlyPath}" has been detected. Do you want use it as the parameter file for "${path.basename(templatPath)}"? This will enable additional functionality, such as more complete validation.`,
       yes,
       no,
       another
