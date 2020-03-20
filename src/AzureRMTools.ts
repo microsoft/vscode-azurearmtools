@@ -29,6 +29,7 @@ import { DeploymentFileMapping } from "./parameterFiles/DeploymentFileMapping";
 import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
 import { DocumentPositionContext } from "./parameterFiles/DocumentPositionContext";
 import { considerQueryingForParameterFile, getFriendlyPathToFile, openParameterFile, openTemplateFile, selectParameterFile } from "./parameterFiles/parameterFiles";
+import { setParameterFileContext } from "./parameterFiles/setParameterFileContext";
 import { ReferenceList } from "./ReferenceList";
 import { resetGlobalState } from "./resetGlobalState";
 import { getPreferredSchema } from "./schemas";
@@ -174,7 +175,7 @@ export class AzureRMTools {
             async () => {
                 this._mapping.resetCache();
                 // tslint:disable-next-line: no-floating-promises
-                this.updateStatusBar();
+                this.updateEditorState();
             },
             this,
             context.subscriptions);
@@ -360,7 +361,7 @@ export class AzureRMTools {
                 }
 
                 // tslint:disable-next-line: no-floating-promises
-                this.updateStatusBar();
+                this.updateEditorState();
             }
         });
     }
@@ -688,46 +689,71 @@ export class AzureRMTools {
         startArmLanguageServer();
     }
 
-    private async updateStatusBar(): Promise<void> {
-        const activeDocument = vscode.window.activeTextEditor?.document;
-        if (activeDocument) {
-            const deploymentTemplate = this.getDeploymentDoc(activeDocument);
-            if (deploymentTemplate instanceof DeploymentTemplate) {
-                const paramFileUri = this._mapping.getParameterFile(activeDocument.uri);
-                if (paramFileUri) {
-                    const doesParamFileExist = await fse.pathExists(paramFileUri?.fsPath);
-                    let text = `Parameters: ${getFriendlyPathToFile(paramFileUri)}`;
-                    if (!doesParamFileExist) {
-                        text += " $(error) Not found";
-                    }
-                    this._paramsStatusBarItem.text = text;
-                } else {
-                    this._paramsStatusBarItem.text = "Select Parameter File...";
-                }
-                this._paramsStatusBarItem.command = "azurerm-vscode-tools.selectParameterFile";
-                this._paramsStatusBarItem.show();
-                return;
-            } else if (deploymentTemplate instanceof DeploymentParameters) {
-                const templateFileUri = this._mapping.getTemplateFile(activeDocument.uri);
-                if (templateFileUri) {
-                    const doesTemplateFileExist = await fse.pathExists(templateFileUri?.fsPath);
-                    let text = `Template file: ${getFriendlyPathToFile(templateFileUri)}`;
-                    if (!doesTemplateFileExist) {
-                        text += " $(error) Not found";
-                    }
-                    this._paramsStatusBarItem.text = text;
-                } else {
-                    this._paramsStatusBarItem.hide();
-                    return;
-                    //this._paramsStatusBarItem.text = "Select Template File..."; //asdf
-                }
-                this._paramsStatusBarItem.command = "azurerm-vscode-tools.openTemplateFile";
-                this._paramsStatusBarItem.show();
-                return;
-            }
-        }
+    private async updateEditorState(): Promise<void> {
+        let show = false;
+        let isTemplateFile = false;
+        let templateFileHasParamFile = false;
+        let isParamFile = false;
+        let paramFileHasTemplateFile = false;
 
-        this._paramsStatusBarItem.hide();
+        try {
+            const activeDocument = vscode.window.activeTextEditor?.document;
+            if (activeDocument) {
+                const deploymentTemplate = this.getDeploymentDoc(activeDocument);
+                if (deploymentTemplate instanceof DeploymentTemplate) {
+                    show = true;
+                    isTemplateFile = true;
+                    let statusBarText: string;
+
+                    const paramFileUri = this._mapping.getParameterFile(activeDocument.uri);
+                    if (paramFileUri) {
+                        templateFileHasParamFile = true;
+                        const doesParamFileExist = await fse.pathExists(paramFileUri?.fsPath);
+                        statusBarText = `Parameters: ${getFriendlyPathToFile(paramFileUri)}`;
+                        if (!doesParamFileExist) {
+                            statusBarText += " $(error) Not found";
+                        }
+                    } else {
+                        statusBarText = "Select Parameter File...";
+                    }
+
+                    this._paramsStatusBarItem.command = "azurerm-vscode-tools.selectParameterFile";
+                    this._paramsStatusBarItem.text = statusBarText;
+                } else if (deploymentTemplate instanceof DeploymentParameters) {
+                    show = true;
+                    isParamFile = true;
+                    let statusBarText: string;
+
+                    const templateFileUri = this._mapping.getTemplateFile(activeDocument.uri);
+                    if (templateFileUri) {
+                        paramFileHasTemplateFile = true;
+                        const doesTemplateFileExist = await fse.pathExists(templateFileUri?.fsPath);
+                        statusBarText = `Template file: ${getFriendlyPathToFile(templateFileUri)}`;
+                        if (!doesTemplateFileExist) {
+                            statusBarText += " $(error) Not found";
+                        }
+                    } else {
+                        statusBarText = "No template file selected";
+                    }
+
+                    this._paramsStatusBarItem.text = statusBarText;
+                }
+            }
+        } finally {
+            if (show) {
+                this._paramsStatusBarItem.show();
+            } else {
+                this._paramsStatusBarItem.hide();
+            }
+
+            // tslint:disable-next-line: no-floating-promises
+            setParameterFileContext({
+                isTemplateFile,
+                hasParamFile: templateFileHasParamFile,
+                isParamFile: isParamFile,
+                hasTemplateFile: paramFileHasTemplateFile
+            });
+        }
     }
 
     /**
@@ -1103,7 +1129,7 @@ export class AzureRMTools {
             }
 
             // tslint:disable-next-line: no-floating-promises
-            this.updateStatusBar();
+            this.updateEditorState();
         });
     }
 

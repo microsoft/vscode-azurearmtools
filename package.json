@@ -51,7 +51,6 @@
         "onCommand:azurerm-vscode-tools.sortResources",
         "onCommand:azurerm-vscode-tools.sortVariables",
         "onCommand:azurerm-vscode-tools.selectParameterFile",
-        "onCommand:azurerm-vscode-tools.selectTemplateFile",
         "onCommand:azurerm-vscode-tools.openParameterFile",
         "onCommand:azurerm-vscode-tools.openTemplateFile",
         "onCommand:azurerm-vscode-tools.resetGlobalState"
@@ -210,22 +209,16 @@
                 "category": "Azure Resource Manager Tools",
                 "title": "Open Parameter File",
                 "command": "azurerm-vscode-tools.openParameterFile",
-                "enablement": "editorLangId==arm-template"
+                "enablement": "azurerm-vscode-tools-hasParamFile",
+                "$enablement.comment": "Shows up when it's a template file, but only enabled if there is an associated param file"
             },
             {
                 "$comment": "============= Parameter file commands =============",
                 "category": "Azure Resource Manager Tools",
-                "title": "Select Template File...",
-                "command": "azurerm-vscode-tools.selectTemplateFile",
-                "enablement": "editorLangId=~/jsonc?/",
-                "$asdf": "only if params file"
-            },
-            {
-                "category": "Azure Resource Manager Tools",
-                "title": "Open Associated Template File",
+                "title": "Open Template File",
                 "command": "azurerm-vscode-tools.openTemplateFile",
-                "enablement": "editorLangId=~/jsonc?/",
-                "$asdf": "only if params file"
+                "enablement": "azurerm-vscode-tools-hasTemplateFile",
+                "$enablement.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
             }
         ],
         "menus": {
@@ -249,6 +242,10 @@
                 {
                     "command": "azurerm-vscode-tools.sortVariables",
                     "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.openTemplateFile",
+                    "when": "never"
                 }
             ],
             "editor/context": [
@@ -261,7 +258,8 @@
                 {
                     "command": "azurerm-vscode-tools.openParameterFile",
                     "group": "zzz_arm-template@2",
-                    "when": "editorLangId==arm-template"
+                    "when": "editorLangId==arm-template",
+                    "$when.comment": "Shows up when it's a template file, but only enabled if there is an associated param file"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortTemplate",
@@ -270,16 +268,10 @@
                 },
                 {
                     "$comment": "============= Parameter file commands =============",
-                    "command": "azurerm-vscode-tools.selectTemplateFile",
-                    "group": "zzz_arm-params@1",
-                    "when": "editorLangId=~/jsonc?/",
-                    "$asdf": "when"
-                },
-                {
                     "command": "azurerm-vscode-tools.openTemplateFile",
                     "group": "zzz_arm-params@2",
-                    "when": "editorLangId=~/jsonc?/",
-                    "$asdf": "when"
+                    "when": "azurerm-vscode-tools-isParamFile",
+                    "$when.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
                 }
             ],
             "view/item/context": [
@@ -325,20 +317,15 @@
                 {
                     "command": "azurerm-vscode-tools.openParameterFile",
                     "group": "zzz_arm-template@2",
-                    "when": "editorLangId==arm-template"
+                    "when": "editorLangId==arm-template",
+                    "$when.comment": "Shows up when it's a template file, but only enabled if there is an associated param file"
                 },
                 {
                     "$comment": "============= Parameter file commands =============",
-                    "command": "azurerm-vscode-tools.selectTemplateFile",
-                    "group": "zzz_arm-params@1",
-                    "when": "editorLangId=~/jsonc?/",
-                    "$asdf": "when"
-                },
-                {
                     "command": "azurerm-vscode-tools.openTemplateFile",
                     "group": "zzz_arm-params@2",
-                    "when": "editorLangId=~/jsonc?/",
-                    "$asdf": "when"
+                    "when": "azurerm-vscode-tools-isParamFile",
+                    "$when.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
                 }
             ],
             "editor/title/context": [
@@ -351,20 +338,15 @@
                 {
                     "command": "azurerm-vscode-tools.openParameterFile",
                     "group": "zzz_arm-template@2",
-                    "when": "editorLangId==arm-template"
+                    "when": "editorLangId==arm-template",
+                    "$when.comment": "Shows up when it's a template file, but only enabled if there is an associated param file"
                 },
                 {
                     "$comment": "============= Parameter file commands =============",
-                    "command": "azurerm-vscode-tools.selectTemplateFile",
-                    "group": "zzz_arm-params@1",
-                    "when": "editorLangId=~/jsonc?/",
-                    "$asdf": "when"
-                },
-                {
-                    "command": "azurerm-vscode-tools.openParameterFile",
+                    "command": "azurerm-vscode-tools.openTemplateFile",
                     "group": "zzz_arm-params@2",
-                    "when": "editorLangId=~/jsonc?/",
-                    "$asdf": "when"
+                    "when": "azurerm-vscode-tools-isParamFile",
+                    "$when.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
                 }
             ]
         }
