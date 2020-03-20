@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { EOL } from "os";
-import { CodeAction, CodeActionContext, CodeActionKind, Command, Range, Selection } from "vscode";
+import { CodeAction, CodeActionContext, CodeActionKind, Command, Range, Selection, TextEditor } from "vscode";
 import { Json } from "../../extension.bundle";
 import * as Completion from "../Completion";
 import { DeploymentTemplate } from "../DeploymentTemplate";
@@ -11,10 +11,11 @@ import { assert } from "../fixed_assert";
 import { IParameterDefinition } from "../IParameterDefinition";
 import { Comments } from "../JSON";
 import * as language from "../Language";
-import { createParameterFromTemplateParameter } from "../parameterFileGeneration";
+import { createParameterFromTemplateParameter, defaultTabSize } from "../parameterFileGeneration";
 import { ReferenceList } from "../ReferenceList";
 import { IReferenceSite } from "../TemplatePositionContext";
-import { getVSCodeRangeFromSpan } from "../util/vscodePosition";
+import { indentMultilineString } from "../util/multilineStrings";
+import { getVSCodePositionFromPosition, getVSCodeRangeFromSpan } from "../util/vscodePosition";
 import { DeploymentParameters } from "./DeploymentParameters";
 import { DocumentPositionContext } from "./DocumentPositionContext";
 
@@ -169,7 +170,7 @@ export class ParametersPositionContext extends DocumentPositionContext {
         }
 
         // Comma before?
-        const commaEdit = this.createEditForAddingCommaBeforeParameter();
+        const commaEdit = this.createEditToAddCommaBeforeDocPosition();
 
         return new Completion.Item(
             label,
@@ -207,7 +208,7 @@ export class ParametersPositionContext extends DocumentPositionContext {
         return false;
     }
 
-    private createEditForAddingCommaBeforeParameter(): { insertText: string; span: language.Span } | undefined {
+    private createEditToAddCommaBeforeDocPosition(): { insertText: string; span: language.Span } | undefined {
         // Are there are any parameters before the one being inserted?
         const newParamIndex = this.document.parameterValues
             .filter(
@@ -275,33 +276,37 @@ export class ParametersPositionContext extends DocumentPositionContext {
     public async getCodeActions(range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]> {
         const actions: (Command | CodeAction)[] = [];
         const parametersProperty = this.document.parametersProperty;
-        if (parametersProperty && this.doOverlap(range, parametersProperty.nameValue.span)) {
-            const missingParameters: IParameterDefinition[] = this.getMissingParameters();
 
-            // Add all missing parameters
-            if (missingParameters.length > 0) {
-                const action = new CodeAction("Add all missing parameters", CodeActionKind.QuickFix);
-                action.command = {
-                    command: 'azurerm-vscode-tools.codeAction.addAllMissingParameters',
-                    title: action.title
-                    // arguments: [
-                    //     this.document.documentId
-                    // ]
-                };
-                actions.push(action);
-            }
+        if (parametersProperty) {
+            const lineIndex = this.document.getDocumentPosition(parametersProperty?.nameValue.span.startIndex).line;
+            if (lineIndex >= range.start.line && lineIndex <= range.end.line) {
+                const missingParameters: IParameterDefinition[] = this.getMissingParameters(false);
 
-            // Add missing required parameters
-            if (missingParameters.some(p => this.isParameterRequired(p))) {
-                const action = new CodeAction("Add missing required parameters", CodeActionKind.QuickFix);
-                action.command = {
-                    command: 'azurerm-vscode-tools.codeAction.addMissingRequiredParameters',
-                    title: action.title
-                    // arguments: [
-                    //     this.document.documentId
-                    // ]
-                };
-                actions.push(action);
+                // Add all missing parameters
+                if (missingParameters.length > 0) {
+                    const action = new CodeAction("Add all missing parameters", CodeActionKind.QuickFix);
+                    action.command = {
+                        command: 'azurerm-vscode-tools.codeAction.addAllMissingParameters',
+                        title: action.title
+                        // arguments: [
+                        //     this.document.documentId
+                        // ]
+                    };
+                    actions.push(action);
+                }
+
+                // Add missing required parameters
+                if (missingParameters.some(p => this.isParameterRequired(p))) {
+                    const action = new CodeAction("Add missing required parameters", CodeActionKind.QuickFix);
+                    action.command = {
+                        command: 'azurerm-vscode-tools.codeAction.addMissingRequiredParameters',
+                        title: action.title
+                        // arguments: [
+                        //     this.document.documentId
+                        // ]
+                    };
+                    actions.push(action);
+                }
             }
         }
 
@@ -312,7 +317,7 @@ export class ParametersPositionContext extends DocumentPositionContext {
         return !paramDef.defaultValue;
     }
 
-    private getMissingParameters(): IParameterDefinition[] {
+    private getMissingParameters(onlyRequiredParameters: boolean): IParameterDefinition[] {
         if (!this._associatedTemplate) {
             return [];
         }
@@ -325,11 +330,87 @@ export class ParametersPositionContext extends DocumentPositionContext {
             }
         }
 
+        if (onlyRequiredParameters) {
+            return results.filter(p => this.isParameterRequired(p));
+        }
+
         return results;
     }
 
-    private doOverlap(range: Range | Selection, span: language.Span): boolean { //asdf test
-        const spanAsRange = getVSCodeRangeFromSpan(this.document, span);
-        return !!range.intersection(spanAsRange);
+    // where does this belong?
+    public static async addMissingParameters(
+        editor: TextEditor,
+        params: DeploymentParameters,
+        template: DeploymentTemplate,
+        onlyRequiredParameters: boolean
+    ): Promise<void> {
+        // Find the location to insert new stuff in the parameters section
+        if (params.parametersProperty && params.parametersObjectValue) {
+            // Where insert?
+            // Find last non-whitespace token inside the parameters section
+            let lastTokenInParameters: Json.Token | undefined;
+            for (let i = params.parametersProperty.span.endIndex - 1; // Start before the closing "}"
+                i >= params.parametersProperty.span.startIndex;
+                --i) {
+                lastTokenInParameters = params.jsonParseResult.getTokenAtCharacterIndex(i, Comments.includeCommentTokens);
+                if (lastTokenInParameters) {
+                    break;
+                }
+            }
+            const insertIndex: number = lastTokenInParameters
+                ? lastTokenInParameters.span.afterEndIndex
+                : params.parametersObjectValue.span.endIndex;
+
+            const pc = ParametersPositionContext.fromDocumentCharacterIndex(params, insertIndex, template);
+
+            // Find missing params
+            const missingParams: IParameterDefinition[] = pc.getMissingParameters(onlyRequiredParameters);
+            if (missingParams.length === 0) {
+                return;
+            }
+
+            // Create insertion text
+            let paramsAsText: string[] = [];
+            for (let param of missingParams) {
+                const paramText = createParameterFromTemplateParameter(template, param, defaultTabSize);
+                paramsAsText.push(paramText);
+            }
+            let newText = paramsAsText.join(`,${EOL}`);
+
+            // Determine indentation
+            const parametersObjectIndent = params.getDocumentPosition(params.parametersProperty?.nameValue.span.startIndex).column;
+            const lastParameter = params.parameterValues.length > 0 ? params.parameterValues[params.parameterValues.length - 1] : undefined;
+            const lastParameterIndent = lastParameter ? params.getDocumentPosition(lastParameter?.fullSpan.startIndex).column : undefined;
+            const newTextIndent = lastParameterIndent === undefined ? parametersObjectIndent + defaultTabSize : lastParameterIndent;
+            let indentedText = indentMultilineString(newText, newTextIndent);
+            let insertText = EOL + indentedText;
+
+            // If insertion point is on the same line as the end of the parameters object, then add a newline
+            // afterwards and indent it (e.g. parameters object = empty, {})
+            if (params.getDocumentPosition(insertIndex).line
+                === params.getDocumentPosition(params.parametersObjectValue.span.endIndex).line
+            ) {
+                insertText += EOL + ' '.repeat(defaultTabSize); 5;
+            }
+
+            // Add comma before?
+            let commaEdit = pc.createEditToAddCommaBeforeDocPosition();
+            assert(!commaEdit || commaEdit.span.endIndex <= insertIndex);
+            if (commaEdit?.span.startIndex === insertIndex) {
+                // vscode doesn't like both edits starting at the same location, so
+                //   just add the comma directly to the string (this is the common case)
+                commaEdit = undefined;
+                indentedText = `,${indentedText}`;
+            }
+
+            await editor.edit(editBuilder => {
+                editBuilder.insert(getVSCodePositionFromPosition(pc.documentPosition), insertText);
+                if (commaEdit) {
+                    editBuilder.replace(
+                        getVSCodeRangeFromSpan(params, commaEdit.span),
+                        commaEdit.insertText);
+                }
+            });
+        }
     }
 }

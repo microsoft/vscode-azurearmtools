@@ -49,7 +49,7 @@ export { IParameterDefinition } from "./src/IParameterDefinition";
 export * from "./src/Language";
 export { LanguageServerState } from "./src/languageclient/startArmLanguageServer";
 export { ParameterDefinition } from "./src/ParameterDefinition";
-export { createParameterFileContents, createParameterFromTemplateParameter as createParameterProperty } from './src/parameterFileGeneration';
+export { createParameterFileContents, createParameterFromTemplateParameter } from './src/parameterFileGeneration';
 export { DeploymentFileMapping } from "./src/parameterFiles/DeploymentFileMapping";
 export { DeploymentParameters } from "./src/parameterFiles/DeploymentParameters";
 export { mayBeMatchingParameterFile } from "./src/parameterFiles/parameterFiles";

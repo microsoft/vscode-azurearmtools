@@ -11,7 +11,7 @@ import { DeploymentTemplate } from "../extension.bundle";
 import { IDeploymentParametersFile, IDeploymentTemplate } from "./support/diagnostics";
 import { parseParametersWithMarkers, parseTemplate } from "./support/parseTemplate";
 
-const newParamCompletionLabel = "New parameter value";
+const newParamCompletionLabel = `"<new parameter>"`;
 
 suite("Parameter file completions", () => {
 
