@@ -19,8 +19,8 @@ import * as path from 'path';
 import { Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument } from "vscode";
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
-import { openTextInNewEditor } from "./openTextInNewEditor";
 import { stringify } from "./stringify";
+import { TempDocument, TempEditor, TempFile } from "./TempFile";
 
 export const diagnosticsTimeout = 2 * 60 * 1000; // CONSIDER: Use this long timeout only for first test, or for suite setup
 export const testFolder = path.join(__dirname, '..', '..', '..', 'test');
@@ -318,12 +318,15 @@ export async function getDiagnosticsForTemplate(
         templateContents = newContents;
     }
 
-    let { document, dispose } = await openTextInNewEditor(templateContents);
+    const tempFile = new TempFile(templateContents);
+    const document = new TempDocument(tempFile);
+    const editor = new TempEditor(document);
+    await editor.open();
 
-    let diagnostics: Diagnostic[] = await getDiagnosticsForDocument(document, options);
+    let diagnostics: Diagnostic[] = await getDiagnosticsForDocument(document.realDocument, options);
     assert(diagnostics);
 
-    await dispose();
+    await editor.dispose();
     return diagnostics;
 }
 

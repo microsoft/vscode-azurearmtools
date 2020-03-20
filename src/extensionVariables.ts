@@ -11,6 +11,7 @@ import { CompletionsSpy } from "./CompletionsSpy";
 import { IConfiguration, VsCodeConfiguration } from "./Configuration";
 import { configPrefix, isWebpack } from "./constants";
 import { LanguageServerState } from "./languageclient/startArmLanguageServer";
+import { DeploymentFileMapping } from "./parameterFiles/DeploymentFileMapping";
 import { JsonOutlineProvider } from "./Treeview";
 import { InitializeBeforeUse } from "./util/InitializeBeforeUse";
 
@@ -26,7 +27,6 @@ class ExtensionVariables {
     private _reporter: InitializeBeforeUse<ITelemetryReporter> = new InitializeBeforeUse<ITelemetryReporter>();
     private _outputChannel: InitializeBeforeUse<IAzExtOutputChannel> = new InitializeBeforeUse<IAzExtOutputChannel>();
     private _ui: InitializeBeforeUse<IAzureUserInput> = new InitializeBeforeUse<IAzureUserInput>();
-    private _completionItemsSpy: InitializeBeforeUse<CompletionsSpy> = new InitializeBeforeUse<CompletionsSpy>();
 
     public set context(context: vscode.ExtensionContext) {
         this._context.setValue(context);
@@ -75,6 +75,8 @@ class ExtensionVariables {
 
     public readonly configuration: IConfiguration = new VsCodeConfiguration(configPrefix);
 
+    public readonly completionItemsSpy: CompletionsSpy = new CompletionsSpy();
+    public deploymentFileMapping: InitializeBeforeUse<DeploymentFileMapping> = new InitializeBeforeUse<DeploymentFileMapping>();
 }
 
 // tslint:disable-next-line: no-any

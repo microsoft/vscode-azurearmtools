@@ -52,8 +52,12 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     ext.reporter = createTelemetryReporter(context);
     ext.outputChannel = createAzExtOutputChannel(extensionName, configPrefix);
     ext.ui = new AzureUserInput(context.globalState);
-    ext.completionItemsSpy = new CompletionsSpy();
-    context.subscriptions.push(ext.completionItemsSpy);
+
+    ext.completionItemsSpy.setValue(new CompletionsSpy());
+    context.subscriptions.push(ext.completionItemsSpy.getValue());
+
+    ext.deploymentFileMapping.setValue(new DeploymentFileMapping(ext.configuration));
+
     registerUIExtensionVariables(ext);
 
     await callWithTelemetryAndErrorHandling('activate', async (actionContext: IActionContext): Promise<void> => {
@@ -77,7 +81,7 @@ export class AzureRMTools {
     private readonly _paramsStatusBarItem: vscode.StatusBarItem;
     private _areDeploymentTemplateEventsHookedUp: boolean = false;
     private _diagnosticsVersion: number = 0;
-    private readonly _mapping: DeploymentFileMapping = new DeploymentFileMapping(ext.configuration);
+    private _mapping: DeploymentFileMapping = ext.deploymentFileMapping.getValue();
 
     // More information can be found about this definition at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
     // Several of these properties are CSS properties. More information about those can be found at https://www.w3.org/wiki/CSS/Properties
@@ -715,7 +719,7 @@ export class AzureRMTools {
                 } else {
                     this._paramsStatusBarItem.hide();
                     return;
-                    //this._paramsStatusBarItem.text = "Select Template File...";
+                    //this._paramsStatusBarItem.text = "Select Template File..."; //asdf
                 }
                 this._paramsStatusBarItem.command = "azurerm-vscode-tools.openTemplateFile";
                 this._paramsStatusBarItem.show();
@@ -852,7 +856,7 @@ export class AzureRMTools {
             if (pc) {
                 const items: Completion.Item[] = pc.getCompletionItems();
                 const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c));
-                ext.completionItemsSpy.postCompletionItemsResult(pc.document, items, vsCodeItems);
+                ext.completionItemsSpy.getValue().postCompletionItemsResult(pc.document, items, vsCodeItems);
 
                 // vscode requires all spans to include the original position and be on the same line, otherwise
                 //   it ignores it.  Verify that here.
@@ -869,7 +873,7 @@ export class AzureRMTools {
     }
 
     private onResolveCompletionItem(item: vscode.CompletionItem, _token: vscode.CancellationToken): vscode.CompletionItem {
-        ext.completionItemsSpy.postCompletionItemResolution(item);
+        ext.completionItemsSpy.getValue().postCompletionItemResolution(item);
         return item;
     }
 

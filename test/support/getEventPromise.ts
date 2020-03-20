@@ -57,7 +57,7 @@ export function getCompletionItemsPromise(document: TextDocument, timeout: numbe
     return getEventPromise(
         "onCompletionItems",
         (resolve, reject) => {
-            const disposable = ext.completionItemsSpy.onCompletionItems(e => {
+            const disposable = ext.completionItemsSpy.getValue().onCompletionItems(e => {
                 if (e.document.documentId.fsPath === document.uri.fsPath) {
                     disposable.dispose();
                     resolve(e);
@@ -71,7 +71,7 @@ export function getCompletionItemResolutionPromise(item?: CompletionItem, timeou
     return getEventPromise(
         "onCompletionItemResolved",
         (resolve, reject) => {
-            const disposable = ext.completionItemsSpy.onCompletionItemResolved(e => {
+            const disposable = ext.completionItemsSpy.getValue().onCompletionItemResolved(e => {
                 if (!item || e === item) {
                     disposable.dispose();
                     resolve(e);
