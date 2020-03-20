@@ -10,7 +10,7 @@ import { IDeploymentParameterDefinition, IDeploymentTemplate } from "./support/d
 import { normalizeString } from "./support/normalizeString";
 import { parseTemplate } from "./support/parseTemplate";
 
-suite("editParameterFile tests", () => {
+suite("parameterFileGeneration tests", () => {
     suite("createParameterFileContents", () => {
         function testCreateFile(
             testName: string,

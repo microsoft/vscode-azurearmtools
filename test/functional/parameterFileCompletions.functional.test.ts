@@ -19,12 +19,21 @@ import { testWithLanguageServer } from '../support/testWithLanguageServer';
 
 const newParamCompletionLabel = `"<new parameter>"`;
 
-const templateOneRequiredParam = {
+const template = {
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "required1": {
             "type": "string"
+        },
+        "required2": {
+            "type": "int"
+        },
+        "optional1": {
+            "type": "int",
+            "defaultValue": {
+                "abc": "def"
+            }
         }
     }
 };
@@ -289,7 +298,7 @@ suite("Functional parameter file completions", () => {
         !{EOL}
     }
 }`,
-            templateOneRequiredParam,
+            template,
             newParamCompletionLabel,
             `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
@@ -313,7 +322,7 @@ suite("Functional parameter file completions", () => {
         !{EOL}
     }
 }`,
-            templateOneRequiredParam,
+            template,
             `"required1"`,
             `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
@@ -326,5 +335,77 @@ suite("Functional parameter file completions", () => {
 }`
         );
 
+        createCompletionsFunctionalTest(
+            "From optional parameter",
+            `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "required1": {
+            "value": "abc"
+        },
+        !{EOL}
+        "required2": {
+            "value": "abc"
+        }
+    }
+}`,
+            template,
+            `"optional1"`,
+            `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "required1": {
+            "value": "abc"
+        },
+        "optional1": {
+            "value": {
+              "abc": "def"
+            }
+        },
+        "required2": {
+            "value": "abc"
+        }
+    }
+}`
+        );
+
     });
+
+    createCompletionsFunctionalTest(
+        "From optional parameter, no existing comma",
+        `{
+"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+"contentVersion": "1.0.0.0",
+"parameters": {
+    "required1": {
+        "value": "abc"
+    }
+    !{EOL}
+    "required2": {
+        "value": "abc"
+    }
+}
+}`,
+        template,
+        `"optional1"`,
+        `{
+"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+"contentVersion": "1.0.0.0",
+"parameters": {
+    "required1": {
+        "value": "abc"
+    },
+    "optional1": {
+        "value": {
+          "abc": "def"
+        }
+    },
+    "required2": {
+        "value": "abc"
+    }
+}
+}`
+    );
 });
