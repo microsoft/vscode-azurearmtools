@@ -4,9 +4,12 @@
 
 import { EOL } from "os";
 import { CodeAction, CodeActionContext, CodeActionKind, Command, Range, Selection } from "vscode";
+import { Json } from "../../extension.bundle";
 import * as Completion from "../Completion";
 import { DeploymentTemplate } from "../DeploymentTemplate";
+import { assert } from "../fixed_assert";
 import { IParameterDefinition } from "../IParameterDefinition";
+import { Comments } from "../JSON";
 import * as language from "../Language";
 import { createParameterFromTemplateParameter } from "../parameterFileGeneration";
 import { ReferenceList } from "../ReferenceList";
@@ -102,17 +105,11 @@ export class ParametersPositionContext extends DocumentPositionContext {
             + `\t"value": "\${2:value}"` + EOL
             + `}`;
         const documentation = "documentation";
+        const label = `"<new parameter>"`;
 
-        if (this.needsCommaAfterCompletion()) {
-            snippet += ',';
-        }
-
-        return new Completion.Item(
-            // Want just "New parameter", but https://github.com/microsoft/vscode/issues/93054 requires
-            // there be a double quote in the label
-            `"<new parameter>"`,
+        return this.createParameterCompletion(
+            label,
             snippet,
-            this.determineCompletionSpan(),
             Completion.CompletionKind.NewPropertyValue,
             detail,
             documentation);
@@ -143,17 +140,10 @@ export class ParametersPositionContext extends DocumentPositionContext {
                 const documentation = `Insert a value for parameter '${param.nameValue.unquotedValue}' from the template file"`;
                 const detail = paramText;
 
-                let span = this.determineCompletionSpan();
-
-                if (this.needsCommaAfterCompletion()) {
-                    replacement += ',';
-                }
-
                 completions.push(
-                    new Completion.Item(
+                    this.createParameterCompletion(
                         label,
                         replacement,
-                        span, //this.emptySpanAtDocumentCharacterIndex,
                         Completion.CompletionKind.PropertyValue,
                         detail,
                         documentation));
@@ -161,6 +151,35 @@ export class ParametersPositionContext extends DocumentPositionContext {
         }
 
         return completions;
+    }
+
+    private createParameterCompletion(
+        label: string,
+        replacement: string,
+        kind: Completion.CompletionKind,
+        detail: string,
+        documentation: string
+    ): Completion.Item {
+        // Replacement span
+        let span = this.determineCompletionSpan();
+
+        // Comma after?
+        if (this.needsCommaAfterCompletion()) {
+            replacement += ',';
+        }
+
+        // Comma before?
+        const commaEdit = this.createEditForAddingCommaBeforeParameter();
+
+        return new Completion.Item(
+            label,
+            replacement,
+            span,
+            kind,
+            detail,
+            documentation,
+            undefined,
+            commaEdit ? [commaEdit] : undefined);
     }
 
     private determineCompletionSpan(): language.Span {
@@ -186,6 +205,40 @@ export class ParametersPositionContext extends DocumentPositionContext {
         }
 
         return false;
+    }
+
+    private createEditForAddingCommaBeforeParameter(): { insertText: string; span: language.Span } | undefined {
+        // Are there are any parameters before the one being inserted?
+        const newParamIndex = this.document.parameterValues
+            .filter(
+                p => p.fullSpan.endIndex < this.documentCharacterIndex)
+            .length;
+        if (newParamIndex > 0) {
+            const prevParameter = this.document.parameterValues[newParamIndex - 1];
+            assert(prevParameter);
+
+            // Is there already a comma after the last parameter?
+            const firstIndexAfterPrev = prevParameter.fullSpan.afterEndIndex;
+            const tokensBetweenParams = this.document.jsonParseResult.getTokensInSpan(
+                new language.Span(
+                    firstIndexAfterPrev,
+                    this.documentCharacterIndex - firstIndexAfterPrev),
+                Comments.ignoreCommentTokens
+            );
+            if (tokensBetweenParams.some(t => t.type === Json.TokenType.Comma)) {
+                // ... yes
+                return undefined;
+            }
+
+            // Insert a new comma right after last item's full span
+            const insertIndex = prevParameter.fullSpan.afterEndIndex;
+            return {
+                insertText: ',',
+                span: new language.Span(insertIndex, 0)
+            };
+        }
+
+        return undefined;
     }
 
     // True if inside the "parameters" object, but not inside any properties

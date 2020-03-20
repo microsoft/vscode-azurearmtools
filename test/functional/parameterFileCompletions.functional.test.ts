@@ -40,17 +40,22 @@ suite("Functional parameter file completions", () => {
     ): void {
         testWithLanguageServer(testName, async () => {
             let editor: TempEditor | undefined;
+            let templateFile: TempFile | undefined;
 
             try {
                 const { markers: { bang }, unmarkedText } = getDocumentMarkers(params);
                 expectedResult = removeEOLMarker(expectedResult);
 
                 // Create template/params files
-                let templateFile = new TempFile(stringify(template));
+                if (template) {
+                    templateFile = new TempFile(stringify(template));
+                }
                 let paramsFile = new TempFile(unmarkedText);
 
                 // Map template to params
-                await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, paramsFile.uri);
+                if (templateFile) {
+                    await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, paramsFile.uri); // asdf dispose
+                }
 
                 // Open params in editor
                 const paramsDoc = new TempDocument(paramsFile);
@@ -67,13 +72,13 @@ suite("Functional parameter file completions", () => {
                 await commands.executeCommand('editor.action.triggerSuggest');
 
                 // Wait for our code to return completion items
-                await completionItemsPromise;
+                let items = await completionItemsPromise;
+                items = items;
 
                 // Wait for any resolution to be sure the UI is ready
+                const resolutionPromise = getCompletionItemResolutionPromise();
                 await delay(1);
-                let currentItem = await getCompletionItemResolutionPromise();
-
-                const documentChangedPromise = getDocumentChangedPromise(paramsDoc.realDocument);
+                let currentItem = await resolutionPromise;
 
                 // Select the item we want and accept it
                 let tries = 0;
@@ -85,17 +90,32 @@ suite("Functional parameter file completions", () => {
                     if (currentItem.label.startsWith(insertSuggestionPrefix)) {
                         break;
                     }
+
+                    const resolutionPromise2 = getCompletionItemResolutionPromise();
                     await commands.executeCommand('selectNextSuggestion');
-                    currentItem = await getCompletionItemResolutionPromise();
+                    await delay(1);
+                    currentItem = await resolutionPromise2;
                 }
+
+                const documentChangedPromise = getDocumentChangedPromise(paramsDoc.realDocument);
                 await commands.executeCommand('acceptSelectedSuggestion');
 
                 // Wait for it to get inserted
-                const actualResult = await documentChangedPromise;
+                await documentChangedPromise;
+
+                // Some completions have additional text edits, and vscode doesn't
+                // seem to have made all the changes when it fires didDocumentChange,
+                // so give a slight delay to allow it to finish
+                await delay(1);
+
+                const actualResult = paramsDoc.realDocument.getText();
                 assert.equal(actualResult, expectedResult);
             } finally {
                 if (editor) {
                     await editor.dispose();
+                }
+                if (templateFile) {
+                    await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, undefined);
                 }
             }
         });
@@ -181,6 +201,36 @@ suite("Functional parameter file completions", () => {
         );
 
         createCompletionsFunctionalTest(
+            "No template file, new parameter after an existing one, automatically add comma after old param - has comments",
+            `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "PARAmeter2": {
+            "value": "string"
+        }
+        // some comments
+        !{EOL}
+    }
+}`,
+            undefined,
+            newParamCompletionLabel,
+            `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "PARAmeter2": {
+            "value": "string"
+        },
+        // some comments
+        "parameter1": {
+            "value": "value"
+        }
+    }
+}`
+        );
+
+        createCompletionsFunctionalTest(
             "No template file, new parameter before an existing one, automatically adds comma after new parameter",
             `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
@@ -247,6 +297,30 @@ suite("Functional parameter file completions", () => {
     "parameters": {
         "parameter1": {
             "value": "value"
+        }
+    }
+}`
+        );
+    });
+
+    suite("Completions for parameters in template file", async () => {
+        createCompletionsFunctionalTest(
+            "From required parameter",
+            `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        !{EOL}
+    }
+}`,
+            templateOneRequiredParam,
+            `"required1"`,
+            `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "required1": {
+            "value": "" // TODO: Fill in parameter value
         }
     }
 }`

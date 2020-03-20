@@ -962,6 +962,26 @@ export class ParseResult {
         }
     }
 
+    // Does no necessarily make a copy
+    public getTokensInSpan(span: language.Span, commentsBehavior: Comments): Token[] {
+        const results: Token[] = [];
+        const tokens = this.getTokens(commentsBehavior);
+        const spanStartIndex = span.startIndex;
+        const spanEndIndex = span.endIndex;
+
+        for (let token of tokens) {
+            if (token.span.endIndex >= spanStartIndex) {
+                if (token.span.startIndex > spanEndIndex) {
+                    break;
+                }
+
+                results.push(token);
+            }
+        }
+
+        return results;
+    }
+
     public getLastTokenOnLine(line: number, commentBehavior: Comments = Comments.ignoreCommentTokens): Token | undefined {
         //asdf test
         const startOfLineIndex = this.getCharacterIndex(line, 0);
