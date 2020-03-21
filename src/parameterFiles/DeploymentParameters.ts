@@ -9,6 +9,7 @@ import { DeploymentDoc } from "../DeploymentDoc";
 import { DeploymentTemplate } from "../DeploymentTemplate";
 import { INamedDefinition } from "../INamedDefinition";
 import * as Json from "../JSON";
+import * as language from "../Language";
 import { ReferenceList } from "../ReferenceList";
 import { isParametersSchema } from "../schemas";
 import { ParametersPositionContext } from "./ParametersPositionContext";
@@ -91,5 +92,13 @@ export class DeploymentParameters extends DeploymentDoc {
 
     public async onProvideCodeActions(range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]> {
         return [];
+    }
+
+    public get errorsPromise(): Promise<language.Issue[]> {
+        return getErrors();
+
+        async function getErrors(): Promise<language.Issue[]> {
+            return [];
+        }
     }
 }

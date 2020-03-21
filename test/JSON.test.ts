@@ -753,4 +753,219 @@ suite("JSON", () => {
         colonTest(0);
         colonTest(7);
     });
+
+    suite("getLastTokenOnLine", () => {
+        function createGetLastTokenOnLineTest(
+            testName: string,
+            json: string,
+            expectedTokenTypesIncludingComments: (Json.TokenType | undefined)[],
+            expectedTokenTypesIgnoringComments?: (Json.TokenType | undefined)[]
+        ): void {
+            if (!expectedTokenTypesIgnoringComments) {
+                expectedTokenTypesIgnoringComments = expectedTokenTypesIncludingComments;
+            }
+
+            createTest(`${testName}, including comments`, Json.Comments.includeCommentTokens, expectedTokenTypesIncludingComments);
+            createTest(`${testName}, ignoring comments`, Json.Comments.ignoreCommentTokens, expectedTokenTypesIgnoringComments);
+
+            function createTest(name: string, comments: Json.Comments, expected: (Json.TokenType | undefined)[]): void {
+                test(name, () => {
+                    const result = Json.parse(json);
+                    const lines = result.lineLengths.length;
+                    const lastTokens: (Json.Token | undefined)[] = [];
+                    for (let i = 0; i < lines; ++i) {
+                        lastTokens[i] = result.getLastTokenOnLine(i, comments);
+                    }
+                    assert.deepStrictEqual(lastTokens.map(t => t?.type), expected);
+                });
+            }
+        }
+
+        suite("simple and line comments", () => {
+            createGetLastTokenOnLineTest(
+                "simple",
+                `{
+                hi: "there"
+            }`,
+                [
+                    Json.TokenType.LeftCurlyBracket,
+                    Json.TokenType.QuotedString,
+                    Json.TokenType.RightCurlyBracket
+                ]
+            );
+            createGetLastTokenOnLineTest(
+                "line comments",
+                `{ // one
+                hi: "there" // two
+            }// three`,
+                [
+                    Json.TokenType.Comment,
+                    Json.TokenType.Comment,
+                    Json.TokenType.Comment
+                ],
+                [
+                    Json.TokenType.LeftCurlyBracket,
+                    Json.TokenType.QuotedString,
+                    Json.TokenType.RightCurlyBracket
+                ]
+            );
+            createGetLastTokenOnLineTest(
+                "empty string",
+                ``,
+                [
+                    undefined,
+                ],
+                [
+                    undefined,
+                ]
+            );
+            createGetLastTokenOnLineTest(
+                "just a line comment",
+                `// hi`,
+                [
+                    Json.TokenType.Comment,
+                ],
+                [
+                    undefined,
+                ]
+            );
+            createGetLastTokenOnLineTest(
+                "single line",
+                `hi`,
+                [
+                    Json.TokenType.Literal,
+                ]
+            );
+            createGetLastTokenOnLineTest(
+                "single line plus line comment",
+                `hi //there`,
+                [
+                    Json.TokenType.Comment,
+                ],
+                [
+                    Json.TokenType.Literal,
+                ]
+            );
+            createGetLastTokenOnLineTest(
+                "blank line at end",
+                `{ // one
+            }// three
+            `,
+                [
+                    Json.TokenType.Comment,
+                    Json.TokenType.Comment,
+                    undefined,
+                ],
+                [
+                    Json.TokenType.LeftCurlyBracket,
+                    Json.TokenType.RightCurlyBracket,
+                    undefined,
+                ]
+            );
+            createGetLastTokenOnLineTest(
+                "blank lines",
+                `
+            { // one
+
+                hi: "there" // two
+
+            }// three
+            `,
+                [
+                    undefined,
+                    Json.TokenType.Comment,
+                    undefined,
+                    Json.TokenType.Comment,
+                    undefined,
+                    Json.TokenType.Comment,
+                    undefined,
+                ],
+                [
+                    undefined,
+                    Json.TokenType.LeftCurlyBracket,
+                    undefined,
+                    Json.TokenType.QuotedString,
+                    undefined,
+                    Json.TokenType.RightCurlyBracket,
+                    undefined,
+                ]
+            );
+        });
+        suite("block comments", () => {
+            createGetLastTokenOnLineTest(
+                "just single line block comment",
+                `/* { hi: "there" } */`,
+                [
+                    Json.TokenType.Comment,
+                ],
+                [
+                    undefined
+                ]
+            );
+            createGetLastTokenOnLineTest(
+                "just multiline block comment",
+                `/* {
+                hi: "there"
+            } */`,
+                [
+                    Json.TokenType.Comment,
+                    Json.TokenType.Comment,
+                    Json.TokenType.Comment
+                ],
+                [
+                    undefined,
+                    undefined,
+                    undefined
+                ]
+            );
+            createGetLastTokenOnLineTest(
+                "block comments",
+                `{ /* one */
+                hi: "there" /* two
+                still a comment
+                last of coment */ hi: "again"
+            } /* three */  `,
+                [
+                    Json.TokenType.Comment,
+                    Json.TokenType.Comment,
+                    Json.TokenType.Comment,
+                    Json.TokenType.QuotedString,
+                    Json.TokenType.Comment,
+                ],
+                [
+                    Json.TokenType.LeftCurlyBracket,
+                    Json.TokenType.QuotedString,
+                    undefined,
+                    Json.TokenType.QuotedString,
+                    Json.TokenType.RightCurlyBracket
+                ]
+            );
+            createGetLastTokenOnLineTest(
+                "single line plus block comment",
+                `hi/*there*/`,
+                [
+                    Json.TokenType.Comment,
+                ],
+                [
+                    Json.TokenType.Literal,
+                ]
+            );
+            createGetLastTokenOnLineTest(
+                "blank line at end",
+                `{ /* one */
+            }/* two */
+            `,
+                [
+                    Json.TokenType.Comment,
+                    Json.TokenType.Comment,
+                    undefined,
+                ],
+                [
+                    Json.TokenType.LeftCurlyBracket,
+                    Json.TokenType.RightCurlyBracket,
+                    undefined,
+                ]
+            );
+        });
+    });
 });

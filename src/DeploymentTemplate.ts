@@ -4,7 +4,6 @@
 
 import { CodeAction, CodeActionContext, Command, Uri } from "vscode";
 import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
-import { CachedPromise } from "./CachedPromise";
 import { CachedValue } from "./CachedValue";
 import { templateKeys } from "./constants";
 import { DeploymentDoc } from "./DeploymentDoc";
@@ -35,10 +34,6 @@ export class DeploymentTemplate extends DeploymentDoc {
 
     // A map from all JSON string value nodes to their cached TLE parse results
     private _jsonStringValueToTleParseResultMap: CachedValue<Map<Json.StringValue, TLE.ParseResult>> = new CachedValue<Map<Json.StringValue, TLE.ParseResult>>();
-
-    // Cached errors and warnings in the template
-    private _errors: CachedPromise<language.Issue[]> = new CachedPromise<language.Issue[]>();
-    private _warnings: CachedValue<language.Issue[]> = new CachedValue<language.Issue[]>();
 
     private _topLevelNamespaceDefinitions: CachedValue<UserFunctionNamespaceDefinition[]> = new CachedValue<UserFunctionNamespaceDefinition[]>();
     private _topLevelVariableDefinitions: CachedValue<IVariableDefinition[]> = new CachedValue<IVariableDefinition[]>();

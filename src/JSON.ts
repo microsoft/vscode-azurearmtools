@@ -983,31 +983,32 @@ export class ParseResult {
     }
 
     public getLastTokenOnLine(line: number, commentBehavior: Comments = Comments.ignoreCommentTokens): Token | undefined {
-        //asdf test
         const startOfLineIndex = this.getCharacterIndex(line, 0);
         const lastLine = this.lineLengths.length - 1;
 
         const tokens = this.getTokens(commentBehavior);
+
+        let lastSeenToken;
+
         if (line === lastLine) {
-            // On last line, so return very last token
-            return tokens[this._tokens.length - 1];
-        }
+            // On last line, check the very last token
+            lastSeenToken = tokens[tokens.length - 1];
+        } else {
+            const nextLineIndex = this.getCharacterIndex(line + 1, 0);
 
-        const nextLineIndex = this.getCharacterIndex(line + 1, 0);
-
-        let prevToken;
-        for (let token of tokens) {
-            if (token.span.startIndex >= nextLineIndex) {
-                if (prevToken && prevToken.span.endIndex >= startOfLineIndex) {
-                    return prevToken;
-                } else {
-                    return undefined;
+            for (let token of tokens) {
+                if (token.span.startIndex >= nextLineIndex) {
+                    break;
                 }
+                lastSeenToken = token;
             }
-            prevToken = token;
         }
 
-        return undefined;
+        if (lastSeenToken && lastSeenToken.span.endIndex >= startOfLineIndex) {
+            return lastSeenToken;
+        } else {
+            return undefined;
+        }
     }
 
     /**

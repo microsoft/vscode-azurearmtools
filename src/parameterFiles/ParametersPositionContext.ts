@@ -390,7 +390,7 @@ export class ParametersPositionContext extends DocumentPositionContext {
             if (params.getDocumentPosition(insertIndex).line
                 === params.getDocumentPosition(params.parametersObjectValue.span.endIndex).line
             ) {
-                insertText += EOL + ' '.repeat(defaultTabSize); 5;
+                insertText += EOL + ' '.repeat(defaultTabSize);
             }
 
             // Add comma before?

@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { CodeAction, CodeActionContext, Command, Uri } from "vscode";
+import { CachedPromise } from "./CachedPromise";
 import { CachedValue } from "./CachedValue";
 import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
@@ -21,6 +22,10 @@ export abstract class DeploymentDoc {
     private _topLevelValue: Json.ObjectValue | undefined;
 
     private _schema: CachedValue<Json.StringValue | undefined> = new CachedValue<Json.StringValue | undefined>();
+
+    // Cached errors and warnings
+    protected _errors: CachedPromise<language.Issue[]> = new CachedPromise<language.Issue[]>();
+    protected _warnings: CachedValue<language.Issue[]> = new CachedValue<language.Issue[]>();
 
     /**
      * Constructor
@@ -135,4 +140,8 @@ export abstract class DeploymentDoc {
     public abstract findReferences(definition: INamedDefinition): ReferenceList;
 
     public abstract async onProvideCodeActions(range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]>;
+
+    // tslint:disable-next-line:no-suspicious-comment
+    // TODO: rename to getErrors
+    public abstract get errorsPromise(): Promise<language.Issue[]>;
 }

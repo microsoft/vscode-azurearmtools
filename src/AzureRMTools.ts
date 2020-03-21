@@ -925,7 +925,6 @@ export class AzureRMTools {
     // Given a document, get a DeploymentTemplate or DeploymentParameters instance from it, and then
     // create the appropriate context for it from the given position
     private async getDocumentPositionContext(document: vscode.TextDocument, position: vscode.Position): Promise<DocumentPositionContext | undefined> {
-        //asdf refactor?
         const doc = this.getOpenedDeploymentDoc(document);
         if (!doc) {
             return undefined;
