@@ -3,20 +3,18 @@
 // ----------------------------------------------------------------------------
 
 import { CodeAction, CodeActionContext, Command, Range, Selection } from "vscode";
-import { CachedValue } from "../CachedValue";
-import * as Completion from "../Completion";
-import { __debugMarkPositionInString } from "../debugMarkStrings";
-import { DeploymentDoc as DeploymentDoc } from "../DeploymentDoc";
-import { assert } from '../fixed_assert';
-import { HoverInfo } from "../Hover";
-import * as Json from "../JSON";
-import * as language from "../Language";
-import { ReferenceList } from "../ReferenceList";
-import { IReferenceSite } from "../TemplatePositionContext";
-import { InitializeBeforeUse } from "../util/InitializeBeforeUse";
-import { nonNullValue } from "../util/nonNull";
-
-// asdf to main folder
+import { CachedValue } from "./CachedValue";
+import * as Completion from "./Completion";
+import { __debugMarkPositionInString } from "./debugMarkStrings";
+import { DeploymentDoc as DeploymentDoc } from "./DeploymentDoc";
+import { assert } from './fixed_assert';
+import { HoverInfo } from "./Hover";
+import * as Json from "./JSON";
+import * as language from "./Language";
+import { ReferenceList } from "./ReferenceList";
+import { IReferenceSite } from "./TemplatePositionContext";
+import { InitializeBeforeUse } from "./util/InitializeBeforeUse";
+import { nonNullValue } from "./util/nonNull";
 
 /**
  * Represents a position inside the snapshot of a deployment parameter file, plus all related information

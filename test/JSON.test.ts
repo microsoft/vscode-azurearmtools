@@ -6,6 +6,7 @@
 
 import * as assert from "assert";
 import { basic, Json, Language, Utilities } from "../extension.bundle";
+import { testStringAtEachIndex } from "./support/testStringAtEachIndex";
 
 /**
  * Convert the provided text string into a sequence of basic Tokens.
@@ -965,6 +966,73 @@ suite("JSON", () => {
                     Json.TokenType.RightCurlyBracket,
                     undefined,
                 ]
+            );
+        });
+    });
+
+    // getCommentTokenAtDocumentIndex =======================
+
+    suite("getCommentTokenAtDocumentIndex", () => {
+        function createGetCommentTokenAtDocumentIndexTest(
+            testName: string,
+            containsBehavior: Language.Contains,
+            jsonWithMarkers: string
+        ): void {
+            test(testName, () =>
+                testStringAtEachIndex(
+                    jsonWithMarkers,
+                    {
+                        true: true,
+                        false: false
+                    },
+                    (text, index) => {
+                        const parseResults = Json.parse(text);
+                        const token = parseResults.getCommentTokenAtDocumentIndex(index, containsBehavior);
+                        return !!token;
+                    })
+            );
+        }
+
+        suite("enclosed", () => {
+            createGetCommentTokenAtDocumentIndexTest(
+                "simple",
+                Language.Contains.enclosed,
+                `<!false!>{
+                hi: "there"
+            }`
+            );
+            createGetCommentTokenAtDocumentIndexTest(
+                "line comments",
+                Language.Contains.enclosed,
+                `<!false!>{ /<!true!>/ one
+<!false!>                hi: "there" /<!true!>/ two
+<!false!>            }/<!true!>/ three`);
+            createGetCommentTokenAtDocumentIndexTest(
+                "block comments",
+                Language.Contains.enclosed,
+                `<!false!>{ /<!true!>* one */<!false!>
+                    hi: "there" /<!true!>* two
+                    still a comment
+                    last of coment */<!false!> hi: "again"
+                }`
+            );
+        });
+
+        suite("strict", () => {
+            createGetCommentTokenAtDocumentIndexTest(
+                "line comments",
+                Language.Contains.strict,
+                `<!false!>{ <!true!>// one
+<!false!>                hi: "there" <!true!>// two
+<!false!>            }<!true!>// three`);
+            createGetCommentTokenAtDocumentIndexTest(
+                "block comments",
+                Language.Contains.strict,
+                `<!false!>{ <!true!>/* one */<!false!>
+                    hi: "there" <!true!>/* two
+                    still a comment
+                    last of coment */<!false!> hi: "again"
+                }`
             );
         });
     });

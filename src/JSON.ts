@@ -35,20 +35,20 @@ export enum ValueKind {
  * The different types of tokens that can be parsed from a JSON string.
  */
 export enum TokenType {
-    LeftCurlyBracket,
-    RightCurlyBracket,
-    LeftSquareBracket,
-    RightSquareBracket,
-    Comma,
-    Colon,
-    Whitespace,
-    QuotedString,
-    Number,
-    Boolean,
-    Literal,
-    Null,
-    Comment,
-    Unrecognized
+    LeftCurlyBracket = 0,
+    RightCurlyBracket = 1,
+    LeftSquareBracket = 2,
+    RightSquareBracket = 3,
+    Comma = 4,
+    Colon = 5,
+    Whitespace = 6,
+    QuotedString = 7,
+    Number = 8,
+    Boolean = 9,
+    Literal = 10,
+    Null = 11,
+    Comment = 12,
+    Unrecognized = 13
 }
 
 export enum Comments {
@@ -1109,18 +1109,15 @@ export class ParseResult {
         if (token?.type === TokenType.Comment) {
             switch (containsBehavior) {
                 case language.Contains.strict:
-                    return token; //asdf
+                    return token;
 
                 case language.Contains.extended:
-                    return token; //asdf
+                    assert.fail("language.Contains.extended not implemented here (somewhat unambiguous and not clear it's useful)");
 
-                case language.Contains.enclosed: //asdf test
+                case language.Contains.enclosed:
                     if (token.span.startIndex === characterIndex) {
                         return undefined;
                     }
-                    // if (characterIndex > token.span.endIndex) {
-                    //     return undefined; //asdf not getting hit
-                    // }
                     return token;
 
                 default:
@@ -1148,7 +1145,6 @@ export class ParseResult {
     /**
      * Get the JSON Token that contains the provided characterIndex
      * if any (returns undefined if at whitespace or comment)
-     * asdf what containsBehavior?
      */
     public getTokenAtCharacterIndex(
         characterIndex: number,

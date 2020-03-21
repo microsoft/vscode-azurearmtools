@@ -19,7 +19,7 @@ import { testWithLanguageServer } from '../support/testWithLanguageServer';
 
 const newParamCompletionLabel = `"<new parameter>"`;
 
-const template = {
+const defaultTemplate = {
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
@@ -298,7 +298,7 @@ suite("Functional parameter file completions", () => {
         !{EOL}
     }
 }`,
-            template,
+            defaultTemplate,
             newParamCompletionLabel,
             `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
@@ -322,7 +322,7 @@ suite("Functional parameter file completions", () => {
         !{EOL}
     }
 }`,
-            template,
+            defaultTemplate,
             `"required1"`,
             `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
@@ -350,7 +350,7 @@ suite("Functional parameter file completions", () => {
         }
     }
 }`,
-            template,
+            defaultTemplate,
             `"optional1"`,
             `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
@@ -388,7 +388,7 @@ suite("Functional parameter file completions", () => {
     }
 }
 }`,
-        template,
+        defaultTemplate,
         `"optional1"`,
         `{
 "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",

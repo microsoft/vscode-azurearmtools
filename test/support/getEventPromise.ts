@@ -11,7 +11,7 @@ import { ICompletionsSpyResult } from '../../src/CompletionsSpy';
 import { ext } from '../../src/extensionVariables';
 import { delay } from '../support/delay';
 
-const defaultTimeout: number = 5000; //asdf 60 * 1000;
+const defaultTimeout: number = 30 * 1000;
 
 export function getEventPromise<T>(
     eventName: string,

@@ -16,6 +16,7 @@ import { CompletionsSpy } from "./CompletionsSpy";
 import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, extensionName, globalStateKeys } from "./constants";
 import { DeploymentDoc } from "./DeploymentDoc";
 import { DeploymentTemplate } from "./DeploymentTemplate";
+import { DocumentPositionContext } from "./DocumentPositionContext";
 import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
 import * as Hover from './Hover';
@@ -27,7 +28,6 @@ import { reloadSchemas } from "./languageclient/reloadSchemas";
 import { startArmLanguageServer, stopArmLanguageServer } from "./languageclient/startArmLanguageServer";
 import { DeploymentFileMapping } from "./parameterFiles/DeploymentFileMapping";
 import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
-import { DocumentPositionContext } from "./parameterFiles/DocumentPositionContext";
 import { considerQueryingForParameterFile, getFriendlyPathToFile, openParameterFile, openTemplateFile, selectParameterFile } from "./parameterFiles/parameterFiles";
 import { ParametersPositionContext } from "./parameterFiles/ParametersPositionContext";
 import { setParameterFileContext } from "./parameterFiles/setParameterFileContext";
@@ -207,7 +207,7 @@ export class AzureRMTools {
                 // Need the template
                 const templateUri: vscode.Uri | undefined = this._mapping.getTemplateFile(paramsUri);
                 if (templateUri) {
-                    const template = await this.getOrReadDeploymentTemplate(templateUri); //asdf errors
+                    const template = await this.getOrReadDeploymentTemplate(templateUri);
                     await ParametersPositionContext.addMissingParameters(
                         editor,
                         params,
@@ -646,7 +646,7 @@ export class AzureRMTools {
                 codeActionProvider,
                 {
                     providedCodeActionKinds: [
-                        vscode.CodeActionKind.QuickFix //asdf
+                        vscode.CodeActionKind.QuickFix
                     ]
                 }
             ));
@@ -939,13 +939,7 @@ export class AzureRMTools {
             let template: DeploymentTemplate | undefined;
             const templateUri: vscode.Uri | undefined = this._mapping.getTemplateFile(document.uri);
             if (templateUri) {
-                // Is it already opened?
-                template = this.getOpenedDeploymentTemplate(templateUri);
-                if (!template) {
-                    // Nope, have to read it from disk asdf error handling
-                    const contents = (await fse.readFile(templateUri.fsPath, { encoding: 'utf8' })).toString();
-                    template = new DeploymentTemplate(contents, templateUri);
-                }
+                template = await this.getOrReadDeploymentTemplate(templateUri);
             }
 
             return doc.getContextFromDocumentLineAndColumnIndexes(
@@ -966,36 +960,10 @@ export class AzureRMTools {
             return doc;
         }
 
-        // Nope, have to read it from disk asdf error handling
+        // Nope, have to read it from disk
         const contents = (await fse.readFile(uri.fsPath, { encoding: 'utf8' })).toString();
         return new DeploymentTemplate(contents, uri);
     }
-
-    //asdf
-    // Given a document, get the existing deployment template or parameter that is editing it, or if none, create a
-    //   new one by reading the location from disk asdf
-    // private async getOrReadDeploymentParameters(parametersUri: vscode.Uri): Promise<DeploymentParameters | undefined> {
-    //     // Is it already opened?
-    //     const doc = this.getOpenedDeploymentParameters(parametersUri);
-    //     if (doc) {
-    //         return doc;
-    //     }
-
-    //     // Nope, have to read it from disk asdf error handling
-
-    //     // Read params file contents
-    //     const contents = (await fse.readFile(parametersUri.fsPath, { encoding: 'utf8' })).toString();
-
-    //     //asdf
-    //     // // Get deployment template, if any
-    //     // const templateUri: vscode.Uri | undefined = this._mapping.getTemplateFile(parametersUri);
-    //     // let template: DeploymentTemplate | undefined;
-    //     // if (templateUri) {
-    //     //     template = await this.getOrReadDeploymentTemplate(templateUri); //asdf error handling
-    //     // }
-
-    //     return new DeploymentParameters(contents, parametersUri);
-    // }
 
     private getDocTypeForTelemetry(doc: DeploymentDoc): string {
         if (doc instanceof DeploymentTemplate) {

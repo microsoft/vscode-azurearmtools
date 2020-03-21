@@ -93,7 +93,7 @@ export function getDocumentMarkers(doc: object | string): { unmarkedText: string
 
     // tslint:disable-next-line:no-constant-condition
     while (true) {
-        let match: RegExpMatchArray | null = modified.match(/<!([a-zA-Z][a-zA-Z0-9]*)!>/);
+        let match: RegExpMatchArray | null = modified.match(/<!([a-zA-Z][a-zA-Z0-9$]*)!>/);
         if (!match) {
             break;
         }

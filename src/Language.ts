@@ -183,7 +183,7 @@ export class Span {
         return undefined;
     }
 
-    /** asdf test
+    /**
      * Create a new span that is the intersection of the given spans.
      * If either is undefined, or they do no intersect, undefined will be returned
      */

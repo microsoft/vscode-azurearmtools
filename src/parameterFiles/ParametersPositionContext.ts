@@ -7,6 +7,7 @@ import { CodeAction, CodeActionContext, CodeActionKind, Command, Range, Selectio
 import { Json } from "../../extension.bundle";
 import * as Completion from "../Completion";
 import { DeploymentTemplate } from "../DeploymentTemplate";
+import { DocumentPositionContext } from "../DocumentPositionContext";
 import { assert } from "../fixed_assert";
 import { IParameterDefinition } from "../IParameterDefinition";
 import { Comments } from "../JSON";
@@ -17,14 +18,13 @@ import { IReferenceSite } from "../TemplatePositionContext";
 import { indentMultilineString } from "../util/multilineStrings";
 import { getVSCodePositionFromPosition, getVSCodeRangeFromSpan } from "../util/vscodePosition";
 import { DeploymentParameters } from "./DeploymentParameters";
-import { DocumentPositionContext } from "./DocumentPositionContext";
 
 /**
  * Represents a position inside the snapshot of a deployment parameter file, plus all related information
  * that can be parsed and analyzed about it from that position.
  */
 export class ParametersPositionContext extends DocumentPositionContext {
-    // asdf pass in function to *get* deployment template
+    // CONSIDER: pass in function to *get* the deployment template, not the template itself
     private _associatedTemplate: DeploymentTemplate | undefined;
 
     private constructor(deploymentParameters: DeploymentParameters, associatedTemplate: DeploymentTemplate | undefined) {
@@ -189,7 +189,7 @@ export class ParametersPositionContext extends DocumentPositionContext {
         // If the completion is triggered inside double quotes, or from a trigger character of a double quotes (
         // which ends up adding '""' first, then triggering the completion inside the quotes), then
         // the insert range needs to subsume those quotes so they get deleted when the new param is inserted.
-        if (this.document.documentText.charAt(this.documentCharacterIndex - 1) === '"') { //asdf
+        if (this.document.documentText.charAt(this.documentCharacterIndex - 1) === '"') {
             span = span.extendLeft(1);
         }
         if (this.document.documentText.charAt(this.documentCharacterIndex) === '"') {
