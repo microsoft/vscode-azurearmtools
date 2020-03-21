@@ -126,6 +126,104 @@ suite("Language", () => {
             });
         });
 
+        suite("intersect()", () => {
+
+            test("With null", () => {
+                let s = Language.Span.fromStartAndAfterEnd(5, 7);
+                assert.deepStrictEqual(s.intersect(undefined), undefined);
+            });
+
+            test("With same span", () => {
+                let s = Language.Span.fromStartAndAfterEnd(5, 7);
+                assert.deepEqual(s, s.intersect(s));
+            });
+
+            test("With equal span", () => {
+                let s = Language.Span.fromStartAndAfterEnd(5, 7);
+                assert.deepEqual(s, s.intersect(new Language.Span(5, 7)));
+            });
+
+            test("second span to left", () => {
+                assert.deepEqual(
+                    Language.Span.fromStartAndAfterEnd(10, 20).intersect(Language.Span.fromStartAndAfterEnd(0, 9)),
+                    undefined
+                );
+            });
+
+            test("second touches the left", () => {
+                assert.deepEqual(
+                    Language.Span.fromStartAndAfterEnd(10, 20).intersect(Language.Span.fromStartAndAfterEnd(0, 10)),
+                    // Two results could be argued here: len 0 span at 10, or undefined
+                    // We'll go with the former until sometimes finds a reason why it should
+                    //   be different
+                    new Language.Span(10, 0)
+                );
+            });
+
+            test("second span to left and overlap", () => {
+                assert.deepEqual(
+                    new Language.Span(10, 20).intersect(new Language.Span(0, 11)),
+                    new Language.Span(10, 1)
+                );
+            });
+
+            test("second span is superset", () => {
+                assert.deepEqual(
+                    Language.Span.fromStartAndAfterEnd(10, 20).intersect(Language.Span.fromStartAndAfterEnd(0, 21)),
+                    Language.Span.fromStartAndAfterEnd(10, 20)
+                );
+            });
+
+            test("second span is subset", () => {
+                assert.deepEqual(
+                    Language.Span.fromStartAndAfterEnd(10, 20).intersect(new Language.Span(11, 8)),
+                    new Language.Span(11, 8)
+                );
+            });
+
+            test("second span is len 0 subset, touching on the left", () => {
+                assert.deepEqual(
+                    new Language.Span(10, 10).intersect(new Language.Span(10, 0)),
+                    new Language.Span(10, 0)
+                );
+            });
+
+            test("second span is len 0 subset, touching on the right", () => {
+                assert.deepEqual(
+                    new Language.Span(10, 10).intersect(new Language.Span(20, 0)),
+                    new Language.Span(20, 0)
+                );
+            });
+
+            test("second span to right and overlapping", () => {
+                assert.deepEqual(
+                    Language.Span.fromStartAndAfterEnd(10, 20).intersect(new Language.Span(19, 10)),
+                    new Language.Span(19, 1)
+                );
+            });
+
+            test("second span to right", () => {
+                assert.deepEqual(
+                    Language.Span.fromStartAndAfterEnd(10, 20).intersect(new Language.Span(21, 9)),
+                    undefined
+                );
+            });
+
+            test("length 0", () => {
+                assert.deepEqual(
+                    Language.Span.fromStartAndAfterEnd(10, 20).intersect(new Language.Span(15, 0)),
+                    new Language.Span(15, 0)
+                );
+            });
+
+            test("length 1", () => {
+                assert.deepEqual(
+                    Language.Span.fromStartAndAfterEnd(10, 20).intersect(new Language.Span(15, 1)),
+                    new Language.Span(15, 1)
+                );
+            });
+        });
+
         suite("translate()", () => {
             test("with 0 movement", () => {
                 const span = new Language.Span(1, 2);

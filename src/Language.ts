@@ -73,6 +73,10 @@ export class Span {
     constructor(private _startIndex: number, private _length: number) {
     }
 
+    public static fromStartAndAfterEnd(startIndex: number, afterEndIndex: number): Span {
+        return new Span(startIndex, afterEndIndex - startIndex);
+    }
+
     /**
      * Get the start index of this span.
      */
@@ -162,8 +166,17 @@ export class Span {
                 [lhs, rhs] = [rhs, lhs];
             }
 
-            if (lhs.endIndex <= rhs.startIndex) {
-                return new Span(rhs.startIndex, lhs.endIndex);
+            // if (lhs.endIndex < rhs.startIndex) {
+            //     return undefined;
+            // }
+
+            let start = rhs.startIndex;
+            let afterEnd = (lhs.afterEndIndex < rhs.afterEndIndex) ? lhs.afterEndIndex : rhs.afterEndIndex;
+
+            if (afterEnd >= start) {
+                return new Span(start, afterEnd - start);
+            } else {
+                return undefined;
             }
         }
 
