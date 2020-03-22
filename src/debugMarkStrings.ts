@@ -11,7 +11,7 @@ export function __debugMarkPositionInString(
     text: string,
     position: number,
     insertTextAtPosition: string = '<CURSOR>',
-    charactersBeforeIndex: number = 25,
+    charactersBeforeIndex: number = 45,
     charactersAfterPosition: number = 50
 ): string {
     const preTextIndex = position - charactersBeforeIndex;

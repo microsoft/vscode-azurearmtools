@@ -122,7 +122,7 @@ export class DeploymentFileMapping {
 
         for (let templatePath of Object.getOwnPropertyNames(map)) {
             if (normalizePath(templatePath) !== normalizedTemplatePath) {
-                newMap[templatePath] = map[templatePath]; //asdf not hit in tests
+                newMap[templatePath] = map[templatePath];
             }
         }
 

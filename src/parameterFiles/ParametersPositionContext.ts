@@ -400,7 +400,7 @@ export class ParametersPositionContext extends DocumentPositionContext {
                 // vscode doesn't like both edits starting at the same location, so
                 //   just add the comma directly to the string (this is the common case)
                 commaEdit = undefined;
-                indentedText = `,${indentedText}`;
+                insertText = `,${insertText}`;
             }
 
             await editor.edit(editBuilder => {

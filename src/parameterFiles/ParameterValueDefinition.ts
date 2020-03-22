@@ -43,7 +43,7 @@ export class ParameterValueDefinition implements INamedDefinition {
         return {
             usage: this.nameValue.unquotedValue,
             friendlyType: "parameter value",
-            description: "asdf" //this.description
+            description: "Parameter value"
         };
     }
 

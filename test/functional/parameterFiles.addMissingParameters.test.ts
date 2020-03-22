@@ -6,9 +6,9 @@
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name no-constant-condition
 // tslint:disable:prefer-template no-http-string
 
+import * as assert from 'assert';
 import { commands } from 'vscode';
-import { ext } from '../../src/extensionVariables';
-import { assert } from '../../src/fixed_assert';
+import { ext } from '../../extension.bundle';
 import { IDeploymentParametersFile, IDeploymentTemplate } from "../support/diagnostics";
 import { getDocumentMarkers, removeEOLMarker } from "../support/parseTemplate";
 import { stringify } from '../support/stringify';
@@ -200,13 +200,20 @@ suite("Add missing parameters - functional", () => {
         `{
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
-    "parameters": {}
+    "parameters": {
+        "unknownParameter": {
+            "value": 1
+        }
+    }
 }`,
         templateWithOneOptionalParam,
         `{
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "unknownParameter": {
+            "value": 1
+        },
         "optionalInt": {
             "value": 1
         }
@@ -215,7 +222,11 @@ suite("Add missing parameters - functional", () => {
         `{
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
-    "parameters": {}
+    "parameters": {
+        "unknownParameter": {
+            "value": 1
+        }
+    }
 }`
     );
 
@@ -314,7 +325,7 @@ suite("Add missing parameters - functional", () => {
             "value": {
                 "abc": "def"
             }
-        }
+        },
         "requiredString": {
             "value": "" // TODO: Fill in parameter value
         },
@@ -334,7 +345,7 @@ suite("Add missing parameters - functional", () => {
             "value": {
                 "abc": "def"
             }
-        }
+        },
         "requiredString": {
             "value": "" // TODO: Fill in parameter value
         }

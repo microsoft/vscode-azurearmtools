@@ -63,7 +63,7 @@ suite("Functional parameter file completions", () => {
 
                 // Map template to params
                 if (templateFile) {
-                    await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, paramsFile.uri); // asdf dispose
+                    await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, paramsFile.uri);
                 }
 
                 // Open params in editor

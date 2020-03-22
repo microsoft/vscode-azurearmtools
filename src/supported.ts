@@ -2,8 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { Position, Range, TextDocument } from "vscode";
-import { armTemplateLanguageId } from "./constants";
+import { Position, Range, TextDocument, workspace } from "vscode";
+import { armTemplateLanguageId, configKeys, configPrefix } from "./constants";
 import { containsArmSchema, containsParametersSchema } from "./schemas";
 
 export const templateDocumentSelector = [
@@ -34,7 +34,7 @@ function isJsonOrJsoncLangId(textDocument: TextDocument): boolean {
 }
 
 // We keep track of arm-template files, of course,
-// but also JSON/JSONC (unless auto-detect is disabled) so we can check them for the ARM schema
+// but also JSON/JSONC so we can check them for the ARM deployment and parameters schemas
 function shouldWatchDocument(textDocument: TextDocument): boolean {
     if (
         textDocument.uri.scheme !== 'file'
@@ -47,13 +47,11 @@ function shouldWatchDocument(textDocument: TextDocument): boolean {
         return true;
     }
 
-    //asdf
-    // let enableAutoDetection = workspace.getConfiguration(configPrefix).get<boolean>(configKeys.autoDetectJsonTemplates);
-    // if (!enableAutoDetection) {
-    //     return false;
-    // }
-
     return isJsonOrJsoncLangId(textDocument);
+}
+
+export function isAutoDetectArmEnabled(): boolean {
+    return !!workspace.getConfiguration(configPrefix).get<boolean>(configKeys.autoDetectJsonTemplates);
 }
 
 export function mightBeDeploymentTemplate(textDocument: TextDocument): boolean {
@@ -66,6 +64,10 @@ export function mightBeDeploymentTemplate(textDocument: TextDocument): boolean {
     }
 
     if (isJsonOrJsoncLangId(textDocument)) {
+        if (!isAutoDetectArmEnabled()) {
+            return false;
+        }
+
         let startOfDocument = textDocument.getText(new Range(new Position(0, 0), new Position(maxLinesToDetectSchemaIn - 1, 0)));
 
         // Do a quick dirty check if the first portion of the JSON contains a schema string that we're interested in

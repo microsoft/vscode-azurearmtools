@@ -59,33 +59,8 @@ suite("Parameter file completions", () => {
         });
     }
 
-    // /**asdf
-    //  * Given a deployment template and a character index into it, verify that getReferences on the template
-    //  * returns the expected set of locations.
-    //  *
-    //  * Usually parseTemplateWithMarkers will be used to parse the document and find the indices of a set of locations
-    //  * Example:
-    //  *
-    //  *      const { dt, markers: { apiVersionDef, apiVersionReference } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
-    //  *      // Cursor at reference to "apiVersion" inside resources
-    //  *      await testFindReferences(dt, apiVersionReference.index, [apiVersionReference.index, apiVersionDef.index]);
-    //  */
-    // export async function testParamCompletions(
-    //     dt: DeploymentTemplate,
-    //     dp: DeploymentParameters,
-    //     cursorIndex: number,
-    //     expectedReferenceIndices: number[]
-    // ): Promise<void> {
-    //     const pc = dt.getContextFromDocumentCharacterIndex(cursorIndex);
-    //     // tslint:disable-next-line: no-non-null-assertion
-    //     const references: ReferenceList = pc.getReferences()!;
-    //     assert(references, "Expected non-empty list of references");
+    // =========================
 
-    //     const indices = references.spans.map(r => r.startIndex).sort();
-    //     expectedReferenceIndices = expectedReferenceIndices.sort();
-
-    //     assert.deepStrictEqual(indices, expectedReferenceIndices);
-    // }
     suite("Completions for new parameters", async () => {
         suite("Params file with missing parameters section - no completions anywhere", () => {
             const dpWithNoParametersSection: string = `{
@@ -135,9 +110,6 @@ suite("Parameter file completions", () => {
             [
                 newParamCompletionLabel
             ]);
-
-        // asdf different param types
-        // params with default values
 
         suite("Offer completions for properties from template that aren't already defined in param file", () => {
             createParamsCompletionsTest(

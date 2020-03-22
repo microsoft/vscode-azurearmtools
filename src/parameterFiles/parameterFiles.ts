@@ -152,10 +152,10 @@ export async function openTemplateFile(mapping: DeploymentFileMapping, parameter
  * use the absolute path.  This is intended for UI only.
  */
 export function getFriendlyPathToFile(uri: Uri): string {
-  const workspaceFolder = workspace.getWorkspaceFolder(uri); //asdftestpoint
+  const workspaceFolder = workspace.getWorkspaceFolder(uri);
 
   if (workspaceFolder) {
-    return path.relative(path.dirname(workspaceFolder.uri.fsPath), uri.fsPath);
+    return path.relative(workspaceFolder.uri.fsPath, uri.fsPath);
   } else {
     return uri.fsPath;
   }
@@ -298,7 +298,7 @@ export async function findSuggestedParameterFiles(templateUri: Uri): Promise<IPo
         if (await isParameterFile(fullPath)) {
           paths.push({
             uri,
-            friendlyPath: getRelativeParameterFilePath(templateUri, uri), //asdf
+            friendlyPath: getRelativeParameterFilePath(templateUri, uri),
             isCloseNameMatch: mayBeMatchingParameterFile(templateUri.fsPath, fullPath)
           });
         }
