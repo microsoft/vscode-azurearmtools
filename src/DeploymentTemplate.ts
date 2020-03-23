@@ -124,7 +124,7 @@ export class DeploymentTemplate extends DeploymentDoc {
         });
     }
 
-    public get errorsPromise(): Promise<language.Issue[]> {
+    public async getErrors(_associatedParameters: DeploymentParameters | undefined): Promise<language.Issue[]> {
         return this._errors.getOrCachePromise(async () => {
             // tslint:disable-next-line:typedef
             return new Promise<language.Issue[]>(async (resolve, reject) => {
@@ -200,7 +200,6 @@ export class DeploymentTemplate extends DeploymentDoc {
 
     public get warnings(): language.Issue[] {
         return this._warnings.getOrCacheValue(() => {
-            // tslint:disable-next-line: no-suspicious-comment
             const unusedParams = this.findUnusedParameters();
             const unusedVars = this.findUnusedVariables();
             const unusedUserFuncs = this.findUnusedUserFunctions();

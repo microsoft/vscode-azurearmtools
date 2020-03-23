@@ -186,21 +186,21 @@ suite("DeploymentTemplate", () => {
     suite("errors", () => {
         test("with empty deployment template", () => {
             const dt = new DeploymentTemplate("", fakeId);
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, []);
             });
         });
 
         test("with empty object deployment template", () => {
             const dt = new DeploymentTemplate("{}", fakeId);
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, []);
             });
         });
 
         test("with one property deployment template", () => {
             const dt = new DeploymentTemplate("{ 'name': 'value' }", fakeId);
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, []);
             });
         });
@@ -210,7 +210,7 @@ suite("DeploymentTemplate", () => {
             const expectedErrors = [
                 new Language.Issue(new Language.Span(20, 1), "Expected a right square bracket (']').", tleSyntax)
             ];
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, expectedErrors);
             });
         });
@@ -220,7 +220,7 @@ suite("DeploymentTemplate", () => {
             const expectedErrors = [
                 new Language.Issue(new Language.Span(23, 6), "Undefined parameter reference: \"test\"", IssueKind.undefinedParam)
             ];
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, expectedErrors);
             });
         });
@@ -230,7 +230,7 @@ suite("DeploymentTemplate", () => {
             const expectedErrors = [
                 new Language.Issue(new Language.Span(22, 6), "Undefined variable reference: \"test\"", IssueKind.undefinedVar)
             ];
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, expectedErrors);
             });
         });
@@ -240,7 +240,7 @@ suite("DeploymentTemplate", () => {
             const expectedErrors = [
                 new UnrecognizedUserNamespaceIssue(new Language.Span(12, 9), "namespace")
             ];
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, expectedErrors);
             });
         });
@@ -273,7 +273,7 @@ suite("DeploymentTemplate", () => {
             const expectedErrors = [
                 new UnrecognizedUserFunctionIssue(new Language.Span(22, 4), "contoso", "blah")
             ];
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, expectedErrors);
             });
         });
@@ -301,7 +301,7 @@ suite("DeploymentTemplate", () => {
                 fakeId);
             const expectedErrors: string[] = [
             ];
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, expectedErrors);
             });
         });
@@ -348,7 +348,7 @@ suite("DeploymentTemplate", () => {
             const expectedErrors = [
                 new UnrecognizedUserFunctionIssue(new Language.Span(22, 9), "contoso", "reference")
             ];
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(errors, expectedErrors);
             });
         });
@@ -379,13 +379,13 @@ suite("DeploymentTemplate", () => {
             const expectedErrors = [
                 new Language.Issue(new Language.Span(243, 6), "User functions cannot reference variables", IssueKind.varInUdf)
             ];
-            const errors: Language.Issue[] = await dt.errorsPromise;
+            const errors: Language.Issue[] = await dt.getErrors(undefined);
             assert.deepStrictEqual(errors, expectedErrors);
         });
 
         test("with reference() call in variable definition", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "[reference('test')]" } }`, fakeId);
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
                     [new Language.Issue(new Language.Span(24, 9), "reference() cannot be invoked inside of a variable definition.", IssueKind.referenceInVar)]
@@ -430,7 +430,7 @@ suite("DeploymentTemplate", () => {
 
         test("with reference() call inside a different expression in a variable definition", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "[concat(reference('test'))]" } }`, fakeId);
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
                     [new Language.Issue(new Language.Span(31, 9), "reference() cannot be invoked inside of a variable definition.", IssueKind.referenceInVar)]);
@@ -439,7 +439,7 @@ suite("DeploymentTemplate", () => {
 
         test("with unnamed property access on variable reference", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": {} }, "z": "[variables('a').]" }`, fakeId);
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
                     [new Language.Issue(new Language.Span(50, 1), "Expected a literal value.", tleSyntax)]);
@@ -448,7 +448,7 @@ suite("DeploymentTemplate", () => {
 
         test("with property access on variable reference without variable name", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": {} }, "z": "[variables().b]" }`, fakeId);
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
                     [new IncorrectArgumentsCountIssue(new Language.Span(35, 11), "The function 'variables' takes 1 argument.", "variables", 0, 1, 1)]);
@@ -457,7 +457,7 @@ suite("DeploymentTemplate", () => {
 
         test("with property access on string variable reference", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "A" }, "z": "[variables('a').b]" }`, fakeId);
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
                     [new Language.Issue(new Language.Span(51, 1), `Property "b" is not a defined property of "variables('a')".`, IssueKind.undefinedVarProp)]);
@@ -466,7 +466,7 @@ suite("DeploymentTemplate", () => {
 
         test("with undefined variable reference child property", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": {} }, "z": "[variables('a').b]" }`, fakeId);
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
                     [new Language.Issue(new Language.Span(50, 1), `Property "b" is not a defined property of "variables('a')".`, IssueKind.undefinedVarProp)]);
@@ -475,7 +475,7 @@ suite("DeploymentTemplate", () => {
 
         test("with undefined variable reference grandchild property", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": { "b": {} } }, "z": "[variables('a').b.c]" }`, fakeId);
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
                     [new Language.Issue(new Language.Span(61, 1), `Property "c" is not a defined property of "variables('a').b".`, IssueKind.undefinedVarProp)]);
@@ -484,7 +484,7 @@ suite("DeploymentTemplate", () => {
 
         test("with undefined variable reference child and grandchild properties", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": { "d": {} } }, "z": "[variables('a').b.c]" }`, fakeId);
-            return dt.errorsPromise.then((errors: Language.Issue[]) => {
+            return dt.getErrors(undefined).then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
                     [new Language.Issue(new Language.Span(59, 1), `Property "b" is not a defined property of "variables('a')".`, IssueKind.undefinedVarProp)]);

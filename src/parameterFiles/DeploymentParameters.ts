@@ -276,11 +276,28 @@ export class DeploymentParameters extends DeploymentDoc {
         return undefined;
     }
 
-    public get errorsPromise(): Promise<language.Issue[]> {
-        return getErrors();
+    // CONSIDER: This cache depends on associatedTemplate not changing (which it shouldn't)
+    public async getErrors(associatedTemplate: DeploymentTemplate | undefined): Promise<language.Issue[]> {
+        return this._errors.getOrCachePromise(async () => {
+            // tslint:disable-next-line:no-this-assignment
+            const me = this;
+            return getMissingRequiredParametersError();
 
-        async function getErrors(): Promise<language.Issue[]> {
-            return [];
-        }
+            async function getMissingRequiredParametersError(): Promise<language.Issue[]> {
+                const missingRequiredParams: IParameterDefinition[] = me.getMissingParameters(associatedTemplate, true);
+                if (missingRequiredParams.length === 0) {
+                    return [];
+                }
+
+                const missingParamNames = missingRequiredParams.map(param => `"${param.nameValue.unquotedValue}"`);
+                const message = `The following parameters do not have default values and require a value in the parameter file: ${missingParamNames.join(', ')}`;
+                const span = me.parametersProperty?.nameValue.span ?? new language.Span(0, 0);
+                return [new language.Issue(span, message, language.IssueKind.params_missingRequiredParam)];
+            }
+        });
+    }
+
+    public get warnings(): language.Issue[] {
+        return [];
     }
 }

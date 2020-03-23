@@ -250,12 +250,7 @@ export class AzureRMTools {
         return file instanceof DeploymentTemplate ? file : undefined;
     }
 
-    private getOpenedDeploymentParameters(documentOrUri: vscode.TextDocument | vscode.Uri): DeploymentParameters | undefined {
-        const file = this.getOpenedDeploymentDoc(documentOrUri);
-        return file instanceof DeploymentParameters ? file : undefined;
-    }
-
-    private updateDeploymentDoc(document: vscode.TextDocument): void {
+    private updateDeploymentDoc(textDocument: vscode.TextDocument): void {
         // tslint:disable-next-line:no-suspicious-comment
         // TODO: refactor
         // tslint:disable-next-line:max-func-body-length cyclomatic-complexity
@@ -263,18 +258,18 @@ export class AzureRMTools {
             actionContext.errorHandling.suppressDisplay = true;
             actionContext.telemetry.suppressIfSuccessful = true;
             actionContext.telemetry.properties.isActivationEvent = 'true';
-            actionContext.telemetry.properties.fileExt = path.extname(document.fileName);
+            actionContext.telemetry.properties.fileExt = path.extname(textDocument.fileName);
 
-            assert(document);
+            assert(textDocument);
             const editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
             const stopwatch = new Stopwatch();
             stopwatch.start();
 
             let treatAsDeploymentTemplate = false;
             let treatAsDeploymentParameters = false;
-            const documentUri = document.uri;
+            const documentUri = textDocument.uri;
 
-            if (document.languageId === armTemplateLanguageId) {
+            if (textDocument.languageId === armTemplateLanguageId) {
                 // Lang ID is set to arm-template, whether auto or manual, respect the setting
                 treatAsDeploymentTemplate = true;
             }
@@ -287,10 +282,10 @@ export class AzureRMTools {
             const isNewlyOpened: boolean = !this.getOpenedDeploymentDoc(documentUri);
 
             // Is it a deployment template file?
-            let shouldParseFile = treatAsDeploymentTemplate || mightBeDeploymentTemplate(document);
+            let shouldParseFile = treatAsDeploymentTemplate || mightBeDeploymentTemplate(textDocument);
             if (shouldParseFile) {
                 // Do a full parse
-                let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(document.getText(), documentUri);
+                let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(textDocument.getText(), documentUri);
                 if (deploymentTemplate.hasArmSchemaUri()) {
                     treatAsDeploymentTemplate = true;
                 }
@@ -304,39 +299,41 @@ export class AzureRMTools {
                         // A deployment template has been opened (as opposed to having been tabbed to)
 
                         // Make sure the language ID is set to arm-template
-                        if (document.languageId !== armTemplateLanguageId) {
+                        if (textDocument.languageId !== armTemplateLanguageId) {
                             // The document will be reloaded, firing this event again with the new langid
-                            AzureRMTools.setLanguageToArm(document, actionContext);
+                            AzureRMTools.setLanguageToArm(textDocument, actionContext);
                             return;
                         }
 
                         // Telemetry for template opened
                         // tslint:disable-next-line: no-floating-promises // Don't wait
-                        this.reportTemplateOpenedTelemetry(document, deploymentTemplate, stopwatch);
+                        this.reportTemplateOpenedTelemetry(textDocument, deploymentTemplate, stopwatch);
 
                         // No guarantee that active editor is the one we're processing, ignore if not
-                        if (editor && editor.document === document) {
+                        if (editor && editor.document === textDocument) {
                             // Are they using an older schema?  Ask to update.
                             // tslint:disable-next-line: no-suspicious-comment
                             // TODO: Move to separate file
                             this.considerQueryingForNewerSchema(editor, deploymentTemplate);
 
                             // Is there a possibly-matching params file they might want to associate?
-                            considerQueryingForParameterFile(this._mapping, document);
+                            considerQueryingForParameterFile(this._mapping, textDocument);
                         }
                     }
 
-                    this.reportDeploymentTemplateErrors(document, deploymentTemplate);
+                    // tslint:disable-next-line:no-suspicious-comment
+                    // TODO: Associated parameters
+                    this.reportDeploymentTemplateErrors(textDocument, deploymentTemplate, undefined);
                     survey.registerActiveUse();
                 }
             }
 
             if (!treatAsDeploymentTemplate) {
                 // Is it a parameter file?
-                let shouldParseParameterFile = treatAsDeploymentTemplate || mightBeDeploymentParameters(document);
+                let shouldParseParameterFile = treatAsDeploymentTemplate || mightBeDeploymentParameters(textDocument);
                 if (shouldParseParameterFile) {
                     // Do a full parse
-                    let deploymentParameters: DeploymentParameters = new DeploymentParameters(document.getText(), document.uri);
+                    let deploymentParameters: DeploymentParameters = new DeploymentParameters(textDocument.getText(), textDocument.uri);
                     if (deploymentParameters.hasParametersUri()) {
                         treatAsDeploymentParameters = true;
                     }
@@ -353,9 +350,10 @@ export class AzureRMTools {
 
                             // Telemetry for parameter file opened
                             // tslint:disable-next-line: no-floating-promises // Don't wait
-                            this.reportParameterFileOpenedTelemetry(document, deploymentParameters, stopwatch);
+                            this.reportParameterFileOpenedTelemetry(textDocument, deploymentParameters, stopwatch);
                         }
 
+                        this.reportDeploymentParametersErrors(textDocument, deploymentParameters);
                         survey.registerActiveUse();
                     }
                 }
@@ -369,7 +367,7 @@ export class AzureRMTools {
                     // file (the $schema property changed to not be a
                     // template/params schema). In either case, we should
                     // remove it from our cache.
-                    this.closeDeploymentFile(document);
+                    this.closeDeploymentFile(textDocument);
                 }
 
                 // tslint:disable-next-line: no-floating-promises
@@ -398,12 +396,12 @@ export class AzureRMTools {
         const totalUserFunctionsCount = functionsInEachNamespace.reduce((sum, count) => sum + count, 0);
 
         const issuesHistograph = new Histogram();
-        const errors = await deploymentTemplate.errorsPromise;
+        const errors = await deploymentTemplate.getErrors(undefined);
         const warnings = deploymentTemplate.warnings;
         for (const error of errors) {
             issuesHistograph.add(`extErr:${error.kind}`);
         }
-        for (const warning of deploymentTemplate.warnings) {
+        for (const warning of warnings) {
             issuesHistograph.add(`extWarn:${warning.kind}`);
         }
 
@@ -440,52 +438,80 @@ export class AzureRMTools {
 
     private async reportParameterFileOpenedTelemetry(
         document: vscode.TextDocument,
-        deploymentParameters: DeploymentParameters,
+        parameters: DeploymentParameters,
         stopwatch: Stopwatch
     ): Promise<void> {
-        ext.reporter.sendTelemetryEvent(
-            "Parameter File Opened",
-            {
-                docLangId: document.languageId,
-                docExtension: path.extname(document.fileName),
-                schema: deploymentParameters.schemaUri ?? ""
-            },
-            {
-                documentSizeInCharacters: document.getText().length,
-                parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds,
-                lineCount: deploymentParameters.lineCount,
-                maxLineLength: deploymentParameters.getMaxLineLength(),
-                paramsCount: deploymentParameters.parametersObjectValue?.length ?? 0,
-                commentCount: deploymentParameters.getCommentCount(),
-                linkedTemplateFiles: this._mapping.getTemplateFile(document.uri) ? 1 : 0
-            });
+        // const issuesHistograph = new Histogram();
+        // const errors = await parameters.getErrors(undefined); //asdf
+        // const warnings = parameters.warnings;
+        // for (const error of errors) {
+        //     issuesHistograph.add(`extErr:${error.kind}`);
+        // }
+        // for (const warning of warnings) {
+        //     issuesHistograph.add(`extWarn:${warning.kind}`);
+        // }
+
+        // ext.reporter.sendTelemetryEvent(
+        //     "Parameter File Opened",
+        //     {
+        //         docLangId: document.languageId,
+        //         docExtension: path.extname(document.fileName),
+        //         schema: parameters.schemaUri ?? ""
+        //     },
+        //     {
+        //         documentSizeInCharacters: document.getText().length,
+        //         parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds,
+        //         lineCount: parameters.lineCount,
+        //         maxLineLength: parameters.getMaxLineLength(),
+        //         paramsCount: parameters.parametersObjectValue?.length ?? 0,
+        //         commentCount: parameters.getCommentCount(),
+        //         linkedTemplateFiles: this._mapping.getTemplateFile(document.uri) ? 1 : 0,
+        //         extErrorsCount: errors.length,
+        //         extWarnCount: warnings.length
+        //     });
     }
 
-    private reportDeploymentTemplateErrors(document: vscode.TextDocument, deploymentTemplate: DeploymentTemplate): void {
+    private async reportDeploymentDocErrors(textDocument: vscode.TextDocument, deploymentDocument: DeploymentDoc, associatedDocument: DeploymentDoc | undefined): Promise<void> {
+        // Don't wait
+        // tslint:disable-next-line: no-floating-promises
+        ++this._diagnosticsVersion;
+
+        let parseErrors: language.Issue[] = await deploymentDocument.getErrors(associatedDocument);
+        const diagnostics: vscode.Diagnostic[] = [];
+
+        for (const error of parseErrors) {
+            diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentDocument, error, vscode.DiagnosticSeverity.Error));
+        }
+
+        for (const warning of deploymentDocument.warnings) {
+            diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentDocument, warning, vscode.DiagnosticSeverity.Warning));
+        }
+
+        let completionDiagnostic = this.getCompletedDiagnostic();
+        if (completionDiagnostic) {
+            diagnostics.push(completionDiagnostic);
+        }
+
+        this._diagnosticsCollection.set(textDocument.uri, diagnostics);
+    }
+
+    private reportDeploymentTemplateErrors(textDocument: vscode.TextDocument, deploymentTemplate: DeploymentTemplate, associatedParameters: DeploymentParameters | undefined): void {
+        // Don't wait
+        // tslint:disable-next-line: no-floating-promises
+        callWithTelemetryAndErrorHandling('reportDeploymentTemplateErrors', async (actionContext: IActionContext): Promise<void> => {
+            actionContext.telemetry.suppressIfSuccessful = true;
+            await this.reportDeploymentDocErrors(textDocument, deploymentTemplate, associatedParameters);
+        });
+    }
+
+    private reportDeploymentParametersErrors(textDocument: vscode.TextDocument, deploymentParamters: DeploymentParameters): void {
         // Don't wait
         // tslint:disable-next-line: no-floating-promises
         callWithTelemetryAndErrorHandling('reportDeploymentTemplateErrors', async (actionContext: IActionContext): Promise<void> => {
             actionContext.telemetry.suppressIfSuccessful = true;
 
-            ++this._diagnosticsVersion;
-
-            let parseErrors: language.Issue[] = await deploymentTemplate.errorsPromise;
-            const diagnostics: vscode.Diagnostic[] = [];
-
-            for (const error of parseErrors) {
-                diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentTemplate, error, vscode.DiagnosticSeverity.Error));
-            }
-
-            for (const warning of deploymentTemplate.warnings) {
-                diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentTemplate, warning, vscode.DiagnosticSeverity.Warning));
-            }
-
-            let completionDiagnostic = this.getCompletedDiagnostic();
-            if (completionDiagnostic) {
-                diagnostics.push(completionDiagnostic);
-            }
-
-            this._diagnosticsCollection.set(document.uri, diagnostics);
+            const template = await this.getOrReadAssociatedTemplate(textDocument.uri, Cancellation.cantCancel);
+            await this.reportDeploymentDocErrors(textDocument, deploymentParamters, template);
         });
     }
 
@@ -783,7 +809,7 @@ export class AzureRMTools {
                 incorrectArgs?: string;
             } & TelemetryProperties = actionContext.telemetry.properties;
 
-            let issues: language.Issue[] = await deploymentTemplate.errorsPromise;
+            let issues: language.Issue[] = await deploymentTemplate.getErrors(undefined);
 
             // Full function counts
             const functionCounts: Histogram = deploymentTemplate.getFunctionCounts();
@@ -848,8 +874,8 @@ export class AzureRMTools {
         return JSON.stringify(array);
     }
 
-    private getVSCodeDiagnosticFromIssue(deploymentTemplate: DeploymentTemplate, issue: language.Issue, severity: vscode.DiagnosticSeverity): vscode.Diagnostic {
-        const range: vscode.Range = getVSCodeRangeFromSpan(deploymentTemplate, issue.span);
+    private getVSCodeDiagnosticFromIssue(deploymentDocument: DeploymentDoc, issue: language.Issue, severity: vscode.DiagnosticSeverity): vscode.Diagnostic {
+        const range: vscode.Range = getVSCodeRangeFromSpan(deploymentDocument, issue.span);
         const message: string = issue.message;
         let diagnostic = new vscode.Diagnostic(range, message, severity);
         diagnostic.source = expressionsDiagnosticsSource;
@@ -951,6 +977,17 @@ export class AzureRMTools {
         } else {
             assert.fail("Unexpected doc type");
         }
+    }
+
+    private async getOrReadAssociatedTemplate(parameterFileUri: vscode.Uri, cancel: Cancellation): Promise<DeploymentTemplate | undefined> {
+        const templateUri: vscode.Uri | undefined = this._mapping.getTemplateFile(parameterFileUri);
+        if (templateUri) {
+            const template = await this.getOrReadDeploymentTemplate(templateUri);
+            cancel.throwIfCancelled();
+            return template;
+        }
+
+        return undefined;
     }
 
     private async getParametersAndAssociatedTemplate(

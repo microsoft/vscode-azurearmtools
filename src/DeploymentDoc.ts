@@ -158,7 +158,7 @@ export abstract class DeploymentDoc {
      */
     public abstract async getCodeActions(associatedDocument: DeploymentDoc | undefined, range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]>;
 
-    // tslint:disable-next-line:no-suspicious-comment
-    // TODO: rename to getErrors
-    public abstract get errorsPromise(): Promise<language.Issue[]>;
+    public abstract getErrors(associatedDocument: DeploymentDoc | undefined): Promise<language.Issue[]>;
+
+    public abstract get warnings(): language.Issue[];
 }

@@ -301,7 +301,7 @@ suite("Variable iteration (copy blocks)", () => {
         });
 
         test("No errors", async () => {
-            const errors = await dt.errorsPromise;
+            const errors = await dt.getErrors(undefined);
             assert.deepStrictEqual(errors, []);
         });
 

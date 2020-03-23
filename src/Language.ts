@@ -248,7 +248,10 @@ export enum IssueKind {
     undefinedParam = "undefinedParam",
     undefinedVar = "undefinedVar",
     varInUdf = "varInUdf",
-    undefinedVarProp = "undefinedVarProp"
+    undefinedVarProp = "undefinedVarProp",
+
+    // Parameter file issues
+    params_missingRequiredParam = "params_missingRequiredParam",
 }
 
 /**
