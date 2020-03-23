@@ -43,6 +43,7 @@ import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedBuiltinFunctionIssue } from "./UnrecognizedFunctionIssues";
 import { normalizePath } from "./util/normalizePath";
+import { Cancellation } from "./util/throwOnCancel";
 import { onCompletionActivated, toVsCodeCompletionItem } from "./util/toVsCodeCompletionItem";
 import { getVSCodeRangeFromSpan } from "./util/vscodePosition";
 
@@ -259,10 +260,9 @@ export class AzureRMTools {
         return file instanceof DeploymentParameters ? file : undefined;
     }
 
-    // tslint:disable-next-line:no-suspicious-comment
-    // TODO: refactor
-    // tslint:disable-next-line:max-func-body-length
     private updateDeploymentDoc(document: vscode.TextDocument): void {
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO: refactor
         // tslint:disable-next-line:max-func-body-length cyclomatic-complexity
         callWithTelemetryAndErrorHandlingSync('updateDeploymentDocument', (actionContext: IActionContext): void => {
             actionContext.errorHandling.suppressDisplay = true;
@@ -869,12 +869,14 @@ export class AzureRMTools {
     }
 
     private async onProvideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover | undefined> {
-        const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(document);
-        if (doc) {
-            return callWithTelemetryAndErrorHandlingSync('Hover', (actionContext: IActionContext): vscode.Hover | undefined => {
-                actionContext.errorHandling.suppressDisplay = true;
-                const properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>actionContext.telemetry.properties;
+        return await callWithTelemetryAndErrorHandling('Hover', async (actionContext: IActionContext): Promise<vscode.Hover | undefined> => {
+            actionContext.errorHandling.suppressDisplay = true;
+            const properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>actionContext.telemetry.properties;
 
+            const cancel = new Cancellation(token, actionContext);
+
+            const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(document, cancel);
+            if (doc) {
                 const context = doc.getContextFromDocumentLineAndColumnIndexes(position.line, position.character, associatedDoc);
                 const hoverInfo: Hover.HoverInfo | undefined = context.getHoverInfo();
 
@@ -884,18 +886,20 @@ export class AzureRMTools {
                     const hover = new vscode.Hover(hoverInfo.getHoverText(), hoverRange);
                     return hover;
                 }
+            }
 
-                return undefined;
-            });
-        }
+            return undefined;
+        });
     }
 
     private async onProvideCompletions(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList | undefined> {
-        return await callWithTelemetryAndErrorHandlingSync('provideCompletionItems', async (actionContext: IActionContext): Promise<vscode.CompletionList | undefined> => {
+        return await callWithTelemetryAndErrorHandling('provideCompletionItems', async (actionContext: IActionContext): Promise<vscode.CompletionList | undefined> => {
             actionContext.telemetry.suppressIfSuccessful = true;
             actionContext.errorHandling.suppressDisplay = true;
 
-            const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(document, position);
+            const cancel = new Cancellation(token, actionContext);
+
+            const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(document, position, cancel);
             if (pc) {
                 const items: Completion.Item[] = pc.getCompletionItems();
                 const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c));
@@ -925,8 +929,11 @@ export class AzureRMTools {
     // tslint:disable-next-line:no-suspicious-comment
     // TODO: Reconsider how template/params docs are associated
     private async getDeploymentDocAndAssociatedDoc(
-        textDocument: vscode.TextDocument
+        textDocument: vscode.TextDocument,
+        cancel: Cancellation
     ): Promise<{ doc?: DeploymentDoc; associatedDoc?: DeploymentDoc }> {
+        cancel.throwIfCancelled();
+
         const doc = this.getOpenedDeploymentDoc(textDocument);
         if (!doc) {
             return {};
@@ -942,6 +949,7 @@ export class AzureRMTools {
             const templateUri: vscode.Uri | undefined = this._mapping.getTemplateFile(textDocument.uri);
             if (templateUri) {
                 template = await this.getOrReadDeploymentTemplate(templateUri);
+                cancel.throwIfCancelled();
             }
 
             return { doc: params, associatedDoc: template };
@@ -952,12 +960,16 @@ export class AzureRMTools {
 
     // Given a document, get a DeploymentTemplate or DeploymentParameters instance from it, and then
     // create the appropriate context for it from the given position
-    private async getDocumentPositionContext(textDocument: vscode.TextDocument, position: vscode.Position): Promise<DocumentPositionContext | undefined> {
-        const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(textDocument);
+    private async getDocumentPositionContext(textDocument: vscode.TextDocument, position: vscode.Position, cancel: Cancellation): Promise<DocumentPositionContext | undefined> {
+        cancel.throwIfCancelled();
+
+        const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(textDocument, cancel);
+
         if (!doc) {
             return undefined;
         }
 
+        cancel.throwIfCancelled();
         return doc.getContextFromDocumentLineAndColumnIndexes(position.line, position.character, associatedDoc);
     }
 
@@ -986,8 +998,10 @@ export class AzureRMTools {
     }
 
     private async onProvideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Location | undefined> {
-        return callWithTelemetryAndErrorHandling('Go To Definition', async (actionContext: IActionContext): Promise<vscode.Location | undefined> => {
-            const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(document, position);
+        return await callWithTelemetryAndErrorHandling('Go To Definition', async (actionContext: IActionContext): Promise<vscode.Location | undefined> => {
+            const cancel = new Cancellation(token, actionContext);
+            const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(document, position, cancel);
+
             if (pc) {
                 let properties = <TelemetryProperties &
                 {
@@ -1013,10 +1027,11 @@ export class AzureRMTools {
     }
 
     private async onProvideReferences(textDocument: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): Promise<vscode.Location[] | undefined> {
-        const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(textDocument, position);
-        if (!token.isCancellationRequested && pc) {
-            return callWithTelemetryAndErrorHandlingSync('Find References', (actionContext: IActionContext): vscode.Location[] => {
-                const results: vscode.Location[] = [];
+        return await callWithTelemetryAndErrorHandling('Find References', async (actionContext: IActionContext): Promise<vscode.Location[]> => {
+            const cancel = new Cancellation(token, actionContext);
+            const results: vscode.Location[] = [];
+            const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(textDocument, position, cancel);
+            if (pc) {
                 const locationUri: vscode.Uri = pc.document.documentId;
                 const references: ReferenceList | undefined = pc.getReferences();
                 if (references && references.length > 0) {
@@ -1027,10 +1042,10 @@ export class AzureRMTools {
                         results.push(new vscode.Location(locationUri, referenceRange));
                     }
                 }
+            }
 
-                return results;
-            });
-        }
+            return results;
+        });
     }
 
     /**
@@ -1050,17 +1065,11 @@ export class AzureRMTools {
         context: vscode.CodeActionContext,
         token: vscode.CancellationToken
     ): Promise<(vscode.Command | vscode.CodeAction)[] | undefined> {
-        return await callWithTelemetryAndErrorHandling('Provide code actions', async (actionContext: IActionContext): Promise<(vscode.Command | vscode.CodeAction)[] | undefined> => {
+        return await callWithTelemetryAndErrorHandling('Provide code actions', async (actionContext: IActionContext): Promise<(vscode.Command | vscode.CodeAction)[]> => {
             actionContext.errorHandling.suppressDisplay = true;
-            if (token.isCancellationRequested) {
-                return undefined;
-            }
+            const cancel = new Cancellation(token, actionContext);
 
-            const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(textDocument);
-            if (token.isCancellationRequested) {
-                return undefined;
-            }
-
+            const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(textDocument, cancel);
             if (doc) {
                 return await doc.getCodeActions(associatedDoc, range, context);
             }
@@ -1070,11 +1079,12 @@ export class AzureRMTools {
     }
 
     private async onProvideSignatureHelp(textDocument: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp | undefined> {
-        const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(textDocument, position);
-        if (!token.isCancellationRequested && pc) {
-            return callWithTelemetryAndErrorHandlingSync('provideSignatureHelp', (actionContext: IActionContext): vscode.SignatureHelp | undefined => {
-                actionContext.errorHandling.suppressDisplay = true;
+        return await callWithTelemetryAndErrorHandling('provideSignatureHelp', async (actionContext: IActionContext): Promise<vscode.SignatureHelp | undefined> => {
+            actionContext.errorHandling.suppressDisplay = true;
 
+            const cancel = new Cancellation(token, actionContext);
+            const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(textDocument, position, cancel);
+            if (pc) {
                 let functionSignatureHelp: TLE.FunctionSignatureHelp | undefined = pc.getSignatureHelp();
                 let signatureHelp: vscode.SignatureHelp | undefined;
 
@@ -1095,15 +1105,18 @@ export class AzureRMTools {
                 }
 
                 return signatureHelp;
-            });
-        }
+            }
+
+            return undefined;
+        });
     }
 
     private async onProvideRename(textDocument: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): Promise<vscode.WorkspaceEdit | undefined> {
         // asdf make consistent - after callwithtelem
-        const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(textDocument, position);
-        if (!token.isCancellationRequested && pc) {
-            return await callWithTelemetryAndErrorHandling('Rename', async () => {
+        return await callWithTelemetryAndErrorHandling('Rename', async (actionContext) => {
+            const cancel = new Cancellation(token, actionContext);
+            const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(textDocument, position, cancel);
+            if (!token.isCancellationRequested && pc) {
                 const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
                 const referenceSiteInfo: IReferenceSite | undefined = pc.getReferenceSiteInfo();
                 if (referenceSiteInfo && referenceSiteInfo.definition.definitionKind === DefinitionKind.BuiltinFunction) {
@@ -1143,8 +1156,8 @@ export class AzureRMTools {
                 }
 
                 return result;
-            });
-        }
+            }
+        });
     }
 
     private onActiveTextEditorChanged(editor: vscode.TextEditor | undefined): void {
@@ -1166,7 +1179,7 @@ export class AzureRMTools {
     }
 
     private async onTextSelectionChanged(): Promise<void> {
-        callWithTelemetryAndErrorHandlingSync('onTextSelectionChanged', async (actionContext: IActionContext): Promise<void> => {
+        await callWithTelemetryAndErrorHandling('onTextSelectionChanged', async (actionContext: IActionContext): Promise<void> => {
             actionContext.telemetry.properties.isActivationEvent = 'true';
             actionContext.errorHandling.suppressDisplay = true;
             actionContext.telemetry.suppressIfSuccessful = true;
@@ -1174,8 +1187,8 @@ export class AzureRMTools {
             let editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
             if (editor) {
                 let position = editor.selection.anchor;
-                //asdf issue too many awaits where there didn't used to be
-                let pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(editor.document, position);
+                let pc: DocumentPositionContext | undefined =
+                    await this.getDocumentPositionContext(editor.document, position, Cancellation.cantCancel);
                 if (pc && pc instanceof TemplatePositionContext) {
                     let tleBraceHighlightIndexes: number[] = TLE.BraceHighlighter.getHighlightCharacterIndexes(pc);
 
