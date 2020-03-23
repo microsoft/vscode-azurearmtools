@@ -1043,7 +1043,7 @@ suite("DeploymentTemplate", () => {
     suite("getContextFromDocumentLineAndColumnIndexes(number, number)", () => {
         test("with empty deployment template", () => {
             const dt = new DeploymentTemplate("", fakeId);
-            const context = dt.getContextFromDocumentLineAndColumnIndexes(0, 0);
+            const context = dt.getContextFromDocumentLineAndColumnIndexes(0, 0, undefined);
             assert(context);
             assert.equal(0, context.documentLineIndex);
             assert.equal(0, context.documentColumnIndex);
@@ -1209,7 +1209,7 @@ suite("DeploymentTemplate", () => {
                 try {
                     // Just make sure nothing throws
                     let dt = new DeploymentTemplate(json, fakeId);
-                    let pc = dt.getContextFromDocumentCharacterIndex(index);
+                    let pc = dt.getContextFromDocumentCharacterIndex(index, undefined);
                     pc.getReferences();
                     pc.getSignatureHelp();
                     pc.tleInfo;

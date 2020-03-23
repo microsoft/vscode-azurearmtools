@@ -43,7 +43,7 @@ export function createCompletionsTest(
 
         const { dt, markers: { bang } } = await parseTemplateWithMarkers(template);
         assert(bang, "Didn't find ! marker in text");
-        const pc = dt.getContextFromDocumentCharacterIndex(bang.index);
+        const pc = dt.getContextFromDocumentCharacterIndex(bang.index, undefined);
         const completions = pc.getCompletionItems();
 
         const completionNames = completions.map(c => c.label).sort();

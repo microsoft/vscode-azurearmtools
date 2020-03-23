@@ -2,7 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { CodeAction, CodeActionContext, Command, Uri } from "vscode";
+import * as assert from 'assert';
+import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
 import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
 import { templateKeys } from "./constants";
@@ -12,6 +13,7 @@ import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { ParameterDefinition } from "./ParameterDefinition";
+import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
 import { ReferenceList } from "./ReferenceList";
 import { isArmSchema } from "./schemas";
 import { TemplatePositionContext } from "./TemplatePositionContext";
@@ -468,11 +470,11 @@ export class DeploymentTemplate extends DeploymentDoc {
         });
     }
 
-    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number): TemplatePositionContext {
+    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, _associatedTemplate: DeploymentParameters | undefined): TemplatePositionContext {
         return TemplatePositionContext.fromDocumentLineAndColumnIndexes(this, documentLineIndex, documentColumnIndex);
     }
 
-    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number): TemplatePositionContext {
+    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number, _associatedTemplate: DeploymentParameters | undefined): TemplatePositionContext {
         return TemplatePositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex);
     }
 
@@ -522,7 +524,12 @@ export class DeploymentTemplate extends DeploymentDoc {
         }
     }
 
-    public async onProvideCodeActions(range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]> {
+    public async getCodeActions(
+        associatedDocument: DeploymentDoc | undefined,
+        range: Range | Selection,
+        context: CodeActionContext
+    ): Promise<(Command | CodeAction)[]> {
+        assert(!associatedDocument || associatedDocument instanceof DeploymentParameters, "Associated document is of the wrong type");
         return [];
     }
 }

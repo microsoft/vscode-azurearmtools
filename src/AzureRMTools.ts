@@ -9,7 +9,7 @@ import * as assert from "assert";
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as vscode from "vscode";
-import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties, UserCancelledError } from "vscode-azureextensionui";
+import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import * as Completion from "./Completion";
 import { CompletionsSpy } from "./CompletionsSpy";
@@ -29,7 +29,6 @@ import { startArmLanguageServer, stopArmLanguageServer } from "./languageclient/
 import { DeploymentFileMapping } from "./parameterFiles/DeploymentFileMapping";
 import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
 import { considerQueryingForParameterFile, getFriendlyPathToFile, openParameterFile, openTemplateFile, selectParameterFile } from "./parameterFiles/parameterFiles";
-import { ParametersPositionContext } from "./parameterFiles/ParametersPositionContext";
 import { setParameterFileContext } from "./parameterFiles/setParameterFileContext";
 import { ReferenceList } from "./ReferenceList";
 import { resetGlobalState } from "./resetGlobalState";
@@ -208,9 +207,8 @@ export class AzureRMTools {
                 const templateUri: vscode.Uri | undefined = this._mapping.getTemplateFile(paramsUri);
                 if (templateUri) {
                     const template = await this.getOrReadDeploymentTemplate(templateUri);
-                    await ParametersPositionContext.addMissingParameters(
+                    await params.addMissingParameters(
                         editor,
-                        params,
                         template,
                         onlyRequiredParameters);
                 }
@@ -623,8 +621,8 @@ export class AzureRMTools {
         vscode.workspace.onDidCloseTextDocument(this.onDocumentClosed, this, ext.context.subscriptions);
 
         const hoverProvider: vscode.HoverProvider = {
-            provideHover: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Hover | undefined => {
-                return this.onProvideHover(document, position, token);
+            provideHover: async (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover | undefined> => {
+                return await this.onProvideHover(document, position, token);
             }
         };
         ext.context.subscriptions.push(vscode.languages.registerHoverProvider(templateDocumentSelector, hoverProvider));
@@ -632,12 +630,12 @@ export class AzureRMTools {
         // Code actions provider
         const codeActionProvider: vscode.CodeActionProvider = {
             provideCodeActions: async (
-                document: vscode.TextDocument,
+                textDocument: vscode.TextDocument,
                 range: vscode.Range | vscode.Selection,
                 context: vscode.CodeActionContext,
                 token: vscode.CancellationToken
             ): Promise<(vscode.Command | vscode.CodeAction)[] | undefined> => {
-                return await this.onProvideCodeActions(document, range, context, token);
+                return await this.onProvideCodeActions(textDocument, range, context, token);
             }
         };
         ext.context.subscriptions.push(
@@ -691,8 +689,8 @@ export class AzureRMTools {
         ext.context.subscriptions.push(vscode.languages.registerReferenceProvider(templateDocumentSelector, referenceProvider));
 
         const signatureHelpProvider: vscode.SignatureHelpProvider = {
-            provideSignatureHelp: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.SignatureHelp | undefined => {
-                return this.onProvideSignatureHelp(document, position, token);
+            provideSignatureHelp: async (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp | undefined> => {
+                return await this.onProvideSignatureHelp(document, position, token);
             }
         };
         ext.context.subscriptions.push(vscode.languages.registerSignatureHelpProvider(templateDocumentSelector, signatureHelpProvider, ",", "(", "\n"));
@@ -870,19 +868,19 @@ export class AzureRMTools {
         this.setDeploymentDoc(document.uri, undefined);
     }
 
-    private onProvideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Hover | undefined {
-        const deploymentTemplate = this.getOpenedDeploymentTemplate(document);
-        if (deploymentTemplate) {
+    private async onProvideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover | undefined> {
+        const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(document);
+        if (doc) {
             return callWithTelemetryAndErrorHandlingSync('Hover', (actionContext: IActionContext): vscode.Hover | undefined => {
                 actionContext.errorHandling.suppressDisplay = true;
                 const properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>actionContext.telemetry.properties;
 
-                const context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
+                const context = doc.getContextFromDocumentLineAndColumnIndexes(position.line, position.character, associatedDoc);
                 const hoverInfo: Hover.HoverInfo | undefined = context.getHoverInfo();
 
                 if (hoverInfo) {
                     properties.hoverType = hoverInfo.friendlyType;
-                    const hoverRange: vscode.Range = getVSCodeRangeFromSpan(deploymentTemplate, hoverInfo.span);
+                    const hoverRange: vscode.Range = getVSCodeRangeFromSpan(doc, hoverInfo.span);
                     const hover = new vscode.Hover(hoverInfo.getHoverText(), hoverRange);
                     return hover;
                 }
@@ -923,32 +921,44 @@ export class AzureRMTools {
     }
 
     // Given a document, get a DeploymentTemplate or DeploymentParameters instance from it, and then
-    // create the appropriate context for it from the given position
-    private async getDocumentPositionContext(document: vscode.TextDocument, position: vscode.Position): Promise<DocumentPositionContext | undefined> {
-        const doc = this.getOpenedDeploymentDoc(document);
+    // find the appropriate associated document for it
+    // tslint:disable-next-line:no-suspicious-comment
+    // TODO: Reconsider how template/params docs are associated
+    private async getDeploymentDocAndAssociatedDoc(
+        textDocument: vscode.TextDocument
+    ): Promise<{ doc?: DeploymentDoc; associatedDoc?: DeploymentDoc }> {
+        const doc = this.getOpenedDeploymentDoc(textDocument);
         if (!doc) {
-            return undefined;
+            return {};
         }
 
         if (doc instanceof DeploymentTemplate) {
-            return doc.getContextFromDocumentLineAndColumnIndexes(
-                position.line,
-                position.character);
+            const template: DeploymentTemplate = doc;
+            return { doc: template };
         } else if (doc instanceof DeploymentParameters) {
+            const params: DeploymentParameters = doc;
             // It's a parameter file - find the associated template file, if any
             let template: DeploymentTemplate | undefined;
-            const templateUri: vscode.Uri | undefined = this._mapping.getTemplateFile(document.uri);
+            const templateUri: vscode.Uri | undefined = this._mapping.getTemplateFile(textDocument.uri);
             if (templateUri) {
                 template = await this.getOrReadDeploymentTemplate(templateUri);
             }
 
-            return doc.getContextFromDocumentLineAndColumnIndexes(
-                position.line,
-                position.character,
-                template);
+            return { doc: params, associatedDoc: template };
         } else {
             assert.fail("Unexpected doc type");
         }
+    }
+
+    // Given a document, get a DeploymentTemplate or DeploymentParameters instance from it, and then
+    // create the appropriate context for it from the given position
+    private async getDocumentPositionContext(textDocument: vscode.TextDocument, position: vscode.Position): Promise<DocumentPositionContext | undefined> {
+        const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(textDocument);
+        if (!doc) {
+            return undefined;
+        }
+
+        return doc.getContextFromDocumentLineAndColumnIndexes(position.line, position.character, associatedDoc);
     }
 
     // Given a document, get the existing deployment template or parameter that is editing it, or if none, create a
@@ -1002,20 +1012,18 @@ export class AzureRMTools {
         });
     }
 
-    private onProvideReferences(document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): vscode.Location[] | undefined {
-        const deploymentTemplate: DeploymentTemplate | undefined = this.getOpenedDeploymentTemplate(document);
-        if (deploymentTemplate) {
+    private async onProvideReferences(textDocument: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): Promise<vscode.Location[] | undefined> {
+        const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(textDocument, position);
+        if (!token.isCancellationRequested && pc) {
             return callWithTelemetryAndErrorHandlingSync('Find References', (actionContext: IActionContext): vscode.Location[] => {
                 const results: vscode.Location[] = [];
-                const locationUri: vscode.Uri = deploymentTemplate.documentId;
-                const positionContext: TemplatePositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-
-                const references: ReferenceList | undefined = positionContext.getReferences();
+                const locationUri: vscode.Uri = pc.document.documentId;
+                const references: ReferenceList | undefined = pc.getReferences();
                 if (references && references.length > 0) {
                     actionContext.telemetry.properties.referenceType = references.kind;
 
                     for (const span of references.spans) {
-                        const referenceRange: vscode.Range = getVSCodeRangeFromSpan(deploymentTemplate, span);
+                        const referenceRange: vscode.Range = getVSCodeRangeFromSpan(pc.document, span);
                         results.push(new vscode.Location(locationUri, referenceRange));
                     }
                 }
@@ -1028,7 +1036,7 @@ export class AzureRMTools {
     /**
      * Provide commands for the given document and range.
      *
-     * @param document The document in which the command was invoked.
+     * @param textDocument The document in which the command was invoked.
      * @param range The selector or range for which the command was invoked. This will always be a selection if
      * there is a currently active editor.
      * @param context Context carrying additional information.
@@ -1037,41 +1045,37 @@ export class AzureRMTools {
      * signaled by returning `undefined`, `null`, or an empty array.
      */
     private async onProvideCodeActions(
-        document: vscode.TextDocument,
+        textDocument: vscode.TextDocument,
         range: vscode.Range | vscode.Selection,
         context: vscode.CodeActionContext,
         token: vscode.CancellationToken
     ): Promise<(vscode.Command | vscode.CodeAction)[] | undefined> {
-        return await callWithTelemetryAndErrorHandling('Provide code actions', async (actionContext: IActionContext): Promise<(vscode.Command | vscode.CodeAction)[]> => {
+        return await callWithTelemetryAndErrorHandling('Provide code actions', async (actionContext: IActionContext): Promise<(vscode.Command | vscode.CodeAction)[] | undefined> => {
             actionContext.errorHandling.suppressDisplay = true;
-
             if (token.isCancellationRequested) {
-                throw new UserCancelledError();
+                return undefined;
             }
 
-            const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(document, range.start);
-
+            const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(textDocument);
             if (token.isCancellationRequested) {
-                throw new UserCancelledError();
+                return undefined;
             }
 
-            if (pc) {
-                return await pc.getCodeActions(range, context);
+            if (doc) {
+                return await doc.getCodeActions(associatedDoc, range, context);
             }
 
             return [];
         });
     }
 
-    private onProvideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.SignatureHelp | undefined {
-        const deploymentTemplate: DeploymentTemplate | undefined = this.getOpenedDeploymentTemplate(document);
-        if (deploymentTemplate) {
+    private async onProvideSignatureHelp(textDocument: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp | undefined> {
+        const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(textDocument, position);
+        if (!token.isCancellationRequested && pc) {
             return callWithTelemetryAndErrorHandlingSync('provideSignatureHelp', (actionContext: IActionContext): vscode.SignatureHelp | undefined => {
                 actionContext.errorHandling.suppressDisplay = true;
 
-                const context: TemplatePositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-
-                let functionSignatureHelp: TLE.FunctionSignatureHelp | undefined = context.getSignatureHelp();
+                let functionSignatureHelp: TLE.FunctionSignatureHelp | undefined = pc.getSignatureHelp();
                 let signatureHelp: vscode.SignatureHelp | undefined;
 
                 if (functionSignatureHelp) {
@@ -1095,19 +1099,18 @@ export class AzureRMTools {
         }
     }
 
-    private async onProvideRename(document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): Promise<vscode.WorkspaceEdit | undefined> {
-        const deploymentTemplate: DeploymentTemplate | undefined = this.getOpenedDeploymentTemplate(document);
-        if (deploymentTemplate) {
+    private async onProvideRename(textDocument: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): Promise<vscode.WorkspaceEdit | undefined> {
+        // asdf make consistent - after callwithtelem
+        const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(textDocument, position);
+        if (!token.isCancellationRequested && pc) {
             return await callWithTelemetryAndErrorHandling('Rename', async () => {
                 const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
-
-                const context: TemplatePositionContext = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                const referenceSiteInfo: IReferenceSite | undefined = context.getReferenceSiteInfo();
+                const referenceSiteInfo: IReferenceSite | undefined = pc.getReferenceSiteInfo();
                 if (referenceSiteInfo && referenceSiteInfo.definition.definitionKind === DefinitionKind.BuiltinFunction) {
                     throw new Error("Built-in functions cannot be renamed.");
                 }
 
-                const referenceList: ReferenceList | undefined = context.getReferences();
+                const referenceList: ReferenceList | undefined = pc.getReferences();
                 if (referenceList) {
                     // When trying to rename a parameter or variable reference inside of a TLE, the
                     // textbox that pops up when you press F2 contains more than just the variable
@@ -1129,10 +1132,10 @@ export class AzureRMTools {
                     // the user is contained in double quotes.  Remove those.
                     newName = newName.replace(/^"(.*)"$/, '$1');
 
-                    const documentUri: vscode.Uri = deploymentTemplate.documentId;
+                    const documentUri: vscode.Uri = pc.document.documentId;
 
                     for (const referenceSpan of referenceList.spans) {
-                        const referenceRange: vscode.Range = getVSCodeRangeFromSpan(deploymentTemplate, referenceSpan);
+                        const referenceRange: vscode.Range = getVSCodeRangeFromSpan(pc.document, referenceSpan);
                         result.replace(documentUri, referenceRange, newName);
                     }
                 } else {
@@ -1162,24 +1165,24 @@ export class AzureRMTools {
         });
     }
 
-    private onTextSelectionChanged(): void {
-        callWithTelemetryAndErrorHandlingSync('onTextSelectionChanged', (actionContext: IActionContext): void => {
+    private async onTextSelectionChanged(): Promise<void> {
+        callWithTelemetryAndErrorHandlingSync('onTextSelectionChanged', async (actionContext: IActionContext): Promise<void> => {
             actionContext.telemetry.properties.isActivationEvent = 'true';
             actionContext.errorHandling.suppressDisplay = true;
             actionContext.telemetry.suppressIfSuccessful = true;
 
             let editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
             if (editor) {
-                let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
-                if (deploymentTemplate) {
-                    let position = editor.selection.anchor;
-                    let context = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(position.line, position.character);
-                    let tleBraceHighlightIndexes: number[] = TLE.BraceHighlighter.getHighlightCharacterIndexes(context);
+                let position = editor.selection.anchor;
+                //asdf issue too many awaits where there didn't used to be
+                let pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(editor.document, position);
+                if (pc && pc instanceof TemplatePositionContext) {
+                    let tleBraceHighlightIndexes: number[] = TLE.BraceHighlighter.getHighlightCharacterIndexes(pc);
 
                     let braceHighlightRanges: vscode.Range[] = [];
                     for (let tleHighlightIndex of tleBraceHighlightIndexes) {
-                        const highlightSpan = new language.Span(tleHighlightIndex + context.jsonTokenStartIndex, 1);
-                        braceHighlightRanges.push(getVSCodeRangeFromSpan(deploymentTemplate, highlightSpan));
+                        const highlightSpan = new language.Span(tleHighlightIndex + pc.jsonTokenStartIndex, 1);
+                        braceHighlightRanges.push(getVSCodeRangeFromSpan(pc.document, highlightSpan));
                     }
 
                     editor.setDecorations(this._braceHighlightDecorationType, braceHighlightRanges);

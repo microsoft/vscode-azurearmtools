@@ -1305,7 +1305,7 @@ suite("User functions", () => {
             expectedHoverText: string,
             expectedSpan?: Language.Span
         ): Promise<void> {
-            const pc = dt.getContextFromDocumentCharacterIndex(cursorIndex);
+            const pc = dt.getContextFromDocumentCharacterIndex(cursorIndex, undefined);
             let hoverInfo: HoverInfo = pc.getHoverInfo()!;
             assert(hoverInfo, "Expected non-empty hover info");
             hoverInfo = hoverInfo!;
@@ -1360,7 +1360,7 @@ suite("User functions", () => {
             expectedReferenceKind: DefinitionKind,
             expectedDefinitionStart: number
         ): Promise<void> {
-            const pc = dt.getContextFromDocumentCharacterIndex(cursorIndex);
+            const pc = dt.getContextFromDocumentCharacterIndex(cursorIndex, undefined);
             const refInfo: IReferenceSite = pc.getReferenceSiteInfo()!;
             assert(refInfo, "Expected non-null IReferenceSite");
 

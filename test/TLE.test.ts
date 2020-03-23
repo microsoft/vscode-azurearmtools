@@ -337,7 +337,7 @@ suite("TLE", () => {
 
     suite("BraceHighlighter", () => {
         function getHighlights(template: DeploymentTemplate, documentCharacterIndex: number): number[] {
-            const context = template.getContextFromDocumentCharacterIndex(documentCharacterIndex);
+            const context = template.getContextFromDocumentCharacterIndex(documentCharacterIndex, undefined);
             return TLE.BraceHighlighter.getHighlightCharacterIndexes(context);
         }
 
@@ -2149,21 +2149,21 @@ suite("TLE", () => {
         suite("visitPropertyAccess(TLE.PropertyAccess)", () => {
             test("with child property access from undefined variable reference", () => {
                 const dt = new DeploymentTemplate(`{ "a": "[variables('v1').apples]" }`, fakeId);
-                const context: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[variables('v1').app`.length);
+                const context: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[variables('v1').app`.length, undefined);
                 const visitor = UndefinedVariablePropertyVisitor.visit(context.tleInfo!.tleValue, dt.topLevelScope);
                 assert.deepStrictEqual(visitor.errors, [], "No errors should be reported for a property access to an undefined variable, because the top priority error for the developer to address is the undefined variable reference.");
             });
 
             test("with grandchild property access from undefined variable reference", () => {
                 const dt = new DeploymentTemplate(`{ "a": "[variables('v1').apples.bananas]" }`, fakeId);
-                const context: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[variables('v1').apples.ban`.length);
+                const context: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[variables('v1').apples.ban`.length, undefined);
                 const visitor = UndefinedVariablePropertyVisitor.visit(context.tleInfo!.tleValue, dt.topLevelScope);
                 assert.deepStrictEqual(visitor.errors, [], "No errors should be reported for a property access to an undefined variable, because the top priority error for the developer to address is the undefined variable reference.");
             });
 
             test("with child property access from variable reference to non-object variable", () => {
                 const dt = new DeploymentTemplate(`{ "variables": { "v1": "blah" }, "a": "[variables('v1').apples]" }`, fakeId);
-                const context: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "variables": { "v1": "blah" }, "a": "[variables('v1').app`.length);
+                const context: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "variables": { "v1": "blah" }, "a": "[variables('v1').app`.length, undefined);
                 const visitor = UndefinedVariablePropertyVisitor.visit(context.tleInfo!.tleValue, dt.topLevelScope);
                 assert.deepStrictEqual(
                     visitor.errors,
@@ -2172,7 +2172,7 @@ suite("TLE", () => {
 
             test("with grandchild property access from variable reference to non-object variable", () => {
                 const dt = new DeploymentTemplate(`{ "variables": { "v1": "blah" }, "a": "[variables('v1').apples.bananas]" }`, fakeId);
-                const context: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "variables": { "v1": "blah" }, "a": "[variables('v1').apples.ban`.length);
+                const context: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "variables": { "v1": "blah" }, "a": "[variables('v1').apples.ban`.length, undefined);
                 const visitor = UndefinedVariablePropertyVisitor.visit(context.tleInfo!.tleValue, dt.topLevelScope);
                 assert.deepStrictEqual(
                     visitor.errors,

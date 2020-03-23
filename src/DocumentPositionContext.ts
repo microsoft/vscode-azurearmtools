@@ -2,7 +2,6 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { CodeAction, CodeActionContext, Command, Range, Selection } from "vscode";
 import { CachedValue } from "./CachedValue";
 import * as Completion from "./Completion";
 import { __debugMarkPositionInString } from "./debugMarkStrings";
@@ -13,6 +12,7 @@ import * as Json from "./JSON";
 import * as language from "./Language";
 import { ReferenceList } from "./ReferenceList";
 import { IReferenceSite } from "./TemplatePositionContext";
+import * as TLE from "./TLE";
 import { InitializeBeforeUse } from "./util/InitializeBeforeUse";
 import { nonNullValue } from "./util/nonNull";
 
@@ -133,19 +133,5 @@ export abstract class DocumentPositionContext {
 
     public abstract getCompletionItems(): Completion.Item[];
 
-    /**
-     * Provide commands for the given document and range.
-     *
-     * @param document The document in which the command was invoked.
-     * @param range The selector or range for which the command was invoked. This will always be a selection if
-     * there is a currently active editor.
-     * @param context Context carrying additional information.
-     * @param token A cancellation token.
-     * @return An array of commands, quick fixes, or refactorings or a thenable of such. The lack of a result can be
-     * signaled by returning `undefined`, `null`, or an empty array.
-     */
-    public abstract async getCodeActions(
-        range: Range | Selection,
-        context: CodeActionContext
-    ): Promise<(Command | CodeAction)[]>;
+    public abstract getSignatureHelp(): TLE.FunctionSignatureHelp | undefined;
 }

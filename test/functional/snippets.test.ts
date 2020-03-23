@@ -384,7 +384,7 @@ suite("Snippets functional tests", () => {
         const snippetInsertComment: string = overrideInsertPosition[snippetName] || "// Insert here: resource";
         const snippetInsertIndex: number = template.indexOf(snippetInsertComment);
         assert(snippetInsertIndex >= 0, `Couldn't find location to insert snippet (looking for "${snippetInsertComment}")`);
-        const snippetInsertPos = getVSCodePositionFromPosition(new DeploymentTemplate(template, Uri.file("fake template")).getContextFromDocumentCharacterIndex(snippetInsertIndex).documentPosition);
+        const snippetInsertPos = getVSCodePositionFromPosition(new DeploymentTemplate(template, Uri.file("fake template")).getContextFromDocumentCharacterIndex(snippetInsertIndex, undefined).documentPosition);
 
         const tempPath = getTempFilePath(`snippet ${snippetName}`, '.azrm');
 

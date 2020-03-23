@@ -156,37 +156,37 @@ suite("PositionContext", () => {
     suite("jsonToken", () => {
         test("with characterIndex in whitespace", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            let pc = dt.getContextFromDocumentCharacterIndex(1);
+            let pc = dt.getContextFromDocumentCharacterIndex(1, undefined);
             assert.deepStrictEqual(undefined, pc.jsonToken);
         });
 
         test("with characterIndex at the start of a LeftCurlyBracket", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            let pc = dt.getContextFromDocumentCharacterIndex(0);
+            let pc = dt.getContextFromDocumentCharacterIndex(0, undefined);
             assert.deepStrictEqual(Json.LeftCurlyBracket(0), pc.jsonToken);
         });
 
         test("with characterIndex at the start of a QuotedString", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            let pc = dt.getContextFromDocumentCharacterIndex(2);
+            let pc = dt.getContextFromDocumentCharacterIndex(2, undefined);
             assert.deepStrictEqual(pc.jsonToken, jsonTest.parseQuotedString(`'a'`, 2));
         });
 
         test("with characterIndex inside of a QuotedString", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            let pc = dt.getContextFromDocumentCharacterIndex(3);
+            let pc = dt.getContextFromDocumentCharacterIndex(3, undefined);
             assert.deepStrictEqual(pc.jsonToken, jsonTest.parseQuotedString(`'a'`, 2));
         });
 
         test("with characterIndex at the end of a closed QuotedString", () => {
             let dt = new DeploymentTemplate("{ 'a'", fakeId);
-            let pc = dt.getContextFromDocumentCharacterIndex(5);
+            let pc = dt.getContextFromDocumentCharacterIndex(5, undefined);
             assert.deepStrictEqual(pc.jsonToken, jsonTest.parseQuotedString(`'a'`, 2));
         });
 
         test("with characterIndex at the end of an unclosed QuotedString", () => {
             let dt = new DeploymentTemplate("{ 'a", fakeId);
-            let pc = dt.getContextFromDocumentCharacterIndex(4);
+            let pc = dt.getContextFromDocumentCharacterIndex(4, undefined);
             assert.deepStrictEqual(pc.jsonToken, jsonTest.parseQuotedString(`'a`, 2));
         });
     });
@@ -194,31 +194,31 @@ suite("PositionContext", () => {
     suite("tleParseResult", () => {
         test("with characterIndex in whitespace", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(1);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(1, undefined);
             assert.deepStrictEqual(pc.tleInfo, undefined);
         });
 
         test("with characterIndex at the start of a LeftCurlyBracket", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(0);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(0, undefined);
             assert.deepStrictEqual(pc.tleInfo, undefined);
         });
 
         test("with characterIndex at the start of a Colon", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            let pc = dt.getContextFromDocumentCharacterIndex(5);
+            let pc = dt.getContextFromDocumentCharacterIndex(5, undefined);
             assert.deepStrictEqual(pc.tleInfo, undefined);
         });
 
         test("with characterIndex at the start of a non-TLE QuotedString", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            let pc = dt.getContextFromDocumentCharacterIndex(2);
+            let pc = dt.getContextFromDocumentCharacterIndex(2, undefined);
             assert.deepStrictEqual(TLE.Parser.parse("'a'", dt.topLevelScope), pc.tleInfo!.tleParseResult);
         });
 
         test("with characterIndex at the start of a closed TLE QuotedString", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(17);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(17, undefined);
 
             const tleParseResult: TLE.ParseResult = pc.tleInfo!.tleParseResult;
             assert.deepStrictEqual(tleParseResult.errors, []);
@@ -239,7 +239,7 @@ suite("PositionContext", () => {
 
         test("with characterIndex at the start of an unclosed TLE QuotedString", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(17);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(17, undefined);
 
             const tleParseResult: TLE.ParseResult = pc.tleInfo!.tleParseResult;
             assert.deepStrictEqual(
@@ -266,43 +266,43 @@ suite("PositionContext", () => {
     suite("tleCharacterIndex", () => {
         test("with characterIndex at the start of a LeftCurlyBracket", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            let pc = dt.getContextFromDocumentCharacterIndex(0);
+            let pc = dt.getContextFromDocumentCharacterIndex(0, undefined);
             assert.deepStrictEqual(pc.tleInfo, undefined);
         });
 
         test("with characterIndex in whitespace", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            let pc = dt.getContextFromDocumentCharacterIndex(1);
+            let pc = dt.getContextFromDocumentCharacterIndex(1, undefined);
             assert.deepStrictEqual(undefined, pc.tleInfo);
         });
 
         test("with characterIndex at the start of a non-TLE QuotedString", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            let pc = dt.getContextFromDocumentCharacterIndex(2);
+            let pc = dt.getContextFromDocumentCharacterIndex(2, undefined);
             assert.deepStrictEqual(0, pc.tleInfo!.tleCharacterIndex);
         });
 
         test("with characterIndex at the start of a TLE", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            let pc = dt.getContextFromDocumentCharacterIndex(17);
+            let pc = dt.getContextFromDocumentCharacterIndex(17, undefined);
             assert.deepStrictEqual(0, pc.tleInfo!.tleCharacterIndex);
         });
 
         test("with characterIndex inside of a TLE", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(21);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(21, undefined);
             assert.deepStrictEqual(pc.tleInfo!.tleCharacterIndex, 4);
         });
 
         test("with characterIndex after the end of a closed TLE", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            let pc = dt.getContextFromDocumentCharacterIndex(32);
+            let pc = dt.getContextFromDocumentCharacterIndex(32, undefined);
             assert.deepStrictEqual(pc.tleInfo, undefined);
         });
 
         test("with characterIndex after the end of an unclosed TLE", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(29);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(29, undefined);
             assert.deepStrictEqual(12, pc.tleInfo!.tleCharacterIndex);
         });
     });
@@ -310,19 +310,19 @@ suite("PositionContext", () => {
     suite("tleValue", () => {
         test("with characterIndex at the start of a LeftCurlyBracket", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            let pc = dt.getContextFromDocumentCharacterIndex(0);
+            let pc = dt.getContextFromDocumentCharacterIndex(0, undefined);
             assert.deepStrictEqual(pc.tleInfo, undefined);
         });
 
         test("with characterIndex in whitespace", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            let pc = dt.getContextFromDocumentCharacterIndex(1);
+            let pc = dt.getContextFromDocumentCharacterIndex(1, undefined);
             assert.deepStrictEqual(pc.tleInfo, undefined);
         });
 
         test("with characterIndex at the start of a non-TLE QuotedString", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(2);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(2, undefined);
             assert.deepStrictEqual(
                 pc.tleInfo!.tleValue,
                 new TLE.StringValue(TLE.Token.createQuotedString(0, "'a'")));
@@ -330,13 +330,13 @@ suite("PositionContext", () => {
 
         test("with characterIndex at the start of a TLE", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': ".length);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': ".length, undefined);
             assert.deepStrictEqual(pc.tleInfo!.tleValue, undefined);
         });
 
         test("with characterIndex inside of a TLE", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(21);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(21, undefined);
 
             const concat: TLE.FunctionCallValue = nonNullValue(TLE.asFunctionCallValue(pc.tleInfo!.tleValue));
             assert.deepStrictEqual(concat.nameToken, TLE.Token.createLiteral(2, "concat"));
@@ -351,13 +351,13 @@ suite("PositionContext", () => {
 
         test("with characterIndex after the end of a closed TLE", () => {
             let dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
-            let pc = dt.getContextFromDocumentCharacterIndex(32);
+            let pc = dt.getContextFromDocumentCharacterIndex(32, undefined);
             assert.deepStrictEqual(pc.tleInfo, undefined);
         });
 
         test("with characterIndex after the end of an unclosed TLE", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[concat('B'".length);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[concat('B'".length, undefined);
 
             const b: TLE.StringValue = nonNullValue(TLE.asStringValue(pc.tleInfo!.tleValue));
             assert.deepStrictEqual(b.token, TLE.Token.createQuotedString(9, "'B'"));
@@ -374,26 +374,26 @@ suite("PositionContext", () => {
     suite("hoverInfo", () => {
         test("in non-string json token", () => {
             const dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", fakeId);
-            const hoverInfo: HoverInfo | undefined = dt.getContextFromDocumentCharacterIndex(0).getHoverInfo();
+            const hoverInfo: HoverInfo | undefined = dt.getContextFromDocumentCharacterIndex(0, undefined).getHoverInfo();
             assert.deepStrictEqual(hoverInfo, undefined);
         });
 
         test("in property name json token", () => {
             const dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", fakeId);
-            const hoverInfo: HoverInfo | undefined = dt.getContextFromDocumentCharacterIndex(3).getHoverInfo();
+            const hoverInfo: HoverInfo | undefined = dt.getContextFromDocumentCharacterIndex(3, undefined).getHoverInfo();
             assert.deepStrictEqual(hoverInfo, undefined);
         });
     });
 
     test("in unrecognized function name", () => {
         const dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[toads('B'", fakeId);
-        const hoverInfo: HoverInfo | undefined = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[to".length).getHoverInfo();
+        const hoverInfo: HoverInfo | undefined = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[to".length, undefined).getHoverInfo();
         assert.deepStrictEqual(hoverInfo, undefined);
     });
 
     test("in recognized function name", () => {
         const dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", fakeId);
-        const pc = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[c".length);
+        const pc = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[c".length, undefined);
         const hi: HoverInfo = pc.getHoverInfo()!;
         assert(hi);
         assert.deepStrictEqual(hi.usage, "concat(arg1, arg2, arg3, ...)");
@@ -402,14 +402,14 @@ suite("PositionContext", () => {
 
     test("in unrecognized parameter reference", () => {
         const dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[parameters('B')]\" }", fakeId);
-        const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[parameters('".length);
+        const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[parameters('".length, undefined);
         const hi: HoverInfo | undefined = pc.getHoverInfo();
         assert.deepStrictEqual(hi, undefined);
     });
 
     test("in recognized parameter reference name", () => {
         const dt = new DeploymentTemplate("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters('pName')\" }", fakeId);
-        const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters('pN".length);
+        const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters('pN".length, undefined);
         const hi: HoverInfo = pc.getHoverInfo()!;
         assert(hi);
         assert.deepStrictEqual(`**pName**${os.EOL}*(parameter)*`, hi.getHoverText());
@@ -418,28 +418,28 @@ suite("PositionContext", () => {
 
     test("in parameter reference function with empty string parameter", () => {
         const dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[parameters('')]\" }", fakeId);
-        const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[parameters('".length);
+        const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[parameters('".length, undefined);
         const hi: HoverInfo | undefined = pc.getHoverInfo();
         assert.deepStrictEqual(hi, undefined);
     });
 
     test("in parameter reference function with no arguments", () => {
         const dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[parameters()]\" }", fakeId);
-        const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[parameters(".length);
+        const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[parameters(".length, undefined);
         const hi: HoverInfo | undefined = pc.getHoverInfo();
         assert.deepStrictEqual(hi, undefined);
     });
 
     test("in unrecognized variable reference", () => {
         const dt = new DeploymentTemplate("{ 'a': 'A', 'b': \"[variables('B')]\" }", fakeId);
-        const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[variables('".length);
+        const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[variables('".length, undefined);
         const hi: HoverInfo | undefined = pc.getHoverInfo();
         assert.deepStrictEqual(hi, undefined);
     });
 
     test("in recognized variable reference name", () => {
         const dt = new DeploymentTemplate("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables('vName')\" }", fakeId);
-        const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables('vNam".length);
+        const pc: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables('vNam".length, undefined);
         const hi: HoverInfo | undefined = pc.getHoverInfo()!;
         assert(hi);
         assert.deepStrictEqual(`**vName**${os.EOL}*(variable)*`, hi.getHoverText());
@@ -458,7 +458,7 @@ suite("PositionContext", () => {
                 keepInClosureForEasierDebugging = keepInClosureForEasierDebugging;
 
                 const dt = new DeploymentTemplate(documentText, fakeId);
-                const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(index);
+                const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(index, undefined);
 
                 let completionItems: Completion.Item[] = pc.getCompletionItems();
                 const completionItems2: Completion.Item[] = pc.getCompletionItems();
@@ -1142,28 +1142,28 @@ suite("PositionContext", () => {
     suite("signatureHelp", () => {
         test("not in a TLE", () => {
             const dt = new DeploymentTemplate(`{ "a": "AA" }`, fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "A`.length);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "A`.length, undefined);
             const functionSignatureHelp: TLE.FunctionSignatureHelp | undefined = pc.getSignatureHelp();
             assert.deepStrictEqual(functionSignatureHelp, undefined);
         });
 
         test("in empty TLE", () => {
             const dt = new DeploymentTemplate(`{ "a": "[]" }`, fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[`.length);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[`.length, undefined);
             const functionSignatureHelp: TLE.FunctionSignatureHelp | undefined = pc.getSignatureHelp();
             assert.deepStrictEqual(functionSignatureHelp, undefined);
         });
 
         test("in TLE function name", () => {
             const dt = new DeploymentTemplate(`{ "a": "[con]" }`, fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[con`.length);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[con`.length, undefined);
             const functionSignatureHelp: TLE.FunctionSignatureHelp | undefined = pc.getSignatureHelp();
             assert.deepStrictEqual(functionSignatureHelp, undefined);
         });
 
         test("after left parenthesis", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat(`, fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat(`.length);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat(`.length, undefined);
             const functionSignatureHelp: TLE.FunctionSignatureHelp = pc.getSignatureHelp()!;
             assert(functionSignatureHelp);
             assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 0);
@@ -1173,7 +1173,7 @@ suite("PositionContext", () => {
 
         test("inside first parameter", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat('test`, fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('test`.length);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('test`.length, undefined);
             const functionSignatureHelp: TLE.FunctionSignatureHelp = pc.getSignatureHelp()!;
             assert(functionSignatureHelp);
             assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 0);
@@ -1183,7 +1183,7 @@ suite("PositionContext", () => {
 
         test("inside second parameter", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat('t1', 't2`, fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('t1', 't2`.length);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('t1', 't2`.length, undefined);
             const functionSignatureHelp: TLE.FunctionSignatureHelp = pc.getSignatureHelp()!;
             assert(functionSignatureHelp);
             assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 1);
@@ -1193,7 +1193,7 @@ suite("PositionContext", () => {
 
         test("inside empty parameter", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat(,,,`, fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat(,,`.length);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat(,,`.length, undefined);
             const functionSignatureHelp: TLE.FunctionSignatureHelp = pc.getSignatureHelp()!;
             assert(functionSignatureHelp);
             assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 2);
@@ -1203,7 +1203,7 @@ suite("PositionContext", () => {
 
         test("in variadic parameter when function signature has '...' parameter and the current argument is greater than the parameter count", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat('a', 'b', 'c', 'd', 'e', 'f'`, fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd', 'e', 'f'`.length);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd', 'e', 'f'`.length, undefined);
             const functionSignatureHelp: TLE.FunctionSignatureHelp = pc.getSignatureHelp()!;
             assert(functionSignatureHelp);
             assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 3);
@@ -1213,7 +1213,7 @@ suite("PositionContext", () => {
 
         test("in variadic parameter when function signature has '...' parameter and the current argument is equal to the parameter count", () => {
             const dt = new DeploymentTemplate(`{ "a": "[concat('a', 'b', 'c', 'd'`, fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd'`.length);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd'`.length, undefined);
             const functionSignatureHelp: TLE.FunctionSignatureHelp = pc.getSignatureHelp()!;
             assert(functionSignatureHelp);
             assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 3);
@@ -1223,7 +1223,7 @@ suite("PositionContext", () => {
 
         test("in variadic parameter when function signature has 'name...' parameter", () => {
             const dt = new DeploymentTemplate(`{ "a": "[resourceId('a', 'b', 'c', 'd', 'e', 'f', 'g'`, fakeId);
-            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd', 'e', 'f', 'g'`.length);
+            const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[concat('a', 'b', 'c', 'd', 'e', 'f', 'g'`.length, undefined);
             const functionSignatureHelp: TLE.FunctionSignatureHelp = pc.getSignatureHelp()!;
             assert(functionSignatureHelp);
             assert.deepStrictEqual(functionSignatureHelp.activeParameterIndex, 4);
@@ -1345,7 +1345,7 @@ suite("PositionContext", () => {
 
                 const { dt, markers: { bang } } = await parseTemplateWithMarkers(templateString);
                 assert(bang, "You must place a bang ('!') in the expression string to indicate position");
-                const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(bang.index);
+                const pc: PositionContext = dt.getContextFromDocumentCharacterIndex(bang.index, undefined);
                 const functionSignatureHelp: TLE.FunctionSignatureHelp | undefined = pc.getSignatureHelp();
                 assert.deepStrictEqual(functionSignatureHelp, expected);
             }
@@ -1464,19 +1464,19 @@ suite("PositionContext", () => {
 
         test("with no parameters property", async () => {
             const dt = new DeploymentTemplate("{ 'a': '[parameters(\"pName\")]' }", fakeId);
-            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': '[parameters(\"pN".length);
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': '[parameters(\"pN".length, undefined);
             assert.deepStrictEqual(await getParameterDefinitionIfAtReference(context), undefined);
         });
 
         test("with empty parameters property value", async () => {
             const dt = new DeploymentTemplate("{ 'parameters': {}, 'a': '[parameters(\"pName\")]' }", fakeId);
-            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': {}, 'a': '[parameters(\"pN".length);
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': {}, 'a': '[parameters(\"pN".length, undefined);
             assert.deepStrictEqual(await getParameterDefinitionIfAtReference(context), undefined);
         });
 
         test("with matching parameter definition", async () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\")]' }", fakeId);
-            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pNa".length);
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pNa".length, undefined);
             const parameterDefinition: IParameterDefinition = nonNullValue(await getParameterDefinitionIfAtReference(context));
             assert.deepStrictEqual(parameterDefinition.nameValue.toString(), "pName");
             assert.deepStrictEqual(parameterDefinition.description, undefined);
@@ -1485,7 +1485,7 @@ suite("PositionContext", () => {
 
         test("with cursor before parameter name start quote with matching parameter definition", async () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\")]' }", fakeId);
-            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': {} }, 'a': '[parameters(".length);
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': {} }, 'a': '[parameters(".length, undefined);
             const parameterDefinition: IParameterDefinition = nonNullValue(await getParameterDefinitionIfAtReference(context));
             assert.deepStrictEqual(parameterDefinition.nameValue.toString(), "pName");
             assert.deepStrictEqual(parameterDefinition.description, undefined);
@@ -1494,7 +1494,7 @@ suite("PositionContext", () => {
 
         test("with cursor after parameter name end quote with matching parameter definition", async () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\")]' }", fakeId);
-            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\"".length);
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\"".length, undefined);
             const parameterDefinition: IParameterDefinition = nonNullValue(await getParameterDefinitionIfAtReference(context));
             assert.deepStrictEqual(parameterDefinition.nameValue.toString(), "pName");
             assert.deepStrictEqual(parameterDefinition.description, undefined);
@@ -1514,19 +1514,19 @@ suite("PositionContext", () => {
 
         test("with no variables property", () => {
             const dt = new DeploymentTemplate("{ 'a': '[variables(\"vName\")]' }", fakeId);
-            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': '[variables(\"vN".length);
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': '[variables(\"vN".length, undefined);
             assert.deepStrictEqual(getVariableDefinitionIfAtReference(context), undefined);
         });
 
         test("with empty variables property value", () => {
             const dt = new DeploymentTemplate("{ 'variables': {}, 'a': '[variables(\"vName\")]' }", fakeId);
-            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': {}, 'a': '[variables(\"vN".length);
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': {}, 'a': '[variables(\"vN".length, undefined);
             assert.deepStrictEqual(getVariableDefinitionIfAtReference(context), undefined);
         });
 
         test("with matching variable definition", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\")]' }", fakeId);
-            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vNa".length);
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vNa".length, undefined);
             const vDef: IVariableDefinition = nonNullValue(getVariableDefinitionIfAtReference(context));
             assert.deepStrictEqual(vDef.nameValue.toString(), "vName");
             assert.deepStrictEqual(vDef.span, new Language.Span(17, 11));
@@ -1534,7 +1534,7 @@ suite("PositionContext", () => {
 
         test("with cursor before variable name start quote with matching variable definition", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\")]' }", fakeId);
-            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(".length);
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(".length, undefined);
             const vDef: IVariableDefinition = nonNullValue(getVariableDefinitionIfAtReference(context));
             assert.deepStrictEqual(vDef.nameValue.toString(), "vName");
             assert.deepStrictEqual(vDef.span, new Language.Span(17, 11));
@@ -1542,7 +1542,7 @@ suite("PositionContext", () => {
 
         test("with cursor after parameter name end quote with matching parameter definition", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\")]' }", fakeId);
-            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\"".length);
+            const context: PositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\"".length, undefined);
             const vDef: IVariableDefinition = nonNullValue(getVariableDefinitionIfAtReference(context));
             assert.deepStrictEqual(vDef.nameValue.toString(), "vName");
             assert.deepStrictEqual(vDef.span, new Language.Span(17, 11));

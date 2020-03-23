@@ -4,7 +4,6 @@
 
 // tslint:disable:max-line-length
 
-import { CodeAction, CodeActionContext, Command, Range, Selection } from "vscode";
 import { Language } from "../extension.bundle";
 import { AzureRMAssets, BuiltinFunctionMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
@@ -61,7 +60,7 @@ export interface IReferenceSite {
 }
 
 // tslint:disable-next-line:no-suspicious-comment
-// TODO: Rename to DeploymentTemplatePositionContext
+// TODO: Rename to DeploymentTemplatePositionContext asdf
 /**
  * Represents a position inside the snapshot of a deployment template, plus all related information
  * that can be parsed and analyzed about it
@@ -654,10 +653,6 @@ export class TemplatePositionContext extends DocumentPositionContext {
             includeRightParenthesisInCompletion: includeRightParenthesisInCompletion,
             replaceSpan: replaceSpan
         };
-    }
-
-    public async getCodeActions(range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]> {
-        return [];
     }
 }
 

@@ -2,9 +2,10 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { CodeAction, CodeActionContext, Command, Uri } from "vscode";
+import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
 import { CachedPromise } from "./CachedPromise";
 import { CachedValue } from "./CachedValue";
+import { DocumentPositionContext } from "./DocumentPositionContext";
 import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
@@ -121,6 +122,10 @@ export abstract class DeploymentDoc {
         return this._jsonParseResult.maxCharacterIndex;
     }
 
+    public abstract getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentDoc | undefined): DocumentPositionContext;
+
+    public abstract getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedTemplate: DeploymentDoc | undefined): DocumentPositionContext;
+
     public getDocumentCharacterIndex(documentLineIndex: number, documentColumnIndex: number): number {
         return this._jsonParseResult.getCharacterIndex(documentLineIndex, documentColumnIndex);
     }
@@ -139,7 +144,19 @@ export abstract class DeploymentDoc {
 
     public abstract findReferences(definition: INamedDefinition): ReferenceList;
 
-    public abstract async onProvideCodeActions(range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]>;
+    /**
+     * Provide commands for the given document and range.
+     *
+     * @param associatedDocument The associated document, if any (for a template file, the associated document is a parameter file,
+     * for a parameter file, the associated document is a template file)
+     * @param range The selector or range for which the command was invoked. This will always be a selection if
+     * there is a currently active editor.
+     * @param context Context carrying additional information.
+     * @param token A cancellation token.
+     * @return An array of commands, quick fixes, or refactorings or a thenable of such. The lack of a result can be
+     * signaled by returning `undefined`, `null`, or an empty array.
+     */
+    public abstract async getCodeActions(associatedDocument: DeploymentDoc | undefined, range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]>;
 
     // tslint:disable-next-line:no-suspicious-comment
     // TODO: rename to getErrors
