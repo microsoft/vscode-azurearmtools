@@ -1176,7 +1176,6 @@ export class AzureRMTools {
     }
 
     private async onProvideRename(textDocument: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): Promise<vscode.WorkspaceEdit | undefined> {
-        // asdf make consistent - after callwithtelem
         return await callWithTelemetryAndErrorHandling('Rename', async (actionContext) => {
             const cancel = new Cancellation(token, actionContext);
             const pc: DocumentPositionContext | undefined = await this.getDocumentPositionContext(textDocument, position, cancel);

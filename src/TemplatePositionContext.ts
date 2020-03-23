@@ -60,7 +60,7 @@ export interface IReferenceSite {
 }
 
 // tslint:disable-next-line:no-suspicious-comment
-// TODO: Rename to DeploymentTemplatePositionContext asdf
+// TODO: Rename to DeploymentTemplatePositionContext
 /**
  * Represents a position inside the snapshot of a deployment template, plus all related information
  * that can be parsed and analyzed about it
