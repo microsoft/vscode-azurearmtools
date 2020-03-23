@@ -125,86 +125,82 @@ export class DeploymentTemplate extends DeploymentDoc {
     }
 
     public async getErrors(_associatedParameters: DeploymentParameters | undefined): Promise<language.Issue[]> {
-        return this._errors.getOrCachePromise(async () => {
-            // tslint:disable-next-line:typedef
-            return new Promise<language.Issue[]>(async (resolve, reject) => {
-                try {
-                    let functions: FunctionsMetadata = AzureRMAssets.getFunctionsMetadata();
-                    const parseErrors: language.Issue[] = [];
+        // tslint:disable-next-line:typedef
+        return new Promise<language.Issue[]>(async (resolve, reject) => {
+            try {
+                let functions: FunctionsMetadata = AzureRMAssets.getFunctionsMetadata();
+                const parseErrors: language.Issue[] = [];
 
-                    // Loop through each reachable string in the template
-                    this.visitAllReachableStringValues(jsonStringValue => {
-                        //const jsonTokenStartIndex: number = jsonQuotedStringToken.span.startIndex;
-                        const jsonTokenStartIndex = jsonStringValue.span.startIndex;
+                // Loop through each reachable string in the template
+                this.visitAllReachableStringValues(jsonStringValue => {
+                    //const jsonTokenStartIndex: number = jsonQuotedStringToken.span.startIndex;
+                    const jsonTokenStartIndex = jsonStringValue.span.startIndex;
 
-                        const tleParseResult: TLE.ParseResult | undefined = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
-                        const expressionScope: TemplateScope = tleParseResult.scope;
+                    const tleParseResult: TLE.ParseResult | undefined = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
+                    const expressionScope: TemplateScope = tleParseResult.scope;
 
-                        for (const error of tleParseResult.errors) {
-                            parseErrors.push(error.translate(jsonTokenStartIndex));
-                        }
-
-                        const tleExpression: TLE.Value | undefined = tleParseResult.expression;
-
-                        // Undefined parameter/variable references
-                        const tleUndefinedParameterAndVariableVisitor =
-                            UndefinedParameterAndVariableVisitor.visit(
-                                tleExpression,
-                                tleParseResult.scope);
-                        for (const error of tleUndefinedParameterAndVariableVisitor.errors) {
-                            parseErrors.push(error.translate(jsonTokenStartIndex));
-                        }
-
-                        // Unrecognized function calls
-                        const tleUnrecognizedFunctionVisitor = UnrecognizedFunctionVisitor.UnrecognizedFunctionVisitor.visit(expressionScope, tleExpression, functions);
-                        for (const error of tleUnrecognizedFunctionVisitor.errors) {
-                            parseErrors.push(error.translate(jsonTokenStartIndex));
-                        }
-
-                        // Incorrect number of function arguments
-                        const tleIncorrectArgumentCountVisitor = IncorrectFunctionArgumentCountVisitor.IncorrectFunctionArgumentCountVisitor.visit(tleExpression, functions);
-                        for (const error of tleIncorrectArgumentCountVisitor.errors) {
-                            parseErrors.push(error.translate(jsonTokenStartIndex));
-                        }
-
-                        // Undefined variable properties
-                        const tleUndefinedVariablePropertyVisitor = UndefinedVariablePropertyVisitor.UndefinedVariablePropertyVisitor.visit(tleExpression, expressionScope);
-                        for (const error of tleUndefinedVariablePropertyVisitor.errors) {
-                            parseErrors.push(error.translate(jsonTokenStartIndex));
-                        }
-                    });
-
-                    // ReferenceInVariableDefinitionsVisitor
-                    const deploymentTemplateObject: Json.ObjectValue | undefined = Json.asObjectValue(this.jsonParseResult.value);
-                    if (deploymentTemplateObject) {
-                        const variablesObject: Json.ObjectValue | undefined = Json.asObjectValue(deploymentTemplateObject.getPropertyValue(templateKeys.variables));
-                        if (variablesObject) {
-                            const referenceInVariablesFinder = new ReferenceInVariableDefinitionsVisitor(this);
-                            variablesObject.accept(referenceInVariablesFinder);
-
-                            // Can't call reference() inside variable definitions
-                            for (const referenceSpan of referenceInVariablesFinder.referenceSpans) {
-                                parseErrors.push(
-                                    new language.Issue(referenceSpan, "reference() cannot be invoked inside of a variable definition.", language.IssueKind.referenceInVar));
-                            }
-                        }
+                    for (const error of tleParseResult.errors) {
+                        parseErrors.push(error.translate(jsonTokenStartIndex));
                     }
 
-                    resolve(parseErrors);
-                } catch (err) {
-                    reject(err);
+                    const tleExpression: TLE.Value | undefined = tleParseResult.expression;
+
+                    // Undefined parameter/variable references
+                    const tleUndefinedParameterAndVariableVisitor =
+                        UndefinedParameterAndVariableVisitor.visit(
+                            tleExpression,
+                            tleParseResult.scope);
+                    for (const error of tleUndefinedParameterAndVariableVisitor.errors) {
+                        parseErrors.push(error.translate(jsonTokenStartIndex));
+                    }
+
+                    // Unrecognized function calls
+                    const tleUnrecognizedFunctionVisitor = UnrecognizedFunctionVisitor.UnrecognizedFunctionVisitor.visit(expressionScope, tleExpression, functions);
+                    for (const error of tleUnrecognizedFunctionVisitor.errors) {
+                        parseErrors.push(error.translate(jsonTokenStartIndex));
+                    }
+
+                    // Incorrect number of function arguments
+                    const tleIncorrectArgumentCountVisitor = IncorrectFunctionArgumentCountVisitor.IncorrectFunctionArgumentCountVisitor.visit(tleExpression, functions);
+                    for (const error of tleIncorrectArgumentCountVisitor.errors) {
+                        parseErrors.push(error.translate(jsonTokenStartIndex));
+                    }
+
+                    // Undefined variable properties
+                    const tleUndefinedVariablePropertyVisitor = UndefinedVariablePropertyVisitor.UndefinedVariablePropertyVisitor.visit(tleExpression, expressionScope);
+                    for (const error of tleUndefinedVariablePropertyVisitor.errors) {
+                        parseErrors.push(error.translate(jsonTokenStartIndex));
+                    }
+                });
+
+                // ReferenceInVariableDefinitionsVisitor
+                const deploymentTemplateObject: Json.ObjectValue | undefined = Json.asObjectValue(this.jsonParseResult.value);
+                if (deploymentTemplateObject) {
+                    const variablesObject: Json.ObjectValue | undefined = Json.asObjectValue(deploymentTemplateObject.getPropertyValue(templateKeys.variables));
+                    if (variablesObject) {
+                        const referenceInVariablesFinder = new ReferenceInVariableDefinitionsVisitor(this);
+                        variablesObject.accept(referenceInVariablesFinder);
+
+                        // Can't call reference() inside variable definitions
+                        for (const referenceSpan of referenceInVariablesFinder.referenceSpans) {
+                            parseErrors.push(
+                                new language.Issue(referenceSpan, "reference() cannot be invoked inside of a variable definition.", language.IssueKind.referenceInVar));
+                        }
+                    }
                 }
-            });
+
+                resolve(parseErrors);
+            } catch (err) {
+                reject(err);
+            }
         });
     }
 
-    public get warnings(): language.Issue[] {
-        return this._warnings.getOrCacheValue(() => {
-            const unusedParams = this.findUnusedParameters();
-            const unusedVars = this.findUnusedVariables();
-            const unusedUserFuncs = this.findUnusedUserFunctions();
-            return unusedParams.concat(unusedVars).concat(unusedUserFuncs);
-        });
+    public getWarnings(): language.Issue[] {
+        const unusedParams = this.findUnusedParameters();
+        const unusedVars = this.findUnusedVariables();
+        const unusedUserFuncs = this.findUnusedUserFunctions();
+        return unusedParams.concat(unusedVars).concat(unusedUserFuncs);
     }
 
     // CONSIDER: PERF: findUnused{Variables,Parameters,findUnusedNamespacesAndUserFunctions} are very inefficient}

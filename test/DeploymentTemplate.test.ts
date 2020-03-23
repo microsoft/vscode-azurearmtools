@@ -496,27 +496,27 @@ suite("DeploymentTemplate", () => {
         test("with unused parameter", () => {
             const dt = new DeploymentTemplate(`{ "parameters": { "a": {} } }`, fakeId);
             assert.deepStrictEqual(
-                dt.warnings,
+                dt.getWarnings(),
                 [new Language.Issue(new Language.Span(18, 3), "The parameter 'a' is never used.", IssueKind.unusedParam)]);
         });
 
         test("with no unused parameters", async () => {
             const dt = new DeploymentTemplate(`{ "parameters": { "a": {} }, "b": "[parameters('a')] }`, fakeId);
-            assert.deepStrictEqual(dt.warnings, []);
-            assert.deepStrictEqual(dt.warnings, []);
+            assert.deepStrictEqual(dt.getWarnings(), []);
+            assert.deepStrictEqual(dt.getWarnings(), []);
         });
 
         test("with unused variable", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "A" } }`, fakeId);
             assert.deepStrictEqual(
-                dt.warnings,
+                dt.getWarnings(),
                 [new Language.Issue(new Language.Span(17, 3), "The variable 'a' is never used.", IssueKind.unusedVar)]);
         });
 
         test("with no unused variables", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "A" }, "b": "[variables('a')] }`, fakeId);
-            assert.deepStrictEqual(dt.warnings, []);
-            assert.deepStrictEqual(dt.warnings, []);
+            assert.deepStrictEqual(dt.getWarnings(), []);
+            assert.deepStrictEqual(dt.getWarnings(), []);
         });
     });
 

@@ -3,7 +3,6 @@
 // ----------------------------------------------------------------------------
 
 import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
-import { CachedPromise } from "./CachedPromise";
 import { CachedValue } from "./CachedValue";
 import { DocumentPositionContext } from "./DocumentPositionContext";
 import { INamedDefinition } from "./INamedDefinition";
@@ -23,10 +22,6 @@ export abstract class DeploymentDoc {
     private _topLevelValue: Json.ObjectValue | undefined;
 
     private _schema: CachedValue<Json.StringValue | undefined> = new CachedValue<Json.StringValue | undefined>();
-
-    // Cached errors and warnings
-    protected _errors: CachedPromise<language.Issue[]> = new CachedPromise<language.Issue[]>();
-    protected _warnings: CachedValue<language.Issue[]> = new CachedValue<language.Issue[]>();
 
     /**
      * Constructor
@@ -160,5 +155,5 @@ export abstract class DeploymentDoc {
 
     public abstract getErrors(associatedDocument: DeploymentDoc | undefined): Promise<language.Issue[]>;
 
-    public abstract get warnings(): language.Issue[];
+    public abstract getWarnings(): language.Issue[];
 }
