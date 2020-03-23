@@ -117,10 +117,10 @@ export class DeploymentParameters extends DeploymentDoc {
                     const action = new CodeAction("Add all missing parameters", CodeActionKind.QuickFix);
                     action.command = {
                         command: 'azurerm-vscode-tools.codeAction.addAllMissingParameters',
-                        title: action.title
-                        // arguments: [
-                        //     this.document.documentId
-                        // ]
+                        title: action.title,
+                        arguments: [
+                            this.documentId
+                        ]
                     };
                     actions.push(action);
                 }
@@ -130,10 +130,10 @@ export class DeploymentParameters extends DeploymentDoc {
                     const action = new CodeAction("Add missing required parameters", CodeActionKind.QuickFix);
                     action.command = {
                         command: 'azurerm-vscode-tools.codeAction.addMissingRequiredParameters',
-                        title: action.title
-                        // arguments: [
-                        //     this.document.documentId
-                        // ]
+                        title: action.title,
+                        arguments: [
+                            this.documentId
+                        ]
                     };
                     actions.push(action);
                 }

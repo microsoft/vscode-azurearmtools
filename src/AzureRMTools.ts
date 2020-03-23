@@ -202,17 +202,12 @@ export class AzureRMTools {
         const editor = vscode.window.activeTextEditor;
         const paramsUri = source || editor?.document.uri;
         if (editor && paramsUri && editor.document.uri.fsPath === paramsUri.fsPath) {
-            let params = this.getOpenedDeploymentParameters(editor.document);
-            if (params) {
-                // Need the template
-                const templateUri: vscode.Uri | undefined = this._mapping.getTemplateFile(paramsUri);
-                if (templateUri) {
-                    const template = await this.getOrReadDeploymentTemplate(templateUri);
-                    await params.addMissingParameters(
-                        editor,
-                        template,
-                        onlyRequiredParameters);
-                }
+            let { parameters, associatedTemplate: template } = await this.getParametersAndAssociatedTemplate(editor.document, Cancellation.cantCancel);
+            if (parameters) {
+                await parameters.addMissingParameters(
+                    editor,
+                    <DeploymentTemplate>template,
+                    onlyRequiredParameters);
             }
         }
     }
@@ -956,6 +951,19 @@ export class AzureRMTools {
         } else {
             assert.fail("Unexpected doc type");
         }
+    }
+
+    private async getParametersAndAssociatedTemplate(
+        textDocument: vscode.TextDocument,
+        cancel: Cancellation
+    ): Promise<{ parameters?: DeploymentParameters; associatedTemplate?: DeploymentTemplate }> {
+        const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(textDocument, cancel);
+        if (doc && doc instanceof DeploymentParameters) {
+            assert(!associatedDoc || associatedDoc instanceof DeploymentTemplate);
+            return { parameters: doc, associatedTemplate: <DeploymentTemplate | undefined>associatedDoc };
+        }
+
+        return {};
     }
 
     // Given a document, get a DeploymentTemplate or DeploymentParameters instance from it, and then
