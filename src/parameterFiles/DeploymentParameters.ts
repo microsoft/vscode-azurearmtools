@@ -112,11 +112,11 @@ export class DeploymentParameters extends DeploymentDoc {
             if (lineIndex >= range.start.line && lineIndex <= range.end.line) {
                 const missingParameters: IParameterDefinition[] = this.getMissingParameters(template, false);
 
-                // Add all missing parameters
-                if (missingParameters.length > 0) {
-                    const action = new CodeAction("Add all missing parameters", CodeActionKind.QuickFix);
+                // Add missing required parameters
+                if (missingParameters.some(p => this.isParameterRequired(p))) {
+                    const action = new CodeAction("Add missing required parameters", CodeActionKind.QuickFix);
                     action.command = {
-                        command: 'azurerm-vscode-tools.codeAction.addAllMissingParameters',
+                        command: 'azurerm-vscode-tools.codeAction.addMissingRequiredParameters',
                         title: action.title,
                         arguments: [
                             this.documentId
@@ -125,11 +125,11 @@ export class DeploymentParameters extends DeploymentDoc {
                     actions.push(action);
                 }
 
-                // Add missing required parameters
-                if (missingParameters.some(p => this.isParameterRequired(p))) {
-                    const action = new CodeAction("Add missing required parameters", CodeActionKind.QuickFix);
+                // Add all missing parameters
+                if (missingParameters.length > 0) {
+                    const action = new CodeAction("Add all missing parameters", CodeActionKind.QuickFix);
                     action.command = {
-                        command: 'azurerm-vscode-tools.codeAction.addMissingRequiredParameters',
+                        command: 'azurerm-vscode-tools.codeAction.addAllMissingParameters',
                         title: action.title,
                         arguments: [
                             this.documentId
