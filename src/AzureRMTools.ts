@@ -485,7 +485,8 @@ export class AzureRMTools {
                 return this.onProvideCompletionItems(document, position, token);
             }
         };
-        ext.context.subscriptions.push(vscode.languages.registerCompletionItemProvider(armDeploymentDocumentSelector, completionProvider, "'", "[", "."));
+        ext.context.subscriptions.push(vscode.languages.registerCompletionItemProvider(
+            armDeploymentDocumentSelector, completionProvider, "'", "[", ".", "("));
 
         const definitionProvider: vscode.DefinitionProvider = {
             provideDefinition: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Definition | undefined => {

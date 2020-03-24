@@ -27,13 +27,13 @@ export class Item {
         // unqualified name, since the namespace is already there (if any)
         let insertText: string = metadata.unqualifiedName;
         // CONSIDER: Adding parentheses is wrong if they're already there
-        if (metadata.maximumArguments === 0) {
-            // Cursor should go after the parentheses if no args
-            insertText += "()$0";
-        } else {
-            // ... or between them if there are args
-            insertText += "($0)";
-        }
+        // if (metadata.maximumArguments === 0) {
+        //     // Cursor should go after the parentheses if no args
+        //     insertText += "()$0";
+        // } else {
+        //     // ... or between them if there are args
+        //     insertText += "($0)";
+        // }
 
         return new Item(
             metadata.fullName,
