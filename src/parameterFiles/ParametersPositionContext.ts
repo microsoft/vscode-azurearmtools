@@ -104,7 +104,7 @@ export class ParametersPositionContext extends PositionContext {
         return this.createParameterCompletion(
             label,
             snippet,
-            Completion.CompletionKind.NewPropertyValue,
+            Completion.CompletionKind.DpNewPropertyValue,
             detail,
             documentation);
     }
@@ -138,7 +138,7 @@ export class ParametersPositionContext extends PositionContext {
                     this.createParameterCompletion(
                         label,
                         replacement,
-                        Completion.CompletionKind.PropertyValue,
+                        Completion.CompletionKind.DtDependsOn,
                         detail,
                         documentation));
             }

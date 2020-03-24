@@ -717,7 +717,8 @@ export class AzureRMTools {
             vscode.languages.registerCompletionItemProvider(
                 templateOrParameterDocumentSelector,
                 completionProvider,
-                "'", "[", ".", "(", '"'
+                "'", "[", ".", "(", '"',
+                ',' //asdf?
             ));
 
         // tslint:disable-next-line:no-suspicious-comment

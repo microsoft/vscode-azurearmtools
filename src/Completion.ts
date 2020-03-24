@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { MarkdownString } from "vscode";
 import { IFunctionMetadata } from "./IFunctionMetadata";
 import { IParameterDefinition } from "./IParameterDefinition";
 import * as language from "./Language";
@@ -12,7 +13,7 @@ import { IVariableDefinition } from "./VariableDefinition";
  * A completion item in the list of completion suggestions that appear when a user invokes auto-completion (Ctrl + Space).
  */
 export class Item {
-    constructor(
+    constructor(//asdf simplify constructor
         public label: string,
         public insertText: string,
         public insertSpan: language.Span,
@@ -25,9 +26,16 @@ export class Item {
         /**
          * A human-readable string that represents a doc-comment.
          */
-        public documention?: string,
+        public documention?: string | MarkdownString,
         public snippetName?: string,
-        public additionalEdits?: { span: language.Span; insertText: string }[]
+        public additionalEdits?: { span: language.Span; insertText: string }[],
+        /**
+         * A string that should be used when comparing this item
+         * with other items. When `falsy` the [label](#CompletionItem.label)
+         * is used.
+         */
+        public sortText?: string,
+        public commitCharacters?: string[]
     ) {
     }
 
@@ -101,13 +109,18 @@ export class Item {
 }
 
 export enum CompletionKind {
+    // TLE completions
     Function = "Function",
     Parameter = "Parameter",
     Variable = "Variable",
     Property = "Property",
     Namespace = "Namespace",
 
+    // Template file completions
+    DtDependsOn = "DtDependsOn",
+    DtDependsOn2 = "DtDependsOn2", //asdf
+
     // Parameter file completions
-    PropertyValue = "PropertyValue", // Parameter from the template file
-    NewPropertyValue = "NewPropertyValue" // New, unnamed parameter
+    DpPropertyValue = "DpPropertyValue", // Parameter from the template file
+    DpNewPropertyValue = "DpNewPropertyValue" // New, unnamed parameter
 }

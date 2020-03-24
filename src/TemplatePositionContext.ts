@@ -4,11 +4,13 @@
 
 // tslint:disable:max-line-length
 
+import { MarkdownString } from "vscode";
 import { AzureRMAssets, BuiltinFunctionMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
 import * as Completion from "./Completion";
 import { templateKeys } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
+import { ext } from "./extensionVariables";
 import { assert } from './fixed_assert';
 import { IFunctionMetadata, IFunctionParameterMetadata } from "./IFunctionMetadata";
 import { INamedDefinition } from "./INamedDefinition";
@@ -23,6 +25,7 @@ import * as TLE from "./TLE";
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
 import { UserFunctionMetadata } from "./UserFunctionMetadata";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
+import { removeIndentation } from "./util/multilineStrings";
 import { IVariableDefinition } from "./VariableDefinition";
 
 /**
@@ -176,10 +179,24 @@ export class TemplatePositionContext extends PositionContext {
         return undefined;
     }
 
-    public getCompletionItems(): Completion.Item[] {
+    public getCompletionItems(): Completion.Item[] { //asdf
+        const dependsOnCompletions = this.getDependsOnCompletions() ?? [];
+        return dependsOnCompletions.concat(this.getCompletionItems2());
+    }
+
+    private getCompletionItems2(): Completion.Item[] {
         const tleInfo = this.tleInfo;
+        // if (!tleInfo || tleInfo.tleValue instanceof TLE.StringValue) { //asdf?  separate TLE.StringValue from non-expression string
+        //     const dependsOnCompletions = this.getDependsOnCompletions();
+        //     if (dependsOnCompletions) {
+        //         return dependsOnCompletions; //asdf: combine?
+        //     }
+        // }
+
+        // const dependsOnCompletions = this.getDependsOnCompletions();
+
         if (!tleInfo) {
-            // No string at this position
+            // No string at this location
             return [];
         }
 
@@ -211,6 +228,263 @@ export class TemplatePositionContext extends PositionContext {
         }
 
         return [];
+    }
+
+    // asdf test case-insensitivity - resources, dependsOn
+    // tslint:disable-next-line:max-func-body-length asdf
+    private getDependsOnCompletions(): Completion.Item[] | undefined {
+        //asdf assert(!this.tleInfo, "Prerequiste: Should not be inside a string");
+
+        // tslint:disable-next-line:no-this-assignment
+        const me = this;
+
+        const valuesEnclosingCursor = this.document.jsonParseResult.getAllValuesAtCharacterIndex(this.documentCharacterIndex, language.Contains.enclosed);
+
+        //asdf child resources
+        // [0] = top-level object
+        // [1] = resources property
+        // [2] = resources array value
+        // [3] = resource
+        // [4] = dependsOn property
+        // [5] = dependsOn array value
+        if (this.document.resources && valuesEnclosingCursor[2] === this.document.resources) {
+            const resourceObject = Json.asObjectValue(valuesEnclosingCursor[3]);
+            if (resourceObject) {
+                const propertyOfResource = valuesEnclosingCursor[4];
+                if (propertyOfResource instanceof Json.Property
+                    && propertyOfResource.nameValue.unquotedValue.toLowerCase() === templateKeys.resourceDependsOn.toLowerCase()) {
+                    const dependsOnArray = Json.asArrayValue(propertyOfResource.value);
+                    if (dependsOnArray && dependsOnArray === valuesEnclosingCursor[5]) {
+                        if (valuesEnclosingCursor[6] === undefined) { //asdf
+                            return getResourceIdCompletions(this.documentCharacterIndex, 0);
+                        } else if (valuesEnclosingCursor[6] instanceof Json.StringValue
+                            && valuesEnclosingCursor[6].length === 2) { //asdf
+                            return getResourceIdCompletions(
+                                valuesEnclosingCursor[6].span.startIndex,
+                                valuesEnclosingCursor[6].span.length);
+                        }
+                    }
+                }
+            }
+        }
+
+        return undefined;
+
+        // tslint:disable-next-line:max-func-body-length asdf
+        function getResourceIdCompletions(insertIndex: number, insertLength: number): Completion.Item[] {
+            const results: Completion.Item[] = [];
+            // tslint:disable-next-line:no-non-null-assertion
+            for (let resourceValue of me.document.resources!.elements) {
+                const resourceObject = Json.asObjectValue(resourceValue);
+                if (resourceObject) {
+                    const resName = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceName));
+                    const resType = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceType));
+                    //const apiVersion = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceApiVersion));
+                    if (resName && resType) {
+                        //const sortText = `"[${escapeTleString(resName.unquotedValue)}, ${escapeTleString(resType.unquotedValue)}]"`;
+                        const replaceSpan = new language.Span(insertIndex, insertLength);
+
+                        const fullResourceIdExpression =
+                            `"[resourceId(${escapeTleString(resType.unquotedValue)}, ${escapeTleString(resName.unquotedValue)})]"`;
+                        const documentation = new MarkdownString();
+                        documentation.appendText('A reference to this resource:');
+                        documentation.appendCodeblock(
+                            removeIndentation(me.document.documentText
+                                .substr(resourceObject.span.startIndex, resourceObject.span.length)),
+                            //                             `{
+                            //     "name": ${resName.quotedValue},
+                            //     "type": ${resType.quotedValue},
+                            //     "apiversion": ${apiVersion?.quotedValue /*asdf*/}
+                            // }`,
+                            'arm-template' // asdf constant
+                        ); // asdf limit length
+                        //`"[resourceId(${escapeTleString(resType.unquotedValue)}, ${escapeTleString(resName.unquotedValue)})]"`;
+
+                        //const sortText = `"[${escapeTleString(resName.unquotedValue)}, ${escapeTleString(resType.unquotedValue)}]"`;
+                        //const sortText = resName.unquotedValue;
+                        //addFullResourceId();
+
+                        const exp = ext.configuration.get<string>('dependsOnExperiment');
+                        switch (exp) {
+                            case 'resourceIdPlusColon':
+                                addExp1();
+                                break;
+                            case 'fullResourceId':
+                                addFullResourceId();
+                                break;
+                            case 'resourceName':
+                                addResourceName();
+                                break;
+                            default:
+                                break;
+                        }
+
+                        function addResourceName(): void {
+                            const label = fullResourceIdExpression;
+                            const sortText = label;
+                            results.push(new Completion.Item(
+                                label,
+                                fullResourceIdExpression,
+                                replaceSpan,
+                                Completion.CompletionKind.DtDependsOn,
+                                fullResourceIdExpression,
+                                documentation,
+                                undefined,
+                                undefined,
+                                sortText
+                            ));
+                        }
+
+                        function addFullResourceId(): void {
+                            const label =
+                                // tslint:disable-next-line:no-non-null-assertion
+                                `"[resourceId(${escapeTleString(resType!.unquotedValue)}, ${escapeTleString(resName!.unquotedValue)})]"`;
+                            const sortText = label;
+                            results.push(new Completion.Item(
+                                label,
+                                fullResourceIdExpression,
+                                replaceSpan,
+                                Completion.CompletionKind.DtDependsOn,
+                                fullResourceIdExpression,
+                                documentation,
+                                undefined,
+                                undefined,
+                                sortText
+                            ));
+                        }
+
+                        function addExp1(): void {
+                            const label =
+                                // asdf remove quotes
+                                // tslint:disable-next-line:no-non-null-assertion
+                                `"resourceId: ${escapeTleString(resName!.unquotedValue)}"`;
+                            const sortText = label;
+                            results.push(new Completion.Item(
+                                label,
+                                fullResourceIdExpression,
+                                replaceSpan,
+                                Completion.CompletionKind.DtDependsOn,
+                                fullResourceIdExpression,
+                                documentation,
+                                undefined,
+                                undefined,
+                                sortText
+                            ));
+                        }
+
+                        // const insertText2 =
+                        //     `"[concat(${escapeTleString(resType.unquotedValue)}, ${escapeTleString(resName.unquotedValue)}))]"`;
+                        // results.push(new Completion.Item(
+                        //     insertText2,
+                        //     insertText2,
+                        //     replaceSpan,
+                        //     Completion.CompletionKind.DtDependsOn,
+                        //     insertText,
+                        //     insertText,
+                        //     undefined,
+                        //     undefined,
+                        //     sortText
+                        // ));
+                        // const insertText3 =
+                        //     `"[${escapeTleString(resName.unquotedValue)}]"`;
+                        // results.push(new Completion.Item(
+                        //     insertText3,
+                        //     insertText3,
+                        //     replaceSpan,
+                        //     Completion.CompletionKind.DtDependsOn,
+                        //     insertText,
+                        //     insertText,
+                        //     undefined,
+                        //     undefined,
+                        //     sortText
+                        // ));
+
+                    }
+                }
+            }
+
+            return results;
+        }
+    }
+
+    private getMatchingResourceTypeCompletions(prefix: string, tleValue: TLE.StringValue | TLE.FunctionCallValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
+        const replaceSpanInfo: ReplaceSpanInfo = this.getReplaceSpanInfo(tleValue, tleCharacterIndex);
+
+        const results: Completion.Item[] = [];
+        for (let resourceValue of this.document.resources?.elements ?? []) {
+            const resourceObject = Json.asObjectValue(resourceValue);
+            if (resourceObject) {
+                //const resName = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceName));
+                const resType = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceType));
+                if (resType) {
+                    //const sortText = `"[${escapeTleString(resName.unquotedValue)}, ${escapeTleString(resType.unquotedValue)}]"`;
+                    //const replaceSpan = new language.Span(insertIndex, insertLength);
+
+                    const typeInsertionText = escapeTleString(resType.unquotedValue);
+                    const label = typeInsertionText;
+                    const sortText = label;
+                    results.push(new Completion.Item(
+                        typeInsertionText,
+                        typeInsertionText,
+                        replaceSpanInfo.replaceSpan, //asdf replaceSpanInfo.includeRightParenthesisInCompletion?
+                        Completion.CompletionKind.DtDependsOn, //asdf
+                        typeInsertionText,
+                        typeInsertionText,
+                        undefined,
+                        undefined,
+                        sortText,
+                        [',']
+                    ));
+                }
+            }
+        }
+
+        return results;
+    }
+
+    private getMatchingResourceNameCompletions(prefix: string, tleValue: TLE.FunctionCallValue | TLE.FunctionCallValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
+        //const replaceSpanInfo: ReplaceSpanInfo = this.getReplaceSpanInfo(tleValue, tleCharacterIndex);
+        const replaceSpan = new language.Span(tleCharacterIndex, 0);
+
+        let resourceIdTypeArg: string | undefined;
+        const resourceIdTypeArgExpr = tleValue.argumentExpressions[0];
+        if (resourceIdTypeArgExpr) {
+            resourceIdTypeArg = TLE.asStringValue(resourceIdTypeArgExpr)?.unquotedValue; // asdf what if expression?
+        }
+
+        const results: Completion.Item[] = [];
+        for (let resourceValue of this.document.resources?.elements ?? []) {
+            const resourceObject = Json.asObjectValue(resourceValue);
+            if (resourceObject) {
+                const resName = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceName));
+                const resType = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceType));
+                if (resName) {
+                    const sortText = resName.unquotedValue; //asdf?
+                    //const replaceSpan = new language.Span(insertIndex, insertLength);
+
+                    if (resourceIdTypeArg && resType && resType.unquotedValue !== resourceIdTypeArg) { //asdf what if expr?
+                        continue; //asdf
+                    }
+
+                    const typeInsertionText = escapeTleString(resName.unquotedValue);
+                    const label = typeInsertionText;
+                    results.push(new Completion.Item(
+                        label,
+                        typeInsertionText,
+                        replaceSpan, //asdf replaceSpanInfo.includeRightParenthesisInCompletion?
+                        Completion.CompletionKind.DtDependsOn, //asdf
+                        typeInsertionText,
+                        typeInsertionText,
+                        undefined,
+                        undefined,
+                        sortText,
+                        [')', ','] //asdf:
+                    ));
+                }
+            }
+        }
+
+        return results;
     }
 
     /**
@@ -343,6 +617,12 @@ export class TemplatePositionContext extends PositionContext {
         let completeBuiltinFunctions: boolean;
         let completeUserFunctions: boolean;
 
+        //asdf
+        const sigHelp = this.getSignatureHelp();
+        if (sigHelp && sigHelp.functionMetadata.fullName === 'resourceId' && sigHelp.activeParameterIndex === 1) {
+            return this.getMatchingResourceNameCompletions('', tleValue, this.documentCharacterIndex, scope);
+        }
+
         if (tleValue.nameToken && tleValue.nameToken.span.contains(tleCharacterIndex, language.Contains.extended)) {
             // The caret is inside the function's name (or a namespace before the period has been typed), so one of
             // three possibilities.
@@ -392,6 +672,12 @@ export class TemplatePositionContext extends PositionContext {
         } else if (tleValue.isCallToBuiltinWithName(templateKeys.variables) && tleValue.argumentExpressions.length === 0) {
             // "variables<CURSOR>" or "variables(<CURSOR>)" or similar
             return this.getMatchingVariableCompletions("", tleValue, tleCharacterIndex, scope);
+        } else if (tleValue.isCallToBuiltinWithName('resourceId') && tleValue.argumentExpressions.length === 0/*asdf*/) {
+            //asdf
+            return this.getMatchingResourceTypeCompletions("", tleValue, tleCharacterIndex, scope);
+            // } else if (tleValue.isCallToBuiltinWithName('resourceId') && tleValue.argumentExpressions.length === 1/*asdf*/) {
+            //     //asdf
+            //     return this.getMatchingResourceNameCompletions("", tleValue, tleCharacterIndex, scope);
         } else {
             // Anywhere else (e.g. whitespace after function name, or inside the arguments list).
             //
@@ -693,4 +979,13 @@ interface ITleInfo {
      */
     tleValue: TLE.Value | undefined;
 
+}
+
+//asdf
+function escapeTleString(s: string): string {
+    if (s[0] === '[' && s[s.length - 1] === ']') {
+        return s.slice(1, s.length - 1); //asdf
+    } else {
+        return `'${s}'`;
+    }
 }

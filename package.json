@@ -136,6 +136,20 @@
                     "additionalProperties": {
                         "type": "string"
                     }
+                },
+                "azureResourceManagerTools.dependsOnExperiment": {
+                    "type": "string",
+                    "description": "Specifies which parameter file to associate with each given template file. Specifying the parameter file allows more thorough validation.",
+                    "enum": [
+                        "resourceIdPlusColon",
+                        "fullResourceId",
+                        "resourceName",
+                        "none"
+                    ],
+                    "default": "fullResourceId",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 }
             }
         },

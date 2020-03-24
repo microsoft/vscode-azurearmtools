@@ -78,4 +78,6 @@ export namespace templateKeys {
     // Resources
     export const resourceType = 'type';
     export const resourceApiVersion = 'apiVersion';
+    export const resourceDependsOn = 'dependsOn';
+    export const resourceName = 'name';
 }

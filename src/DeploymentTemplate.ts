@@ -77,6 +77,14 @@ export class DeploymentTemplate extends DeploymentDocument {
         return undefined;
     }
 
+    public get resources(): Json.ArrayValue | undefined {
+        if (this.topLevelValue) {
+            return Json.asArrayValue(this.topLevelValue.getPropertyValue(templateKeys.resources));
+        }
+
+        return undefined;
+    }
+
     /**
      * Parses all JSON strings in the template, assigns them a scope, and caches the results.
      * Returns a map that maps from the Json.StringValue object to the parse result (we can't cache
