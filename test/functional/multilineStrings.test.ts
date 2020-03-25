@@ -7,8 +7,7 @@
 
 import * as assert from 'assert';
 import * as os from 'os';
-import { indentMultilineString } from "../../extension.bundle";
-import { removeIndentation } from '../../src/util/multilineStrings';
+import { indentMultilineString, removeIndentation } from "../../extension.bundle";
 
 const EOL = os.EOL;
 
