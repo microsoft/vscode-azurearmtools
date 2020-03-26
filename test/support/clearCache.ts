@@ -55,7 +55,7 @@ export async function displayCacheStatus(): Promise<void> {
     if (fse.pathExistsSync(cacheFolder)) {
         console.log(`  Cache contents:`);
         console.log((await fse.readdir(cacheFolder)).length);
-        console.log((await fse.readdir(cacheFolder)).join(', '));
+        console.log((await fse.readdir(cacheFolder)).join(os.EOL));
     } else {
         console.log(`  Cache folder does not exist: ${cacheFolder}`);
     }

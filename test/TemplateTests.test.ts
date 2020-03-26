@@ -38,6 +38,7 @@ suite("Template tests", () => {
                             "type": "string"
                         }
                     },
+                    "resources": [],
                     "outputs": {
                         "WebHookURI": {
                             "type": "string",
