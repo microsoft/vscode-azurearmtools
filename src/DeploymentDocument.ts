@@ -4,10 +4,10 @@
 
 import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
 import { CachedValue } from "./CachedValue";
-import { DocumentPositionContext } from "./DocumentPositionContext";
 import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
+import { PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
 import { nonNullValue } from "./util/nonNull";
 
@@ -117,9 +117,9 @@ export abstract class DeploymentDocument {
         return this._jsonParseResult.maxCharacterIndex;
     }
 
-    public abstract getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentDocument | undefined): DocumentPositionContext;
+    public abstract getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentDocument | undefined): PositionContext;
 
-    public abstract getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedTemplate: DeploymentDocument | undefined): DocumentPositionContext;
+    public abstract getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedTemplate: DeploymentDocument | undefined): PositionContext;
 
     public getDocumentCharacterIndex(documentLineIndex: number, documentColumnIndex: number): number {
         return this._jsonParseResult.getCharacterIndex(documentLineIndex, documentColumnIndex);

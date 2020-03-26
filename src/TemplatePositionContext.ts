@@ -4,20 +4,17 @@
 
 // tslint:disable:max-line-length
 
-import { Language } from "../extension.bundle";
 import { AzureRMAssets, BuiltinFunctionMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
 import * as Completion from "./Completion";
 import { templateKeys } from "./constants";
-import { DeploymentDocument } from "./DeploymentDocument";
 import { DeploymentTemplate } from "./DeploymentTemplate";
-import { DocumentPositionContext } from "./DocumentPositionContext";
 import { assert } from './fixed_assert';
 import { IFunctionMetadata, IFunctionParameterMetadata } from "./IFunctionMetadata";
-import { INamedDefinition } from "./INamedDefinition";
 import { IParameterDefinition } from "./IParameterDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
+import { IReferenceSite, PositionContext } from "./PositionContext";
 import * as Reference from "./ReferenceList";
 import { TemplateScope } from "./TemplateScope";
 import * as TLE from "./TLE";
@@ -40,32 +37,10 @@ class TleInfo implements ITleInfo {
 }
 
 /**
- * Information about a reference site (function call, parameter reference, etc.)
- */
-export interface IReferenceSite {
-    /**
-     * Where the reference occurs in the template
-     */
-    referenceSpan: Language.Span;
-
-    /**
-     * The definition that the reference refers to
-     */
-    definition: INamedDefinition;
-
-    /**
-     * The document that contains the definition
-     */
-    definitionDoc: DeploymentDocument;
-}
-
-// tslint:disable-next-line:no-suspicious-comment
-// TODO: Rename to DeploymentTemplatePositionContext
-/**
  * Represents a position inside the snapshot of a deployment template, plus all related information
  * that can be parsed and analyzed about it
  */
-export class TemplatePositionContext extends DocumentPositionContext {
+export class TemplatePositionContext extends PositionContext {
     private _tleInfo: CachedValue<TleInfo | undefined> = new CachedValue<TleInfo | undefined>();
 
     public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number): TemplatePositionContext {
@@ -115,7 +90,7 @@ export class TemplatePositionContext extends DocumentPositionContext {
         if (tleInfo) {
             const scope = tleInfo.scope;
             const tleCharacterIndex = tleInfo.tleCharacterIndex;
-            const definitionDoc = this.document;
+            const definitionDocument = this.document;
 
             const tleFuncCall: TLE.FunctionCallValue | undefined = TLE.asFunctionCallValue(tleInfo.tleValue);
             if (tleFuncCall) {
@@ -125,7 +100,7 @@ export class TemplatePositionContext extends DocumentPositionContext {
                     const nsDefinition = scope.getFunctionNamespaceDefinition(ns);
                     if (nsDefinition) {
                         const referenceSpan: language.Span = tleFuncCall.namespaceToken.span.translate(this.jsonTokenStartIndex);
-                        return { definition: nsDefinition, referenceSpan, definitionDoc };
+                        return { definition: nsDefinition, referenceSpan, definitionDocument };
                     }
                 } else if (tleFuncCall.nameToken && tleFuncCall.nameToken.span.contains(tleCharacterIndex, language.Contains.strict)) {
                     if (tleFuncCall.namespaceToken) {
@@ -136,14 +111,14 @@ export class TemplatePositionContext extends DocumentPositionContext {
                         const userFunctiondefinition = scope.getUserFunctionDefinition(ns, name);
                         if (nsDefinition && userFunctiondefinition) {
                             const referenceSpan: language.Span = tleFuncCall.nameToken.span.translate(this.jsonTokenStartIndex);
-                            return { definition: userFunctiondefinition, referenceSpan, definitionDoc };
+                            return { definition: userFunctiondefinition, referenceSpan, definitionDocument };
                         }
                     } else {
                         // Inside a reference to a built-in function
                         const functionMetadata: BuiltinFunctionMetadata | undefined = AzureRMAssets.getFunctionMetadataFromName(tleFuncCall.nameToken.stringValue);
                         if (functionMetadata) {
                             const referenceSpan: language.Span = tleFuncCall.nameToken.span.translate(this.jsonTokenStartIndex);
-                            return { definition: functionMetadata, referenceSpan, definitionDoc };
+                            return { definition: functionMetadata, referenceSpan, definitionDocument };
                         }
                     }
                 }
@@ -156,14 +131,14 @@ export class TemplatePositionContext extends DocumentPositionContext {
                     const parameterDefinition: IParameterDefinition | undefined = scope.getParameterDefinition(tleStringValue.toString());
                     if (parameterDefinition) {
                         const referenceSpan: language.Span = tleStringValue.getSpan().translate(this.jsonTokenStartIndex);
-                        return { definition: parameterDefinition, referenceSpan, definitionDoc };
+                        return { definition: parameterDefinition, referenceSpan, definitionDocument };
                     }
                 } else if (tleStringValue.isVariablesArgument()) {
                     const variableDefinition: IVariableDefinition | undefined = scope.getVariableDefinition(tleStringValue.toString());
                     if (variableDefinition) {
                         // Inside the 'xxx' of a variables('xxx') reference
                         const referenceSpan: language.Span = tleStringValue.getSpan().translate(this.jsonTokenStartIndex);
-                        return { definition: variableDefinition, referenceSpan, definitionDoc };
+                        return { definition: variableDefinition, referenceSpan, definitionDocument };
                     }
                 }
             }

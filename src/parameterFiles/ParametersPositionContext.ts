@@ -5,11 +5,10 @@
 import { EOL } from "os";
 import * as Completion from "../Completion";
 import { DeploymentTemplate } from "../DeploymentTemplate";
-import { DocumentPositionContext } from "../DocumentPositionContext";
 import * as language from "../Language";
 import { createParameterFromTemplateParameter } from "../parameterFileGeneration";
+import { IReferenceSite, PositionContext } from "../PositionContext";
 import { ReferenceList } from "../ReferenceList";
-import { IReferenceSite } from "../TemplatePositionContext";
 import * as TLE from '../TLE';
 import { DeploymentParameters } from "./DeploymentParameters";
 
@@ -17,7 +16,7 @@ import { DeploymentParameters } from "./DeploymentParameters";
  * Represents a position inside the snapshot of a deployment parameter file, plus all related information
  * that can be parsed and analyzed about it from that position.
  */
-export class ParametersPositionContext extends DocumentPositionContext {
+export class ParametersPositionContext extends PositionContext {
     // CONSIDER: pass in function to *get* the deployment template, not the template itself?
     private _associatedTemplate: DeploymentTemplate | undefined;
 
@@ -59,7 +58,7 @@ export class ParametersPositionContext extends DocumentPositionContext {
                     return {
                         referenceSpan: paramValue.nameValue.span,
                         definition: paramDef,
-                        definitionDoc: this._associatedTemplate
+                        definitionDocument: this._associatedTemplate
                     };
                 }
 

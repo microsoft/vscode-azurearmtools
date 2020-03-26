@@ -8,19 +8,39 @@ import { __debugMarkPositionInString } from "./debugMarkStrings";
 import { DeploymentDocument as DeploymentDocument } from "./DeploymentDocument";
 import { assert } from './fixed_assert';
 import { HoverInfo } from "./Hover";
+import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { ReferenceList } from "./ReferenceList";
-import { IReferenceSite } from "./TemplatePositionContext";
 import * as TLE from "./TLE";
 import { InitializeBeforeUse } from "./util/InitializeBeforeUse";
 import { nonNullValue } from "./util/nonNull";
 
 /**
+ * Information about a reference site (function call, parameter reference, etc.)
+ */
+export interface IReferenceSite {
+    /**
+     * Where the reference occurs in the template
+     */
+    referenceSpan: language.Span;
+
+    /**
+     * The definition that the reference refers to
+     */
+    definition: INamedDefinition;
+
+    /**
+     * The document that contains the definition
+     */
+    definitionDocument: DeploymentDocument;
+}
+
+/**
  * Represents a position inside the snapshot of a deployment parameter file, plus all related information
  * that can be parsed and analyzed about it from that position.
  */
-export abstract class DocumentPositionContext {
+export abstract class PositionContext {
     private _documentPosition: InitializeBeforeUse<language.Position> = new InitializeBeforeUse<language.Position>();
     private _documentCharacterIndex: InitializeBeforeUse<number> = new InitializeBeforeUse<number>();
     private _jsonToken: CachedValue<Json.Token | undefined> = new CachedValue<Json.Token>();
