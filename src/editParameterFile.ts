@@ -3,7 +3,6 @@
 // ----------------------------------------------------------------------------
 
 import * as fse from 'fs-extra';
-import * as os from 'os';
 import * as path from 'path';
 import { QuickPickItem, Uri, window } from "vscode";
 import { IActionContext, UserCancelledError } from 'vscode-azureextensionui';
@@ -69,20 +68,21 @@ export function createParameterFileContents(template: DeploymentTemplate, indent
     const tab = makeIndent(indent);
 
     const params: CaseInsensitiveMap<string, string> = createParameters(template, indent, onlyRequiredParameters);
-    const paramsContent = params.map((key, value) => value).join(`,${os.EOL}`);
+    const paramsContent = params.map((key, value) => value).join(`,${ext.EOL}`);
 
-    let contents = `{
-${tab}"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-${tab}"contentVersion": "1.0.0.0",
-${tab}"parameters": {
-`;
+    // tslint:disable-next-line: prefer-template
+    let contents = `{` + ext.EOL +
+        `${tab}"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",` + ext.EOL +
+        `${tab}"contentVersion": "1.0.0.0",` + ext.EOL +
+        `${tab}"parameters": {` + ext.EOL;
 
     if (params.size > 0) {
-        contents += indentMultilineString(paramsContent, indent * 2) + os.EOL;
+        contents += indentMultilineString(paramsContent, indent * 2) + ext.EOL;
     }
 
-    contents += `${tab}}
-}`;
+    // tslint:disable-next-line: prefer-template
+    contents += `${tab}}` + ext.EOL
+        + `}`;
 
     return contents;
 }
@@ -108,8 +108,8 @@ export function createParameterProperty(template: DeploymentTemplate, parameter:
     const valueIndentedAfterFirstLine: string = indentMultilineString(value.trimLeft(), indent).trimLeft();
 
     // tslint:disable-next-line:prefer-template
-    return `"${parameter.nameValue.unquotedValue}": {` + os.EOL
-        + `${makeIndent(indent)}"value": ${valueIndentedAfterFirstLine}` + os.EOL
+    return `"${parameter.nameValue.unquotedValue}": {` + ext.EOL
+        + `${makeIndent(indent)}"value": ${valueIndentedAfterFirstLine}` + ext.EOL
         + `}`;
 }
 
@@ -119,7 +119,7 @@ function getDefaultValueFromType(propType: ExpressionType | undefined, indent: n
 
     switch (propType) {
         case "array":
-            return `[${os.EOL}${tab}${comment}${os.EOL}]`;
+            return `[${ext.EOL}${tab}${comment}${ext.EOL}]`;
 
         case "bool":
             return `false ${comment}`;
@@ -129,7 +129,7 @@ function getDefaultValueFromType(propType: ExpressionType | undefined, indent: n
 
         case "object":
         case "secureobject":
-            return `{${os.EOL}${tab}${comment}${os.EOL}}`;
+            return `{${ext.EOL}${tab}${comment}${ext.EOL}}`;
 
         case "securestring":
         case "string":

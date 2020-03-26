@@ -3,8 +3,6 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-'use strict';
-
 // tslint:disable:max-func-body-length no-console cyclomatic-complexity max-line-length prefer-template non-literal-fs-path
 
 // Turn on to overwrite results files rather than creating new ".txt.actual" files when there are differences.
@@ -18,6 +16,7 @@ import * as path from 'path';
 import { commands, Uri } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
 import { getTempFilePath } from '../support/getTempFilePath';
+import { normalizeString } from '../support/normalizeString';
 import { DISABLE_SLOW_TESTS } from '../testConstants';
 
 const tleGrammarSourcePath: string = path.join(__dirname, '../../../grammars/arm-expression-string.tmLanguage.json');
@@ -188,7 +187,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
         let resultPathToWriteTo = OVERWRITE ? resultPath : actualResultPath;
         let removeActualResultPath = false;
         if (fs.existsSync(resultPath)) {
-            let previousResult = normalize(fs.readFileSync(resultPath).toString().trim());
+            let previousResult = normalizeString(fs.readFileSync(resultPath).toString().trim());
             let isJustDiff = false;
 
             try {
@@ -274,10 +273,6 @@ function getDictionaryNestingLevel(scopes: string): number {
     return matches ? matches.length : 0;
 }
 
-function normalize(s: string): string {
-    return s.replace(/(\r\n)|\r/g, os.EOL);
-}
-
 function getTestcaseResults(testCases: ITestcase[]): { text: string; results: string[]; fullScopeString: string; shortScopeString: string } {
     let results = testCases.map((testcase: ITestcase): { short: string; full: string } => {
         let prefix = testcase.testString ? `${testcase.testString}${os.EOL}` : "";
@@ -307,12 +302,12 @@ function getTestcaseResults(testCases: ITestcase[]): { text: string; results: st
     });
 
     let fullScopeString = results.map(r => r.full).join(`${os.EOL}${os.EOL}`);
-    fullScopeString = normalize(fullScopeString.trim());
+    fullScopeString = normalizeString(fullScopeString.trim());
 
     let shortScopeString = results.map(r => r.short).join(`${os.EOL}${os.EOL}`);
-    shortScopeString = normalize(shortScopeString.trim());
+    shortScopeString = normalizeString(shortScopeString.trim());
 
-    let text = normalize(testCases.map(tc => tc.data).map((tis: ITokenInfo[]) => tis.map(ti => ti.text).join('')).join(''));
+    let text = normalizeString(testCases.map(tc => tc.data).map((tis: ITokenInfo[]) => tis.map(ti => ti.text).join('')).join(''));
 
     return { text, results: results.map(r => r.full), fullScopeString, shortScopeString };
 }
