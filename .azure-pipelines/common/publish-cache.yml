@@ -1,0 +1,26 @@
+
+- task: CopyFiles@2
+displayName: 'Copy pre-cache to staging directory'
+inputs:
+  Contents: 'pre-cache/**'
+  TargetFolder: '$(build.artifactstagingdirectory)'
+
+- task: PublishBuildArtifacts@1
+displayName: 'Publish artifacts: pre-cache'
+inputs:
+  PathtoPublish: '$(build.artifactstagingdirectory)'
+  ArtifactName: pre-cache
+condition: ne(variables['System.PullRequest.IsFork'], 'True')
+
+- task: CopyFiles@2
+displayName: 'Copy post-cache to staging directory'
+inputs:
+  Contents: 'post-cache/**'
+  TargetFolder: '$(build.artifactstagingdirectory)'
+
+- task: PublishBuildArtifacts@1
+displayName: 'Publish artifacts: post-cache'
+inputs:
+  PathtoPublish: '$(build.artifactstagingdirectory)'
+  ArtifactName: post-cache
+condition: ne(variables['System.PullRequest.IsFork'], 'True')
