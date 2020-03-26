@@ -55,7 +55,9 @@ suite("Schema validation", () => {
         async () =>
             await testDiagnostics(
                 {
-                    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+                    // tslint:disable-next-line:no-suspicious-comment
+                    // TODO: Change back to "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+                    $schema: "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
                     "parameters": {
                         "rgName": {
