@@ -85,9 +85,9 @@ export async function packageCache(destFolderName: string): Promise<void> {
         console.log(`  Cache folder does not exist: ${cacheFolder}`);
     }
 
-    async function copyCacheFile(cacheFileRelativePath: string, destFolderPath: string): Promise<void> {
+    async function copyCacheFile(cacheFileRelativePath: string, destCacheFolderPath: string): Promise<void> {
         const sourcePath = path.join(cacheFolder, cacheFileRelativePath);
-        const targetPath = path.join(destFolderPath, cacheFileRelativePath);
+        const targetPath = path.join(destCacheFolderPath, cacheFileRelativePath);
         if ((await fse.stat(sourcePath)).isFile()) {
             await fse.copyFile(sourcePath, targetPath);
         }
