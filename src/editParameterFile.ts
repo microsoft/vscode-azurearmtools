@@ -13,7 +13,7 @@ import { ExpressionType } from './ExpressionType';
 import { ext } from './extensionVariables';
 import { IParameterDefinition } from './IParameterDefinition';
 import { assertNever } from './util/assertNever';
-import { indentMultilineString, removeIndentation } from './util/multilineStrings';
+import { indentMultilineString, unindentMultilineString } from './util/multilineStrings';
 
 const defaultIndent: number = 4;
 
@@ -102,7 +102,7 @@ export function createParameterProperty(template: DeploymentTemplate, parameter:
     if (parameter.defaultValue) {
         const defValueSpan = parameter.defaultValue.span;
         const defValue: string = template.documentText.slice(defValueSpan.startIndex, defValueSpan.afterEndIndex);
-        value = removeIndentation(defValue, true);
+        value = unindentMultilineString(defValue, true);
     }
 
     const valueIndentedAfterFirstLine: string = indentMultilineString(value.trimLeft(), indent).trimLeft();

@@ -61,7 +61,7 @@ export { UserFunctionMetadata } from "./src/UserFunctionMetadata";
 export { UserFunctionNamespaceDefinition } from "./src/UserFunctionNamespaceDefinition";
 export { UserFunctionParameterDefinition } from "./src/UserFunctionParameterDefinition";
 export { mapJsonObjectValue } from "./src/util/mapJsonObjectValue";
-export { indentMultilineString, removeIndentation } from "./src/util/multilineStrings";
+export { indentMultilineString, unindentMultilineString as removeIndentation } from "./src/util/multilineStrings";
 export * from "./src/util/nonNull";
 export * from './src/util/time';
 export { getVSCodePositionFromPosition } from "./src/util/vscodePosition";
