@@ -5,10 +5,11 @@
 
 import * as fse from 'fs-extra';
 import * as os from 'os';
+import * as path from 'path';
 import * as process from 'process';
 import * as rimraf from 'rimraf';
 import { parseError } from 'vscode-azureextensionui';
-import { isWin32 } from '../../extension.bundle';
+import { basePath, isWin32 } from '../../extension.bundle';
 
 const homedir = os.homedir();
 const cacheFolder = isWin32
@@ -54,9 +55,41 @@ export async function displayCacheStatus(): Promise<void> {
     console.log(`Inspecting cache...`);
     if (fse.pathExistsSync(cacheFolder)) {
         console.log(`  Cache contents:`);
-        console.log((await fse.readdir(cacheFolder)).length);
-        console.log((await fse.readdir(cacheFolder)).join(os.EOL));
+        console.log(`${(await fse.readdir(cacheFolder)).length} file(s)`);
+        // console.log((await fse.readdir(cacheFolder)).join(os.EOL));
     } else {
         console.log(`  Cache folder does not exist: ${cacheFolder}`);
+    }
+}
+
+export async function packageCache(destFolderName: string): Promise<void> {
+    console.log(`Copying the cache...`);
+    const destFolderPath = path.join(basePath, destFolderName);
+    const destFolderExpirationPath = path.join(destFolderPath, 'Expiration');
+
+    if (await fse.pathExists(destFolderExpirationPath)) {
+        rimraf.sync(destFolderPath);
+    }
+
+    await fse.mkdir(destFolderPath);
+    await fse.mkdir(destFolderExpirationPath);
+
+    if (fse.pathExistsSync(cacheFolder)) {
+        for (let file of await fse.readdir(cacheFolder)) {
+            await copyCacheFile(file, destFolderPath);
+        }
+        for (let file of await fse.readdir(path.join(cacheFolder, "Expiration"))) {
+            await copyCacheFile(path.join('Expiration', file), destFolderPath);
+        }
+    } else {
+        console.log(`  Cache folder does not exist: ${cacheFolder}`);
+    }
+
+    async function copyCacheFile(cacheFileRelativePath: string, destFolderPath: string): Promise<void> {
+        const sourcePath = path.join(cacheFolder, cacheFileRelativePath);
+        const targetPath = path.join(destFolderPath, cacheFileRelativePath);
+        if ((await fse.stat(sourcePath)).isFile()) {
+            await fse.copyFile(sourcePath, targetPath);
+        }
     }
 }

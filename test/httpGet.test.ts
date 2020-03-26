@@ -43,6 +43,10 @@ suite("HttpClient", () => {
                 // tslint:disable-next-line:no-any
                 .catch((reason: { code?: string; errno?: number; hostname?: string; syscall?: string }) => {
                     assert(reason);
+                    if (reason.code === 'EAI_AGAIN') {
+                        return;
+                    }
+
                     assert.deepStrictEqual(reason.code, "ENOTFOUND");
                     assert.deepStrictEqual(reason.errno, "ENOTFOUND");
                     assert.deepStrictEqual(reason.hostname, "i.dont.exist.com");
