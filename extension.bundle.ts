@@ -32,7 +32,7 @@ export { CachedPromise } from "./src/CachedPromise";
 export { CachedValue } from "./src/CachedValue";
 export { CaseInsensitiveMap } from "./src/CaseInsensitiveMap";
 export * from "./src/Completion";
-export { configKeys, configPrefix, diagnosticsCompletePrefix, expressionsDiagnosticsSource, languageId as armDeploymentLanguageId, languageId, languageServerStateSource, templateKeys } from "./src/constants";
+export { configKeys, configPrefix, diagnosticsCompletePrefix, expressionsDiagnosticsSource, isWin32, languageId as armDeploymentLanguageId, languageId, languageServerStateSource, templateKeys } from "./src/constants";
 export { __debugMarkPositionInString, __debugMarkSubstring } from "./src/debugMarkStrings";
 export { DeploymentTemplate } from "./src/DeploymentTemplate";
 export { Duration } from './src/Duration';
@@ -80,4 +80,3 @@ export { Language };
 export { basic };
 export { Utilities };
 export { TLE };
-
