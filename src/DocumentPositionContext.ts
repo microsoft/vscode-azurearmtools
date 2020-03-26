@@ -5,7 +5,7 @@
 import { CachedValue } from "./CachedValue";
 import * as Completion from "./Completion";
 import { __debugMarkPositionInString } from "./debugMarkStrings";
-import { DeploymentDoc as DeploymentDoc } from "./DeploymentDoc";
+import { DeploymentDocument as DeploymentDocument } from "./DeploymentDocument";
 import { assert } from './fixed_assert';
 import { HoverInfo } from "./Hover";
 import * as Json from "./JSON";
@@ -26,7 +26,7 @@ export abstract class DocumentPositionContext {
     private _jsonToken: CachedValue<Json.Token | undefined> = new CachedValue<Json.Token>();
     private _jsonValue: CachedValue<Json.Value | undefined> = new CachedValue<Json.Value | undefined>();
 
-    protected constructor(private _document: DeploymentDoc) {
+    protected constructor(private _document: DeploymentDocument) {
         nonNullValue(this._document, "document");
     }
 
@@ -51,7 +51,7 @@ export abstract class DocumentPositionContext {
         this._documentPosition.setValue(this._document.getDocumentPosition(documentCharacterIndex));
     }
 
-    public get document(): DeploymentDoc {
+    public get document(): DeploymentDocument {
         return this._document;
     }
 

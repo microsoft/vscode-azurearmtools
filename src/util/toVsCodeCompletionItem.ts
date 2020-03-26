@@ -6,7 +6,7 @@
 import * as vscode from 'vscode';
 import { IActionContext } from 'vscode-azureextensionui';
 import * as Completion from '../Completion';
-import { DeploymentDoc } from '../DeploymentDoc';
+import { DeploymentDocument } from '../DeploymentDocument';
 import { assertNever } from './assertNever';
 import { getVSCodeRangeFromSpan } from './vscodePosition';
 
@@ -15,7 +15,7 @@ interface ICompletionActivated {
     snippetName: string;
 }
 
-export function toVsCodeCompletionItem(deploymentFile: DeploymentDoc, item: Completion.Item): vscode.CompletionItem {
+export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item: Completion.Item): vscode.CompletionItem {
     const insertRange: vscode.Range = getVSCodeRangeFromSpan(deploymentFile, item.insertSpan);
 
     const vscodeItem = new vscode.CompletionItem(item.label);

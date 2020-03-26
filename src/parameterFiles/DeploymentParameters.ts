@@ -7,7 +7,7 @@ import { EOL } from "os";
 import { CodeAction, CodeActionContext, CodeActionKind, Command, Range, Selection, TextEditor, Uri } from "vscode";
 import { CachedValue } from "../CachedValue";
 import { templateKeys } from "../constants";
-import { DeploymentDoc } from "../DeploymentDoc";
+import { DeploymentDocument } from "../DeploymentDocument";
 import { DeploymentTemplate } from "../DeploymentTemplate";
 import { INamedDefinition } from "../INamedDefinition";
 import { IParameterDefinition } from "../IParameterDefinition";
@@ -24,7 +24,7 @@ import { ParameterValueDefinition } from "./ParameterValueDefinition";
 /**
  * Represents a deployment parameter file
  */
-export class DeploymentParameters extends DeploymentDoc {
+export class DeploymentParameters extends DeploymentDocument {
     private _parameterValueDefinitions: CachedValue<ParameterValueDefinition[]> = new CachedValue<ParameterValueDefinition[]>();
     private _parametersProperty: CachedValue<Json.Property | undefined> = new CachedValue<Json.Property | undefined>();
 
@@ -97,7 +97,7 @@ export class DeploymentParameters extends DeploymentDoc {
     }
 
     public async getCodeActions(
-        associatedDocument: DeploymentDoc | undefined,
+        associatedDocument: DeploymentDocument | undefined,
         range: Range | Selection,
         context: CodeActionContext
     ): Promise<(Command | CodeAction)[]> {

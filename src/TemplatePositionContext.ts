@@ -9,7 +9,7 @@ import { AzureRMAssets, BuiltinFunctionMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
 import * as Completion from "./Completion";
 import { templateKeys } from "./constants";
-import { DeploymentDoc } from "./DeploymentDoc";
+import { DeploymentDocument } from "./DeploymentDocument";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { DocumentPositionContext } from "./DocumentPositionContext";
 import { assert } from './fixed_assert';
@@ -56,7 +56,7 @@ export interface IReferenceSite {
     /**
      * The document that contains the definition
      */
-    definitionDoc: DeploymentDoc;
+    definitionDoc: DeploymentDocument;
 }
 
 // tslint:disable-next-line:no-suspicious-comment

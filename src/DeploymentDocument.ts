@@ -14,7 +14,7 @@ import { nonNullValue } from "./util/nonNull";
 /**
  * Represents a deployment-related JSON file
  */
-export abstract class DeploymentDoc {
+export abstract class DeploymentDocument {
     // Parse result for the template JSON document as a whole
     private _jsonParseResult: Json.ParseResult;
 
@@ -117,9 +117,9 @@ export abstract class DeploymentDoc {
         return this._jsonParseResult.maxCharacterIndex;
     }
 
-    public abstract getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentDoc | undefined): DocumentPositionContext;
+    public abstract getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentDocument | undefined): DocumentPositionContext;
 
-    public abstract getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedTemplate: DeploymentDoc | undefined): DocumentPositionContext;
+    public abstract getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedTemplate: DeploymentDocument | undefined): DocumentPositionContext;
 
     public getDocumentCharacterIndex(documentLineIndex: number, documentColumnIndex: number): number {
         return this._jsonParseResult.getCharacterIndex(documentLineIndex, documentColumnIndex);
@@ -151,9 +151,9 @@ export abstract class DeploymentDoc {
      * @return An array of commands, quick fixes, or refactorings or a thenable of such. The lack of a result can be
      * signaled by returning `undefined`, `null`, or an empty array.
      */
-    public abstract async getCodeActions(associatedDocument: DeploymentDoc | undefined, range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]>;
+    public abstract async getCodeActions(associatedDocument: DeploymentDocument | undefined, range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]>;
 
-    public abstract getErrors(associatedDocument: DeploymentDoc | undefined): Promise<language.Issue[]>;
+    public abstract getErrors(associatedDocument: DeploymentDocument | undefined): Promise<language.Issue[]>;
 
     public abstract getWarnings(): language.Issue[];
 }

@@ -4,7 +4,7 @@
 
 import { CompletionItem, Event, EventEmitter } from "vscode";
 import { Completion } from "../extension.bundle";
-import { DeploymentDoc } from "./DeploymentDoc";
+import { DeploymentDocument } from "./DeploymentDocument";
 import { IFunctionMetadata } from "./IFunctionMetadata";
 import { IParameterDefinition } from "./IParameterDefinition";
 import * as language from "./Language";
@@ -120,7 +120,7 @@ export enum CompletionKind {
 }
 
 export interface ICompletionsSpyResult {
-    document: DeploymentDoc;
+    document: DeploymentDocument;
     completionItems: Completion.Item[];
     vsCodeCompletionItems: CompletionItem[];
 }
@@ -133,7 +133,7 @@ export class CompletionsSpy {
     public readonly onCompletionItemResolved: Event<CompletionItem> = this._resolveEmitter.event;
 
     public postCompletionItemsResult(
-        document: DeploymentDoc,
+        document: DeploymentDocument,
         completionItems: Completion.Item[],
         vsCodeCompletionItems: CompletionItem[]
     ): void {

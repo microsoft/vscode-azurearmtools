@@ -7,7 +7,7 @@ import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "v
 import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
 import { templateKeys } from "./constants";
-import { DeploymentDoc } from "./DeploymentDoc";
+import { DeploymentDocument } from "./DeploymentDocument";
 import { Histogram } from "./Histogram";
 import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
@@ -30,7 +30,7 @@ import { UndefinedParameterAndVariableVisitor } from "./visitors/UndefinedParame
 import * as UndefinedVariablePropertyVisitor from "./visitors/UndefinedVariablePropertyVisitor";
 import * as UnrecognizedFunctionVisitor from "./visitors/UnrecognizedFunctionVisitor";
 
-export class DeploymentTemplate extends DeploymentDoc {
+export class DeploymentTemplate extends DeploymentDocument {
     // The top-level parameters and variables (as opposed to those in user functions and deployment resources)
     private _topLevelScope: TemplateScope;
 
@@ -520,7 +520,7 @@ export class DeploymentTemplate extends DeploymentDoc {
     }
 
     public async getCodeActions(
-        associatedDocument: DeploymentDoc | undefined,
+        associatedDocument: DeploymentDocument | undefined,
         range: Range | Selection,
         context: CodeActionContext
     ): Promise<(Command | CodeAction)[]> {
