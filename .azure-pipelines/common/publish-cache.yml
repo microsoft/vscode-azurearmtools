@@ -1,4 +1,4 @@
-
+steps:
 - task: CopyFiles@2
 displayName: 'Copy pre-cache to staging directory'
 inputs:
@@ -9,7 +9,7 @@ inputs:
 displayName: 'Publish artifacts: pre-cache'
 inputs:
   PathtoPublish: '$(build.artifactstagingdirectory)'
-  ArtifactName: pre-cache
+  ArtifactName: pre-cache-$(Agent.OS)
 condition: ne(variables['System.PullRequest.IsFork'], 'True')
 
 - task: CopyFiles@2
@@ -22,5 +22,5 @@ inputs:
 displayName: 'Publish artifacts: post-cache'
 inputs:
   PathtoPublish: '$(build.artifactstagingdirectory)'
-  ArtifactName: post-cache
+  ArtifactName: post-$(Agent.OS)
 condition: ne(variables['System.PullRequest.IsFork'], 'True')
