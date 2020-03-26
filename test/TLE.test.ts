@@ -7,8 +7,7 @@
 
 import * as assert from "assert";
 import { Uri } from "vscode";
-import { AzureRMAssets, BuiltinFunctionMetadata, DefinitionKind, DeploymentTemplate, FindReferencesVisitor, FunctionsMetadata, IncorrectArgumentsCountIssue, IncorrectFunctionArgumentCountVisitor, Language, nonNullValue, ReferenceList, ScopeContext, TemplateScope, TLE, UndefinedParameterAndVariableVisitor, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue, UnrecognizedFunctionVisitor } from "../extension.bundle";
-import { TemplatePositionContext } from "../src/TemplatePositionContext";
+import { AzureRMAssets, BuiltinFunctionMetadata, DefinitionKind, DeploymentTemplate, FindReferencesVisitor, FunctionsMetadata, IncorrectArgumentsCountIssue, IncorrectFunctionArgumentCountVisitor, Language, nonNullValue, ReferenceList, ScopeContext, TemplatePositionContext, TemplateScope, TLE, UndefinedParameterAndVariableVisitor, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue, UnrecognizedFunctionVisitor } from "../extension.bundle";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 

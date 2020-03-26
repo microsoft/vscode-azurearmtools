@@ -8,8 +8,7 @@
 import * as assert from "assert";
 import * as os from 'os';
 import { Uri } from "vscode";
-import { Completion, DeploymentTemplate, FunctionSignatureHelp, HoverInfo, IParameterDefinition, IReferenceSite, isVariableDefinition, IVariableDefinition, Json, Language, nonNullValue, TLE, UserFunctionMetadata, Utilities } from "../extension.bundle";
-import { TemplatePositionContext } from "../src/TemplatePositionContext";
+import { Completion, DeploymentTemplate, FunctionSignatureHelp, HoverInfo, IParameterDefinition, IReferenceSite, isVariableDefinition, IVariableDefinition, Json, Language, nonNullValue, TemplatePositionContext, TLE, UserFunctionMetadata, Utilities } from "../extension.bundle";
 import * as jsonTest from "./JSON.test";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
