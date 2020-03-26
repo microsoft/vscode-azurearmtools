@@ -1,26 +1,24 @@
 steps:
 - task: CopyFiles@2
-displayName: 'Copy pre-cache to staging directory'
-inputs:
-  Contents: 'pre-cache/**'
-  TargetFolder: '$(build.artifactstagingdirectory)'
+    displayName: 'Copy pre-cache to staging directory'
+    inputs:
+        Contents: 'pre-cache/**'
+        TargetFolder: '$(build.artifactstagingdirectory)'
 
 - task: PublishBuildArtifacts@1
-displayName: 'Publish artifacts: pre-cache'
-inputs:
-  PathtoPublish: '$(build.artifactstagingdirectory)'
-  ArtifactName: pre-cache-$(Agent.OS)
-condition: ne(variables['System.PullRequest.IsFork'], 'True')
+    displayName: 'Publish artifacts: pre-cache'
+    inputs:
+        PathtoPublish: '$(build.artifactstagingdirectory)'
+        ArtifactName: pre-cache-$(Agent.OS)
 
 - task: CopyFiles@2
-displayName: 'Copy post-cache to staging directory'
-inputs:
-  Contents: 'post-cache/**'
-  TargetFolder: '$(build.artifactstagingdirectory)'
+    displayName: 'Copy post-cache to staging directory'
+    inputs:
+        Contents: 'post-cache/**'
+        TargetFolder: '$(build.artifactstagingdirectory)'
 
 - task: PublishBuildArtifacts@1
-displayName: 'Publish artifacts: post-cache'
-inputs:
-  PathtoPublish: '$(build.artifactstagingdirectory)'
-  ArtifactName: post-$(Agent.OS)
-condition: ne(variables['System.PullRequest.IsFork'], 'True')
+    displayName: 'Publish artifacts: post-cache'
+    inputs:
+        PathtoPublish: '$(build.artifactstagingdirectory)'
+        ArtifactName: post-$(Agent.OS)
