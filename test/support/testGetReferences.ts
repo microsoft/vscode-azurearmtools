@@ -3,8 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from 'assert';
-import { DeploymentTemplate } from '../../src/DeploymentTemplate';
-import { ReferenceList } from '../../src/ReferenceList';
+import { DeploymentTemplate, ReferenceList } from '../../extension.bundle';
 
 /**
  * Given a deployment template and a character index into it, verify that getReferences on the template

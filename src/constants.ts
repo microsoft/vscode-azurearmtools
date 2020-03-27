@@ -12,8 +12,9 @@ export const isWebpack: boolean = /^(false|0)?$/i.test(process.env.AZCODE_ARM_IG
 export const isWin32: boolean = os.platform() === 'win32';
 export const isCaseSensitiveFileSystem: boolean = !isWin32;
 
-export const assetsPath = path.join(__dirname, isWebpack ? "" : "..", "..", "assets");
-export const iconsPath = path.join(__dirname, isWebpack ? "" : "..", "..", "icons");
+export const basePath = path.join(__dirname, isWebpack ? "" : "..", "..");
+export const assetsPath = path.join(basePath, "assets");
+export const iconsPath = path.join(basePath, "icons");
 
 export const languageServerName = 'ARM Template Language Server';
 export const languageFriendlyName = 'Azure Resource Manager Template';
