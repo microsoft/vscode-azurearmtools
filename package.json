@@ -129,7 +129,7 @@
                 },
                 "azureResourceManagerTools.parameterFiles": {
                     "type": "object",
-                    "description": "Specifies which parameter file to associate with each given template file. Specifying the parameter file allows more thorough validation.",
+                    "description": "Specifies which parameter file to use for each given template file. Specifying the parameter file allows more thorough validation.",
                     "default": {},
                     "additionalProperties": {
                         "type": "string"
@@ -204,7 +204,7 @@
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Open Associated Parameter File",
+                "title": "Open Parameter File",
                 "command": "azurerm-vscode-tools.openParameterFile",
                 "enablement": "editorLangId==arm-template"
             },
