@@ -307,3 +307,7 @@ pkgs/**
 
 # Staged language server bits
 languageServer/**
+
+# Schema caches
+pre-cache
+post-cache

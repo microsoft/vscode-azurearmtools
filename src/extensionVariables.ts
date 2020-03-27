@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as os from 'os';
 import * as vscode from "vscode";
 import { IAzExtOutputChannel, IAzureUserInput, ITelemetryReporter } from "vscode-azureextensionui";
 import { LanguageClient } from "vscode-languageclient";
@@ -77,6 +78,8 @@ class ExtensionVariables {
     public get ui(): IAzureUserInput {
         return this._ui.getValue();
     }
+
+    public EOL: string = os.EOL;
 
     public readonly ignoreBundle: boolean = !isWebpack;
 

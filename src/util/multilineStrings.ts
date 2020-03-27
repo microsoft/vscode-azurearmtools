@@ -2,26 +2,42 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import * as os from 'os';
+import { ext } from "../extensionVariables";
 
-export function indentMultilineString(s: string, indent: number): string {
-    return s.replace(/^/mg, ' '.repeat(indent));
+/**
+ * Indents each line of a multi-line string by 'indent' number of spaces
+ */
+export function indentMultilineString(multilineText: string, indent: number): string {
+    const lines = splitIntoLines(multilineText);
+    const indentation: string = ' '.repeat(indent);
+    return indentation + lines.join(ext.EOL + indentation);
 }
 
-export function removeIndentation(s: string, ignoreFirstLine: boolean = false): string {
-    const lines = s.split(/\r\n|\n/);
-    const linesToCalculateIndent = ignoreFirstLine ? lines.slice(1) : lines;
+/**
+ * Unindents the given multi-line string by the minimum amount of indentation that exists on
+ * any given line
+ */
+export function unindentMultilineString(multilineText: string, ignoreFirstLineWhenCalculatingIndent: boolean = false): string {
+    const lines = splitIntoLines(multilineText);
+    const linesToCalculateIndent = ignoreFirstLineWhenCalculatingIndent ? lines.slice(1) : lines;
     const minIndent = linesToCalculateIndent.map(getLineIndentation).reduce((previous, current) => Math.min(previous, current), Number.MAX_SAFE_INTEGER);
     const removeFromStart = new RegExp(`^\\s{0,${minIndent}}`, "gm");
     const unindentedLines = lines.map(l => l.replace(removeFromStart, ""));
-    return unindentedLines.join(os.EOL);
+    return unindentedLines.join(ext.EOL);
 }
 
-export function getLineIndentation(line: string): number {
-    const indentation = line.match(/^\s+/);
+/**
+ * Returns the amount of whitespace at the start of the given single line of text
+ */
+export function getLineIndentation(singleLineText: string): number {
+    const indentation = singleLineText.match(/^\s+/);
     if (!indentation) {
         return 0;
     }
 
     return indentation[0].length;
+}
+
+function splitIntoLines(multilineText: string): string[] {
+    return multilineText.split(/\r\n|\n|\r/);
 }

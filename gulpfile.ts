@@ -311,7 +311,7 @@ async function verifyTestReferencesOnlyExtensionBundle(testFolder: string): Prom
     }
 
     async function verifyFile(file: string): Promise<void> {
-        const regex = /import .*['"]\.\.\/src\/.*['"]/mg;
+        const regex = /import .*['"]\.\.\/(\.\.\/)?src\/.*['"]/mg;
         if (path.extname(file) === ".ts") {
             const contents: string = (await fse.readFile(file)).toString();
             const matches = contents.match(regex);
