@@ -5,6 +5,8 @@
 import { commands } from 'vscode';
 import { assert } from '../fixed_assert';
 
+// These contexts are used to drive when/enablement clauses in package.json
+
 // Is current file a parameter file?
 const isParameterFileContextName = `azurerm-vscode-tools-isParamFile`;
 
@@ -14,7 +16,6 @@ const hasTemplateFileContextName = `azurerm-vscode-tools-hasTemplateFile`;
 // Is a template file and has an associated parameter file?
 const hasParameterFileContextName = `azurerm-vscode-tools-hasParamFile`;
 
-// These contexts are used to drive when/enablement clauses in package.json
 export function setParameterFileContext(
     value: {
         isTemplateFile: boolean;

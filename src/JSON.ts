@@ -951,7 +951,7 @@ export class ParseResult {
         return this._lineLengths;
     }
 
-    // Does no necessarily make a copy
+    // Might or might not make a copy
     public getTokens(commentBehavior: Comments): Token[] {
         if (commentBehavior === Comments.includeCommentTokens) {
             const tokens = this.tokens.concat(this.commentTokens);
@@ -962,7 +962,7 @@ export class ParseResult {
         }
     }
 
-    // Does no necessarily make a copy
+    // Might or might not make a copy
     public getTokensInSpan(span: language.Span, commentsBehavior: Comments): Token[] {
         const results: Token[] = [];
         const tokens = this.getTokens(commentsBehavior);
