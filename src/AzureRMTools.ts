@@ -12,7 +12,6 @@ import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import * as Completion from "./Completion";
-import { CompletionsSpy } from "./CompletionsSpy";
 import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, extensionName, globalStateKeys } from "./constants";
 import { DeploymentDocument } from "./DeploymentDocument";
 import { DeploymentTemplate } from "./DeploymentTemplate";
@@ -60,8 +59,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     ext.outputChannel = createAzExtOutputChannel(extensionName, configPrefix);
     ext.ui = new AzureUserInput(context.globalState);
 
-    ext.completionItemsSpy.setValue(new CompletionsSpy());
-    context.subscriptions.push(ext.completionItemsSpy.getValue());
+    context.subscriptions.push(ext.completionItemsSpy);
 
     ext.deploymentFileMapping.setValue(new DeploymentFileMapping(ext.configuration));
 
