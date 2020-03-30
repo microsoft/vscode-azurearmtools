@@ -52,12 +52,9 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
             vscodeItem.kind = vscode.CompletionItemKind.Snippet;
             break;
 
-        case Completion.CompletionKind.DtDependsOn:
-            vscodeItem.kind = vscode.CompletionItemKind.Reference; //asdf
-            break;
-
-        case Completion.CompletionKind.DtDependsOn2:
-            vscodeItem.kind = vscode.CompletionItemKind.Snippet; //asdf
+        case Completion.CompletionKind.DtResourceIdResType:
+        case Completion.CompletionKind.DtResourceIdResName:
+            vscodeItem.kind = vscode.CompletionItemKind.Reference;
             break;
 
         default:

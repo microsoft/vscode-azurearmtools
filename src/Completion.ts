@@ -118,6 +118,23 @@ export class Item {
             detail: `(variable)`
         });
     }
+
+    /**
+     * Dupes the completions list by label, without affecting order
+     */
+    public static dedupeByLabel(items: Item[]): Item[] {
+        const added = new Set<string>();
+        const deduped: Item[] = [];
+
+        for (let item of items) {
+            if (!added.has(item.label)) {
+                deduped.push(item);
+                added.add(item.label);
+            }
+        }
+
+        return deduped;
+    }
 }
 
 export enum CompletionKind {
@@ -129,8 +146,8 @@ export enum CompletionKind {
     Namespace = "Namespace",
 
     // Template file completions
-    DtDependsOn = "DtDependsOn",
-    DtDependsOn2 = "DtDependsOn2", //asdf
+    DtResourceIdResType = "DtResourceIdResType", // First arg of resourceId
+    DtResourceIdResName = "DtResourceIdResName", // Second arg of resourceId
 
     // Parameter file completions
     DpPropertyValue = "DpPropertyValue", // Parameter from the template file

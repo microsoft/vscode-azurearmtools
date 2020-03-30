@@ -138,7 +138,7 @@ export class ParametersPositionContext extends PositionContext {
                     this.createParameterCompletion(
                         label,
                         replacement,
-                        Completion.CompletionKind.DtDependsOn,
+                        Completion.CompletionKind.DtResourceIdResType,
                         detail,
                         documentation));
             }

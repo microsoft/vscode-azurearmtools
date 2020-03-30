@@ -110,6 +110,29 @@ export interface IDeploymentTemplate {
     functions?: IDeploymentNamespaceDefinition[];
 }
 
+export interface IPartialDeploymentTemplate {
+    "$schema"?: "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#" | "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
+    | string;
+    contentVersion?: string;
+    apiProfile?: string;
+    parameters?: {
+        [key: string]: Partial<IDeploymentParameterDefinition>;
+    };
+    variables?: {
+        copy?: {
+            name: string;
+            count: number;
+            input: string | {};
+        }[];
+        [key: string]: number | unknown[] | string | {} | undefined;
+    };
+    resources?: Partial<IDeploymentTemplateResource>[];
+    outputs?: {
+        [key: string]: Partial<IDeploymentOutput>;
+    };
+    functions?: Partial<IDeploymentNamespaceDefinition>[];
+}
+
 export const defaultArmSchema = "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#";
 
 export const minimalDeploymentTemplate: IDeploymentTemplate = {
