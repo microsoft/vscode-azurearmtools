@@ -2,11 +2,17 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
-## Version 0.8.5-alpha
+## Version 0.9.0
 
 ### Added
 
 ## Filtering for child resource type name and apiVersion values
+
+## Version 0.8.5 (2020-03-30)
+
+### Fixed
+
+- "Error loading Schemas" [#536](https://github.com/microsoft/vscode-azurearmtools/issues/536)
 
 ## Version 0.8.4 (2020-02-05)
 
