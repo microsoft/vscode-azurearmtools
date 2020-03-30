@@ -44,7 +44,6 @@
         "onLanguage:json",
         "onLanguage:jsonc",
         "onCommand:azurerm-vscode-tools.uninstallDotnet",
-        "onCommand:azurerm-vscode-tools.reloadSchemas",
         "onCommand:azurerm-vscode-tools.sortTemplate",
         "onCommand:azurerm-vscode-tools.sortFunctions",
         "onCommand:azurerm-vscode-tools.sortOutputs",
@@ -163,11 +162,6 @@
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Reload Cached Schemas",
-                "command": "azurerm-vscode-tools.reloadSchemas"
-            },
-            {
-                "category": "Azure Resource Manager Tools",
                 "title": "Sort Template...",
                 "command": "azurerm-vscode-tools.sortTemplate"
             },
@@ -252,11 +246,6 @@
                     "command": "azurerm-vscode-tools.sortTemplate",
                     "when": "editorLangId==arm-template",
                     "group": "zzz_arm-template@3"
-                },
-                {
-                    "command": "azurerm-vscode-tools.reloadSchemas",
-                    "group": "zzz_arm-template@4",
-                    "when": "editorLangId==arm-template"
                 }
             ],
             "view/item/context": [
