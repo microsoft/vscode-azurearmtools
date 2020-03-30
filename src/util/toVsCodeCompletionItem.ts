@@ -16,10 +16,10 @@ interface ICompletionActivated {
 }
 
 export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item: Completion.Item): vscode.CompletionItem {
-    const insertRange: vscode.Range = getVSCodeRangeFromSpan(deploymentFile, item.insertSpan);
+    const range: vscode.Range = getVSCodeRangeFromSpan(deploymentFile, item.span);
 
     const vscodeItem = new vscode.CompletionItem(item.label);
-    vscodeItem.range = insertRange;
+    vscodeItem.range = range;
     vscodeItem.insertText = new vscode.SnippetString(item.insertText);
     vscodeItem.detail = item.detail;
     vscodeItem.documentation = item.documention;
