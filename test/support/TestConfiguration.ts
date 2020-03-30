@@ -2,9 +2,9 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import * as assert from 'assert';
 import { ConfigurationTarget } from "vscode";
 import { IConfiguration } from "../../extension.bundle";
-import { assert } from "../../src/fixed_assert";
 
 export class TestConfiguration implements IConfiguration {
     // tslint:disable-next-line:variable-name

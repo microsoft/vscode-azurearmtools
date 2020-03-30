@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from 'assert';
-import { __debugMarkPositionInString } from '../../src/debugMarkStrings';
+import { __debugMarkPositionInString } from '../../extension.bundle';
 import { getDocumentMarkers } from "./parseTemplate";
 
 // See testCanAddPropertyHere for example usage

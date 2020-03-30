@@ -4,9 +4,9 @@
 
 // Support for testing diagnostics in vscode
 
+import * as assert from 'assert';
 import * as fs from 'fs';
 import { commands, TextDocument, TextEditor, Uri, window, workspace } from 'vscode';
-import { assert } from '../../src/fixed_assert';
 import { getTempFilePath } from './getTempFilePath';
 
 export class TempFile {

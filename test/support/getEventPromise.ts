@@ -7,8 +7,7 @@
 // tslint:disable:prefer-template
 
 import { CompletionItem, TextDocument, workspace } from 'vscode';
-import { ICompletionsSpyResult } from '../../src/CompletionsSpy';
-import { ext } from '../../src/extensionVariables';
+import { ext, ICompletionsSpyResult } from '../../extension.bundle';
 import { delay } from '../support/delay';
 
 const defaultTimeout: number = 30 * 1000;
@@ -58,7 +57,7 @@ export function getCompletionItemsPromise(document: TextDocument, timeout: numbe
     return getEventPromise(
         "onCompletionItems",
         (resolve, reject) => {
-            const disposable = ext.completionItemsSpy.getValue().onCompletionItems(e => {
+            const disposable = ext.completionItemsSpy.onCompletionItems(e => {
                 if (e.document.documentId.fsPath === document.uri.fsPath) {
                     disposable.dispose();
                     resolve(e);
@@ -72,7 +71,7 @@ export function getCompletionItemResolutionPromise(item?: CompletionItem, timeou
     return getEventPromise(
         "onCompletionItemResolved",
         (resolve, reject) => {
-            const disposable = ext.completionItemsSpy.getValue().onCompletionItemResolved(e => {
+            const disposable = ext.completionItemsSpy.onCompletionItemResolved(e => {
                 if (!item || e === item) {
                     disposable.dispose();
                     resolve(e);

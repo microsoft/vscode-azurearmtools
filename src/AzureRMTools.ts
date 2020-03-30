@@ -946,7 +946,7 @@ export class AzureRMTools {
             if (pc) {
                 const items: Completion.Item[] = pc.getCompletionItems();
                 const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c));
-                ext.completionItemsSpy.getValue().postCompletionItemsResult(pc.document, items, vsCodeItems);
+                ext.completionItemsSpy.postCompletionItemsResult(pc.document, items, vsCodeItems);
 
                 // vscode requires all spans to include the original position and be on the same line, otherwise
                 //   it ignores it.  Verify that here.
@@ -963,7 +963,7 @@ export class AzureRMTools {
     }
 
     private onResolveCompletionItem(item: vscode.CompletionItem, _token: vscode.CancellationToken): vscode.CompletionItem {
-        ext.completionItemsSpy.getValue().postCompletionItemResolution(item);
+        ext.completionItemsSpy.postCompletionItemResolution(item);
         return item;
     }
 

@@ -6,9 +6,9 @@
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name no-constant-condition
 // tslint:disable:prefer-template no-http-string
 
+import * as assert from 'assert';
 import { commands, Selection } from 'vscode';
-import { ext } from '../../src/extensionVariables';
-import { assert } from '../../src/fixed_assert';
+import { ext } from '../../extension.bundle';
 import { delay } from '../support/delay';
 import { IDeploymentParametersFile, IDeploymentTemplate } from "../support/diagnostics";
 import { getCompletionItemResolutionPromise, getCompletionItemsPromise, getDocumentChangedPromise } from '../support/getEventPromise';

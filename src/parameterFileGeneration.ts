@@ -68,7 +68,7 @@ export function createParameterFileContents(template: DeploymentTemplate, tabSiz
     const tab = makeIndent(tabSize);
 
     const params: CaseInsensitiveMap<string, string> = createParameters(template, tabSize, onlyRequiredParameters);
-    const paramsContent = params.map((key, value) => value).join(`,${os.EOL}`);
+    const paramsContent = params.map((key, value) => value).join(`,${ext.EOL}`);
 
     // tslint:disable-next-line: prefer-template
     let contents = `{` + ext.EOL +
@@ -77,7 +77,7 @@ export function createParameterFileContents(template: DeploymentTemplate, tabSiz
         `${tab}"parameters": {` + ext.EOL;
 
     if (params.size > 0) {
-        contents += indentMultilineString(paramsContent, tabSize * 2) + os.EOL;
+        contents += indentMultilineString(paramsContent, tabSize * 2) + ext.EOL;
     }
 
     // tslint:disable-next-line: prefer-template
@@ -112,8 +112,8 @@ export function createParameterFromTemplateParameter(template: DeploymentTemplat
     const valueIndentedAfterFirstLine: string = indentMultilineString(value.trimLeft(), tabSize).trimLeft();
 
     // tslint:disable-next-line:prefer-template
-    return `"${parameter.nameValue.unquotedValue}": {` + os.EOL
-        + `${makeIndent(tabSize)}"value": ${valueIndentedAfterFirstLine}` + os.EOL
+    return `"${parameter.nameValue.unquotedValue}": {` + ext.EOL
+        + `${makeIndent(tabSize)}"value": ${valueIndentedAfterFirstLine}` + ext.EOL
         + `}`;
 }
 
