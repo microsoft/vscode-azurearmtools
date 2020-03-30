@@ -25,16 +25,12 @@ export class Item {
     public static fromFunctionMetadata(metadata: IFunctionMetadata, replaceSpan: language.Span): Item {
         // We want to show the fully-qualified name in the completion's title, but we only need to insert the
         // unqualified name, since the namespace is already there (if any)
-        let insertText: string = metadata.unqualifiedName;
-        // CONSIDER: Adding parentheses is wrong if they're already there
-        // if (metadata.maximumArguments === 0) {
-        //     // Cursor should go after the parentheses if no args
-        //     insertText += "()$0";
-        // } else {
-        //     // ... or between them if there are args
-        //     insertText += "($0)";
-        // }
+        const insertText: string = metadata.unqualifiedName;
 
+        // Note: We do *not* automtically add parentheses after the function name. This actually
+        // disrupts the normal flow that customers are expecting. Also, this means users will
+        // need to type "(" themselves, which will then open up the intellisense completion
+        // for the arguments, which otherwise wouldn't happen.
         return new Item(
             metadata.fullName,
             insertText,
@@ -46,7 +42,7 @@ export class Item {
 
     public static fromNamespaceDefinition(namespace: UserFunctionNamespaceDefinition, replaceSpan: language.Span): Item {
         const name: string = namespace.nameValue.unquotedValue;
-        let insertText: string = `${name}.$0`;
+        let insertText: string = `${name}`;
 
         return new Item(
             name,
@@ -61,7 +57,7 @@ export class Item {
     public static fromPropertyName(propertyName: string, replaceSpan: language.Span): Item {
         return new Item(
             propertyName,
-            `${propertyName}$0`,
+            `${propertyName}`,
             replaceSpan,
             "(property)", // detail  // CONSIDER: Add type, default value, etc.
             "", // description
@@ -73,7 +69,7 @@ export class Item {
         const name: string = `'${parameter.nameValue.unquotedValue}'`;
         return new Item(
             name,
-            `${name}${includeRightParenthesisInCompletion ? ")" : ""}$0`,
+            `${name}${includeRightParenthesisInCompletion ? ")" : ""}`, //asdf
             replaceSpan,
             `(parameter)`, // detail // CONSIDER: Add type, default value, etc. from property definition
             parameter.description, // description (from property definition's metadata)
@@ -84,7 +80,7 @@ export class Item {
         const variableName: string = `'${variable.nameValue.unquotedValue}'`;
         return new Item(
             variableName,
-            `${variableName}${includeRightParenthesisInCompletion ? ")" : ""}$0`,
+            `${variableName}${includeRightParenthesisInCompletion ? ")" : ""}`,
             replaceSpan,
             `(variable)`, // detail
             "", // description
