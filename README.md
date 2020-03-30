@@ -23,6 +23,14 @@ The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language 
   - [subscription() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#subscription)
   - Properties of references to variables that are objects
 
+  ## Parameter files
+
+  - Associate a parameter file with a template for full validation of both
+  - Open associated parameter file from the template
+  - Create a new parameter file from parameters defined within a template
+
+![Associate a parameters file with template and create parameters file](./images/params-support.gif)
+
 ## Other features:
 
   - [Signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
@@ -34,6 +42,7 @@ The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language 
   - [TLE brace matching](https://code.visualstudio.com/docs/editor/editingevolved#_bracket-matching)
   - User-defined template functions, see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#functions)
   - Variable iteration ("copy blocks"), see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration)
+  - Sort template and template sections alphabetically
 
 ## Snippets
 
@@ -51,7 +60,6 @@ Snippets for deployment template and 70+ Azure resources.
 | `arm-userfunc` | Adds a user function to a template. |
 | `arm-userfunc-namespace` | Adds a user function namespace to a template. |
 | `arm-` | Displays 70+ snippets for creating Azure resources. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine. |
-
 
 ## Automatic Detection of deployment template files
 
