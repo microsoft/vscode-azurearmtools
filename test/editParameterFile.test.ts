@@ -7,6 +7,7 @@
 import * as assert from "assert";
 import { createParameterFileContents, createParameterProperty } from "../extension.bundle";
 import { IDeploymentParameterDefinition, IDeploymentTemplate } from "./support/diagnostics";
+import { normalizeString } from "./support/normalizeString";
 import { parseTemplate } from "./support/parseTemplate";
 
 suite("editParameterFile tests", () => {
@@ -18,6 +19,8 @@ suite("editParameterFile tests", () => {
             expectedContents: string
         ): void {
             test(`${testName} (${onlyRequiredParams ? 'all params' : 'required params'})`, async () => {
+                expectedContents = normalizeString(expectedContents);
+
                 const template: IDeploymentTemplate = {
                     $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                     contentVersion: "1.0.0.0",
@@ -37,6 +40,8 @@ suite("editParameterFile tests", () => {
             expectedContents: string
         ): void {
             test(testName, async () => {
+                expectedContents = normalizeString(expectedContents);
+
                 const parameterName = "parameter1";
                 const template: IDeploymentTemplate = {
                     $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",

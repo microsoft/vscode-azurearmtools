@@ -5,7 +5,7 @@
     "version": "0.9.0-alpha",
     "publisher": "msazurermtools",
     "config": {
-        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20157.1"
+        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20180.1"
     },
     "categories": [
         "Azure",
@@ -44,7 +44,6 @@
         "onLanguage:json",
         "onLanguage:jsonc",
         "onCommand:azurerm-vscode-tools.uninstallDotnet",
-        "onCommand:azurerm-vscode-tools.reloadSchemas",
         "onCommand:azurerm-vscode-tools.sortTemplate",
         "onCommand:azurerm-vscode-tools.sortFunctions",
         "onCommand:azurerm-vscode-tools.sortOutputs",
@@ -129,7 +128,7 @@
                 },
                 "azureResourceManagerTools.parameterFiles": {
                     "type": "object",
-                    "description": "Specifies which parameter file to associate with each given template file. Specifying the parameter file allows more thorough validation.",
+                    "description": "Specifies which parameter file to use for each given template file. Specifying the parameter file allows more thorough validation.",
                     "default": {},
                     "additionalProperties": {
                         "type": "string"
@@ -160,11 +159,6 @@
                 "category": "Azure Resource Manager Tools",
                 "title": "Remove Local Dotnet Core Installation",
                 "command": "azurerm-vscode-tools.uninstallDotnet"
-            },
-            {
-                "category": "Azure Resource Manager Tools",
-                "title": "Reload Cached Schemas",
-                "command": "azurerm-vscode-tools.reloadSchemas"
             },
             {
                 "category": "Azure Resource Manager Tools",
@@ -204,7 +198,7 @@
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Open Associated Parameter File",
+                "title": "Open Parameter File",
                 "command": "azurerm-vscode-tools.openParameterFile",
                 "enablement": "editorLangId==arm-template"
             },
@@ -252,11 +246,6 @@
                     "command": "azurerm-vscode-tools.sortTemplate",
                     "when": "editorLangId==arm-template",
                     "group": "zzz_arm-template@3"
-                },
-                {
-                    "command": "azurerm-vscode-tools.reloadSchemas",
-                    "group": "zzz_arm-template@4",
-                    "when": "editorLangId==arm-template"
                 }
             ],
             "view/item/context": [
