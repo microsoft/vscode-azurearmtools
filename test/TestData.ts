@@ -68,6 +68,7 @@ export function allTestDataExpectedCompletions(startIndex: number, length: numbe
         expectedStringCompletion(startIndex, length),
         expectedSubCompletion(startIndex, length),
         expectedSubscriptionCompletion(startIndex, length),
+        expectedSubscriptionResourceIdCompletion(startIndex, length),
         expectedSubstringCompletion(startIndex, length),
         expectedTakeCompletion(startIndex, length),
         expectedToLowerCompletion(startIndex, length),
@@ -177,6 +178,10 @@ export function expectedSubCompletion(startIndex: number, length: number): Compl
 
 export function expectedSubscriptionCompletion(startIndex: number, length: number): Completion.Item {
     return new Completion.Item("subscription", "subscription()$0", new Language.Span(startIndex, length), "(function) subscription() [object]", "Returns details about the subscription.", Completion.CompletionKind.Function);
+}
+
+export function expectedSubscriptionResourceIdCompletion(startIndex: number, length: number): Completion.Item {
+    return new Completion.Item("subscriptionResourceId", "subscriptionResourceId($0)", new Language.Span(startIndex, length), "(function) subscriptionResourceId([subscriptionId], resourceType, resourceName1, [resourceName2]...)", "Returns the unique resource identifier of a subscription scoped resource. You use this function to create a resourceId for a given resource as required by a property value.", Completion.CompletionKind.Function);
 }
 
 export function expectedSubstringCompletion(startIndex: number, length: number): Completion.Item {

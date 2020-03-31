@@ -2,10 +2,10 @@
     "name": "azurerm-vscode-tools",
     "displayName": "Azure Resource Manager (ARM) Tools",
     "description": "Language server, editing tools and snippets for Azure Resource Manager (ARM) template files.",
-    "version": "0.8.5-alpha",
+    "version": "0.9.0",
     "publisher": "msazurermtools",
     "config": {
-        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20106.3"
+        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20180.1"
     },
     "categories": [
         "Azure",
@@ -44,7 +44,15 @@
         "onLanguage:json",
         "onLanguage:jsonc",
         "onCommand:azurerm-vscode-tools.uninstallDotnet",
-        "onCommand:azurerm-vscode-tools.reloadSchemas"
+        "onCommand:azurerm-vscode-tools.sortTemplate",
+        "onCommand:azurerm-vscode-tools.sortFunctions",
+        "onCommand:azurerm-vscode-tools.sortOutputs",
+        "onCommand:azurerm-vscode-tools.sortParameters",
+        "onCommand:azurerm-vscode-tools.sortResources",
+        "onCommand:azurerm-vscode-tools.sortVariables",
+        "onCommand:azurerm-vscode-tools.selectParameterFile",
+        "onCommand:azurerm-vscode-tools.openParameterFile",
+        "onCommand:azurerm-vscode-tools.resetGlobalState"
     ],
     "contributes": {
         "grammars": [
@@ -102,7 +110,7 @@
                         "None"
                     ],
                     "default": "Warning",
-                    "description": "Sets the trace (log) level in the Output window for the Azure Template Language Server"
+                    "description": "Sets the trace (log) level in the Output window for the Azure Template Language Server (requires restart)"
                 },
                 "azureResourceManagerTools.languageServer.dotnetExePath": {
                     "type": "string",
@@ -112,6 +120,19 @@
                     "type": "boolean",
                     "description": "Check if the schema for deployment templates is using an out-of-date version and suggest updating",
                     "default": true
+                },
+                "azureResourceManagerTools.checkForMatchingParameterFiles": {
+                    "type": "boolean",
+                    "description": "Check if an opened template file has a matching params file and ask to use it",
+                    "default": true
+                },
+                "azureResourceManagerTools.parameterFiles": {
+                    "type": "object",
+                    "description": "Specifies which parameter file to use for each given template file. Specifying the parameter file allows more thorough validation.",
+                    "default": {},
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -141,14 +162,145 @@
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Reload Cached Schemas",
-                "command": "azurerm-vscode-tools.reloadSchemas"
+                "title": "Sort Template...",
+                "command": "azurerm-vscode-tools.sortTemplate"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort Functions",
+                "command": "azurerm-vscode-tools.sortFunctions"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort Outputs",
+                "command": "azurerm-vscode-tools.sortOutputs"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort Parameters",
+                "command": "azurerm-vscode-tools.sortParameters"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort Resources",
+                "command": "azurerm-vscode-tools.sortResources"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort Variables",
+                "command": "azurerm-vscode-tools.sortVariables"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Select/Create Parameter File...",
+                "command": "azurerm-vscode-tools.selectParameterFile",
+                "enablement": "editorLangId==arm-template"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Open Parameter File",
+                "command": "azurerm-vscode-tools.openParameterFile",
+                "enablement": "editorLangId==arm-template"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Reset Global State",
+                "command": "azurerm-vscode-tools.resetGlobalState"
             }
         ],
         "menus": {
+            "commandPalette": [
+                {
+                    "command": "azurerm-vscode-tools.sortFunctions",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortOutputs",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortParameters",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortResources",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortVariables",
+                    "when": "never"
+                }
+            ],
             "editor/context": [
                 {
-                    "command": "azurerm-vscode-tools.reloadSchemas",
+                    "command": "azurerm-vscode-tools.selectParameterFile",
+                    "group": "zzz_arm-template@1",
+                    "when": "editorLangId==arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.openParameterFile",
+                    "group": "zzz_arm-template@2",
+                    "when": "editorLangId==arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortTemplate",
+                    "when": "editorLangId==arm-template",
+                    "group": "zzz_arm-template@3"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "azurerm-vscode-tools.sortTemplate",
+                    "when": "azurerm-vscode-tools.template-outline.active == true",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortFunctions",
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == functions",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortOutputs",
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == outputs",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortParameters",
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == parameters",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortResources",
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == resources",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortVariables",
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == variables",
+                    "group": "arm-template"
+                }
+            ],
+            "editor/title": [
+                {
+                    "command": "azurerm-vscode-tools.selectParameterFile",
+                    "group": "zzz_arm-template@1",
+                    "when": "editorLangId==arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.openParameterFile",
+                    "group": "zzz_arm-template@2",
+                    "when": "editorLangId==arm-template"
+                }
+            ],
+            "editor/title/context": [
+                {
+                    "command": "azurerm-vscode-tools.selectParameterFile",
+                    "group": "zzz_arm-template@1",
+                    "when": "editorLangId==arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.openParameterFile",
+                    "group": "zzz_arm-template@2",
                     "when": "editorLangId==arm-template"
                 }
             ]
@@ -179,22 +331,22 @@
         "@types/fs-extra": "^5.1.0",
         "@types/gulp": "^4.0.6",
         "@types/mocha": "^2.2.41",
-        "@types/node": "^12.12.20",
+        "@types/node": "^12.12.26",
         "@types/opn": "^5.5.0",
         "@types/recursive-readdir": "^2.2.0",
         "@types/rimraf": "2.0.2",
         "@types/shelljs": "0.8.3",
-        "@types/webpack": "^4.41.0",
+        "@types/webpack": "^4.41.5",
         "gulp": "^4.0.2",
         "mocha": "^5.2.0",
-        "mocha-junit-reporter": "^1.23.1",
+        "mocha-junit-reporter": "^1.23.3",
         "mocha-multi-reporters": "^1.1.7",
         "recursive-readdir": "^2.2.2",
         "ts-node": "^7.0.1",
         "tslint": "^5.20.1",
         "tslint-microsoft-contrib": "5.0.3",
-        "typescript": "^3.7.4",
-        "vsce": "^1.71.0",
+        "typescript": "^3.7.5",
+        "vsce": "^1.73.0",
         "vscode": "^1.1.33",
         "vscode-azureextensiondev": "^0.2.4",
         "webpack": "4.28.1",
@@ -207,7 +359,7 @@
         "opn": "^5.5.0",
         "rimraf": "2.6.3",
         "shelljs": "^0.8.3",
-        "vscode-azureextensionui": "^0.29.0",
+        "vscode-azureextensionui": "^0.29.7",
         "vscode-jsonrpc": "^4.0.0",
         "vscode-languageclient": "^4.4.0"
     }

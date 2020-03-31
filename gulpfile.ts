@@ -15,7 +15,7 @@ import * as process from 'process';
 import * as recursiveReadDir from 'recursive-readdir';
 import * as shelljs from 'shelljs';
 import { gulp_installAzureAccount, gulp_webpack } from 'vscode-azureextensiondev';
-import { languageServerFolderName as languageServerRelativeFolderPath } from './src/constants';
+import { dotnetVersion, languageServerFolderName } from './src/constants';
 import { assert } from './src/fixed_assert';
 import { getTempFilePath } from './test/support/getTempFilePath';
 
@@ -172,7 +172,7 @@ async function getLanguageServer(): Promise<void> {
             'install',
             languageServerNugetPackage,
             '-Version', languageServerVersion,
-            '-Framework', 'netcoreapp2.2',
+            '-Framework', `netcoreapp${dotnetVersion}`,
             '-OutputDirectory', 'pkgs',
             //'-Verbosity', 'detailed',
             '-ExcludeVersion', // Keeps the package version from being included in the output folder name
@@ -188,22 +188,22 @@ async function getLanguageServer(): Promise<void> {
         fse.unlinkSync(configPath);
 
         // Copy binaries and license into dist\languageServer
-        console.log(`Removing ${languageServerRelativeFolderPath}`);
-        rimraf.sync(languageServerRelativeFolderPath);
-        console.log(`Copying language server binaries to ${languageServerRelativeFolderPath}`);
-        const srcPath = path.join(__dirname, 'pkgs', languageServerNugetPackage, 'lib', 'netcoreapp2.2');
-        let destPath = path.join(__dirname, languageServerRelativeFolderPath);
+        console.log(`Removing ${languageServerFolderName}`);
+        rimraf.sync(languageServerFolderName);
+        console.log(`Copying language server binaries to ${languageServerFolderName}`);
+        const srcPath = path.join(__dirname, 'pkgs', languageServerNugetPackage, 'lib', `netcoreapp${dotnetVersion}`);
+        let destPath = path.join(__dirname, languageServerFolderName);
         fse.mkdirpSync(destPath);
         copyFolder(srcPath, destPath);
 
         if (packageLanguageServer) {
             const licenseSrc = path.join(__dirname, 'pkgs', languageServerNugetPackage, languageServerLicenseFileName);
-            const licenseDest = path.join(languageServerRelativeFolderPath, languageServerLicenseFileName);
+            const licenseDest = path.join(languageServerFolderName, languageServerLicenseFileName);
             console.log(`Copying language server license ${licenseSrc} to ${licenseDest}`);
             fse.copyFileSync(licenseSrc, licenseDest);
         }
 
-        console.log(`Language server binaries and license are in ${languageServerRelativeFolderPath}`);
+        console.log(`Language server binaries and license are in ${languageServerFolderName}`);
     } else {
         console.warn(`Language server not available, skipping packaging of language server binaries.`);
     }
@@ -250,10 +250,10 @@ async function packageVsix(): Promise<void> {
     let expectedLicenseFileName: string;
     if (packageLanguageServer) {
         // Copy language server bits
-        copyToStagingFolder(languageServerRelativeFolderPath);
+        copyToStagingFolder(languageServerFolderName);
 
         // Copy license to staging main folder
-        copyToStagingFolder(path.join(languageServerRelativeFolderPath, languageServerLicenseFileName), languageServerLicenseFileName);
+        copyToStagingFolder(path.join(languageServerFolderName, languageServerLicenseFileName), languageServerLicenseFileName);
         expectedLicenseFileName = languageServerLicenseFileName;
     } else {
         copyToStagingFolder(publicLicenseFileName);
@@ -311,7 +311,7 @@ async function verifyTestReferencesOnlyExtensionBundle(testFolder: string): Prom
     }
 
     async function verifyFile(file: string): Promise<void> {
-        const regex = /import .*['"]\.\.\/src\/.*['"]/mg;
+        const regex = /import .*['"]\.\.\/(\.\.\/)?src\/.*['"]/mg;
         if (path.extname(file) === ".ts") {
             const contents: string = (await fse.readFile(file)).toString();
             const matches = contents.match(regex);

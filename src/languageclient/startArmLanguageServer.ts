@@ -10,7 +10,7 @@ import { ProgressLocation, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
 import { dotnetAcquire, ensureDotnetDependencies } from '../acquisition/dotnetAcquisition';
-import { configKeys, configPrefix, languageFriendlyName, languageId, languageServerFolderName, languageServerName } from '../constants';
+import { configKeys, configPrefix, dotnetVersion, languageFriendlyName, languageId, languageServerFolderName, languageServerName } from '../constants';
 import { ext } from '../extensionVariables';
 import { assert } from '../fixed_assert';
 import { armDeploymentDocumentSelector } from '../supported';
@@ -18,7 +18,6 @@ import { WrappedErrorHandler } from './WrappedErrorHandler';
 
 const languageServerDllName = 'Microsoft.ArmLanguageServer.dll';
 const defaultTraceLevel = 'Warning';
-const dotnetVersion = '2.2';
 
 export enum LanguageServerState {
     NotStarted,
@@ -75,6 +74,8 @@ async function getLangServerVersion(): Promise<string | undefined> {
 }
 
 export async function startLanguageClient(serverDllPath: string, dotnetExePath: string): Promise<void> {
+    // tslint:disable-next-line: no-suspicious-comment
+    // tslint:disable-next-line: max-func-body-length // TODO: Refactor function
     await callWithTelemetryAndErrorHandling('startArmLanguageClient', async (actionContext: IActionContext) => {
         actionContext.errorHandling.rethrow = true;
 
@@ -116,6 +117,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         let clientOptions: LanguageClientOptions = {
             documentSelector: armDeploymentDocumentSelector,
             diagnosticCollectionName: `${languageServerName} diagnostics`,
+            outputChannel: ext.outputChannel, // Use the same output channel as the extension does
             revealOutputChannelOn: RevealOutputChannelOn.Error,
             synchronize: {
                 configurationSection: configPrefix

@@ -12,7 +12,7 @@ import * as jsonTest from "./JSON.test";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
-import { allTestDataCompletionNames, allTestDataExpectedCompletions, expectedConcatCompletion, expectedCopyIndexCompletion, expectedPadLeftCompletion, expectedParametersCompletion, expectedProvidersCompletion, expectedReferenceCompletion, expectedReplaceCompletion, expectedResourceGroupCompletion, expectedResourceIdCompletion, expectedSkipCompletion, expectedSplitCompletion, expectedStringCompletion, expectedSubCompletion, expectedSubscriptionCompletion, expectedSubstringCompletion, expectedVariablesCompletion, parameterCompletion, propertyCompletion, variableCompletion } from "./TestData";
+import { allTestDataCompletionNames, allTestDataExpectedCompletions, expectedConcatCompletion, expectedCopyIndexCompletion, expectedPadLeftCompletion, expectedParametersCompletion, expectedProvidersCompletion, expectedReferenceCompletion, expectedReplaceCompletion, expectedResourceGroupCompletion, expectedResourceIdCompletion, expectedSkipCompletion, expectedSplitCompletion, expectedStringCompletion, expectedSubCompletion, expectedSubscriptionCompletion, expectedSubscriptionResourceIdCompletion, expectedSubstringCompletion, expectedVariablesCompletion, parameterCompletion, propertyCompletion, variableCompletion } from "./TestData";
 
 const IssueKind = Language.IssueKind;
 
@@ -529,6 +529,7 @@ suite("PositionContext", () => {
                             expectedStringCompletion(19, 4),
                             expectedSubCompletion(19, 4),
                             expectedSubscriptionCompletion(19, 4),
+                            expectedSubscriptionResourceIdCompletion(19, 4),
                             expectedSubstringCompletion(19, 4)
                         ] :
                             (i === 21) ? [

@@ -8,6 +8,27 @@ import { IDeploymentTemplate } from "./diagnostics";
 import { parseTemplateWithMarkers } from "./parseTemplate";
 import { stringify } from './stringify';
 
+export function createExpressionCompletionsTest(
+    replacementWithBang: string,
+    // Can either be an array of completion names, or an array of
+    //   [completion name, insert text] tuples
+    expectedNamesAndInsertTexts: ([string, string][]) | (string[])
+): void {
+    const template = <IDeploymentTemplate>{
+        $schema: "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+        contentVersion: "1.0.0.0",
+        resources: [],
+        outputs: {
+            o1: {
+                type: "object",
+                value: "<output1>"
+            }
+        }
+    };
+
+    createCompletionsTest(template, '<output1>', replacementWithBang, expectedNamesAndInsertTexts);
+}
+
 export function createCompletionsTest(
     template: string | Partial<IDeploymentTemplate>,
     find: string,
@@ -16,7 +37,7 @@ export function createCompletionsTest(
     //   [completion name, insert text] tuples
     expectedNamesAndInsertTexts: ([string, string][]) | (string[])
 ): void {
-    test(`Test UDF Completions: ${replacementWithBang}`, async () => {
+    test(`Test Completions: ${replacementWithBang}`, async () => {
         template = stringify(template).replace(find, replacementWithBang);
 
         const { dt, markers: { bang } } = await parseTemplateWithMarkers(template);

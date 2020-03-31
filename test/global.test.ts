@@ -6,6 +6,7 @@
 import * as mocha from 'mocha';
 import * as vscode from 'vscode';
 import { configKeys, configPrefix, ext, languageId } from "../extension.bundle";
+import { displayCacheStatus, packageCache } from './support/clearCache';
 import { delay } from "./support/delay";
 import { useTestFunctionMetadata } from "./TestData";
 
@@ -18,6 +19,9 @@ let previousSettings = {
 
 // Runs before all tests
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
+
+    await displayCacheStatus();
+    await packageCache('pre-cache');
 
     // For tests, set up dotnet install path to something unusual to simulate installing with unusual usernames
     process.env.ARM_DOTNET_INSTALL_FOLDER = ".dotnet O'Hare O'Donald";
@@ -48,6 +52,9 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
 // Runs after all tests
 suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
     console.log('Done: global.test.ts: suiteTeardown');
+
+    await displayCacheStatus();
+    await packageCache('post-cache');
 
     console.log('Restoring settings');
     vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, previousSettings.autoDetectJsonTemplates, vscode.ConfigurationTarget.Global);

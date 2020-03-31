@@ -187,7 +187,7 @@ export async function getDiagnosticsForDocument(
             // Find completion messages
             for (let d of filteredDiagnostics) {
                 if (d.message.startsWith(diagnosticsCompletePrefix)) {
-                    const version = Number(d.message.match(/version ([0-9]+)$/)![1]);
+                    const version = Number(d.message.match(/version ([0-9]+)/)![1]);
                     sourceCompletionVersions[d.source!] = version;
                 }
             }
