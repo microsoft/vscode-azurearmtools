@@ -52,7 +52,8 @@
         "onCommand:azurerm-vscode-tools.sortVariables",
         "onCommand:azurerm-vscode-tools.selectParameterFile",
         "onCommand:azurerm-vscode-tools.openParameterFile",
-        "onCommand:azurerm-vscode-tools.resetGlobalState"
+        "onCommand:azurerm-vscode-tools.resetGlobalState",
+        "onCommand:azurerm-vscode-tools.insertItem"
     ],
     "contributes": {
         "grammars": [
@@ -206,6 +207,12 @@
                 "category": "Azure Resource Manager Tools",
                 "title": "Reset Global State",
                 "command": "azurerm-vscode-tools.resetGlobalState"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Insert item",
+                "command": "azurerm-vscode-tools.insertItem",
+                "enablement": "editorLangId==arm-template"
             }
         ],
         "menus": {
@@ -246,6 +253,11 @@
                     "command": "azurerm-vscode-tools.sortTemplate",
                     "when": "editorLangId==arm-template",
                     "group": "zzz_arm-template@3"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertItem",
+                    "when": "editorLangId==arm-template",
+                    "group": "zzz_arm-template@4"
                 }
             ],
             "view/item/context": [
@@ -277,6 +289,11 @@
                 {
                     "command": "azurerm-vscode-tools.sortVariables",
                     "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == variables",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertItem",
+                    "when": "azurerm-vscode-tools.template-outline.active == true",
                     "group": "arm-template"
                 }
             ],

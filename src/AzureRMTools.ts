@@ -19,6 +19,7 @@ import { Histogram } from "./Histogram";
 import * as Hover from './Hover';
 import { DefinitionKind } from "./INamedDefinition";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
+import { getInsertItemQuickPickItems, insertItem } from "./insertItem";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { reloadSchemas } from "./languageclient/reloadSchemas";
@@ -127,6 +128,18 @@ export class AzureRMTools {
         registerCommand("azurerm-vscode-tools.sortTopLevel", async () => {
             await this.sortTemplate(SortType.TopLevel);
         });
+        registerCommand("azurerm-vscode-tools.insertItem", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
+            editor = editor || vscode.window.activeTextEditor;
+            uri = uri || vscode.window.activeTextEditor?.document.uri;
+            // If "Sort template..." was called from the context menu for ARM template outline
+            if (typeof uri === "string") {
+                uri = vscode.window.activeTextEditor?.document.uri;
+            }
+            if (uri && editor) {
+                const sortType = await ext.ui.showQuickPick(getInsertItemQuickPickItems(), { placeHolder: 'What do you want to insert?' });
+                await this.insertItem(sortType.value, uri, editor);
+            }
+        });
         registerCommand("azurerm-vscode-tools.selectParameterFile", selectParameterFile);
         registerCommand("azurerm-vscode-tools.openParameterFile", openParameterFile);
         registerCommand("azurerm-vscode-tools.resetGlobalState", resetGlobalState);
@@ -155,6 +168,15 @@ export class AzureRMTools {
         if (editor && documentUri && editor.document.uri.fsPath === documentUri.fsPath) {
             let deploymentTemplate = this.getDeploymentTemplate(editor.document);
             await sortTemplate(deploymentTemplate, sortType, editor);
+        }
+    }
+
+    private async insertItem(sortType: SortType, documentUri?: vscode.Uri, editor?: vscode.TextEditor): Promise<void> {
+        editor = editor || vscode.window.activeTextEditor;
+        documentUri = documentUri || editor?.document.uri;
+        if (editor && documentUri && editor.document.uri.fsPath === documentUri.fsPath) {
+            let deploymentTemplate = this.getDeploymentTemplate(editor.document);
+            await insertItem(deploymentTemplate, sortType, editor);
         }
     }
 
