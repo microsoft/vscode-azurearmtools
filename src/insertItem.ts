@@ -21,7 +21,7 @@ export class QuickPickItem<T> implements vscode.QuickPickItem {
     }
 }
 
-export function getParameterTypeType(): QuickPickItem<string>[] {
+export function getParameterType(): QuickPickItem<string>[] {
     let items: QuickPickItem<string>[] = [];
     items.push(new QuickPickItem<string>("String", "string", "A string"));
     items.push(new QuickPickItem<string>("Secure string", "securestring", "A secure string"));
@@ -59,15 +59,19 @@ export async function insertItem(template: DeploymentTemplate | undefined, sortT
                 return;
             }
             let parameters = Json.asObjectValue(rootValue.getPropertyValue(templateKeys.parameters));
-            let name = await ext.ui.showInputBox({ prompt: "Name of parameter" });
-            const parameterType = await ext.ui.showQuickPick(getParameterTypeType(), { placeHolder: 'Type of parameter?' });
-            //TODO: Should we ask about description and default value?
+            let name = await ext.ui.showInputBox({ prompt: "Name of parameter?" });
+            const parameterType = await ext.ui.showQuickPick(getParameterType(), { placeHolder: 'Type of parameter?' });
+            let defaultValue = await ext.ui.showInputBox({ prompt: "Default value? Leave empty for no default value", });
+            let defaultValueText = defaultValue === '' ? '' : `,\r\n\t\t\t"defaultValue": "${defaultValue}"`;
+            let descriptionValue = await ext.ui.showInputBox({ prompt: "Description? Leave empty for no description", });
+            let descriptionValueText = descriptionValue === '' ? '' : `,\r\n\t\t\t"metadata": {\r\n\t\t\t\t"description": "${descriptionValue}"\r\n\t\t\t}`;
             let index = parameters?.span.endIndex;
+
             if (index !== undefined) {
                 await textEditor.edit(builder => {
                     let i: number = index!;
                     let pos = textEditor.document.positionAt(i);
-                    builder.insert(pos, `\t,"${name}": \{\r\n\t\t\t"type": "${parameterType.value}"\r\n\t\t\}\r\n\t`);
+                    builder.insert(pos, `\t,"${name}": \{\r\n\t\t\t"type": "${parameterType.value}"${defaultValueText}${descriptionValueText}\r\n\t\t\}\r\n\t`);
                 });
             }
             break;
