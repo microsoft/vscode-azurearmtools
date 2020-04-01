@@ -67,7 +67,7 @@ export async function insertItem(template: DeploymentTemplate | undefined, sortT
                 await textEditor.edit(builder => {
                     let i: number = index!;
                     let pos = textEditor.document.positionAt(i);
-                    builder.insert(pos, "\t,\"" + name + "\": {\r\n\t\t\t\"type\": \"" + parameterType.value + "\"\r\n\t\t}\r\n\t");
+                    builder.insert(pos, `\t,"${name}": \{\r\n\t\t\t"type": "${parameterType.value}"\r\n\t\t\}\r\n\t`);
                 });
             }
             break;
