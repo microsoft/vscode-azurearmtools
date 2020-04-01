@@ -61,6 +61,7 @@ export async function insertItem(template: DeploymentTemplate | undefined, sortT
             let parameters = Json.asObjectValue(rootValue.getPropertyValue(templateKeys.parameters));
             let name = await ext.ui.showInputBox({ prompt: "Name of parameter" });
             const parameterType = await ext.ui.showQuickPick(getParameterTypeType(), { placeHolder: 'Type of parameter?' });
+            //TODO: Should we ask about description and default value?
             let index = parameters?.span.endIndex;
             if (index !== undefined) {
                 await textEditor.edit(builder => {
