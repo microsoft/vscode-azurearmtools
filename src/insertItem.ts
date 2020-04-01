@@ -59,6 +59,7 @@ export async function insertItem(template: DeploymentTemplate | undefined, sortT
                 return;
             }
             let parameters = Json.asObjectValue(rootValue.getPropertyValue(templateKeys.parameters));
+            let startText = parameters?.properties.length === 0 ? '\r\n\t\t' : '\t,';
             let name = await ext.ui.showInputBox({ prompt: "Name of parameter?" });
             const parameterType = await ext.ui.showQuickPick(getParameterType(), { placeHolder: 'Type of parameter?' });
             let defaultValue = await ext.ui.showInputBox({ prompt: "Default value? Leave empty for no default value", });
@@ -71,7 +72,7 @@ export async function insertItem(template: DeploymentTemplate | undefined, sortT
                 await textEditor.edit(builder => {
                     let i: number = index!;
                     let pos = textEditor.document.positionAt(i);
-                    builder.insert(pos, `\t,"${name}": \{\r\n\t\t\t"type": "${parameterType.value}"${defaultValueText}${descriptionValueText}\r\n\t\t\}\r\n\t`);
+                    builder.insert(pos, `${startText}"${name}": \{\r\n\t\t\t"type": "${parameterType.value}"${defaultValueText}${descriptionValueText}\r\n\t\t\}\r\n\t`);
                 });
             }
             break;
