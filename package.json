@@ -54,7 +54,8 @@
         "onCommand:azurerm-vscode-tools.openParameterFile",
         "onCommand:azurerm-vscode-tools.resetGlobalState",
         "onCommand:azurerm-vscode-tools.insertItem",
-        "onCommand:azurerm-vscode-tools.insertParameter"
+        "onCommand:azurerm-vscode-tools.insertParameter",
+        "onCommand:azurerm-vscode-tools.insertVariable"
     ],
     "contributes": {
         "grammars": [
@@ -216,6 +217,11 @@
             },
             {
                 "category": "Azure Resource Manager Tools",
+                "title": "Insert variable",
+                "command": "azurerm-vscode-tools.insertVariable"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
                 "title": "Insert parameter",
                 "command": "azurerm-vscode-tools.insertParameter"
             }
@@ -240,6 +246,14 @@
                 },
                 {
                     "command": "azurerm-vscode-tools.sortVariables",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertParameter",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertVariable",
                     "when": "never"
                 }
             ],
@@ -304,6 +318,11 @@
                 {
                     "command": "azurerm-vscode-tools.insertParameter",
                     "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == parameters",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertVariable",
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == variables",
                     "group": "arm-template"
                 }
             ],
