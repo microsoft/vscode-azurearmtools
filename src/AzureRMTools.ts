@@ -19,7 +19,7 @@ import { Histogram } from "./Histogram";
 import * as Hover from './Hover';
 import { DefinitionKind } from "./INamedDefinition";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
-import { getInsertItemQuickPickItems, insertItem } from "./insertItem";
+import { getInsertItemType, insertItem } from "./insertItem";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { reloadSchemas } from "./languageclient/reloadSchemas";
@@ -136,9 +136,12 @@ export class AzureRMTools {
                 uri = vscode.window.activeTextEditor?.document.uri;
             }
             if (uri && editor) {
-                const sortType = await ext.ui.showQuickPick(getInsertItemQuickPickItems(), { placeHolder: 'What do you want to insert?' });
+                const sortType = await ext.ui.showQuickPick(getInsertItemType(), { placeHolder: 'What do you want to insert?' });
                 await this.insertItem(sortType.value, uri, editor);
             }
+        });
+        registerCommand("azurerm-vscode-tools.insertParameter", async () => {
+            await this.insertItem(SortType.Parameters);
         });
         registerCommand("azurerm-vscode-tools.selectParameterFile", selectParameterFile);
         registerCommand("azurerm-vscode-tools.openParameterFile", openParameterFile);

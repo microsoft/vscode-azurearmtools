@@ -53,7 +53,8 @@
         "onCommand:azurerm-vscode-tools.selectParameterFile",
         "onCommand:azurerm-vscode-tools.openParameterFile",
         "onCommand:azurerm-vscode-tools.resetGlobalState",
-        "onCommand:azurerm-vscode-tools.insertItem"
+        "onCommand:azurerm-vscode-tools.insertItem",
+        "onCommand:azurerm-vscode-tools.insertParameter"
     ],
     "contributes": {
         "grammars": [
@@ -211,8 +212,12 @@
             {
                 "category": "Azure Resource Manager Tools",
                 "title": "Insert item",
-                "command": "azurerm-vscode-tools.insertItem",
-                "enablement": "editorLangId==arm-template"
+                "command": "azurerm-vscode-tools.insertItem"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Insert parameter",
+                "command": "azurerm-vscode-tools.insertParameter"
             }
         ],
         "menus": {
@@ -294,6 +299,11 @@
                 {
                     "command": "azurerm-vscode-tools.insertItem",
                     "when": "azurerm-vscode-tools.template-outline.active == true",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertParameter",
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == parameters",
                     "group": "arm-template"
                 }
             ],
