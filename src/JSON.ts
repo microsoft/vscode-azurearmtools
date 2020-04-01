@@ -1188,60 +1188,6 @@ export class ParseResult {
         return token;
     }
 
-    //asdf refactor?
-    public getAllValuesAtCharacterIndex(characterIndex: number, containsBehavior: language.Contains): Value[] {
-        assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);
-
-        let result: Value[] = [];
-
-        // Find the Values at the given character index by starting at the outside and finding each next
-        //   child that contains the point.
-        if (this.value && this.value.span.contains(characterIndex, containsBehavior)) {
-            result.push(this.value);
-            let current: Value = this.value;
-
-            // tslint:disable-next-line:no-constant-condition
-            while (true) {
-                const currentValue: Value = current;
-
-                // tslint:disable-next-line:no-suspicious-comment
-                // TODO: This should not depend on knowledge of the various value types' implementations
-                if (currentValue instanceof Property) {
-                    if (currentValue.nameValue.span.contains(characterIndex, containsBehavior)) {
-                        current = currentValue.nameValue;
-                    } else if (currentValue.value && currentValue.value.span.contains(characterIndex, containsBehavior)) {
-                        current = currentValue.value;
-                    }
-                } else if (currentValue instanceof ObjectValue) {
-                    assert(currentValue.properties);
-                    for (const property of currentValue.properties) {
-                        assert(property);
-                        if (property.span.contains(characterIndex, containsBehavior)) {
-                            current = property;
-                        }
-                    }
-                } else if (currentValue instanceof ArrayValue) {
-                    assert(currentValue.elements);
-                    for (const element of currentValue.elements) {
-                        assert(element);
-                        if (element.span.contains(characterIndex, containsBehavior)) {
-                            current = element;
-                        }
-                    }
-                }
-
-                if (current === currentValue) {
-                    break;
-                }
-
-                result.push(current);
-            }
-        }
-
-        return result;
-    }
-
-    // asdf use getAllValuesAtCharacterIndex?  or callback?
     public getValueAtCharacterIndex(characterIndex: number, containsBehavior: language.Contains): Value | undefined {
         assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);
 

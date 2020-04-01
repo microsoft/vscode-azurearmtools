@@ -23,6 +23,8 @@ export class Item {
     public get additionalEdits(): { span: language.Span; insertText: string }[] | undefined { return this.options.additionalEdits; }
     public get sortText(): string | undefined { return this.options.sortText; }
     public get commitCharacters(): string[] | undefined { return this.options.commitCharacters; }
+    public get highPriority(): boolean { return this.options.highPriority ?? false; }
+    public get preselect(): boolean { return this.options.preselect ?? false; }
 
     constructor(
         private readonly options: {
@@ -49,6 +51,11 @@ export class Item {
              */
             sortText?: string;
             commitCharacters?: string[];
+            /**
+             * Priority for sorting used in addition to sortText.
+             */
+            highPriority?: boolean;
+            preselect?: boolean;
         }) {
     }
 
@@ -123,13 +130,14 @@ export class Item {
      * Dupes the completions list by label, without affecting order
      */
     public static dedupeByLabel(items: Item[]): Item[] {
-        const added = new Set<string>();
+        const addedLC = new Set<string>();
         const deduped: Item[] = [];
 
         for (let item of items) {
-            if (!added.has(item.label)) {
+            const itemLabelLC = item.label.toLowerCase();
+            if (!addedLC.has(itemLabelLC)) {
                 deduped.push(item);
-                added.add(item.label);
+                addedLC.add(itemLabelLC);
             }
         }
 

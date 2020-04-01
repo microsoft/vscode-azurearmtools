@@ -59,10 +59,11 @@ export function createExpressionCompletionsTestEx(
     //   [completion name, insert text] tuples
     expectedCompletions: ([string, string][]) | (string[])
 ): void {
-    test(`Test Expression Completions: ${expressionWithBang}`, async () => {
+    test(`Expression completion: ${expressionWithBang}`, async () => {
+        expressionWithBang = expressionWithBang.replace(/!/g, "<!bang!>");
         template = stringify(template).replace(contextFind, expressionWithBang);
 
-        const { dt, markers: { bang } } = await parseTemplateWithMarkers(template);
+        const { dt, markers: { bang } } = await parseTemplateWithMarkers(template, undefined, { ignoreBang: true });
         assert(bang, "Didn't find ! marker in text");
         const pc = dt.getContextFromDocumentCharacterIndex(bang.index, undefined);
         const completions = pc.getCompletionItems();

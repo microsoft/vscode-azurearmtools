@@ -120,7 +120,7 @@ export class StringValue extends Value {
         return new language.Span(this.getSpan().startIndex + 1, this.length - (this.hasCloseQuote() ? 2 : 1));
     }
 
-    public get unquotedValue(): string { //asdf
+    public get unquotedValue(): string {
         return this.quotedValue.slice(1, this.length - (this.hasCloseQuote() ? 1 : 0));
     }
 

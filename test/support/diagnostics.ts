@@ -48,6 +48,8 @@ export interface IDeploymentParameterDefinition {
     };
     maxLength?: number;
     minLength?: number;
+    maxValue?: number;
+    minValue?: number;
     defaultValue?: number | unknown[] | string | {};
     allowedValues?: (number | unknown[] | string | {})[];
 }

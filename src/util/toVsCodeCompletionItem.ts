@@ -23,8 +23,11 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
     vscodeItem.insertText = new vscode.SnippetString(item.insertText);
     vscodeItem.detail = item.detail;
     vscodeItem.documentation = item.documention;
-    vscodeItem.sortText = item.sortText;
     vscodeItem.commitCharacters = item.commitCharacters;
+    vscodeItem.preselect = item.preselect;
+
+    // Add priority string to start of sortText;
+    vscodeItem.sortText = `${item.highPriority ? '0' : '1'}-${item.sortText ?? item.label}`;
 
     switch (item.kind) {
         case Completion.CompletionKind.Function:

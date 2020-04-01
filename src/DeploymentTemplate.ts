@@ -535,4 +535,14 @@ export class DeploymentTemplate extends DeploymentDocument {
         assert(!associatedDocument || associatedDocument instanceof DeploymentParameters, "Associated document is of the wrong type");
         return [];
     }
+
+    public getTextAtTleValue(tleValue: TLE.Value, parentStringToken: Json.Token): string | undefined {
+        assert.equal(parentStringToken.type, Json.TokenType.QuotedString);
+        const spanOfValueInsideString = tleValue.getSpan();
+        const valueStartInDoc = parentStringToken.span.startIndex + spanOfValueInsideString.startIndex;
+        const text = this.documentText.slice(
+            valueStartInDoc,
+            valueStartInDoc + spanOfValueInsideString.length);
+        return text;
+    }
 }

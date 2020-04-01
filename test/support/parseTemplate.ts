@@ -33,7 +33,10 @@ interface Markers {
 export async function parseTemplateWithMarkers(
     template: string | {},
     expectedDiagnosticMessages?: string[],
-    options?: { ignoreWarnings: boolean }
+    options?: {
+        ignoreWarnings?: boolean;
+        ignoreBang?: boolean;
+    }
 ): Promise<{ dt: DeploymentTemplate; markers: Markers }> {
     const { unmarkedText, markers } = getDocumentMarkers(template);
     const dt: DeploymentTemplate = new DeploymentTemplate(unmarkedText, Uri.file("https://parseTemplate template"));
@@ -84,7 +87,7 @@ export function removeEOLMarker(s: string): string {
  * Pass in a template with positions marked using the notation <!tagname!>
  * Returns the document without the tags, plus a dictionary of the tags and their positions
  */
-export function getDocumentMarkers(doc: object | string): { unmarkedText: string; markers: Markers } {
+export function getDocumentMarkers(doc: object | string, options?: { ignoreBang?: boolean }): { unmarkedText: string; markers: Markers } {
     let markers: Markers = {};
     doc = typeof doc === "string" ? doc : stringify(doc);
     let modified = doc;
@@ -109,10 +112,12 @@ export function getDocumentMarkers(doc: object | string): { unmarkedText: string
     }
 
     // Also look for shortcut marker "!" with id "bang" used in some tests
-    let bangIndex = modified.indexOf('!');
-    if (bangIndex >= 0) {
-        markers.bang = { name: 'bang', index: bangIndex };
-        modified = modified.slice(0, bangIndex) + modified.slice(bangIndex + 1);
+    if (!options?.ignoreBang) {
+        let bangIndex = modified.indexOf('!');
+        if (bangIndex >= 0) {
+            markers.bang = { name: 'bang', index: bangIndex };
+            modified = modified.slice(0, bangIndex) + modified.slice(bangIndex + 1);
+        }
     }
 
     const malformed =
