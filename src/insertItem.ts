@@ -98,6 +98,10 @@ async function insertVariable(template: DeploymentTemplate, textEditor: vscode.T
     let text = `${startText}"${name}": ""\r\n\t`;
     let index = variables?.span.endIndex;
     await insertText(textEditor, index, text);
+    let cursorPos = text.indexOf('""');
+    let pos = textEditor.document.positionAt(index! + cursorPos + 1);
+    let newSelection = new vscode.Selection(pos, pos);
+    textEditor.selection = newSelection;
 }
 
 async function insertText(textEditor: vscode.TextEditor, index: number | undefined, text: string): Promise<void> {
