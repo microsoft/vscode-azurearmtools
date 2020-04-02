@@ -19,7 +19,10 @@ export function createExpressionCompletionsTest(
     expectedCompletions: ([string, string][]) | (string[]),
     // If specified, the template with the string '<context>' in the location
     // where the expression to be tested should be placed
-    template?: string | Partial<IDeploymentTemplate> | IPartialDeploymentTemplate
+    template?: string | Partial<IDeploymentTemplate> | IPartialDeploymentTemplate,
+    options?: {
+        name?: string;
+    }
 ): void {
     const defaultTemplate = <IDeploymentTemplate>{
         $schema: "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
@@ -34,7 +37,7 @@ export function createExpressionCompletionsTest(
     };
     template = template ?? defaultTemplate;
 
-    createExpressionCompletionsTestEx(template, '<context>', expressionWithBang, expectedCompletions);
+    createExpressionCompletionsTestEx(template, '<context>', expressionWithBang, expectedCompletions, options);
 }
 
 /**
@@ -57,9 +60,14 @@ export function createExpressionCompletionsTestEx(
     expressionWithBang: string,
     // Can either be an array of completion names, or an array of
     //   [completion name, insert text] tuples
-    expectedCompletions: ([string, string][]) | (string[])
+    expectedCompletions: ([string, string][]) | (string[]),
+    options?: {
+        name?: string;
+    }
 ): void {
-    test(`Expression completion: ${expressionWithBang}`, async () => {
+    const name = options?.name;
+    // tslint:disable-next-line:prefer-template
+    test(`Expression completion: ${name ? name + ': ' : ''}${expressionWithBang}`, async () => {
         expressionWithBang = expressionWithBang.replace(/!/g, "<!bang!>");
         template = stringify(template).replace(contextFind, expressionWithBang);
 

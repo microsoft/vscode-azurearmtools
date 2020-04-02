@@ -7,6 +7,7 @@ import { AzureRMAssets } from "./AzureRMAssets";
 import * as Completion from "./Completion";
 import { templateKeys } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
+import { assert } from "./fixed_assert";
 import { Behaviors } from "./IFunctionMetadata";
 import * as Json from "./JSON";
 import { TemplatePositionContext } from "./TemplatePositionContext";
@@ -25,7 +26,7 @@ export function getResourceIdFunctionCompletions(
     parentStringToken: Json.Token
 ): Completion.Item[] {
     if (!funcCall.isUserDefinedFunction && funcCall.name) {
-        const functionMetadata = AzureRMAssets.getFunctionMetadataFromName(funcCall.name);
+        const functionMetadata = AzureRMAssets.getFunctionMetadataFromName(funcCall.name); //asdf refactor
         if (functionMetadata?.hasBehavior(Behaviors.usesResourceIdCompletions)) {
             // If the completion is for 'resourceId' or related function, then in addition
             // to the regular completions, also add special completions for resourceId
@@ -33,10 +34,11 @@ export function getResourceIdFunctionCompletions(
             // What argument to the function call is the cursor in?
             const argumentIndex = pc.getFunctionCallArgumentIndex(funcCall);
             if (typeof argumentIndex === 'number') {
-                if (argumentIndex === 0) {
+                const segmentIndex = argumentIndex;
+                if (segmentIndex === 0) {
                     return getResourceTypeCompletions(pc, pc.documentCharacterIndex);
-                } else if (argumentIndex === 1) {
-                    return getResourceNameCompletions(pc, funcCall, parentStringToken);
+                } else {
+                    return getResourceNameCompletions(pc, funcCall, parentStringToken, 0, segmentIndex);
                 }
             }
         }
@@ -72,48 +74,85 @@ function getResourceTypeCompletions(
     return Completion.Item.dedupeByLabel(results);
 }
 
+function getArgumentExpressionText(
+    pc: TemplatePositionContext,
+    funcCall: TLE.FunctionCallValue,
+    parentStringToken: Json.Token,
+    argumentIndex: number
+): string | undefined {
+    const argExpressionValue: TLE.Value | undefined = funcCall.argumentExpressions[argumentIndex];
+    if (argExpressionValue) {
+        return pc.document.getTextAtTleValue(argExpressionValue, parentStringToken)?.toLowerCase();
+    }
+
+    return undefined;
+}
+
 function getResourceNameCompletions(
     pc: TemplatePositionContext,
     funcCall: TLE.FunctionCallValue,
-    parentStringToken: Json.Token
+    parentStringToken: Json.Token,
+    indexOfResourceTypeArgument: number,
+    // segment 0 = type
+    // segment 1 = first part of name
+    // segment 2 = second part of name, etc.
+    segmentIndex: number
 ): Completion.Item[] {
-    // Get the resource type specified in the first argument of resourceId
-    let firstArgAsStringLC: string | undefined;
-    const firstArgExpr: TLE.Value | undefined = funcCall.argumentExpressions[0];
-    if (firstArgExpr) {
-        firstArgAsStringLC = pc.document.getTextAtTleValue(firstArgExpr, parentStringToken)?.toLowerCase();
-    }
+    assert(indexOfResourceTypeArgument === 0, "NYI asdf");
 
-    if (!firstArgAsStringLC) {
+    // Get the resource type specified in the first argument of resourceId
+    let resourceTypeArgAsStringLC: string | undefined = getArgumentExpressionText(pc, funcCall, parentStringToken, 0)
+        ?.toLowerCase();
+    if (!resourceTypeArgAsStringLC) {
         return [];
     }
 
     const results: Completion.Item[] = [];
-    for (let { nameExpressions, typeExpressions } of getResourcesInfo(pc.document)) {
-        const typeExpression = typeExpressions[0]; //asdf
-        const nameExpression = nameExpressions[0]; //asdf
+    for (let info of getResourcesInfo(pc.document)) {
+        const resFullType = getFullTypeName(info);
+        //const resFullName = getFullResourceName(info);
 
-        if (typeExpression.toLowerCase() !== firstArgAsStringLC) {
+        if (resFullType.toLowerCase() !== resourceTypeArgAsStringLC) {
             // Resource type for this resource doesn't match the first argument
             continue;
         }
 
-        const insertText = nameExpression;
-        const label = insertText;
-        const span = new Language.Span(pc.documentCharacterIndex, 0);
+        // Previous parts of the name must also match what is currently specified in the template text
+        let previousNameSegmentsMatch = true;
+        for (let iSegment = 1; iSegment <= segmentIndex - 1; ++iSegment) {
+            const namePartIndex = iSegment - 1;
+            const segmentName = info.nameExpressions[namePartIndex];
 
-        results.push(new Completion.Item({
-            label,
-            insertText,
-            span,
-            kind: Completion.CompletionKind.DtResourceIdResName,
-            highPriority: true,
-            // Force the first of the resourceId completions to be preselected, otherwise
-            // vscode tends to preselect one of the regular function completions based
-            // on recently-typed text
-            preselect: true,
-            commitCharacters: [')', ',']
-        }));
+            const checkingArgIndex = indexOfResourceTypeArgument + iSegment;
+            let namePartArgumentText: string | undefined = getArgumentExpressionText(pc, funcCall, parentStringToken, checkingArgIndex);
+            if (segmentName.toLowerCase() !== namePartArgumentText?.toString()) {
+                previousNameSegmentsMatch = false;
+                break; //asdf test with 3 segments
+            }
+        }
+        if (!previousNameSegmentsMatch) { //asdf refactor
+            continue;
+        }
+
+        const resSegmentName = info.nameExpressions[segmentIndex - 1]; //asdf
+        if (resSegmentName) {
+            const insertText = resSegmentName;
+            const label = insertText;
+            const span = new Language.Span(pc.documentCharacterIndex, 0);
+
+            results.push(new Completion.Item({
+                label,
+                insertText,
+                span,
+                kind: Completion.CompletionKind.DtResourceIdResName,
+                highPriority: true,
+                // Force the first of the resourceId completions to be preselected, otherwise
+                // vscode tends to preselect one of the regular function completions based
+                // on recently-typed text
+                preselect: true,
+                commitCharacters: [')', ',']
+            }));
+        }
     }
 
     return Completion.Item.dedupeByLabel(results);
@@ -189,5 +228,13 @@ function getFullTypeName(info: IResourceInfo): string { //asdf need the array?
         return `'${info.typeExpressions.map(unquote).join('/')}'`; //asdf
     } else {
         return info.typeExpressions[0];
+    }
+}
+
+function getFullResourceName(info: IResourceInfo): string { //asdf need the array?
+    if (info.nameExpressions.length > 1) {
+        return `'${info.nameExpressions.map(unquote).join('/')}'`; //asdf
+    } else {
+        return info.nameExpressions[0];
     }
 }
