@@ -3,40 +3,53 @@
 // ----------------------------------------------------------------------------
 
 import { Language } from "../extension.bundle";
+import { AzureRMAssets } from "./AzureRMAssets";
 import * as Completion from "./Completion";
 import { templateKeys } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
+import { Behaviors } from "./IFunctionMetadata";
 import * as Json from "./JSON";
+import { TemplatePositionContext } from "./TemplatePositionContext";
 import * as TLE from "./TLE";
 
-// Handle completions for resourceId and similar functions
+// Handle completions for resourceId and similar functions with the usesResourceIdCompletions behavior
 
 export function getResourceIdFunctionCompletions(
-    template: DeploymentTemplate,
+    pc: TemplatePositionContext,
     funcCall: TLE.FunctionCallValue,
-    parentStringToken: Json.Token,
-    tleCharacterIndex: number,
-    argumentIndex: number
+    parentStringToken: Json.Token
 ): Completion.Item[] {
-    if (argumentIndex === 0) {
-        return getResourceTypeCompletions(template, tleCharacterIndex);
-    } else if (argumentIndex === 1) {
-        return getResourceNameCompletions(template, funcCall, parentStringToken, tleCharacterIndex);
+    if (!funcCall.isUserDefinedFunction && funcCall.name) {
+        const functionMetadata = AzureRMAssets.getFunctionMetadataFromName(funcCall.name);
+        if (functionMetadata?.hasBehavior(Behaviors.usesResourceIdCompletions)) {
+            // If the completion is for 'resourceId' or related function, then in addition
+            // to the regular completions, also add special completions for resourceId
+
+            // What argument to the function call is the cursor in?
+            const argumentIndex = pc.getFunctionCallArgumentIndex(funcCall);
+            if (typeof argumentIndex === 'number') {
+                if (argumentIndex === 0) {
+                    return getResourceTypeCompletions(pc, pc.documentCharacterIndex);
+                } else if (argumentIndex === 1) {
+                    return getResourceNameCompletions(pc, funcCall, parentStringToken);
+                }
+            }
+        }
     }
 
     return [];
 }
 
 function getResourceTypeCompletions(
-    template: DeploymentTemplate,
-    tleCharacterIndex: number
+    pc: TemplatePositionContext,
+    documentCharacterIndex: number
 ): Completion.Item[] {
     const results: Completion.Item[] = [];
-    for (let { typeExpression } of getResourcesInfo(template)) {
+    for (let { typeExpression } of getResourcesInfo(pc.document)) {
         if (typeExpression) {
             const insertText = typeExpression;
             const label = insertText;
-            const span = new Language.Span(tleCharacterIndex, 0);
+            const span = new Language.Span(documentCharacterIndex, 0);
 
             results.push(new Completion.Item({
                 label,
@@ -56,17 +69,16 @@ function getResourceTypeCompletions(
     return Completion.Item.dedupeByLabel(results);
 }
 
-export function getResourceNameCompletions(
-    template: DeploymentTemplate,
+function getResourceNameCompletions(
+    pc: TemplatePositionContext,
     funcCall: TLE.FunctionCallValue,
-    parentStringToken: Json.Token,
-    tleCharacterIndex: number
+    parentStringToken: Json.Token
 ): Completion.Item[] {
     // Get the resource type specified in the first argument of resourceId
     let firstArgAsStringLC: string | undefined;
     const firstArgExpr: TLE.Value | undefined = funcCall.argumentExpressions[0];
     if (firstArgExpr) {
-        firstArgAsStringLC = template.getTextAtTleValue(firstArgExpr, parentStringToken)?.toLowerCase();
+        firstArgAsStringLC = pc.document.getTextAtTleValue(firstArgExpr, parentStringToken)?.toLowerCase();
     }
 
     if (!firstArgAsStringLC) {
@@ -74,7 +86,7 @@ export function getResourceNameCompletions(
     }
 
     const results: Completion.Item[] = [];
-    for (let { nameExpression, typeExpression } of getResourcesInfo(template)) {
+    for (let { nameExpression, typeExpression } of getResourcesInfo(pc.document)) {
         if (nameExpression) {
             if (typeExpression && typeExpression.toLowerCase() !== firstArgAsStringLC) {
                 // Resource type for this resource doesn't match the first argument
@@ -83,7 +95,7 @@ export function getResourceNameCompletions(
 
             const insertText = nameExpression;
             const label = insertText;
-            const span = new Language.Span(tleCharacterIndex, 0);
+            const span = new Language.Span(pc.documentCharacterIndex, 0);
 
             results.push(new Completion.Item({
                 label,

@@ -12,7 +12,6 @@ import { IDeploymentTemplate, IPartialDeploymentTemplate } from './support/diagn
 import { allTestDataExpectedCompletions } from './TestData';
 
 suite("ResourceId completions", () => {
-
     function createResourceIdCompletionsTest(
         template: IPartialDeploymentTemplate,
         expressionWithBang: string,
@@ -74,6 +73,14 @@ suite("ResourceId completions", () => {
             createResourceIdCompletionsTest(template, `resourceId('type1',!)`, [`'name1'`]);
             createResourceIdCompletionsTest(template, `resourceId('type1', !)`, [`'name1'`]);
             createResourceIdCompletionsTest(template, `resourceId('type1', ! )`, [`'name1'`]);
+        });
+
+        suite("Third arg completions - nothing", () => {
+            createResourceIdCompletionsTest(template, `resourceId('type','name1',!)`, []);
+        });
+
+        suite("resourceId case insensitive", () => {
+            createResourceIdCompletionsTest(template, `RESOURCEid(!)`, [`'type1'`]);
         });
     });
 
@@ -302,6 +309,45 @@ suite("ResourceId completions", () => {
             ]
         };
         createResourceIdCompletionsTest(template, `resourceId('type',!)`, [`variables('name')`]);
+    });
+
+    // Note: tenantResourceId and extensionResourceId aren't in the test function metadata, so we won't specifically test them here
+    suite("subscriptionResourceId", () => {
+        const template: Partial<IPartialDeploymentTemplate> = {
+            resources: [
+                {
+                    name: "name2",
+                    type: "type2"
+                },
+                {
+                    name: "name1",
+                    type: "type1"
+                }
+            ]
+        };
+
+        createResourceIdCompletionsTest(template, `SUBSCRIPTIONRESOURCEID(!)`, [`'type1'`, `'type2'`]);
+        createResourceIdCompletionsTest(template, `subscriptionResourceId('type1',!)`, [`'name1'`]);
+        createResourceIdCompletionsTest(template, `subscriptionResourceId('type2',!)`, [`'name2'`]);
+    });
+
+    suite("other names, no dice", () => {
+        const template: Partial<IPartialDeploymentTemplate> = {
+            resources: [
+                {
+                    name: "name2",
+                    type: "type2"
+                },
+                {
+                    name: "name1",
+                    type: "type1"
+                }
+            ]
+        };
+
+        createResourceIdCompletionsTest(template, `extensionResourceId2(!)`, []);
+        createResourceIdCompletionsTest(template, `udf1.resourceId('type1',!)`, []);
+        createResourceIdCompletionsTest(template, `concat(!)`, []);
     });
 
     suite("101_acsengine_swarmmode", () => {

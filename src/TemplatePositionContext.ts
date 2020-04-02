@@ -414,22 +414,9 @@ export class TemplatePositionContext extends PositionContext {
             completeUserFunctions = false;
         }
 
-        if (tleValue.isCallToBuiltinWithName('resourceId')) {
-            // If the completion is for 'resourceId', then in addition to the regular completions, also
-            // add special completions for resourceId
-
-            // What argument to the function call is the cursor in?
-            const argumentIndex = this.getFunctionCallArgumentIndex(tleValue);
-            if (typeof argumentIndex === 'number') {
-                completions.push(
-                    ...getResourceIdFunctionCompletions(
-                        this.document,
-                        tleValue,
-                        parentStringToken,
-                        tleCharacterIndex,
-                        argumentIndex));
-            }
-        }
+        // If the completion is for 'resourceId' or related function, then in addition
+        // to the regular completions, also add special completions for resourceId
+        completions.push(...getResourceIdFunctionCompletions(this, tleValue, parentStringToken));
 
         let replaceSpan: language.Span;
         let completionPrefix: string;
@@ -601,7 +588,7 @@ export class TemplatePositionContext extends PositionContext {
     /**
      * Get the index (0-based) of the argument in the given function call, at the current position
      */
-    private getFunctionCallArgumentIndex(functionCall?: TLE.FunctionCallValue): number | undefined {
+    public getFunctionCallArgumentIndex(functionCall?: TLE.FunctionCallValue): number | undefined {
         const tleInfo = this.tleInfo;
         const tleValue: TLE.Value | undefined = tleInfo?.tleValue;
         if (tleInfo && tleValue) {

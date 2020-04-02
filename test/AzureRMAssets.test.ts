@@ -17,7 +17,7 @@ suite("AzureRMAssets", () => {
 
     suite("FunctionMetadata", () => {
         test("constructor(string,string,string)", () => {
-            const metadata = new BuiltinFunctionMetadata("a", "b", "c", 1, 2, []);
+            const metadata = new BuiltinFunctionMetadata("a", "b", "c", 1, 2, [], undefined);
             assert.deepStrictEqual(metadata.fullName, "a");
             assert.deepStrictEqual(metadata.usage, "b");
             assert.deepStrictEqual(metadata.description, "c");
@@ -28,7 +28,7 @@ suite("AzureRMAssets", () => {
 
         test("findByName", () => {
             const metadata = new FunctionsMetadata(
-                [new BuiltinFunctionMetadata("hi", "", "", 0, 0, []), new BuiltinFunctionMetadata("MyFunction", "", "", 0, 0, [])]);
+                [new BuiltinFunctionMetadata("hi", "", "", 0, 0, [], undefined), new BuiltinFunctionMetadata("MyFunction", "", "", 0, 0, [], undefined)]);
 
             assert.equal(metadata.findbyName("MyFunction")!.fullName, "MyFunction");
             assert.equal(metadata.findbyName("myfunction")!.fullName, "MyFunction");
@@ -39,9 +39,9 @@ suite("AzureRMAssets", () => {
 
         test("findByPrefix", () => {
             const metadata = new FunctionsMetadata([
-                new BuiltinFunctionMetadata("One", "", "", 0, 0, []),
-                new BuiltinFunctionMetadata("Onerous", "", "", 0, 0, []),
-                new BuiltinFunctionMetadata("Two", "", "", 0, 0, [])
+                new BuiltinFunctionMetadata("One", "", "", 0, 0, [], undefined),
+                new BuiltinFunctionMetadata("Onerous", "", "", 0, 0, [], undefined),
+                new BuiltinFunctionMetadata("Two", "", "", 0, 0, [], undefined)
             ]);
 
             assert.deepStrictEqual(metadata.filterByPrefix("MyFunction"), []);
@@ -56,17 +56,17 @@ suite("AzureRMAssets", () => {
 
         suite("parameters", () => {
             test("with no parameters in usage", () => {
-                const metadata = new BuiltinFunctionMetadata("a", "a()", "description", 1, 2, []);
+                const metadata = new BuiltinFunctionMetadata("a", "a()", "description", 1, 2, [], []);
                 assert.deepStrictEqual(metadata.parameters, []);
             });
 
             test("with one parameter in usage", () => {
-                const metadata = new BuiltinFunctionMetadata("a", "a(b)", "description", 1, 2, []);
+                const metadata = new BuiltinFunctionMetadata("a", "a(b)", "description", 1, 2, [], undefined);
                 assert.deepStrictEqual(metadata.parameters, [{ name: "b", type: undefined }]);
             });
 
             test("with two parameters in usage", () => {
-                const metadata = new BuiltinFunctionMetadata("a", "a(b, c )", "description", 1, 2, []);
+                const metadata = new BuiltinFunctionMetadata("a", "a(b, c )", "description", 1, 2, [], undefined);
                 assert.deepStrictEqual(metadata.parameters, [{ name: "b", type: undefined }, { name: "c", type: undefined }]);
             });
         });
@@ -103,7 +103,7 @@ suite("AzureRMAssets", () => {
                     BuiltinFunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z", "description": "1" } ] }`),
                     [
                         // tslint:disable-next-line:no-any
-                        new BuiltinFunctionMetadata("a", "z", "1", <any>undefined, <any>undefined, [])
+                        new BuiltinFunctionMetadata("a", "z", "1", <any>undefined, <any>undefined, [], undefined)
                     ]);
             });
 
@@ -113,9 +113,9 @@ suite("AzureRMAssets", () => {
                     BuiltinFunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z" }, { "name": "b", "expectedUsage": "y", "description": "7" } ] }`),
                     [
                         // tslint:disable-next-line:no-any
-                        new BuiltinFunctionMetadata("a", "z", <any>undefined, <any>undefined, <any>undefined, []),
+                        new BuiltinFunctionMetadata("a", "z", <any>undefined, <any>undefined, <any>undefined, [], undefined),
                         // tslint:disable-next-line:no-any
-                        new BuiltinFunctionMetadata("b", "y", "7", <any>undefined, <any>undefined, [])
+                        new BuiltinFunctionMetadata("b", "y", "7", <any>undefined, <any>undefined, [], undefined)
                     ]);
             });
 

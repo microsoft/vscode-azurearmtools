@@ -8,7 +8,7 @@ import { assetsPath } from './constants';
 import { ExpressionType } from './ExpressionType';
 import { assert } from './fixed_assert';
 import { IUsageInfo } from './Hover';
-import { IFunctionMetadata, IFunctionParameterMetadata } from './IFunctionMetadata';
+import { Behaviors, IFunctionMetadata, IFunctionParameterMetadata } from './IFunctionMetadata';
 import { DefinitionKind, INamedDefinition } from './INamedDefinition';
 import { StringValue } from './JSON';
 
@@ -106,7 +106,8 @@ export class BuiltinFunctionMetadata implements IFunctionMetadata, INamedDefinit
         private readonly _description: string,
         private readonly _minimumArguments: number,
         private readonly _maximumArguments: number | undefined,
-        private readonly _returnValueMembers: string[]
+        private readonly _returnValueMembers: string[],
+        private readonly _behaviors: Behaviors[] | undefined | null
     ) {
         assert(_maximumArguments !== null, "Use undefined, not null");
 
@@ -179,6 +180,16 @@ export class BuiltinFunctionMetadata implements IFunctionMetadata, INamedDefinit
         return this._returnValueMembers;
     }
 
+    public hasBehavior(behavior: Behaviors): boolean {
+        for (let b of this._behaviors ?? []) {
+            if (b === behavior) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static fromString(metadataString: string): BuiltinFunctionMetadata[] {
         let metadataJSON: FunctionMetadataContract;
         try {
@@ -211,7 +222,8 @@ export class BuiltinFunctionMetadata implements IFunctionMetadata, INamedDefinit
                         functionMetadata.description,
                         functionMetadata.minimumArguments,
                         functionMetadata.maximumArguments ?? undefined,
-                        returnValueMembers));
+                        returnValueMembers,
+                        functionMetadata.behaviors));
                 }
             }
         }
@@ -231,5 +243,6 @@ interface FunctionMetadataContract {
         returnValueMembers?: {
             name: string;
         }[];
+        behaviors: Behaviors[] | null;
     }[];
 }
