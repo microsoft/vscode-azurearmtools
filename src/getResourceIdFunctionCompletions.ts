@@ -175,10 +175,18 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
             const resType = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceType));
 
             if (resName && resType) {
-                const nameExpressions = parent?.nameExpressions.slice() ?? [];
-                nameExpressions.push(jsonStringToTleExpression(resName));
-                const typeExpressions = parent?.typeExpressions.slice() ?? [];
-                typeExpressions.push(jsonStringToTleExpression(resType));
+                let nameExpressions: string[];
+                let typeExpressions: string[];
+
+                if (parent) {
+                    nameExpressions = parent?.nameExpressions.slice() ?? [];
+                    nameExpressions.push(jsonStringToTleExpression(resName));
+                    typeExpressions = parent?.typeExpressions.slice() ?? [];
+                    typeExpressions.push(jsonStringToTleExpression(resType));
+                } else {
+                    nameExpressions = getNameSegmentExpressions(resName);
+                    typeExpressions = getTypeSegmentExpressions(resType);
+                }
 
                 const info: IResourceInfo = { nameExpressions, typeExpressions };
                 results.push(info);
@@ -196,6 +204,11 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
     return results;
 }
 
+function isExpression(text: string): boolean {
+    // Not perfect, but good enough for our purposes here
+    return text.length >= 2 && text.startsWith('[') && text.endsWith(']');
+}
+
 /**
  * Given a JSON string, turn it into a string representing a TLE subexpression by
  * either wrapping it with single quotes (if it's a plain JSON string value), or
@@ -206,11 +219,11 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
  *   "[variables('abc')]" => "variables('abc')"
  */
 function jsonStringToTleExpression(stringValue: Json.StringValue): string {
-    const s = stringValue.unquotedValue;
-    if (s[0] === '[' && s[s.length - 1] === ']') {
-        return s.slice(1, s.length - 1);
+    const text = stringValue.unquotedValue;
+    if (isExpression(text)) {
+        return text.slice(1, text.length - 1);
     } else {
-        return `'${s}'`;
+        return `'${text}'`;
     }
 }
 
@@ -231,10 +244,48 @@ function getFullTypeName(info: IResourceInfo): string { //asdf need the array?
     }
 }
 
-function getFullResourceName(info: IResourceInfo): string { //asdf need the array?
-    if (info.nameExpressions.length > 1) {
-        return `'${info.nameExpressions.map(unquote).join('/')}'`; //asdf
-    } else {
-        return info.nameExpressions[0];
+//asdf
+// function getFullResourceName(info: IResourceInfo): string { //asdf need the array?
+//     if (info.nameExpressions.length > 1) {
+//         return `'${info.nameExpressions.map(unquote).join('/')}'`; //asdf
+//     } else {
+//         return info.nameExpressions[0];
+//     }
+// }
+
+//asdf expressions?
+// e.g.
+//   "networkSecurityGroup2/networkSecurityGroupRule2"
+//     ->
+//   ["'networkSecurityGroup2'", "'networkSecurityGroupRule2'"]
+function getNameSegmentExpressions(name: Json.StringValue): string[] {
+    const text = name.unquotedValue;
+
+    if (isExpression(text)) {
+        // If it's an expression, we don't currently handle splitting it into segments asdf
+        return [jsonStringToTleExpression(name)];
     }
+
+    return text.split('/').map(segment => `'${segment}'`);
+}
+
+// e.g.
+// "'Microsoft.Network/networkSecurityGroups/securityRules'"
+//   ->
+// ["'Microsoft.Network/networkSecurityGroups'", "'securityRules']
+function getTypeSegmentExpressions(typeName: Json.StringValue): string[] {
+    const text = typeName.unquotedValue;
+
+    if (isExpression(text)) {
+        // If it's an expression, we don't currently handle splitting it into segments asdf
+        return [jsonStringToTleExpression(typeName)];
+    }
+
+    let segments = text.split('/');
+    if (segments.length >= 2) {
+        // Combine first two segments
+        segments = [`${segments[0]}/${segments[1]}`].concat(segments.slice(2));
+    }
+
+    return segments.map(segment => `'${segment}'`);
 }

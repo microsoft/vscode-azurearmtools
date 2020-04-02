@@ -1076,4 +1076,3 @@ template_101_acsengine_swarmmode.outputs!.testOutput = {
 };
 
 // asdf 201-timeseriesinsights-environment-with-eventhub - grandchildren
-

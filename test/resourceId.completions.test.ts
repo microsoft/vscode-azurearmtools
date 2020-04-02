@@ -449,6 +449,33 @@ suite("ResourceId completions", () => {
             `resourceId('Microsoft.Storage/accounts',!)`,
             [
             ]);
+
+        /*asdf suite("subnets special case", () => {
+            // "agentVnetSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('agentSubnetName'))]",
+            createResourceIdCompletionsTest(
+                template_101_acsengine_swarmmode,
+                `resourceId('Microsoft.Network/virtualNetworks/subnets', !)`,
+                [`variables('virtualNetworkName')`]);
+            createResourceIdCompletionsTest(
+                template_101_acsengine_swarmmode,
+                `resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'),!)`,
+                [`variables('masterSubnetName')`, `variables('agentSubnetName')`]);
+            createResourceIdCompletionsTest(
+                template_101_acsengine_swarmmode,
+                `resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('agentSubnetName'),!)`,
+                []);
+        });*/
+
+        suite("Microsoft.Compute/virtualMachines/extensions", () => {
+            createResourceIdCompletionsTest(
+                template_101_acsengine_swarmmode,
+                `resourceId('Microsoft.Compute/virtualMachines/extensions', !)`,
+                [`concat(variables('masterVMNamePrefix'), copyIndex(), '/configuremaster')`]);
+            createResourceIdCompletionsTest(
+                template_101_acsengine_swarmmode,
+                `resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('masterVMNamePrefix'), copyIndex(), '/configuremaster'), !)`,
+                []);
+        });
     });
 
     suite("child resources", () => {
@@ -552,6 +579,10 @@ suite("ResourceId completions", () => {
                     "type": "Microsoft.Network/networkSecurityGroups",
                 },
                 {
+                    "name": "networkSecurityGroup2",
+                    "type": "Microsoft.Network/networkSecurityGroups",
+                },
+                {
                     "name": "networkSecurityGroup1/networkSecurityGroupRule1a",
                     "type": "Microsoft.Network/networkSecurityGroups/securityRules",
                 },
@@ -560,7 +591,11 @@ suite("ResourceId completions", () => {
                     "type": "Microsoft.Network/networkSecurityGroups/securityRules",
                 },
                 {
-                    "name": "networkSecurityGroup1/networkSecurityGroupRule1b/grandchild",
+                    "name": "networkSecurityGroup2/networkSecurityGroupRule2",
+                    "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+                },
+                {
+                    "name": "networkSecurityGroup2/networkSecurityGroupRule2/grandchild",
                     "type": "Microsoft.Network/networkSecurityGroups/securityRules/fakeGrandchildType"
                 }
             ]
@@ -611,7 +646,7 @@ suite("ResourceId completions", () => {
         });
 
         suite("decoupled child resources", () => {
-            //asdf createTestsForChildResources(decoupledTemplate);
+            createTestsForChildResources(decoupledTemplate);
         });
 
         suite("doubly nested child resources", () => {
