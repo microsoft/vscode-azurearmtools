@@ -102,6 +102,7 @@ async function insertVariable(template: DeploymentTemplate, textEditor: vscode.T
     let pos = textEditor.document.positionAt(index! + cursorPos + 1);
     let newSelection = new vscode.Selection(pos, pos);
     textEditor.selection = newSelection;
+    textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
 }
 
 async function insertText(textEditor: vscode.TextEditor, index: number | undefined, text: string): Promise<void> {
