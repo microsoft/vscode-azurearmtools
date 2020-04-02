@@ -128,7 +128,7 @@ export interface IPartialDeploymentTemplate {
         }[];
         [key: string]: number | unknown[] | string | {} | undefined;
     };
-    resources?: Partial<IDeploymentTemplateResource>[];
+    resources?: IPartialDeploymentTemplateResource[];
     outputs?: {
         [key: string]: Partial<IDeploymentOutput>;
     };
@@ -153,7 +153,33 @@ export interface IDeploymentTemplateResource {
     dependsOn?: string[];
     tags?: { [key: string]: string };
     properties?: { [key: string]: unknown };
+    resources?: IDeploymentTemplateChildResource[];
+    [key: string]: unknown;
+}
+
+export interface IDeploymentTemplateChildResource {
+    // tslint:disable-next-line:no-reserved-keywords
+    type: string;
+    name: string;
+    apiVersion: string;
+    location?: string;
+    dependsOn?: string[];
+    tags?: { [key: string]: string };
+    properties?: { [key: string]: unknown };
     resources?: IDeploymentTemplateResource[];
+    [key: string]: unknown;
+}
+
+export interface IPartialDeploymentTemplateResource {
+    // tslint:disable-next-line:no-reserved-keywords
+    type?: string;
+    name?: string;
+    apiVersion?: string;
+    location?: string;
+    dependsOn?: string[];
+    tags?: { [key: string]: string };
+    properties?: { [key: string]: unknown };
+    resources?: IPartialDeploymentTemplateResource[];
     [key: string]: unknown;
 }
 

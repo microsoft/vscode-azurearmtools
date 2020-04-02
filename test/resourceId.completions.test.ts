@@ -439,4 +439,139 @@ suite("ResourceId completions", () => {
             [
             ]);
     });
+
+    suite("child resources", () => {
+        const templateasdf: IDeploymentTemplate = {
+            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {},
+            "functions": [],
+            "variables": {},
+            "resources": [
+                {
+                    "name": "networkSecurityGroup1",
+                    "type": "Microsoft.Network/networkSecurityGroups",
+                    "apiVersion": "2019-11-01",
+                    "location": "[resourceGroup().location]",
+                    "properties": {},
+                    "resources": [
+                        {
+                            "name": "networkSecurityGroupRuleName",
+                            "type": "securityRules",
+                            "apiVersion": "2019-11-01",
+                            "dependson": [
+                                "[resourceId('Microsoft.Network/networkSecurityGroups', 'networkSecurityGroup1')]"
+                            ],
+                            "properties": {
+                                "description": "nsgRuleDescription",
+                                "protocol": "*",
+                                "sourcePortRange": "*",
+                                "destinationPortRange": "*",
+                                "sourceAddressPrefix": "*",
+                                "destinationAddressPrefix": "*",
+                                "access": "Allow",
+                                "priority": 100,
+                                "direction": "Inbound"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "outputs": {
+                "ruleResourceId": {
+                    "type": "string",
+                    "value": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'networkSecurityGroup1', 'networkSecurityGroupRuleName')]"
+                },
+                // This resourceId call is not valid
+                "invalidRuleResourceId2": {
+                    "type": "string",
+                    "value": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'networkSecurityGroupRuleName')]"
+                }
+            }
+        };
+
+        function createTestsForChildResources(template: IPartialDeploymentTemplate): void {
+            // For info on child resources, see https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/child-resource-name-type
+
+            suite("1st arg - should sugggest parent and child types", () => {
+                createResourceIdCompletionsTest(
+                    template,
+                    `resourceId(!)`,
+                    [
+                        `'Microsoft.Network/networkSecurityGroups'`,
+                        `'Microsoft.Network/networkSecurityGroups/securityRules'`
+                    ]);
+            });
+            suite("Referencing the parent", () => {
+                // Valid: "[resourceId('Microsoft.Network/networkSecurityGroups', 'networkSecurityGroup1')]"
+                createResourceIdCompletionsTest(template, `resourceId('Microsoft.Network/networkSecurityGroups', !)`, [`'networkSecurityGroup1'`]);
+                createResourceIdCompletionsTest(template, `resourceId('Microsoft.Network/networkSecurityGroups', 'networkSecurityGroup1', !)`, []);
+            });
+            suite("Referencing the nested child", () => {
+                // Valid: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'networkSecurityGroup1', 'networkSecurityGroupRuleName')
+
+                // 2nd arg (1st part of name)
+                createResourceIdCompletionsTest(template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRULES', !)`, [`'networkSecurityGroup1'`]);
+
+                // 3rd arg (2nd part of name)
+                createResourceIdCompletionsTest(template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'NETWORKSecurityGroup1', !)`, [`'networkSecurityGroupRuleName'`]);
+
+                // 4th arg (not needed)
+                createResourceIdCompletionsTest(template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'NETWORKSecurityGroup1', 'networkSecurityGroupRuleName', !)`, []);
+
+                suite("not matched or invalid - no completions", () => {
+                    createResourceIdCompletionsTest(template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRULES2', !)`, []);
+                    createResourceIdCompletionsTest(template, `resourceId('Microsoft.Network/networkSecurityGroups2/securityRULES', !)`, []);
+                    createResourceIdCompletionsTest(template, `resourceId(concat('Microsoft.Network/networkSecurityGroups/', 'securityRules'), !)`, []);
+
+                    createResourceIdCompletionsTest(template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRules2', 'NETWORKSecurityGroup1', !)`, []);
+                    createResourceIdCompletionsTest(template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'NETWORKSecurityGroup2', !)`, []);
+                    createResourceIdCompletionsTest(template, `resourceId(concat('Microsoft.Network/networkSecurityGroups/', 'securityRules'), 'NETWORKSecurityGroup1', !)`, []);
+                });
+
+                // Invalid: "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'networkSecurityGroupRuleName')]"
+            });
+        }
+
+        suite("nested child resource", () => {
+            const template: IPartialDeploymentTemplate = {
+                "resources": [
+                    {
+                        "name": "networkSecurityGroup1",
+                        "type": "Microsoft.Network/networkSecurityGroups",
+                        "resources": [
+                            {
+                                "name": "networkSecurityGroupRuleName",
+                                "type": "securityRules", // Note that the full type has the parent type prepended
+                                "dependson": [
+                                    "[resourceId('Microsoft.Network/networkSecurityGroups', 'networkSecurityGroup1')]"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            };
+            createTestsForChildResources(template);
+        });
+
+        suite("decoupled child resource", () => {
+            const template: IPartialDeploymentTemplate = {
+                "resources": [
+                    {
+                        "name": "networkSecurityGroup1",
+                        "type": "Microsoft.Network/networkSecurityGroups",
+                    },
+                    {
+                        "name": "networkSecurityGroup1/networkSecurityGroupRuleName",
+                        "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+                    }
+                ]
+            };
+            createTestsForChildResources(template);
+        });
+
+        suite("doubly nested child resources", () => {
+            test("doubly nested child resource"); //asdf
+        });
+    });
 });

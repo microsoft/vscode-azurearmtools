@@ -181,13 +181,8 @@ export class BuiltinFunctionMetadata implements IFunctionMetadata, INamedDefinit
     }
 
     public hasBehavior(behavior: Behaviors): boolean {
-        for (let b of this._behaviors ?? []) {
-            if (b === behavior) {
-                return true;
-            }
-        }
-
-        return false;
+        // case-sensitive match
+        return !!this._behaviors && this._behaviors.includes(behavior);
     }
 
     public static fromString(metadataString: string): BuiltinFunctionMetadata[] {
