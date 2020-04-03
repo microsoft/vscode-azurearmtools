@@ -8,7 +8,7 @@
 
 import * as assert from 'assert';
 import { AzureRMAssets, looksLikeResourceTypeStringLiteral } from '../extension.bundle';
-import { template_101_acsengine_swarmmode, template_101_app_service_regional_vnet_integration } from './resourceId.completions.templates';
+import { template_101_acsengine_swarmmode, template_101_app_service_regional_vnet_integration, template_201_time_series_insights_environment_with_eventhub } from './resourceId.completions.templates';
 import { createExpressionCompletionsTest } from './support/createCompletionsTest';
 import { IDeploymentTemplate, IPartialDeploymentTemplate } from './support/diagnostics';
 import { stringify } from './support/stringify';
@@ -584,14 +584,15 @@ suite("ResourceId completions", () => {
                     "resources": [
                         {
                             "name": "networkSecurityGroupRule1a",
-                            "type": "securityRules", // It is possible though not common to specify the full type here
+                            "type": "securityRules",
                             "dependson": [
                                 "[resourceId('Microsoft.Network/networkSecurityGroups', 'networkSecurityGroup1')]"
                             ]
                         },
                         {
-                            "name": "networkSecurityGroupRule1b",
-                            "type": "securityRules",
+                            // It is possible though not common to specify the full type like is done here
+                            "name": "networkSecurityGroup1/networkSecurityGroupRule1b",
+                            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
                             "dependson": [
                                 "[resourceId('Microsoft.Network/networkSecurityGroups', 'networkSecurityGroup1')]"
                             ]
@@ -785,6 +786,54 @@ suite("ResourceId completions", () => {
                     []
                 );
             });
+        });
+
+        suite("template_201_time_series_insights_environment_with_eventhub - grandchild resources", () => {
+            // "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',parameters('eventHubNamespaceName'),parameters('eventHubName'),parameters('eventSourceKeyName'))]"
+            createResourceIdCompletionsTest2(
+                "1st arg",
+                template_201_time_series_insights_environment_with_eventhub,
+                `resourceId(!)`,
+                [
+                    `'Microsoft.EventHub/namespaces'`,
+                    `'Microsoft.EventHub/namespaces/eventhubs'`,
+                    `'Microsoft.EventHub/namespaces/eventhubs/authorizationRules'`,
+                    `'Microsoft.EventHub/namespaces/eventhubs/consumergroups'`,
+                    `'Microsoft.TimeSeriesInsights/environments'`,
+                    `'Microsoft.TimeSeriesInsights/environments/eventsources'`,
+                    `'Microsoft.TimeSeriesInsights/environments/accessPolicies'`
+                ]
+            );
+            createResourceIdCompletionsTest2(
+                "2nd arg",
+                template_201_time_series_insights_environment_with_eventhub,
+                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',!)`,
+                [`parameters('eventHubNamespaceName')`]
+            );
+            createResourceIdCompletionsTest2(
+                "3rd arg",
+                template_201_time_series_insights_environment_with_eventhub,
+                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',parameters('eventHubNamespaceName'),!)`,
+                [`parameters('eventHubName')`]
+            );
+            createResourceIdCompletionsTest2(
+                "4th arg",
+                template_201_time_series_insights_environment_with_eventhub,
+                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',parameters('eventHubNamespaceName'),parameters('eventHubName'),!)`,
+                [`parameters('eventSourceKeyName')`]
+            );
+            createResourceIdCompletionsTest2(
+                "5th arg",
+                template_201_time_series_insights_environment_with_eventhub,
+                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',parameters('eventHubNamespaceName'),parameters('eventHubName'),parameters('eventSourceKeyName'),!)`,
+                []
+            );
+            createResourceIdCompletionsTest2(
+                "6th arg with two optional params",
+                template_201_time_series_insights_environment_with_eventhub,
+                `resourceId('look','ma','Microsoft.EventHub/namespaces/eventhubs/authorizationRules',parameters('eventHubNamespaceName'),parameters('eventHubName'),!)`,
+                [`parameters('eventSourceKeyName')`]
+            );
         });
     });
 });

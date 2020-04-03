@@ -149,9 +149,9 @@ export interface IDeploymentTemplateResource {
     type: string;
     name: string;
     apiVersion: string;
-    location: string;
+    location?: string;
     dependsOn?: string[];
-    tags?: { [key: string]: string };
+    tags?: { [key: string]: string } | string;
     properties?: { [key: string]: unknown };
     resources?: IDeploymentTemplateChildResource[];
     [key: string]: unknown;
@@ -164,7 +164,7 @@ export interface IDeploymentTemplateChildResource {
     apiVersion: string;
     location?: string;
     dependsOn?: string[];
-    tags?: { [key: string]: string };
+    tags?: { [key: string]: string } | string;
     properties?: { [key: string]: unknown };
     resources?: IDeploymentTemplateResource[];
     [key: string]: unknown;
@@ -177,7 +177,7 @@ export interface IPartialDeploymentTemplateResource {
     apiVersion?: string;
     location?: string;
     dependsOn?: string[];
-    tags?: { [key: string]: string };
+    tags?: { [key: string]: string } | string;
     properties?: { [key: string]: unknown };
     resources?: IPartialDeploymentTemplateResource[];
     [key: string]: unknown;

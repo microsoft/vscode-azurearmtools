@@ -26,7 +26,7 @@ export function getResourceIdCompletions(
     parentStringToken: Json.Token
 ): Completion.Item[] {
     if (!funcCall.isUserDefinedFunction && funcCall.name) {
-        const functionMetadata = AzureRMAssets.getFunctionMetadataFromName(funcCall.name); //asdf refactor
+        const functionMetadata = AzureRMAssets.getFunctionMetadataFromName(funcCall.name);
         if (functionMetadata?.hasBehavior(Behaviors.usesResourceIdCompletions)) {
             // If the completion is for 'resourceId' or related function, then in addition
             // to the regular completions, also add special completions for resourceId
@@ -85,7 +85,7 @@ function getCompletions(
             break;
         }
 
-        let argExpression: string | undefined = getArgumentExpressionText(pc, funcCall, parentStringToken, argIndex);
+        let argExpression: string | undefined = getArgumentExpression(pc, funcCall, parentStringToken, argIndex);
         if (!argExpression) {
             return [];
         }
@@ -122,8 +122,12 @@ function getCompletions(
 }
 
 /**
- * Finds the first function call argument that matches a known type (could be
- * an expression), or looks like a resource type as a string literal
+ * Finds the first argument in the function that matches a known type (could be
+ * an expression), or looks like a resource type as a string literal, e.g.
+ *
+ *   resourceId(subscription().id, 'Microsoft.Network/vnet', 'vnet1')
+ *     ->
+ * returns the second argument (index=0)
  */
 function findFunctionCallArgumentWithResourceType(
     resources: IResourceInfo[],
@@ -133,7 +137,7 @@ function findFunctionCallArgumentWithResourceType(
     maxIndex: number
 ): { argIndex: number; typeExpression: string } | undefined {
     for (let argIndex = 0; argIndex <= maxIndex; ++argIndex) {
-        let argText: string | undefined = getArgumentExpressionText(pc, funcCall, parentStringToken, argIndex);
+        let argText: string | undefined = getArgumentExpression(pc, funcCall, parentStringToken, argIndex);
         if (argText) {
             if (looksLikeResourceTypeStringLiteral(argText)) {
                 return { argIndex, typeExpression: argText };
@@ -229,14 +233,23 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
                 let nameExpressions: string[];
                 let typeExpressions: string[];
 
-                if (parent) {
-                    nameExpressions = parent?.nameExpressions.slice() ?? [];
-                    nameExpressions.push(jsonStringToTleExpression(resName));
-                    typeExpressions = parent?.typeExpressions.slice() ?? [];
-                    typeExpressions.push(jsonStringToTleExpression(resType));
+                // If there's a parent, generally the type specified in the template
+                // is just the last segment, buy it is allowed to put the full
+                // type there instead
+                const typeSegments = splitTypeIntoSegments(resType);
+                if (parent && typeSegments.length <= 1) {
+                    // Add to end of parent type segments
+                    typeExpressions = [...parent.typeExpressions, ...typeSegments];
                 } else {
-                    nameExpressions = getNameSegmentExpressions(resName);
-                    typeExpressions = getTypeSegmentExpressions(resType);
+                    typeExpressions = typeSegments;
+                }
+
+                const nameSegments = splitNameIntoSegments(resName);
+                if (parent && nameSegments.length <= 1) {
+                    // Add to end of parent name segments
+                    nameExpressions = [...parent.nameExpressions, ...nameSegments];
+                } else {
+                    nameExpressions = nameSegments;
                 }
 
                 const info: IResourceInfo = { nameExpressions, typeExpressions };
@@ -294,7 +307,7 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
 /**
  * Retrieves the document text for the given argument
  */
-function getArgumentExpressionText(
+function getArgumentExpression(
     pc: TemplatePositionContext,
     funcCall: TLE.FunctionCallValue,
     parentStringToken: Json.Token,
@@ -351,11 +364,12 @@ function getFullTypeName(info: IResourceInfo): string { //asdf need the array?
 //   "networkSecurityGroup2/networkSecurityGroupRule2"
 //     ->
 //   ["'networkSecurityGroup2'", "'networkSecurityGroupRule2'"]
-function getNameSegmentExpressions(name: Json.StringValue): string[] {
+function splitNameIntoSegments(name: Json.StringValue): string[] {
     const text = name.unquotedValue;
 
     if (isExpression(text)) {
-        // If it's an expression, we don't currently handle splitting it into segments asdf
+        // If it's an expression, we can't know how to split it into segments in a generic
+        // way, so just return the entire expression
         return [jsonStringToTleExpression(name)];
     }
 
@@ -366,11 +380,12 @@ function getNameSegmentExpressions(name: Json.StringValue): string[] {
 // "'Microsoft.Network/networkSecurityGroups/securityRules'"
 //   ->
 // ["'Microsoft.Network/networkSecurityGroups'", "'securityRules']
-function getTypeSegmentExpressions(typeName: Json.StringValue): string[] {
+function splitTypeIntoSegments(typeName: Json.StringValue): string[] {
     const text = typeName.unquotedValue;
 
     if (isExpression(text)) {
-        // If it's an expression, we don't currently handle splitting it into segments asdf
+        // If it's an expression, we can't know how to split it into segments in a generic
+        // way, so just return the entire expression
         return [jsonStringToTleExpression(typeName)];
     }
 
