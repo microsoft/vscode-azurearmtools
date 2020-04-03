@@ -6,7 +6,8 @@
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name no-constant-condition
 // tslint:disable:prefer-template no-http-string
 
-import { AzureRMAssets } from '../src/AzureRMAssets';
+import * as assert from 'assert';
+import { AzureRMAssets, looksLikeResourceTypeStringLiteral } from '../extension.bundle';
 import { template_101_acsengine_swarmmode, template_101_app_service_regional_vnet_integration } from './resourceId.completions.templates';
 import { createExpressionCompletionsTest } from './support/createCompletionsTest';
 import { IDeploymentTemplate, IPartialDeploymentTemplate } from './support/diagnostics';
@@ -58,6 +59,34 @@ suite("ResourceId completions", () => {
     const defaultCompletions = AzureRMAssets.getFunctionsMetadata().functionMetadata.map(c => c.unqualifiedName);
     allTestDataExpectedCompletions(0, 0).map(c => c.label);
 
+    suite("looksLikeResourceTypeStringLiteral", () => {
+        function createTest(expected: boolean, text: string): void {
+            test(`looksLikeResourceTypeStringLiteral: ${expected}: ${text}`, () => {
+                const result = looksLikeResourceTypeStringLiteral(text);
+                assert.equal(result, expected);
+            });
+        }
+
+        createTest(true, "'a.b/c'");
+        createTest(true, "'a.b/c/d'");
+        createTest(true, "'a.b/c/d/e'");
+        createTest(true, "'ab.bc/cd/de/ef'");
+        createTest(true, "'Microsoft.Network/publicIPAddresses'");
+        createTest(true, "'Microsoft.Compute/virtualMachineScaleSets'");
+        createTest(true, "'Microsoft.Network/virtualNetworks'");
+        createTest(true, "'Microsoft.Compute/availabilitySets'");
+        createTest(true, "'Microsoft.Network/publicIPAddresses'");
+        createTest(true, "'Microsoft.Network/loadBalancers'");
+        createTest(true, "'Microsoft.Network/loadBalancers/inboundNatRules'");
+
+        createTest(false, "a.b/c");
+        createTest(false, "'a./c'");
+        createTest(false, "'a/c'");
+        createTest(false, "'a.B'");
+        createTest(true, "'a.b/c/d/'");
+        createTest(false, "[variables('agentLbName')]");
+    });
+
     suite("No resources section - empty completions", () => {
         const template: Partial<IDeploymentTemplate> = {
         };
@@ -96,7 +125,7 @@ suite("ResourceId completions", () => {
         });
 
         suite("Third arg completions - nothing", () => {
-            createResourceIdCompletionsTest(template, `resourceId('type','name1',!)`, []);
+            createResourceIdCompletionsTest(template, `resourceId('type1','name1',!)`, []);
         });
 
         suite("resourceId case insensitive", () => {
@@ -259,27 +288,6 @@ suite("ResourceId completions", () => {
 
         // Missing quotes around 'type1'
         createResourceIdCompletionsTest(template, `resourceId(type1,!)`, []);
-    });
-
-    suite("If first arg is not non-empty string literal, match no names", () => {
-        const template: Partial<IPartialDeploymentTemplate> = {
-            resources: [
-                {
-                    type: "type1",
-                    name: "name1a",
-                },
-                {
-                    type: "type1",
-                    name: "name1b"
-                },
-                {
-                    type: "type2",
-                    name: "name2"
-                }
-            ]
-        };
-        createResourceIdCompletionsTest(template, `resourceId(,!)`, []);
-        createResourceIdCompletionsTest(template, `resourceId(1,!)`, []);
     });
 
     suite("Type is not a string", () => {
@@ -568,55 +576,6 @@ suite("ResourceId completions", () => {
     });
 
     suite("child resources", () => {
-        const templateasdf: IDeploymentTemplate = {
-            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-            "contentVersion": "1.0.0.0",
-            "parameters": {},
-            "functions": [],
-            "variables": {},
-            "resources": [
-                {
-                    "name": "networkSecurityGroup1",
-                    "type": "Microsoft.Network/networkSecurityGroups",
-                    "apiVersion": "2019-11-01",
-                    "location": "[resourceGroup().location]",
-                    "properties": {},
-                    "resources": [
-                        {
-                            "name": "networkSecurityGroupRule1a",
-                            "type": "securityRules",
-                            "apiVersion": "2019-11-01",
-                            "dependson": [
-                                "[resourceId('Microsoft.Network/networkSecurityGroups', 'networkSecurityGroup1')]"
-                            ],
-                            "properties": {
-                                "description": "nsgRuleDescription",
-                                "protocol": "*",
-                                "sourcePortRange": "*",
-                                "destinationPortRange": "*",
-                                "sourceAddressPrefix": "*",
-                                "destinationAddressPrefix": "*",
-                                "access": "Allow",
-                                "priority": 100,
-                                "direction": "Inbound"
-                            }
-                        }
-                    ]
-                }
-            ],
-            "outputs": {
-                "ruleResourceId": {
-                    "type": "string",
-                    "value": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'networkSecurityGroup1', 'networkSecurityGroupRule1a')]"
-                },
-                // This resourceId call is not valid
-                "invalidRuleResourceId2": {
-                    "type": "string",
-                    "value": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'networkSecurityGroupRule1a')]"
-                }
-            }
-        };
-
         const nestedTemplate: IPartialDeploymentTemplate = {
             "resources": [
                 {
@@ -625,7 +584,7 @@ suite("ResourceId completions", () => {
                     "resources": [
                         {
                             "name": "networkSecurityGroupRule1a",
-                            "type": "securityRules", // It is possible though not common to specify the full type here asdf
+                            "type": "securityRules", // It is possible though not common to specify the full type here
                             "dependson": [
                                 "[resourceId('Microsoft.Network/networkSecurityGroups', 'networkSecurityGroup1')]"
                             ]
@@ -693,15 +652,17 @@ suite("ResourceId completions", () => {
         function createTestsForChildResources(template: IPartialDeploymentTemplate): void {
             // For info on child resources, see https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/child-resource-name-type
 
+            const allResourceTypeCompletions = [
+                `'Microsoft.Network/networkSecurityGroups'`,
+                `'Microsoft.Network/networkSecurityGroups/securityRules'`,
+                `'Microsoft.Network/networkSecurityGroups/securityRules/fakeGrandchildType'`
+            ];
+
             suite("1st arg - should sugggest parent and child types", () => {
                 createResourceIdCompletionsTest(
                     template,
                     `resourceId(!)`,
-                    [
-                        `'Microsoft.Network/networkSecurityGroups'`,
-                        `'Microsoft.Network/networkSecurityGroups/securityRules'`,
-                        `'Microsoft.Network/networkSecurityGroups/securityRules/fakeGrandchildType'`
-                    ]);
+                    allResourceTypeCompletions);
             });
             suite("Referencing the parent", () => {
                 // Valid: "[resourceId('Microsoft.Network/networkSecurityGroups', 'networkSecurityGroup1')]"
@@ -716,14 +677,8 @@ suite("ResourceId completions", () => {
 
                 createResourceIdCompletionsTest2("3rd arg #2", template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'NETWORKSecurityGroup2', !)`, [`'networkSecurityGroupRule2'`]);
 
-                suite("not matched or invalid - no completions", () => {
-                    createResourceIdCompletionsTest2("type doesn't match", template, `resourceId('Microsoft.Network/networkSecurityGroups2/securityRULES', !)`, []);
-                    createResourceIdCompletionsTest2("type doesn't match 2", template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRULES2', !)`, []);
-                    createResourceIdCompletionsTest2("expression", template, `resourceId(concat('Microsoft.Network/networkSecurityGroups/', 'securityRules'), !)`, []);
-
-                    createResourceIdCompletionsTest(template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRules2', 'NETWORKSecurityGroup1', !)`, []);
-                    createResourceIdCompletionsTest2("1st part of name doesn't match", template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'NETWORKSecurityGroup3', !)`, []);
-                    createResourceIdCompletionsTest2("there is no 3rd part of name", template, `resourceId(concat('Microsoft.Network/networkSecurityGroups/', 'securityRules'), 'networkSecurityGroup1', !)`, []);
+                suite("not matched or invalid but doesn't look like a type - returns match of all resource types", () => {
+                    createResourceIdCompletionsTest2("type doesn't match", template, `resourceId(variables('a'), !)`, allResourceTypeCompletions);
                 });
 
                 // Invalid: "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'networkSecurityGroupRule1a')]"
@@ -739,7 +694,30 @@ suite("ResourceId completions", () => {
         });
 
         suite("optional arguments", () => {
-            const template: IPartialDeploymentTemplate = {
+            suite("If first arg is not a recognized type name, complete with all resource types, up to the 3rd arg", () => {
+                const template: Partial<IPartialDeploymentTemplate> = {
+                    resources: [
+                        {
+                            type: "type1",
+                            name: "name1a",
+                        },
+                        {
+                            type: "type1",
+                            name: "name1b"
+                        },
+                        {
+                            type: "type2",
+                            name: "name2"
+                        }
+                    ]
+                };
+                createResourceIdCompletionsTest2("1st arg", template, `resourceId(,!)`, [`'type1'`, `'type2'`]);
+                createResourceIdCompletionsTest2("2nd arg", template, `resourceId(1,!)`, [`'type1'`, `'type2'`]);
+                createResourceIdCompletionsTest2("3rd arg", template, `resourceId(1,resourceGroup().id,!)`, [`'type1'`, `'type2'`]);
+                createResourceIdCompletionsTest2("4th arg - no type more completions", template, `resourceId(1,resourceGroup().id,'nothing',!)`, []);
+            });
+
+            const template1: IPartialDeploymentTemplate = {
                 "resources": [
                     {
                         "name": "name1",
@@ -760,12 +738,53 @@ suite("ResourceId completions", () => {
                 ]
             };
 
-            createResourceIdCompletionsTest2(
-                "asdf",
-                template,
-                `resourceId('ns.type1/type2/type3', 'name1', 'name2', !)`,
-                [`'name3'`]
-            );
+            suite("resourceId using optional subscriptionId as first arg", () => {
+                createResourceIdCompletionsTest2(
+                    "1st arg - returns all types as usual",
+                    template1,
+                    `resourceId(!)`,
+                    [`'ns.type1'`, `'ns.type1/type2'`, `'ns.type1/type2/type3'`]
+                );
+                createResourceIdCompletionsTest2(
+                    "2nd arg - still returns all types since 1st arg not recognized",
+                    template1,
+                    `resourceId(subscription().id, !)`,
+                    [`'ns.type1'`, `'ns.type1/type2'`, `'ns.type1/type2/type3'`]
+                );
+                createResourceIdCompletionsTest2(
+                    "3rd arg - recognizes type in 2nd arg, returns first part of name",
+                    template1,
+                    `resourceId(subscription().id, 'ns.type1/type2/type3', !)`,
+                    [`'name1'`]
+                );
+                createResourceIdCompletionsTest2(
+                    "4th arg - returns second part of name",
+                    template1,
+                    `resourceId(subscription().id, 'ns.type1/type2/type3', 'name1', !)`,
+                    [`'name2'`]
+                );
+                createResourceIdCompletionsTest2(
+                    "5th arg - third part of name",
+                    template1,
+                    `resourceId(subscription().id, 'ns.type1/type2/type3', 'name1', 'name2', !)`,
+                    [`'name3'`]
+                );
+            });
+
+            suite("stop adding resource type completions once an argument looks like a type", () => {
+                createResourceIdCompletionsTest2(
+                    "2nd arg doesn't look like type",
+                    template1,
+                    `resourceId('hi, mom',!)`,
+                    [`'ns.type1'`, `'ns.type1/type2'`, `'ns.type1/type2/type3'`]
+                );
+                createResourceIdCompletionsTest2(
+                    "2nd arg looks like type",
+                    template1,
+                    `resourceId('Microsoft.Hello/Mom', !)`,
+                    []
+                );
+            });
         });
     });
 });

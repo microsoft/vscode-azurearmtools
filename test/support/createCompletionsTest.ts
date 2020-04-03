@@ -74,6 +74,9 @@ export function createExpressionCompletionsTestEx(
         `Expression completion: ${name ? name + ': ' : ''}${expressionWithBang}`,
         options?.preps ?? [],
         async () => {
+            let keepInClosure = name;
+            keepInClosure = keepInClosure;
+
             expressionWithBang = expressionWithBang.replace(/!/g, "<!bang!>");
             template = stringify(template).replace(contextFind, expressionWithBang);
 

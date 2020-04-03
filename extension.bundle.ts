@@ -40,6 +40,7 @@ export { DeploymentTemplate } from "./src/DeploymentTemplate";
 export { Duration } from './src/Duration';
 export { ExpressionType } from "./src/ExpressionType";
 export { ext } from './src/extensionVariables';
+export { looksLikeResourceTypeStringLiteral } from "./src/getResourceIdCompletions";
 export { Histogram } from "./src/Histogram";
 export { HoverInfo } from "./src/Hover";
 export { httpGet } from './src/httpGet';

@@ -20,7 +20,7 @@ interface IResourceInfo {
     typeExpressions: string[];
 }
 
-export function getResourceIdFunctionCompletions(
+export function getResourceIdCompletions(
     pc: TemplatePositionContext,
     funcCall: TLE.FunctionCallValue,
     parentStringToken: Json.Token
@@ -35,11 +35,7 @@ export function getResourceIdFunctionCompletions(
             const argumentIndex = pc.getFunctionCallArgumentIndex(funcCall);
             if (typeof argumentIndex === 'number') {
                 const segmentIndex = argumentIndex;
-                if (segmentIndex === 0) {
-                    return getResourceTypeCompletions(pc, pc.documentCharacterIndex);
-                } else {
-                    return getResourceNameCompletions(pc, funcCall, parentStringToken, 0, segmentIndex);
-                }
+                return getCompletions(pc, funcCall, parentStringToken, segmentIndex, { maxOptionalParameters: 2 });
             }
         }
     }
@@ -47,96 +43,63 @@ export function getResourceIdFunctionCompletions(
     return [];
 }
 
-function getResourceTypeCompletions(
-    pc: TemplatePositionContext,
-    documentCharacterIndex: number
-): Completion.Item[] {
-    const results: Completion.Item[] = [];
-    for (let info of getResourcesInfo(pc.document)) {
-        const insertText = getFullTypeName(info);
-        const label = insertText;
-        const span = new Language.Span(documentCharacterIndex, 0);
-
-        results.push(new Completion.Item({
-            label,
-            insertText,
-            span,
-            kind: Completion.CompletionKind.DtResourceIdResType,
-            highPriority: true,
-            // Force the first of the resourceId completions to be preselected, otherwise
-            // vscode tends to preselect one of the regular function completions based
-            // on recently-typed text
-            preselect: true,
-            commitCharacters: [',']
-        }));
-    }
-
-    return Completion.Item.dedupeByLabel(results);
-}
-
-function getArgumentExpressionText(
+function getCompletions(
     pc: TemplatePositionContext,
     funcCall: TLE.FunctionCallValue,
     parentStringToken: Json.Token,
-    argumentIndex: number
-): string | undefined {
-    const argExpressionValue: TLE.Value | undefined = funcCall.argumentExpressions[argumentIndex];
-    if (argExpressionValue) {
-        return pc.document.getTextAtTleValue(argExpressionValue, parentStringToken)?.toLowerCase();
-    }
-
-    return undefined;
-}
-
-function getResourceNameCompletions(
-    pc: TemplatePositionContext,
-    funcCall: TLE.FunctionCallValue,
-    parentStringToken: Json.Token,
-    indexOfResourceTypeArgument: number,
-    // segment 0 = type
-    // segment 1 = first part of name
-    // segment 2 = second part of name, etc.
-    segmentIndex: number
+    argIndexAtCursor: number,
+    resourceIdCompletions: { maxOptionalParameters: number }
 ): Completion.Item[] {
-    assert(indexOfResourceTypeArgument === 0, "NYI asdf");
-
-    // Get the resource type specified in the first argument of resourceId
-    let resourceTypeArgAsStringLC: string | undefined = getArgumentExpressionText(pc, funcCall, parentStringToken, 0)
-        ?.toLowerCase();
-    if (!resourceTypeArgAsStringLC) {
-        return [];
+    if (argIndexAtCursor === 0) {
+        // For the first argument, we always provide completions for the list of resource types,
+        // since we don't know if the user is adding optional args to the call
+        return getResourceTypeCompletions(pc, resourceIdCompletions, argIndexAtCursor);
     }
 
+    const allResources = getResourcesInfo(pc.document);
+
+    // Check previous arguments in the call to see if any of them matches a known resource type
+    let argWithResourceType = findFunctionCallArgumentWithResourceType(
+        allResources,
+        pc,
+        funcCall,
+        parentStringToken,
+        argIndexAtCursor - 1);
+
+    if (!argWithResourceType) {
+        // None of the previous arguments matched a known resource type, so the current argument might
+        // be intended to be a resource type.
+        return getResourceTypeCompletions(pc, resourceIdCompletions, argIndexAtCursor);
+    }
+
+    // Only look at resources with that type
+    let filteredResources = filterResourceInfosByType(allResources, argWithResourceType.typeExpression);
+
+    // Previous parts of the name must also match what is currently specified in the function call
+    let argIndex = argWithResourceType.argIndex + 1;
+    let nameSegmentIndex = 0;
+    // tslint:disable-next-line:no-constant-condition
+    while (true) {
+        assert(argIndex <= argIndexAtCursor);
+        if (argIndex === argIndexAtCursor) {
+            break;
+        }
+
+        let argExpression: string | undefined = getArgumentExpressionText(pc, funcCall, parentStringToken, argIndex);
+        if (!argExpression) {
+            return [];
+        }
+
+        filteredResources = filterResourceInfosByNameSegment(filteredResources, argExpression, nameSegmentIndex);
+        ++argIndex;
+        ++nameSegmentIndex;
+    }
+
+    // Add completions for all remaining resources, at the given name segment index
     const results: Completion.Item[] = [];
-    for (let info of getResourcesInfo(pc.document)) {
-        const resFullType = getFullTypeName(info);
-        //const resFullName = getFullResourceName(info);
-
-        if (resFullType.toLowerCase() !== resourceTypeArgAsStringLC) {
-            // Resource type for this resource doesn't match the first argument
-            continue;
-        }
-
-        // Previous parts of the name must also match what is currently specified in the template text
-        let previousNameSegmentsMatch = true;
-        for (let iSegment = 1; iSegment <= segmentIndex - 1; ++iSegment) {
-            const namePartIndex = iSegment - 1;
-            const segmentName = info.nameExpressions[namePartIndex];
-
-            const checkingArgIndex = indexOfResourceTypeArgument + iSegment;
-            let namePartArgumentText: string | undefined = getArgumentExpressionText(pc, funcCall, parentStringToken, checkingArgIndex);
-            if (segmentName.toLowerCase() !== namePartArgumentText?.toString()) {
-                previousNameSegmentsMatch = false;
-                break; //asdf test with 3 segments
-            }
-        }
-        if (!previousNameSegmentsMatch) { //asdf refactor
-            continue;
-        }
-
-        const resSegmentName = info.nameExpressions[segmentIndex - 1]; //asdf
-        if (resSegmentName) {
-            const insertText = resSegmentName;
+    for (let info of filteredResources) {
+        const insertText = info.nameExpressions[nameSegmentIndex];
+        if (insertText) {
             const label = insertText;
             const span = new Language.Span(pc.documentCharacterIndex, 0);
 
@@ -158,6 +121,94 @@ function getResourceNameCompletions(
     return Completion.Item.dedupeByLabel(results);
 }
 
+/**
+ * Finds the first function call argument that matches a known type (could be
+ * an expression), or looks like a resource type as a string literal
+ */
+function findFunctionCallArgumentWithResourceType(
+    resources: IResourceInfo[],
+    pc: TemplatePositionContext,
+    funcCall: TLE.FunctionCallValue,
+    parentStringToken: Json.Token,
+    maxIndex: number
+): { argIndex: number; typeExpression: string } | undefined {
+    for (let argIndex = 0; argIndex <= maxIndex; ++argIndex) {
+        let argText: string | undefined = getArgumentExpressionText(pc, funcCall, parentStringToken, argIndex);
+        if (argText) {
+            if (looksLikeResourceTypeStringLiteral(argText)) {
+                return { argIndex, typeExpression: argText };
+            }
+
+            let argTextLC = argText?.toLowerCase();
+            for (let info of resources) {
+                const resFullType = getFullTypeName(info); // asdf put this into the info itself
+                if (resFullType.toLowerCase() === argTextLC) { //asdf put lc into info
+                    return { argIndex, typeExpression: argText };
+                }
+            }
+        }
+    }
+
+    return undefined;
+}
+
+function filterResourceInfosByType(infos: IResourceInfo[], typeExpression: string): IResourceInfo[] {
+    if (!typeExpression) {
+        return [];
+    }
+    const typeExpressionLC = typeExpression.toLowerCase();
+    return infos.filter(info => getFullTypeName(info).toLowerCase() === typeExpressionLC);
+}
+
+function filterResourceInfosByNameSegment(infos: IResourceInfo[], segmentExpression: string, segmentIndex: number): IResourceInfo[] {
+    if (!segmentExpression) {
+        return [];
+    }
+    const segmentExpressionLC = segmentExpression.toLowerCase();
+    return infos.filter(info => info.nameExpressions[segmentIndex]?.toLocaleLowerCase() === segmentExpressionLC); // asdf store LC?
+}
+
+/**
+ * Get completions for all resource types available (all those used in the template)
+ * at the given document index
+ */
+function getResourceTypeCompletions(
+    pc: TemplatePositionContext,
+    resourceIdCompletions: { maxOptionalParameters: number },
+    argumentIndex: number
+): Completion.Item[] {
+    if (argumentIndex > resourceIdCompletions.maxOptionalParameters) {
+        // The resource type must be the argument after the optional arguments.
+        // This argument is past that, so no resource type completions.
+        return [];
+    }
+
+    const results: Completion.Item[] = [];
+    for (let info of getResourcesInfo(pc.document)) {
+        const insertText = getFullTypeName(info);
+        const label = insertText;
+        const span = new Language.Span(pc.documentCharacterIndex, 0);
+
+        results.push(new Completion.Item({
+            label,
+            insertText,
+            span,
+            kind: Completion.CompletionKind.DtResourceIdResType,
+            highPriority: true,
+            // Force the first of the resourceId completions to be preselected, otherwise
+            // vscode tends to preselect one of the regular function completions based
+            // on recently-typed text
+            preselect: true,
+            commitCharacters: [',']
+        }));
+    }
+
+    return Completion.Item.dedupeByLabel(results);
+}
+
+/**
+ * Get useful info about each resource in the template
+ */
 function getResourcesInfo(template: DeploymentTemplate): IResourceInfo[] {
     if (template.resources) {
         return getInfoFromResourcesArray(template.resources, undefined);
@@ -198,6 +249,25 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
                     results.push(...childrenInfo);
                 }
 
+                // Special-case subnets - they were designed before nested resources were a thing.
+                // Subnets are considered children but are defined under properties/subnets instead of
+                //   a nested "resources"
+                // Example:
+                //
+                // "resources": [
+                //     {
+                //         "type": "Microsoft.Network/virtualNetworks",
+                //         "name": "vnet1",
+                //         "properties": {
+                //             "subnets": [
+                //                 // These are considered children, with type Microsoft.Network/virtualNetworks/subnets
+                //                 {
+                //                     "name": "subnet1",
+                //                 }
+                //             ]
+                //         }
+                //     }
+                // ]
                 if (resType.unquotedValue.toLowerCase() === 'Microsoft.Network/virtualNetworks'.toLowerCase()) {
                     const subnets = resourceObject.getPropertyValue(templateKeys.properties)?.asObjectValue
                         ?.getPropertyValue('subnets')?.asArrayValue;
@@ -219,6 +289,23 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
     }
 
     return results;
+}
+
+/**
+ * Retrieves the document text for the given argument
+ */
+function getArgumentExpressionText(
+    pc: TemplatePositionContext,
+    funcCall: TLE.FunctionCallValue,
+    parentStringToken: Json.Token,
+    argumentIndex: number
+): string | undefined {
+    const argExpressionValue: TLE.Value | undefined = funcCall.argumentExpressions[argumentIndex];
+    if (argExpressionValue) {
+        return pc.document.getTextAtTleValue(argExpressionValue, parentStringToken)?.toLowerCase();
+    }
+
+    return undefined;
 }
 
 function isExpression(text: string): boolean {
@@ -244,8 +331,7 @@ function jsonStringToTleExpression(stringValue: Json.StringValue): string {
     }
 }
 
-// asdf what about expressions?
-function unquote(expression: string): string {
+function removeSingleQuotes(expression: string): string {
     if (expression.length >= 2 && expression[0] === `'` && expression.slice(-1) === `'`) {
         return expression.slice(1, expression.length - 1);
     }
@@ -255,22 +341,12 @@ function unquote(expression: string): string {
 
 function getFullTypeName(info: IResourceInfo): string { //asdf need the array?
     if (info.typeExpressions.length > 1) {
-        return `'${info.typeExpressions.map(unquote).join('/')}'`; //asdf
+        return `'${info.typeExpressions.map(removeSingleQuotes).join('/')}'`; //asdf
     } else {
         return info.typeExpressions[0];
     }
 }
 
-//asdf
-// function getFullResourceName(info: IResourceInfo): string { //asdf need the array?
-//     if (info.nameExpressions.length > 1) {
-//         return `'${info.nameExpressions.map(unquote).join('/')}'`; //asdf
-//     } else {
-//         return info.nameExpressions[0];
-//     }
-// }
-
-//asdf expressions?
 // e.g.
 //   "networkSecurityGroup2/networkSecurityGroupRule2"
 //     ->
@@ -305,4 +381,9 @@ function getTypeSegmentExpressions(typeName: Json.StringValue): string[] {
     }
 
     return segments.map(segment => `'${segment}'`);
+}
+
+export function looksLikeResourceTypeStringLiteral(text: string): boolean {
+    // e.g. 'Microsoft.Compute/virtualMachines/extensions'
+    return !!text.match(/^'[^'.]+\.[^'.]+\/([^'.]+)(\.[^'.]+)*'$/);
 }

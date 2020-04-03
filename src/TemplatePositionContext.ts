@@ -10,7 +10,7 @@ import * as Completion from "./Completion";
 import { templateKeys } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { assert } from './fixed_assert';
-import { getResourceIdFunctionCompletions } from "./getResourceIdFunctionCompletions";
+import { getResourceIdCompletions } from "./getResourceIdCompletions";
 import { IFunctionMetadata, IFunctionParameterMetadata } from "./IFunctionMetadata";
 import { INamedDefinition } from "./INamedDefinition";
 import { IParameterDefinition } from "./IParameterDefinition";
@@ -416,7 +416,7 @@ export class TemplatePositionContext extends PositionContext {
 
         // If the completion is for 'resourceId' or related function, then in addition
         // to the regular completions, also add special completions for resourceId
-        completions.push(...getResourceIdFunctionCompletions(this, tleValue, parentStringToken));
+        completions.push(...getResourceIdCompletions(this, tleValue, parentStringToken));
 
         let replaceSpan: language.Span;
         let completionPrefix: string;
