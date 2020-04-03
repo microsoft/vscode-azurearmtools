@@ -8,6 +8,8 @@
 
 import { IDeploymentTemplate } from "./support/diagnostics";
 
+// =========== 101-acsengine-swarmmode/azuredeploy.json
+
 export let template_101_acsengine_swarmmode: IDeploymentTemplate = {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
@@ -1070,9 +1072,110 @@ export let template_101_acsengine_swarmmode: IDeploymentTemplate = {
     }
 };
 
-template_101_acsengine_swarmmode.outputs!.testOutput = {
-    "type": "string",
-    "value": "[<context>]"
+// =========== 101-app-service-regional-vnet-integration/azuredeploy.json
+
+export const template_101_app_service_regional_vnet_integration: IDeploymentTemplate = {
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appName": {
+            "type": "string",
+            "defaultValue": "[uniqueString(resourceGroup().id)]",
+            "metadata": {
+                "description": "The name of the app to create."
+            }
+        },
+        "appServicePlanName": {
+            "type": "string",
+            "defaultValue": "[uniqueString(subscription().subscriptionId)]",
+            "metadata": {
+                "description": "The name of the app service plan to create."
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "The location in which all resources should be deployed."
+            }
+        }
+    },
+    "variables": {
+        "vnetName": "vnet",
+        "vnetAddressPrefix": "10.0.0.0/16",
+        "subnetName": "myappservice",
+        "subnetAddressPrefix": "10.0.0.0/24",
+        "appServicePlanSku": "S1"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2019-11-01",
+            "name": "[variables('vnetName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnetAddressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetAddressPrefix')]",
+                            "delegations": [
+                                {
+                                    "name": "delegation",
+                                    "properties": {
+                                        "serviceName": "Microsoft.Web/serverFarms"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2019-08-01",
+            "name": "[parameters('appServicePlanName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "[variables('appServicePlanSku')]"
+            },
+            "kind": "app"
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2019-08-01",
+            "name": "[parameters('appName')]",
+            "location": "[parameters('location')]",
+            "kind": "app",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverFarms', parameters('appServicePlanName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverFarms', parameters('appServicePlanName'))]"
+            },
+            "resources": [
+                {
+                    "name": "virtualNetwork",
+                    "type": "networkConfig",
+                    "apiVersion": "2019-08-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', parameters('appName'))]"
+                    ],
+                    "properties": {
+                        "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]",
+                        "swiftSupported": true
+                    }
+                }
+            ]
+        }
+    ]
 };
 
 // asdf 201-timeseriesinsights-environment-with-eventhub - grandchildren

@@ -192,10 +192,27 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
                 results.push(info);
 
                 // Check child resources
-                const childResources = Json.asArrayValue(resourceObject.getPropertyValue(templateKeys.resources));
+                const childResources = resourceObject.getPropertyValue(templateKeys.resources)?.asArrayValue;
                 if (childResources) {
                     const childrenInfo = getInfoFromResourcesArray(childResources, info);
                     results.push(...childrenInfo);
+                }
+
+                if (resType.unquotedValue.toLowerCase() === 'Microsoft.Network/virtualNetworks'.toLowerCase()) {
+                    const subnets = resourceObject.getPropertyValue(templateKeys.properties)?.asObjectValue
+                        ?.getPropertyValue('subnets')?.asArrayValue;
+                    for (let subnet of subnets?.elements ?? []) {
+                        const subnetObject = Json.asObjectValue(subnet);
+                        const subnetName = subnetObject?.getPropertyValue(templateKeys.resourceName)?.asStringValue;
+                        if (subnetName) {
+                            const subnetTypes = [`'Microsoft.Network/virtualNetworks'`, `'subnets'`];
+                            const subnetInfo: IResourceInfo = {
+                                nameExpressions: [jsonStringToTleExpression(resName), jsonStringToTleExpression(subnetName)],
+                                typeExpressions: subnetTypes
+                            };
+                            results.push(subnetInfo);
+                        }
+                    }
                 }
             }
         }

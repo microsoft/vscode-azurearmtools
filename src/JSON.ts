@@ -12,6 +12,7 @@
 // Because the JSON/ARM parsers catch these errors, it doesn't make too much difference for the end user
 //   so might not be worth fixing.
 
+import { Json } from "../extension.bundle";
 import { CachedValue } from "./CachedValue";
 import { CaseInsensitiveMap } from "./CaseInsensitiveMap";
 import { assert } from "./fixed_assert";
@@ -593,6 +594,26 @@ export abstract class Value {
      */
     public get __debugDisplay(): string {
         return this.toString();
+    }
+
+    public get asObjectValue(): ObjectValue | undefined {
+        return Json.asObjectValue(this);
+    }
+
+    public get asArrayValue(): ArrayValue | undefined {
+        return Json.asArrayValue(this);
+    }
+
+    public get asStringValue(): StringValue | undefined {
+        return Json.asStringValue(this);
+    }
+
+    public get asNumberValue(): NumberValue | undefined {
+        return Json.asNumberValue(this);
+    }
+
+    public get asBooleanValue(): BooleanValue | undefined {
+        return Json.asBooleanValue(this);
     }
 }
 

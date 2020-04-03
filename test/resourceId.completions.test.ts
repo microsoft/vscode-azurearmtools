@@ -6,9 +6,10 @@
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name no-constant-condition
 // tslint:disable:prefer-template no-http-string
 
-import { template_101_acsengine_swarmmode } from './resourceId.completions.templates';
+import { template_101_acsengine_swarmmode, template_101_app_service_regional_vnet_integration } from './resourceId.completions.templates';
 import { createExpressionCompletionsTest } from './support/createCompletionsTest';
 import { IDeploymentTemplate, IPartialDeploymentTemplate } from './support/diagnostics';
+import { stringify } from './support/stringify';
 import { allTestDataExpectedCompletions } from './TestData';
 
 suite("ResourceId completions", () => {
@@ -31,7 +32,11 @@ suite("ResourceId completions", () => {
         expectedCompletions: string[]
     ): void {
         if (!("outputs" in template)) {
-            // Add default outputs section to place test expressions into
+            template.outputs = {};
+        }
+
+        if (!stringify(template).includes('<context>')) {
+            // Add a default test output to place test expressions into if not already there
             template = {
                 ...template,
                 outputs: {
@@ -409,6 +414,7 @@ suite("ResourceId completions", () => {
                 "'Microsoft.Network/publicIPAddresses'",
                 "'Microsoft.Compute/virtualMachineScaleSets'",
                 "'Microsoft.Network/virtualNetworks'",
+                "'Microsoft.Network/virtualNetworks/subnets'",
                 "'Microsoft.Compute/availabilitySets'",
                 "'Microsoft.Network/loadBalancers'",
                 "'Microsoft.Network/loadBalancers/inboundNatRules'",
@@ -450,21 +456,101 @@ suite("ResourceId completions", () => {
             [
             ]);
 
-        /*asdf suite("subnets special case", () => {
-            // "agentVnetSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('agentSubnetName'))]",
-            createResourceIdCompletionsTest(
-                template_101_acsengine_swarmmode,
-                `resourceId('Microsoft.Network/virtualNetworks/subnets', !)`,
-                [`variables('virtualNetworkName')`]);
-            createResourceIdCompletionsTest(
-                template_101_acsengine_swarmmode,
-                `resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'),!)`,
-                [`variables('masterSubnetName')`, `variables('agentSubnetName')`]);
-            createResourceIdCompletionsTest(
-                template_101_acsengine_swarmmode,
-                `resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('agentSubnetName'),!)`,
-                []);
-        });*/
+        suite("subnets special case - subnet children are located in properties, not resources", () => {
+            suite("simple", () => {
+                const nestedSubnetsTemplate = {
+                    "resources": [
+                        {
+                            "type": "Microsoft.Network/virtualNetworks",
+                            "name": "vnet1",
+                            "properties": {
+                                "subnets": [
+                                    // These are considered children, with type Microsoft.Network/virtualNetworks/subnets
+                                    {
+                                        "name": "subnet1",
+                                    },
+                                    {
+                                        "name": "subnet2",
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                };
+
+                createResourceIdCompletionsTest2(
+                    "1st arg",
+                    nestedSubnetsTemplate,
+                    `resourceId(!)`,
+                    [`'Microsoft.Network/virtualNetworks'`, `'Microsoft.Network/virtualNetworks/subnets'`]
+                );
+                createResourceIdCompletionsTest2(
+                    "2nd arg",
+                    nestedSubnetsTemplate,
+                    `resourceId('Microsoft.Network/virtualNetworks/subnets', !)`,
+                    [`'vnet1'`]
+                );
+                createResourceIdCompletionsTest2(
+                    "2nd arg",
+                    nestedSubnetsTemplate,
+                    `resourceId('Microsoft.Network/virtualNetworks/subnets', 'vnet1', !)`,
+                    [`'subnet1'`, `'subnet2'`]
+                );
+            });
+
+            suite("template_101_app_service_regional_vnet_integration", () => {
+                // "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), variables('subnetName'))]",
+                createResourceIdCompletionsTest2(
+                    "1st arg",
+                    template_101_app_service_regional_vnet_integration,
+                    `resourceId(!)`,
+                    [
+                        `'Microsoft.Network/virtualNetworks'`,
+                        `'Microsoft.Network/virtualNetworks/subnets'`,
+                        `'Microsoft.Web/serverfarms'`,
+                        `'Microsoft.Web/sites'`,
+                        `'Microsoft.Web/sites/networkConfig'`
+                    ]
+                );
+                createResourceIdCompletionsTest2(
+                    "2nd arg",
+                    template_101_app_service_regional_vnet_integration,
+                    `resourceId('Microsoft.Network/virtualNetworks/subnets',!)`,
+                    [
+                        `variables('vnetName')`
+                    ]
+                );
+                createResourceIdCompletionsTest2(
+                    "3rd arg",
+                    template_101_app_service_regional_vnet_integration,
+                    `resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), !)`,
+                    [`variables('subnetName')`]
+                );
+
+                createResourceIdCompletionsTest2(
+                    "3rd arg, networkConfig",
+                    template_101_app_service_regional_vnet_integration,
+                    `resourceId('Microsoft.Web/sites/networkConfig',parameters('appName'),!)`,
+                    [`'virtualNetwork'`]
+                );
+            });
+
+            suite("template_101_acsengine_swarmmode", () => {
+                // "agentVnetSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('agentSubnetName'))]",
+                createResourceIdCompletionsTest(
+                    template_101_acsengine_swarmmode,
+                    `resourceId('Microsoft.Network/virtualNetworks/subnets', !)`,
+                    [`variables('virtualNetworkName')`]);
+                createResourceIdCompletionsTest(
+                    template_101_acsengine_swarmmode,
+                    `resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'),!)`,
+                    [`variables('masterSubnetName')`, `variables('agentSubnetName')`]);
+                createResourceIdCompletionsTest(
+                    template_101_acsengine_swarmmode,
+                    `resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('agentSubnetName'),!)`,
+                    []);
+            });
+        });
 
         suite("Microsoft.Compute/virtualMachines/extensions", () => {
             createResourceIdCompletionsTest(
