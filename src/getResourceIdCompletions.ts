@@ -145,8 +145,8 @@ function findFunctionCallArgumentWithResourceType(
 
             let argTextLC = argText?.toLowerCase();
             for (let info of resources) {
-                const resFullType = getFullTypeName(info); // asdf put this into the info itself
-                if (resFullType.toLowerCase() === argTextLC) { //asdf put lc into info
+                const resFullType = getFullTypeName(info);
+                if (resFullType.toLowerCase() === argTextLC) {
                     return { argIndex, typeExpression: argText };
                 }
             }
@@ -169,7 +169,7 @@ function filterResourceInfosByNameSegment(infos: IResourceInfo[], segmentExpress
         return [];
     }
     const segmentExpressionLC = segmentExpression.toLowerCase();
-    return infos.filter(info => info.nameExpressions[segmentIndex]?.toLocaleLowerCase() === segmentExpressionLC); // asdf store LC?
+    return infos.filter(info => info.nameExpressions[segmentIndex]?.toLocaleLowerCase() === segmentExpressionLC);
 }
 
 /**
@@ -236,7 +236,7 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
                 // If there's a parent, generally the type specified in the template
                 // is just the last segment, buy it is allowed to put the full
                 // type there instead
-                const typeSegments = splitTypeIntoSegments(resType);
+                const typeSegments = splitResourceTypeIntoSegments(resType.unquotedValue);
                 if (parent && typeSegments.length <= 1) {
                     // Add to end of parent type segments
                     typeExpressions = [...parent.typeExpressions, ...typeSegments];
@@ -244,7 +244,7 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
                     typeExpressions = typeSegments;
                 }
 
-                const nameSegments = splitNameIntoSegments(resName);
+                const nameSegments = splitResourceNameIntoSegments(resName.unquotedValue);
                 if (parent && nameSegments.length <= 1) {
                     // Add to end of parent name segments
                     nameExpressions = [...parent.nameExpressions, ...nameSegments];
@@ -290,7 +290,7 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
                         if (subnetName) {
                             const subnetTypes = [`'Microsoft.Network/virtualNetworks'`, `'subnets'`];
                             const subnetInfo: IResourceInfo = {
-                                nameExpressions: [jsonStringToTleExpression(resName), jsonStringToTleExpression(subnetName)],
+                                nameExpressions: [jsonStringToTleExpression(resName.unquotedValue), jsonStringToTleExpression(subnetName.unquotedValue)],
                                 typeExpressions: subnetTypes
                             };
                             results.push(subnetInfo);
@@ -335,12 +335,11 @@ function isExpression(text: string): boolean {
  *   "mystring" => "'mystring'"
  *   "[variables('abc')]" => "variables('abc')"
  */
-function jsonStringToTleExpression(stringValue: Json.StringValue): string {
-    const text = stringValue.unquotedValue;
-    if (isExpression(text)) {
-        return text.slice(1, text.length - 1);
+function jsonStringToTleExpression(stringUnquotedValue: string): string {
+    if (isExpression(stringUnquotedValue)) {
+        return stringUnquotedValue.slice(1, stringUnquotedValue.length - 1);
     } else {
-        return `'${text}'`;
+        return `'${stringUnquotedValue}'`;
     }
 }
 
@@ -352,9 +351,9 @@ function removeSingleQuotes(expression: string): string {
     return expression;
 }
 
-function getFullTypeName(info: IResourceInfo): string { //asdf need the array?
+function getFullTypeName(info: IResourceInfo): string {
     if (info.typeExpressions.length > 1) {
-        return `'${info.typeExpressions.map(removeSingleQuotes).join('/')}'`; //asdf
+        return `'${info.typeExpressions.map(removeSingleQuotes).join('/')}'`;
     } else {
         return info.typeExpressions[0];
     }
@@ -363,33 +362,39 @@ function getFullTypeName(info: IResourceInfo): string { //asdf need the array?
 // e.g.
 //   "networkSecurityGroup2/networkSecurityGroupRule2"
 //     ->
-//   ["'networkSecurityGroup2'", "'networkSecurityGroupRule2'"]
-function splitNameIntoSegments(name: Json.StringValue): string[] {
-    const text = name.unquotedValue;
+//   [ "'networkSecurityGroup2'", "'networkSecurityGroupRule2'" ]
+//
+//   "[concat(variables('sqlServer'), '/' , variables('firewallRuleName'))]"
+//     ->
+//   [ "concat(variables('sqlServer')", "variables('firewallRuleName')" ]
+export function splitResourceNameIntoSegments(nameUnquotedValue: string): string[] {
+    if (isExpression(nameUnquotedValue)) {
+        // It's an expression.  Handle certain common patterns
+        const expressionWithoutBrackets = jsonStringToTleExpression(nameUnquotedValue);
+        TLE.Parser.parse(`"${nameUnquotedValue}"`);
 
-    if (isExpression(text)) {
+        // "[concat(expression1, '/' , expression2)]" => [expression1, expression2]
+
         // If it's an expression, we can't know how to split it into segments in a generic
         // way, so just return the entire expression
-        return [jsonStringToTleExpression(name)];
+        return [jsonStringToTleExpression(nameUnquotedValue)];
     }
 
-    return text.split('/').map(segment => `'${segment}'`);
+    return nameUnquotedValue.split('/').map(segment => `'${segment}'`);
 }
 
 // e.g.
-// "'Microsoft.Network/networkSecurityGroups/securityRules'"
+// "Microsoft.Network/networkSecurityGroups/securityRules"
 //   ->
-// ["'Microsoft.Network/networkSecurityGroups'", "'securityRules']
-function splitTypeIntoSegments(typeName: Json.StringValue): string[] {
-    const text = typeName.unquotedValue;
-
-    if (isExpression(text)) {
+// [ "'Microsoft.Network/networkSecurityGroups'", "'securityRules'" ]
+function splitResourceTypeIntoSegments(typeNameUnquotedValue: string): string[] {
+    if (isExpression(typeNameUnquotedValue)) {
         // If it's an expression, we can't know how to split it into segments in a generic
         // way, so just return the entire expression
-        return [jsonStringToTleExpression(typeName)];
+        return [jsonStringToTleExpression(typeNameUnquotedValue)];
     }
 
-    let segments = text.split('/');
+    let segments = typeNameUnquotedValue.split('/');
     if (segments.length >= 2) {
         // Combine first two segments
         segments = [`${segments[0]}/${segments[1]}`].concat(segments.slice(2));

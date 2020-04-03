@@ -7,10 +7,11 @@
 // tslint:disable:prefer-template no-http-string
 
 import * as assert from 'assert';
-import { AzureRMAssets, looksLikeResourceTypeStringLiteral } from '../extension.bundle';
+import { AzureRMAssets, looksLikeResourceTypeStringLiteral, splitResourceNameIntoSegments } from '../extension.bundle';
 import { template_101_acsengine_swarmmode, template_101_app_service_regional_vnet_integration, template_201_time_series_insights_environment_with_eventhub } from './resourceId.completions.templates';
 import { createExpressionCompletionsTest } from './support/createCompletionsTest';
 import { IDeploymentTemplate, IPartialDeploymentTemplate } from './support/diagnostics';
+import { parseTemplate } from './support/parseTemplate';
 import { stringify } from './support/stringify';
 import { allTestDataExpectedCompletions, UseRealFunctionMetadata } from './TestData';
 
@@ -692,6 +693,53 @@ suite("ResourceId completions", () => {
 
         suite("decoupled child resources", () => {
             createTestsForChildResources(decoupledTemplate);
+
+            suite("Name is an expression with concat - resourceId completion should split the expression", () => {
+                const template: IPartialDeploymentTemplate = {
+                    "resources": [
+                        {
+                            "name": "[variables('sqlServer')]",
+                            "type": "Microsoft.Sql/servers"
+                        },
+                        {
+                            "name": "[concat(variables('sqlServer'), '/' , variables('firewallRuleName'))]",
+                            "type": "Microsoft.Sql/servers/firewallRules"
+                        }
+                    ]
+                };
+
+                //asdf more testcases
+                //asdf split type name expressions
+
+                // resourceId('Microsoft.Sql/servers/firewallRules',variables('sqlServer'),variables('firewallRuleName'))
+                createResourceIdCompletionsTest2("1st arg", template, `resourceId(,!)`, [`'Microsoft.Sql/servers/firewallRules'`, `'Microsoft.Sql/servers'`]);
+                createResourceIdCompletionsTest2("2nd arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',!)`, [`concat(variables('sqlServer'))`]);
+                createResourceIdCompletionsTest2("3rd arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',concat(variables('sqlServer')), !)`, [`variables('firewallRuleName')`]);
+                createResourceIdCompletionsTest2("4th arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',concat(variables('sqlServer')), variables('firewallRuleName'),!)`, []);
+
+                suite("splitResourceNameIntoSegments", () => {
+                    function createTestSplitResourceNameTest(resourceName: string, expected: string[]): void {
+                        test(resourceName, async () => {
+                            const template: IPartialDeploymentTemplate = {
+                                resources: [{
+                                    "name": resourceName
+                                }
+                                ]
+                            };
+                            const dt = await parseTemplate(template);
+                            const actual = splitResourceNameIntoSegments(resourceName, dt);
+                            assert.deepStrictEqual(actual, expected);
+                        });
+                    }
+
+                    createTestSplitResourceNameTest(
+                        `[concat(variables('sqlServer'), '/' , variables('firewallRuleName'))]`,
+                        [`variables('sqlServer')`, `variables('firewallRuleName')`]);
+                    createTestSplitResourceNameTest(
+                        `[concat(variables('sqlServer'), '/' , variables('firewallRuleName'),'/','whatever')]`,
+                        [`variables('sqlServer')`, `variables('firewallRuleName')`, `'whatever'`]);
+                });
+            });
         });
 
         suite("optional arguments", () => {
