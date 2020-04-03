@@ -7,6 +7,7 @@ import * as assert from 'assert';
 import { IDeploymentTemplate, IPartialDeploymentTemplate } from "./diagnostics";
 import { parseTemplateWithMarkers } from "./parseTemplate";
 import { stringify } from './stringify';
+import { ITestPreparation, testWithPrep } from './testWithPrep';
 
 /**
  * Creates a test for completions in a particular template language expression
@@ -22,6 +23,7 @@ export function createExpressionCompletionsTest(
     template?: string | Partial<IDeploymentTemplate> | IPartialDeploymentTemplate,
     options?: {
         name?: string;
+        preps?: ITestPreparation[];
     }
 ): void {
     const defaultTemplate = <IDeploymentTemplate>{
@@ -63,29 +65,34 @@ export function createExpressionCompletionsTestEx(
     expectedCompletions: ([string, string][]) | (string[]),
     options?: {
         name?: string;
+        preps?: ITestPreparation[];
     }
 ): void {
     const name = options?.name;
-    // tslint:disable-next-line:prefer-template
-    test(`Expression completion: ${name ? name + ': ' : ''}${expressionWithBang}`, async () => {
-        expressionWithBang = expressionWithBang.replace(/!/g, "<!bang!>");
-        template = stringify(template).replace(contextFind, expressionWithBang);
+    testWithPrep(
+        // tslint:disable-next-line:prefer-template
+        `Expression completion: ${name ? name + ': ' : ''}${expressionWithBang}`,
+        options?.preps ?? [],
+        async () => {
+            expressionWithBang = expressionWithBang.replace(/!/g, "<!bang!>");
+            template = stringify(template).replace(contextFind, expressionWithBang);
 
-        const { dt, markers: { bang } } = await parseTemplateWithMarkers(template, undefined, { ignoreBang: true });
-        assert(bang, "Didn't find ! marker in text");
-        const pc = dt.getContextFromDocumentCharacterIndex(bang.index, undefined);
-        const completions = pc.getCompletionItems();
+            const { dt, markers: { bang } } = await parseTemplateWithMarkers(template, undefined, { ignoreBang: true });
+            assert(bang, "Didn't find ! marker in text");
+            const pc = dt.getContextFromDocumentCharacterIndex(bang.index, undefined);
+            const completions = pc.getCompletionItems();
 
-        const completionNames = completions.map(c => c.label).sort();
-        const completionInserts = completions.map(c => c.insertText).sort();
+            const completionNames = completions.map(c => c.label).sort();
+            const completionInserts = completions.map(c => c.insertText).sort();
 
-        const expectedNames = (<unknown[]>expectedCompletions).map(e => Array.isArray(e) ? <string>e[0] : <string>e).sort();
-        // tslint:disable-next-line: no-any
-        const expectedInsertTexts = expectedCompletions.every((e: any) => Array.isArray(e)) ? (<[string, string][]>expectedCompletions).map(e => e[1]).sort() : undefined;
+            const expectedNames = (<unknown[]>expectedCompletions).map(e => Array.isArray(e) ? <string>e[0] : <string>e).sort();
+            // tslint:disable-next-line: no-any
+            const expectedInsertTexts = expectedCompletions.every((e: any) => Array.isArray(e)) ? (<[string, string][]>expectedCompletions).map(e => e[1]).sort() : undefined;
 
-        assert.deepStrictEqual(completionNames, expectedNames, "Completion names didn't match");
-        if (expectedInsertTexts !== undefined) {
-            assert.deepStrictEqual(completionInserts, expectedInsertTexts, "Completion insert texts didn't match");
+            assert.deepStrictEqual(completionNames, expectedNames, "Completion names didn't match");
+            if (expectedInsertTexts !== undefined) {
+                assert.deepStrictEqual(completionInserts, expectedInsertTexts, "Completion insert texts didn't match");
+            }
         }
-    });
+    );
 }

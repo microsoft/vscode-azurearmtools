@@ -6,11 +6,12 @@
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name no-constant-condition
 // tslint:disable:prefer-template no-http-string
 
+import { AzureRMAssets } from '../src/AzureRMAssets';
 import { template_101_acsengine_swarmmode, template_101_app_service_regional_vnet_integration } from './resourceId.completions.templates';
 import { createExpressionCompletionsTest } from './support/createCompletionsTest';
 import { IDeploymentTemplate, IPartialDeploymentTemplate } from './support/diagnostics';
 import { stringify } from './support/stringify';
-import { allTestDataExpectedCompletions } from './TestData';
+import { allTestDataExpectedCompletions, UseRealFunctionMetadata } from './TestData';
 
 suite("ResourceId completions", () => {
     function createResourceIdCompletionsTest(
@@ -37,22 +38,25 @@ suite("ResourceId completions", () => {
 
         if (!stringify(template).includes('<context>')) {
             // Add a default test output to place test expressions into if not already there
-            template = {
-                ...template,
-                outputs: {
-                    "testOutput": {
-                        value: "[<context>]"
-                    }
-                }
+            template.outputs!.testOutput = {
+                value: "[<context>]"
             };
         }
 
         // Always add default completions
         expectedCompletions = [...expectedCompletions, ...defaultCompletions];
-        createExpressionCompletionsTest(expressionWithBang, expectedCompletions, template, { name });
+        createExpressionCompletionsTest(
+            expressionWithBang,
+            expectedCompletions,
+            template,
+            {
+                name,
+                preps: [new UseRealFunctionMetadata()]
+            });
     }
 
-    const defaultCompletions = allTestDataExpectedCompletions(0, 0).map(c => c.label);
+    const defaultCompletions = AzureRMAssets.getFunctionsMetadata().functionMetadata.map(c => c.unqualifiedName);
+    allTestDataExpectedCompletions(0, 0).map(c => c.label);
 
     suite("No resources section - empty completions", () => {
         const template: Partial<IDeploymentTemplate> = {
@@ -327,7 +331,6 @@ suite("ResourceId completions", () => {
         createResourceIdCompletionsTest(template, `resourceId('type',!)`, [`variables('name')`]);
     });
 
-    // Note: tenantResourceId and extensionResourceId aren't in the test function metadata, so we won't specifically test them here
     suite("subscriptionResourceId", () => {
         const template: Partial<IPartialDeploymentTemplate> = {
             resources: [
@@ -735,8 +738,34 @@ suite("ResourceId completions", () => {
             createTestsForChildResources(decoupledTemplate);
         });
 
-        suite("doubly nested child resources", () => {
-            test("doubly nested child resource"); //asdf
+        suite("optional arguments", () => {
+            const template: IPartialDeploymentTemplate = {
+                "resources": [
+                    {
+                        "name": "name1",
+                        "type": "ns.type1",
+                        "resources": [
+                            {
+                                "name": "name2",
+                                "type": "type2",
+                                "resources": [
+                                    {
+                                        "name": "name3",
+                                        "type": "type3"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                ]
+            };
+
+            createResourceIdCompletionsTest2(
+                "asdf",
+                template,
+                `resourceId('ns.type1/type2/type3', 'name1', 'name2', !)`,
+                [`'name3'`]
+            );
         });
     });
 });

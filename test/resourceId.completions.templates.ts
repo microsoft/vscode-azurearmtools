@@ -1179,3 +1179,4 @@ export const template_101_app_service_regional_vnet_integration: IDeploymentTemp
 };
 
 // asdf 201-timeseriesinsights-environment-with-eventhub - grandchildren
+// asdf or 101-cosmosdb-sql-container-sprocs/azuredeploy.json

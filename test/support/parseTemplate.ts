@@ -38,7 +38,7 @@ export async function parseTemplateWithMarkers(
         ignoreBang?: boolean;
     }
 ): Promise<{ dt: DeploymentTemplate; markers: Markers }> {
-    const { unmarkedText, markers } = getDocumentMarkers(template);
+    const { unmarkedText, markers } = getDocumentMarkers(template, options);
     const dt: DeploymentTemplate = new DeploymentTemplate(unmarkedText, Uri.file("https://parseTemplate template"));
 
     // Always run these even if not checking against expected, to verify nothing throws
