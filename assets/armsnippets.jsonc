@@ -249,7 +249,7 @@
             "            \"enabled\": ${20|true,false|},",
             "            \"firewallMode\": \"${21|Detection,Prevention|}\",",
             "            \"ruleSetType\": \"OWASP\",",
-            "            \"ruleSetVersion\": \"${21|2.2.9,3.0,3.1|}\"",
+            "            \"ruleSetVersion\": \"${22|2.2.9,3.0,3.1|}\"",
             "          }",
             "    }",
             "}"
