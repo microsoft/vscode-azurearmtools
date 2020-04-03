@@ -21,7 +21,7 @@ export class QuickPickItem<T> implements vscode.QuickPickItem {
     }
 }
 
-export function getParameterType(): QuickPickItem<string>[] {
+export function getItemType(): QuickPickItem<string>[] {
     let items: QuickPickItem<string>[] = [];
     items.push(new QuickPickItem<string>("String", "string", "A string"));
     items.push(new QuickPickItem<string>("Secure string", "securestring", "A secure string"));
@@ -36,7 +36,7 @@ export function getParameterType(): QuickPickItem<string>[] {
 export function getInsertItemType(): QuickPickItem<SortType>[] {
     let items: QuickPickItem<SortType>[] = [];
     // items.push(new QuickPickItem<SortType>("Function", SortType.Functions, "Insert a function"));
-    // items.push(new QuickPickItem<SortType>("Output", SortType.Outputs, "Inserts an output"));
+    items.push(new QuickPickItem<SortType>("Output", SortType.Outputs, "Inserts an output"));
     items.push(new QuickPickItem<SortType>("Parameter", SortType.Parameters, "Inserts a parameter"));
     // items.push(new QuickPickItem<SortType>("Resource", SortType.Resources, "Insert a resource"));
     items.push(new QuickPickItem<SortType>("Variable", SortType.Variables, "Insert a variable"));
@@ -52,6 +52,7 @@ export async function insertItem(template: DeploymentTemplate | undefined, sortT
         case SortType.Functions:
             break;
         case SortType.Outputs:
+            await insertOutput(template, textEditor);
             break;
         case SortType.Parameters:
             await insertParameter(template, textEditor);
@@ -81,7 +82,7 @@ async function insertParameter(template: DeploymentTemplate, textEditor: vscode.
     let parameters = getTemplatePart(template, templateKeys.parameters);
     let startText = parameters?.properties.length === 0 ? '\r\n\t\t' : '\t,';
     let name = await ext.ui.showInputBox({ prompt: "Name of parameter?" });
-    const parameterType = await ext.ui.showQuickPick(getParameterType(), { placeHolder: 'Type of parameter?' });
+    const parameterType = await ext.ui.showQuickPick(getItemType(), { placeHolder: 'Type of parameter?' });
     let defaultValue = await ext.ui.showInputBox({ prompt: "Default value? Leave empty for no default value", });
     let defaultValueText = defaultValue === '' ? '' : `,\r\n\t\t\t"defaultValue": "${defaultValue}"`;
     let descriptionValue = await ext.ui.showInputBox({ prompt: "Description? Leave empty for no description", });
@@ -100,6 +101,21 @@ async function insertVariable(template: DeploymentTemplate, textEditor: vscode.T
     await insertText(textEditor, index, text);
     let cursorPos = text.indexOf('""');
     let pos = textEditor.document.positionAt(index! + cursorPos + 1);
+    let newSelection = new vscode.Selection(pos, pos);
+    textEditor.selection = newSelection;
+    textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
+}
+
+async function insertOutput(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
+    let outputs = getTemplatePart(template, templateKeys.outputs);
+    let startText = outputs?.properties.length === 0 ? '\r\n\t\t' : '\t,';
+    let name = await ext.ui.showInputBox({ prompt: "Name of output?" });
+    const outputType = await ext.ui.showQuickPick(getItemType(), { placeHolder: 'Type of output?' });
+    let text = `${startText}"${name}": \{\r\n\t\t\t"type": "${outputType.value}",\r\n\t\t\t"value": ""\r\n\t\t\}\r\n\t`;
+    let index = outputs?.span.endIndex;
+    await insertText(textEditor, index, text);
+    let cursorPos = text.indexOf('""');
+    let pos = textEditor.document.positionAt(index! + cursorPos - 1);
     let newSelection = new vscode.Selection(pos, pos);
     textEditor.selection = newSelection;
     textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);

@@ -55,7 +55,8 @@
         "onCommand:azurerm-vscode-tools.resetGlobalState",
         "onCommand:azurerm-vscode-tools.insertItem",
         "onCommand:azurerm-vscode-tools.insertParameter",
-        "onCommand:azurerm-vscode-tools.insertVariable"
+        "onCommand:azurerm-vscode-tools.insertVariable",
+        "onCommand:azurerm-vscode-tools.insertOutput"
     ],
     "contributes": {
         "grammars": [
@@ -212,18 +213,23 @@
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Insert item",
+                "title": "Insert Item...",
                 "command": "azurerm-vscode-tools.insertItem"
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Insert variable",
+                "title": "Insert Variable",
                 "command": "azurerm-vscode-tools.insertVariable"
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Insert parameter",
+                "title": "Insert Parameter",
                 "command": "azurerm-vscode-tools.insertParameter"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Insert Output",
+                "command": "azurerm-vscode-tools.insertOutput"
             }
         ],
         "menus": {
@@ -254,6 +260,10 @@
                 },
                 {
                     "command": "azurerm-vscode-tools.insertVariable",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertOutput",
                     "when": "never"
                 }
             ],
@@ -323,6 +333,11 @@
                 {
                     "command": "azurerm-vscode-tools.insertVariable",
                     "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == variables",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertOutput",
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == outputs",
                     "group": "arm-template"
                 }
             ],
