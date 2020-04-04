@@ -220,27 +220,27 @@
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Insert Variable",
+                "title": "Insert Variable...",
                 "command": "azurerm-vscode-tools.insertVariable"
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Insert Function",
+                "title": "Insert Function...",
                 "command": "azurerm-vscode-tools.insertFunction"
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Insert Resource",
+                "title": "Insert Resource...",
                 "command": "azurerm-vscode-tools.insertResource"
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Insert Parameter",
+                "title": "Insert Parameter...",
                 "command": "azurerm-vscode-tools.insertParameter"
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Insert Output",
+                "title": "Insert Output...",
                 "command": "azurerm-vscode-tools.insertOutput"
             }
         ],

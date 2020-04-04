@@ -299,6 +299,11 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             if (keyNode instanceof Json.StringValue) {
                 return keyNode.unquotedValue;
             }
+        } else {
+            const rootNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.root.key.start);
+            if (rootNode instanceof Json.StringValue) {
+                return rootNode.unquotedValue;
+            }
         }
         return undefined;
     }
