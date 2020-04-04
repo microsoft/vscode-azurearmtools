@@ -56,7 +56,8 @@
         "onCommand:azurerm-vscode-tools.insertItem",
         "onCommand:azurerm-vscode-tools.insertParameter",
         "onCommand:azurerm-vscode-tools.insertVariable",
-        "onCommand:azurerm-vscode-tools.insertOutput"
+        "onCommand:azurerm-vscode-tools.insertOutput",
+        "onCommand:azurerm-vscode-tools.insertFunction"
     ],
     "contributes": {
         "grammars": [
@@ -223,6 +224,11 @@
             },
             {
                 "category": "Azure Resource Manager Tools",
+                "title": "Insert Function",
+                "command": "azurerm-vscode-tools.insertFunction"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
                 "title": "Insert Parameter",
                 "command": "azurerm-vscode-tools.insertParameter"
             },
@@ -264,6 +270,10 @@
                 },
                 {
                     "command": "azurerm-vscode-tools.insertOutput",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertFunction",
                     "when": "never"
                 }
             ],
@@ -338,6 +348,11 @@
                 {
                     "command": "azurerm-vscode-tools.insertOutput",
                     "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == outputs",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertFunction",
+                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == functions",
                     "group": "arm-template"
                 }
             ],

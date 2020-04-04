@@ -123,12 +123,62 @@ async function insertOutput(template: DeploymentTemplate, textEditor: vscode.Tex
 
 async function insertFunction(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
     let functions = getTemplateArrayPart(template, templateKeys.functions);
+    let index: number = 0;
+    let text: string;
+    let namespaceName: string = "";
     if (functions?.length === 0) {
-        let namespace = await ext.ui.showInputBox({ prompt: "Name of namespace?" });
-        let text = `\r\n\t\t{\r\n\t\t\t"namespace": "${namespace}",\r\n\t\t\t"members": {\r\n\t\t\t}\r\n\t\t}\r\n\t`;
-        let index = functions?.span.endIndex;
-        await insertText(textEditor, index, text);
+        namespaceName = await ext.ui.showInputBox({ prompt: "Name of namespace?" });
+        index = functions?.span.endIndex;
+    } else {
+        let namespace = Json.asObjectValue(functions?.elements[0]);
+        let members2 = namespace?.getPropertyValue("members");
+        index = members2?.span.endIndex! - 4;
     }
+    let functionName = await ext.ui.showInputBox({ prompt: "Name of function?" });
+    let functionDef = await getFunction();
+    if (namespaceName !== '') {
+        let members: any = {};
+        members[functionName] = functionDef;
+        let namespace = {
+            namespace: namespaceName,
+            members: members
+        };
+        text = JSON.stringify(namespace, null, '\t');
+        let indentedText = indent(`\r\n${text}\r\n`, 2);
+        await insertTextAndSetCursor(textEditor, index, indentedText + '\t');
+    } else {
+        text = JSON.stringify(functionDef, null, '\t');
+        let indentedText = indent(`"${functionName}": ${text}\r\n`, 4);
+        await insertTextAndSetCursor(textEditor, index, `,\r\n${indentedText}\t`);
+    }
+}
+async function getFunction(): Promise<any> {
+    const outputType = await ext.ui.showQuickPick(getItemType(), { placeHolder: 'Type of function output?' });
+    let parameters = await getFunctionParameters();
+    let functionDef = {
+        parameters: parameters,
+        output: {
+            type: outputType.value,
+            value: ""
+        }
+    };
+    return functionDef;
+}
+async function getFunctionParameters(): Promise<any[]> {
+    let parameterName: string;
+    let parameters = [];
+    do {
+        parameterName = await ext.ui.showInputBox({ prompt: "Name of parameter? Leave empty for no more parameters" });
+        if (parameterName !== '') {
+            const parameterType = await ext.ui.showQuickPick(getItemType(), { placeHolder: `Type of parameter ${parameterName}?` });
+            parameters.push({
+                name: parameterName,
+                type: parameterType.value
+            });
+        }
+
+    } while (parameterName !== '');
+    return parameters;
 }
 
 async function insertText(textEditor: vscode.TextEditor, index: number | undefined, text: string): Promise<void> {
@@ -148,4 +198,21 @@ async function insertTextAndSetCursor(textEditor: vscode.TextEditor, index: numb
     let newSelection = new vscode.Selection(pos, pos);
     textEditor.selection = newSelection;
     textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
+}
+
+/**
+ * Indents the given string
+ * @param {string} str  The string to be indented.
+ * @param {number} numOfIndents  The amount of indentations to place at the
+ *     beginning of each line of the string.
+ * @param {number=} opt_spacesPerIndent  Optional.  If specified, this should be
+ *     the number of spaces to be used for each tab that would ordinarily be
+ *     used to indent the text.  These amount of spaces will also be used to
+ *     replace any tab characters that already exist within the string.
+ * @return {string}  The new string with each line beginning with the desired
+ *     amount of indentation.
+ */
+function indent(str: string, numOfIndents: number) {
+    str = str.replace(/^(?=.)/gm, new Array(numOfIndents + 1).join('\t'));
+    return str;
 }
