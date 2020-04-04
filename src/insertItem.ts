@@ -35,7 +35,7 @@ export function getItemType(): QuickPickItem<string>[] {
 
 export function getInsertItemType(): QuickPickItem<SortType>[] {
     let items: QuickPickItem<SortType>[] = [];
-    // items.push(new QuickPickItem<SortType>("Function", SortType.Functions, "Insert a function"));
+    items.push(new QuickPickItem<SortType>("Function", SortType.Functions, "Insert a function"));
     items.push(new QuickPickItem<SortType>("Output", SortType.Outputs, "Inserts an output"));
     items.push(new QuickPickItem<SortType>("Parameter", SortType.Parameters, "Inserts a parameter"));
     // items.push(new QuickPickItem<SortType>("Resource", SortType.Resources, "Insert a resource"));
@@ -50,6 +50,7 @@ export async function insertItem(template: DeploymentTemplate | undefined, sortT
     ext.outputChannel.appendLine("Insert item");
     switch (sortType) {
         case SortType.Functions:
+            await insertFunction(template, textEditor);
             break;
         case SortType.Outputs:
             await insertOutput(template, textEditor);
@@ -69,17 +70,26 @@ export async function insertItem(template: DeploymentTemplate | undefined, sortT
     vscode.window.showInformationMessage("Done inserting item!");
 }
 
-function getTemplatePart(template: DeploymentTemplate, templatePart: string): Json.ObjectValue | undefined {
+function getTemplateObjectPart(template: DeploymentTemplate, templatePart: string): Json.ObjectValue | undefined {
+    let part = getTemplatePart(template, templatePart);
+    return Json.asObjectValue(part);
+}
+
+function getTemplateArrayPart(template: DeploymentTemplate, templatePart: string): Json.ArrayValue | undefined {
+    let part = getTemplatePart(template, templatePart);
+    return Json.asArrayValue(part);
+}
+
+function getTemplatePart(template: DeploymentTemplate, templatePart: string): Json.Value | undefined {
     let rootValue = template.topLevelValue;
     if (!rootValue) {
         return undefined;
     }
-    let parameters = Json.asObjectValue(rootValue.getPropertyValue(templatePart));
-    return parameters;
+    return rootValue.getPropertyValue(templatePart);
 }
 
 async function insertParameter(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
-    let parameters = getTemplatePart(template, templateKeys.parameters);
+    let parameters = getTemplateObjectPart(template, templateKeys.parameters);
     let startText = parameters?.properties.length === 0 ? '\r\n\t\t' : '\t,';
     let name = await ext.ui.showInputBox({ prompt: "Name of parameter?" });
     const parameterType = await ext.ui.showQuickPick(getItemType(), { placeHolder: 'Type of parameter?' });
@@ -93,32 +103,32 @@ async function insertParameter(template: DeploymentTemplate, textEditor: vscode.
 }
 
 async function insertVariable(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
-    let variables = getTemplatePart(template, templateKeys.variables);
+    let variables = getTemplateObjectPart(template, templateKeys.variables);
     let startText = variables?.properties.length === 0 ? '\r\n\t\t' : '\t,';
     let name = await ext.ui.showInputBox({ prompt: "Name of variable?" });
     let text = `${startText}"${name}": ""\r\n\t`;
     let index = variables?.span.endIndex;
-    await insertText(textEditor, index, text);
-    let cursorPos = text.indexOf('""');
-    let pos = textEditor.document.positionAt(index! + cursorPos + 1);
-    let newSelection = new vscode.Selection(pos, pos);
-    textEditor.selection = newSelection;
-    textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
+    await insertTextAndSetCursor(textEditor, index, text);
 }
 
 async function insertOutput(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
-    let outputs = getTemplatePart(template, templateKeys.outputs);
+    let outputs = getTemplateObjectPart(template, templateKeys.outputs);
     let startText = outputs?.properties.length === 0 ? '\r\n\t\t' : '\t,';
     let name = await ext.ui.showInputBox({ prompt: "Name of output?" });
     const outputType = await ext.ui.showQuickPick(getItemType(), { placeHolder: 'Type of output?' });
     let text = `${startText}"${name}": \{\r\n\t\t\t"type": "${outputType.value}",\r\n\t\t\t"value": ""\r\n\t\t\}\r\n\t`;
     let index = outputs?.span.endIndex;
-    await insertText(textEditor, index, text);
-    let cursorPos = text.indexOf('""');
-    let pos = textEditor.document.positionAt(index! + cursorPos - 1);
-    let newSelection = new vscode.Selection(pos, pos);
-    textEditor.selection = newSelection;
-    textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
+    await insertTextAndSetCursor(textEditor, index, text);
+}
+
+async function insertFunction(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
+    let functions = getTemplateArrayPart(template, templateKeys.functions);
+    if (functions?.length === 0) {
+        let namespace = await ext.ui.showInputBox({ prompt: "Name of namespace?" });
+        let text = `\r\n\t\t{\r\n\t\t\t"namespace": "${namespace}",\r\n\t\t\t"members": {\r\n\t\t\t}\r\n\t\t}\r\n\t`;
+        let index = functions?.span.endIndex;
+        await insertText(textEditor, index, text);
+    }
 }
 
 async function insertText(textEditor: vscode.TextEditor, index: number | undefined, text: string): Promise<void> {
@@ -129,4 +139,13 @@ async function insertText(textEditor: vscode.TextEditor, index: number | undefin
             builder.insert(pos, text);
         });
     }
+}
+
+async function insertTextAndSetCursor(textEditor: vscode.TextEditor, index: number | undefined, text: string): Promise<void> {
+    await insertText(textEditor, index, text);
+    let cursorPos = text.indexOf('""');
+    let pos = textEditor.document.positionAt(index! + cursorPos - 1);
+    let newSelection = new vscode.Selection(pos, pos);
+    textEditor.selection = newSelection;
+    textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
 }
