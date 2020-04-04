@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from "vscode";
+import { commands } from "vscode";
 import { Json, templateKeys } from "../extension.bundle";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from './extensionVariables';
@@ -33,12 +34,86 @@ export function getItemType(): QuickPickItem<string>[] {
     return items;
 }
 
+export function getResourceSnippets(): vscode.QuickPickItem[] {
+    let items: vscode.QuickPickItem[] = [];
+    items.push(getQuickPickItem("Nested Deployment"));
+    items.push(getQuickPickItem("App Service Plan (Server Farm)"));
+    items.push(getQuickPickItem("Application Insights for Web Apps"));
+    items.push(getQuickPickItem("Application Security Group"));
+    items.push(getQuickPickItem("Automation Account"));
+    items.push(getQuickPickItem("Automation Certificate"));
+    items.push(getQuickPickItem("Automation Credential"));
+    items.push(getQuickPickItem("Automation Job Schedule"));
+    items.push(getQuickPickItem("Automation Runbook"));
+    items.push(getQuickPickItem("Automation Schedule"));
+    items.push(getQuickPickItem("Automation Variable"));
+    items.push(getQuickPickItem("Automation Module"));
+    items.push(getQuickPickItem("Availability Set"));
+    items.push(getQuickPickItem("Azure Firewall"));
+    items.push(getQuickPickItem("Container Group"));
+    items.push(getQuickPickItem("Container Registry"));
+    items.push(getQuickPickItem("Cosmos DB Database Account"));
+    items.push(getQuickPickItem("Cosmos DB SQL Database"));
+    items.push(getQuickPickItem("Cosmos DB Mongo Database"));
+    items.push(getQuickPickItem("Cosmos DB Gremlin Database"));
+    items.push(getQuickPickItem("Cosmos DB Cassandra Namespace"));
+    items.push(getQuickPickItem("Cosmos DB Cassandra Table"));
+    items.push(getQuickPickItem("Cosmos DB SQL Container"));
+    items.push(getQuickPickItem("Cosmos DB Gremlin Graph"));
+    items.push(getQuickPickItem("Cosmos DB Table Storage Table"));
+    items.push(getQuickPickItem("Data Lake Store Account"));
+    items.push(getQuickPickItem("DNS Record"));
+    items.push(getQuickPickItem("DNS Zone"));
+    items.push(getQuickPickItem("Function"));
+    items.push(getQuickPickItem("KeyVault"));
+    items.push(getQuickPickItem("KeyVault Secret"));
+    items.push(getQuickPickItem("Kubernetes Service Cluster"));
+    items.push(getQuickPickItem("Linux VM Custom Script"));
+    items.push(getQuickPickItem("Load Balancer External"));
+    items.push(getQuickPickItem("Load Balancer Internal"));
+    items.push(getQuickPickItem("Log Analytics Solution"));
+    items.push(getQuickPickItem("Log Analytics Workspace"));
+    items.push(getQuickPickItem("Logic App"));
+    items.push(getQuickPickItem("Logic App Connector"));
+    items.push(getQuickPickItem("Managed Identity (User Assigned)"));
+    items.push(getQuickPickItem("Media Services"));
+    items.push(getQuickPickItem("MySQL Database"));
+    items.push(getQuickPickItem("Network Interface"));
+    items.push(getQuickPickItem("Network Security Group"));
+    items.push(getQuickPickItem("Network Security Group Rule"));
+    items.push(getQuickPickItem("Public IP Address"));
+    items.push(getQuickPickItem("Public IP Prefix"));
+    items.push(getQuickPickItem("Recovery Service Vault"));
+    items.push(getQuickPickItem("Redis Cache"));
+    items.push(getQuickPickItem("Route Table"));
+    items.push(getQuickPickItem("Route Table Route"));
+    items.push(getQuickPickItem("SQL Database"));
+    items.push(getQuickPickItem("SQL Database Import"));
+    items.push(getQuickPickItem("SQL Server"));
+    items.push(getQuickPickItem("Storage Account"));
+    items.push(getQuickPickItem("Traffic Manager Profile"));
+    items.push(getQuickPickItem("Ubuntu Virtual Machine"));
+    items.push(getQuickPickItem("Virtual Network"));
+    items.push(getQuickPickItem("VPN Local Network Gateway"));
+    items.push(getQuickPickItem("VPN Virtual Network Gateway"));
+    items.push(getQuickPickItem("VPN Virtual Network Connection"));
+    items.push(getQuickPickItem("Web App"));
+    items.push(getQuickPickItem("Web Deploy for Web App"));
+    items.push(getQuickPickItem("Windows Virtual Machine"));
+    items.push(getQuickPickItem("Windows VM Custom Script"));
+    items.push(getQuickPickItem("Windows VM Diagnostics Extension"));
+    items.push(getQuickPickItem("Windows VM DSC PowerShell Script"));
+    return items;
+}
+export function getQuickPickItem(label: string): vscode.QuickPickItem {
+    return { label: label };
+}
 export function getInsertItemType(): QuickPickItem<SortType>[] {
     let items: QuickPickItem<SortType>[] = [];
     items.push(new QuickPickItem<SortType>("Function", SortType.Functions, "Insert a function"));
     items.push(new QuickPickItem<SortType>("Output", SortType.Outputs, "Inserts an output"));
     items.push(new QuickPickItem<SortType>("Parameter", SortType.Parameters, "Inserts a parameter"));
-    // items.push(new QuickPickItem<SortType>("Resource", SortType.Resources, "Insert a resource"));
+    items.push(new QuickPickItem<SortType>("Resource", SortType.Resources, "Insert a resource"));
     items.push(new QuickPickItem<SortType>("Variable", SortType.Variables, "Insert a variable"));
     return items;
 }
@@ -59,6 +134,7 @@ export async function insertItem(template: DeploymentTemplate | undefined, sortT
             await insertParameter(template, textEditor);
             break;
         case SortType.Resources:
+            await insertResource(template, textEditor);
             break;
         case SortType.Variables:
             await insertVariable(template, textEditor);
@@ -152,6 +228,28 @@ async function insertFunction(template: DeploymentTemplate, textEditor: vscode.T
         await insertTextAndSetCursor(textEditor, index, `,\r\n${indentedText}\t`);
     }
 }
+
+async function insertResource(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
+    let resources = getTemplateArrayPart(template, templateKeys.resources);
+    if (!resources) {
+        return;
+    }
+    const resource = await ext.ui.showQuickPick(getResourceSnippets(), { placeHolder: 'What resource do you want to insert?' });
+    let index = resources.span.endIndex;
+    let text = "\r\n\t\t";
+    if (resources.elements.length > 0) {
+        let lastIndex = resources.elements.length - 1;
+        index = resources.elements[lastIndex].span.afterEndIndex;
+        text = `,${text}`;
+    }
+    await insertText(textEditor, index, text);
+    let pos = textEditor.document.positionAt(index + text.length);
+    let newSelection = new vscode.Selection(pos, pos);
+    textEditor.selection = newSelection;
+    await commands.executeCommand('editor.action.insertSnippet', { name: resource.label });
+    textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
+}
+
 async function getFunction(): Promise<any> {
     const outputType = await ext.ui.showQuickPick(getItemType(), { placeHolder: 'Type of function output?' });
     let parameters = await getFunctionParameters();

@@ -152,6 +152,9 @@ export class AzureRMTools {
         registerCommand("azurerm-vscode-tools.insertFunction", async () => {
             await this.insertItem(SortType.Functions);
         });
+        registerCommand("azurerm-vscode-tools.insertResource", async () => {
+            await this.insertItem(SortType.Resources);
+        });
         registerCommand("azurerm-vscode-tools.selectParameterFile", selectParameterFile);
         registerCommand("azurerm-vscode-tools.openParameterFile", openParameterFile);
         registerCommand("azurerm-vscode-tools.resetGlobalState", resetGlobalState);
