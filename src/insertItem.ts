@@ -190,12 +190,17 @@ async function insertInObject(template: DeploymentTemplate, textEditor: vscode.T
     if (!templatePart) {
         return;
     }
+    await insertInObject2(templatePart, textEditor, data, name);
+}
+
+async function insertInObject2(templatePart: Json.ObjectValue, textEditor: vscode.TextEditor, data: any, name: string, indentLevel: number = 2): Promise<void> {
     let firstItem = templatePart.properties.length === 0;
     let startText = firstItem ? '\t\t' : ',';
-    let index = firstItem ? templatePart.span.endIndex : templatePart.span.endIndex - 3;
-    let endText = firstItem ? '\r\n\t' : '\t';
+    let index = firstItem ? templatePart.span.endIndex : templatePart.span.endIndex - indentLevel - 1;
+    let tabs = '\t'.repeat(indentLevel - 1);
+    let endText = firstItem ? `\r\n${tabs}` : `${tabs}`;
     let text = typeof (data) === 'object' ? JSON.stringify(data, null, '\t') : data;
-    let indentedText = indent(`\r\n"${name}": ${text}`, 2);
+    let indentedText = indent(`\r\n"${name}": ${text}`, indentLevel);
     await insertText(textEditor, index, `${startText}${indentedText}${endText}`);
 }
 
@@ -213,37 +218,57 @@ async function insertOutput(template: DeploymentTemplate, textEditor: vscode.Tex
     };
     await insertInObject(template, textEditor, templateKeys.outputs, output, name);
 }
+async function insertFunctionTopLevel(topLevel: Json.ObjectValue | undefined, textEditor: vscode.TextEditor): Promise<void> {
+    if (!topLevel) {
+        return;
+    }
+    let functions = [await getFunctionNamespace()];
+    await insertInObject2(topLevel, textEditor, functions, "functions", 1);
+}
+
+async function insertFunctionNamespace(functions: Json.ArrayValue, textEditor: vscode.TextEditor): Promise<void> {
+    let namespace = await getFunctionNamespace();
+    await insertInArray(functions, textEditor, namespace);
+}
+
+async function insertFunctionMembers(namespace: Json.ObjectValue, textEditor: vscode.TextEditor): Promise<void> {
+    let functionName = await ext.ui.showInputBox({ prompt: "Name of function?" });
+    let functionDef = await getFunction();
+    let members: any = {};
+    members[functionName] = functionDef;
+    await insertInObject2(namespace, textEditor, members, 'members', 3);
+}
+
+async function insertFunctionFunction(members: Json.ObjectValue, textEditor: vscode.TextEditor): Promise<void> {
+    let functionName = await ext.ui.showInputBox({ prompt: "Name of function?" });
+    let functionDef = await getFunction();
+    await insertInObject2(members, textEditor, functionDef, functionName, 4);
+}
 
 async function insertFunction(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
     let functions = getTemplateArrayPart(template, templateKeys.functions);
-    let index: number = 0;
-    let text: string;
-    let namespaceName: string = "";
-    if (functions?.length === 0) {
-        namespaceName = await ext.ui.showInputBox({ prompt: "Name of namespace?" });
-        index = functions?.span.endIndex;
-    } else {
-        let namespace = Json.asObjectValue(functions?.elements[0]);
-        let members2 = namespace?.getPropertyValue("members");
-        index = members2?.span.endIndex! - 4;
+    if (!functions) {
+        await insertFunctionTopLevel(template.topLevelValue, textEditor);
+        return;
     }
-    let functionName = await ext.ui.showInputBox({ prompt: "Name of function?" });
-    let functionDef = await getFunction();
-    if (namespaceName !== '') {
-        let members: any = {};
-        members[functionName] = functionDef;
-        let namespace = {
-            namespace: namespaceName,
-            members: members
-        };
-        text = JSON.stringify(namespace, null, '\t');
-        let indentedText = indent(`\r\n${text}\r\n`, 2);
-        await insertText(textEditor, index, indentedText + '\t', true);
-    } else {
-        text = JSON.stringify(functionDef, null, '\t');
-        let indentedText = indent(`"${functionName}": ${text}\r\n`, 4);
-        await insertText(textEditor, index, `,\r\n${indentedText}\t`, true);
+    if (functions.length === 0) {
+        await insertFunctionNamespace(functions, textEditor);
+        return;
     }
+    let namespace = Json.asObjectValue(functions.elements[0]);
+    if (!namespace) {
+        return;
+    }
+    let members = namespace.getPropertyValue("members");
+    if (!members) {
+        await insertFunctionMembers(namespace, textEditor);
+        return;
+    }
+    let membersObject = Json.asObjectValue(members);
+    if (!membersObject) {
+        return;
+    }
+    await insertFunctionFunction(membersObject, textEditor);
 }
 
 async function insertResource(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
@@ -274,7 +299,7 @@ async function getFunction(): Promise<any> {
         parameters: parameters,
         output: {
             type: outputType.value,
-            value: ""
+            value: insertCursorText.replace(/"/g, '')
         }
     };
     return functionDef;
@@ -294,6 +319,29 @@ async function getFunctionParameters(): Promise<any[]> {
 
     } while (parameterName !== '');
     return parameters;
+}
+async function insertInArray(templatePart: Json.ArrayValue, textEditor: vscode.TextEditor, data: any): Promise<void> {
+    let index = templatePart.span.endIndex;
+    let text = JSON.stringify(data, null, '\t');
+    let indentedText = indent(`\r\n${text}\r\n`, 2);
+    await insertText(textEditor, index, `${indentedText}\t`, true);
+}
+
+async function getFunctionNamespace(): Promise<any> {
+    let namespaceName = await ext.ui.showInputBox({ prompt: "Name of namespace?" });
+    let namespace = {
+        namespace: namespaceName,
+        members: await getFunctionMembers()
+    };
+    return namespace;
+}
+
+async function getFunctionMembers(): Promise<any> {
+    let functionName = await ext.ui.showInputBox({ prompt: "Name of function?" });
+    let functionDef = await getFunction();
+    let members: any = {};
+    members[functionName] = functionDef;
+    return members;
 }
 
 async function insertText(textEditor: vscode.TextEditor, index: number, text: string, setCursor: boolean = false): Promise<void> {
