@@ -217,7 +217,7 @@ async function insertOutput(template: DeploymentTemplate, textEditor: vscode.Tex
     const outputType = await ext.ui.showQuickPick(getItemType(), { placeHolder: 'Type of output?' });
     let output: Output = {
         type: outputType.value,
-        value: insertCursorText
+        value: insertCursorText.replace(/"/g, '')
     };
     await insertInObject(template, textEditor, templateKeys.outputs, output, name);
 }
