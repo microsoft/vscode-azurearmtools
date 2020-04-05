@@ -166,34 +166,59 @@ function getTemplatePart(template: DeploymentTemplate, templatePart: string): Js
 
 async function insertParameter(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
     let parameters = getTemplateObjectPart(template, templateKeys.parameters);
-    let startText = parameters?.properties.length === 0 ? '\r\n\t\t' : '\t,';
+    if (!parameters) {
+        return;
+    }
+    let startText = '\t\t';
+    let index = parameters.span.endIndex;
+    let endText = "\r\n\t";
+    if (parameters.properties.length > 0) {
+        startText = ",";
+        index -= 3;
+        endText = '\t';
+    }
     let name = await ext.ui.showInputBox({ prompt: "Name of parameter?" });
     const parameterType = await ext.ui.showQuickPick(getItemType(), { placeHolder: 'Type of parameter?' });
+    let parameter: any = {
+        type: parameterType.value
+    };
     let defaultValue = await ext.ui.showInputBox({ prompt: "Default value? Leave empty for no default value", });
-    let defaultValueText = defaultValue === '' ? '' : `,\r\n\t\t\t"defaultValue": "${defaultValue}"`;
+    if (defaultValue !== '') {
+        parameter.defaultValue = defaultValue;
+    }
     let descriptionValue = await ext.ui.showInputBox({ prompt: "Description? Leave empty for no description", });
-    let descriptionValueText = descriptionValue === '' ? '' : `,\r\n\t\t\t"metadata": {\r\n\t\t\t\t"description": "${descriptionValue}"\r\n\t\t\t}`;
-    let text = `${startText}"${name}": \{\r\n\t\t\t"type": "${parameterType.value}"${defaultValueText}${descriptionValueText}\r\n\t\t\}\r\n\t`;
-    let index = parameters?.span.endIndex;
-    await insertText(textEditor, index, text);
+    if (descriptionValue !== '') {
+        parameter.metadata = {
+            description: descriptionValue
+        };
+    }
+    let text = JSON.stringify(parameter, null, '\t');
+    let indentedText = indent(`\r\n"${name}": ${text}`, 2);
+    await insertText(textEditor, index, `${startText}${indentedText}${endText}`);
 }
 
 async function insertVariable(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
     let variables = getTemplateObjectPart(template, templateKeys.variables);
-    let startText = variables?.properties.length === 0 ? '\r\n\t\t' : '\t,';
+    if (!variables) {
+        return;
+    }
+    let startText = variables.properties.length === 0 ? '\r\n\t\t' : '\t,';
     let name = await ext.ui.showInputBox({ prompt: "Name of variable?" });
     let text = `${startText}"${name}": ""\r\n\t`;
-    let index = variables?.span.endIndex;
+    let index = variables.span.endIndex;
     await insertTextAndSetCursor(textEditor, index, text);
 }
 
 async function insertOutput(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
     let outputs = getTemplateObjectPart(template, templateKeys.outputs);
-    let startText = outputs?.properties.length === 0 ? '\r\n\t\t' : '\t,';
+    if (!outputs) {
+        return;
+    }
+    let startText = outputs.properties.length === 0 ? '\r\n\t\t' : '\t,';
     let name = await ext.ui.showInputBox({ prompt: "Name of output?" });
     const outputType = await ext.ui.showQuickPick(getItemType(), { placeHolder: 'Type of output?' });
     let text = `${startText}"${name}": \{\r\n\t\t\t"type": "${outputType.value}",\r\n\t\t\t"value": ""\r\n\t\t\}\r\n\t`;
-    let index = outputs?.span.endIndex;
+    let index = outputs.span.endIndex;
     await insertTextAndSetCursor(textEditor, index, text);
 }
 
@@ -279,23 +304,21 @@ async function getFunctionParameters(): Promise<any[]> {
     return parameters;
 }
 
-async function insertText(textEditor: vscode.TextEditor, index: number | undefined, text: string): Promise<void> {
-    if (index !== undefined) {
-        await textEditor.edit(builder => {
-            let i: number = index!;
-            let pos = textEditor.document.positionAt(i);
-            builder.insert(pos, text);
-        });
-    }
+async function insertText(textEditor: vscode.TextEditor, index: number, text: string): Promise<void> {
+    await textEditor.edit(builder => {
+        let i: number = index;
+        let pos = textEditor.document.positionAt(i);
+        builder.insert(pos, text);
+        textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
+    });
 }
 
-async function insertTextAndSetCursor(textEditor: vscode.TextEditor, index: number | undefined, text: string): Promise<void> {
+async function insertTextAndSetCursor(textEditor: vscode.TextEditor, index: number, text: string): Promise<void> {
     await insertText(textEditor, index, text);
     let cursorPos = text.indexOf('""');
-    let pos = textEditor.document.positionAt(index! + cursorPos - 1);
+    let pos = textEditor.document.positionAt(index + cursorPos - 1);
     let newSelection = new vscode.Selection(pos, pos);
     textEditor.selection = newSelection;
-    textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
 }
 
 /**
