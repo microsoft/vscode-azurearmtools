@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from "vscode";
+// tslint:disable-next-line:no-duplicate-imports
 import { commands } from "vscode";
 import { Json, templateKeys } from "../extension.bundle";
 import { DeploymentTemplate } from "./DeploymentTemplate";
@@ -169,7 +170,7 @@ function getTemplatePart(template: DeploymentTemplate, templatePart: string): Js
 async function insertParameter(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
     let name = await ext.ui.showInputBox({ prompt: "Name of parameter?" });
     const parameterType = await ext.ui.showQuickPick(getItemType(), { placeHolder: 'Type of parameter?' });
-    let parameter: any = {
+    let parameter: Parameter = {
         type: parameterType.value
     };
     let defaultValue = await ext.ui.showInputBox({ prompt: "Default value? Leave empty for no default value", });
@@ -185,6 +186,7 @@ async function insertParameter(template: DeploymentTemplate, textEditor: vscode.
     await insertInObject(template, textEditor, templateKeys.parameters, parameter, name);
 }
 
+// tslint:disable-next-line:no-any
 async function insertInObject(template: DeploymentTemplate, textEditor: vscode.TextEditor, part: string, data: any, name: string): Promise<void> {
     let templatePart = getTemplateObjectPart(template, part);
     if (!templatePart) {
@@ -193,6 +195,7 @@ async function insertInObject(template: DeploymentTemplate, textEditor: vscode.T
     await insertInObject2(templatePart, textEditor, data, name);
 }
 
+// tslint:disable-next-line:no-any
 async function insertInObject2(templatePart: Json.ObjectValue, textEditor: vscode.TextEditor, data: any, name: string, indentLevel: number = 2): Promise<void> {
     let firstItem = templatePart.properties.length === 0;
     let startText = firstItem ? '\t\t' : ',';
@@ -212,7 +215,7 @@ async function insertVariable(template: DeploymentTemplate, textEditor: vscode.T
 async function insertOutput(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
     let name = await ext.ui.showInputBox({ prompt: "Name of output?" });
     const outputType = await ext.ui.showQuickPick(getItemType(), { placeHolder: 'Type of output?' });
-    let output: any = {
+    let output: Output = {
         type: outputType.value,
         value: insertCursorText
     };
@@ -234,7 +237,9 @@ async function insertFunctionNamespace(functions: Json.ArrayValue, textEditor: v
 async function insertFunctionMembers(namespace: Json.ObjectValue, textEditor: vscode.TextEditor): Promise<void> {
     let functionName = await ext.ui.showInputBox({ prompt: "Name of function?" });
     let functionDef = await getFunction();
+    // tslint:disable-next-line:no-any
     let members: any = {};
+    // tslint:disable-next-line:no-unsafe-any
     members[functionName] = functionDef;
     await insertInObject2(namespace, textEditor, members, 'members', 3);
 }
@@ -292,7 +297,7 @@ async function insertResource(template: DeploymentTemplate, textEditor: vscode.T
     textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
 }
 
-async function getFunction(): Promise<any> {
+async function getFunction(): Promise<Function> {
     const outputType = await ext.ui.showQuickPick(getItemType(), { placeHolder: 'Type of function output?' });
     let parameters = await getFunctionParameters();
     let functionDef = {
@@ -304,7 +309,8 @@ async function getFunction(): Promise<any> {
     };
     return functionDef;
 }
-async function getFunctionParameters(): Promise<any[]> {
+
+async function getFunctionParameters(): Promise<FunctionParameter[]> {
     let parameterName: string;
     let parameters = [];
     do {
@@ -320,6 +326,8 @@ async function getFunctionParameters(): Promise<any[]> {
     } while (parameterName !== '');
     return parameters;
 }
+
+// tslint:disable-next-line:no-any
 async function insertInArray(templatePart: Json.ArrayValue, textEditor: vscode.TextEditor, data: any): Promise<void> {
     let index = templatePart.span.endIndex;
     let text = JSON.stringify(data, null, '\t');
@@ -327,7 +335,7 @@ async function insertInArray(templatePart: Json.ArrayValue, textEditor: vscode.T
     await insertText(textEditor, index, `${indentedText}\t`, true);
 }
 
-async function getFunctionNamespace(): Promise<any> {
+async function getFunctionNamespace(): Promise<FunctionNameSpace> {
     let namespaceName = await ext.ui.showInputBox({ prompt: "Name of namespace?" });
     let namespace = {
         namespace: namespaceName,
@@ -336,10 +344,13 @@ async function getFunctionNamespace(): Promise<any> {
     return namespace;
 }
 
+// tslint:disable-next-line:no-any
 async function getFunctionMembers(): Promise<any> {
     let functionName = await ext.ui.showInputBox({ prompt: "Name of function?" });
     let functionDef = await getFunction();
+    // tslint:disable-next-line:no-any
     let members: any = {};
+    // tslint:disable-next-line:no-unsafe-any
     members[functionName] = functionDef;
     return members;
 }
@@ -358,17 +369,48 @@ async function insertText(textEditor: vscode.TextEditor, index: number, text: st
 
 /**
  * Indents the given string
- * @param {string} str  The string to be indented.
- * @param {number} numOfIndents  The amount of indentations to place at the
+ * @param str  The string to be indented.
+ * @param numOfIndents  The amount of indentations to place at the
  *     beginning of each line of the string.
- * @param {number=} opt_spacesPerIndent  Optional.  If specified, this should be
- *     the number of spaces to be used for each tab that would ordinarily be
- *     used to indent the text.  These amount of spaces will also be used to
- *     replace any tab characters that already exist within the string.
- * @return {string}  The new string with each line beginning with the desired
+ * @return   The new string with each line beginning with the desired
  *     amount of indentation.
  */
-function indent(str: string, numOfIndents: number) {
+function indent(str: string, numOfIndents: number): string {
+    // tslint:disable-next-line:prefer-array-literal
     str = str.replace(/^(?=.)/gm, new Array(numOfIndents + 1).join('\t'));
     return str;
+}
+
+interface ParameterMetaData {
+    description: string;
+}
+
+interface Parameter {
+    // tslint:disable-next-line:no-reserved-keywords
+    type: string;
+    defaultValue?: string;
+    metadata?: ParameterMetaData;
+}
+
+interface Output {
+    // tslint:disable-next-line:no-reserved-keywords
+    type: string;
+    value: string;
+}
+
+interface Function {
+    parameters: Parameter[];
+    output: Output;
+}
+
+interface FunctionParameter {
+    name: string;
+    // tslint:disable-next-line:no-reserved-keywords
+    type: string;
+}
+
+interface FunctionNameSpace {
+    namespace: string;
+    // tslint:disable-next-line:no-any
+    members: any[];
 }
