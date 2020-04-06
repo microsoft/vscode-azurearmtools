@@ -24,6 +24,29 @@ suite("TLE", () => {
         return TLE.Parser.parse(stringValue, scope);
     }
 
+    suite("isExpression", () => {
+        function createIsExpressionTest(unquotedValue: string, expectedResult: boolean): void {
+            test(`"${unquotedValue}"`, () => {
+                const result = TLE.isTleExpression(unquotedValue);
+                assert.equal(result, expectedResult);
+            });
+        }
+
+        createIsExpressionTest("", false);
+        createIsExpressionTest("[", false);
+        createIsExpressionTest("['hi'", false);
+        createIsExpressionTest("]", false);
+        createIsExpressionTest("[[", false);
+        createIsExpressionTest("'hi'", false);
+        createIsExpressionTest(" []", false);
+        createIsExpressionTest("[] ", false);
+        createIsExpressionTest("[[] ", false);
+        createIsExpressionTest("[[]", false);
+
+        createIsExpressionTest("[]", true);
+        createIsExpressionTest("['hi']", true);
+    });
+
     suite("StringValue", () => {
         suite("constructor(tle.Token)", () => {
             test("with undefined token", () => {

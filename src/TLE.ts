@@ -23,6 +23,12 @@ import * as Utilities from "./Utilities";
 
 const tleSyntax: language.IssueKind = language.IssueKind.tleSyntax;
 
+export function isTleExpression(unquotedStringValue: string): boolean {
+    // An expression must start with '[' (no whitespace before),
+    //   not start with '[[', and end with ']' (no whitespace after)
+    return !!unquotedStringValue.match(/^\[(?!\[).*\]$/);
+}
+
 export function asStringValue(value: Value | undefined): StringValue | undefined {
     return value instanceof StringValue ? value : undefined;
 }

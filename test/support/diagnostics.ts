@@ -80,7 +80,7 @@ export interface IDeploymentParameterValue {
 }
 
 export interface IDeploymentParametersFile {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#" | "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#";
     contentVersion: string;
     parameters?: {
         [key: string]: IDeploymentParameterValue;

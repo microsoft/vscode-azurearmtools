@@ -352,4 +352,43 @@ suite("Add missing parameters - functional", () => {
     }
 }`
     );
+
+    createAddMissingParamsTest(
+        "Don't put default value into params file if it's an expression",
+        stringify(
+            {
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+                "contentVersion": "1.0.0.0",
+                "parameters": {
+                }
+            },
+            4),
+        {
+            "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+                "defValueIsBoolLiteral": {
+                    "type": "string",
+                    defaultValue: true
+                },
+                "defValueIsExpression": {
+                    "type": "string",
+                    defaultValue: "[variables('bool')]"
+                }
+            }
+        },
+        Params.all,
+        `{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "defValueIsBoolLiteral": {
+            "value": true
+        },
+        "defValueIsExpression": {
+            "value": "" // TODO: Fill in parameter value
+        }
+    }
+}`);
+
 });

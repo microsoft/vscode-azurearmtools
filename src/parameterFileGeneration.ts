@@ -6,6 +6,7 @@ import * as fse from 'fs-extra';
 import * as path from 'path';
 import { QuickPickItem, Uri, window } from "vscode";
 import { IActionContext, UserCancelledError } from 'vscode-azureextensionui';
+import { Json, TLE } from '../extension.bundle';
 import { CaseInsensitiveMap } from './CaseInsensitiveMap';
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ExpressionType } from './ExpressionType';
@@ -102,11 +103,20 @@ export function createParameterFromTemplateParameter(template: DeploymentTemplat
 
     */
 
-    let value: string = getDefaultValueFromType(parameter.validType, tabSize);
+    let value: string | undefined;
     if (parameter.defaultValue) {
-        const defValueSpan = parameter.defaultValue.span;
-        const defValue: string = template.documentText.slice(defValueSpan.startIndex, defValueSpan.afterEndIndex);
-        value = unindentMultilineString(defValue, true);
+        // If the parameter has a default value that's not an expression, then use it as the
+        // value in the param file
+        const isExpression = parameter.defaultValue instanceof Json.StringValue &&
+            TLE.isTleExpression(parameter.defaultValue.unquotedValue);
+        if (!isExpression) {
+            const defValueSpan = parameter.defaultValue.span;
+            const defValue: string = template.documentText.slice(defValueSpan.startIndex, defValueSpan.afterEndIndex);
+            value = unindentMultilineString(defValue, true);
+        }
+    }
+    if (value === undefined) {
+        value = getDefaultValueFromType(parameter.validType, tabSize);
     }
 
     const valueIndentedAfterFirstLine: string = indentMultilineString(value.trimLeft(), tabSize).trimLeft();
