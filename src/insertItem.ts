@@ -6,6 +6,7 @@
 import * as vscode from "vscode";
 // tslint:disable-next-line:no-duplicate-imports
 import { commands } from "vscode";
+import { IAzureUserInput } from "vscode-azureextensionui";
 import { Json, templateKeys } from "../extension.bundle";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from './extensionVariables';
@@ -121,264 +122,272 @@ export function getInsertItemType(): QuickPickItem<SortType>[] {
     return items;
 }
 
-export async function insertItem(template: DeploymentTemplate | undefined, sortType: SortType, textEditor: vscode.TextEditor): Promise<void> {
-    if (!template) {
-        return;
+export class InsertItem {
+    private ui: IAzureUserInput;
+
+    constructor(ui: IAzureUserInput) {
+        this.ui = ui;
     }
-    ext.outputChannel.appendLine("Insert item");
-    switch (sortType) {
-        case SortType.Functions:
-            await insertFunction(template, textEditor);
-            break;
-        case SortType.Outputs:
-            await insertOutput(template, textEditor);
-            break;
-        case SortType.Parameters:
-            await insertParameter(template, textEditor);
-            break;
-        case SortType.Resources:
-            await insertResource(template, textEditor);
-            break;
-        case SortType.Variables:
-            await insertVariable(template, textEditor);
-            break;
-        default:
-            vscode.window.showWarningMessage("Unknown insert item type!");
+
+    public async insertItem(template: DeploymentTemplate | undefined, sortType: SortType, textEditor: vscode.TextEditor): Promise<void> {
+        if (!template) {
             return;
+        }
+        ext.outputChannel.appendLine("Insert item");
+        switch (sortType) {
+            case SortType.Functions:
+                await this.insertFunction(template, textEditor);
+                break;
+            case SortType.Outputs:
+                await this.insertOutput(template, textEditor);
+                break;
+            case SortType.Parameters:
+                await this.insertParameter(template, textEditor);
+                break;
+            case SortType.Resources:
+                await this.insertResource(template, textEditor);
+                break;
+            case SortType.Variables:
+                await this.insertVariable(template, textEditor);
+                break;
+            default:
+                vscode.window.showWarningMessage("Unknown insert item type!");
+                return;
+        }
+        vscode.window.showInformationMessage("Done inserting item!");
     }
-    vscode.window.showInformationMessage("Done inserting item!");
-}
 
-function getTemplateObjectPart(template: DeploymentTemplate, templatePart: string): Json.ObjectValue | undefined {
-    let part = getTemplatePart(template, templatePart);
-    return Json.asObjectValue(part);
-}
-
-function getTemplateArrayPart(template: DeploymentTemplate, templatePart: string): Json.ArrayValue | undefined {
-    let part = getTemplatePart(template, templatePart);
-    return Json.asArrayValue(part);
-}
-
-function getTemplatePart(template: DeploymentTemplate, templatePart: string): Json.Value | undefined {
-    let rootValue = template.topLevelValue;
-    if (!rootValue) {
-        return undefined;
+    private getTemplateObjectPart(template: DeploymentTemplate, templatePart: string): Json.ObjectValue | undefined {
+        let part = this.getTemplatePart(template, templatePart);
+        return Json.asObjectValue(part);
     }
-    return rootValue.getPropertyValue(templatePart);
-}
 
-async function insertParameter(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
-    let name = await ext.ui.showInputBox({ prompt: "Name of parameter?" });
-    const parameterType = await ext.ui.showQuickPick(getItemType(), { placeHolder: 'Type of parameter?' });
-    let parameter: Parameter = {
-        type: parameterType.value
-    };
-    let defaultValue = await ext.ui.showInputBox({ prompt: "Default value? Leave empty for no default value", });
-    if (defaultValue !== '') {
-        parameter.defaultValue = defaultValue;
+    private getTemplateArrayPart(template: DeploymentTemplate, templatePart: string): Json.ArrayValue | undefined {
+        let part = this.getTemplatePart(template, templatePart);
+        return Json.asArrayValue(part);
     }
-    let description = await ext.ui.showInputBox({ prompt: "Description? Leave empty for no description", });
-    if (description !== '') {
-        parameter.metadata = {
-            description: description
+
+    private getTemplatePart(template: DeploymentTemplate, templatePart: string): Json.Value | undefined {
+        let rootValue = template.topLevelValue;
+        if (!rootValue) {
+            return undefined;
+        }
+        return rootValue.getPropertyValue(templatePart);
+    }
+
+    private async insertParameter(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
+        let name = await this.ui.showInputBox({ prompt: "Name of parameter?" });
+        const parameterType = await this.ui.showQuickPick(getItemType(), { placeHolder: 'Type of parameter?' });
+        let parameter: Parameter = {
+            type: parameterType.value
         };
+        let defaultValue = await this.ui.showInputBox({ prompt: "Default value? Leave empty for no default value", });
+        if (defaultValue !== '') {
+            parameter.defaultValue = defaultValue;
+        }
+        let description = await this.ui.showInputBox({ prompt: "Description? Leave empty for no description", });
+        if (description !== '') {
+            parameter.metadata = {
+                description: description
+            };
+        }
+        await this.insertInObject(template, textEditor, templateKeys.parameters, parameter, name);
     }
-    await insertInObject(template, textEditor, templateKeys.parameters, parameter, name);
-}
 
-// tslint:disable-next-line:no-any
-async function insertInObject(template: DeploymentTemplate, textEditor: vscode.TextEditor, part: string, data: any, name: string): Promise<void> {
-    let templatePart = getTemplateObjectPart(template, part);
-    if (!templatePart) {
-        return;
-    }
-    await insertInObject2(templatePart, textEditor, data, name);
-}
-
-// tslint:disable-next-line:no-any
-async function insertInObject2(templatePart: Json.ObjectValue, textEditor: vscode.TextEditor, data: any, name: string, indentLevel: number = 2): Promise<void> {
-    let firstItem = templatePart.properties.length === 0;
-    let startText = firstItem ? '\t\t' : ',';
-    let index = firstItem ? templatePart.span.endIndex : templatePart.span.endIndex - indentLevel - 1;
-    let tabs = '\t'.repeat(indentLevel - 1);
-    let endText = firstItem ? `\r\n${tabs}` : `${tabs}`;
-    let text = typeof (data) === 'object' ? JSON.stringify(data, null, '\t') : data;
-    let indentedText = indent(`\r\n"${name}": ${text}`, indentLevel);
-    await insertText(textEditor, index, `${startText}${indentedText}${endText}`);
-}
-
-async function insertVariable(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
-    let name = await ext.ui.showInputBox({ prompt: "Name of variable?" });
-    await insertInObject(template, textEditor, templateKeys.variables, insertCursorText, name);
-}
-
-async function insertOutput(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
-    let name = await ext.ui.showInputBox({ prompt: "Name of output?" });
-    const outputType = await ext.ui.showQuickPick(getItemType(), { placeHolder: 'Type of output?' });
-    let output: Output = {
-        type: outputType.value,
-        value: insertCursorText.replace(/"/g, '')
-    };
-    await insertInObject(template, textEditor, templateKeys.outputs, output, name);
-}
-async function insertFunctionTopLevel(topLevel: Json.ObjectValue | undefined, textEditor: vscode.TextEditor): Promise<void> {
-    if (!topLevel) {
-        return;
-    }
-    let functions = [await getFunctionNamespace()];
-    await insertInObject2(topLevel, textEditor, functions, "functions", 1);
-}
-
-async function insertFunctionNamespace(functions: Json.ArrayValue, textEditor: vscode.TextEditor): Promise<void> {
-    let namespace = await getFunctionNamespace();
-    await insertInArray(functions, textEditor, namespace);
-}
-
-async function insertFunctionMembers(namespace: Json.ObjectValue, textEditor: vscode.TextEditor): Promise<void> {
-    let functionName = await ext.ui.showInputBox({ prompt: "Name of function?" });
-    let functionDef = await getFunction();
     // tslint:disable-next-line:no-any
-    let members: any = {};
-    // tslint:disable-next-line:no-unsafe-any
-    members[functionName] = functionDef;
-    await insertInObject2(namespace, textEditor, members, 'members', 3);
-}
+    private async insertInObject(template: DeploymentTemplate, textEditor: vscode.TextEditor, part: string, data: any, name: string): Promise<void> {
+        let templatePart = this.getTemplateObjectPart(template, part);
+        if (!templatePart) {
+            return;
+        }
+        await this.insertInObject2(templatePart, textEditor, data, name);
+    }
 
-async function insertFunctionFunction(members: Json.ObjectValue, textEditor: vscode.TextEditor): Promise<void> {
-    let functionName = await ext.ui.showInputBox({ prompt: "Name of function?" });
-    let functionDef = await getFunction();
-    await insertInObject2(members, textEditor, functionDef, functionName, 4);
-}
+    // tslint:disable-next-line:no-any
+    private async insertInObject2(templatePart: Json.ObjectValue, textEditor: vscode.TextEditor, data: any, name: string, indentLevel: number = 2): Promise<void> {
+        let firstItem = templatePart.properties.length === 0;
+        let startText = firstItem ? '\t\t' : ',';
+        let index = firstItem ? templatePart.span.endIndex : templatePart.span.endIndex - indentLevel - 1;
+        let tabs = '\t'.repeat(indentLevel - 1);
+        let endText = firstItem ? `\r\n${tabs}` : `${tabs}`;
+        let text = typeof (data) === 'object' ? JSON.stringify(data, null, '\t') : data;
+        let indentedText = this.indent(`\r\n"${name}": ${text}`, indentLevel);
+        await this.insertText(textEditor, index, `${startText}${indentedText}${endText}`);
+    }
 
-async function insertFunction(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
-    let functions = getTemplateArrayPart(template, templateKeys.functions);
-    if (!functions) {
-        await insertFunctionTopLevel(template.topLevelValue, textEditor);
-        return;
+    private async insertVariable(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
+        let name = await this.ui.showInputBox({ prompt: "Name of variable?" });
+        await this.insertInObject(template, textEditor, templateKeys.variables, insertCursorText, name);
     }
-    if (functions.length === 0) {
-        await insertFunctionNamespace(functions, textEditor);
-        return;
-    }
-    let namespace = Json.asObjectValue(functions.elements[0]);
-    if (!namespace) {
-        return;
-    }
-    let members = namespace.getPropertyValue("members");
-    if (!members) {
-        await insertFunctionMembers(namespace, textEditor);
-        return;
-    }
-    let membersObject = Json.asObjectValue(members);
-    if (!membersObject) {
-        return;
-    }
-    await insertFunctionFunction(membersObject, textEditor);
-}
 
-async function insertResource(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
-    let resources = getTemplateArrayPart(template, templateKeys.resources);
-    if (!resources) {
-        return;
-    }
-    const resource = await ext.ui.showQuickPick(getResourceSnippets(), { placeHolder: 'What resource do you want to insert?' });
-    let index = resources.span.endIndex;
-    let text = "\r\n\t\t";
-    if (resources.elements.length > 0) {
-        let lastIndex = resources.elements.length - 1;
-        index = resources.elements[lastIndex].span.afterEndIndex;
-        text = `,${text}`;
-    }
-    await insertText(textEditor, index, text, false);
-    let pos = textEditor.document.positionAt(index + text.length);
-    let newSelection = new vscode.Selection(pos, pos);
-    textEditor.selection = newSelection;
-    await commands.executeCommand('editor.action.insertSnippet', { name: resource.label });
-    textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
-}
-
-async function getFunction(): Promise<Function> {
-    const outputType = await ext.ui.showQuickPick(getItemType(), { placeHolder: 'Type of function output?' });
-    let parameters = await getFunctionParameters();
-    let functionDef = {
-        parameters: parameters,
-        output: {
+    private async insertOutput(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
+        let name = await this.ui.showInputBox({ prompt: "Name of output?" });
+        const outputType = await this.ui.showQuickPick(getItemType(), { placeHolder: 'Type of output?' });
+        let output: Output = {
             type: outputType.value,
             value: insertCursorText.replace(/"/g, '')
-        }
-    };
-    return functionDef;
-}
-
-async function getFunctionParameters(): Promise<FunctionParameter[]> {
-    let parameterName: string;
-    let parameters = [];
-    do {
-        parameterName = await ext.ui.showInputBox({ prompt: "Name of parameter? Leave empty for no more parameters" });
-        if (parameterName !== '') {
-            const parameterType = await ext.ui.showQuickPick(getItemType(), { placeHolder: `Type of parameter ${parameterName}?` });
-            parameters.push({
-                name: parameterName,
-                type: parameterType.value
-            });
-        }
-
-    } while (parameterName !== '');
-    return parameters;
-}
-
-// tslint:disable-next-line:no-any
-async function insertInArray(templatePart: Json.ArrayValue, textEditor: vscode.TextEditor, data: any): Promise<void> {
-    let index = templatePart.span.endIndex;
-    let text = JSON.stringify(data, null, '\t');
-    let indentedText = indent(`\r\n${text}\r\n`, 2);
-    await insertText(textEditor, index, `${indentedText}\t`, true);
-}
-
-async function getFunctionNamespace(): Promise<FunctionNameSpace> {
-    let namespaceName = await ext.ui.showInputBox({ prompt: "Name of namespace?" });
-    let namespace = {
-        namespace: namespaceName,
-        members: await getFunctionMembers()
-    };
-    return namespace;
-}
-
-// tslint:disable-next-line:no-any
-async function getFunctionMembers(): Promise<any> {
-    let functionName = await ext.ui.showInputBox({ prompt: "Name of function?" });
-    let functionDef = await getFunction();
-    // tslint:disable-next-line:no-any
-    let members: any = {};
-    // tslint:disable-next-line:no-unsafe-any
-    members[functionName] = functionDef;
-    return members;
-}
-
-async function insertText(textEditor: vscode.TextEditor, index: number, text: string, setCursor: boolean = false): Promise<void> {
-    let pos = textEditor.document.positionAt(index);
-    await textEditor.edit(builder => builder.insert(pos, text));
-    textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
-    if (text.indexOf(insertCursorText) >= 0) {
-        let insertedText = textEditor.document.getText(new vscode.Range(pos, textEditor.document.positionAt(index + text.length)));
-        let cursorPos = insertedText.indexOf(insertCursorText);
-        let pos2 = textEditor.document.positionAt(index + cursorPos + insertCursorText.length / 2);
-        textEditor.selection = new vscode.Selection(pos2, pos2);
+        };
+        await this.insertInObject(template, textEditor, templateKeys.outputs, output, name);
     }
-}
+    private async insertFunctionTopLevel(topLevel: Json.ObjectValue | undefined, textEditor: vscode.TextEditor): Promise<void> {
+        if (!topLevel) {
+            return;
+        }
+        let functions = [await this.getFunctionNamespace()];
+        await this.insertInObject2(topLevel, textEditor, functions, "functions", 1);
+    }
 
-/**
- * Indents the given string
- * @param str  The string to be indented.
- * @param numOfIndents  The amount of indentations to place at the
- *     beginning of each line of the string.
- * @return   The new string with each line beginning with the desired
- *     amount of indentation.
- */
-function indent(str: string, numOfIndents: number): string {
-    // tslint:disable-next-line:prefer-array-literal
-    str = str.replace(/^(?=.)/gm, new Array(numOfIndents + 1).join('\t'));
-    return str;
+    private async insertFunctionNamespace(functions: Json.ArrayValue, textEditor: vscode.TextEditor): Promise<void> {
+        let namespace = await this.getFunctionNamespace();
+        await this.insertInArray(functions, textEditor, namespace);
+    }
+
+    private async insertFunctionMembers(namespace: Json.ObjectValue, textEditor: vscode.TextEditor): Promise<void> {
+        let functionName = await this.ui.showInputBox({ prompt: "Name of function?" });
+        let functionDef = await this.getFunction();
+        // tslint:disable-next-line:no-any
+        let members: any = {};
+        // tslint:disable-next-line:no-unsafe-any
+        members[functionName] = functionDef;
+        await this.insertInObject2(namespace, textEditor, members, 'members', 3);
+    }
+
+    private async insertFunctionFunction(members: Json.ObjectValue, textEditor: vscode.TextEditor): Promise<void> {
+        let functionName = await this.ui.showInputBox({ prompt: "Name of function?" });
+        let functionDef = await this.getFunction();
+        await this.insertInObject2(members, textEditor, functionDef, functionName, 4);
+    }
+
+    private async insertFunction(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
+        let functions = this.getTemplateArrayPart(template, templateKeys.functions);
+        if (!functions) {
+            await this.insertFunctionTopLevel(template.topLevelValue, textEditor);
+            return;
+        }
+        if (functions.length === 0) {
+            await this.insertFunctionNamespace(functions, textEditor);
+            return;
+        }
+        let namespace = Json.asObjectValue(functions.elements[0]);
+        if (!namespace) {
+            return;
+        }
+        let members = namespace.getPropertyValue("members");
+        if (!members) {
+            await this.insertFunctionMembers(namespace, textEditor);
+            return;
+        }
+        let membersObject = Json.asObjectValue(members);
+        if (!membersObject) {
+            return;
+        }
+        await this.insertFunctionFunction(membersObject, textEditor);
+    }
+
+    private async insertResource(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
+        let resources = this.getTemplateArrayPart(template, templateKeys.resources);
+        if (!resources) {
+            return;
+        }
+        const resource = await this.ui.showQuickPick(getResourceSnippets(), { placeHolder: 'What resource do you want to insert?' });
+        let index = resources.span.endIndex;
+        let text = "\r\n\t\t";
+        if (resources.elements.length > 0) {
+            let lastIndex = resources.elements.length - 1;
+            index = resources.elements[lastIndex].span.afterEndIndex;
+            text = `,${text}`;
+        }
+        await this.insertText(textEditor, index, text, false);
+        let pos = textEditor.document.positionAt(index + text.length);
+        let newSelection = new vscode.Selection(pos, pos);
+        textEditor.selection = newSelection;
+        await commands.executeCommand('editor.action.insertSnippet', { name: resource.label });
+        textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
+    }
+
+    private async getFunction(): Promise<Function> {
+        const outputType = await this.ui.showQuickPick(getItemType(), { placeHolder: 'Type of function output?' });
+        let parameters = await this.getFunctionParameters();
+        let functionDef = {
+            parameters: parameters,
+            output: {
+                type: outputType.value,
+                value: insertCursorText.replace(/"/g, '')
+            }
+        };
+        return functionDef;
+    }
+
+    private async getFunctionParameters(): Promise<FunctionParameter[]> {
+        let parameterName: string;
+        let parameters = [];
+        do {
+            parameterName = await this.ui.showInputBox({ prompt: "Name of parameter? Leave empty for no more parameters" });
+            if (parameterName !== '') {
+                const parameterType = await this.ui.showQuickPick(getItemType(), { placeHolder: `Type of parameter ${parameterName}?` });
+                parameters.push({
+                    name: parameterName,
+                    type: parameterType.value
+                });
+            }
+
+        } while (parameterName !== '');
+        return parameters;
+    }
+
+    // tslint:disable-next-line:no-any
+    private async insertInArray(templatePart: Json.ArrayValue, textEditor: vscode.TextEditor, data: any): Promise<void> {
+        let index = templatePart.span.endIndex;
+        let text = JSON.stringify(data, null, '\t');
+        let indentedText = this.indent(`\r\n${text}\r\n`, 2);
+        await this.insertText(textEditor, index, `${indentedText}\t`, true);
+    }
+
+    private async getFunctionNamespace(): Promise<FunctionNameSpace> {
+        let namespaceName = await this.ui.showInputBox({ prompt: "Name of namespace?" });
+        let namespace = {
+            namespace: namespaceName,
+            members: await this.getFunctionMembers()
+        };
+        return namespace;
+    }
+
+    // tslint:disable-next-line:no-any
+    private async getFunctionMembers(): Promise<any> {
+        let functionName = await this.ui.showInputBox({ prompt: "Name of function?" });
+        let functionDef = await this.getFunction();
+        // tslint:disable-next-line:no-any
+        let members: any = {};
+        // tslint:disable-next-line:no-unsafe-any
+        members[functionName] = functionDef;
+        return members;
+    }
+
+    private async insertText(textEditor: vscode.TextEditor, index: number, text: string, setCursor: boolean = false): Promise<void> {
+        let pos = textEditor.document.positionAt(index);
+        await textEditor.edit(builder => builder.insert(pos, text));
+        textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
+        if (text.indexOf(insertCursorText) >= 0) {
+            let insertedText = textEditor.document.getText(new vscode.Range(pos, textEditor.document.positionAt(index + text.length)));
+            let cursorPos = insertedText.indexOf(insertCursorText);
+            let pos2 = textEditor.document.positionAt(index + cursorPos + insertCursorText.length / 2);
+            textEditor.selection = new vscode.Selection(pos2, pos2);
+        }
+    }
+
+    /**
+     * Indents the given string
+     * @param str  The string to be indented.
+     * @param numOfIndents  The amount of indentations to place at the
+     *     beginning of each line of the string.
+     * @return   The new string with each line beginning with the desired
+     *     amount of indentation.
+     */
+    private indent(str: string, numOfIndents: number): string {
+        // tslint:disable-next-line:prefer-array-literal
+        str = str.replace(/^(?=.)/gm, new Array(numOfIndents + 1).join('\t'));
+        return str;
+    }
 }
 
 interface ParameterMetaData {

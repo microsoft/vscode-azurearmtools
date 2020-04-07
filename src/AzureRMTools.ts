@@ -19,7 +19,7 @@ import { Histogram } from "./Histogram";
 import * as Hover from './Hover';
 import { DefinitionKind } from "./INamedDefinition";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
-import { getInsertItemType, insertItem } from "./insertItem";
+import { getInsertItemType, InsertItem } from "./insertItem";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { reloadSchemas } from "./languageclient/reloadSchemas";
@@ -191,7 +191,7 @@ export class AzureRMTools {
         documentUri = documentUri || editor?.document.uri;
         if (editor && documentUri && editor.document.uri.fsPath === documentUri.fsPath) {
             let deploymentTemplate = this.getDeploymentTemplate(editor.document);
-            await insertItem(deploymentTemplate, sortType, editor);
+            await new InsertItem(ext.ui).insertItem(deploymentTemplate, sortType, editor);
         }
     }
 
