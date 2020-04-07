@@ -13,22 +13,21 @@ import * as fse from 'fs-extra';
 import * as vscode from "vscode";
 import { window, workspace } from "vscode";
 import { IAzureUserInput } from 'vscode-azureextensionui';
-import { DeploymentTemplate } from '../../src/DeploymentTemplate';
-import { InsertItem } from '../../src/insertItem';
-import { SortType } from '../../src/sortTemplate';
+import { DeploymentTemplate, InsertItem, SortType } from '../../extension.bundle';
 import { getTempFilePath } from "../support/getTempFilePath";
 
 suite("InsertItem", async (): Promise<void> => {
-    const parameterCommand = 'azurerm-vscode-tools.insertParameter';
-    const variableCommand = 'azurerm-vscode-tools.insertVariable';
+    // const parameterCommand = 'azurerm-vscode-tools.insertParameter';
+    // const variableCommand = 'azurerm-vscode-tools.insertVariable';
     const command = 'azurerm-vscode-tools.insertItem';
-    const resourceCommand = 'azurerm-vscode-tools.insertResource';
-    const outputCommand = 'azurerm-vscode-tools.insertOutput';
-    const functionCommand = 'azurerm-vscode-tools.insertFunction';
+    // const resourceCommand = 'azurerm-vscode-tools.insertResource';
+    // const outputCommand = 'azurerm-vscode-tools.insertOutput';
+    // const functionCommand = 'azurerm-vscode-tools.insertFunction';
 
-    const emptyTemplate = `{
-        "variables": {}
-    }`;
+    const emptyTemplate =
+        `{
+    "variables": {}
+}`;
 
     async function testInsertItem(command: string, template: String, expected: String): Promise<void> {
         const tempPath = getTempFilePath(`insertItem`, '.azrm');
@@ -39,7 +38,7 @@ suite("InsertItem", async (): Promise<void> => {
         await window.showTextDocument(doc);
 
         // InsertItem
-        let ui = new MockUserInput();
+        let ui = new MockUserInput(["variable1"]);
         let insertItem = new InsertItem(ui);
         let document = window.activeTextEditor!.document;
         let deploymentTemplate = new DeploymentTemplate(document.getText(), document.uri.toString());
@@ -47,28 +46,34 @@ suite("InsertItem", async (): Promise<void> => {
         // await commands.executeCommand(command, null, null, null, { hello: 'World!' });
 
         const docTextAfterInsertion = window.activeTextEditor!.document.getText();
-        assert.deepStrictEqual(docTextAfterInsertion, expected);
+        // assert.deepStrictEqual(docTextAfterInsertion, expected);
+        assert.equal(docTextAfterInsertion.replace(/\t/g, '    '), expected.replace(/\t/g, '    '));
     }
 
     test("Variables", async () => {
         await testInsertItem(
             command, emptyTemplate,
             `{
-                "variables": {
-                    "variable1": "[]"
-                }
-            }`);
+    "variables": {
+        "variable1": "[]"
+    }
+}`
+        );
     });
 });
 
 class MockUserInput implements IAzureUserInput {
+    private showInputBoxTexts: string[] = [];
+    constructor(showInputBox: string[]) {
+        this.showInputBoxTexts = showInputBox;
+    }
     public async showQuickPick<T extends vscode.QuickPickItem>(items: T[] | Thenable<T[]>, options: import("vscode-azureextensionui").IAzureQuickPickOptions): Promise<T> {
         let result = await items;
         return result[0];
     }
 
     public async showInputBox(options: vscode.InputBoxOptions): Promise<string> {
-        return "Hello World";
+        return this.showInputBoxTexts.pop()!;
     }
 
     public async showWarningMessage<T extends vscode.MessageItem>(message: string, options: import("vscode-azureextensionui").IAzureMessageOptions, ...items: T[]): Promise<T> {

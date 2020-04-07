@@ -206,7 +206,7 @@ export class InsertItem {
     // tslint:disable-next-line:no-any
     private async insertInObject2(templatePart: Json.ObjectValue, textEditor: vscode.TextEditor, data: any, name: string, indentLevel: number = 2): Promise<void> {
         let firstItem = templatePart.properties.length === 0;
-        let startText = firstItem ? '\t\t' : ',';
+        let startText = firstItem ? '' : ',';
         let index = firstItem ? templatePart.span.endIndex : templatePart.span.endIndex - indentLevel - 1;
         let tabs = '\t'.repeat(indentLevel - 1);
         let endText = firstItem ? `\r\n${tabs}` : `${tabs}`;
