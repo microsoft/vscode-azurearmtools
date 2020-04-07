@@ -23,64 +23,64 @@ suite("TemplatePositionContext", () => {
     suite("fromDocumentLineAndColumnIndexes(DeploymentTemplate,number,number)", () => {
         test("with undefined deploymentTemplate", () => {
             // tslint:disable-next-line:no-any
-            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(<any>undefined, 1, 2); });
+            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(<any>undefined, 1, 2, undefined); });
         });
 
         test("with undefined deploymentTemplate", () => {
             // tslint:disable-next-line:no-any
-            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(<any>undefined, 1, 2); });
+            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(<any>undefined, 1, 2, undefined); });
         });
 
         test("with undefined documentLineIndex", () => {
             let dt = new DeploymentTemplate("{}", fakeId);
             // tslint:disable-next-line:no-any
-            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, <any>undefined, 2); });
+            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, <any>undefined, 2, undefined); });
         });
 
         test("with undefined documentLineIndex", () => {
             let dt = new DeploymentTemplate("{}", fakeId);
             // tslint:disable-next-line:no-any
-            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, <any>undefined, 2); });
+            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, <any>undefined, 2, undefined); });
         });
 
         test("with negative documentLineIndex", () => {
             let dt = new DeploymentTemplate("{}", fakeId);
-            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, -1, 2); });
+            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, -1, 2, undefined); });
         });
 
         test("with documentLineIndex equal to document line count", () => {
             let dt = new DeploymentTemplate("{}", fakeId);
             assert.deepStrictEqual(1, dt.lineCount);
-            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 1, 0); });
+            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 1, 0, undefined); });
         });
 
         test("with undefined documentColumnIndex", () => {
             let dt = new DeploymentTemplate("{}", fakeId);
             // tslint:disable-next-line:no-any
-            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 0, <any>undefined); });
+            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 0, <any>undefined, undefined); });
         });
 
         test("with undefined documentColumnIndex", () => {
             let dt = new DeploymentTemplate("{}", fakeId);
             // tslint:disable-next-line:no-any
-            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 0, <any>undefined); });
+            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 0, <any>undefined, undefined); });
         });
 
         test("with negative documentColumnIndex", () => {
             let dt = new DeploymentTemplate("{}", fakeId);
-            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 0, -2); });
+            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 0, -2, undefined); });
         });
 
         test("with documentColumnIndex greater than line length", () => {
             let dt = new DeploymentTemplate("{}", fakeId);
-            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 0, 3); });
+            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 0, 3, undefined); });
         });
 
         test("with valid arguments", () => {
             let dt = new DeploymentTemplate("{}", fakeId);
             let documentLineIndex = 0;
             let documentColumnIndex = 2;
-            let pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, documentLineIndex, documentColumnIndex);
+            let pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, documentLineIndex, documentColumnIndex, undefined);
             assert.deepStrictEqual(new Language.Position(0, 2), pc.documentPosition);
             assert.deepStrictEqual(0, pc.documentLineIndex);
             assert.deepStrictEqual(2, pc.documentColumnIndex);
@@ -90,40 +90,40 @@ suite("TemplatePositionContext", () => {
     suite("fromDocumentCharacterIndex(DeploymentTemplate,number)", () => {
         test("with undefined deploymentTemplate", () => {
             // tslint:disable-next-line:no-any
-            assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(<any>undefined, 1); });
+            assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(<any>undefined, 1, undefined); });
         });
 
         test("with undefined deploymentTemplate", () => {
             // tslint:disable-next-line:no-any
-            assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(<any>undefined, 1); });
+            assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(<any>undefined, 1, undefined); });
         });
 
         test("with undefined documentCharacterIndex", () => {
             let dt = new DeploymentTemplate("{}", fakeId);
             // tslint:disable-next-line:no-any
-            assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(dt, <any>undefined); });
+            assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(dt, <any>undefined, undefined); });
         });
 
         test("with undefined documentCharacterIndex", () => {
             let dt = new DeploymentTemplate("{}", fakeId);
             // tslint:disable-next-line:no-any
-            assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(dt, <any>undefined); });
+            assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(dt, <any>undefined, undefined); });
         });
 
         test("with negative documentCharacterIndex", () => {
             let dt = new DeploymentTemplate("{}", fakeId);
-            assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(dt, -1); });
+            assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(dt, -1, undefined); });
         });
 
         test("with documentCharacterIndex greater than the maximum character index", () => {
             let dt = new DeploymentTemplate("{}", fakeId);
-            assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(dt, 3); });
+            assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(dt, 3, undefined); });
         });
 
         test("with valid arguments", () => {
             let dt = new DeploymentTemplate("{}", fakeId);
             let documentCharacterIndex = 2;
-            let pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, documentCharacterIndex);
+            let pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, documentCharacterIndex, undefined);
             assert.deepStrictEqual(2, pc.documentCharacterIndex);
         });
     });
@@ -131,24 +131,24 @@ suite("TemplatePositionContext", () => {
     suite("documentPosition", () => {
         test("with PositionContext from line and column indexes", () => {
             const dt = new DeploymentTemplate("{\n}", fakeId);
-            let pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 1, 0);
+            let pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 1, 0, undefined);
             assert.deepStrictEqual(new Language.Position(1, 0), pc.documentPosition);
         });
 
         test("with PositionContext from characterIndex", () => {
-            let pc = TemplatePositionContext.fromDocumentCharacterIndex(new DeploymentTemplate("{\n}", fakeId), 2);
+            let pc = TemplatePositionContext.fromDocumentCharacterIndex(new DeploymentTemplate("{\n}", fakeId), 2, undefined);
             assert.deepStrictEqual(new Language.Position(1, 0), pc.documentPosition);
         });
     });
 
     suite("documentCharacterIndex", () => {
         test("with PositionContext from line and column indexes", () => {
-            let pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(new DeploymentTemplate("{\n}", fakeId), 1, 0);
+            let pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(new DeploymentTemplate("{\n}", fakeId), 1, 0, undefined);
             assert.deepStrictEqual(2, pc.documentCharacterIndex);
         });
 
         test("with PositionContext from characterIndex", () => {
-            let pc = TemplatePositionContext.fromDocumentCharacterIndex(new DeploymentTemplate("{\n}", fakeId), 2);
+            let pc = TemplatePositionContext.fromDocumentCharacterIndex(new DeploymentTemplate("{\n}", fakeId), 2, undefined);
             assert.deepStrictEqual(2, pc.documentCharacterIndex);
         });
     });
@@ -1454,7 +1454,7 @@ suite("TemplatePositionContext", () => {
 
     suite("parameterDefinition", () => {
         async function getParameterDefinitionIfAtReference(pc: TemplatePositionContext): Promise<IParameterDefinition | undefined> {
-            const refInfo: IReferenceSite | undefined = pc.getReferenceSiteInfo();
+            const refInfo: IReferenceSite | undefined = pc.getReferenceSiteInfo(false);
             if (refInfo && refInfo.definition.definitionKind === "Parameter") {
                 return <IParameterDefinition>refInfo.definition;
             }
@@ -1504,7 +1504,7 @@ suite("TemplatePositionContext", () => {
 
     suite("variableDefinition", () => {
         function getVariableDefinitionIfAtReference(pc: TemplatePositionContext): IVariableDefinition | undefined {
-            const refInfo: IReferenceSite | undefined = pc.getReferenceSiteInfo();
+            const refInfo: IReferenceSite | undefined = pc.getReferenceSiteInfo(false);
             if (refInfo && isVariableDefinition(refInfo.definition)) {
                 return refInfo.definition;
             }

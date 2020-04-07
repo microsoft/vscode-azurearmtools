@@ -7,7 +7,7 @@ import * as Completion from "../Completion";
 import { DeploymentTemplate } from "../DeploymentTemplate";
 import * as language from "../Language";
 import { createParameterFromTemplateParameter } from "../parameterFileGeneration";
-import { IReferenceSite, PositionContext } from "../PositionContext";
+import { IReferenceSite, PositionContext, ReferenceSiteKind } from "../PositionContext";
 import { ReferenceList } from "../ReferenceList";
 import * as TLE from '../TLE';
 import { DeploymentParameters } from "./DeploymentParameters";
@@ -21,7 +21,7 @@ export class ParametersPositionContext extends PositionContext {
     private _associatedTemplate: DeploymentTemplate | undefined;
 
     private constructor(deploymentParameters: DeploymentParameters, associatedTemplate: DeploymentTemplate | undefined) {
-        super(deploymentParameters);
+        super(deploymentParameters, associatedTemplate);
         this._associatedTemplate = associatedTemplate;
     }
 
@@ -44,7 +44,7 @@ export class ParametersPositionContext extends PositionContext {
      * If this position is inside an expression, inside a reference to an interesting function/parameter/etc, then
      * return an object with information about this reference and the corresponding definition
      */
-    public getReferenceSiteInfo(): IReferenceSite | undefined {
+    public getReferenceSiteInfo(_includeDefinition: boolean): IReferenceSite | undefined {
         if (!this._associatedTemplate) {
             return undefined;
         }
@@ -56,7 +56,9 @@ export class ParametersPositionContext extends PositionContext {
                 const paramDef = this._associatedTemplate?.topLevelScope.getParameterDefinition(paramValue.nameValue.unquotedValue);
                 if (paramDef) {
                     return {
-                        referenceSpan: paramValue.nameValue.span,
+                        referenceKind: ReferenceSiteKind.reference,
+                        referenceSpan: paramValue.nameValue.unquotedSpan,
+                        referenceDocument: this.document,
                         definition: paramDef,
                         definitionDocument: this._associatedTemplate
                     };
@@ -69,15 +71,13 @@ export class ParametersPositionContext extends PositionContext {
         return undefined;
     }
 
-    // Returns undefined if references are not supported at this location.
-    // Returns empty list if supported but none found
-    public getReferences(): ReferenceList | undefined {
-        const refInfo = this.getReferenceSiteInfo();
-        if (refInfo) {
-            return this.document.findReferences(refInfo.definition);
-        }
-
-        return undefined;
+    /**
+     * Return all references to the given reference site info in this document
+     * @returns undefined if references are not supported at this location, or empty list if supported but none found
+     */
+    protected getReferencesCore(): ReferenceList | undefined {
+        const refInfo = this.getReferenceSiteInfo(false);
+        return refInfo ? this.document.findReferencesToDefinition(refInfo.definition) : undefined;
     }
 
     public getCompletionItems(): Completion.Item[] {

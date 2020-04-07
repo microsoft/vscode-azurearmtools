@@ -22,7 +22,7 @@ export async function testGetReferences(dt: DeploymentTemplate, cursorIndex: num
     const references: ReferenceList = pc.getReferences()!;
     assert(references, "Expected non-empty list of references");
 
-    const indices = references.spans.map(r => r.startIndex).sort();
+    const indices = references.references.map(r => r.span.startIndex).sort();
     expectedReferenceIndices = expectedReferenceIndices.sort();
 
     assert.deepStrictEqual(indices, expectedReferenceIndices);

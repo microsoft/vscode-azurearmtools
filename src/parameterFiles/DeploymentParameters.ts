@@ -86,12 +86,15 @@ export class DeploymentParameters extends DeploymentDocument {
         return ParametersPositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex, associatedDocument);
     }
 
-    public findReferences(definition: INamedDefinition): ReferenceList {
+    public findReferencesToDefinition(definition: INamedDefinition): ReferenceList {
         const results: ReferenceList = new ReferenceList(definition.definitionKind);
 
-        // The only reference possible is the definition itself (from the template file)
+        // The only reference possible in the parameter file is the parameter's value definition
         if (definition.nameValue) {
-            results.add(definition.nameValue.unquotedSpan);
+            const paramValue = this.getParameterValue(definition.nameValue.unquotedValue);
+            if (paramValue) {
+                results.add({ document: this, span: paramValue.nameValue.unquotedSpan });
+            }
         }
         return results;
     }
