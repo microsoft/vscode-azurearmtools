@@ -43,9 +43,6 @@ suite("InsertItem", async (): Promise<void> => {
 
     const emptyTemplate =
         `{
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "resources": [],
     "variables": {}
 }`;
 
@@ -99,9 +96,6 @@ suite("InsertItem", async (): Promise<void> => {
     suite("Variables", async () => {
         await testInsertItem(emptyTemplate,
             `{
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "resources": [],
     "variables": {
         "variable1": "[resourceGroup()]"
     }
