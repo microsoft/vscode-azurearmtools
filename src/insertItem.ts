@@ -212,6 +212,7 @@ export class InsertItem {
         let endText = firstItem ? `\r\n${tabs}` : `${tabs}`;
         let text = typeof (data) === 'object' ? JSON.stringify(data, null, '\t') : data;
         let indentedText = this.indent(`\r\n"${name}": ${text}`, indentLevel);
+
         await this.insertText(textEditor, index, `${startText}${indentedText}${endText}`);
     }
 
@@ -364,6 +365,7 @@ export class InsertItem {
     }
 
     private async insertText(textEditor: vscode.TextEditor, index: number, text: string, setCursor: boolean = false): Promise<void> {
+        text = this.formatText(text, textEditor);
         let pos = textEditor.document.positionAt(index);
         await textEditor.edit(builder => builder.insert(pos, text));
         textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
@@ -373,6 +375,16 @@ export class InsertItem {
             let pos2 = textEditor.document.positionAt(index + cursorPos + insertCursorText.length / 2);
             textEditor.selection = new vscode.Selection(pos2, pos2);
         }
+    }
+
+    private formatText(text: string, textEditor: vscode.TextEditor): string {
+        if (textEditor.options.insertSpaces === true) {
+            text = text.replace(/\t/g, ' '.repeat(Number(textEditor.options.tabSize)));
+        }
+        if (textEditor.document.eol === vscode.EndOfLine.LF) {
+            text = text.replace(/\r\n/g, '\n');
+        }
+        return text;
     }
 
     /**
