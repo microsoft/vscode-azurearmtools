@@ -380,6 +380,8 @@ export class InsertItem {
     private formatText(text: string, textEditor: vscode.TextEditor): string {
         if (textEditor.options.insertSpaces === true) {
             text = text.replace(/\t/g, ' '.repeat(Number(textEditor.options.tabSize)));
+        } else {
+            text = text.replace(/    /g, '\t');
         }
         if (textEditor.document.eol === vscode.EndOfLine.LF) {
             text = text.replace(/\r\n/g, '\n');

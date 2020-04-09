@@ -15,30 +15,17 @@ import { IAzureUserInput } from 'vscode-azureextensionui';
 import { DeploymentTemplate, InsertItem, SortType } from '../../extension.bundle';
 import { getTempFilePath } from "../support/getTempFilePath";
 
-let previousSettings = {
-    insertSpaces: <boolean | undefined>undefined,
-    tabSize: <string | number | undefined>undefined,
-    eol: <string | undefined>undefined,
-};
-
-namespace configKeys {
-    export const editor = 'editor';
-    export const insertSpaces = 'insertSpaces';
-    export const tabSize = 'tabSize';
-}
-
 suite("InsertItem", async (): Promise<void> => {
-    function assertTemplate(actual: String, expected: String, textEditor: vscode.TextEditor) {
-        let spaces = textEditor.options.insertSpaces;
-        let tabs = textEditor.options.tabSize;
-        let eol = textEditor.document.eol;
-        if (spaces === true) {
-            expected = expected.replace(/\t/g, ' '.repeat(Number(tabs)));
+    function assertTemplate(actual: String, expected: String, textEditor: vscode.TextEditor): void {
+        if (textEditor.options.insertSpaces === true) {
+            expected = expected.replace(/    /g, ' '.repeat(Number(textEditor.options.tabSize)));
+        } else {
+            expected = expected.replace(/    /g, '\t');
         }
-        if (eol === vscode.EndOfLine.CRLF) {
+        if (textEditor.document.eol === vscode.EndOfLine.CRLF) {
             expected = expected.replace(/\n/g, '\r\n');
         }
-        assert.equal(actual.replace(/\t/g, '    '), expected);
+        assert.equal(actual, expected);
     }
 
     const emptyTemplate =
@@ -46,12 +33,15 @@ suite("InsertItem", async (): Promise<void> => {
     "variables": {}
 }`;
 
-    async function testInsertItem(template: String, expected: String): Promise<void> {
+    async function testInsertItem(template: string, expected: String): Promise<void> {
         test("Tabs CRLF", async () => {
             await testInsertItemWithSettings(template, expected, false, 4, true);
         });
         test("Spaces CRLF", async () => {
             await testInsertItemWithSettings(template, expected, true, 4, true);
+        });
+        test("Spaces (2) CRLF", async () => {
+            await testInsertItemWithSettings(template, expected, true, 2, true);
         });
         test("Spaces LF", async () => {
             await testInsertItemWithSettings(template, expected, true, 4, false);
@@ -59,14 +49,17 @@ suite("InsertItem", async (): Promise<void> => {
         test("Tabs LF", async () => {
             await testInsertItemWithSettings(template, expected, false, 4, false);
         });
+        test("Spaces (2) LF", async () => {
+            await testInsertItemWithSettings(template, expected, true, 2, false);
+        });
     }
 
-    async function testInsertItemWithSettings(template: String, expected: String, insertSpaces: boolean, tabSize: number, eolAsCRLF: boolean): Promise<void> {
-        let config = vscode.workspace.getConfiguration(configKeys.editor);
-        config.update(configKeys.insertSpaces, insertSpaces, vscode.ConfigurationTarget.Global);
-        config.update(configKeys.tabSize, tabSize, vscode.ConfigurationTarget.Global);
+    async function testInsertItemWithSettings(template: string, expected: String, insertSpaces: boolean, tabSize: number, eolAsCRLF: boolean): Promise<void> {
         if (eolAsCRLF) {
             template = template.replace(/\n/g, '\r\n');
+        }
+        if (insertSpaces && tabSize != 4) {
+            template = template.replace(/    /g, ' '.repeat(tabSize));
         }
         const tempPath = getTempFilePath(`insertItem`, '.azrm');
         fse.writeFileSync(tempPath, template);
@@ -80,18 +73,6 @@ suite("InsertItem", async (): Promise<void> => {
         const docTextAfterInsertion = document.getText();
         assertTemplate(docTextAfterInsertion, expected, textEditor);
     }
-
-    // beforeEach(() => {
-    //     let config = vscode.workspace.getConfiguration(configKeys.editor);
-    //     previousSettings.insertSpaces = config.get(configKeys.insertSpaces);
-    //     previousSettings.tabSize = config.get(configKeys.tabSize);
-    // });
-
-    // afterEach(() => {
-    //     let config = vscode.workspace.getConfiguration(configKeys.editor);
-    //     config.update(configKeys.insertSpaces, previousSettings.insertSpaces, vscode.ConfigurationTarget.Global);
-    //     config.update(configKeys.tabSize, previousSettings.tabSize, vscode.ConfigurationTarget.Global);
-    // });
 
     suite("Variables", async () => {
         await testInsertItem(emptyTemplate,
