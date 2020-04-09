@@ -10,6 +10,7 @@
 import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import * as vscode from "vscode";
+// tslint:disable-next-line:no-duplicate-imports
 import { window, workspace } from "vscode";
 import { IAzureUserInput } from 'vscode-azureextensionui';
 import { DeploymentTemplate, InsertItem, SortType } from '../../extension.bundle';
@@ -18,9 +19,9 @@ import { getTempFilePath } from "../support/getTempFilePath";
 suite("InsertItem", async (): Promise<void> => {
     function assertTemplate(actual: String, expected: String, textEditor: vscode.TextEditor): void {
         if (textEditor.options.insertSpaces === true) {
-            expected = expected.replace(/    /g, ' '.repeat(Number(textEditor.options.tabSize)));
+            expected = expected.replace(/ {4}/g, ' '.repeat(Number(textEditor.options.tabSize)));
         } else {
-            expected = expected.replace(/    /g, '\t');
+            expected = expected.replace(/ {4}/g, '\t');
         }
         if (textEditor.document.eol === vscode.EndOfLine.CRLF) {
             expected = expected.replace(/\n/g, '\r\n');
@@ -53,8 +54,8 @@ suite("InsertItem", async (): Promise<void> => {
         if (eolAsCRLF) {
             template = template.replace(/\n/g, '\r\n');
         }
-        if (insertSpaces && tabSize != 4) {
-            template = template.replace(/    /g, ' '.repeat(tabSize));
+        if (insertSpaces && tabSize !== 4) {
+            template = template.replace(/ {4}/g, ' '.repeat(tabSize));
         }
         const tempPath = getTempFilePath(`insertItem`, '.azrm');
         fse.writeFileSync(tempPath, template);
@@ -68,6 +69,9 @@ suite("InsertItem", async (): Promise<void> => {
         const docTextAfterInsertion = document.getText();
         assertTemplate(docTextAfterInsertion, expected, textEditor);
     }
+
+    const totallyEmptyTemplate =
+        `{}`;
 
     suite("Variables", async () => {
         const emptyTemplate =
@@ -100,6 +104,10 @@ suite("InsertItem", async (): Promise<void> => {
         });
         suite("Insert even one more variable", async () => {
             await testInsertItem(twoVariablesTemplate, threeVariablesTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, SortType.Variables, editor), ["variable3"], 'resourceGroup()');
+        });
+
+        suite("Insert one variable in totally empty template", async () => {
+            await testInsertItem(totallyEmptyTemplate, oneVariableTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, SortType.Variables, editor), ["variable1"], 'resourceGroup()');
         });
     });
 
@@ -152,6 +160,9 @@ suite("InsertItem", async (): Promise<void> => {
         });
         suite("Insert even one more variable", async () => {
             await testInsertItem(twoOutputsTemplate, threeOutputsTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, SortType.Outputs, editor), ["output3"], 'resourceGroup()');
+        });
+        suite("Insert one output in totally empty template", async () => {
+            await testInsertItem(totallyEmptyTemplate, oneOutputTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, SortType.Outputs, editor), ["output1"], 'resourceGroup()');
         });
     });
 });

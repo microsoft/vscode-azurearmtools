@@ -12,7 +12,7 @@ import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from './extensionVariables';
 import { SortType } from "./sortTemplate";
 
-const insertCursorText = '"[]"';
+const insertCursorText = '[]';
 
 export class QuickPickItem<T> implements vscode.QuickPickItem {
     public label: string;
@@ -198,6 +198,15 @@ export class InsertItem {
     private async insertInObject(template: DeploymentTemplate, textEditor: vscode.TextEditor, part: string, data: any, name: string): Promise<void> {
         let templatePart = this.getTemplateObjectPart(template, part);
         if (!templatePart) {
+            let topLevel = template.topLevelValue;
+            if (!topLevel) {
+                return;
+            }
+            // tslint:disable-next-line:no-any
+            let subPart: any = {};
+            // tslint:disable-next-line:no-unsafe-any
+            subPart[name] = data;
+            await this.insertInObject2(topLevel, textEditor, subPart, part, 1);
             return;
         }
         await this.insertInObject2(templatePart, textEditor, data, name);
@@ -210,7 +219,7 @@ export class InsertItem {
         let index = firstItem ? templatePart.span.endIndex : templatePart.properties[templatePart.properties.length - 1].span.afterEndIndex;
         let tabs = '\t'.repeat(indentLevel - 1);
         let endText = firstItem ? `\r\n${tabs}` : ``;
-        let text = typeof (data) === 'object' ? JSON.stringify(data, null, '\t') : data;
+        let text = typeof (data) === 'object' ? JSON.stringify(data, null, '\t') : `"${data}"`;
         let indentedText = this.indent(`\r\n"${name}": ${text}`, indentLevel);
 
         await this.insertText(textEditor, index, `${startText}${indentedText}${endText}`);
@@ -381,7 +390,7 @@ export class InsertItem {
         if (textEditor.options.insertSpaces === true) {
             text = text.replace(/\t/g, ' '.repeat(Number(textEditor.options.tabSize)));
         } else {
-            text = text.replace(/    /g, '\t');
+            text = text.replace(/ {4}/g, '\t');
         }
         if (textEditor.document.eol === vscode.EndOfLine.LF) {
             text = text.replace(/\r\n/g, '\n');
