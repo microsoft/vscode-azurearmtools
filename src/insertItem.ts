@@ -207,9 +207,9 @@ export class InsertItem {
     private async insertInObject2(templatePart: Json.ObjectValue, textEditor: vscode.TextEditor, data: any, name: string, indentLevel: number = 2): Promise<void> {
         let firstItem = templatePart.properties.length === 0;
         let startText = firstItem ? '' : ',';
-        let index = firstItem ? templatePart.span.endIndex : templatePart.span.endIndex - indentLevel - 1;
+        let index = firstItem ? templatePart.span.endIndex : templatePart.properties[templatePart.properties.length - 1].span.afterEndIndex;
         let tabs = '\t'.repeat(indentLevel - 1);
-        let endText = firstItem ? `\r\n${tabs}` : `${tabs}`;
+        let endText = firstItem ? `\r\n${tabs}` : ``;
         let text = typeof (data) === 'object' ? JSON.stringify(data, null, '\t') : data;
         let indentedText = this.indent(`\r\n"${name}": ${text}`, indentLevel);
 
