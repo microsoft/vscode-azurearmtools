@@ -290,6 +290,8 @@ export async function getDiagnosticsForTemplate(
     options?: IGetDiagnosticsOptions
 ): Promise<Diagnostic[]> {
     let templateContents: string | undefined;
+    let tempPathSuffix: string = '';
+
     // tslint:disable-next-line: strict-boolean-expressions
     options = options || {};
 
@@ -298,6 +300,7 @@ export async function getDiagnosticsForTemplate(
             // It's a filename
             let sourcePath = path.join(testFolder, templateContentsOrFileName);
             templateContents = fs.readFileSync(sourcePath).toString();
+            tempPathSuffix = path.basename(templateContentsOrFileName, path.extname(templateContentsOrFileName));
         } else {
             // It's a string
             templateContents = templateContentsOrFileName;
