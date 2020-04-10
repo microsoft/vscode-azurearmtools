@@ -57,6 +57,9 @@ suite("InsertItem", async (): Promise<void> => {
         if (insertSpaces && tabSize !== 4) {
             template = template.replace(/ {4}/g, ' '.repeat(tabSize));
         }
+        if (!insertSpaces) {
+            template = template.replace(/ {4}/g, '\t');
+        }
         const tempPath = getTempFilePath(`insertItem`, '.azrm');
         fse.writeFileSync(tempPath, template);
         let document = await workspace.openTextDocument(tempPath);
@@ -115,6 +118,138 @@ suite("InsertItem", async (): Promise<void> => {
         });
     });
 
+    suite("Functions", async () => {
+        const emptyTemplate =
+            `{
+    "functions": []
+}`;
+        const namespaceTemplate = `{
+    "functions": [
+        {
+            "namespace": "ns"
+        }
+    ]
+}`;
+        const membersTemplate = `{
+    "functions": [
+        {
+            "namespace": "ns",
+            "members": {}
+        }
+    ]
+}`;
+        const oneFunctionTemplate = `{
+    "functions": [
+        {
+            "namespace": "ns",
+            "members": {
+                "function1": {
+                    "parameters": [
+                        {
+                            "name": "parameter1",
+                            "type": "string"
+                        }
+                    ],
+                    "output": {
+                        "type": "string",
+                        "value": "[resourceGroup()]"
+                    }
+                }
+            }
+        }
+    ]
+}`;
+        const twoFunctionsTemplate = `{
+    "functions": [
+        {
+            "namespace": "ns",
+            "members": {
+                "function1": {
+                    "parameters": [
+                        {
+                            "name": "parameter1",
+                            "type": "string"
+                        }
+                    ],
+                    "output": {
+                        "type": "string",
+                        "value": "[resourceGroup()]"
+                    }
+                },
+                "function2": {
+                    "parameters": [],
+                    "output": {
+                        "type": "string",
+                        "value": "[resourceGroup()]"
+                    }
+                }
+            }
+        }
+    ]
+}`;
+        const threeFunctionsTemplate = `{
+    "functions": [
+        {
+            "namespace": "ns",
+            "members": {
+                "function1": {
+                    "parameters": [
+                        {
+                            "name": "parameter1",
+                            "type": "string"
+                        }
+                    ],
+                    "output": {
+                        "type": "string",
+                        "value": "[resourceGroup()]"
+                    }
+                },
+                "function2": {
+                    "parameters": [],
+                    "output": {
+                        "type": "string",
+                        "value": "[resourceGroup()]"
+                    }
+                },
+                "function3": {
+                    "parameters": [
+                        {
+                            "name": "parameter1",
+                            "type": "string"
+                        },
+                        {
+                            "name": "parameter2",
+                            "type": "bool"
+                        }
+                    ],
+                    "output": {
+                        "type": "securestring",
+                        "value": "[resourceGroup()]"
+                    }
+                }
+            }
+        }
+    ]
+}`;
+        suite("Insert function", async () => {
+            await doTestInsertItem(emptyTemplate, oneFunctionTemplate, SortType.Functions, ["ns", "function1", "String", "parameter1", "String", ""], "resourceGroup()");
+        });
+        suite("Insert one more function", async () => {
+            await doTestInsertItem(oneFunctionTemplate, twoFunctionsTemplate, SortType.Functions, ["function2", "String", ""], "resourceGroup()");
+        });
+        suite("Insert one function in totally empty template", async () => {
+            await doTestInsertItem(totallyEmptyTemplate, oneFunctionTemplate, SortType.Functions, ["ns", "function1", "String", "parameter1", "String", ""], "resourceGroup()");
+        });
+        suite("Insert function in namespace", async () => {
+            await doTestInsertItem(namespaceTemplate, oneFunctionTemplate, SortType.Functions, ["function1", "String", "parameter1", "String", ""], "resourceGroup()");
+        });
+        suite("Insert function in members", async () => {
+            await doTestInsertItem(membersTemplate, oneFunctionTemplate, SortType.Functions, ["function1", "String", "parameter1", "String", ""], "resourceGroup()");
+        });
+        suite("Insert even one more function", async () => {
+            await doTestInsertItem(twoFunctionsTemplate, threeFunctionsTemplate, SortType.Functions, ["function3", "Secure string", "parameter1", "String", "parameter2", "Bool", ""], "resourceGroup()");
+        });
+    });
     suite("Parameters", async () => {
         const emptyTemplate =
             `{

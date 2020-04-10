@@ -378,9 +378,9 @@ export class InsertItem {
         let pos = textEditor.document.positionAt(index);
         await textEditor.edit(builder => builder.insert(pos, text));
         textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
-        if (text.indexOf(insertCursorText) >= 0) {
+        if (text.lastIndexOf(insertCursorText) >= 0) {
             let insertedText = textEditor.document.getText(new vscode.Range(pos, textEditor.document.positionAt(index + text.length)));
-            let cursorPos = insertedText.indexOf(insertCursorText);
+            let cursorPos = insertedText.lastIndexOf(insertCursorText);
             let pos2 = textEditor.document.positionAt(index + cursorPos + insertCursorText.length / 2);
             textEditor.selection = new vscode.Selection(pos2, pos2);
         }
