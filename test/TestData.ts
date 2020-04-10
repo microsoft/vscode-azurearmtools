@@ -227,9 +227,9 @@ export function parameterCompletion(parameterName: string, startIndex: number, l
 }
 
 export function propertyCompletion(propertyName: string, startIndex: number, length: number): Completion.Item {
-    return new Completion.Item(propertyName, `${propertyName}`, new Language.Span(startIndex, length), Completion.CompletionKind.Parameter, "(property)", "");
+    return new Completion.Item(propertyName, `${propertyName}`, new Language.Span(startIndex, length), Completion.CompletionKind.Property, "(property)");
 }
 
 export function variableCompletion(variableName: string, startIndex: number, length: number, includeRightParenthesis: boolean = true): Completion.Item {
-    return new Completion.Item(`'${variableName}'`, `'${variableName}'${includeRightParenthesis ? ")" : ""}`, new Language.Span(startIndex, length), Completion.CompletionKind.Variable, "(variable)", "");
+    return new Completion.Item(`'${variableName}'`, `'${variableName}'${includeRightParenthesis ? ")" : ""}`, new Language.Span(startIndex, length), Completion.CompletionKind.Variable, "(variable)");
 }
