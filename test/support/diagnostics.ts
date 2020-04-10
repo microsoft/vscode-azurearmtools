@@ -321,7 +321,7 @@ export async function getDiagnosticsForTemplate(
         templateContents = newContents;
     }
 
-    const tempFile = new TempFile(templateContents);
+    const tempFile = new TempFile(templateContents, tempPathSuffix);
     const document = new TempDocument(tempFile);
     const editor = new TempEditor(document);
     await editor.open();

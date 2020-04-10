@@ -13,8 +13,8 @@ export class TempFile {
     public readonly fsPath: string;
     public readonly uri: Uri;
 
-    public constructor(contents: string) {
-        this.fsPath = getTempFilePath();
+    public constructor(contents: string, baseFilename?: string, extension?: string) {
+        this.fsPath = getTempFilePath(baseFilename, extension);
         this.uri = Uri.file(this.fsPath);
 
         fs.writeFileSync(this.fsPath, contents);
