@@ -117,6 +117,35 @@ suite("InsertItem", async (): Promise<void> => {
             await doTestInsertItem(totallyEmptyTemplate, oneVariableTemplate, SortType.Variables, ["variable1"], 'resourceGroup()');
         });
     });
+    suite("Resources", async () => {
+        const emptyTemplate =
+            `{
+    "resources": []
+}`;
+        const oneResourceTemplate = `{
+    "resources": [
+  {
+      "name": "storageaccount1",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2019-06-01",
+      "tags": {
+          "displayName": "storageaccount1"
+      },
+      "location": "[resourceGroup().location]",
+      "kind": "StorageV2",
+      "sku": {
+         "name": "Premium_LRS",
+         "tier": "Premium"
+       }
+  }      ]
+}`;
+
+        suite("Insert one resource (Storage Account)", async () => {
+            test("Spaces CRLF", async () => {
+                await testInsertItemWithSettings(emptyTemplate, oneResourceTemplate, true, 4, true, async (insertItem, template, editor) => await insertItem.insertItem(template, SortType.Resources, editor), ["Storage Account"]);
+            });
+        });
+    });
 
     suite("Functions", async () => {
         const emptyTemplate =

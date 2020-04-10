@@ -296,21 +296,28 @@ export class InsertItem {
 
     private async insertResource(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
         let resources = this.getTemplateArrayPart(template, templateKeys.resources);
-        if (!resources) {
-            return;
-        }
+        let pos: vscode.Position;
         const resource = await this.ui.showQuickPick(getResourceSnippets(), { placeHolder: 'What resource do you want to insert?' });
-        let index = resources.span.endIndex;
-        let text = "\r\n\t\t";
-        if (resources.elements.length > 0) {
-            let lastIndex = resources.elements.length - 1;
-            index = resources.elements[lastIndex].span.afterEndIndex;
-            text = `,${text}`;
+        if (!resources) {
+            if (!template.topLevelValue) {
+                return;
+            }
+            let subPart: any = [];
+            await this.insertInObject2(template.topLevelValue, textEditor, subPart, "resources", 1);
+            pos = textEditor.selection.active;
+        } else {
+            let index = resources.span.endIndex;
+            let text = "\r\n\t\t";
+            if (resources.elements.length > 0) {
+                let lastIndex = resources.elements.length - 1;
+                index = resources.elements[lastIndex].span.afterEndIndex;
+                text = `,${text}`;
+            }
+            await this.insertText(textEditor, index, text, false);
+            pos = textEditor.document.positionAt(index + text.length);
+            let newSelection = new vscode.Selection(pos, pos);
+            textEditor.selection = newSelection;
         }
-        await this.insertText(textEditor, index, text, false);
-        let pos = textEditor.document.positionAt(index + text.length);
-        let newSelection = new vscode.Selection(pos, pos);
-        textEditor.selection = newSelection;
         await commands.executeCommand('editor.action.insertSnippet', { name: resource.label });
         textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
     }
