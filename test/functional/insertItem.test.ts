@@ -73,6 +73,10 @@ suite("InsertItem", async (): Promise<void> => {
     const totallyEmptyTemplate =
         `{}`;
 
+    async function doTestInsertItem(startTemplate: string, expectedTemplate: string, type: SortType, showInputBox: string[] = [], textToInsert: string = ''): Promise<void> {
+        await testInsertItem(startTemplate, expectedTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, type, editor), showInputBox, textToInsert);
+    }
+
     suite("Variables", async () => {
         const emptyTemplate =
             `{
@@ -97,20 +101,83 @@ suite("InsertItem", async (): Promise<void> => {
     }
 }`;
         suite("Insert one variable", async () => {
-            await testInsertItem(emptyTemplate, oneVariableTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, SortType.Variables, editor), ["variable1"], 'resourceGroup()');
+            await doTestInsertItem(emptyTemplate, oneVariableTemplate, SortType.Variables, ["variable1"], 'resourceGroup()');
         });
         suite("Insert one more variable", async () => {
-            await testInsertItem(oneVariableTemplate, twoVariablesTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, SortType.Variables, editor), ["variable2"], 'resourceGroup()');
+            await doTestInsertItem(oneVariableTemplate, twoVariablesTemplate, SortType.Variables, ["variable2"], 'resourceGroup()');
         });
         suite("Insert even one more variable", async () => {
-            await testInsertItem(twoVariablesTemplate, threeVariablesTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, SortType.Variables, editor), ["variable3"], 'resourceGroup()');
+            await doTestInsertItem(twoVariablesTemplate, threeVariablesTemplate, SortType.Variables, ["variable3"], 'resourceGroup()');
         });
 
         suite("Insert one variable in totally empty template", async () => {
-            await testInsertItem(totallyEmptyTemplate, oneVariableTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, SortType.Variables, editor), ["variable1"], 'resourceGroup()');
+            await doTestInsertItem(totallyEmptyTemplate, oneVariableTemplate, SortType.Variables, ["variable1"], 'resourceGroup()');
         });
     });
 
+    suite("Parameters", async () => {
+        const emptyTemplate =
+            `{
+    "parameters": {}
+}`;
+        const oneParameterTemplate = `{
+    "parameters": {
+        "parameter1": {
+            "type": "string",
+            "defaultValue": "default",
+            "metadata": {
+                "description": "description"
+            }
+        }
+    }
+}`;
+        const twoParametersTemplate = `{
+    "parameters": {
+        "parameter1": {
+            "type": "string",
+            "defaultValue": "default",
+            "metadata": {
+                "description": "description"
+            }
+        },
+        "parameter2": {
+            "type": "string"
+        }
+    }
+}`;
+        const threeParametersTemplate = `{
+    "parameters": {
+        "parameter1": {
+            "type": "string",
+            "defaultValue": "default",
+            "metadata": {
+                "description": "description"
+            }
+        },
+        "parameter2": {
+            "type": "string"
+        },
+        "parameter3": {
+            "type": "securestring",
+            "metadata": {
+                "description": "description3"
+            }
+        }
+    }
+}`;
+        suite("Insert one parameter", async () => {
+            await doTestInsertItem(emptyTemplate, oneParameterTemplate, SortType.Parameters, ["parameter1", "String", "default", "description"]);
+        });
+        suite("Insert one more parameter", async () => {
+            await doTestInsertItem(oneParameterTemplate, twoParametersTemplate, SortType.Parameters, ["parameter2", "String", "", ""]);
+        });
+        suite("Insert even one more parameter", async () => {
+            await doTestInsertItem(twoParametersTemplate, threeParametersTemplate, SortType.Parameters, ["parameter3", "Secure string", "", "description3"]);
+        });
+        suite("Insert one output in totally empty template", async () => {
+            await doTestInsertItem(totallyEmptyTemplate, oneParameterTemplate, SortType.Parameters, ["parameter1", "String", "default", "description"]);
+        });
+    });
     suite("Outputs", async () => {
         const emptyTemplate =
             `{
@@ -147,22 +214,22 @@ suite("InsertItem", async (): Promise<void> => {
             "value": "[resourceGroup()]"
         },
         "output3": {
-            "type": "string",
+            "type": "securestring",
             "value": "[resourceGroup()]"
         }
     }
 }`;
         suite("Insert one output", async () => {
-            await testInsertItem(emptyTemplate, oneOutputTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, SortType.Outputs, editor), ["output1"], 'resourceGroup()');
+            await doTestInsertItem(emptyTemplate, oneOutputTemplate, SortType.Outputs, ["output1", "String"], 'resourceGroup()');
         });
         suite("Insert one more variable", async () => {
-            await testInsertItem(oneOutputTemplate, twoOutputsTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, SortType.Outputs, editor), ["output2"], 'resourceGroup()');
+            await doTestInsertItem(oneOutputTemplate, twoOutputsTemplate, SortType.Outputs, ["output2", "String"], 'resourceGroup()');
         });
         suite("Insert even one more variable", async () => {
-            await testInsertItem(twoOutputsTemplate, threeOutputsTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, SortType.Outputs, editor), ["output3"], 'resourceGroup()');
+            await doTestInsertItem(twoOutputsTemplate, threeOutputsTemplate, SortType.Outputs, ["output3", "Secure string"], 'resourceGroup()');
         });
         suite("Insert one output in totally empty template", async () => {
-            await testInsertItem(totallyEmptyTemplate, oneOutputTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, SortType.Outputs, editor), ["output1"], 'resourceGroup()');
+            await doTestInsertItem(emptyTemplate, oneOutputTemplate, SortType.Outputs, ["output1", "String"], 'resourceGroup()');
         });
     });
 });
@@ -174,11 +241,13 @@ class MockUserInput implements IAzureUserInput {
     }
     public async showQuickPick<T extends vscode.QuickPickItem>(items: T[] | Thenable<T[]>, options: import("vscode-azureextensionui").IAzureQuickPickOptions): Promise<T> {
         let result = await items;
-        return result[0];
+        let label = this.showInputBoxTexts.shift()!;
+        let item = result.find(x => x.label === label)!;
+        return item;
     }
 
     public async showInputBox(options: vscode.InputBoxOptions): Promise<string> {
-        return this.showInputBoxTexts.pop()!;
+        return this.showInputBoxTexts.shift()!;
     }
 
     public async showWarningMessage<T extends vscode.MessageItem>(message: string, options: import("vscode-azureextensionui").IAzureMessageOptions, ...items: T[]): Promise<T> {
