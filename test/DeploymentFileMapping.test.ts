@@ -20,8 +20,8 @@ suite("DeploymentFileMapping", () => {
     const param1subfolder = Uri.file(isWin32 ? "c:\\temp\\sub\\template1.params.json" : "/temp/sub/template1.params.json");
     const param1parentfolder = Uri.file(isWin32 ? "c:\\template1.params.json" : "/template1.params.json");
 
-    const template1 = Uri.parse(isWin32 ? "c:\\temp\\template1.json" : "/temp/template1.json");
-    const template1variation = Uri.parse(isWin32 ? "c:\\temp\\abc\\..\\template1.json" : "/temp/abc/../template1.json");
+    const template1 = Uri.file(isWin32 ? "c:\\temp\\template1.json" : "/temp/template1.json");
+    const template1variation = Uri.file(isWin32 ? "c:\\temp\\abc\\..\\template1.json" : "/temp/abc/../template1.json");
 
     test("Update/get", async () => {
         const testConfig = new TestConfiguration();
@@ -104,8 +104,8 @@ suite("DeploymentFileMapping", () => {
 
         await mapping.mapParameterFile(t, p);
 
-        assert.equal(mapping.getParameterFile(Uri.file("c:\\temp\\tEMPLATE.jSON"))?.fsPath, p.fsPath);
-        assert.equal(mapping.getTemplateFile(Uri.file("c:\\temP\\TemPLATE1.pARAMS.jSOn"))?.fsPath, t.fsPath);
+        assert.equal(mapping.getParameterFile(Uri.file("c:\\temp\\tEMPLATE1.jSON"))?.fsPath, p.fsPath.toLocaleLowerCase());
+        assert.equal(mapping.getTemplateFile(Uri.file("c:\\temP\\TemPLATE1.pARAMS.jSOn"))?.fsPath, t.fsPath.toLowerCase());
     });
 
     testOnWin32("Case-insensitive on Windows - last entry wins", async () => {
@@ -115,7 +115,7 @@ suite("DeploymentFileMapping", () => {
         const t2 = Uri.file("C:\\TEMP\\TEMPLATE1.json");
         const t3 = Uri.file("C:\\TEMP\\tempLATE1.json");
         const p1 = Uri.file("C:\\TEMP\\Template1.Params.json");
-        const p2 = Uri.file("C:\\TEMP\\TEMPLATE.PARAMS.json");
+        const p2 = Uri.file("C:\\TEMP\\TEMPLATE1.PARAMS.json");
         const p3 = Uri.file("C:\\TEMP\\tempLATE1.paRAMS.json");
 
         const obj: { [key: string]: unknown } = {};
@@ -127,16 +127,14 @@ suite("DeploymentFileMapping", () => {
         // Look-up on any template version returns p2
         const normalizedTemplate = normalizePath(t1.fsPath);
         assert(normalizedTemplate === normalizePath(t2.fsPath) && normalizedTemplate === normalizePath(t3.fsPath));
-        assert.equal(mapping.getParameterFile(t1)?.fsPath, p2.fsPath);
-        assert.equal(mapping.getParameterFile(t2)?.fsPath, p2.fsPath);
-        assert.equal(mapping.getParameterFile(t3)?.fsPath, p2.fsPath);
+        assert.equal(mapping.getParameterFile(t1)?.fsPath, p3.fsPath);
+        assert.equal(mapping.getParameterFile(t2)?.fsPath, p3.fsPath);
+        assert.equal(mapping.getParameterFile(t3)?.fsPath, p3.fsPath);
 
-        // Look-up on any parameter version returns same normalized path
-        const normalizedParams = normalizePath(p1.fsPath);
-        assert(normalizedParams === normalizePath(p2.fsPath) && normalizedParams === normalizePath(p3.fsPath));
-        assert.equal(mapping.getTemplateFile(p1)?.fsPath, normalizedParams);
-        assert.equal(mapping.getTemplateFile(p2)?.fsPath, normalizedParams);
-        assert.equal(mapping.getTemplateFile(p3)?.fsPath, normalizedParams);
+        // Look-up on any parameter version returns same path
+        assert.equal(mapping.getTemplateFile(p1)?.fsPath, t3.fsPath);
+        assert.equal(mapping.getTemplateFile(p2)?.fsPath, t3.fsPath);
+        assert.equal(mapping.getTemplateFile(p3)?.fsPath, t3.fsPath);
     });
 
     test("Bad settings 1", async () => {
@@ -167,22 +165,17 @@ suite("DeploymentFileMapping", () => {
         obj[`${root}good1.json`] = "a.";
 
         // getParameterFile
-        assert.equal(mapping.getParameterFile(Uri.parse(<string><unknown>undefined)), undefined);
-        assert.equal(mapping.getParameterFile(Uri.parse(<string><unknown>1)), undefined);
-        assert.equal(mapping.getParameterFile(Uri.parse("")), undefined);
-        assert.equal(mapping.getParameterFile(Uri.parse("foo")), undefined);
-        assert.equal(mapping.getParameterFile(Uri.parse("temp/relative/foo.json")), undefined);
-        assert.equal(mapping.getParameterFile(Uri.parse(`${root}t1.json`)), undefined);
-        assert.equal(mapping.getParameterFile(Uri.parse(`${root}t2.json`)), undefined);
-        assert.equal(mapping.getParameterFile(Uri.parse(`${root}t3.json`)), undefined);
-        assert.equal(mapping.getParameterFile(Uri.parse(`${root}t4.json`)), undefined);
-        assert.equal(mapping.getParameterFile(Uri.parse(`${root}t5.json`)), undefined);
-        assert.equal(mapping.getParameterFile(Uri.parse(`${root}t6.json`)), undefined);
-        assert.equal(mapping.getParameterFile(Uri.parse(`${root}good1.json`))?.fsPath, `${root}a.`);
+        assert.equal(mapping.getParameterFile(Uri.file("")), undefined);
+        assert.equal(mapping.getParameterFile(Uri.file("foo")), undefined);
+        assert.equal(mapping.getParameterFile(Uri.file("temp/relative/foo.json")), undefined);
+        assert.equal(mapping.getParameterFile(Uri.file(`${root}t1.json`)), undefined);
+        assert.equal(mapping.getParameterFile(Uri.file(`${root}t3.json`)), undefined);
+        assert.equal(mapping.getParameterFile(Uri.file(`${root}t4.json`)), undefined);
+        assert.equal(mapping.getParameterFile(Uri.file(`${root}good1.json`))?.fsPath, `${root}a.`);
 
         // getTemplateFile
-        assert.equal(mapping.getTemplateFile(Uri.parse("")), undefined);
-        assert.equal(mapping.getTemplateFile(Uri.parse("foo.params.json")), undefined);
+        assert.equal(mapping.getTemplateFile(Uri.file("")), undefined);
+        assert.equal(mapping.getTemplateFile(Uri.file("foo.params.json")), undefined);
     });
 
     test("Remove mapping", async () => {
