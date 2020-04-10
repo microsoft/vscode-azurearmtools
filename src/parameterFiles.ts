@@ -5,7 +5,7 @@
 import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import * as path from 'path';
-import { commands, ConfigurationTarget, MessageItem, TextDocument, Uri, ViewColumn, window, workspace } from 'vscode';
+import { commands, ConfigurationTarget, MessageItem, TextDocument, Uri, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, DialogResponses, IActionContext, IAzureQuickPickItem, UserCancelledError } from 'vscode-azureextensionui';
 import { configKeys, configPrefix, globalStateKeys, isWin32 } from './constants';
 import { DeploymentTemplate } from './DeploymentTemplate';
@@ -129,7 +129,7 @@ export async function openParameterFile(actionContext: IActionContext, sourceUri
     }
 
     let doc: TextDocument = await workspace.openTextDocument(paramFile);
-    await window.showTextDocument(doc, ViewColumn.Beside);
+    await window.showTextDocument(doc);
   }
 }
 
