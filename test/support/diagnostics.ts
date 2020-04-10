@@ -279,6 +279,8 @@ export async function getDiagnosticsForTemplate(
 ): Promise<Diagnostic[]> {
     let templateContents: string | undefined;
     let fileToDelete: string | undefined;
+    let tempPathSuffix: string = '';
+
     // tslint:disable-next-line: strict-boolean-expressions
     options = options || {};
 
@@ -287,6 +289,7 @@ export async function getDiagnosticsForTemplate(
             // It's a filename
             let sourcePath = path.join(testFolder, templateContentsOrFileName);
             templateContents = fs.readFileSync(sourcePath).toString();
+            tempPathSuffix = path.basename(templateContentsOrFileName, path.extname(templateContentsOrFileName));
         } else {
             // It's a string
             templateContents = templateContentsOrFileName;
@@ -308,7 +311,7 @@ export async function getDiagnosticsForTemplate(
     }
 
     // Write to temp file
-    let tempPath = getTempFilePath();
+    let tempPath = getTempFilePath(tempPathSuffix);
     fs.writeFileSync(tempPath, templateContents);
     fileToDelete = tempPath;
 
