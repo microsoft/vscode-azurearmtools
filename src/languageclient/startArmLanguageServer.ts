@@ -6,11 +6,11 @@
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
-import { ProgressLocation, window, workspace } from 'vscode';
+import { ProgressLocation, Uri, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
 import { acquireSharedDotnetInstallation } from '../acquisition/acquireSharedDotnetInstallation';
-import { armTemplateLanguageId, configKeys, configPrefix, downloadDotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName } from '../constants';
+import { armTemplateLanguageId, configKeys, configPrefix, downloadDotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName, notifications } from '../constants';
 import { ext } from '../extensionVariables';
 import { assert } from '../fixed_assert';
 import { templateDocumentSelector } from '../supported';
@@ -166,12 +166,51 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
 
             await client.onReady();
             ext.languageServerClient = client;
+
+            // asdf constant
+            // asdf with telemetry
+            client.onRequest(notifications.openLinkedTemplate, async (args: { templatePath: string; requestedPath: string }) => { //asdf new file?
+                return await callWithTelemetryAndErrorHandling('requestOpenLinkedTemplate', async () => { //asdf error handling
+                    const templatePath: string = args.templatePath;
+                    const requestedPath: string = args.requestedPath;
+
+                    ext.outputChannel.appendLine(`${notifications.openLinkedTemplate}: (${templatePath}, ${requestedPath})`);
+                    //asdf const workspaceFolder = workspace.getWorkspaceFolder(uri2)?.uri;
+                    let filePath: string;
+                    if (path.isAbsolute(requestedPath)) {
+                        filePath = requestedPath;
+                        ext.outputChannel.appendLine(`... Using absolute path: ${filePath}`);
+
+                    } else {
+                        const localTemplatePath = Uri.parse(templatePath).fsPath; //asdf
+                        filePath = path.resolve(path.dirname(localTemplatePath), requestedPath);
+                        ext.outputChannel.appendLine(`... Using local path: ${filePath}`);
+                    }
+
+                    // tslint:disable-next-line: no-floating-promises // Don't wait
+                    loadLinkedFile(filePath);
+
+                    // Let language server know the path that they need to load, once it's available
+                    return filePath; // Uri.parse(filePath).fsPath; //asdf?  should keep consistent, either remove query strings or don't
+                });
+            });
         } catch (error) {
             throw new Error(
                 `${languageServerName}: An error occurred starting the language server.${os.EOL}${os.EOL}${parseError(error).message}`
             );
         }
     });
+}
+
+async function loadLinkedFile(filePath: string): Promise<void> {
+    try {
+        const uri = Uri.parse(filePath); //asdf
+        // asdf existing?
+        const doc = await workspace.openTextDocument(uri);
+        await window.showTextDocument(doc);
+    } catch (err) {
+        window.showErrorMessage(parseError(err).message); //asdf
+    }
 }
 
 async function getDotNetPath(): Promise<string | undefined> {
