@@ -78,7 +78,7 @@
         "description": "ARM Template Variable"
     },
     "Parameter": {
-        "prefix": "arm-param-value",
+        "prefix": "arm-param",
         "body": [
             "\"${1:parameter1}\": {",
             "   \"type\": \"${2|string,securestring,int,bool,object,secureobject,array|}\",",

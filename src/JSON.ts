@@ -17,6 +17,7 @@ import { CaseInsensitiveMap } from "./CaseInsensitiveMap";
 import { assert } from "./fixed_assert";
 import * as language from "./Language";
 import * as basic from "./Tokenizer";
+import { assertNever } from "./util/assertNever";
 import { nonNullValue } from "./util/nonNull";
 import * as utilities from "./Utilities";
 
@@ -34,20 +35,28 @@ export enum ValueKind {
  * The different types of tokens that can be parsed from a JSON string.
  */
 export enum TokenType {
-    LeftCurlyBracket,
-    RightCurlyBracket,
-    LeftSquareBracket,
-    RightSquareBracket,
-    Comma,
-    Colon,
-    Whitespace,
-    QuotedString,
-    Number,
-    Boolean,
-    Literal,
-    Null,
-    Comment,
-    Unrecognized
+    LeftCurlyBracket = 0,
+    RightCurlyBracket = 1,
+    LeftSquareBracket = 2,
+    RightSquareBracket = 3,
+    Comma = 4,
+    Colon = 5,
+    Whitespace = 6,
+    QuotedString = 7,
+    Number = 8,
+    Boolean = 9,
+    Literal = 10,
+    Null = 11,
+    Comment = 12,
+    Unrecognized = 13
+}
+
+export enum Comments {
+    /**
+     * Default (parser generally ignores comments)
+     */
+    ignoreCommentTokens,
+    includeCommentTokens
 }
 
 /**
@@ -592,7 +601,7 @@ export abstract class Value {
  */
 export class ObjectValue extends Value {
     // Last set with the same (case-insensitive) key wins (just like in Azure template deployment)
-    private _caseInsensitivePropertyMap: CachedValue<CaseInsensitiveMap<string, Value | undefined>> = new CachedValue<CaseInsensitiveMap<string, Value | undefined>>();
+    private _caseInsensitivePropertyMap: CachedValue<CaseInsensitiveMap<string, Property | undefined>> = new CachedValue<CaseInsensitiveMap<string, Property | undefined>>();
 
     constructor(span: language.Span, private _properties: Property[]) {
         super(span);
@@ -604,16 +613,16 @@ export class ObjectValue extends Value {
     }
 
     /**
-     * Get the map of property names to property values for this ObjectValue. This mapping is
+     * Get the map of property names to properties for this ObjectValue. This mapping is
      * created lazily.
      */
-    private get caseInsensitivePropertyMap(): CaseInsensitiveMap<string, Value | undefined> {
+    private get caseInsensitivePropertyMap(): CaseInsensitiveMap<string, Property | undefined> {
         return this._caseInsensitivePropertyMap.getOrCacheValue(() => {
-            const caseInsensitivePropertyMap = new CaseInsensitiveMap<string, Value | undefined>();
+            const caseInsensitivePropertyMap = new CaseInsensitiveMap<string, Property | undefined>();
 
             if (this._properties.length > 0) {
                 for (const property of this._properties) {
-                    caseInsensitivePropertyMap.set(property.nameValue.toString(), property.value);
+                    caseInsensitivePropertyMap.set(property.nameValue.toString(), property);
                 }
             }
 
@@ -637,7 +646,16 @@ export class ObjectValue extends Value {
      * provided name (case-insensitive), then undefined will be returned.
      */
     public getPropertyValue(propertyName: string): Value | undefined {
-        const result = this.caseInsensitivePropertyMap.get(propertyName);
+        const result: Property | undefined = this.caseInsensitivePropertyMap.get(propertyName);
+        return result ? result.value : undefined;
+    }
+
+    /**
+     * Get the property for the provided property name. If no property exists with the
+     * provided name (case-insensitive), then undefined will be returned.
+     */
+    public getProperty(propertyName: string): Property | undefined {
+        const result: Property | undefined = this.caseInsensitivePropertyMap.get(propertyName);
         return result ? result : undefined;
     }
 
@@ -723,7 +741,7 @@ export class Property extends Value {
 
     public get __debugDisplay(): string {
         // tslint:disable-next-line: prefer-template
-        return this._name.toString() + ":" + (this.value instanceof Value ? this.value.__debugDisplay : String(this.value));
+        return this._name.quotedValue + ":" + (this.value instanceof Value ? this.value.__debugDisplay : String(this.value));
     }
 }
 
@@ -925,12 +943,76 @@ export class ParseResult {
         return this._commentTokens;
     }
 
+    public get commentTokenCount(): number {
+        return this._commentTokens.length;
+    }
+
     public get lineLengths(): number[] {
         return this._lineLengths;
     }
 
+    // Might or might not make a copy
+    public getTokens(commentBehavior: Comments): Token[] {
+        if (commentBehavior === Comments.includeCommentTokens) {
+            const tokens = this.tokens.concat(this.commentTokens);
+            tokens.sort((a, b) => a.span.startIndex - b.span.startIndex);
+            return tokens;
+        } else {
+            return this.tokens;
+        }
+    }
+
+    // Might or might not make a copy
+    public getTokensInSpan(span: language.Span, commentsBehavior: Comments): Token[] {
+        const results: Token[] = [];
+        const tokens = this.getTokens(commentsBehavior);
+        const spanStartIndex = span.startIndex;
+        const spanEndIndex = span.endIndex;
+
+        for (let token of tokens) {
+            if (token.span.endIndex >= spanStartIndex) {
+                if (token.span.startIndex > spanEndIndex) {
+                    break;
+                }
+
+                results.push(token);
+            }
+        }
+
+        return results;
+    }
+
+    public getLastTokenOnLine(line: number, commentBehavior: Comments = Comments.ignoreCommentTokens): Token | undefined {
+        const startOfLineIndex = this.getCharacterIndex(line, 0);
+        const lastLine = this.lineLengths.length - 1;
+
+        const tokens = this.getTokens(commentBehavior);
+
+        let lastSeenToken;
+
+        if (line === lastLine) {
+            // On last line, check the very last token
+            lastSeenToken = tokens[tokens.length - 1];
+        } else {
+            const nextLineIndex = this.getCharacterIndex(line + 1, 0);
+
+            for (let token of tokens) {
+                if (token.span.startIndex >= nextLineIndex) {
+                    break;
+                }
+                lastSeenToken = token;
+            }
+        }
+
+        if (lastSeenToken && lastSeenToken.span.endIndex >= startOfLineIndex) {
+            return lastSeenToken;
+        } else {
+            return undefined;
+        }
+    }
+
     /**
-     * Get the last character index in this JSON parse result.
+     * Get the highest character index of any line in this JSON parse result.
      */
     public get maxCharacterIndex(): number {
         let result = 0;
@@ -1002,34 +1084,95 @@ export class ParseResult {
         return maxColumnIndex;
     }
 
-    private getToken(tokenIndex: number): Token {
+    private static getToken(tokens: Token[], tokenIndex: number): Token {
         // tslint:disable-next-line:max-line-length
-        assert(0 <= tokenIndex && tokenIndex < this.tokenCount, `The tokenIndex (${tokenIndex}) must always be between 0 and the token count - 1 (${this.tokenCount - 1}).`);
+        assert(0 <= tokenIndex && tokenIndex < tokens.length, `The tokenIndex (${tokenIndex}) must always be between 0 and the token count - 1 (${tokens.length - 1}).`);
 
-        return this._tokens[tokenIndex];
+        return tokens[tokenIndex];
     }
 
-    private get lastToken(): Token | undefined {
-        let tokenCount = this.tokenCount;
-        return tokenCount > 0 ? this.getToken(tokenCount - 1) : undefined;
+    private static getLastToken(tokens: Token[]): Token | undefined {
+        // Returns undefined if no tokens
+        return tokens[tokens.length - 1];
+    }
+
+    // Unlike getTokenAtCharacterIndex by itself, also handles the
+    // case of being at the end of a line comment ("// comment")
+    public getCommentTokenAtDocumentIndex(
+        characterIndex: number,
+        containsBehavior: language.Contains
+    ): Token | undefined {
+        // Check if we're inside a comment token
+        const token = this.getTokenAtCharacterIndex(
+            characterIndex,
+            Comments.includeCommentTokens);
+        if (token?.type === TokenType.Comment) {
+            switch (containsBehavior) {
+                case language.Contains.strict:
+                    return token;
+
+                case language.Contains.extended:
+                    assert.fail("language.Contains.extended not implemented here (somewhat unambiguous and not clear it's useful)");
+
+                case language.Contains.enclosed:
+                    if (token.span.startIndex === characterIndex) {
+                        return undefined;
+                    }
+                    return token;
+
+                default:
+                    assertNever(containsBehavior);
+            }
+        }
+
+        // Are we after a line comment on the same line (if we're on the \r or \n after
+        //   a line comment, the enclosing token is a whitespace token)
+        const line = this.getPositionFromCharacterIndex(characterIndex).line;
+        const lastTokenOnLineIncludingComments = this.getLastTokenOnLine(
+            line,
+            Comments.includeCommentTokens);
+        if (lastTokenOnLineIncludingComments
+            && lastTokenOnLineIncludingComments.type === TokenType.Comment
+            && lastTokenOnLineIncludingComments.toString().startsWith('//')
+            && lastTokenOnLineIncludingComments.span.startIndex < characterIndex
+        ) {
+            return lastTokenOnLineIncludingComments;
+        }
+
+        return undefined;
     }
 
     /**
-     * Get the JSON Token that contains the provided characterIndex, if any (e.g. returns undefined if at whitespace)
+     * Get the JSON Token that contains the provided characterIndex
+     * if any (returns undefined if at whitespace or comment)
      */
-    public getTokenAtCharacterIndex(characterIndex: number): Token | undefined {
+    public getTokenAtCharacterIndex(
+        characterIndex: number,
+        commentBehavior: Comments = Comments.includeCommentTokens
+    ): Token | undefined {
         assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);
 
-        let token: Token | undefined;
+        const tokens = this.getTokens(commentBehavior);
+        return ParseResult.getTokenAtCharacterIndex(tokens, characterIndex);
+    }
 
-        if (!!this.lastToken && this.lastToken.span.afterEndIndex === characterIndex) {
-            token = this.lastToken;
+    private static getTokenAtCharacterIndex(tokens: Token[], characterIndex: number): Token | undefined {
+        assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);
+
+        const tokenCount: number = tokens.length;
+        const lastToken: Token | undefined = ParseResult.getLastToken(tokens);
+
+        let token: Token | undefined;
+        // tslint:disable-next-line: strict-boolean-expressions
+        if (!!lastToken && lastToken.span.afterEndIndex === characterIndex) {
+            token = lastToken;
         } else {
+            // Perform a binary search
             let minTokenIndex = 0;
-            let maxTokenIndex = this.tokenCount - 1;
+            let maxTokenIndex = tokenCount - 1;
             while (!token && minTokenIndex <= maxTokenIndex) {
                 let midTokenIndex = Math.floor((maxTokenIndex + minTokenIndex) / 2);
-                let currentToken = this.getToken(midTokenIndex);
+                let currentToken = ParseResult.getToken(tokens, midTokenIndex);
                 let currentTokenSpan = currentToken.span;
 
                 if (characterIndex < currentTokenSpan.startIndex) {
@@ -1045,29 +1188,32 @@ export class ParseResult {
         return token;
     }
 
-    public getValueAtCharacterIndex(characterIndex: number): Value | undefined {
+    public getValueAtCharacterIndex(characterIndex: number, containsBehavior: language.Contains): Value | undefined {
         assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);
 
         let result: Value | undefined;
 
-        // Find the Value at the given character index via a binary search through the value tree
-        if (this.value && this.value.span.contains(characterIndex, true)) {
+        // Find the Value at the given character index by starting at the outside and finding the innermost
+        //   child that contains the point.
+        if (this.value && this.value.span.contains(characterIndex, containsBehavior)) {
             let current: Value = this.value;
 
             while (!result) {
                 const currentValue: Value = current;
 
+                // tslint:disable-next-line:no-suspicious-comment
+                // TODO: This should not depend on knowledge of the various value types' implementations
                 if (currentValue instanceof Property) {
-                    if (currentValue.nameValue.span.contains(characterIndex, true)) {
+                    if (currentValue.nameValue.span.contains(characterIndex, containsBehavior)) {
                         current = currentValue.nameValue;
-                    } else if (currentValue.value && currentValue.value.span.contains(characterIndex, true)) {
+                    } else if (currentValue.value && currentValue.value.span.contains(characterIndex, containsBehavior)) {
                         current = currentValue.value;
                     }
                 } else if (currentValue instanceof ObjectValue) {
                     assert(currentValue.properties);
                     for (const property of currentValue.properties) {
                         assert(property);
-                        if (property.span.contains(characterIndex, true)) {
+                        if (property.span.contains(characterIndex, containsBehavior)) {
                             current = property;
                         }
                     }
@@ -1075,7 +1221,7 @@ export class ParseResult {
                     assert(currentValue.elements);
                     for (const element of currentValue.elements) {
                         assert(element);
-                        if (element.span.contains(characterIndex, true)) {
+                        if (element.span.contains(characterIndex, containsBehavior)) {
                             current = element;
                         }
                     }

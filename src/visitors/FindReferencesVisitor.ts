@@ -104,9 +104,13 @@ export class FindReferencesVisitor extends Visitor {
                 }
                 break;
 
+            case DefinitionKind.ParameterValue:
+                // tslint:disable-next-line:no-suspicious-comment
+                // TODO: To implement
+                break;
+
             default:
                 assertNever(this._definition.definitionKind);
-                break;
         }
 
         super.visitFunctionCall(tleFunction);
