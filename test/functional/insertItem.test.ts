@@ -135,6 +135,7 @@ suite("InsertItem", async (): Promise<void> => {
             await doTestInsertItem(totallyEmptyTemplate, oneVariableTemplate, SortType.Variables, ["variable1"], 'resourceGroup()');
         });
     });
+
     suite("Resources", async () => {
         const emptyTemplate =
             `{
@@ -325,6 +326,7 @@ suite("InsertItem", async (): Promise<void> => {
             await doTestInsertItem(twoFunctionsTemplate, threeFunctionsTemplate, SortType.Functions, ["function3", "Secure string", "parameter1", "String", "parameter2", "Bool", ""], "resourceGroup()");
         });
     });
+
     suite("Parameters", async () => {
         const emptyTemplate =
             `{
@@ -388,6 +390,7 @@ suite("InsertItem", async (): Promise<void> => {
             await doTestInsertItem(totallyEmptyTemplate, oneParameterTemplate, SortType.Parameters, ["parameter1", "String", "default", "description"]);
         });
     });
+
     suite("Outputs", async () => {
         const emptyTemplate =
             `{
@@ -432,10 +435,10 @@ suite("InsertItem", async (): Promise<void> => {
         suite("Insert one output", async () => {
             await doTestInsertItem(emptyTemplate, oneOutputTemplate, SortType.Outputs, ["output1", "String"], 'resourceGroup()');
         });
-        suite("Insert one more variable", async () => {
+        suite("Insert one more output", async () => {
             await doTestInsertItem(oneOutputTemplate, twoOutputsTemplate, SortType.Outputs, ["output2", "String"], 'resourceGroup()');
         });
-        suite("Insert even one more variable", async () => {
+        suite("Insert even one more output", async () => {
             await doTestInsertItem(twoOutputsTemplate, threeOutputsTemplate, SortType.Outputs, ["output3", "Secure string"], 'resourceGroup()');
         });
         suite("Insert one output in totally empty template", async () => {

@@ -190,11 +190,11 @@ export class InsertItem {
         let parameter: Parameter = {
             type: parameterType.value
         };
-        let defaultValue = await this.ui.showInputBox({ prompt: "Default value? Leave empty for no default value", });
+        let defaultValue = await this.ui.showInputBox({ prompt: "Default value? Leave empty for no default value.", });
         if (defaultValue !== '') {
             parameter.defaultValue = defaultValue;
         }
-        let description = await this.ui.showInputBox({ prompt: "Description? Leave empty for no description", });
+        let description = await this.ui.showInputBox({ prompt: "Description? Leave empty for no description.", });
         if (description !== '') {
             parameter.metadata = {
                 description: description
@@ -216,20 +216,20 @@ export class InsertItem {
             let subPart: any = {};
             // tslint:disable-next-line:no-unsafe-any
             subPart[name] = data;
-            await this.insertInObject2(topLevel, textEditor, subPart, part, 1);
+            await this.insertInObjectInternal(topLevel, textEditor, subPart, part, 1);
         } else {
-            await this.insertInObject2(templatePart, textEditor, data, name);
+            await this.insertInObjectInternal(templatePart, textEditor, data, name);
         }
         return true;
     }
 
     // tslint:disable-next-line:no-any
-    private async insertInObject2(templatePart: Json.ObjectValue, textEditor: vscode.TextEditor, data: any, name: string, indentLevel: number = 2): Promise<number> {
-        let firstItem = templatePart.properties.length === 0;
-        let startText = firstItem ? '' : ',';
-        let index = firstItem ? templatePart.span.endIndex : templatePart.properties[templatePart.properties.length - 1].span.afterEndIndex;
+    private async insertInObjectInternal(templatePart: Json.ObjectValue, textEditor: vscode.TextEditor, data: any, name: string, indentLevel: number = 2): Promise<number> {
+        let isFirstItem = templatePart.properties.length === 0;
+        let startText = isFirstItem ? '' : ',';
+        let index = isFirstItem ? templatePart.span.endIndex : templatePart.properties[templatePart.properties.length - 1].span.afterEndIndex;
         let tabs = '\t'.repeat(indentLevel - 1);
-        let endText = firstItem ? `\r\n${tabs}` : ``;
+        let endText = isFirstItem ? `\r\n${tabs}` : ``;
         let text = typeof (data) === 'object' ? JSON.stringify(data, null, '\t') : `"${data}"`;
         let indentedText = this.indent(`\r\n"${name}": ${text}`, indentLevel);
         return await this.insertText(textEditor, index, `${startText}${indentedText}${endText}`);
@@ -249,46 +249,46 @@ export class InsertItem {
         };
         return await this.insertInObject(template, textEditor, templateKeys.outputs, output, name);
     }
-    private async insertFunctionTopLevel(topLevel: Json.ObjectValue | undefined, textEditor: vscode.TextEditor): Promise<boolean> {
+    private async insertFunctionAsTopLevel(topLevel: Json.ObjectValue | undefined, textEditor: vscode.TextEditor): Promise<boolean> {
         if (!topLevel) {
             vscode.window.showErrorMessage('Invalid ARM template!');
             return false;
         }
         let functions = [await this.getFunctionNamespace()];
-        await this.insertInObject2(topLevel, textEditor, functions, "functions", 1);
+        await this.insertInObjectInternal(topLevel, textEditor, functions, "functions", 1);
         return true;
     }
 
-    private async insertFunctionNamespace(functions: Json.ArrayValue, textEditor: vscode.TextEditor): Promise<boolean> {
+    private async insertFunctionAsNamespace(functions: Json.ArrayValue, textEditor: vscode.TextEditor): Promise<boolean> {
         let namespace = await this.getFunctionNamespace();
         await this.insertInArray(functions, textEditor, namespace);
         return true;
     }
 
-    private async insertFunctionMembers(namespace: Json.ObjectValue, textEditor: vscode.TextEditor): Promise<void> {
+    private async insertFunctionAsMembers(namespace: Json.ObjectValue, textEditor: vscode.TextEditor): Promise<void> {
         let functionName = await this.ui.showInputBox({ prompt: "Name of function?" });
         let functionDef = await this.getFunction();
         // tslint:disable-next-line:no-any
         let members: any = {};
         // tslint:disable-next-line:no-unsafe-any
         members[functionName] = functionDef;
-        await this.insertInObject2(namespace, textEditor, members, 'members', 3);
+        await this.insertInObjectInternal(namespace, textEditor, members, 'members', 3);
     }
 
-    private async insertFunctionFunction(members: Json.ObjectValue, textEditor: vscode.TextEditor): Promise<void> {
+    private async insertFunctionAsFunction(members: Json.ObjectValue, textEditor: vscode.TextEditor): Promise<void> {
         let functionName = await this.ui.showInputBox({ prompt: "Name of function?" });
         let functionDef = await this.getFunction();
-        await this.insertInObject2(members, textEditor, functionDef, functionName, 4);
+        await this.insertInObjectInternal(members, textEditor, functionDef, functionName, 4);
     }
 
     private async insertFunction(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
         let functions = this.getTemplateArrayPart(template, templateKeys.functions);
         if (!functions) {
             // tslint:disable-next-line:no-unsafe-any
-            return await this.insertFunctionTopLevel(template.topLevelValue, textEditor);
+            return await this.insertFunctionAsTopLevel(template.topLevelValue, textEditor);
         }
         if (functions.length === 0) {
-            return await this.insertFunctionNamespace(functions, textEditor);
+            return await this.insertFunctionAsNamespace(functions, textEditor);
         }
         let namespace = Json.asObjectValue(functions.elements[0]);
         if (!namespace) {
@@ -297,7 +297,7 @@ export class InsertItem {
         }
         let members = namespace.getPropertyValue("members");
         if (!members) {
-            await this.insertFunctionMembers(namespace, textEditor);
+            await this.insertFunctionAsMembers(namespace, textEditor);
             return true;
         }
         let membersObject = Json.asObjectValue(members);
@@ -305,7 +305,7 @@ export class InsertItem {
             vscode.window.showErrorMessage('The first namespace in functions does not have members as an object!');
             return false;
         }
-        await this.insertFunctionFunction(membersObject, textEditor);
+        await this.insertFunctionAsFunction(membersObject, textEditor);
         return true;
     }
 
@@ -314,7 +314,6 @@ export class InsertItem {
         let pos: vscode.Position;
         let index: number;
         let text = "\r\n\t\t\r\n\t";
-        const resource = await this.ui.showQuickPick(this.getResourceSnippets(), { placeHolder: 'What resource do you want to insert?' });
         if (!resources) {
             if (!template.topLevelValue) {
                 vscode.window.showErrorMessage("Invalid ARM template!");
@@ -322,7 +321,7 @@ export class InsertItem {
             }
             // tslint:disable-next-line:no-any
             let subPart: any = [];
-            index = await this.insertInObject2(template.topLevelValue, textEditor, subPart, "resources", 1);
+            index = await this.insertInObjectInternal(template.topLevelValue, textEditor, subPart, "resources", 1);
             pos = textEditor.selection.active;
         } else {
             index = resources.span.endIndex;
@@ -332,6 +331,7 @@ export class InsertItem {
                 text = `,\r\n\t\t`;
             }
         }
+        const resource = await this.ui.showQuickPick(this.getResourceSnippets(), { placeHolder: 'What resource do you want to insert?' });
         await this.insertText(textEditor, index, text, false);
         let range = new vscode.Range(textEditor.document.positionAt(index), textEditor.document.positionAt(index + this.formatText(text, textEditor).length));
         let insertedText = textEditor.document.getText(range);
@@ -352,7 +352,7 @@ export class InsertItem {
             parameters: parameters,
             output: {
                 type: outputType.value,
-                value: insertCursorText.replace(/"/g, '')
+                value: insertCursorText
             }
         };
         return functionDef;
