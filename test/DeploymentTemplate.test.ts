@@ -49,7 +49,7 @@ suite("DeploymentTemplate", () => {
             return new ReferenceList(definitionKind, []);
         }
 
-        return dt.findReferences(definition!);
+        return dt.findReferencesToDefinition(definition!);
     }
 
     suite("constructor(string)", () => {
@@ -1057,7 +1057,7 @@ suite("DeploymentTemplate", () => {
             const list: ReferenceList = findReferences(dt, DefinitionKind.Parameter, "dontMatchMe", dt.topLevelScope);
             assert(list);
             assert.deepStrictEqual(list.kind, DefinitionKind.Parameter);
-            assert.deepStrictEqual(list.spans, []);
+            assert.deepStrictEqual(list.references, []);
         });
 
         test("with parameter type and matching parameter definition", () => {
@@ -1065,7 +1065,7 @@ suite("DeploymentTemplate", () => {
             const list: ReferenceList = findReferences(dt, DefinitionKind.Parameter, "pName", dt.topLevelScope);
             assert(list);
             assert.deepStrictEqual(list.kind, DefinitionKind.Parameter);
-            assert.deepStrictEqual(list.spans, [new Language.Span(19, 5)]);
+            assert.deepStrictEqual(list.references.map(r => r.span), [new Language.Span(19, 5)]);
         });
 
         test("with variable type and no matching variable definition", () => {
@@ -1073,7 +1073,7 @@ suite("DeploymentTemplate", () => {
             const list: ReferenceList = findReferences(dt, DefinitionKind.Variable, "dontMatchMe", dt.topLevelScope);
             assert(list);
             assert.deepStrictEqual(list.kind, DefinitionKind.Variable);
-            assert.deepStrictEqual(list.spans, []);
+            assert.deepStrictEqual(list.references.map(r => r.span), []);
         });
 
         test("with variable type and matching variable definition", () => {
@@ -1081,7 +1081,7 @@ suite("DeploymentTemplate", () => {
             const list: ReferenceList = findReferences(dt, DefinitionKind.Variable, "vName", dt.topLevelScope);
             assert(list);
             assert.deepStrictEqual(list.kind, DefinitionKind.Variable);
-            assert.deepStrictEqual(list.spans, [new Language.Span(18, 5)]);
+            assert.deepStrictEqual(list.references.map(r => r.span), [new Language.Span(18, 5)]);
         });
 
     }); // findReferences
@@ -1213,7 +1213,7 @@ suite("DeploymentTemplate", () => {
                     pc.getReferences();
                     pc.getSignatureHelp();
                     pc.tleInfo;
-                    pc.getReferenceSiteInfo();
+                    pc.getReferenceSiteInfo(true);
                     pc.getHoverInfo();
                     pc.getCompletionItems();
                 } catch (err) {

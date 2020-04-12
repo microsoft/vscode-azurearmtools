@@ -4,6 +4,7 @@
 
 import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
 import { CachedValue } from "./CachedValue";
+import { __debugMarkPositionInString, __debugMarkRangeInString } from "./debugMarkStrings";
 import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
@@ -36,6 +37,15 @@ export abstract class DeploymentDocument {
         this._topLevelValue = Json.asObjectValue(this._jsonParseResult.value);
     }
 
+    // tslint:disable-next-line:function-name
+    public _debugShowTextAt(position: number | language.Span): string {
+        if (position instanceof language.Span) {
+            return __debugMarkRangeInString(this.documentText, position.startIndex, position.length);
+        } else {
+            return __debugMarkPositionInString(this.documentText, position);
+        }
+    }
+
     /**
      * Get the document text as a string.
      */
@@ -44,7 +54,7 @@ export abstract class DeploymentDocument {
     }
 
     /**
-     * The unique identifier for this deployment template. Usually this will be a URI to the document.
+     * The unique identifier for this deployment template, which indicates its location
      */
     public get documentId(): Uri {
         return this._documentId;
@@ -137,7 +147,10 @@ export abstract class DeploymentDocument {
         return this._jsonParseResult.getValueAtCharacterIndex(documentCharacterIndex, containsBehavior);
     }
 
-    public abstract findReferences(definition: INamedDefinition): ReferenceList;
+    /**
+     * Find all references in this document to the given named definition (which may or may not be in this document)
+     */
+    public abstract findReferencesToDefinition(definition: INamedDefinition): ReferenceList;
 
     /**
      * Provide commands for the given document and range.

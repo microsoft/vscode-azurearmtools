@@ -11,10 +11,12 @@ import { templateKeys } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { assert } from './fixed_assert';
 import { IFunctionMetadata, IFunctionParameterMetadata } from "./IFunctionMetadata";
+import { INamedDefinition } from "./INamedDefinition";
 import { IParameterDefinition } from "./IParameterDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
-import { IReferenceSite, PositionContext } from "./PositionContext";
+import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
+import { IReferenceSite, PositionContext, ReferenceSiteKind } from "./PositionContext";
 import * as Reference from "./ReferenceList";
 import { TemplateScope } from "./TemplateScope";
 import * as TLE from "./TLE";
@@ -43,16 +45,20 @@ class TleInfo implements ITleInfo {
 export class TemplatePositionContext extends PositionContext {
     private _tleInfo: CachedValue<TleInfo | undefined> = new CachedValue<TleInfo | undefined>();
 
-    public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number): TemplatePositionContext {
-        let context = new TemplatePositionContext(deploymentTemplate);
+    public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentParameters | undefined): TemplatePositionContext {
+        let context = new TemplatePositionContext(deploymentTemplate, associatedParameters);
         context.initFromDocumentLineAndColumnIndices(documentLineIndex, documentColumnIndex);
         return context;
     }
 
-    public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplate, documentCharacterIndex: number): TemplatePositionContext {
-        let context = new TemplatePositionContext(deploymentTemplate);
+    public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplate, documentCharacterIndex: number, associatedParameters: DeploymentParameters | undefined): TemplatePositionContext {
+        let context = new TemplatePositionContext(deploymentTemplate, associatedParameters);
         context.initFromDocumentCharacterIndex(documentCharacterIndex);
         return context;
+    }
+
+    private constructor(deploymentTemplate: DeploymentTemplate, associatedParameters: DeploymentParameters | undefined) {
+        super(deploymentTemplate, associatedParameters);
     }
 
     public get document(): DeploymentTemplate {
@@ -85,12 +91,17 @@ export class TemplatePositionContext extends PositionContext {
      * If this position is inside an expression, inside a reference to an interesting function/parameter/etc, then
      * return an object with information about this reference and the corresponding definition
      */
-    public getReferenceSiteInfo(): IReferenceSite | undefined {
+    // tslint:disable-next-line:no-suspicious-comment
+    // CONSIDER: should includeDefinition should always be true?  For instance, it would mean
+    //  that we get hover over the definition of a param/var/etc and not just at references.
+    //  Any bad side effects?
+    public getReferenceSiteInfo(includeDefinition: boolean): IReferenceSite | undefined {
         const tleInfo = this.tleInfo;
         if (tleInfo) {
             const scope = tleInfo.scope;
             const tleCharacterIndex = tleInfo.tleCharacterIndex;
             const definitionDocument = this.document;
+            const referenceDocument = this.document;
 
             const tleFuncCall: TLE.FunctionCallValue | undefined = TLE.asFunctionCallValue(tleInfo.tleValue);
             if (tleFuncCall) {
@@ -100,25 +111,28 @@ export class TemplatePositionContext extends PositionContext {
                     const nsDefinition = scope.getFunctionNamespaceDefinition(ns);
                     if (nsDefinition) {
                         const referenceSpan: language.Span = tleFuncCall.namespaceToken.span.translate(this.jsonTokenStartIndex);
-                        return { definition: nsDefinition, referenceSpan, definitionDocument };
+                        return { referenceKind: ReferenceSiteKind.reference, referenceDocument, definition: nsDefinition, referenceSpan, definitionDocument };
                     }
-                } else if (tleFuncCall.nameToken && tleFuncCall.nameToken.span.contains(tleCharacterIndex, language.Contains.strict)) {
-                    if (tleFuncCall.namespaceToken) {
-                        // Inside the name of a user-function reference
-                        const ns = tleFuncCall.namespaceToken.stringValue;
-                        const name = tleFuncCall.nameToken.stringValue;
-                        const nsDefinition = scope.getFunctionNamespaceDefinition(ns);
-                        const userFunctiondefinition = scope.getUserFunctionDefinition(ns, name);
-                        if (nsDefinition && userFunctiondefinition) {
-                            const referenceSpan: language.Span = tleFuncCall.nameToken.span.translate(this.jsonTokenStartIndex);
-                            return { definition: userFunctiondefinition, referenceSpan, definitionDocument };
-                        }
-                    } else {
-                        // Inside a reference to a built-in function
-                        const functionMetadata: BuiltinFunctionMetadata | undefined = AzureRMAssets.getFunctionMetadataFromName(tleFuncCall.nameToken.stringValue);
-                        if (functionMetadata) {
-                            const referenceSpan: language.Span = tleFuncCall.nameToken.span.translate(this.jsonTokenStartIndex);
-                            return { definition: functionMetadata, referenceSpan, definitionDocument };
+                } else if (tleFuncCall.nameToken) {
+                    const referenceSpan: language.Span = tleFuncCall.nameToken.span.translate(this.jsonTokenStartIndex);
+                    const referenceKind = ReferenceSiteKind.reference;
+
+                    if (tleFuncCall.nameToken.span.contains(tleCharacterIndex, language.Contains.strict)) {
+                        if (tleFuncCall.namespaceToken) {
+                            // Inside the name of a user-function reference
+                            const ns = tleFuncCall.namespaceToken.stringValue;
+                            const name = tleFuncCall.nameToken.stringValue;
+                            const nsDefinition = scope.getFunctionNamespaceDefinition(ns);
+                            const userFunctiondefinition = scope.getUserFunctionDefinition(ns, name);
+                            if (nsDefinition && userFunctiondefinition) {
+                                return { referenceKind, referenceDocument, definition: userFunctiondefinition, referenceSpan, definitionDocument };
+                            }
+                        } else {
+                            // Inside a reference to a built-in function
+                            const functionMetadata: BuiltinFunctionMetadata | undefined = AzureRMAssets.getFunctionMetadataFromName(tleFuncCall.nameToken.stringValue);
+                            if (functionMetadata) {
+                                return { referenceKind, referenceDocument, definition: functionMetadata, referenceSpan, definitionDocument };
+                            }
                         }
                     }
                 }
@@ -126,21 +140,36 @@ export class TemplatePositionContext extends PositionContext {
 
             const tleStringValue: TLE.StringValue | undefined = TLE.asStringValue(tleInfo.tleValue);
             if (tleStringValue instanceof TLE.StringValue) {
+                const referenceKind = ReferenceSiteKind.reference;
+
                 if (tleStringValue.isParametersArgument()) {
                     // Inside the 'xxx' of a parameters('xxx') reference
                     const parameterDefinition: IParameterDefinition | undefined = scope.getParameterDefinition(tleStringValue.toString());
                     if (parameterDefinition) {
                         const referenceSpan: language.Span = tleStringValue.getSpan().translate(this.jsonTokenStartIndex);
-                        return { definition: parameterDefinition, referenceSpan, definitionDocument };
+                        return { referenceKind, referenceDocument, definition: parameterDefinition, referenceSpan: referenceSpan, definitionDocument };
                     }
                 } else if (tleStringValue.isVariablesArgument()) {
                     const variableDefinition: IVariableDefinition | undefined = scope.getVariableDefinition(tleStringValue.toString());
                     if (variableDefinition) {
                         // Inside the 'xxx' of a variables('xxx') reference
                         const referenceSpan: language.Span = tleStringValue.getSpan().translate(this.jsonTokenStartIndex);
-                        return { definition: variableDefinition, referenceSpan, definitionDocument };
+                        return { referenceKind, referenceDocument, definition: variableDefinition, referenceSpan: referenceSpan, definitionDocument };
                     }
                 }
+            }
+        }
+
+        if (includeDefinition) {
+            const definition = this.getDefinitionAtSite();
+            if (definition && definition.nameValue) {
+                return {
+                    referenceKind: ReferenceSiteKind.definition,
+                    definition: definition,
+                    referenceDocument: this.document,
+                    definitionDocument: this.document,
+                    referenceSpan: definition.nameValue?.unquotedSpan
+                };
             }
         }
 
@@ -448,17 +477,29 @@ export class TemplatePositionContext extends PositionContext {
         return Completion.Item.fromPropertyName(propertyName, replaceSpan);
     }
 
-    // Returns undefined if references are not supported at this location.
-    // Returns empty list if supported but none found
-    public getReferences(): Reference.ReferenceList | undefined {
+    /**
+     * Return all references to the given reference site info in this document
+     * @returns undefined if references are not supported at this location, or empty list if supported but none found
+     */
+    protected getReferencesCore(): Reference.ReferenceList | undefined {
         const tleInfo = this.tleInfo;
         if (tleInfo) { // If we're inside a string (whether an expression or not)
-            const refInfo = this.getReferenceSiteInfo();
+            const refInfo = this.getReferenceSiteInfo(true);
             if (refInfo) {
-                return this.document.findReferences(refInfo.definition);
+                return this.document.findReferencesToDefinition(refInfo.definition);
             }
+        }
 
-            // Handle when we're directly on the name of a parameter/variable/etc definition (as opposed to a reference)
+        return undefined;
+    }
+
+    /**
+     * Returns the definition at the current position, if the current position represents
+     * a definition.
+     */
+    private getDefinitionAtSite(): INamedDefinition | undefined {
+        const tleInfo = this.tleInfo;
+        if (tleInfo) {
             const jsonStringValue: Json.StringValue | undefined = Json.asStringValue(this.jsonValue);
             if (jsonStringValue) {
                 const unquotedString = jsonStringValue.unquotedValue;
@@ -467,32 +508,30 @@ export class TemplatePositionContext extends PositionContext {
                 // Is it a parameter definition?
                 const parameterDefinition: IParameterDefinition | undefined = scope.getParameterDefinition(unquotedString);
                 if (parameterDefinition && parameterDefinition.nameValue === jsonStringValue) {
-                    return this.document.findReferences(parameterDefinition);
+                    return parameterDefinition;
                 }
 
                 // Is it a variable definition?
                 const variableDefinition: IVariableDefinition | undefined = scope.getVariableDefinition(unquotedString);
                 if (variableDefinition && variableDefinition.nameValue === jsonStringValue) {
-                    return this.document.findReferences(variableDefinition);
+                    return variableDefinition;
                 }
 
                 // Is it a user namespace definition?
                 const namespaceDefinition: UserFunctionNamespaceDefinition | undefined = scope.getFunctionNamespaceDefinition(unquotedString);
                 if (namespaceDefinition && namespaceDefinition.nameValue === jsonStringValue) {
-                    return this.document.findReferences(namespaceDefinition);
+                    return namespaceDefinition;
                 }
 
                 // Is it a user function definition inside any namespace?
                 for (let ns of scope.namespaceDefinitions) {
                     const userFunctionDefinition: UserFunctionDefinition | undefined = scope.getUserFunctionDefinition(ns.nameValue.unquotedValue, unquotedString);
                     if (userFunctionDefinition && userFunctionDefinition.nameValue === jsonStringValue) {
-                        return this.document.findReferences(userFunctionDefinition);
+                        return userFunctionDefinition;
                     }
                 }
             }
         }
-
-        return undefined;
     }
 
     public getSignatureHelp(): TLE.FunctionSignatureHelp | undefined {

@@ -1361,7 +1361,7 @@ suite("User functions", () => {
             expectedDefinitionStart: number
         ): Promise<void> {
             const pc = dt.getContextFromDocumentCharacterIndex(cursorIndex, undefined);
-            const refInfo: IReferenceSite = pc.getReferenceSiteInfo()!;
+            const refInfo: IReferenceSite = pc.getReferenceSiteInfo(false)!;
             assert(refInfo, "Expected non-null IReferenceSite");
 
             assert.deepStrictEqual(refInfo.definition.definitionKind, expectedReferenceKind);

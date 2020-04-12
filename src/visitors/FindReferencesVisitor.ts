@@ -2,8 +2,10 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { Language } from "../../extension.bundle";
 import { BuiltinFunctionMetadata, FunctionsMetadata } from "../AzureRMAssets";
 import { templateKeys } from "../constants";
+import { DeploymentDocument } from "../DeploymentDocument";
 import { assert } from '../fixed_assert';
 import { DefinitionKind, INamedDefinition } from "../INamedDefinition";
 import * as Reference from "../ReferenceList";
@@ -20,6 +22,7 @@ export class FindReferencesVisitor extends Visitor {
     private _lowerCasedFullName: string;
 
     constructor(
+        private readonly _document: DeploymentDocument,
         private readonly _definition: INamedDefinition,
         private readonly _functionsMetadata: FunctionsMetadata
     ) {
@@ -39,6 +42,13 @@ export class FindReferencesVisitor extends Visitor {
         return this._references;
     }
 
+    private addReference(span: Language.Span): void {
+        this._references.add({
+            document: this._document,
+            span: span
+        });
+    }
+
     // tslint:disable-next-line:cyclomatic-complexity
     public visitFunctionCall(tleFunction: FunctionCallValue): void {
         switch (this._definition.definitionKind) {
@@ -46,7 +56,7 @@ export class FindReferencesVisitor extends Visitor {
                 if (tleFunction.nameToken && tleFunction.name && tleFunction.namespace) {
                     const userFunctionDefinition: UserFunctionDefinition | undefined = tleFunction.scope.getUserFunctionDefinition(tleFunction.namespace, tleFunction.name);
                     if (userFunctionDefinition === this._definition) {
-                        this._references.add(tleFunction.nameToken.span);
+                        this.addReference(tleFunction.nameToken.span);
                     }
                 }
                 break;
@@ -55,7 +65,7 @@ export class FindReferencesVisitor extends Visitor {
                 if (tleFunction.namespaceToken && tleFunction.namespace) {
                     const userNamespaceDefinition: UserFunctionNamespaceDefinition | undefined = tleFunction.scope.getFunctionNamespaceDefinition(tleFunction.namespace);
                     if (userNamespaceDefinition === this._definition) {
-                        this._references.add(tleFunction.namespaceToken.span);
+                        this.addReference(tleFunction.namespaceToken.span);
                     }
                 }
                 break;
@@ -66,7 +76,7 @@ export class FindReferencesVisitor extends Visitor {
                     if (this._definition instanceof BuiltinFunctionMetadata) {
                         // Metadata is not guaranteed to be the same each call, so compare name instead of definition
                         if (metadata && metadata.lowerCaseName === this._lowerCasedFullName) {
-                            this._references.add(tleFunction.nameToken.span);
+                            this.addReference(tleFunction.nameToken.span);
                         }
                     } else {
                         assert(false, "Expected reference definition to be BuiltinFunctionMetadata");
@@ -82,7 +92,7 @@ export class FindReferencesVisitor extends Visitor {
                             const argName = arg.toString();
                             const paramDefinition = tleFunction.scope.getParameterDefinition(argName);
                             if (paramDefinition === this._definition) {
-                                this._references.add(arg.unquotedSpan);
+                                this.addReference(arg.unquotedSpan);
                             }
                         }
                     }
@@ -97,7 +107,7 @@ export class FindReferencesVisitor extends Visitor {
                             const argName = arg.toString();
                             const varDefinition = tleFunction.scope.getVariableDefinition(argName);
                             if (varDefinition === this._definition) {
-                                this._references.add(arg.unquotedSpan);
+                                this.addReference(arg.unquotedSpan);
                             }
                         }
                     }
@@ -116,8 +126,8 @@ export class FindReferencesVisitor extends Visitor {
         super.visitFunctionCall(tleFunction);
     }
 
-    public static visit(tleValue: Value | undefined, definition: INamedDefinition, metadata: FunctionsMetadata): FindReferencesVisitor {
-        const visitor = new FindReferencesVisitor(definition, metadata);
+    public static visit(document: DeploymentDocument, tleValue: Value | undefined, definition: INamedDefinition, metadata: FunctionsMetadata): FindReferencesVisitor {
+        const visitor = new FindReferencesVisitor(document, definition, metadata);
         if (tleValue) {
             tleValue.accept(visitor);
         }

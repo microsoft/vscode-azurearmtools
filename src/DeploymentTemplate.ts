@@ -210,7 +210,7 @@ export class DeploymentTemplate extends DeploymentDocument {
 
         for (const variableDefinition of this.getTopLevelVariableDefinitions()) {
             // Variables are only supported at the top level
-            const variableReferences: ReferenceList = this.findReferences(variableDefinition);
+            const variableReferences: ReferenceList = this.findReferencesToDefinition(variableDefinition);
             if (variableReferences.length === 1) {
                 warnings.push(
                     new language.Issue(variableDefinition.nameValue.span, `The variable '${variableDefinition.nameValue.toString()}' is never used.`, language.IssueKind.unusedVar));
@@ -226,7 +226,7 @@ export class DeploymentTemplate extends DeploymentDocument {
         // Top-level parameters
         for (const parameterDefinition of this.topLevelScope.parameterDefinitions) {
             const parameterReferences: ReferenceList =
-                this.findReferences(parameterDefinition);
+                this.findReferencesToDefinition(parameterDefinition);
             if (parameterReferences.length === 1) {
                 warnings.push(
                     new language.Issue(
@@ -241,7 +241,7 @@ export class DeploymentTemplate extends DeploymentDocument {
             for (const member of ns.members) {
                 for (const parameterDefinition of member.parameterDefinitions) {
                     const parameterReferences: ReferenceList =
-                        this.findReferences(parameterDefinition);
+                        this.findReferencesToDefinition(parameterDefinition);
                     if (parameterReferences.length === 1) {
                         warnings.push(
                             new language.Issue(
@@ -263,7 +263,7 @@ export class DeploymentTemplate extends DeploymentDocument {
         for (const ns of this.topLevelScope.namespaceDefinitions) {
             for (const member of ns.members) {
                 const userFuncReferences: ReferenceList =
-                    this.findReferences(member);
+                    this.findReferencesToDefinition(member);
                 if (userFuncReferences.length === 1) {
                     warnings.push(
                         new language.Issue(
@@ -465,12 +465,12 @@ export class DeploymentTemplate extends DeploymentDocument {
         });
     }
 
-    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, _associatedTemplate: DeploymentParameters | undefined): TemplatePositionContext {
-        return TemplatePositionContext.fromDocumentLineAndColumnIndexes(this, documentLineIndex, documentColumnIndex);
+    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentParameters | undefined): TemplatePositionContext {
+        return TemplatePositionContext.fromDocumentLineAndColumnIndexes(this, documentLineIndex, documentColumnIndex, associatedTemplate);
     }
 
-    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number, _associatedTemplate: DeploymentParameters | undefined): TemplatePositionContext {
-        return TemplatePositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex);
+    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedTemplate: DeploymentParameters | undefined): TemplatePositionContext {
+        return TemplatePositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex, associatedTemplate);
     }
 
     /**
@@ -490,13 +490,13 @@ export class DeploymentTemplate extends DeploymentDocument {
         return tleParseResult;
     }
 
-    public findReferences(definition: INamedDefinition): ReferenceList {
+    public findReferencesToDefinition(definition: INamedDefinition): ReferenceList {
         const result: ReferenceList = new ReferenceList(definition.definitionKind);
         const functions: FunctionsMetadata = AzureRMAssets.getFunctionsMetadata();
 
         // Add the definition of whatever's being referenced to the list
         if (definition.nameValue) {
-            result.add(definition.nameValue.unquotedSpan);
+            result.add({ document: this, span: definition.nameValue.unquotedSpan });
         }
 
         // Find and add references that match the definition we're looking for
@@ -504,7 +504,7 @@ export class DeploymentTemplate extends DeploymentDocument {
             const tleParseResult: TLE.ParseResult | undefined = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
             if (tleParseResult.expression) {
                 // tslint:disable-next-line:no-non-null-assertion // Guaranteed by if
-                const visitor = FindReferencesVisitor.visit(tleParseResult.expression, definition, functions);
+                const visitor = FindReferencesVisitor.visit(this, tleParseResult.expression, definition, functions);
                 result.addAll(visitor.references.translate(jsonStringValue.span.startIndex));
             }
         });

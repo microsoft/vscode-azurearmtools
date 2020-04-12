@@ -51,6 +51,8 @@ interface IErrorsAndWarnings {
     warnings: language.Issue[];
 }
 
+const invalidRenameError = "Only parameters, variables, user namespaces and user functions can be renamed.";
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
@@ -205,9 +207,9 @@ export class AzureRMTools {
         const editor = vscode.window.activeTextEditor;
         const paramsUri = source || editor?.document.uri;
         if (editor && paramsUri && editor.document.uri.fsPath === paramsUri.fsPath) {
-            let { parameters, associatedTemplate: template } = await this.getParametersAndAssociatedTemplate(editor.document, Cancellation.cantCancel);
-            if (parameters) {
-                await parameters.addMissingParameters(
+            let { doc, associatedDoc: template } = await this.getDeploymentDocAndAssociatedDoc(editor.document, Cancellation.cantCancel);
+            if (doc instanceof DeploymentParameters) {
+                await doc.addMissingParameters(
                     editor,
                     <DeploymentTemplate>template,
                     onlyRequiredParameters);
@@ -252,6 +254,11 @@ export class AzureRMTools {
     private getOpenedDeploymentTemplate(documentOrUri: vscode.TextDocument | vscode.Uri): DeploymentTemplate | undefined {
         const file = this.getOpenedDeploymentDocument(documentOrUri);
         return file instanceof DeploymentTemplate ? file : undefined;
+    }
+
+    private getOpenedDeploymentParameters(documentOrUri: vscode.TextDocument | vscode.Uri): DeploymentParameters | undefined {
+        const file = this.getOpenedDeploymentDocument(documentOrUri);
+        return file instanceof DeploymentParameters ? file : undefined;
     }
 
     /**
@@ -729,7 +736,7 @@ export class AzureRMTools {
                 return this.onProvideReferences(document, position, context, token);
             }
         };
-        ext.context.subscriptions.push(vscode.languages.registerReferenceProvider(templateDocumentSelector, referenceProvider));
+        ext.context.subscriptions.push(vscode.languages.registerReferenceProvider(templateOrParameterDocumentSelector, referenceProvider));
 
         const signatureHelpProvider: vscode.SignatureHelpProvider = {
             provideSignatureHelp: async (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp | undefined> => {
@@ -741,9 +748,12 @@ export class AzureRMTools {
         const renameProvider: vscode.RenameProvider = {
             provideRenameEdits: async (document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): Promise<vscode.WorkspaceEdit | undefined> => {
                 return await this.onProvideRename(document, position, newName, token);
+            },
+            prepareRename: async (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Range | { range: vscode.Range; placeholder: string } | undefined> => {
+                return await this.prepareRename(document, position, token);
             }
         };
-        ext.context.subscriptions.push(vscode.languages.registerRenameProvider(templateDocumentSelector, renameProvider));
+        ext.context.subscriptions.push(vscode.languages.registerRenameProvider(templateOrParameterDocumentSelector, renameProvider));
 
         // tslint:disable-next-line:no-floating-promises // Don't wait
         startArmLanguageServer();
@@ -967,10 +977,10 @@ export class AzureRMTools {
         return item;
     }
 
-    // Given a document, get a DeploymentTemplate or DeploymentParameters instance from it, and then
-    // find the appropriate associated document for it
-    // tslint:disable-next-line:no-suspicious-comment
-    // TODO: Reconsider how template/params docs are associated
+    /**
+     * Given a document, get a DeploymentTemplate or DeploymentParameters instance from it, and then
+     * find the appropriate associated document for it
+     */
     private async getDeploymentDocAndAssociatedDoc(
         textDocument: vscode.TextDocument,
         cancel: Cancellation
@@ -979,12 +989,22 @@ export class AzureRMTools {
 
         const doc = this.getOpenedDeploymentDocument(textDocument);
         if (!doc) {
+            // No reason to try reading from disk, if it's not in our opened list,
+            // it can't be the one in the current text document
             return {};
         }
 
         if (doc instanceof DeploymentTemplate) {
             const template: DeploymentTemplate = doc;
-            return { doc: template };
+            // It's a template file - find the associated parameter file, if any
+            let params: DeploymentParameters | undefined;
+            const paramsUri: vscode.Uri | undefined = this._mapping.getParameterFile(textDocument.uri);
+            if (paramsUri) {
+                params = await this.getOrReadTemplateParameters(paramsUri);
+                cancel.throwIfCancelled();
+            }
+
+            return { doc: template, associatedDoc: params };
         } else if (doc instanceof DeploymentParameters) {
             const params: DeploymentParameters = doc;
             // It's a parameter file - find the associated template file, if any
@@ -1001,37 +1021,14 @@ export class AzureRMTools {
         }
     }
 
-    private async getOrReadAssociatedTemplate(parameterFileUri: vscode.Uri, cancel: Cancellation): Promise<DeploymentTemplate | undefined> {
-        const templateUri: vscode.Uri | undefined = this._mapping.getTemplateFile(parameterFileUri);
-        if (templateUri) {
-            const template = await this.getOrReadDeploymentTemplate(templateUri);
-            cancel.throwIfCancelled();
-            return template;
-        }
-
-        return undefined;
-    }
-
-    private async getParametersAndAssociatedTemplate(
-        textDocument: vscode.TextDocument,
-        cancel: Cancellation
-    ): Promise<{ parameters?: DeploymentParameters; associatedTemplate?: DeploymentTemplate }> {
-        const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(textDocument, cancel);
-        if (doc && doc instanceof DeploymentParameters) {
-            assert(!associatedDoc || associatedDoc instanceof DeploymentTemplate);
-            return { parameters: doc, associatedTemplate: <DeploymentTemplate | undefined>associatedDoc };
-        }
-
-        return {};
-    }
-
-    // Given a document, get a DeploymentTemplate or DeploymentParameters instance from it, and then
-    // create the appropriate context for it from the given position
+    /**
+     * Given a document, get a DeploymentTemplate or DeploymentParameters instance from it, and then
+     * create the appropriate context for it from the given position
+     */
     private async getPositionContext(textDocument: vscode.TextDocument, position: vscode.Position, cancel: Cancellation): Promise<PositionContext | undefined> {
         cancel.throwIfCancelled();
 
         const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(textDocument, cancel);
-
         if (!doc) {
             return undefined;
         }
@@ -1040,8 +1037,10 @@ export class AzureRMTools {
         return doc.getContextFromDocumentLineAndColumnIndexes(position.line, position.character, associatedDoc);
     }
 
-    // Given a document, get the existing deployment template or parameter that is editing it, or if none, create a
-    //   new one by reading the location from disk
+    /**
+     * Given a deployment template URI, return the corresponding opened DeploymentTemplate for it.
+     * If none, create a new one by reading the location from disk
+     */
     private async getOrReadDeploymentTemplate(uri: vscode.Uri): Promise<DeploymentTemplate> {
         // Is it already opened?
         const doc = this.getOpenedDeploymentTemplate(uri);
@@ -1052,6 +1051,33 @@ export class AzureRMTools {
         // Nope, have to read it from disk
         const contents = (await fse.readFile(uri.fsPath, { encoding: 'utf8' })).toString();
         return new DeploymentTemplate(contents, uri);
+    }
+
+    /**
+     * Given a parameter file URI, return the corresponding opened DeploymentParameters for it.
+     * If none, create a new one by reading the location from disk
+     */
+    private async getOrReadTemplateParameters(uri: vscode.Uri): Promise<DeploymentParameters> {
+        // Is it already opened?
+        const doc = this.getOpenedDeploymentParameters(uri);
+        if (doc) {
+            return doc;
+        }
+
+        // Nope, have to read it from disk
+        const contents = (await fse.readFile(uri.fsPath, { encoding: 'utf8' })).toString();
+        return new DeploymentParameters(contents, uri);
+    }
+
+    private async getOrReadAssociatedTemplate(parameterFileUri: vscode.Uri, cancel: Cancellation): Promise<DeploymentTemplate | undefined> {
+        const templateUri: vscode.Uri | undefined = this._mapping.getTemplateFile(parameterFileUri);
+        if (templateUri) {
+            const template = await this.getOrReadDeploymentTemplate(templateUri);
+            cancel.throwIfCancelled();
+            return template;
+        }
+
+        return undefined;
     }
 
     private getDocTypeForTelemetry(doc: DeploymentDocument): string {
@@ -1078,7 +1104,7 @@ export class AzureRMTools {
                 actionContext.errorHandling.suppressDisplay = true;
                 properties.docType = this.getDocTypeForTelemetry(pc.document);
 
-                const refInfo = pc.getReferenceSiteInfo();
+                const refInfo = pc.getReferenceSiteInfo(false);
                 if (refInfo && refInfo.definition.nameValue) {
                     properties.definitionType = refInfo.definition.definitionKind;
 
@@ -1099,13 +1125,13 @@ export class AzureRMTools {
             const results: vscode.Location[] = [];
             const pc: PositionContext | undefined = await this.getPositionContext(textDocument, position, cancel);
             if (pc) {
-                const locationUri: vscode.Uri = pc.document.documentId;
                 const references: ReferenceList | undefined = pc.getReferences();
                 if (references && references.length > 0) {
                     actionContext.telemetry.properties.referenceType = references.kind;
 
-                    for (const span of references.spans) {
-                        const referenceRange: vscode.Range = getVSCodeRangeFromSpan(pc.document, span);
+                    for (const ref of references.references) {
+                        const locationUri: vscode.Uri = ref.document.documentId;
+                        const referenceRange: vscode.Range = getVSCodeRangeFromSpan(ref.document, ref.span);
                         results.push(new vscode.Location(locationUri, referenceRange));
                     }
                 }
@@ -1178,13 +1204,58 @@ export class AzureRMTools {
         });
     }
 
-    private async onProvideRename(textDocument: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): Promise<vscode.WorkspaceEdit | undefined> {
-        return await callWithTelemetryAndErrorHandling('Rename', async (actionContext) => {
+    /**
+     * Optional function for resolving and validating a position *before* running rename. The result can
+     * be a range or a range and a placeholder text. The placeholder text should be the identifier of the symbol
+     * which is being renamed - when omitted the text in the returned range is used.
+     *
+     * *Note: * This function should throw an error or return a rejected thenable when the provided location
+     * doesn't allow for a rename.
+     *
+     * @param textDocument The document in which rename will be invoked.
+     * @param position The position at which rename will be invoked.
+     * @param token A cancellation token.
+     * @return The range or range and placeholder text of the identifier that is to be renamed. The lack of a result can signaled by returning `undefined` or `null`.
+     */
+    private async prepareRename(textDocument: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Range | { range: vscode.Range; placeholder: string } | undefined> {
+        return await callWithTelemetryAndErrorHandling('PrepareRename', async (actionContext) => {
+            actionContext.errorHandling.rethrow = true;
+
             const cancel = new Cancellation(token, actionContext);
             const pc: PositionContext | undefined = await this.getPositionContext(textDocument, position, cancel);
             if (!token.isCancellationRequested && pc) {
+                // Make sure the kind of item being renamed is valid
+                const referenceSiteInfo: IReferenceSite | undefined = pc.getReferenceSiteInfo(true);
+                if (referenceSiteInfo && referenceSiteInfo.definition.definitionKind === DefinitionKind.BuiltinFunction) {
+                    actionContext.errorHandling.suppressDisplay = true;
+                    throw new Error("Built-in functions cannot be renamed.");
+                }
+
+                if (referenceSiteInfo) {
+                    // Get the correct span to replace.  In particular, this fixes the fact that in JSON the rename
+                    // dialog tends to pick up the entire string of a params/var name, along with quotation marks,
+                    // but we want just the unquoted string
+                    return getVSCodeRangeFromSpan(pc.document, referenceSiteInfo.referenceSpan);
+                }
+
+                actionContext.errorHandling.suppressDisplay = true;
+                throw new Error(invalidRenameError);
+            }
+
+            return undefined;
+        });
+    }
+
+    private async onProvideRename(textDocument: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): Promise<vscode.WorkspaceEdit | undefined> {
+        return await callWithTelemetryAndErrorHandling('Rename', async (actionContext) => {
+            actionContext.errorHandling.rethrow = true;
+
+            const cancel = new Cancellation(token, actionContext);
+            const pc: PositionContext | undefined = await this.getPositionContext(textDocument, position, cancel);
+            if (!token.isCancellationRequested && pc) {
+                // Make sure the kind of item being renamed is valid
                 const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
-                const referenceSiteInfo: IReferenceSite | undefined = pc.getReferenceSiteInfo();
+                const referenceSiteInfo: IReferenceSite | undefined = pc.getReferenceSiteInfo(true);
                 if (referenceSiteInfo && referenceSiteInfo.definition.definitionKind === DefinitionKind.BuiltinFunction) {
                     throw new Error("Built-in functions cannot be renamed.");
                 }
@@ -1211,14 +1282,12 @@ export class AzureRMTools {
                     // the user is contained in double quotes.  Remove those.
                     newName = newName.replace(/^"(.*)"$/, '$1');
 
-                    const documentUri: vscode.Uri = pc.document.documentId;
-
-                    for (const referenceSpan of referenceList.spans) {
-                        const referenceRange: vscode.Range = getVSCodeRangeFromSpan(pc.document, referenceSpan);
-                        result.replace(documentUri, referenceRange, newName);
+                    for (const ref of referenceList.references) {
+                        const referenceRange: vscode.Range = getVSCodeRangeFromSpan(ref.document, ref.span);
+                        result.replace(ref.document.documentId, referenceRange, newName);
                     }
                 } else {
-                    throw new Error('Only parameters, variables, user namespaces and user functions can be renamed.');
+                    throw new Error(invalidRenameError);
                 }
 
                 return result;

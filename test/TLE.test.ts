@@ -2225,7 +2225,7 @@ suite("TLE", () => {
                 const dt = await parseTemplate(template);
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
                 assert(param);
-                const visitor = FindReferencesVisitor.visit(undefined, param, metadata);
+                const visitor = FindReferencesVisitor.visit(dt, undefined, param, metadata);
                 assert(visitor);
                 assert.deepStrictEqual(visitor.references, new ReferenceList(DefinitionKind.Parameter));
             });
@@ -2235,7 +2235,7 @@ suite("TLE", () => {
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
                 assert(param);
                 // tslint:disable-next-line:no-any
-                const visitor = FindReferencesVisitor.visit(<any>undefined, param, metadata);
+                const visitor = FindReferencesVisitor.visit(dt, <any>undefined, param, metadata);
                 assert(visitor);
                 assert.deepStrictEqual(visitor.references, new ReferenceList(DefinitionKind.Parameter));
             });
@@ -2245,11 +2245,11 @@ suite("TLE", () => {
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
                 assert(param);
                 const pr: TLE.ParseResult = parseExpressionWithScope(`"[parameters('pName')]"`, dt.topLevelScope);
-                const visitor = FindReferencesVisitor.visit(pr.expression, param, metadata);
+                const visitor = FindReferencesVisitor.visit(dt, pr.expression, param, metadata);
                 assert(visitor);
                 assert.deepStrictEqual(
                     visitor.references,
-                    new ReferenceList(DefinitionKind.Parameter, [new Language.Span(14, 5)]));
+                    new ReferenceList(DefinitionKind.Parameter, [{ document: dt, span: new Language.Span(14, 5) }]));
             });
         });
     });

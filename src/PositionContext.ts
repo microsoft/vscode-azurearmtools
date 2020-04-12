@@ -16,14 +16,27 @@ import * as TLE from "./TLE";
 import { InitializeBeforeUse } from "./util/InitializeBeforeUse";
 import { nonNullValue } from "./util/nonNull";
 
+export enum ReferenceSiteKind {
+    definition = "definition",
+    reference = "reference"
+}
+
 /**
- * Information about a reference site (function call, parameter reference, etc.)
+ * Information about a reference site (function call, parameter reference, etc.), or to
+ * a definition itself (function definition, parameter definition, etc.)
  */
 export interface IReferenceSite {
+    referenceKind: ReferenceSiteKind;
+
     /**
-     * Where the reference occurs in the template
+     * Where the reference or definition occurs in the template
      */
     referenceSpan: language.Span;
+
+    /**
+     * The document that contains the reference
+     */
+    referenceDocument: DeploymentDocument;
 
     /**
      * The definition that the reference refers to
@@ -46,7 +59,7 @@ export abstract class PositionContext {
     private _jsonToken: CachedValue<Json.Token | undefined> = new CachedValue<Json.Token>();
     private _jsonValue: CachedValue<Json.Value | undefined> = new CachedValue<Json.Value | undefined>();
 
-    protected constructor(private _document: DeploymentDocument) {
+    protected constructor(private _document: DeploymentDocument, private _associatedDocument: DeploymentDocument | undefined) {
         nonNullValue(this._document, "document");
     }
 
@@ -134,14 +147,41 @@ export abstract class PositionContext {
      * If this position is inside an expression, inside a reference to an interesting function/parameter/etc, then
      * return an object with information about this reference and the corresponding definition
      */
-    public abstract getReferenceSiteInfo(): IReferenceSite | undefined;
+    public abstract getReferenceSiteInfo(includeDefinition: boolean): IReferenceSite | undefined;
 
-    // Returns undefined if references are not supported at this location.
-    // Returns empty list if supported but none found
-    public abstract getReferences(): ReferenceList | undefined;
+    /**
+     * Return all references to the item at the cursor position (both in this document
+     * and any associated documents). The item may be a definition (such as a parameter definition), or
+     * it may be a reference to an item defined elsewhere (like a variables('xxx') call).
+     * @returns undefined if references are not supported at this location, or empty list if supported but none found
+     */
+    public getReferences(): ReferenceList | undefined {
+        // Find what's at the cursor position
+        // References in this document
+        const references: ReferenceList | undefined = this.getReferencesCore();
+        if (!references) {
+            return undefined;
+        }
+
+        if (this._associatedDocument) {
+            // References/definitions in the associated document
+            const refInfo = this.getReferenceSiteInfo(true);
+            if (refInfo) {
+                const templateReferences = this._associatedDocument.findReferencesToDefinition(refInfo.definition);
+                references.addAll(templateReferences);
+            }
+        }
+        return references;
+    }
+
+    /**
+     * Return all references to the given reference site info in this document
+     * @returns undefined if references are not supported at this location, or empty list if supported but none found
+     */
+    protected abstract getReferencesCore(): ReferenceList | undefined;
 
     public getHoverInfo(): HoverInfo | undefined {
-        const reference: IReferenceSite | undefined = this.getReferenceSiteInfo();
+        const reference: IReferenceSite | undefined = this.getReferenceSiteInfo(false);
         if (reference) {
             const span = reference.referenceSpan;
             const definition = reference.definition;
