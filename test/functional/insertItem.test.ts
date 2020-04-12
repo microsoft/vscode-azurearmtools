@@ -17,11 +17,19 @@ import { DeploymentTemplate, InsertItem, SortType } from '../../extension.bundle
 import { getTempFilePath } from "../support/getTempFilePath";
 
 suite("InsertItem", async (): Promise<void> => {
-    function assertTemplate(actual: String, expected: String, textEditor: vscode.TextEditor): void {
+    function assertTemplate(actual: String, expected: String, textEditor: vscode.TextEditor, ignoreWhiteSpace: boolean = false): void {
         if (textEditor.options.insertSpaces === true) {
             expected = expected.replace(/ {4}/g, ' '.repeat(Number(textEditor.options.tabSize)));
+            if (ignoreWhiteSpace) {
+                expected = expected.replace(/ +/g, ' ');
+                actual = actual.replace(/ +/g, ' ');
+            }
         } else {
             expected = expected.replace(/ {4}/g, '\t');
+            if (ignoreWhiteSpace) {
+                expected = expected.replace(/\t+/g, '\t');
+                actual = actual.replace(/\t+/g, '\t');
+            }
         }
         if (textEditor.document.eol === vscode.EndOfLine.CRLF) {
             expected = expected.replace(/\n/g, '\r\n');
@@ -29,28 +37,28 @@ suite("InsertItem", async (): Promise<void> => {
         assert.equal(actual, expected);
     }
 
-    async function testInsertItem(template: string, expected: String, action: (insertItem: InsertItem, deploymentTemplate: DeploymentTemplate, textEditor: vscode.TextEditor) => Promise<void>, showInputBox: string[], textToInsert: string = ''): Promise<void> {
+    async function testInsertItem(template: string, expected: String, action: (insertItem: InsertItem, deploymentTemplate: DeploymentTemplate, textEditor: vscode.TextEditor) => Promise<void>, showInputBox: string[], textToInsert: string = '', ignoreWhiteSpace: boolean = false): Promise<void> {
         test("Tabs CRLF", async () => {
-            await testInsertItemWithSettings(template, expected, false, 4, true, action, showInputBox, textToInsert);
+            await testInsertItemWithSettings(template, expected, false, 4, true, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
         test("Spaces CRLF", async () => {
-            await testInsertItemWithSettings(template, expected, true, 4, true, action, showInputBox, textToInsert);
+            await testInsertItemWithSettings(template, expected, true, 4, true, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
         test("Spaces (2) CRLF", async () => {
-            await testInsertItemWithSettings(template, expected, true, 2, true, action, showInputBox, textToInsert);
+            await testInsertItemWithSettings(template, expected, true, 2, true, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
         test("Spaces LF", async () => {
-            await testInsertItemWithSettings(template, expected, true, 4, false, action, showInputBox, textToInsert);
+            await testInsertItemWithSettings(template, expected, true, 4, false, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
         test("Tabs LF", async () => {
-            await testInsertItemWithSettings(template, expected, false, 4, false, action, showInputBox, textToInsert);
+            await testInsertItemWithSettings(template, expected, false, 4, false, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
         test("Spaces (2) LF", async () => {
-            await testInsertItemWithSettings(template, expected, true, 2, false, action, showInputBox, textToInsert);
+            await testInsertItemWithSettings(template, expected, true, 2, false, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
     }
 
-    async function testInsertItemWithSettings(template: string, expected: String, insertSpaces: boolean, tabSize: number, eolAsCRLF: boolean, action: (insertItem: InsertItem, deploymentTemplate: DeploymentTemplate, textEditor: vscode.TextEditor) => Promise<void>, showInputBox: string[], textToInsert: string = ''): Promise<void> {
+    async function testInsertItemWithSettings(template: string, expected: String, insertSpaces: boolean, tabSize: number, eolAsCRLF: boolean, action: (insertItem: InsertItem, deploymentTemplate: DeploymentTemplate, textEditor: vscode.TextEditor) => Promise<void>, showInputBox: string[], textToInsert: string = '', ignoreWhiteSpace: boolean = false): Promise<void> {
         if (eolAsCRLF) {
             template = template.replace(/\n/g, '\r\n');
         }
@@ -70,7 +78,7 @@ suite("InsertItem", async (): Promise<void> => {
         await action(insertItem, deploymentTemplate, textEditor);
         await textEditor.edit(builder => builder.insert(textEditor.selection.active, textToInsert));
         const docTextAfterInsertion = document.getText();
-        assertTemplate(docTextAfterInsertion, expected, textEditor);
+        assertTemplate(docTextAfterInsertion, expected, textEditor, ignoreWhiteSpace);
     }
 
     async function testResourceSnippet(resourceSnippet: string): Promise<void> {
@@ -86,8 +94,8 @@ suite("InsertItem", async (): Promise<void> => {
     const totallyEmptyTemplate =
         `{}`;
 
-    async function doTestInsertItem(startTemplate: string, expectedTemplate: string, type: SortType, showInputBox: string[] = [], textToInsert: string = ''): Promise<void> {
-        await testInsertItem(startTemplate, expectedTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, type, editor), showInputBox, textToInsert);
+    async function doTestInsertItem(startTemplate: string, expectedTemplate: string, type: SortType, showInputBox: string[] = [], textToInsert: string = '', ignoreWhiteSpace: boolean = false): Promise<void> {
+        await testInsertItem(startTemplate, expectedTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, type, editor), showInputBox, textToInsert, ignoreWhiteSpace);
     }
 
     suite("Variables", async () => {
@@ -134,26 +142,45 @@ suite("InsertItem", async (): Promise<void> => {
 }`;
         const oneResourceTemplate = `{
     "resources": [
-  {
-      "name": "storageaccount1",
-      "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2019-06-01",
-      "tags": {
-          "displayName": "storageaccount1"
-      },
-      "location": "[resourceGroup().location]",
-      "kind": "StorageV2",
-      "sku": {
-         "name": "Premium_LRS",
-         "tier": "Premium"
-       }
-  }      ]
+        {
+            "name": "keyVault1/keyVaultSecret1",
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "apiVersion": "2016-10-01",
+            "properties": {
+                "value": "secretValue"
+            }
+        }
+    ]
+}`;
+        const twoResourcesTemplate = `{
+    "resources": [
+        {
+            "name": "keyVault1/keyVaultSecret1",
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "apiVersion": "2016-10-01",
+            "properties": {
+                "value": "secretValue"
+            }
+        },
+        {
+            "name": "applicationSecurityGroup1",
+            "type": "Microsoft.Network/applicationSecurityGroups",
+            "apiVersion": "2019-11-01",
+            "location": "[resourceGroup().location]",
+            "tags": {},
+            "properties": {}
+        }
+    ]
 }`;
 
-        suite("Insert one resource (Storage Account)", async () => {
-            test("Spaces CRLF", async () => {
-                await testInsertItemWithSettings(emptyTemplate, oneResourceTemplate, true, 4, true, async (insertItem, template, editor) => await insertItem.insertItem(template, SortType.Resources, editor), ["Storage Account"]);
-            });
+        suite("Insert one resource (KeyVault Secret) into totally empty template", async () => {
+            await doTestInsertItem(totallyEmptyTemplate, oneResourceTemplate, SortType.Resources, ["KeyVault Secret"], '', true);
+        });
+        suite("Insert one resource (KeyVault Secret)", async () => {
+            await doTestInsertItem(emptyTemplate, oneResourceTemplate, SortType.Resources, ["KeyVault Secret"], '', true);
+        });
+        suite("Insert one more resource (Application Security Group)", async () => {
+            await doTestInsertItem(oneResourceTemplate, twoResourcesTemplate, SortType.Resources, ["Application Security Group"], '', true);
         });
 
         suite("Resource snippets", async () => {
