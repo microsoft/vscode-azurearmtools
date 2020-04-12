@@ -94,8 +94,8 @@ suite("InsertItem", async (): Promise<void> => {
     const totallyEmptyTemplate =
         `{}`;
 
-    async function doTestInsertItem(startTemplate: string, expectedTemplate: string, type: SortType, showInputBox: string[] = [], textToInsert: string = '', ignoreWhiteSpace: boolean = false): Promise<void> {
-        await testInsertItem(startTemplate, expectedTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, type, editor), showInputBox, textToInsert, ignoreWhiteSpace);
+    async function doTestInsertItem(startTemplate: string, expectedTemplate: string, sortType: SortType, showInputBox: string[] = [], textToInsert: string = '', ignoreWhiteSpace: boolean = false): Promise<void> {
+        await testInsertItem(startTemplate, expectedTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, sortType, editor), showInputBox, textToInsert, ignoreWhiteSpace);
     }
 
     suite("Variables", async () => {
