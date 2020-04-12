@@ -7,29 +7,13 @@ import * as os from 'os';
 import * as vscode from "vscode";
 import { IAzExtOutputChannel, IAzureUserInput, ITelemetryReporter } from "vscode-azureextensionui";
 import { LanguageClient } from "vscode-languageclient";
-import { isWebpack } from "./constants";
-import { assert } from "./fixed_assert";
+import { CompletionsSpy } from "./CompletionsSpy";
+import { IConfiguration, VsCodeConfiguration } from "./Configuration";
+import { configPrefix, isWebpack } from "./constants";
 import { LanguageServerState } from "./languageclient/startArmLanguageServer";
+import { DeploymentFileMapping } from "./parameterFiles/DeploymentFileMapping";
 import { JsonOutlineProvider } from "./Treeview";
-
-/**
- * Represents a scalar value that must be initialized before its getValue is called
- */
-class InitializeBeforeUse<T> {
-    private _value: { value: T; initialized: true } | { initialized: false } = { initialized: false };
-
-    public setValue(value: T): void {
-        this._value = { value: value, initialized: true };
-    }
-
-    public getValue(): T {
-        if (this._value.initialized) {
-            return this._value.value;
-        } else {
-            assert.fail("ExtensionVariables has not been fully initialized");
-        }
-    }
-}
+import { InitializeBeforeUse } from "./util/InitializeBeforeUse";
 
 /**
  * Namespace for common variables used throughout the extension. They must be initialized in the activate() method of extension.ts
@@ -88,6 +72,11 @@ class ExtensionVariables {
 
     // Suite support - lets us know when diagnostics have been completely published for a file
     public addCompletedDiagnostic: boolean = false;
+
+    public readonly configuration: IConfiguration = new VsCodeConfiguration(configPrefix);
+
+    public readonly completionItemsSpy: CompletionsSpy = new CompletionsSpy();
+    public deploymentFileMapping: InitializeBeforeUse<DeploymentFileMapping> = new InitializeBeforeUse<DeploymentFileMapping>();
 }
 
 // tslint:disable-next-line: no-any

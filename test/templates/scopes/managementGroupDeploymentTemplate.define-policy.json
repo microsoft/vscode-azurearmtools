@@ -1,0 +1,27 @@
+{
+    // from https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/deploy-to-management-group
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Authorization/policyDefinitions",
+            "apiVersion": "2018-05-01",
+            "name": "locationpolicy",
+            "properties": {
+                "policyType": "Custom",
+                "parameters": {},
+                "policyRule": {
+                    "if": {
+                        "field": "location",
+                        "equals": "northeurope"
+                    },
+                    "then": {
+                        "effect": "deny"
+                    }
+                }
+            }
+        }
+    ]
+}

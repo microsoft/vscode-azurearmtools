@@ -9,6 +9,7 @@ import { parseTemplateWithMarkers } from "./parseTemplate";
 import { stringify } from './stringify';
 
 export function createExpressionCompletionsTest(
+    // Contains the text of the expression. '!' indicates the cursor location
     replacementWithBang: string,
     // Can either be an array of completion names, or an array of
     //   [completion name, insert text] tuples
@@ -31,7 +32,7 @@ export function createExpressionCompletionsTest(
 
 export function createCompletionsTest(
     template: string | Partial<IDeploymentTemplate>,
-    find: string,
+    find: string, // String to find and replace in the template (e.g. '<output1>')
     replacementWithBang: string,
     // Can either be an array of completion names, or an array of
     //   [completion name, insert text] tuples
@@ -42,10 +43,10 @@ export function createCompletionsTest(
 
         const { dt, markers: { bang } } = await parseTemplateWithMarkers(template);
         assert(bang, "Didn't find ! marker in text");
-        const pc = dt.getContextFromDocumentCharacterIndex(bang.index);
+        const pc = dt.getContextFromDocumentCharacterIndex(bang.index, undefined);
         const completions = pc.getCompletionItems();
 
-        const completionNames = completions.map(c => c.name).sort();
+        const completionNames = completions.map(c => c.label).sort();
         const completionInserts = completions.map(c => c.insertText).sort();
 
         const expectedNames = (<unknown[]>expectedNamesAndInsertTexts).map(e => Array.isArray(e) ? <string>e[0] : <string>e).sort();

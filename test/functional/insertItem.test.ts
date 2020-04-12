@@ -74,7 +74,7 @@ suite("InsertItem", async (): Promise<void> => {
         let textEditor = await window.showTextDocument(document);
         let ui = new MockUserInput(showInputBox);
         let insertItem = new InsertItem(ui);
-        let deploymentTemplate = new DeploymentTemplate(document.getText(), document.uri.toString());
+        let deploymentTemplate = new DeploymentTemplate(document.getText(), document.uri);
         await action(insertItem, deploymentTemplate, textEditor);
         await textEditor.edit(builder => builder.insert(textEditor.selection.active, textToInsert));
         const docTextAfterInsertion = document.getText();
