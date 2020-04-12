@@ -5,13 +5,15 @@
 import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import * as path from 'path';
-import { commands, ConfigurationTarget, MessageItem, TextDocument, Uri, ViewColumn, window, workspace } from 'vscode';
+import { commands, MessageItem, TextDocument, Uri, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, DialogResponses, IActionContext, IAzureQuickPickItem, UserCancelledError } from 'vscode-azureextensionui';
-import { configKeys, configPrefix, globalStateKeys, isWin32 } from './constants';
-import { DeploymentTemplate } from './DeploymentTemplate';
-import { queryCreateParameterFile } from './editParameterFile';
-import { ext } from './extensionVariables';
-import { containsParametersSchema } from './schemas';
+import { configKeys, configPrefix, globalStateKeys } from '../constants';
+import { DeploymentTemplate } from '../DeploymentTemplate';
+import { ext } from '../extensionVariables';
+import { queryCreateParameterFile } from '../parameterFileGeneration';
+import { containsParametersSchema } from '../schemas';
+import { normalizePath } from '../util/normalizePath';
+import { DeploymentFileMapping } from './DeploymentFileMapping';
 
 const readAtMostBytesToFindParamsSchema = 4 * 1024;
 const currentMessage = "Current";
@@ -33,7 +35,7 @@ interface IPossibleParameterFile {
 }
 
 // tslint:disable-next-line: max-func-body-length
-export async function selectParameterFile(actionContext: IActionContext, sourceUri: Uri | undefined): Promise<void> {
+export async function selectParameterFile(actionContext: IActionContext, mapping: DeploymentFileMapping, sourceUri: Uri | undefined): Promise<void> {
   if (!sourceUri) {
     sourceUri = window.activeTextEditor?.document.uri;
   }
@@ -46,12 +48,12 @@ export async function selectParameterFile(actionContext: IActionContext, sourceU
 
   // Verify it's a template file (have to read in entire file to do full validation)
   const contents = (await fse.readFile(templateUri.fsPath, { encoding: "utf8" })).toString();
-  const template: DeploymentTemplate = new DeploymentTemplate(contents, "Check file is template");
+  const template: DeploymentTemplate = new DeploymentTemplate(contents, Uri.file("https://Check file is template"));
   if (!template.hasArmSchemaUri()) {
     throw new Error(`"${templateUri.fsPath}" does not appear to be an Azure Resource Manager deployment template file.`);
   }
 
-  let quickPickList: IQuickPickList = await createParameterFileQuickPickList(templateUri);
+  let quickPickList: IQuickPickList = await createParameterFileQuickPickList(mapping, templateUri);
   // Show the quick pick
   const result: IAzureQuickPickItem<IPossibleParameterFile | undefined> = await ext.ui.showQuickPick(
     quickPickList.items,
@@ -67,7 +69,7 @@ export async function selectParameterFile(actionContext: IActionContext, sourceU
 
     // Remove the mapping for this file
     await neverAskAgain(templateUri, actionContext);
-    await setMappedParameterFileForTemplate(templateUri, undefined);
+    await mapping.mapParameterFile(templateUri, undefined);
   } else if (result === quickPickList.browse) {
     // Browse...
 
@@ -96,12 +98,12 @@ export async function selectParameterFile(actionContext: IActionContext, sourceU
     await neverAskAgain(templateUri, actionContext);
 
     // Map to the browsed file
-    await setMappedParameterFileForTemplate(templateUri, selectedParamsPath);
+    await mapping.mapParameterFile(templateUri, selectedParamsPath);
   } else if (result === quickPickList.newFile) {
     // New parameter file
 
     let newUri: Uri = await queryCreateParameterFile(actionContext, templateUri, template);
-    await setMappedParameterFileForTemplate(templateUri, newUri);
+    await mapping.mapParameterFile(templateUri, newUri);
     await commands.executeCommand('azurerm-vscode-tools.openParameterFile', templateUri, newUri);
   } else if (result === quickPickList.openCurrent) {
     // Open current
@@ -117,33 +119,59 @@ export async function selectParameterFile(actionContext: IActionContext, sourceU
 
     assert(result.data, "Quick pick item should have had data");
     await neverAskAgain(templateUri, actionContext);
-    await setMappedParameterFileForTemplate(templateUri, result.data?.uri);
+    await mapping.mapParameterFile(templateUri, result.data?.uri);
   }
 }
 
-export async function openParameterFile(actionContext: IActionContext, sourceUri?: Uri, parameterUri?: Uri): Promise<void> {
-  if (sourceUri) {
-    let paramFile: Uri | undefined = parameterUri || findMappedParameterFileForTemplate(sourceUri);
+export async function openParameterFile(mapping: DeploymentFileMapping, templateUri: Uri | undefined, parameterUri: Uri | undefined): Promise<void> {
+  if (templateUri) {
+    let paramFile: Uri | undefined = parameterUri || mapping.getParameterFile(templateUri);
     if (!paramFile) {
-      throw new Error(`There is currently no parameter file for template file "${sourceUri.fsPath}"`);
+      throw new Error(`There is currently no parameter file for template file "${templateUri.fsPath}"`);
     }
 
     let doc: TextDocument = await workspace.openTextDocument(paramFile);
-    await window.showTextDocument(doc, ViewColumn.Beside);
+    await window.showTextDocument(doc);
+  }
+}
+
+export async function openTemplateFile(mapping: DeploymentFileMapping, parameterUri: Uri | undefined, templateUri: Uri | undefined): Promise<void> {
+  if (parameterUri) {
+    let templateFile: Uri | undefined = templateUri || mapping.getTemplateFile(parameterUri);
+    if (!templateFile) {
+      throw new Error(`There is no template file currently associated with parameter file "${parameterUri.fsPath}"`);
+    }
+
+    let doc: TextDocument = await workspace.openTextDocument(templateFile);
+    await window.showTextDocument(doc);
   }
 }
 
 /**
- * If the params file is inside the workspace folder, use the path relative to its template file. Otherwise, return the
- * absolute path to the params file. This is intended to make the path most logical to the user.
+ * If the file is inside the workspace folder, use the path relative to that, otherwise
+ * use the absolute path.  This is intended for UI only.
  */
-export function getFriendlyPathToParameterFile(templateUri: Uri, paramFileUri: Uri): string {
-  const workspaceFolder = workspace.getWorkspaceFolder(paramFileUri);
+export function getFriendlyPathToFile(uri: Uri): string {
+  const workspaceFolder = workspace.getWorkspaceFolder(uri);
+
   if (workspaceFolder) {
-    return path.relative(path.dirname(templateUri.fsPath), paramFileUri.fsPath);
+    return path.relative(workspaceFolder.uri.fsPath, uri.fsPath);
   } else {
-    return paramFileUri.fsPath;
+    return uri.fsPath;
   }
+}
+
+export function getRelativeParameterFilePath(templateUri: Uri, parameterUri: Uri): string {
+  const templatePath = normalizePath(templateUri);
+  const paramPath = normalizePath(parameterUri);
+
+  return path.relative(path.dirname(templatePath), paramPath);
+}
+
+export function resolveParameterFilePath(templatePath: string, parameterPathRelativeToTemplate: string): string {
+  assert(path.isAbsolute(templatePath));
+  const resolved = path.resolve(path.dirname(templatePath), parameterPathRelativeToTemplate);
+  return resolved;
 }
 
 interface IQuickPickList {
@@ -155,17 +183,17 @@ interface IQuickPickList {
   openCurrent: IAzureQuickPickItem<IPossibleParameterFile | undefined>;
 }
 
-async function createParameterFileQuickPickList(templateUri: Uri): Promise<IQuickPickList> {
+async function createParameterFileQuickPickList(mapping: DeploymentFileMapping, templateUri: Uri): Promise<IQuickPickList> {
   // Find likely parameter file matches
   let suggestions: IPossibleParameterFile[] = await findSuggestedParameterFiles(templateUri);
 
   // Find the current in that list
-  const currentParamUri: Uri | undefined = findMappedParameterFileForTemplate(templateUri);
+  const currentParamUri: Uri | undefined = mapping.getParameterFile(templateUri);
   const currentParamPathNormalized: string | undefined = currentParamUri ? normalizePath(currentParamUri) : undefined;
   let currentParamFile: IPossibleParameterFile | undefined = suggestions.find(pf => normalizePath(pf.uri) === currentParamPathNormalized);
   if (currentParamUri && !currentParamFile) {
     // There is a current parameter file, but it wasn't among the list we came up with.  We must add it to the list.
-    currentParamFile = { isCloseNameMatch: false, uri: currentParamUri, friendlyPath: getFriendlyPathToParameterFile(templateUri, currentParamUri) };
+    currentParamFile = { isCloseNameMatch: false, uri: currentParamUri, friendlyPath: getRelativeParameterFilePath(templateUri, currentParamUri) };
     let exists = false;
     try {
       exists = await fse.pathExists(currentParamUri.fsPath);
@@ -250,17 +278,6 @@ function createQuickPickItem(paramFile: IPossibleParameterFile, current: IPossib
   };
 }
 
-function normalizePath(filePath: Uri | string): string {
-  const fsPath: string = typeof filePath === 'string' ? filePath :
-    filePath.fsPath;
-  let normalizedPath = path.normalize(fsPath);
-  if (isWin32) {
-    normalizedPath = normalizedPath.toLowerCase();
-  }
-
-  return normalizedPath;
-}
-
 /**
  * Finds parameter files to suggest for a given template.
  */
@@ -281,7 +298,7 @@ export async function findSuggestedParameterFiles(templateUri: Uri): Promise<IPo
         if (await isParameterFile(fullPath)) {
           paths.push({
             uri,
-            friendlyPath: getFriendlyPathToParameterFile(templateUri, uri),
+            friendlyPath: getRelativeParameterFilePath(templateUri, uri),
             isCloseNameMatch: mayBeMatchingParameterFile(templateUri.fsPath, fullPath)
           });
         }
@@ -363,7 +380,7 @@ function removeAllExtensions(fileName: string): string {
 /**
  * Search for potential parameter file matches for the given document, and ask the user if appropriate whether to associate it
  */
-export function considerQueryingForParameterFile(document: TextDocument): void {
+export function considerQueryingForParameterFile(mapping: DeploymentFileMapping, document: TextDocument): void {
   // Only deal with saved files, because we don't have an accurate
   //   URI that we can track for unsaved files, and it's a better user experience.
   if (document.uri.scheme !== 'file') {
@@ -372,7 +389,7 @@ export function considerQueryingForParameterFile(document: TextDocument): void {
 
   const templateUri = document.uri;
   const templatPath = templateUri.fsPath;
-  const alreadyHasParamFile: boolean = !!findMappedParameterFileForTemplate(document.uri);
+  const alreadyHasParamFile: boolean = !!mapping.getParameterFile(document.uri);
 
   // tslint:disable-next-line: no-floating-promises Don't wait
   callWithTelemetryAndErrorHandling('queryAddParameterFile', async (actionContext: IActionContext): Promise<void> => {
@@ -415,7 +432,7 @@ export function considerQueryingForParameterFile(document: TextDocument): void {
 
     switch (response.title) {
       case yes.title:
-        await setMappedParameterFileForTemplate(templateUri, closestMatch.uri);
+        await mapping.mapParameterFile(templateUri, closestMatch.uri);
         break;
       case no.title:
         // We won't ask again
@@ -469,72 +486,6 @@ async function neverAskAgain(templateUri: Uri, actionContext: IActionContext): P
   const key: string = normalizePath(templateUri);
   neverAskFiles.push(key);
   await ext.context.globalState.update(globalStateKeys.dontAskAboutParameterFiles, neverAskFiles);
-}
-
-/**
- * Given a template file, find the parameter file, if any, that the user currently has associated with it
- */
-export function findMappedParameterFileForTemplate(templateFileUri: Uri): Uri | undefined {
-  const paramFiles: { [key: string]: string } | undefined =
-    workspace.getConfiguration(configPrefix).get<{ [key: string]: string }>(configKeys.parameterFiles)
-    // tslint:disable-next-line: strict-boolean-expressions
-    || {};
-  if (typeof paramFiles === 'object') {
-    const normalizedTemplatePath = normalizePath(templateFileUri.fsPath);
-    let paramFile: Uri | undefined;
-
-    // Can't do a simple lookup because need to be case-insensitivity tolerant on Win32
-    for (let fileNameKey of Object.getOwnPropertyNames(paramFiles)) {
-      const normalizedFileName: string | undefined = normalizePath(fileNameKey);
-      if (normalizedFileName === normalizedTemplatePath) {
-        if (typeof paramFiles[fileNameKey] === 'string') {
-          // Resolve relative to template file's folder
-          let resolvedPath = path.resolve(path.dirname(templateFileUri.fsPath), paramFiles[fileNameKey]);
-
-          // If the user has an entry in both workspace and user settings, vscode combines the two objects,
-          //   with workspace settings overriding the user settings.
-          // If there are two entries differing only by case, allow the last one to win, because it will be
-          //   the workspace setting value
-          paramFile = !!resolvedPath ? Uri.file(resolvedPath) : undefined;
-        }
-      }
-    }
-
-    return paramFile;
-  }
-
-  return undefined;
-}
-
-async function setMappedParameterFileForTemplate(templateUri: Uri, paramFileUri: Uri | undefined): Promise<void> {
-  const relativeParamFilePath: string | undefined = paramFileUri ? getFriendlyPathToParameterFile(templateUri, paramFileUri) : undefined;
-  const normalizedTemplatePath = normalizePath(templateUri.fsPath);
-
-  // We only want the values in the user settings
-  const map = workspace.getConfiguration(configPrefix)
-    .inspect<{ [key: string]: string | undefined }>(configKeys.parameterFiles)?.globalValue
-    // tslint:disable-next-line: strict-boolean-expressions
-    || {};
-
-  if (typeof map !== 'object') {
-    return;
-  }
-
-  // Copy existing entries that don't match (might be multiple entries with different casing, so can't do simple delete)
-  const newMap: { [key: string]: string | undefined } = {};
-
-  for (let templatePath of Object.getOwnPropertyNames(map)) {
-    if (normalizePath(templatePath) !== normalizedTemplatePath) {
-      newMap[templatePath] = map[templatePath];
-    }
-  }
-
-  // Add new entry
-  if (paramFileUri) {
-    newMap[templateUri.fsPath] = relativeParamFilePath;
-  }
-
-  await workspace.getConfiguration(configPrefix).update(configKeys.parameterFiles, newMap, ConfigurationTarget.Global);
 }
 
 function hasSupportedParameterFileExtension(filePath: string): boolean {

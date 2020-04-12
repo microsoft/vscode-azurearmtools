@@ -98,7 +98,7 @@ suite("Validation regression tests", () => {
                     "Error: Expected a comma (','). (arm-template (expressions))",
 
                     // Expected schema errors:
-                    `Warning: Value must conform to exactly one of the associated schemas${os.EOL}    Value must conform to exactly one of the associated schemas${os.EOL}        Value must be one of the following types: boolean${os.EOL}        or${os.EOL}        Value must match the regular expression ^\\[([^\\[].*)?\\]$ at #/resources/3/properties/overprovision${os.EOL}    or${os.EOL}    Value must be one of the following types: string (arm-template (schema))`
+                    `Warning: Value must conform to exactly one of the associated schemas${os.EOL}|   Value must be one of the following types: boolean${os.EOL}|   or${os.EOL}|   Value must match the regular expression ^\\[([^\\[].*)?\\]$ (arm-template (schema))`
                 ]
             )
     );

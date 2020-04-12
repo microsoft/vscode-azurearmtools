@@ -23,7 +23,7 @@ export class UserFunctionNamespaceDefinition implements INamedDefinition {
     /* Example:
 
             "functions": [
-                {  <<<<  call createIfValid on this object
+                {  <----  call createIfValid on this object
                     "namespace": "contoso",
                     "members": {
                         "uniqueName": {

@@ -13,7 +13,7 @@ import * as fs from 'fs';
 import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
 import * as path from 'path';
 import { commands, languages, Range, Selection, TextDocument, TextEditor, window, workspace } from "vscode";
-import { armDeploymentLanguageId } from "../extension.bundle";
+import { armTemplateLanguageId } from "../extension.bundle";
 import { diagnosticsTimeout, testFolder } from "./support/diagnostics";
 import { ensureLanguageServerAvailable } from "./support/ensureLanguageServerAvailable";
 import { getTempFilePath } from "./support/getTempFilePath";
@@ -46,8 +46,8 @@ suite("Format document", function (this: ISuiteCallbackContext): void {
             fs.writeFileSync(filePath, jsonUnformatted);
             let doc = await workspace.openTextDocument(filePath);
             let editor: TextEditor = await window.showTextDocument(doc);
-            if (!sourceIsFile && doc.languageId !== armDeploymentLanguageId) {
-                await languages.setTextDocumentLanguage(doc, armDeploymentLanguageId);
+            if (!sourceIsFile && doc.languageId !== armTemplateLanguageId) {
+                await languages.setTextDocumentLanguage(doc, armTemplateLanguageId);
             }
 
             // Now that we've opened a document that should start up the server, wait until we know it's actually available before trying
