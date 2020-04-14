@@ -9,7 +9,7 @@ import * as path from 'path';
 import { ProgressLocation, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
-import { dotnetAcquire, ensureDotnetDependencies } from '../acquisition/dotnetAcquisition';
+import { acquireSharedDotnetInstallation } from '../acquisition/acquireSharedDotnetInstallation';
 import { armTemplateLanguageId, configKeys, configPrefix, dotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName } from '../constants';
 import { ext } from '../extensionVariables';
 import { assert } from '../fixed_assert';
@@ -26,6 +26,7 @@ export enum LanguageServerState {
     Started,
     Stopped,
 }
+
 export async function stopArmLanguageServer(): Promise<void> {
     ext.outputChannel.appendLine(`Stopping ${languageServerName}...`);
     // Work-around for https://github.com/microsoft/vscode/issues/83254 - store languageServerState global via ext to keep it a singleton
@@ -50,8 +51,13 @@ export async function startArmLanguageServer(): Promise<void> {
             try {
                 // The server is implemented in .NET Core. We run it by calling 'dotnet' with the dll as an argument
                 let serverDllPath: string = findLanguageServer();
-                let dotnetExePath: string = await acquireDotnet(serverDllPath);
-                await ensureDependencies(dotnetExePath, serverDllPath);
+                let dotnetExePath: string | undefined = await getDotNetPath();
+                if (!dotnetExePath) {
+                    // Acquisition failed
+                    ext.languageServerState = LanguageServerState.Failed;
+                    return;
+                }
+
                 await startLanguageClient(serverDllPath, dotnetExePath);
 
                 ext.languageServerState = LanguageServerState.Started;
@@ -166,30 +172,36 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
     });
 }
 
-async function acquireDotnet(dotnetExePath: string): Promise<string> {
-    const resultPath = await callWithTelemetryAndErrorHandling('acquireDotnet', async (actionContext: IActionContext) => {
+async function getDotNetPath(): Promise<string | undefined> {
+    return await callWithTelemetryAndErrorHandling("getDotNetPath", async (actionContext: IActionContext) => {
         actionContext.errorHandling.rethrow = true;
+
+        let dotnetPath: string | undefined;
 
         const overriddenDotNetExePath = workspace.getConfiguration(configPrefix).get<string>(configKeys.dotnetExePath);
         if (typeof overriddenDotNetExePath === "string" && !!overriddenDotNetExePath) {
             if (!(await isFile(overriddenDotNetExePath))) {
                 throw new Error(`Invalid path given for ${configPrefix}.${configKeys.dotnetExePath} setting. Must point to dotnet executable. Could not find file ${overriddenDotNetExePath}`);
             }
-            dotnetExePath = overriddenDotNetExePath;
+            dotnetPath = overriddenDotNetExePath;
             actionContext.telemetry.properties.overriddenDotNetExePath = "true";
         } else {
             actionContext.telemetry.properties.overriddenDotNetExePath = "false";
 
-            ext.outputChannel.appendLine(`This extension requires .NET Core for full functionality.`);
-            dotnetExePath = await dotnetAcquire(dotnetVersion, actionContext.telemetry.properties, actionContext.errorHandling.issueProperties);
-            if (!(await isFile(dotnetExePath))) {
-                throw new Error(`The path returned for .net core does not exist: ${dotnetExePath}`);
+            dotnetPath = await acquireSharedDotnetInstallation(dotnetVersion);
+            if (!dotnetPath) {
+                // Acquisition failed. Error will already have been displayed.
+                return undefined;
+            }
+
+            if (!(await isFile(dotnetPath))) {
+                throw new Error(`The path returned for .net core does not exist: ${dotnetPath}`);
             }
 
             // Telemetry: dotnet version actually used
             try {
                 // E.g. "c:\Users\<user>\AppData\Roaming\Code - Insiders\User\globalStorage\msazurermtools.azurerm-vscode-tools\.dotnet\2.2.5\dotnet.exe"
-                const versionMatch = dotnetExePath.match(/dotnet[\\/]([^\\/]+)[\\/]/);
+                const versionMatch = dotnetPath.match(/dotnet[\\/]([^\\/]+)[\\/]/);
                 // tslint:disable-next-line: strict-boolean-expressions
                 const actualVersion = versionMatch && versionMatch[1] || 'unknown';
                 actionContext.telemetry.properties.dotnetVersionInstalled = actualVersion;
@@ -198,14 +210,10 @@ async function acquireDotnet(dotnetExePath: string): Promise<string> {
             }
         }
 
-        ext.outputChannel.appendLine(`Using dotnet core executable at ${dotnetExePath}`);
+        ext.outputChannel.appendLine(`Using dotnet core executable at ${dotnetPath}`);
 
-        return dotnetExePath;
+        return dotnetPath;
     });
-
-    assert(typeof resultPath === "string", "Should have thrown instead of returning undefined");
-    // tslint:disable-next-line:no-non-null-assertion // Asserted
-    return resultPath!;
 }
 
 function findLanguageServer(): string {
@@ -242,23 +250,6 @@ function findLanguageServer(): string {
     assert(typeof serverDllPath === "string", "Should have thrown instead of returning undefined");
     // tslint:disable-next-line:no-non-null-assertion // Asserted
     return serverDllPath!;
-}
-
-async function ensureDependencies(dotnetExePath: string, serverDllPath: string): Promise<void> {
-    await callWithTelemetryAndErrorHandling('ensureDotnetDependencies', async (actionContext: IActionContext) => {
-        actionContext.errorHandling.rethrow = true;
-
-        // Attempt to determine by running a .net app whether additional runtime dependencies are missing on the machine (Linux only),
-        // and if necessary prompt the user whether to install them.
-        await ensureDotnetDependencies(
-            dotnetExePath,
-            [
-                serverDllPath,
-                '--help'
-            ],
-            actionContext.telemetry.properties,
-            actionContext.errorHandling.issueProperties);
-    });
 }
 
 async function isFile(pathPath: string): Promise<boolean> {

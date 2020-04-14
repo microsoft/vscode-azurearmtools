@@ -43,7 +43,6 @@
         "onLanguage:arm-template",
         "onLanguage:json",
         "onLanguage:jsonc",
-        "onCommand:azurerm-vscode-tools.uninstallDotnet",
         "onCommand:azurerm-vscode-tools.sortTemplate",
         "onCommand:azurerm-vscode-tools.sortFunctions",
         "onCommand:azurerm-vscode-tools.sortOutputs",
@@ -158,12 +157,6 @@
             }
         ],
         "commands": [
-            {
-                "$comment": "============= General commands =============",
-                "category": "Azure Resource Manager Tools",
-                "title": "Remove Local Dotnet Core Installation",
-                "command": "azurerm-vscode-tools.uninstallDotnet"
-            },
             {
                 "category": "Azure Resource Manager Tools",
                 "title": "Reset Global State",
@@ -423,5 +416,8 @@
         "vscode-azureextensionui": "^0.29.12",
         "vscode-jsonrpc": "^4.0.0",
         "vscode-languageclient": "^4.4.0"
-    }
+    },
+    "extensionDependencies": [
+        "ms-dotnettools.vscode-dotnet-runtime"
+    ]
 }
