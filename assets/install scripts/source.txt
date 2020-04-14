@@ -1,5 +1,0 @@
-https://dot.net/v1/dotnet-install.sh
-https://dot.net/v1/dotnet-install.ps1
-
-See https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-install-script for more information.
-
