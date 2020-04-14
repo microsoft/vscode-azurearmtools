@@ -29,7 +29,7 @@ const filesAndFoldersToPackage: string[] = [
     'AzureRMTools128x128.png',
     'CHANGELOG.md',
     'main.js',
-    'NOTICE.html', // License.{md,txt} is handled specially
+    'NOTICES AND INFORMATION.html', // License.{md,txt} is handled specially
     'node_modules', // Must be present for vsce package to work, but will be ignored during packaging
     'README.md',
     '.vscodeignore'
