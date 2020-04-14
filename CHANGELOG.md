@@ -32,6 +32,7 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 - autocomplete list for apiVersions on child resources is empty [#351](https://github.com/microsoft/vscode-azurearmtools/issues/351)
 - Null ref exception in validation with empty doc or doc containing only a comment
 - Add space after colon with IntelliSense [#460](https://github.com/microsoft/vscode-azurearmtools/issues/460)
+- Nested templates scoped to the root schema of the template under which they are nested [#593](https://github.com/microsoft/vscode-azurearmtools/issues/593)
 
 ## Version 0.8.5 (2020-03-30)
 
