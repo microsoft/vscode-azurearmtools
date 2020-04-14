@@ -54,6 +54,13 @@ export abstract class DeploymentDocument {
     }
 
     /**
+     * Retrieves a section of the document text
+     */
+    public getDocumentText(span: language.Span, offsetIndex?: number): string {
+        return span.getText(this.documentText, offsetIndex);
+    }
+
+    /**
      * The unique identifier for this deployment template, which indicates its location
      */
     public get documentId(): Uri {

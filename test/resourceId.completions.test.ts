@@ -459,8 +459,14 @@ suite("ResourceId completions", () => {
             template_101_acsengine_swarmmode,
             `resourceId('Microsoft.Network/loadBalancers/inboundNatRules',!)`,
             [
-                `concat(variables('masterLbName'), '/', 'SSH-', variables('masterVMNamePrefix'), copyIndex())`,
+                `variables('masterLbName')`,
                 `concat(variables('masterSshPort22InboundNatRuleNamePrefix'), '0')`
+            ]);
+        createResourceIdCompletionsTest(
+            template_101_acsengine_swarmmode,
+            `resourceId('Microsoft.Network/loadBalancers/inboundNatRules',variables('masterLbName'),!)`,
+            [
+                `concat('SSH-', variables('masterVMNamePrefix'), copyIndex())`
             ]);
         createResourceIdCompletionsTest(
             template_101_acsengine_swarmmode,
@@ -568,10 +574,14 @@ suite("ResourceId completions", () => {
             createResourceIdCompletionsTest(
                 template_101_acsengine_swarmmode,
                 `resourceId('Microsoft.Compute/virtualMachines/extensions', !)`,
-                [`concat(variables('masterVMNamePrefix'), copyIndex(), '/configuremaster')`]);
+                [`concat(variables('masterVMNamePrefix'), copyIndex())`]);
             createResourceIdCompletionsTest(
                 template_101_acsengine_swarmmode,
-                `resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('masterVMNamePrefix'), copyIndex(), '/configuremaster'), !)`,
+                `resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('masterVMNamePrefix'), copyIndex()), !)`,
+                [`'configuremaster'`]);
+            createResourceIdCompletionsTest(
+                template_101_acsengine_swarmmode,
+                `resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('masterVMNamePrefix'), copyIndex()), 'configuremaster'), !)`,
                 []);
         });
     });
@@ -708,23 +718,29 @@ suite("ResourceId completions", () => {
                     ]
                 };
 
-                //asdf more testcases
-                //asdf split type name expressions
-
                 // resourceId('Microsoft.Sql/servers/firewallRules',variables('sqlServer'),variables('firewallRuleName'))
                 createResourceIdCompletionsTest2("1st arg", template, `resourceId(,!)`, [`'Microsoft.Sql/servers/firewallRules'`, `'Microsoft.Sql/servers'`]);
-                createResourceIdCompletionsTest2("2nd arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',!)`, [`concat(variables('sqlServer'))`]);
-                createResourceIdCompletionsTest2("3rd arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',concat(variables('sqlServer')), !)`, [`variables('firewallRuleName')`]);
-                createResourceIdCompletionsTest2("4th arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',concat(variables('sqlServer')), variables('firewallRuleName'),!)`, []);
+                createResourceIdCompletionsTest2("2nd arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',!)`, [`variables('sqlServer')`]);
+                createResourceIdCompletionsTest2("3rd arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',variables('sqlServer'), !)`, [`variables('firewallRuleName')`]);
+                createResourceIdCompletionsTest2("4th arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',variables('sqlServer'), variables('firewallRuleName'),!)`, []);
+
+                suite("Whitespace ignored when looking at previous args", () => {
+                    createResourceIdCompletionsTest2("ignore whitespace, 3rd arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',variables( 'sqlServer' ) , !)`, [`variables('firewallRuleName')`]);
+                });
 
                 suite("splitResourceNameIntoSegments", () => {
-                    function createTestSplitResourceNameTest(resourceName: string, expected: string[]): void {
-                        test(resourceName, async () => {
+                    function createSplitResourceNameTest(testName: string, resourceName: string, expected?: string[]): void {
+                        if (!expected) {
+                            // If no expected, we're expecting the original input minus the brackets ('[]') because
+                            //   the code does't know how to split the resource name properly
+                            expected = [resourceName.slice(1, resourceName.length - 1)];
+                            testName += " - do not know how to split, expecting original expression minus brackets";
+                        }
+                        test(testName, async () => {
                             const template: IPartialDeploymentTemplate = {
                                 resources: [{
                                     "name": resourceName
-                                }
-                                ]
+                                }]
                             };
                             const dt = await parseTemplate(template);
                             const actual = splitResourceNameIntoSegments(resourceName, dt);
@@ -732,12 +748,114 @@ suite("ResourceId completions", () => {
                         });
                     }
 
-                    createTestSplitResourceNameTest(
-                        `[concat(variables('sqlServer'), '/' , variables('firewallRuleName'))]`,
+                    createSplitResourceNameTest(
+                        "not an expression",
+                        `name1/name2/name3`,
+                        [`'name1'`, `'name2'`, `'name3'`]);
+
+                    createSplitResourceNameTest(
+                        "not enough segments #1",
+                        `[concat('a', '/')]`);
+                    createSplitResourceNameTest(
+                        "not enough segments #2",
+                        `[concat('a', 'b')]`);
+
+                    createSplitResourceNameTest(
+                        "simple split with string literals",
+                        `[concat('a', '/', 'b')]`,
+                        [`'a'`, `'b'`]);
+
+                    createSplitResourceNameTest(
+                        "multiple split with string literals",
+                        `[concat('a', '/', 'b', '/', 'c')]`,
+                        [`'a'`, `'b'`, `'c'`]);
+                    createSplitResourceNameTest(
+                        "multiple split with expression",
+                        `[concat('a', '/', concat('b1', 'b2'), '/', 'c')]`,
+                        [`'a'`, `concat('b1', 'b2')`, `'c'`]);
+
+                    createSplitResourceNameTest(
+                        "groups need concat #1",
+                        `[concat('a', 'b', '/', 'c')]`,
+                        [`concat('a', 'b')`, `'c'`]);
+                    createSplitResourceNameTest(
+                        "groups need concat #2",
+                        `[concat('a', 'b', '/', 'c', 'd')]`,
+                        [`concat('a', 'b')`, `concat('c', 'd')`]);
+                    createSplitResourceNameTest(
+                        "groups need concat #3",
+                        `[concat('a', 'b', '/', concat('c', '1'), 'd')]`,
+                        [`concat('a', 'b')`, `concat(concat('c', '1'), 'd')`]);
+
+                    createSplitResourceNameTest(
+                        "'/' is at beginning or end of argument #1",
+                        `[concat('a/', 'b')]`,
+                        [`'a'`, `'b'`]);
+                    createSplitResourceNameTest(
+                        "'/' is at beginning or end of argument #2",
+                        `[concat('a', '/b')]`,
+                        [`'a'`, `'b'`]);
+
+                    createSplitResourceNameTest(
+                        "'/' is in middle of argument #1",
+                        `[concat('a/b')]`,
+                        [`'a'`, `'b'`]);
+                    createSplitResourceNameTest(
+                        "'/' is in middle of argument #2",
+                        `[concat('a', 'b/c', add(1))]`,
+                        [`concat('a', 'b')`, `concat('c', add(1))`]);
+
+                    createSplitResourceNameTest(
+                        "groups need concat #2",
+                        `[concat('a', 'b', '/', 'c', 'd')]`,
+                        [`concat('a', 'b')`, `concat('c', 'd')`]);
+
+                    createSplitResourceNameTest(
+                        "realistic #1",
+                        `[concat(variables('sqlServer'), '/', variables('firewallRuleName'))]`,
                         [`variables('sqlServer')`, `variables('firewallRuleName')`]);
-                    createTestSplitResourceNameTest(
-                        `[concat(variables('sqlServer'), '/' , variables('firewallRuleName'),'/','whatever')]`,
+                    createSplitResourceNameTest(
+                        "realistic #2",
+                        `[concat(variables('sqlServer'), '/', variables('firewallRuleName'), '/', 'whatever')]`,
                         [`variables('sqlServer')`, `variables('firewallRuleName')`, `'whatever'`]);
+                    createSplitResourceNameTest(
+                        "realistic #3",
+                        `[concat(variables('masterLbName'), '/', 'SSH-', variables('masterVMNamePrefix'), copyIndex())]`,
+                        [`variables('masterLbName')`, `concat('SSH-', variables('masterVMNamePrefix'), copyIndex())`]
+                    );
+                    createSplitResourceNameTest(
+                        "realistic #4",
+                        `[concat(parameters('vmNameChefServer'),'/', 'chefServerSetup')]`,
+                        [`parameters('vmNameChefServer')`, `'chefServerSetup'`]
+                    );
+                    createSplitResourceNameTest(
+                        "realistic #5",
+                        `[concat(parameters('chefprefix'), parameters('vmNameDSAgent'),copyIndex(),'/', variables('vmExtensionName'))]`,
+                        [`concat(parameters('chefprefix'), parameters('vmNameDSAgent'), copyIndex())`, `variables('vmExtensionName')`]
+                    );
+                    createSplitResourceNameTest(
+                        "realistic #6",
+                        `[concat(parameters('omsLogAnalyticsWorkspaceName'), '/', tolower(variables('alertMetricArray')[copyIndex()].searchCategory), '|', toLower(variables('alertMetricArray')[copyIndex()].searchName), '/','schedule-',uniqueString(resourceGroup().id, deployment().name,parameters('omsLogAnalyticsWorkspaceName'), '/', variables('alertMetricArray')[copyIndex()].searchCategory, '|', variables('alertMetricArray')[copyIndex()].searchName))]`,
+                        [
+                            `parameters('omsLogAnalyticsWorkspaceName')`,
+                            `concat(tolower(variables('alertMetricArray')[copyIndex()].searchCategory), '|', toLower(variables('alertMetricArray')[copyIndex()].searchName))`,
+                            `concat('schedule-', uniqueString(resourceGroup().id, deployment().name,parameters('omsLogAnalyticsWorkspaceName'), '/', variables('alertMetricArray')[copyIndex()].searchCategory, '|', variables('alertMetricArray')[copyIndex()].searchName))`
+                        ]
+                    );
+                    createSplitResourceNameTest(
+                        "realistic #7",
+                        `[concat(parameters('omsLogAnalyticsWorkspaceName'), '/', tolower(variables('alertMetricArray')[copyIndex()].searchCategory), '|', toLower(variables('alertMetricArray')[copyIndex()].searchName), '/','schedule-',uniqueString(resourceGroup().id, deployment().name,parameters('omsLogAnalyticsWorkspaceName'), '/', variables('alertMetricArray')[copyIndex()].searchCategory, '|', variables('alertMetricArray')[copyIndex()].searchName), '/', 'alert-',uniqueString(resourceGroup().id, deployment().name,parameters('omsLogAnalyticsWorkspaceName'), '/', variables('alertMetricArray')[copyIndex()].searchCategory, '|', variables('alertMetricArray')[copyIndex()].searchName))]`,
+                        [
+                            `parameters('omsLogAnalyticsWorkspaceName')`,
+                            `concat(tolower(variables('alertMetricArray')[copyIndex()].searchCategory), '|', toLower(variables('alertMetricArray')[copyIndex()].searchName))`,
+                            `concat('schedule-', uniqueString(resourceGroup().id, deployment().name,parameters('omsLogAnalyticsWorkspaceName'), '/', variables('alertMetricArray')[copyIndex()].searchCategory, '|', variables('alertMetricArray')[copyIndex()].searchName))`,
+                            `concat('alert-', uniqueString(resourceGroup().id, deployment().name,parameters('omsLogAnalyticsWorkspaceName'), '/', variables('alertMetricArray')[copyIndex()].searchCategory, '|', variables('alertMetricArray')[copyIndex()].searchName))`
+                        ]);
+                    createSplitResourceNameTest(
+                        "realistic #8",
+                        `[concat(parameters('serverName'), '/', variables('firewallrules').batch.rules[copyIndex()].Name)]`,
+                        [`parameters('serverName')`, `variables('firewallrules').batch.rules[copyIndex()].Name`]
+                    );
                 });
             });
         });
@@ -760,10 +878,10 @@ suite("ResourceId completions", () => {
                         }
                     ]
                 };
-                createResourceIdCompletionsTest2("1st arg", template, `resourceId(,!)`, [`'type1'`, `'type2'`]);
-                createResourceIdCompletionsTest2("2nd arg", template, `resourceId(1,!)`, [`'type1'`, `'type2'`]);
-                createResourceIdCompletionsTest2("3rd arg", template, `resourceId(1,resourceGroup().id,!)`, [`'type1'`, `'type2'`]);
-                createResourceIdCompletionsTest2("4th arg - no type more completions", template, `resourceId(1,resourceGroup().id,'nothing',!)`, []);
+                createResourceIdCompletionsTest2("1st arg", template, `resourceId(, !)`, [`'type1'`, `'type2'`]);
+                createResourceIdCompletionsTest2("2nd arg", template, `resourceId(1, !)`, [`'type1'`, `'type2'`]);
+                createResourceIdCompletionsTest2("3rd arg", template, `resourceId(1, resourceGroup().id, !)`, [`'type1'`, `'type2'`]);
+                createResourceIdCompletionsTest2("4th arg - no type more completions", template, `resourceId(1, resourceGroup().id, 'nothing', !)`, []);
             });
 
             const template1: IPartialDeploymentTemplate = {
@@ -824,7 +942,7 @@ suite("ResourceId completions", () => {
                 createResourceIdCompletionsTest2(
                     "2nd arg doesn't look like type",
                     template1,
-                    `resourceId('hi, mom',!)`,
+                    `resourceId('hi, mom', !)`,
                     [`'ns.type1'`, `'ns.type1/type2'`, `'ns.type1/type2/type3'`]
                 );
                 createResourceIdCompletionsTest2(
@@ -855,31 +973,31 @@ suite("ResourceId completions", () => {
             createResourceIdCompletionsTest2(
                 "2nd arg",
                 template_201_time_series_insights_environment_with_eventhub,
-                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',!)`,
+                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', !)`,
                 [`parameters('eventHubNamespaceName')`]
             );
             createResourceIdCompletionsTest2(
                 "3rd arg",
                 template_201_time_series_insights_environment_with_eventhub,
-                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',parameters('eventHubNamespaceName'),!)`,
+                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), !)`,
                 [`parameters('eventHubName')`]
             );
             createResourceIdCompletionsTest2(
                 "4th arg",
                 template_201_time_series_insights_environment_with_eventhub,
-                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',parameters('eventHubNamespaceName'),parameters('eventHubName'),!)`,
+                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), !)`,
                 [`parameters('eventSourceKeyName')`]
             );
             createResourceIdCompletionsTest2(
                 "5th arg",
                 template_201_time_series_insights_environment_with_eventhub,
-                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules',parameters('eventHubNamespaceName'),parameters('eventHubName'),parameters('eventSourceKeyName'),!)`,
+                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), parameters('eventSourceKeyName'), !)`,
                 []
             );
             createResourceIdCompletionsTest2(
                 "6th arg with two optional params",
                 template_201_time_series_insights_environment_with_eventhub,
-                `resourceId('look','ma','Microsoft.EventHub/namespaces/eventhubs/authorizationRules',parameters('eventHubNamespaceName'),parameters('eventHubName'),!)`,
+                `resourceId('look', 'ma', 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), !)`,
                 [`parameters('eventSourceKeyName')`]
             );
         });

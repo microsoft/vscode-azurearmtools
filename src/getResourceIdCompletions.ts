@@ -85,7 +85,7 @@ function getCompletions(
             break;
         }
 
-        let argExpression: string | undefined = getArgumentExpression(pc, funcCall, parentStringToken, argIndex);
+        let argExpression: string | undefined = getArgumentExpressionText(pc, funcCall, parentStringToken, argIndex);
         if (!argExpression) {
             return [];
         }
@@ -137,7 +137,7 @@ function findFunctionCallArgumentWithResourceType(
     maxIndex: number
 ): { argIndex: number; typeExpression: string } | undefined {
     for (let argIndex = 0; argIndex <= maxIndex; ++argIndex) {
-        let argText: string | undefined = getArgumentExpression(pc, funcCall, parentStringToken, argIndex);
+        let argText: string | undefined = getArgumentExpressionText(pc, funcCall, parentStringToken, argIndex);
         if (argText) {
             if (looksLikeResourceTypeStringLiteral(argText)) {
                 return { argIndex, typeExpression: argText };
@@ -168,8 +168,12 @@ function filterResourceInfosByNameSegment(infos: IResourceInfo[], segmentExpress
     if (!segmentExpression) {
         return [];
     }
-    const segmentExpressionLC = segmentExpression.toLowerCase();
-    return infos.filter(info => info.nameExpressions[segmentIndex]?.toLocaleLowerCase() === segmentExpressionLC);
+    const segmentExpressionLC = lowerCaseAndNoWhitespace(segmentExpression);
+    return infos.filter(info => lowerCaseAndNoWhitespace(info.nameExpressions[segmentIndex]) === segmentExpressionLC);
+}
+
+function lowerCaseAndNoWhitespace(s: string | undefined): string | undefined {
+    return s?.toLowerCase().replace(/\s/g, '');
 }
 
 /**
@@ -215,13 +219,13 @@ function getResourceTypeCompletions(
  */
 function getResourcesInfo(template: DeploymentTemplate): IResourceInfo[] {
     if (template.resources) {
-        return getInfoFromResourcesArray(template.resources, undefined);
+        return getInfoFromResourcesArray(template.resources, undefined, template);
     }
 
     return [];
 }
 
-function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IResourceInfo | undefined): IResourceInfo[] {
+function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IResourceInfo | undefined, dt: DeploymentTemplate): IResourceInfo[] {
     const results: IResourceInfo[] = [];
     for (let resourceValue of resourcesArray.elements ?? []) {
         const resourceObject = Json.asObjectValue(resourceValue);
@@ -234,7 +238,7 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
                 let typeExpressions: string[];
 
                 // If there's a parent, generally the type specified in the template
-                // is just the last segment, buy it is allowed to put the full
+                // is just the last segment, but it is allowed to put the full
                 // type there instead
                 const typeSegments = splitResourceTypeIntoSegments(resType.unquotedValue);
                 if (parent && typeSegments.length <= 1) {
@@ -244,7 +248,7 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
                     typeExpressions = typeSegments;
                 }
 
-                const nameSegments = splitResourceNameIntoSegments(resName.unquotedValue);
+                const nameSegments = splitResourceNameIntoSegments(resName.unquotedValue, dt);
                 if (parent && nameSegments.length <= 1) {
                     // Add to end of parent name segments
                     nameExpressions = [...parent.nameExpressions, ...nameSegments];
@@ -258,7 +262,7 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
                 // Check child resources
                 const childResources = resourceObject.getPropertyValue(templateKeys.resources)?.asArrayValue;
                 if (childResources) {
-                    const childrenInfo = getInfoFromResourcesArray(childResources, info);
+                    const childrenInfo = getInfoFromResourcesArray(childResources, info, dt);
                     results.push(...childrenInfo);
                 }
 
@@ -305,9 +309,9 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
 }
 
 /**
- * Retrieves the document text for the given argument
+ * Retrieves the document text for the given function call argument
  */
-function getArgumentExpression(
+function getArgumentExpressionText(
     pc: TemplatePositionContext,
     funcCall: TLE.FunctionCallValue,
     parentStringToken: Json.Token,
@@ -367,20 +371,91 @@ function getFullTypeName(info: IResourceInfo): string {
 //   "[concat(variables('sqlServer'), '/' , variables('firewallRuleName'))]"
 //     ->
 //   [ "concat(variables('sqlServer')", "variables('firewallRuleName')" ]
-export function splitResourceNameIntoSegments(nameUnquotedValue: string): string[] {
+export function splitResourceNameIntoSegments(nameUnquotedValue: string, dt: DeploymentTemplate): string[] {
     if (isExpression(nameUnquotedValue)) {
-        // It's an expression.  Handle certain common patterns
-        const expressionWithoutBrackets = jsonStringToTleExpression(nameUnquotedValue);
-        TLE.Parser.parse(`"${nameUnquotedValue}"`);
+        // It's an expression.  Try to break it into segments by handling certain common patterns
 
-        // "[concat(expression1, '/' , expression2)]" => [expression1, expression2]
+        // No sense taking time for parsing if '/' is nowhere in the expression
+        if (nameUnquotedValue.includes('/')) {
+            const quotedValue = `"${nameUnquotedValue}"`;
+            const parseResult = TLE.Parser.parse(quotedValue, dt.topLevelScope); // asdf scope?
+            const expression = parseResult.expression;
+            if (!parseResult.errors.length && expression) {
+                // Handle this pattern:
+                // "[concat(expression1, '/' , expression2)]" => [expression1, expression2]
+                if (expression instanceof TLE.FunctionCallValue && expression.isCallToBuiltinWithName('concat')) {
+                    const argumentExpressions = expression.argumentExpressions;
+                    if (argumentExpressions.every(v => !!v)) {
+                        // First, rewrite any string literals that contain a forward slash
+                        // into separate string literals, e.g.
+                        //   concat('a/', parameters('p1')) -> [ 'a', parameters('p1') ]
+                        let rewrittenArgs: (TLE.Value | string)[] = []; // string instances are string literals
+                        for (let arg of argumentExpressions) {
+                            if (arg instanceof TLE.StringValue && arg.unquotedValue.includes('/')) {
+                                const refactoredArg: string[] = splitStringWithSeparator(arg.unquotedValue, '/')
+                                    .map(s => `'${s}'`);
+                                rewrittenArgs.push(...refactoredArg);
+                            } else {
+                                rewrittenArgs.push(arg!);
+                            }
+                        }
 
-        // If it's an expression, we can't know how to split it into segments in a generic
+                        // Separate it into groups of arguments that are separated by '/'
+                        // string literals, e.g.
+                        //   [a, '/', b, c, '/', d] -> [ [a], [b, c], [d]]
+                        let segmentGroups: string[][] = [];
+                        let newGroup: string[] = [];
+
+                        let separatorFound = false;
+                        for (let arg of rewrittenArgs) {
+                            const argAsString = typeof arg === 'string' ? arg : arg.getSpan().getText(quotedValue);
+                            if (arg === `'/'`) {
+                                separatorFound = true;
+                                segmentGroups.push(newGroup);
+                                newGroup = [];
+                            } else {
+                                newGroup.push(argAsString);
+                            }
+                        }
+                        segmentGroups.push(newGroup);
+
+                        if (separatorFound && !segmentGroups.some(g => g.length === 0)) {
+                            // Create segments out of the groups - groups with more than one element must be recombined
+                            // using 'concat'
+                            return segmentGroups.map(g => g.length > 1 ? `concat(${g.join(', ')})` : g[0]);
+                        }
+                    }
+                }
+            }
+        }
+
+        // We don't know how to split this expression into segments in a generic
         // way, so just return the entire expression
         return [jsonStringToTleExpression(nameUnquotedValue)];
     }
 
     return nameUnquotedValue.split('/').map(segment => `'${segment}'`);
+}
+
+/**
+ * Splits a string using a separator, but unlike string.split, the separators
+ * are keep in the array returned.
+ */
+function splitStringWithSeparator(s: string, separator: string): string[] {
+    let result: string[] = [];
+    let substrings: string[] = s.split(separator);
+
+    let first = true;
+    for (let substring of substrings) {
+        if (!first) {
+            result.push('/');
+        }
+        first = false;
+
+        result.push(substring);
+    }
+
+    return result.filter(s => s.length > 0);
 }
 
 // e.g.

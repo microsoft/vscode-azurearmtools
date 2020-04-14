@@ -536,13 +536,9 @@ export class DeploymentTemplate extends DeploymentDocument {
         return [];
     }
 
-    public getTextAtTleValue(tleValue: TLE.Value, parentStringToken: Json.Token): string | undefined {
+    public getTextAtTleValue(tleValue: TLE.Value, parentStringToken: Json.Token): string {
         assert.equal(parentStringToken.type, Json.TokenType.QuotedString);
         const spanOfValueInsideString = tleValue.getSpan();
-        const valueStartInDoc = parentStringToken.span.startIndex + spanOfValueInsideString.startIndex;
-        const text = this.documentText.slice(
-            valueStartInDoc,
-            valueStartInDoc + spanOfValueInsideString.length);
-        return text;
+        return this.getDocumentText(spanOfValueInsideString, parentStringToken.span.startIndex);
     }
 }
