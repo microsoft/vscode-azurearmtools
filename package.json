@@ -306,7 +306,7 @@
         "compile": "gulp build-grammars && npm run get-language-server && gulp verify-test-uses-extension-bundle && tsc -watch -p ./",
         "build": "gulp build-grammars && npm run get-language-server && gulp verify-test-uses-extension-bundle && tsc -p ./",
         "get-language-server": "gulp get-language-server",
-        "lint": "tslint --project tsconfig.json -t verbose",
+        "lint": "tslint --project tsconfig.json -e src/*.d.ts -t verbose",
         "lint-fix": "tslint --project tsconfig.json -t verbose --fix",
         "package": "npm run webpack-prod && npm run get-language-server && gulp package",
         "postinstall": "node ./node_modules/vscode/bin/install",
@@ -322,6 +322,7 @@
         "verify-test-uses-extension-bundle": "gulp verify-test-uses-extension-bundle"
     },
     "devDependencies": {
+        "@types/decompress": "^4.2.3",
         "@types/fs-extra": "^5.1.0",
         "@types/gulp": "^4.0.6",
         "@types/mocha": "^2.2.41",
@@ -331,7 +332,11 @@
         "@types/rimraf": "2.0.2",
         "@types/shelljs": "0.8.3",
         "@types/webpack": "^4.41.5",
+        "decompress": "^4.2.0",
+        "glob": "^7.1.6",
         "gulp": "^4.0.2",
+        "gulp-decompress": "^2.0.2",
+        "gulp-download": "^0.0.1",
         "mocha": "^5.2.0",
         "mocha-junit-reporter": "^1.23.3",
         "mocha-multi-reporters": "^1.1.7",
