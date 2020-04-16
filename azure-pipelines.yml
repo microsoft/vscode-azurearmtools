@@ -5,15 +5,19 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: ls
-  displayName: 'List files'
 
-# Install nuget
 - task: NuGetToolInstaller@0
+  displayName: Install nuget
   inputs:
     versionSpec: '5.2.0'
 
 # Install node
 - task: NodeTool@0
+  displayName: Install Node 8.x
   inputs:
     versionSpec: '8.x'
+
+- task: Npm@0
+  inputs:
+    command: 'install'
+  displayName: npm install
