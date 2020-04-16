@@ -21,7 +21,7 @@ export const languageFriendlyName = 'Azure Resource Manager Template';
 export const languageId = 'arm-template';
 export const languageServerFolderName = 'languageServer';
 export const extensionName = 'Azure Resource Manager Tools';
-export const outputWindowName = extensionName;
+export const outputChannelName = extensionName;
 
 // String that shows up in our errors as the source in parentheses
 export const expressionsDiagnosticsSource = "arm-template (expressions)";
@@ -31,7 +31,7 @@ export const languageServerStateSource = "arm-template";
 
 export const configPrefix = 'azureResourceManagerTools'; // Prefix for user settings
 
-export const dotnetVersion = '3.0';
+export const dotnetVersion = '3.1';
 
 export namespace configKeys {
     export const autoDetectJsonTemplates = 'autoDetectJsonTemplates';

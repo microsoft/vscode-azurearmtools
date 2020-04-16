@@ -13,7 +13,8 @@ import { parseError } from 'vscode-azureextensionui';
  * @param innerError Original error or other item that was thrown
  */
 export function wrapError(outerMessage: string, innerError: unknown): Error {
-    const newMessage = outerMessage + os.EOL + parseError(innerError).message;
+    // tslint:disable-next-line:prefer-template
+    const newMessage = outerMessage + " " + os.EOL + parseError(innerError).message;
 
     if (innerError instanceof Error) {
         const copy = cloneError(innerError);
