@@ -4,22 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from 'assert';
-import * as os from 'os';
 import { parseError } from 'vscode-azureextensionui';
-import { wrapError } from '../extension.bundle';
+import { ext, wrapError } from '../extension.bundle';
 
 suite("wrapError", () => {
     test("outer string, inner string", () => {
         let wrapped = wrapError('Outer error.', 'Inner error.');
         assert(wrapped instanceof Error);
-        assert.equal(parseError(wrapped).message, `Outer error.${os.EOL}Inner error.`);
+        assert.equal(parseError(wrapped).message, `Outer error. ${ext.EOL}Inner error.`);
     });
 
     test("outer string, inner error", () => {
         const inner = new Error('Inner error.');
         let wrapped = wrapError('Outer error.', inner);
         assert(wrapped instanceof Error);
-        assert.equal(parseError(wrapped).message, `Outer error.${os.EOL}Inner error.`);
+        assert.equal(parseError(wrapped).message, `Outer error. ${ext.EOL}Inner error.`);
         assert.equal(wrapped.stack, inner.stack);
         assert.equal(wrapped.name, inner.name);
     });
@@ -41,7 +40,7 @@ suite("wrapError", () => {
 
         let wrapped = wrapError('Outer error.', inner);
         assert(wrapped instanceof Error);
-        assert.equal(parseError(wrapped).message, `Outer error.${os.EOL}Inner message.`);
+        assert.equal(parseError(wrapped).message, `Outer error. ${ext.EOL}Inner message.`);
         assert.equal(wrapped.stack, inner.stack);
         assert.equal(wrapped.name, inner.name);
     });
