@@ -13,6 +13,8 @@ import { parseError } from 'vscode-azureextensionui';
  * @param innerError Original error or other item that was thrown
  */
 export function wrapError(outerMessage: string, innerError: unknown): Error {
+    // Note: We add a space as well as an EOL because in some vscode scenarios the EOL
+    //   doesn't show up in the UI
     // tslint:disable-next-line:prefer-template
     const newMessage = outerMessage + " " + os.EOL + parseError(innerError).message;
 
