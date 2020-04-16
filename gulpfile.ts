@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// tslint:disable:no-unsafe-any no-console prefer-template
+// tslint:disable:no-unsafe-any no-console prefer-template no-implicit-dependencies export-name
 
 import * as cp from 'child_process';
 import { File } from 'decompress';
@@ -13,7 +13,6 @@ import * as gulp from 'gulp';
 import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
-// tslint:disable-next-line:no-implicit-dependencies
 import * as recursiveReadDir from 'recursive-readdir';
 import * as shelljs from 'shelljs';
 import { Stream } from 'stream';
@@ -21,12 +20,12 @@ import { gulp_webpack } from 'vscode-azureextensiondev';
 import { dotnetVersion, languageServerFolderName } from './src/constants';
 import { assert } from './src/fixed_assert';
 import { getTempFilePath } from './test/support/getTempFilePath';
-// tslint:disable-next-line: no-require-imports
+
+// tslint:disable:no-require-imports
 import decompress = require('gulp-decompress');
-// tslint:disable-next-line: no-require-imports
 import download = require('gulp-download');
-// tslint:disable-next-line:no-require-imports
 import rimraf = require('rimraf');
+// tslint:enable:no-require-imports
 
 const filesAndFoldersToPackage: string[] = [
     'dist',
