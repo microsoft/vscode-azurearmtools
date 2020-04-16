@@ -7,3 +7,13 @@ pool:
 steps:
 - script: ls
   displayName: 'List files'
+
+# Install nuget
+- task: NuGetToolInstaller@0
+  inputs:
+    versionSpec: '5.2.0'
+
+# Install node
+- task: NodeTool@0
+  inputs:
+    versionSpec: '8.x'
