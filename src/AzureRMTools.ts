@@ -10,9 +10,8 @@ import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
-import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import * as Completion from "./Completion";
-import { configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, extensionName, globalStateKeys, languageId } from "./constants";
+import { configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, languageId, outputChannelName } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
@@ -21,8 +20,7 @@ import { DefinitionKind } from "./INamedDefinition";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 import * as Json from "./JSON";
 import * as language from "./Language";
-import { reloadSchemas } from "./languageclient/reloadSchemas";
-import { startArmLanguageServer, stopArmLanguageServer } from "./languageclient/startArmLanguageServer";
+import { startArmLanguageServer } from "./languageclient/startArmLanguageServer";
 import { considerQueryingForParameterFile, findMappedParameterFileForTemplate, getFriendlyPathToParameterFile, openParameterFile, selectParameterFile } from "./parameterFiles";
 import { IReferenceSite, PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
@@ -43,7 +41,7 @@ import { getVSCodeRangeFromSpan } from "./util/vscodePosition";
 export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
     ext.context = context;
     ext.reporter = createTelemetryReporter(context);
-    ext.outputChannel = createAzExtOutputChannel(extensionName, configPrefix);
+    ext.outputChannel = createAzExtOutputChannel(outputChannelName, configPrefix);
     ext.ui = new AzureUserInput(context.globalState);
     registerUIExtensionVariables(ext);
 
@@ -90,13 +88,6 @@ export class AzureRMTools {
         context.subscriptions.push(vscode.window.registerTreeDataProvider("azurerm-vscode-tools.template-outline", jsonOutline));
 
         registerCommand("azurerm-vscode-tools.treeview.goto", (_actionContext: IActionContext, range: vscode.Range) => jsonOutline.goToDefinition(range));
-        registerCommand('azurerm-vscode-tools.uninstallDotnet', async () => {
-            await stopArmLanguageServer();
-            await uninstallDotnet();
-        });
-        registerCommand("azurerm-vscode-tools.reloadSchemas", async () => {
-            await reloadSchemas();
-        });
         registerCommand("azurerm-vscode-tools.sortTemplate", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
             editor = editor || vscode.window.activeTextEditor;
             uri = uri || vscode.window.activeTextEditor?.document.uri;
@@ -137,6 +128,7 @@ export class AzureRMTools {
         vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
         vscode.workspace.onDidOpenTextDocument(this.onDocumentOpened, this, context.subscriptions);
         vscode.workspace.onDidChangeTextDocument(this.onDocumentChanged, this, context.subscriptions);
+        vscode.workspace.onDidCloseTextDocument(this.onDocumentClosed, this, ext.context.subscriptions);
         vscode.workspace.onDidChangeConfiguration(this.updateParameterFileInStatusBar, this, context.subscriptions);
 
         this._diagnosticsCollection = vscode.languages.createDiagnosticCollection("azurerm-tools-expressions");
@@ -469,54 +461,56 @@ export class AzureRMTools {
         }
         this._areDeploymentTemplateEventsHookedUp = true;
 
-        vscode.window.onDidChangeTextEditorSelection(this.onTextSelectionChanged, this, ext.context.subscriptions);
+        callWithTelemetryAndErrorHandlingSync("ensureDeploymentTemplateEventsHookedUp", (actionContext: IActionContext) => {
+            actionContext.telemetry.suppressIfSuccessful = true;
 
-        vscode.workspace.onDidCloseTextDocument(this.onDocumentClosed, this, ext.context.subscriptions);
+            vscode.window.onDidChangeTextEditorSelection(this.onTextSelectionChanged, this, ext.context.subscriptions);
 
-        const hoverProvider: vscode.HoverProvider = {
-            provideHover: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Hover | undefined => {
-                return this.onProvideHover(document, position, token);
-            }
-        };
-        ext.context.subscriptions.push(vscode.languages.registerHoverProvider(armDeploymentDocumentSelector, hoverProvider));
+            const hoverProvider: vscode.HoverProvider = {
+                provideHover: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Hover | undefined => {
+                    return this.onProvideHover(document, position, token);
+                }
+            };
+            ext.context.subscriptions.push(vscode.languages.registerHoverProvider(armDeploymentDocumentSelector, hoverProvider));
 
-        const completionProvider: vscode.CompletionItemProvider = {
-            provideCompletionItems: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.CompletionList | undefined => {
-                return this.onProvideCompletionItems(document, position, token);
-            }
-        };
-        ext.context.subscriptions.push(vscode.languages.registerCompletionItemProvider(armDeploymentDocumentSelector, completionProvider, "'", "[", "."));
+            const completionProvider: vscode.CompletionItemProvider = {
+                provideCompletionItems: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.CompletionList | undefined => {
+                    return this.onProvideCompletionItems(document, position, token);
+                }
+            };
+            ext.context.subscriptions.push(vscode.languages.registerCompletionItemProvider(armDeploymentDocumentSelector, completionProvider, "'", "[", "."));
 
-        const definitionProvider: vscode.DefinitionProvider = {
-            provideDefinition: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Definition | undefined => {
-                return this.onProvideDefinition(document, position, token);
-            }
-        };
-        ext.context.subscriptions.push(vscode.languages.registerDefinitionProvider(armDeploymentDocumentSelector, definitionProvider));
+            const definitionProvider: vscode.DefinitionProvider = {
+                provideDefinition: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.Definition | undefined => {
+                    return this.onProvideDefinition(document, position, token);
+                }
+            };
+            ext.context.subscriptions.push(vscode.languages.registerDefinitionProvider(armDeploymentDocumentSelector, definitionProvider));
 
-        const referenceProvider: vscode.ReferenceProvider = {
-            provideReferences: async (document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): Promise<vscode.Location[] | undefined> => {
-                return this.onProvideReferences(document, position, context, token);
-            }
-        };
-        ext.context.subscriptions.push(vscode.languages.registerReferenceProvider(armDeploymentDocumentSelector, referenceProvider));
+            const referenceProvider: vscode.ReferenceProvider = {
+                provideReferences: async (document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): Promise<vscode.Location[] | undefined> => {
+                    return this.onProvideReferences(document, position, context, token);
+                }
+            };
+            ext.context.subscriptions.push(vscode.languages.registerReferenceProvider(armDeploymentDocumentSelector, referenceProvider));
 
-        const signatureHelpProvider: vscode.SignatureHelpProvider = {
-            provideSignatureHelp: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.SignatureHelp | undefined => {
-                return this.onProvideSignatureHelp(document, position, token);
-            }
-        };
-        ext.context.subscriptions.push(vscode.languages.registerSignatureHelpProvider(armDeploymentDocumentSelector, signatureHelpProvider, ",", "(", "\n"));
+            const signatureHelpProvider: vscode.SignatureHelpProvider = {
+                provideSignatureHelp: (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.SignatureHelp | undefined => {
+                    return this.onProvideSignatureHelp(document, position, token);
+                }
+            };
+            ext.context.subscriptions.push(vscode.languages.registerSignatureHelpProvider(armDeploymentDocumentSelector, signatureHelpProvider, ",", "(", "\n"));
 
-        const renameProvider: vscode.RenameProvider = {
-            provideRenameEdits: async (document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): Promise<vscode.WorkspaceEdit | undefined> => {
-                return await this.onProvideRename(document, position, newName, token);
-            }
-        };
-        ext.context.subscriptions.push(vscode.languages.registerRenameProvider(armDeploymentDocumentSelector, renameProvider));
+            const renameProvider: vscode.RenameProvider = {
+                provideRenameEdits: async (document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): Promise<vscode.WorkspaceEdit | undefined> => {
+                    return await this.onProvideRename(document, position, newName, token);
+                }
+            };
+            ext.context.subscriptions.push(vscode.languages.registerRenameProvider(armDeploymentDocumentSelector, renameProvider));
 
-        // tslint:disable-next-line:no-floating-promises // Don't wait
-        startArmLanguageServer();
+            // tslint:disable-next-line:no-floating-promises // Don't wait
+            startArmLanguageServer();
+        });
     }
 
     private async updateParameterFileInStatusBar(): Promise<void> {
