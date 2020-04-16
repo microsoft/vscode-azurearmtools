@@ -2,6 +2,12 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.9.1 (2020-04-21)
+
+### Changed
+
+- Use .NET Install Tool for Extension Authors (ms-dotnettools.vscode-dotnet-runtime) to download and install .NET core runtime
+
 ## Version 0.9.0 (2020-04-14)
 
 ### Added
