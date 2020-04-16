@@ -10,11 +10,6 @@ import { DeploymentDocument } from '../DeploymentDocument';
 import { assertNever } from './assertNever';
 import { getVSCodeRangeFromSpan } from './vscodePosition';
 
-interface ICompletionActivated {
-    completionKind: string;
-    snippetName: string;
-}
-
 export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item: Completion.Item): vscode.CompletionItem {
     const range: vscode.Range = getVSCodeRangeFromSpan(deploymentFile, item.span);
 
@@ -31,6 +26,7 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
 
     switch (item.kind) {
         case Completion.CompletionKind.Function:
+        case Completion.CompletionKind.UserFunction:
             vscodeItem.kind = vscode.CompletionItemKind.Function;
             break;
 
@@ -74,22 +70,25 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
     }
 
     // Add a command to let us know when activated so we can send telemetry
+    const telemetryArgs: { [key: string]: string | undefined } = {
+        snippet: item.snippetName,
+        kind: item.kind,
+        function: item.kind === Completion.CompletionKind.Function ? item.label : undefined
+    };
+    for (let key of Object.getOwnPropertyNames(item.telemetryProperties ?? {})) {
+        telemetryArgs[key] = item.telemetryProperties?.[key];
+    }
     vscodeItem.command = {
         command: "azurerm-vscode-tools.completion-activated",
         title: "completion activated", // won't ever be shown to the user
         arguments: [
-            {
-                snippetName: item.snippetName,
-                completionKind: item.kind
-            }
+            telemetryArgs
         ]
     };
 
     return vscodeItem;
 }
 
-export function onCompletionActivated(actionContext: IActionContext, args: object): void {
-    const options = <ICompletionActivated>args ?? {};
-    actionContext.telemetry.properties.snippetName = options.snippetName;
-    actionContext.telemetry.properties.completionKind = options.completionKind;
+export function onCompletionActivated(actionContext: IActionContext, telemetryProperties: { [key: string]: string }): void {
+    Object.assign(actionContext.telemetry.properties, telemetryProperties ?? {});
 }
