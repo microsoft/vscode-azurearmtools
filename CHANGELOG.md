@@ -2,6 +2,13 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.9.1 (2020-04-20)
+
+### Fixed
+
+- There are problems with this document's schema impacting one or more items in the document (ignore invalid formats in schemas) [#570](https://github.com/microsoft/vscode-azurearmtools/issues/570)
+- Use dotnet core v3.1
+
 ## Version 0.9.0 (2020-04-14)
 
 ### Added
