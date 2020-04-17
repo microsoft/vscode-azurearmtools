@@ -184,14 +184,14 @@ suite("InsertItem", async (): Promise<void> => {
             await doTestInsertItem(oneResourceTemplate, twoResourcesTemplate, SortType.Resources, ["Application Security Group"], '', true);
         });
 
-        suite("Resource snippets", async () => {
-            test("Verify all snippets used by Insert Resource", async () => {
-                let insertItem = new InsertItem(new MockUserInput([]));
-                for (const snippet of insertItem.getResourceSnippets()) {
-                    await testResourceSnippet(snippet.label);
-                }
-            });
-        });
+        // suite("Resource snippets", async () => {
+        //     test("Verify all snippets used by Insert Resource", async () => {
+        //         let insertItem = new InsertItem(new MockUserInput([]));
+        //         for (const snippet of insertItem.getResourceSnippets()) {
+        //             await testResourceSnippet(snippet.label);
+        //         }
+        //     });
+        // });
     });
 
     suite("Functions", async () => {
