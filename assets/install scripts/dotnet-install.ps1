@@ -80,42 +80,42 @@
 #>
 [cmdletbinding()]
 param(
-    [string]$Channel = "LTS",
-    [string]$Version = "Latest",
-    [string]$JSonFile,
-    [string]$InstallDir = "<auto>",
-    [string]$Architecture = "<auto>",
-    [ValidateSet("dotnet", "aspnetcore", "windowsdesktop", IgnoreCase = $false)]
-    [string]$Runtime,
-    [Obsolete("This parameter may be removed in a future version of this script. The recommended alternative is '-Runtime dotnet'.")]
-    [switch]$SharedRuntime,
-    [switch]$DryRun,
-    [switch]$NoPath,
-    [string]$AzureFeed = "https://dotnetcli.azureedge.net/dotnet",
-    [string]$UncachedFeed = "https://dotnetcli.blob.core.windows.net/dotnet",
-    [string]$FeedCredential,
-    [string]$ProxyAddress,
-    [switch]$ProxyUseDefaultCredentials,
-    [switch]$SkipNonVersionedFiles,
-    [switch]$NoCdn
+   [string]$Channel="LTS",
+   [string]$Version="Latest",
+   [string]$JSonFile,
+   [string]$InstallDir="<auto>",
+   [string]$Architecture="<auto>",
+   [ValidateSet("dotnet", "aspnetcore", "windowsdesktop", IgnoreCase = $false)]
+   [string]$Runtime,
+   [Obsolete("This parameter may be removed in a future version of this script. The recommended alternative is '-Runtime dotnet'.")]
+   [switch]$SharedRuntime,
+   [switch]$DryRun,
+   [switch]$NoPath,
+   [string]$AzureFeed="https://dotnetcli.azureedge.net/dotnet",
+   [string]$UncachedFeed="https://dotnetcli.blob.core.windows.net/dotnet",
+   [string]$FeedCredential,
+   [string]$ProxyAddress,
+   [switch]$ProxyUseDefaultCredentials,
+   [switch]$SkipNonVersionedFiles,
+   [switch]$NoCdn
 )
 
 Set-StrictMode -Version Latest
-$ErrorActionPreference = "Stop"
-$ProgressPreference = "SilentlyContinue"
+$ErrorActionPreference="Stop"
+$ProgressPreference="SilentlyContinue"
 
 if ($NoCdn) {
     $AzureFeed = $UncachedFeed
 }
 
-$BinFolderRelativePath = ""
+$BinFolderRelativePath=""
 
 if ($SharedRuntime -and (-not $Runtime)) {
     $Runtime = "dotnet"
 }
 
 # example path with regex: shared/1.0.0-beta-12345/somepath
-$VersionRegEx = "/\d+\.\d+[^/]+/"
+$VersionRegEx="/\d+\.\d+[^/]+/"
 $OverrideNonVersionedFiles = !$SkipNonVersionedFiles
 
 function Say($str) {
@@ -184,7 +184,7 @@ function Get-Version-Info-From-Version-Text([string]$VersionText) {
 
     $VersionInfo = @{
         CommitHash = $(if ($Data.Count -gt 1) { $Data[0] })
-        Version    = $Data[-1] # last line is always the version number.
+        Version = $Data[-1] # last line is always the version number.
     }
     return $VersionInfo
 }
@@ -199,64 +199,64 @@ function Load-Assembly([string] $Assembly) {
     }
 }
 
-function GetHTTPResponse([Uri] $Uri) {
+function GetHTTPResponse([Uri] $Uri)
+{
     Invoke-With-Retry(
-        {
+    {
 
-            $HttpClient = $null
+        $HttpClient = $null
 
-            try {
-                # HttpClient is used vs Invoke-WebRequest in order to support Nano Server which doesn't support the Invoke-WebRequest cmdlet.
-                Load-Assembly -Assembly System.Net.Http
+        try {
+            # HttpClient is used vs Invoke-WebRequest in order to support Nano Server which doesn't support the Invoke-WebRequest cmdlet.
+            Load-Assembly -Assembly System.Net.Http
 
-                if (-not $ProxyAddress) {
-                    try {
-                        # Despite no proxy being explicitly specified, we may still be behind a default proxy
-                        $DefaultProxy = [System.Net.WebRequest]::DefaultWebProxy;
-                        if ($DefaultProxy -and (-not $DefaultProxy.IsBypassed($Uri))) {
-                            $ProxyAddress = $DefaultProxy.GetProxy($Uri).OriginalString
-                            $ProxyUseDefaultCredentials = $true
-                        }
+            if(-not $ProxyAddress) {
+                try {
+                    # Despite no proxy being explicitly specified, we may still be behind a default proxy
+                    $DefaultProxy = [System.Net.WebRequest]::DefaultWebProxy;
+                    if($DefaultProxy -and (-not $DefaultProxy.IsBypassed($Uri))) {
+                        $ProxyAddress = $DefaultProxy.GetProxy($Uri).OriginalString
+                        $ProxyUseDefaultCredentials = $true
                     }
-                    catch {
-                        # Eat the exception and move forward as the above code is an attempt
-                        #    at resolving the DefaultProxy that may not have been a problem.
-                        $ProxyAddress = $null
-                        Say-Verbose("Exception ignored: $_.Exception.Message - moving forward...")
-                    }
-                }
-
-                if ($ProxyAddress) {
-                    $HttpClientHandler = New-Object System.Net.Http.HttpClientHandler
-                    $HttpClientHandler.Proxy = New-Object System.Net.WebProxy -Property @{Address = $ProxyAddress; UseDefaultCredentials = $ProxyUseDefaultCredentials }
-                    $HttpClient = New-Object System.Net.Http.HttpClient -ArgumentList $HttpClientHandler
-                }
-                else {
-
-                    $HttpClient = New-Object System.Net.Http.HttpClient
-                }
-                # Default timeout for HttpClient is 100s.  For a 50 MB download this assumes 500 KB/s average, any less will time out
-                # 20 minutes allows it to work over much slower connections.
-                $HttpClient.Timeout = New-TimeSpan -Minutes 20
-                $Response = $HttpClient.GetAsync("${Uri}${FeedCredential}").Result
-                if (($Response -eq $null) -or (-not ($Response.IsSuccessStatusCode))) {
-                    # The feed credential is potentially sensitive info. Do not log FeedCredential to console output.
-                    $ErrorMsg = "Failed to download $Uri."
-                    if ($Response -ne $null) {
-                        $ErrorMsg += "  $Response"
-                    }
-
-                    throw $ErrorMsg
-                }
-
-                return $Response
-            }
-            finally {
-                if ($HttpClient -ne $null) {
-                    $HttpClient.Dispose()
+                } catch {
+                    # Eat the exception and move forward as the above code is an attempt
+                    #    at resolving the DefaultProxy that may not have been a problem.
+                    $ProxyAddress = $null
+                    Say-Verbose("Exception ignored: $_.Exception.Message - moving forward...")
                 }
             }
-        })
+
+            if($ProxyAddress) {
+                $HttpClientHandler = New-Object System.Net.Http.HttpClientHandler
+                $HttpClientHandler.Proxy =  New-Object System.Net.WebProxy -Property @{Address=$ProxyAddress;UseDefaultCredentials=$ProxyUseDefaultCredentials}
+                $HttpClient = New-Object System.Net.Http.HttpClient -ArgumentList $HttpClientHandler
+            }
+            else {
+
+                $HttpClient = New-Object System.Net.Http.HttpClient
+            }
+            # Default timeout for HttpClient is 100s.  For a 50 MB download this assumes 500 KB/s average, any less will time out
+            # 20 minutes allows it to work over much slower connections.
+            $HttpClient.Timeout = New-TimeSpan -Minutes 20
+            $Response = $HttpClient.GetAsync("${Uri}${FeedCredential}").Result
+            if (($Response -eq $null) -or (-not ($Response.IsSuccessStatusCode))) {
+                 # The feed credential is potentially sensitive info. Do not log FeedCredential to console output.
+                $ErrorMsg = "Failed to download $Uri."
+                if ($Response -ne $null) {
+                    $ErrorMsg += "  $Response"
+                }
+
+                throw $ErrorMsg
+            }
+
+             return $Response
+        }
+        finally {
+             if ($HttpClient -ne $null) {
+                $HttpClient.Dispose()
+            }
+        }
+    })
 }
 
 function Get-Latest-Version-Info([string]$AzureFeed, [string]$Channel, [bool]$Coherent) {
@@ -495,7 +495,7 @@ function Extract-Dotnet-Package([string]$ZipPath, [string]$OutPath) {
             if (($PathWithVersion -eq $null) -Or ($DirectoriesToUnpack -contains $PathWithVersion)) {
                 $DestinationPath = Get-Absolute-Path $(Join-Path -Path $OutPath -ChildPath $entry.FullName)
                 $DestinationDir = Split-Path -Parent $DestinationPath
-                $OverrideFiles = $OverrideNonVersionedFiles -Or (-Not (Test-Path $DestinationPath))
+                $OverrideFiles=$OverrideNonVersionedFiles -Or (-Not (Test-Path $DestinationPath))
                 if ((-Not $DestinationPath.EndsWith("\")) -And $OverrideFiles) {
                     New-Item -ItemType Directory -Force -Path $DestinationDir | Out-Null
                     [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $DestinationPath, $OverrideNonVersionedFiles)
@@ -546,8 +546,7 @@ function Prepend-Sdk-InstallRoot-To-Path([string]$InstallRoot, [string]$BinFolde
         if (-Not $env:path.Contains($SuffixedBinPath)) {
             Say "Adding to current process PATH: `"$BinPath`". Note: This change will not be visible if PowerShell was run as a child process."
             $env:path = $SuffixedBinPath + $env:path
-        }
-        else {
+        } else {
             Say-Verbose "Current process PATH already contains `"$BinPath`""
         }
     }
@@ -573,14 +572,14 @@ if ($DryRun) {
     }
     $RepeatableCommand = ".\$ScriptName -Version `"$SpecificVersion`" -InstallDir `"$InstallRoot`" -Architecture `"$CLIArchitecture`""
     if ($Runtime -eq "dotnet") {
-        $RepeatableCommand += " -Runtime `"dotnet`""
+       $RepeatableCommand+=" -Runtime `"dotnet`""
     }
     elseif ($Runtime -eq "aspnetcore") {
-        $RepeatableCommand += " -Runtime `"aspnetcore`""
+       $RepeatableCommand+=" -Runtime `"aspnetcore`""
     }
     foreach ($key in $MyInvocation.BoundParameters.Keys) {
-        if (-not (@("Architecture", "Channel", "DryRun", "InstallDir", "Runtime", "SharedRuntime", "Version") -contains $key)) {
-            $RepeatableCommand += " -$key `"$($MyInvocation.BoundParameters[$key])`""
+        if (-not (@("Architecture","Channel","DryRun","InstallDir","Runtime","SharedRuntime","Version") -contains $key)) {
+            $RepeatableCommand+=" -$key `"$($MyInvocation.BoundParameters[$key])`""
         }
     }
     Say "Repeatable invocation: $RepeatableCommand"

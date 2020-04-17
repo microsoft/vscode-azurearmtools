@@ -2,6 +2,12 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.9.1 (2020-04-17)
+
+### Fixed
+
+- Update to 3.0.3 of .NET Core runtime and update install scripts
+
 ## Version 0.9.0 (2020-04-14)
 
 ### Added

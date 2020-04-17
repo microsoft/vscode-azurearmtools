@@ -33,7 +33,7 @@ export class DotnetCoreAcquisitionWorker {
         '2.0': '2.0.9',
         2.1: '2.1.11',
         2.2: '2.2.5',
-        '3.0': '3.0.2'
+        '3.0': '3.0.3'
     };
 
     private acquisitionPromises: { [version: string]: Promise<string> | undefined };
