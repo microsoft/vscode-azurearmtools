@@ -2,7 +2,7 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
-## Version 0.9.0 (2020-04-06)
+## Version 0.9.0 (2020-04-14)
 
 ### Added
 
@@ -16,6 +16,7 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
   * apiVersions updated
   * various fixes and standardization
 - Added more resource type icons for ARM TEMPLATE OUTLINE view (thanks Nils Hedström @nilshedstrom!) [#253](https://github.com/microsoft/vscode-azurearmtools/issues/253)
+- Support for schema auto-completion inside nested templates
 
 ### Changed
 
