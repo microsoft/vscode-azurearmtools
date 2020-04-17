@@ -79,7 +79,7 @@ export class DeploymentTemplate extends DeploymentDocument {
 
     public get resources(): Json.ArrayValue | undefined {
         if (this.topLevelValue) {
-            return Json.asArrayValue(this.topLevelValue.getPropertyValue(templateKeys.resources));
+            return this.topLevelValue?.getPropertyValue(templateKeys.resources)?.asArrayValue;
         }
 
         return undefined;

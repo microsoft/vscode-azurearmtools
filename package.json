@@ -223,7 +223,6 @@
                 "$enablement.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
             },
             {
-                "$comment": "============= Parameter file commands =============",
                 "category": "Azure Resource Manager Tools",
                 "title": "Add all missing parameters",
                 "command": "azurerm-vscode-tools.codeAction.addAllMissingParameters",

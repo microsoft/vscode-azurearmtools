@@ -84,15 +84,7 @@ export abstract class DeploymentDocument {
 
     public get schemaValue(): Json.StringValue | undefined {
         return this._schema.getOrCacheValue(() => {
-            const value: Json.ObjectValue | undefined = Json.asObjectValue(this._jsonParseResult.value);
-            if (value) {
-                const schema: Json.StringValue | undefined = Json.asStringValue(value.getPropertyValue("$schema"));
-                if (schema) {
-                    return schema;
-                }
-            }
-
-            return undefined;
+            return Json.asStringValue(this.topLevelValue?.getPropertyValue("$schema"));
         });
     }
 
