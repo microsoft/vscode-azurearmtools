@@ -10,7 +10,7 @@ import { ProgressLocation, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
 import { dotnetAcquire, ensureDotnetDependencies } from '../acquisition/dotnetAcquisition';
-import { configKeys, configPrefix, dotnetVersion, languageFriendlyName, languageId, languageServerFolderName, languageServerName } from '../constants';
+import { configKeys, configPrefix, downloadDotnetVersion, languageFriendlyName, languageId, languageServerFolderName, languageServerName } from '../constants';
 import { ext } from '../extensionVariables';
 import { assert } from '../fixed_assert';
 import { armDeploymentDocumentSelector } from '../supported';
@@ -181,7 +181,7 @@ async function acquireDotnet(dotnetExePath: string): Promise<string> {
             actionContext.telemetry.properties.overriddenDotNetExePath = "false";
 
             ext.outputChannel.appendLine(`This extension requires .NET Core for full functionality.`);
-            dotnetExePath = await dotnetAcquire(dotnetVersion, actionContext.telemetry.properties, actionContext.errorHandling.issueProperties);
+            dotnetExePath = await dotnetAcquire(downloadDotnetVersion, actionContext.telemetry.properties, actionContext.errorHandling.issueProperties);
             if (!(await isFile(dotnetExePath))) {
                 throw new Error(`The path returned for .net core does not exist: ${dotnetExePath}`);
             }
