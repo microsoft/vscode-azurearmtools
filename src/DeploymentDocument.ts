@@ -113,7 +113,8 @@ export abstract class DeploymentDocument {
     /**
      * Get the maximum column index for the provided line. For the last line in the file,
      * the maximum column index is equal to the line length. For every other line in the file,
-     * the maximum column index is less than the line length.
+     * the maximum column index is less than the line length (because line length includes
+     * the LF/CRLF?).
      */
     public getMaxColumnIndex(lineIndex: number): number {
         return this._jsonParseResult.getMaxColumnIndex(lineIndex);
@@ -167,9 +168,8 @@ export abstract class DeploymentDocument {
 
     // CONSIDER: Should we cache?  But that cache would depend on associatedTemplate not changing, not sure if that's
     // guaranteed.
-    // Consider whether
-    // associated document should be a function passed in to constructor so that it's a permanent part of the
-    // template state
+    // Consider whether associated document should be a function passed in to constructor so that it's a permanent part of the
+    // template state.
     public async getErrors(associatedDocument: DeploymentDocument | undefined): Promise<language.Issue[]> {
         return this.getErrorsCore(associatedDocument);
     }

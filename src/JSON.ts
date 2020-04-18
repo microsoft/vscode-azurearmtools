@@ -1098,7 +1098,7 @@ export class ParseResult {
 
         let maxColumnIndex: number = this.lineLengths[lineIndex];
         if (lineIndex < this.lineLengths.length - 1) {
-            --maxColumnIndex;
+            --maxColumnIndex; // CONSIDER: Is this for LF?  What about CRLF?
         }
 
         return maxColumnIndex;

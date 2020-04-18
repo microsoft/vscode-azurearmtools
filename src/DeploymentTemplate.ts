@@ -132,7 +132,7 @@ export class DeploymentTemplate extends DeploymentDocument {
         });
     }
 
-    public async getErrors(_associatedParameters: DeploymentParameters | undefined): Promise<language.Issue[]> {
+    public async getErrorsCore(_associatedParameters: DeploymentParameters | undefined): Promise<language.Issue[]> {
         // tslint:disable-next-line:typedef
         return new Promise<language.Issue[]>(async (resolve, reject) => {
             try {
