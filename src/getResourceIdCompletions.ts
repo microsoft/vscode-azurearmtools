@@ -391,7 +391,7 @@ export function splitResourceNameIntoSegments(nameUnquotedValue: string, dt: Dep
             const quotedValue = `"${nameUnquotedValue}"`;
             const parseResult = TLE.Parser.parse(quotedValue, dt.topLevelScope);
             const expression = parseResult.expression;
-            if (parseResult.errors.length > 0 && expression) {
+            if (parseResult.errors.length === 0 && expression) {
                 // Handle this pattern:
                 // "[concat(expression1, '/' , expression2)]" => [expression1, expression2]
                 if (expression instanceof TLE.FunctionCallValue && expression.isCallToBuiltinWithName('concat')) {

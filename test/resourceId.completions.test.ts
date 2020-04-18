@@ -737,12 +737,12 @@ suite("ResourceId completions", () => {
                             testName += " - do not know how to split, expecting original expression minus brackets";
                         }
                         test(testName, async () => {
-                            const template: IPartialDeploymentTemplate = {
+                            const fakeTemplate: IPartialDeploymentTemplate = {
                                 resources: [{
                                     "name": resourceName
                                 }]
                             };
-                            const dt = await parseTemplate(template);
+                            const dt = await parseTemplate(fakeTemplate);
                             const actual = splitResourceNameIntoSegments(resourceName, dt);
                             assert.deepStrictEqual(actual, expected);
                         });
