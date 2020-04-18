@@ -1016,7 +1016,7 @@ export class ParseResult {
         } else {
             const nextLineIndex = this.getCharacterIndex(line + 1, 0);
 
-            for (let token of tokens) {
+            for (let token of tokens) { // CONSIDER: binary search
                 if (token.span.startIndex >= nextLineIndex) {
                     break;
                 }

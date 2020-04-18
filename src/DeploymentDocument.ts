@@ -84,7 +84,7 @@ export abstract class DeploymentDocument {
 
     public get schemaValue(): Json.StringValue | undefined {
         return this._schema.getOrCacheValue(() => {
-            return Json.asStringValue(this.topLevelValue?.getPropertyValue("$schema"));
+            return this.topLevelValue?.getPropertyValue("$schema")?.asStringValue;
         });
     }
 
@@ -165,7 +165,16 @@ export abstract class DeploymentDocument {
      */
     public abstract async getCodeActions(associatedDocument: DeploymentDocument | undefined, range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]>;
 
-    public abstract getErrors(associatedDocument: DeploymentDocument | undefined): Promise<language.Issue[]>;
+    // CONSIDER: Should we cache?  But that cache would depend on associatedTemplate not changing, not sure if that's
+    // guaranteed.
+    // Consider whether
+    // associated document should be a function passed in to constructor so that it's a permanent part of the
+    // template state
+    public async getErrors(associatedDocument: DeploymentDocument | undefined): Promise<language.Issue[]> {
+        return this.getErrorsCore(associatedDocument);
+    }
+
+    public abstract getErrorsCore(associatedDocument: DeploymentDocument | undefined): Promise<language.Issue[]>;
 
     public abstract getWarnings(): language.Issue[];
 }
