@@ -1,38 +1,30 @@
 
 import * as vscode from 'vscode';
-import { DeploymentTemplate } from './DeploymentTemplate';
 import { DefinitionKind } from './INamedDefinition';
-import { IReferenceSite } from './PositionContext';
+import { PositionContext } from './PositionContext';
 const COMMAND = 'editor.action.rename';
 export class RenameCodeActionProvider implements vscode.CodeActionProvider {
 
-    constructor(private action: (document: vscode.TextDocument) => DeploymentTemplate | undefined) {
+    constructor(private action: (document: vscode.TextDocument, position: vscode.Position) => Promise<PositionContext | undefined>) {
     }
-    public static readonly providedCodeActionKinds = [
-        vscode.CodeActionKind.RefactorRewrite
-    ];
 
-    public provideCodeActions(document: vscode.TextDocument, range: vscode.Range): vscode.CodeAction[] | undefined {
-        let template = this.action(document);
-        let position = range.start;
-        if (!template) {
-            return undefined;
+    public async provideCodeActions(document: vscode.TextDocument, range: vscode.Range): Promise<vscode.CodeAction[] | undefined> {
+        let pc = await this.action(document, range.start);
+        if (!pc) {
+            return;
         }
-        let pc = template.getContextFromDocumentLineAndColumnIndexes(position.line, position.character, undefined);
-        const referenceSiteInfo: IReferenceSite | undefined = pc.getReferenceSiteInfo(true);
+        const referenceSiteInfo = pc.getReferenceSiteInfo(true);
         if (!referenceSiteInfo || referenceSiteInfo.definition.definitionKind === DefinitionKind.BuiltinFunction) {
             return;
         }
-        const commandAction = this.createCommand();
-
         return [
-            commandAction
+            this.createCommand()
         ];
     }
 
     private createCommand(): vscode.CodeAction {
         const action = new vscode.CodeAction('Rename...', vscode.CodeActionKind.RefactorRewrite);
-        action.command = { command: COMMAND, title: 'Rename', tooltip: 'This will rename the parameter.' };
+        action.command = { command: COMMAND, title: '' };
         return action;
     }
 }

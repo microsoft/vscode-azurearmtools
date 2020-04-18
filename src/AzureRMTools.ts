@@ -111,8 +111,11 @@ export class AzureRMTools {
         ext.jsonOutlineProvider = jsonOutline;
         context.subscriptions.push(vscode.window.registerTreeDataProvider("azurerm-vscode-tools.template-outline", jsonOutline));
         context.subscriptions.push(
-            vscode.languages.registerCodeActionsProvider('arm-template', new RenameCodeActionProvider((document) => this.getOpenedDeploymentTemplate(document)), {
-                providedCodeActionKinds: RenameCodeActionProvider.providedCodeActionKinds
+            // tslint:disable-next-line:typedef
+            vscode.languages.registerCodeActionsProvider(armTemplateLanguageId, new RenameCodeActionProvider(async (document, position) => await this.getPositionContext(document, position, Cancellation.cantCancel)), {
+                providedCodeActionKinds: [
+                    vscode.CodeActionKind.RefactorRewrite
+                ]
             }));
         registerCommand("azurerm-vscode-tools.treeview.goto", (_actionContext: IActionContext, range: vscode.Range) => jsonOutline.goToDefinition(range));
         registerCommand("azurerm-vscode-tools.completion-activated", (actionContext: IActionContext, args: object) => {
