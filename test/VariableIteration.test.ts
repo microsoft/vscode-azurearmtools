@@ -8,7 +8,7 @@
 import * as assert from 'assert';
 import { Uri } from 'vscode';
 import { DeploymentTemplate, IVariableDefinition, Json } from "../extension.bundle";
-import { createCompletionsTest } from './support/createCompletionsTest';
+import { createExpressionCompletionsTestEx } from './support/createCompletionsTest';
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
@@ -237,11 +237,11 @@ suite("Variable iteration (copy blocks)", () => {
                 }
             };
 
-            createCompletionsTest(disksTopLevelArrayTemplate, '<output1>', '[variables(!)]', ["'disks-top-level-array-of-object'"]);
+            createExpressionCompletionsTestEx(disksTopLevelArrayTemplate, '<output1>', '[variables(!)]', ["'disks-top-level-array-of-object'"]);
 
             // We don't currently support completions from an array, so these should return an empty list
-            createCompletionsTest(disksTopLevelArrayTemplate, '<output1>', "[variables('disks-top-level-array-of-object').!]", []);
-            createCompletionsTest(disksTopLevelArrayTemplate, '<output1>', "[variables('disks-top-level-array-of-object').data!]", []);
+            createExpressionCompletionsTestEx(disksTopLevelArrayTemplate, '<output1>', "[variables('disks-top-level-array-of-object').!]", []);
+            createExpressionCompletionsTestEx(disksTopLevelArrayTemplate, '<output1>', "[variables('disks-top-level-array-of-object').data!]", []);
 
         });
 
@@ -572,8 +572,8 @@ suite("Variable iteration (copy blocks)", () => {
                 }
             };
 
-            createCompletionsTest(template, '<output1>', '[variables(!)]', ["'disk-array-in-object'"]);
-            createCompletionsTest(template, '<output1>', "[variables('disk-array-in-object').!]", ["member1", "member2", "array1", "array2"]);
+            createExpressionCompletionsTestEx(template, '<output1>', '[variables(!)]', ["'disk-array-in-object'"]);
+            createExpressionCompletionsTestEx(template, '<output1>', "[variables('disk-array-in-object').!]", ["member1", "member2", "array1", "array2"]);
         });
 
     }); // end suite embedded variable copy blocks

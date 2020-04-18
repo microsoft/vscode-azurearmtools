@@ -48,6 +48,8 @@ export interface IDeploymentParameterDefinition {
     };
     maxLength?: number;
     minLength?: number;
+    maxValue?: number;
+    minValue?: number;
     defaultValue?: number | unknown[] | string | {};
     allowedValues?: (number | unknown[] | string | {})[];
 }
@@ -110,6 +112,29 @@ export interface IDeploymentTemplate {
     functions?: IDeploymentNamespaceDefinition[];
 }
 
+export interface IPartialDeploymentTemplate {
+    "$schema"?: "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#" | "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
+    | string;
+    contentVersion?: string;
+    apiProfile?: string;
+    parameters?: {
+        [key: string]: Partial<IDeploymentParameterDefinition>;
+    };
+    variables?: {
+        copy?: {
+            name: string;
+            count: number;
+            input: string | {};
+        }[];
+        [key: string]: number | unknown[] | string | {} | undefined;
+    };
+    resources?: IPartialDeploymentTemplateResource[];
+    outputs?: {
+        [key: string]: Partial<IDeploymentOutput>;
+    };
+    functions?: Partial<IDeploymentNamespaceDefinition>[];
+}
+
 export const defaultArmSchema = "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#";
 
 export const minimalDeploymentTemplate: IDeploymentTemplate = {
@@ -124,11 +149,37 @@ export interface IDeploymentTemplateResource {
     type: string;
     name: string;
     apiVersion: string;
-    location: string;
+    location?: string;
     dependsOn?: string[];
-    tags?: { [key: string]: string };
+    tags?: { [key: string]: string } | string;
+    properties?: { [key: string]: unknown };
+    resources?: IDeploymentTemplateChildResource[];
+    [key: string]: unknown;
+}
+
+export interface IDeploymentTemplateChildResource {
+    // tslint:disable-next-line:no-reserved-keywords
+    type: string;
+    name: string;
+    apiVersion: string;
+    location?: string;
+    dependsOn?: string[];
+    tags?: { [key: string]: string } | string;
     properties?: { [key: string]: unknown };
     resources?: IDeploymentTemplateResource[];
+    [key: string]: unknown;
+}
+
+export interface IPartialDeploymentTemplateResource {
+    // tslint:disable-next-line:no-reserved-keywords
+    type?: string;
+    name?: string;
+    apiVersion?: string;
+    location?: string;
+    dependsOn?: string[];
+    tags?: { [key: string]: string } | string;
+    properties?: { [key: string]: unknown };
+    resources?: IPartialDeploymentTemplateResource[];
     [key: string]: unknown;
 }
 

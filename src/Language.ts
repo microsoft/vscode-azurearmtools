@@ -210,6 +210,13 @@ export class Span {
     public extendRight(extendRight: number): Span {
         return new Span(this.startIndex, this.length + extendRight);
     }
+
+    public getText(text: string, offsetIndex?: number): string {
+        const start = this.startIndex + (offsetIndex ?? 0);
+        return text.slice(
+            start,
+            start + this.length);
+    }
 }
 
 export class Position {

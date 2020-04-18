@@ -279,8 +279,7 @@ export class DeploymentParameters extends DeploymentDocument {
         return undefined;
     }
 
-    // CONSIDER: This cache depends on associatedTemplate not changing (which it shouldn't)
-    public async getErrors(associatedTemplate: DeploymentTemplate | undefined): Promise<language.Issue[]> {
+    public async getErrorsCore(associatedTemplate: DeploymentTemplate | undefined): Promise<language.Issue[]> {
         const missingRequiredParams: IParameterDefinition[] = this.getMissingParameters(associatedTemplate, true);
         if (missingRequiredParams.length === 0) {
             return [];

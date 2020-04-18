@@ -110,10 +110,12 @@ export class AzureRMTools {
         ext.jsonOutlineProvider = jsonOutline;
         context.subscriptions.push(vscode.window.registerTreeDataProvider("azurerm-vscode-tools.template-outline", jsonOutline));
 
-        registerCommand("azurerm-vscode-tools.treeview.goto", (_actionContext: IActionContext, range: vscode.Range) => jsonOutline.goToDefinition(range));
+        // For telemetry
         registerCommand("azurerm-vscode-tools.completion-activated", (actionContext: IActionContext, args: object) => {
-            onCompletionActivated(actionContext, args);
+            onCompletionActivated(actionContext, <{ [key: string]: string }>args);
         });
+
+        registerCommand("azurerm-vscode-tools.treeview.goto", (_actionContext: IActionContext, range: vscode.Range) => jsonOutline.goToDefinition(range));
         registerCommand('azurerm-vscode-tools.uninstallDotnet', async () => {
             await stopArmLanguageServer();
             await uninstallDotnet();
@@ -660,6 +662,8 @@ export class AzureRMTools {
      * Hook up events related to template files (as opposed to plain JSON files). This is only called when
      * actual template files are open, to avoid slowing performance when simple JSON files are opened.
      */
+    // tslint:disable-next-line: no-suspicious-comment
+    // tslint:disable-next-line: max-func-body-length // TODO: refactor
     private ensureDeploymentDocumentEventsHookedUp(): void {
         if (this._areDeploymentTemplateEventsHookedUp) {
             return;
@@ -667,7 +671,6 @@ export class AzureRMTools {
         this._areDeploymentTemplateEventsHookedUp = true;
 
         vscode.window.onDidChangeTextEditorSelection(this.onTextSelectionChanged, this, ext.context.subscriptions);
-
         vscode.workspace.onDidCloseTextDocument(this.onDocumentClosed, this, ext.context.subscriptions);
 
         const hoverProvider: vscode.HoverProvider = {
@@ -717,7 +720,13 @@ export class AzureRMTools {
             vscode.languages.registerCompletionItemProvider(
                 templateOrParameterDocumentSelector,
                 completionProvider,
-                "'", "[", ".", "(", '"'
+                "'",
+                "[",
+                ".",
+                '"',
+                '(',
+                ',',
+                ' '
             ));
 
         // tslint:disable-next-line:no-suspicious-comment
@@ -924,6 +933,7 @@ export class AzureRMTools {
     private async onProvideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover | undefined> {
         return await callWithTelemetryAndErrorHandling('Hover', async (actionContext: IActionContext): Promise<vscode.Hover | undefined> => {
             actionContext.errorHandling.suppressDisplay = true;
+            actionContext.telemetry.suppressIfSuccessful = true;
             const properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>actionContext.telemetry.properties;
 
             const cancel = new Cancellation(token, actionContext);
@@ -1160,6 +1170,7 @@ export class AzureRMTools {
     ): Promise<(vscode.Command | vscode.CodeAction)[] | undefined> {
         return await callWithTelemetryAndErrorHandling('Provide code actions', async (actionContext: IActionContext): Promise<(vscode.Command | vscode.CodeAction)[]> => {
             actionContext.errorHandling.suppressDisplay = true;
+            actionContext.telemetry.suppressIfSuccessful = true;
             const cancel = new Cancellation(token, actionContext);
 
             const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(textDocument, cancel);
@@ -1174,6 +1185,7 @@ export class AzureRMTools {
     private async onProvideSignatureHelp(textDocument: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp | undefined> {
         return await callWithTelemetryAndErrorHandling('provideSignatureHelp', async (actionContext: IActionContext): Promise<vscode.SignatureHelp | undefined> => {
             actionContext.errorHandling.suppressDisplay = true;
+            actionContext.telemetry.suppressIfSuccessful = true;
 
             const cancel = new Cancellation(token, actionContext);
             const pc: PositionContext | undefined = await this.getPositionContext(textDocument, position, cancel);

@@ -54,6 +54,13 @@ export abstract class DeploymentDocument {
     }
 
     /**
+     * Retrieves a section of the document text
+     */
+    public getDocumentText(span: language.Span, offsetIndex?: number): string {
+        return span.getText(this.documentText, offsetIndex);
+    }
+
+    /**
      * The unique identifier for this deployment template, which indicates its location
      */
     public get documentId(): Uri {
@@ -77,15 +84,7 @@ export abstract class DeploymentDocument {
 
     public get schemaValue(): Json.StringValue | undefined {
         return this._schema.getOrCacheValue(() => {
-            const value: Json.ObjectValue | undefined = Json.asObjectValue(this._jsonParseResult.value);
-            if (value) {
-                const schema: Json.StringValue | undefined = Json.asStringValue(value.getPropertyValue("$schema"));
-                if (schema) {
-                    return schema;
-                }
-            }
-
-            return undefined;
+            return this.topLevelValue?.getPropertyValue("$schema")?.asStringValue;
         });
     }
 
@@ -114,7 +113,8 @@ export abstract class DeploymentDocument {
     /**
      * Get the maximum column index for the provided line. For the last line in the file,
      * the maximum column index is equal to the line length. For every other line in the file,
-     * the maximum column index is less than the line length.
+     * the maximum column index is less than the line length (because line length includes
+     * the LF/CRLF?).
      */
     public getMaxColumnIndex(lineIndex: number): number {
         return this._jsonParseResult.getMaxColumnIndex(lineIndex);
@@ -166,7 +166,15 @@ export abstract class DeploymentDocument {
      */
     public abstract async getCodeActions(associatedDocument: DeploymentDocument | undefined, range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]>;
 
-    public abstract getErrors(associatedDocument: DeploymentDocument | undefined): Promise<language.Issue[]>;
+    // CONSIDER: Should we cache?  But that cache would depend on associatedTemplate not changing, not sure if that's
+    // guaranteed.
+    // Consider whether associated document should be a function passed in to constructor so that it's a permanent part of the
+    // template state.
+    public async getErrors(associatedDocument: DeploymentDocument | undefined): Promise<language.Issue[]> {
+        return this.getErrorsCore(associatedDocument);
+    }
+
+    public abstract getErrorsCore(associatedDocument: DeploymentDocument | undefined): Promise<language.Issue[]>;
 
     public abstract getWarnings(): language.Issue[];
 }
