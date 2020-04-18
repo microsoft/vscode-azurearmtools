@@ -30,6 +30,7 @@ import { considerQueryingForParameterFile, getFriendlyPathToFile, openParameterF
 import { setParameterFileContext } from "./parameterFiles/setParameterFileContext";
 import { IReferenceSite, PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
+import { RenameCodeActionProvider } from "./RenameCodeActionProvider";
 import { resetGlobalState } from "./resetGlobalState";
 import { getPreferredSchema } from "./schemas";
 import { getFunctionParamUsage } from "./signatureFormatting";
@@ -109,7 +110,10 @@ export class AzureRMTools {
         const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
         ext.jsonOutlineProvider = jsonOutline;
         context.subscriptions.push(vscode.window.registerTreeDataProvider("azurerm-vscode-tools.template-outline", jsonOutline));
-
+        context.subscriptions.push(
+            vscode.languages.registerCodeActionsProvider('arm-template', new RenameCodeActionProvider((document) => this.getOpenedDeploymentTemplate(document)), {
+                providedCodeActionKinds: RenameCodeActionProvider.providedCodeActionKinds
+            }));
         registerCommand("azurerm-vscode-tools.treeview.goto", (_actionContext: IActionContext, range: vscode.Range) => jsonOutline.goToDefinition(range));
         registerCommand("azurerm-vscode-tools.completion-activated", (actionContext: IActionContext, args: object) => {
             onCompletionActivated(actionContext, args);
