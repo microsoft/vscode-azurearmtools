@@ -23,5 +23,14 @@
     },
     "files.associations": {
         "tslint.json": "jsonc"
-    }
+    },
+    "json.schemas": [
+        {
+            "fileMatch": [
+                "ExpressionMetadata.json",
+                "TestData.ExpressionMetadata.json",
+            ],
+            "url": "assets/ExpressionMetadata.schema.json"
+        }
+    ]
 }

@@ -76,6 +76,9 @@ export namespace templateKeys {
     export const loopVarCount = 'count';
 
     // Resources
+    export const properties = 'properties';
     export const resourceType = 'type';
     export const resourceApiVersion = 'apiVersion';
+    export const resourceDependsOn = 'dependsOn';
+    export const resourceName = 'name';
 }

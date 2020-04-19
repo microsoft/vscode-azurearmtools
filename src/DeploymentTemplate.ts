@@ -77,6 +77,14 @@ export class DeploymentTemplate extends DeploymentDocument {
         return undefined;
     }
 
+    public get resources(): Json.ArrayValue | undefined {
+        if (this.topLevelValue) {
+            return this.topLevelValue?.getPropertyValue(templateKeys.resources)?.asArrayValue;
+        }
+
+        return undefined;
+    }
+
     /**
      * Parses all JSON strings in the template, assigns them a scope, and caches the results.
      * Returns a map that maps from the Json.StringValue object to the parse result (we can't cache
@@ -124,7 +132,7 @@ export class DeploymentTemplate extends DeploymentDocument {
         });
     }
 
-    public async getErrors(_associatedParameters: DeploymentParameters | undefined): Promise<language.Issue[]> {
+    public async getErrorsCore(_associatedParameters: DeploymentParameters | undefined): Promise<language.Issue[]> {
         // tslint:disable-next-line:typedef
         return new Promise<language.Issue[]>(async (resolve, reject) => {
             try {
@@ -526,5 +534,11 @@ export class DeploymentTemplate extends DeploymentDocument {
     ): Promise<(Command | CodeAction)[]> {
         assert(!associatedDocument || associatedDocument instanceof DeploymentParameters, "Associated document is of the wrong type");
         return [];
+    }
+
+    public getTextAtTleValue(tleValue: TLE.Value, parentStringToken: Json.Token): string {
+        assert.equal(parentStringToken.type, Json.TokenType.QuotedString);
+        const spanOfValueInsideString = tleValue.getSpan();
+        return this.getDocumentText(spanOfValueInsideString, parentStringToken.span.startIndex);
     }
 }
