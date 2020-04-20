@@ -15,6 +15,7 @@ import * as path from 'path';
 import * as process from 'process';
 import * as recursiveReadDir from 'recursive-readdir';
 import * as shelljs from 'shelljs';
+import { Stream } from 'stream';
 import { gulp_webpack } from 'vscode-azureextensiondev';
 import { langServerDotnetVersion, languageServerFolderName } from './src/constants';
 import { assert } from './src/fixed_assert';
