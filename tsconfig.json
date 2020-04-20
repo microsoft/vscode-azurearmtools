@@ -7,7 +7,8 @@
         "sourceMap": true,
         "noUnusedLocals": true,
         "strict": true,
-        "alwaysStrict": true
+        "alwaysStrict": true,
+        "experimentalDecorators": true
     },
     "exclude": [
         "node_modules"

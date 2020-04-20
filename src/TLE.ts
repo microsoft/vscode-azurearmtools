@@ -10,18 +10,24 @@
 // tslint:disable:max-classes-per-file // Grandfathered in
 
 import { templateKeys } from "./constants";
-import { __debugMarkSubstring } from "./debugMarkStrings";
+import { __debugMarkRangeInString } from "./debugMarkStrings";
 import { assert } from "./fixed_assert";
 import { IFunctionMetadata } from "./IFunctionMetadata";
 import * as Json from "./JSON";
 import * as language from "./Language";
-import { PositionContext } from "./PositionContext";
+import { TemplatePositionContext } from "./TemplatePositionContext";
 import { TemplateScope } from "./TemplateScope";
 import * as basic from "./Tokenizer";
 import { nonNullValue } from "./util/nonNull";
 import * as Utilities from "./Utilities";
 
 const tleSyntax: language.IssueKind = language.IssueKind.tleSyntax;
+
+export function isTleExpression(unquotedStringValue: string): boolean {
+    // An expression must start with '[' (no whitespace before),
+    //   not start with '[[', and end with ']' (no whitespace after)
+    return !!unquotedStringValue.match(/^\[(?!\[).*\]$/);
+}
 
 export function asStringValue(value: Value | undefined): StringValue | undefined {
     return value instanceof StringValue ? value : undefined;
@@ -59,6 +65,8 @@ export abstract class Value {
 
     public abstract getSpan(): language.Span;
 
+    // Note: This always includes the character after the Value as well (i.e., uses
+    //   Contains.extended).
     public abstract contains(characterIndex: number): boolean;
 
     public abstract toString(): string;
@@ -112,8 +120,12 @@ export class StringValue extends Value {
         return new language.Span(this.getSpan().startIndex + 1, this.length - (this.hasCloseQuote() ? 2 : 1));
     }
 
+    public get unquotedValue(): string {
+        return this.quotedValue.slice(1, this.length - (this.hasCloseQuote() ? 1 : 0));
+    }
+
     public contains(characterIndex: number): boolean {
-        return this.getSpan().contains(characterIndex, true);
+        return this.getSpan().contains(characterIndex, language.Contains.extended);
     }
 
     public hasCloseQuote(): boolean {
@@ -150,8 +162,12 @@ export class StringValue extends Value {
         visitor.visitString(this);
     }
 
-    public toString(): string {
+    public get quotedValue(): string {
         return this._token.stringValue;
+    }
+
+    public toString(): string {
+        return this.quotedValue;
     }
 }
 
@@ -175,7 +191,7 @@ export class NumberValue extends Value {
     }
 
     public contains(characterIndex: number): boolean {
-        return this.getSpan().contains(characterIndex, true);
+        return this.getSpan().contains(characterIndex, language.Contains.extended);
     }
 
     public accept(visitor: Visitor): void {
@@ -253,7 +269,7 @@ export class ArrayAccessValue extends ParentValue {
     }
 
     public contains(characterIndex: number): boolean {
-        return this.getSpan().contains(characterIndex, !this._rightSquareBracketToken);
+        return this.getSpan().contains(characterIndex, this._rightSquareBracketToken ? language.Contains.strict : language.Contains.extended);
     }
 
     public accept(visitor: Visitor): void {
@@ -434,7 +450,7 @@ export class FunctionCallValue extends ParentValue {
     }
 
     public contains(characterIndex: number): boolean {
-        return this.getSpan().contains(characterIndex, !this._rightParenthesisToken);
+        return this.getSpan().contains(characterIndex, this._rightParenthesisToken ? language.Contains.strict : language.Contains.extended);
     }
 
     public accept(visitor: Visitor): void {
@@ -470,7 +486,7 @@ export class FunctionCallValue extends ParentValue {
  */
 export class PropertyAccess extends ParentValue {
     // We need to allow creating a property access expresion whether the property name
-    //   was correctly given or note, so we can have proper intellisense/etc.
+    //   was correctly given or not, so we can have proper intellisense/etc.
     // I.e., we require the period, but after that might be empty or an error.
     constructor(private _source: Value, private _periodToken: Token, private _nameToken: Token | undefined) {
         super();
@@ -538,7 +554,7 @@ export class PropertyAccess extends ParentValue {
     }
 
     public contains(characterIndex: number): boolean {
-        return this.getSpan().contains(characterIndex, true);
+        return this.getSpan().contains(characterIndex, language.Contains.extended);
     }
 
     public accept(visitor: Visitor): void {
@@ -558,7 +574,7 @@ export class PropertyAccess extends ParentValue {
  * A set of functions that pertain to getting highlight character indexes for a TLE string.
  */
 export class BraceHighlighter {
-    public static getHighlightCharacterIndexes(context: PositionContext): number[] {
+    public static getHighlightCharacterIndexes(context: TemplatePositionContext): number[] {
         assert(context);
 
         let highlightCharacterIndexes: number[] = [];
@@ -1113,7 +1129,7 @@ export class Tokenizer {
      * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
      */
     public get __debugDisplay(): string {
-        return __debugMarkSubstring(this._text, this._currentTokenStartIndex, this._current ? this._current.toString().length : 0);
+        return __debugMarkRangeInString(this._text, this._currentTokenStartIndex, this._current ? this._current.toString().length : 0);
     }
 
     public hasStarted(): boolean {

@@ -18,7 +18,7 @@ export const iconsPath = path.join(basePath, "icons");
 
 export const languageServerName = 'ARM Template Language Server';
 export const languageFriendlyName = 'Azure Resource Manager Template';
-export const languageId = 'arm-template';
+export const armTemplateLanguageId = 'arm-template';
 export const languageServerFolderName = 'languageServer';
 export const extensionName = 'Azure Resource Manager Tools';
 export const outputWindowName = extensionName;
@@ -76,6 +76,9 @@ export namespace templateKeys {
     export const loopVarCount = 'count';
 
     // Resources
+    export const properties = 'properties';
     export const resourceType = 'type';
     export const resourceApiVersion = 'apiVersion';
+    export const resourceDependsOn = 'dependsOn';
+    export const resourceName = 'name';
 }

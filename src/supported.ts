@@ -3,12 +3,28 @@
 // ----------------------------------------------------------------------------
 
 import { Position, Range, TextDocument, workspace } from "vscode";
-import { configKeys, configPrefix, languageId } from "./constants";
-import { containsArmSchema } from "./schemas";
+import { armTemplateLanguageId, configKeys, configPrefix } from "./constants";
+import { containsArmSchema, containsParametersSchema } from "./schemas";
 
-export const armDeploymentDocumentSelector = [
-    { language: languageId, scheme: 'file' },
-    { language: languageId, scheme: 'untitled' } // unsaved files
+export const templateDocumentSelector = [
+    { language: armTemplateLanguageId, scheme: 'file' },
+    { language: armTemplateLanguageId, scheme: 'untitled' } // unsaved files
+];
+
+export const parameterDocumentSelector = [
+    { language: 'json', scheme: 'file' },
+    { language: 'json', scheme: 'untitled' },
+    { language: 'jsonc', scheme: 'file' },
+    { language: 'jsonc', scheme: 'untitled' },
+];
+
+export const templateOrParameterDocumentSelector = [
+    { language: armTemplateLanguageId, scheme: 'file' },
+    { language: armTemplateLanguageId, scheme: 'untitled' }, // unsaved files
+    { language: 'json', scheme: 'file' },
+    { language: 'json', scheme: 'untitled' },
+    { language: 'jsonc', scheme: 'file' },
+    { language: 'jsonc', scheme: 'untitled' },
 ];
 
 const maxLinesToDetectSchemaIn = 500;
@@ -18,7 +34,7 @@ function isJsonOrJsoncLangId(textDocument: TextDocument): boolean {
 }
 
 // We keep track of arm-template files, of course,
-// but also JSON/JSONC (unless auto-detect is disabled) so we can check them for the ARM schema
+// but also JSON/JSONC so we can check them for the ARM deployment and parameters schemas
 function shouldWatchDocument(textDocument: TextDocument): boolean {
     if (
         textDocument.uri.scheme !== 'file'
@@ -27,16 +43,15 @@ function shouldWatchDocument(textDocument: TextDocument): boolean {
         return false;
     }
 
-    if (textDocument.languageId === languageId) {
+    if (textDocument.languageId === armTemplateLanguageId) {
         return true;
     }
 
-    let enableAutoDetection = workspace.getConfiguration(configPrefix).get<boolean>(configKeys.autoDetectJsonTemplates);
-    if (!enableAutoDetection) {
-        return false;
-    }
-
     return isJsonOrJsoncLangId(textDocument);
+}
+
+export function isAutoDetectArmEnabled(): boolean {
+    return !!workspace.getConfiguration(configPrefix).get<boolean>(configKeys.autoDetectJsonTemplates);
 }
 
 export function mightBeDeploymentTemplate(textDocument: TextDocument): boolean {
@@ -44,8 +59,28 @@ export function mightBeDeploymentTemplate(textDocument: TextDocument): boolean {
         return false;
     }
 
-    if (textDocument.languageId === languageId) {
+    if (textDocument.languageId === armTemplateLanguageId) {
         return true;
+    }
+
+    if (isJsonOrJsoncLangId(textDocument)) {
+        if (!isAutoDetectArmEnabled()) {
+            return false;
+        }
+
+        let startOfDocument = textDocument.getText(new Range(new Position(0, 0), new Position(maxLinesToDetectSchemaIn - 1, 0)));
+
+        // Do a quick dirty check if the first portion of the JSON contains a schema string that we're interested in
+        // (might not actually be in a $schema property, though)
+        return !!startOfDocument && containsArmSchema(startOfDocument);
+    }
+
+    return false;
+}
+
+export function mightBeDeploymentParameters(textDocument: TextDocument): boolean {
+    if (!shouldWatchDocument(textDocument)) {
+        return false;
     }
 
     if (isJsonOrJsoncLangId(textDocument)) {
@@ -53,7 +88,7 @@ export function mightBeDeploymentTemplate(textDocument: TextDocument): boolean {
 
         // Do a quick dirty check if the first portion of the JSON contains a schema string that we're interested in
         // (might not actually be in a $schema property, though)
-        return !!startOfDocument && containsArmSchema(startOfDocument);
+        return !!startOfDocument && containsParametersSchema(startOfDocument);
     }
 
     return false;

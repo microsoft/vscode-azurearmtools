@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { ExpressionType } from "./ExpressionType";
-import { IFunctionMetadata, IFunctionParameterMetadata } from "./IFunctionMetadata";
+import { Behaviors, IFunctionMetadata, IFunctionParameterMetadata } from "./IFunctionMetadata";
 import { getUserFunctionUsage } from "./signatureFormatting";
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
 
@@ -39,5 +39,9 @@ export class UserFunctionMetadata implements IFunctionMetadata {
                 }),
             func.output && func.output.validOutputType,
             []);
+    }
+
+    public hasBehavior(behavior: Behaviors): boolean {
+        return false;
     }
 }

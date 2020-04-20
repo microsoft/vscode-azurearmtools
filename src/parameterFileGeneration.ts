@@ -6,6 +6,7 @@ import * as fse from 'fs-extra';
 import * as path from 'path';
 import { QuickPickItem, Uri, window } from "vscode";
 import { IActionContext, UserCancelledError } from 'vscode-azureextensionui';
+import { Json, TLE } from '../extension.bundle';
 import { CaseInsensitiveMap } from './CaseInsensitiveMap';
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ExpressionType } from './ExpressionType';
@@ -14,9 +15,9 @@ import { IParameterDefinition } from './IParameterDefinition';
 import { assertNever } from './util/assertNever';
 import { indentMultilineString, unindentMultilineString } from './util/multilineStrings';
 
-const defaultIndent: number = 4;
+export const defaultTabSize: number = 4;
 
-export async function queryCreateParameterFile(actionContext: IActionContext, templateUri: Uri, template: DeploymentTemplate, indent: number = defaultIndent): Promise<Uri> {
+export async function queryCreateParameterFile(actionContext: IActionContext, templateUri: Uri, template: DeploymentTemplate, tabSize: number = defaultTabSize): Promise<Uri> {
     const all = <QuickPickItem>{ label: "All parameters" };
     const required = <QuickPickItem>{ label: "Only required parameters", description: "Uses only parameters that have no default value in the template file" };
 
@@ -42,7 +43,7 @@ export async function queryCreateParameterFile(actionContext: IActionContext, te
         throw new UserCancelledError();
     }
 
-    let paramsObj: string = createParameterFileContents(template, indent, onlyRequiredParams);
+    let paramsObj: string = createParameterFileContents(template, tabSize, onlyRequiredParams);
     await fse.writeFile(newUri.fsPath, paramsObj, {
         encoding: 'utf8'
     });
@@ -50,11 +51,11 @@ export async function queryCreateParameterFile(actionContext: IActionContext, te
     return newUri;
 }
 
-export function createParameterFileContents(template: DeploymentTemplate, indent: number, onlyRequiredParameters: boolean): string {
+export function createParameterFileContents(template: DeploymentTemplate, tabSize: number, onlyRequiredParameters: boolean): string {
     /* e.g.
 
     {
-        "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+        "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
         "contentVersion": "1.0.0.0",
         "parameters": {
             "parameter1": {
@@ -65,19 +66,19 @@ export function createParameterFileContents(template: DeploymentTemplate, indent
 
     */
 
-    const tab = makeIndent(indent);
+    const tab = makeIndent(tabSize);
 
-    const params: CaseInsensitiveMap<string, string> = createParameters(template, indent, onlyRequiredParameters);
+    const params: CaseInsensitiveMap<string, string> = createParameters(template, tabSize, onlyRequiredParameters);
     const paramsContent = params.map((key, value) => value).join(`,${ext.EOL}`);
 
     // tslint:disable-next-line: prefer-template
     let contents = `{` + ext.EOL +
-        `${tab}"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",` + ext.EOL +
+        `${tab}"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",` + ext.EOL +
         `${tab}"contentVersion": "1.0.0.0",` + ext.EOL +
         `${tab}"parameters": {` + ext.EOL;
 
     if (params.size > 0) {
-        contents += indentMultilineString(paramsContent, indent * 2) + ext.EOL;
+        contents += indentMultilineString(paramsContent, tabSize * 2) + ext.EOL;
     }
 
     // tslint:disable-next-line: prefer-template
@@ -87,7 +88,11 @@ export function createParameterFileContents(template: DeploymentTemplate, indent
     return contents;
 }
 
-export function createParameterProperty(template: DeploymentTemplate, parameter: IParameterDefinition, indent: number): string {
+/**
+ * Creates text for a property using information for that property in a template file
+ * @param tabSize The number of spaces to indent at each level. The parameter text will start flush left
+ */
+export function createParameterFromTemplateParameter(template: DeploymentTemplate, parameter: IParameterDefinition, tabSize: number = defaultTabSize): string {
     /* e.g.
 
     "parameters": {
@@ -98,18 +103,27 @@ export function createParameterProperty(template: DeploymentTemplate, parameter:
 
     */
 
-    let value: string = getDefaultValueFromType(parameter.validType, indent);
+    let value: string | undefined;
     if (parameter.defaultValue) {
-        const defValueSpan = parameter.defaultValue.span;
-        const defValue: string = template.documentText.slice(defValueSpan.startIndex, defValueSpan.afterEndIndex);
-        value = unindentMultilineString(defValue, true);
+        // If the parameter has a default value that's not an expression, then use it as the
+        // value in the param file
+        const isExpression = parameter.defaultValue instanceof Json.StringValue &&
+            TLE.isTleExpression(parameter.defaultValue.unquotedValue);
+        if (!isExpression) {
+            const defValueSpan = parameter.defaultValue.span;
+            const defValue: string = template.documentText.slice(defValueSpan.startIndex, defValueSpan.afterEndIndex);
+            value = unindentMultilineString(defValue, true);
+        }
+    }
+    if (value === undefined) {
+        value = getDefaultValueFromType(parameter.validType, tabSize);
     }
 
-    const valueIndentedAfterFirstLine: string = indentMultilineString(value.trimLeft(), indent).trimLeft();
+    const valueIndentedAfterFirstLine: string = indentMultilineString(value.trimLeft(), tabSize).trimLeft();
 
     // tslint:disable-next-line:prefer-template
     return `"${parameter.nameValue.unquotedValue}": {` + ext.EOL
-        + `${makeIndent(indent)}"value": ${valueIndentedAfterFirstLine}` + ext.EOL
+        + `${makeIndent(tabSize)}"value": ${valueIndentedAfterFirstLine}` + ext.EOL
         + `}`;
 }
 
@@ -141,18 +155,18 @@ function getDefaultValueFromType(propType: ExpressionType | undefined, indent: n
     }
 }
 
-function createParameters(template: DeploymentTemplate, indent: number, onlyRequiredParameters: boolean): CaseInsensitiveMap<string, string> {
+function createParameters(template: DeploymentTemplate, tabSize: number, onlyRequiredParameters: boolean): CaseInsensitiveMap<string, string> {
     let params: CaseInsensitiveMap<string, string> = new CaseInsensitiveMap<string, string>();
 
     for (let paramDef of template.topLevelScope.parameterDefinitions) {
         if (!onlyRequiredParameters || !paramDef.defaultValue) {
-            params.set(paramDef.nameValue.unquotedValue, createParameterProperty(template, paramDef, indent));
+            params.set(paramDef.nameValue.unquotedValue, createParameterFromTemplateParameter(template, paramDef, tabSize));
         }
     }
 
     return params;
 }
 
-function makeIndent(indent: number): string {
-    return ' '.repeat(indent);
+function makeIndent(tabSize: number): string {
+    return ' '.repeat(tabSize);
 }

@@ -17,12 +17,12 @@ import { DeploymentTemplate, ReferenceList } from '../../extension.bundle';
  *      await testFindReferences(dt, apiVersionReference.index, [apiVersionReference.index, apiVersionDef.index]);
  */
 export async function testGetReferences(dt: DeploymentTemplate, cursorIndex: number, expectedReferenceIndices: number[]): Promise<void> {
-    const pc = dt.getContextFromDocumentCharacterIndex(cursorIndex);
+    const pc = dt.getContextFromDocumentCharacterIndex(cursorIndex, undefined);
     // tslint:disable-next-line: no-non-null-assertion
     const references: ReferenceList = pc.getReferences()!;
     assert(references, "Expected non-empty list of references");
 
-    const indices = references.spans.map(r => r.startIndex).sort();
+    const indices = references.references.map(r => r.span.startIndex).sort();
     expectedReferenceIndices = expectedReferenceIndices.sort();
 
     assert.deepStrictEqual(indices, expectedReferenceIndices);

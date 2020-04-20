@@ -16,11 +16,11 @@ const DEBUG_BREAK_AFTER_DIAGNOSTICS_COMPLETE = false;
 import * as assert from "assert";
 import * as fs from 'fs';
 import * as path from 'path';
-import { commands, Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument, window, workspace } from "vscode";
+import { Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument } from "vscode";
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
-import { getTempFilePath } from "./getTempFilePath";
 import { stringify } from "./stringify";
+import { TempDocument, TempEditor, TempFile } from "./TempFile";
 
 export const diagnosticsTimeout = 2 * 60 * 1000; // CONSIDER: Use this long timeout only for first test, or for suite setup
 export const testFolder = path.join(__dirname, '..', '..', '..', 'test');
@@ -48,6 +48,8 @@ export interface IDeploymentParameterDefinition {
     };
     maxLength?: number;
     minLength?: number;
+    maxValue?: number;
+    minValue?: number;
     defaultValue?: number | unknown[] | string | {};
     allowedValues?: (number | unknown[] | string | {})[];
 }
@@ -75,6 +77,18 @@ export interface IDeploymentNamespaceDefinition {
     };
 }
 
+export interface IDeploymentParameterValue {
+    value: unknown;
+}
+
+export interface IDeploymentParametersFile {
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#" | "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#";
+    contentVersion: string;
+    parameters?: {
+        [key: string]: IDeploymentParameterValue;
+    };
+}
+
 export interface IDeploymentTemplate {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#" | "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
     | string;
@@ -98,6 +112,29 @@ export interface IDeploymentTemplate {
     functions?: IDeploymentNamespaceDefinition[];
 }
 
+export interface IPartialDeploymentTemplate {
+    "$schema"?: "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#" | "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
+    | string;
+    contentVersion?: string;
+    apiProfile?: string;
+    parameters?: {
+        [key: string]: Partial<IDeploymentParameterDefinition>;
+    };
+    variables?: {
+        copy?: {
+            name: string;
+            count: number;
+            input: string | {};
+        }[];
+        [key: string]: number | unknown[] | string | {} | undefined;
+    };
+    resources?: IPartialDeploymentTemplateResource[];
+    outputs?: {
+        [key: string]: Partial<IDeploymentOutput>;
+    };
+    functions?: Partial<IDeploymentNamespaceDefinition>[];
+}
+
 export const defaultArmSchema = "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#";
 
 export const minimalDeploymentTemplate: IDeploymentTemplate = {
@@ -112,11 +149,37 @@ export interface IDeploymentTemplateResource {
     type: string;
     name: string;
     apiVersion: string;
-    location: string;
+    location?: string;
     dependsOn?: string[];
-    tags?: { [key: string]: string };
+    tags?: { [key: string]: string } | string;
+    properties?: { [key: string]: unknown };
+    resources?: IDeploymentTemplateChildResource[];
+    [key: string]: unknown;
+}
+
+export interface IDeploymentTemplateChildResource {
+    // tslint:disable-next-line:no-reserved-keywords
+    type: string;
+    name: string;
+    apiVersion: string;
+    location?: string;
+    dependsOn?: string[];
+    tags?: { [key: string]: string } | string;
     properties?: { [key: string]: unknown };
     resources?: IDeploymentTemplateResource[];
+    [key: string]: unknown;
+}
+
+export interface IPartialDeploymentTemplateResource {
+    // tslint:disable-next-line:no-reserved-keywords
+    type?: string;
+    name?: string;
+    apiVersion?: string;
+    location?: string;
+    dependsOn?: string[];
+    tags?: { [key: string]: string } | string;
+    properties?: { [key: string]: unknown };
+    resources?: IPartialDeploymentTemplateResource[];
     [key: string]: unknown;
 }
 
@@ -278,7 +341,8 @@ export async function getDiagnosticsForTemplate(
     options?: IGetDiagnosticsOptions
 ): Promise<Diagnostic[]> {
     let templateContents: string | undefined;
-    let fileToDelete: string | undefined;
+    let tempPathSuffix: string = '';
+
     // tslint:disable-next-line: strict-boolean-expressions
     options = options || {};
 
@@ -287,6 +351,7 @@ export async function getDiagnosticsForTemplate(
             // It's a filename
             let sourcePath = path.join(testFolder, templateContentsOrFileName);
             templateContents = fs.readFileSync(sourcePath).toString();
+            tempPathSuffix = path.basename(templateContentsOrFileName, path.extname(templateContentsOrFileName));
         } else {
             // It's a string
             templateContents = templateContentsOrFileName;
@@ -307,28 +372,15 @@ export async function getDiagnosticsForTemplate(
         templateContents = newContents;
     }
 
-    // Write to temp file
-    let tempPath = getTempFilePath();
-    fs.writeFileSync(tempPath, templateContents);
-    fileToDelete = tempPath;
+    const tempFile = new TempFile(templateContents, tempPathSuffix);
+    const document = new TempDocument(tempFile);
+    const editor = new TempEditor(document);
+    await editor.open();
 
-    let doc = await workspace.openTextDocument(tempPath);
-    await window.showTextDocument(doc);
-
-    let diagnostics: Diagnostic[] = await getDiagnosticsForDocument(doc, options);
+    let diagnostics: Diagnostic[] = await getDiagnosticsForDocument(document.realDocument, options);
     assert(diagnostics);
 
-    // NOTE: Even though we request the editor to be closed,
-    // there's no way to request the document actually be closed,
-    //   and when you open it via an API, it doesn't close for a while,
-    //   so the diagnostics won't go away
-    // See https://github.com/Microsoft/vscode/issues/43056
-    await commands.executeCommand('workbench.action.closeAllEditors');
-
-    if (fileToDelete) {
-        fs.unlinkSync(fileToDelete);
-    }
-
+    await editor.dispose();
     return diagnostics;
 }
 

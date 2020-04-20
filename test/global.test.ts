@@ -5,7 +5,7 @@
 
 import * as mocha from 'mocha';
 import * as vscode from 'vscode';
-import { configKeys, configPrefix, ext, languageId } from "../extension.bundle";
+import { armTemplateLanguageId, configKeys, configPrefix, ext } from "../extension.bundle";
 import { displayCacheStatus, packageCache } from './support/clearCache';
 import { delay } from "./support/delay";
 import { useTestFunctionMetadata } from "./TestData";
@@ -41,7 +41,7 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, true, vscode.ConfigurationTarget.Global);
     // ... Add {'*.azrm':'arm-template'} to file.assocations (so colorization tests use the correct grammar, since _workbench.captureSyntaxTokens doesn't actually load anything into an editor)
     let fileAssociations = previousSettings.fileAssociations = vscode.workspace.getConfiguration('files').get<{}>('associations');
-    let newAssociations = Object.assign({}, fileAssociations, { '*.azrm': languageId });
+    let newAssociations = Object.assign({}, fileAssociations, { '*.azrm': armTemplateLanguageId });
     vscode.workspace.getConfiguration('files', null).update('associations', newAssociations, vscode.ConfigurationTarget.Global);
 
     await delay(1000); // Give vscode time to update the setting

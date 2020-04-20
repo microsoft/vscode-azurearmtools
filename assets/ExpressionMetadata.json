@@ -202,7 +202,10 @@
             "expectedUsage": "extensionResourceId(resourceId, resourceType, resourceName1, [resourceName2]...)",
             "description": "Returns the unique resource identifier of an extension resource. The resourceId parameter may be a resourceId of any scope or resourceId function. You use this function to create a resourceId for a given resource as required by a property value.",
             "minimumArguments": 3,
-            "maximumArguments": null
+            "maximumArguments": null,
+            "behaviors": [
+                "usesResourceIdCompletions"
+            ]
         },
         {
             "name": "first",
@@ -618,7 +621,10 @@
             "expectedUsage": "resourceId([subscriptionId], [resourceGroupName], resourceType, resourceName1, [resourceName2]...)",
             "description": "Returns the unique resource identifier of a resource group scoped resource. You use this function to create a resourceId for a given resource as required by a property value.",
             "minimumArguments": 2,
-            "maximumArguments": null
+            "maximumArguments": null,
+            "behaviors": [
+                "usesResourceIdCompletions"
+            ]
         },
         {
             "name": "skip",
@@ -681,7 +687,10 @@
             "expectedUsage": "subscriptionResourceId([subscriptionId], resourceType, resourceName1, [resourceName2]...)",
             "description": "Returns the unique resource identifier of a subscription scoped resource. You use this function to create a resourceId for a given resource as required by a property value.",
             "minimumArguments": 2,
-            "maximumArguments": null
+            "maximumArguments": null,
+            "behaviors": [
+                "usesResourceIdCompletions"
+            ]
         },
         {
             "name": "substring",
@@ -702,7 +711,10 @@
             "expectedUsage": "tenantResourceId(resourceType, resourceName1, [resourceName2]...)",
             "description": "Returns the unique resource identifier of a tenant scoped resource. You use this function to create a resourceId for a given resource as required by a property value.",
             "minimumArguments": 2,
-            "maximumArguments": null
+            "maximumArguments": null,
+            "behaviors": [
+                "usesResourceIdCompletions"
+            ]
         },
         {
             "name": "toLower",

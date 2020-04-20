@@ -10,10 +10,10 @@ import { ProgressLocation, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
 import { dotnetAcquire, ensureDotnetDependencies } from '../acquisition/dotnetAcquisition';
-import { configKeys, configPrefix, dotnetVersion, languageFriendlyName, languageId, languageServerFolderName, languageServerName } from '../constants';
+import { armTemplateLanguageId, configKeys, configPrefix, dotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName } from '../constants';
 import { ext } from '../extensionVariables';
 import { assert } from '../fixed_assert';
-import { armDeploymentDocumentSelector } from '../supported';
+import { templateDocumentSelector } from '../supported';
 import { WrappedErrorHandler } from './WrappedErrorHandler';
 
 const languageServerDllName = 'Microsoft.ArmLanguageServer.dll';
@@ -115,7 +115,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
 
         // Options to control the language client
         let clientOptions: LanguageClientOptions = {
-            documentSelector: armDeploymentDocumentSelector,
+            documentSelector: templateDocumentSelector,
             diagnosticCollectionName: `${languageServerName} diagnostics`,
             outputChannel: ext.outputChannel, // Use the same output channel as the extension does
             revealOutputChannelOn: RevealOutputChannelOn.Error,
@@ -133,7 +133,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         ext.outputChannel.appendLine(`Client options:${os.EOL}${JSON.stringify(clientOptions, undefined, 2)}`);
         ext.outputChannel.appendLine(`Server options:${os.EOL}${JSON.stringify(serverOptions, undefined, 2)}`);
         let client: LanguageClient = new LanguageClient(
-            languageId,
+            armTemplateLanguageId,
             languageFriendlyName, // Used in the Output window combobox
             serverOptions,
             clientOptions
