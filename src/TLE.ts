@@ -120,6 +120,10 @@ export class StringValue extends Value {
         return new language.Span(this.getSpan().startIndex + 1, this.length - (this.hasCloseQuote() ? 2 : 1));
     }
 
+    public get unquotedValue(): string {
+        return this.quotedValue.slice(1, this.length - (this.hasCloseQuote() ? 1 : 0));
+    }
+
     public contains(characterIndex: number): boolean {
         return this.getSpan().contains(characterIndex, language.Contains.extended);
     }
@@ -158,8 +162,12 @@ export class StringValue extends Value {
         visitor.visitString(this);
     }
 
-    public toString(): string {
+    public get quotedValue(): string {
         return this._token.stringValue;
+    }
+
+    public toString(): string {
+        return this.quotedValue;
     }
 }
 

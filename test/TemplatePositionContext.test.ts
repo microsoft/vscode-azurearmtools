@@ -484,7 +484,7 @@ suite("TemplatePositionContext", () => {
             let expectedNames = expectedItems.map(item => typeof item === 'string' ? item : item.label);
             assert.deepStrictEqual(actualNames, expectedNames, "Names in the completion items did not match");
 
-            assert.deepStrictEqual(actualItems, expectedItems);
+            assert.deepEqual(actualItems, expectedItems);
         }
 
         // NOTE: We are testing against test metadata, not the real data

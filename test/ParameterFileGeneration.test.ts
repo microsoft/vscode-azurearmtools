@@ -82,7 +82,7 @@ suite("parameterFileGeneration tests", () => {
                     }
                 },
                 `{
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "p1": {
@@ -98,7 +98,7 @@ suite("parameterFileGeneration tests", () => {
                 {
                 },
                 `{
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
     }
@@ -124,7 +124,7 @@ suite("parameterFileGeneration tests", () => {
                     }
                 },
                 `{
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "p1": {

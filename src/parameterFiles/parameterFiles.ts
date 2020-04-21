@@ -406,6 +406,8 @@ export function considerQueryingForParameterFile(mapping: DeploymentFileMapping,
     const suggestions = await findSuggestedParameterFiles(document.uri);
     const closeMatches = suggestions.filter(pf => pf.isCloseNameMatch);
     actionContext.telemetry.measurements.closeMatches = closeMatches.length;
+    actionContext.telemetry.measurements.totalFound = suggestions.length;
+
     // Take the shortest as the most likely best match
     const closestMatch: IPossibleParameterFile | undefined = closeMatches.length > 0 ? closeMatches.sort(pf => -pf.uri.fsPath.length)[0] : undefined;
     if (!closestMatch) {

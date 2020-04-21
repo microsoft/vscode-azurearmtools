@@ -4,6 +4,10 @@
 
 import { ExpressionType } from "./ExpressionType";
 
+export enum Behaviors {
+    usesResourceIdCompletions = "usesResourceIdCompletions"
+}
+
 /**
  * Metadata for a TLE (Template Language Expression) function.
  */
@@ -17,6 +21,7 @@ export interface IFunctionMetadata {
     maximumArguments: number | undefined;   // Undefined if number of args is unlimited
     returnType: ExpressionType | undefined; // Undefined if unknown
     returnValueMembers: string[]; // Used if returnType == 'object' or 'secureobject'
+    hasBehavior(behavior: Behaviors): boolean;
 }
 
 export interface IFunctionParameterMetadata {

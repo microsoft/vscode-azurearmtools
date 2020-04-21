@@ -55,7 +55,7 @@ export function createParameterFileContents(template: DeploymentTemplate, tabSiz
     /* e.g.
 
     {
-        "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+        "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
         "contentVersion": "1.0.0.0",
         "parameters": {
             "parameter1": {
@@ -73,7 +73,7 @@ export function createParameterFileContents(template: DeploymentTemplate, tabSiz
 
     // tslint:disable-next-line: prefer-template
     let contents = `{` + ext.EOL +
-        `${tab}"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",` + ext.EOL +
+        `${tab}"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",` + ext.EOL +
         `${tab}"contentVersion": "1.0.0.0",` + ext.EOL +
         `${tab}"parameters": {` + ext.EOL;
 
