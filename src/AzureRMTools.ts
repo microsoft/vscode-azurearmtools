@@ -114,17 +114,15 @@ export class AzureRMTools {
             // tslint:disable-next-line:typedef
             vscode.languages.registerCodeActionsProvider(templateOrParameterDocumentSelector,
                 // tslint:disable-next-line:align
-                new RenameCodeActionProvider(async (document, position) => await this.getPositionContext(document, position, Cancellation.cantCancel)), {
+                new RenameCodeActionProvider(async (document, position): Promise<PositionContext | undefined> => await this.getPositionContext(document, position, Cancellation.cantCancel)), {
                 providedCodeActionKinds: [
                     vscode.CodeActionKind.RefactorRewrite
                 ]
             }));
-
         // For telemetry
         registerCommand("azurerm-vscode-tools.completion-activated", (actionContext: IActionContext, args: object) => {
             onCompletionActivated(actionContext, <{ [key: string]: string }>args);
         });
-
         registerCommand("azurerm-vscode-tools.treeview.goto", (_actionContext: IActionContext, range: vscode.Range) => jsonOutline.goToDefinition(range));
         registerCommand('azurerm-vscode-tools.uninstallDotnet', async () => {
             await stopArmLanguageServer();
