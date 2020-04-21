@@ -119,6 +119,7 @@ export class AzureRMTools {
                     vscode.CodeActionKind.RefactorRewrite
                 ]
             }));
+
         // For telemetry
         registerCommand("azurerm-vscode-tools.completion-activated", (actionContext: IActionContext, args: object) => {
             onCompletionActivated(actionContext, <{ [key: string]: string }>args);
