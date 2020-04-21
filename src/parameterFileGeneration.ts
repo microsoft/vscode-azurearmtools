@@ -15,7 +15,7 @@ import { IParameterDefinition } from './IParameterDefinition';
 import { assertNever } from './util/assertNever';
 import { indentMultilineString, unindentMultilineString } from './util/multilineStrings';
 
-export const defaultTabSize: number = 4;
+export const defaultTabSize: number = 1;
 
 export async function queryCreateParameterFile(actionContext: IActionContext, templateUri: Uri, template: DeploymentTemplate, tabSize: number = defaultTabSize): Promise<Uri> {
     const all = <QuickPickItem>{ label: "All parameters" };
@@ -129,7 +129,7 @@ export function createParameterFromTemplateParameter(template: DeploymentTemplat
 
 function getDefaultValueFromType(propType: ExpressionType | undefined, indent: number): string {
     const comment = "// TODO: Fill in parameter value";
-    const tab = ' '.repeat(indent);
+    const tab = '\t'.repeat(indent);
 
     switch (propType) {
         case "array":
@@ -168,5 +168,5 @@ function createParameters(template: DeploymentTemplate, tabSize: number, onlyReq
 }
 
 function makeIndent(tabSize: number): string {
-    return ' '.repeat(tabSize);
+    return '\t'.repeat(tabSize);
 }

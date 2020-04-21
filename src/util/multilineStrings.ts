@@ -9,7 +9,7 @@ import { ext } from "../extensionVariables";
  */
 export function indentMultilineString(multilineText: string, indent: number): string {
     const lines = splitIntoLines(multilineText);
-    const indentation: string = ' '.repeat(indent);
+    const indentation: string = '\t'.repeat(indent);
     return indentation + lines.join(ext.EOL + indentation);
 }
 

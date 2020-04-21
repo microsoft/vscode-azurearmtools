@@ -224,7 +224,7 @@ export class DeploymentParameters extends DeploymentDocument {
             if (this.getDocumentPosition(insertIndex).line
                 === this.getDocumentPosition(this.parametersObjectValue.span.endIndex).line
             ) {
-                insertText += EOL + ' '.repeat(defaultTabSize);
+                insertText += EOL + '\t'.repeat(defaultTabSize);
             }
 
             // Add comma before?
