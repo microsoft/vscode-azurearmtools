@@ -30,10 +30,8 @@ suite("Acceptance validation tests (all sources)", () => {
                     "Warning: The parameter 'backupContainerName' is never used. (arm-template (expressions)) [47,8-47,29]",
 
                     // Unrelated errors:
-                    'Warning: Value must be one of the following values: "2016-05-15" (arm-template (schema)) [240,12-240,24]',
-                    'Warning: OneOf (Require 1 match, following 2 not matched):\r\n    Value must be one of the following values: "2016-12-01"\r\n    string (arm-template (schema)) [273,12-273,24]',
-                    'Warning: Value must be one of the following values: "2016-12-01" (arm-template (schema)) [293,28-293,40]',
-                    'Warning: Exactly 1 match required, but found more than 1 (arm-template (schema)) [324,28-324,40]'
+                    "Warning: For full schema validation, consider updating the value to one of the following: \"2016-05-15\". It is possible that the current resource version is valid but that a schema has not been generated. For more information see https://aka.ms/arm-tools-apiversion. (arm-template (schema)) [240,12-240,24]",
+                    "Warning: Value must conform to exactly one of the associated schemas\n|   For full schema validation, consider updating the value to one of the following: \"2016-12-01\". It is possible that the current resource version is valid but that a schema has not been generated. For more information see https://aka.ms/arm-tools-apiversion. at #/resources/6/properties/template/resources/1/apiVersion\n|   or\n|   Value must be one of the following types: string\n|   For full schema validation, consider updating the value to one of the following: \"2016-12-01\". It is possible that the current resource version is valid but that a schema has not been generated. For more information see https://aka.ms/arm-tools-apiversion. at #/resources/6/properties/template/resources/1/apiVersion (arm-template (schema)) [273,12-273,24]",
                 ])
     );
 
