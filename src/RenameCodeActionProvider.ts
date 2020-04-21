@@ -1,8 +1,8 @@
 
 import * as vscode from 'vscode';
-import { DefinitionKind } from './INamedDefinition';
 import { PositionContext } from './PositionContext';
-const COMMAND = 'editor.action.rename';
+import { canRename } from './util/canRename';
+const command = 'editor.action.rename';
 export class RenameCodeActionProvider implements vscode.CodeActionProvider {
 
     constructor(private action: (document: vscode.TextDocument, position: vscode.Position) => Promise<PositionContext | undefined>) {
@@ -14,7 +14,7 @@ export class RenameCodeActionProvider implements vscode.CodeActionProvider {
             return;
         }
         const referenceSiteInfo = pc.getReferenceSiteInfo(true);
-        if (!referenceSiteInfo || referenceSiteInfo.definition.definitionKind === DefinitionKind.BuiltinFunction) {
+        if (!referenceSiteInfo || canRename(referenceSiteInfo)) {
             return;
         }
         return [
@@ -24,7 +24,7 @@ export class RenameCodeActionProvider implements vscode.CodeActionProvider {
 
     private createCommand(): vscode.CodeAction {
         const action = new vscode.CodeAction('Rename...', vscode.CodeActionKind.RefactorRewrite);
-        action.command = { command: COMMAND, title: '' };
+        action.command = { command: command, title: '' };
         return action;
     }
 }

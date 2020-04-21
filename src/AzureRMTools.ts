@@ -18,7 +18,6 @@ import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
 import { Histogram } from "./Histogram";
 import * as Hover from './Hover';
-import { DefinitionKind } from "./INamedDefinition";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 import * as Json from "./JSON";
 import * as language from "./Language";
@@ -42,6 +41,7 @@ import { TemplatePositionContext } from "./TemplatePositionContext";
 import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedBuiltinFunctionIssue } from "./UnrecognizedFunctionIssues";
+import { canRename } from "./util/canRename";
 import { normalizePath } from "./util/normalizePath";
 import { Cancellation } from "./util/throwOnCancel";
 import { onCompletionActivated, toVsCodeCompletionItem } from "./util/toVsCodeCompletionItem";
@@ -112,7 +112,9 @@ export class AzureRMTools {
         context.subscriptions.push(vscode.window.registerTreeDataProvider("azurerm-vscode-tools.template-outline", jsonOutline));
         context.subscriptions.push(
             // tslint:disable-next-line:typedef
-            vscode.languages.registerCodeActionsProvider(armTemplateLanguageId, new RenameCodeActionProvider(async (document, position) => await this.getPositionContext(document, position, Cancellation.cantCancel)), {
+            vscode.languages.registerCodeActionsProvider(templateOrParameterDocumentSelector,
+                // tslint:disable-next-line:align
+                new RenameCodeActionProvider(async (document, position) => await this.getPositionContext(document, position, Cancellation.cantCancel)), {
                 providedCodeActionKinds: [
                     vscode.CodeActionKind.RefactorRewrite
                 ]
@@ -1233,9 +1235,9 @@ export class AzureRMTools {
             if (!token.isCancellationRequested && pc) {
                 // Make sure the kind of item being renamed is valid
                 const referenceSiteInfo: IReferenceSite | undefined = pc.getReferenceSiteInfo(true);
-                if (referenceSiteInfo && referenceSiteInfo.definition.definitionKind === DefinitionKind.BuiltinFunction) {
+                if (referenceSiteInfo && canRename(referenceSiteInfo)) {
                     actionContext.errorHandling.suppressDisplay = true;
-                    throw new Error("Built-in functions cannot be renamed.");
+                    throw new Error(canRename(referenceSiteInfo));
                 }
 
                 if (referenceSiteInfo) {
@@ -1263,8 +1265,8 @@ export class AzureRMTools {
                 // Make sure the kind of item being renamed is valid
                 const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
                 const referenceSiteInfo: IReferenceSite | undefined = pc.getReferenceSiteInfo(true);
-                if (referenceSiteInfo && referenceSiteInfo.definition.definitionKind === DefinitionKind.BuiltinFunction) {
-                    throw new Error("Built-in functions cannot be renamed.");
+                if (referenceSiteInfo && canRename(referenceSiteInfo)) {
+                    throw new Error(canRename(referenceSiteInfo));
                 }
 
                 const referenceList: ReferenceList | undefined = pc.getReferences();
