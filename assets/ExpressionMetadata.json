@@ -102,7 +102,7 @@
         {
             "name": "dateTimeAdd",
             "expectedUsage": "dateTimeAdd(base, duration, [format])",
-            "description": "Adds a time duration to a base datetime value.",
+            "description": "Adds a time duration to a base value. ISO 8601 format is expected.",
             "minimumArguments": 2,
             "maximumArguments": 3
         },
