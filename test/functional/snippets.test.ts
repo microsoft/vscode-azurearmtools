@@ -21,30 +21,32 @@ import { getTempFilePath } from "../support/getTempFilePath";
 import { testWithLanguageServer } from '../support/testWithLanguageServer';
 
 let resourceTemplate: string = `{
-    "resources": [
-        // Insert here: resource
-    ],
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "variables": {
-        // Insert here: variable
-    },
-    "parameters": {
-        // Insert here: parameter
-    },
-    "outputs": {
-        // Insert here: output
-    },
-    "functions": [{
-        "namespace": "udf",
-        "members": {
-            // Insert here: user function
-        }
-    }]
+\t"resources": [
+\t\t//Insert here: resource
+\t],
+\t"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+\t"contentVersion": "1.0.0.0",
+\t"variables": {
+\t\t//Insert here: variable
+\t},
+\t"parameters": {
+\t\t//Insert here: parameter
+\t},
+\t"outputs": {
+\t\t//Insert here: output
+\t},
+\t"functions": [
+\t\t{
+\t\t\t"namespace": "udf",
+\t\t\t"members": {
+\t\t\t\t//Insert here: user function
+\t\t\t}
+\t\t}
+\t]
 }`;
 
 let emptyTemplate: string = `
-// Insert here: empty
+//Insert here: empty
 `;
 
 //
@@ -75,24 +77,25 @@ const overrideTemplateForSnippet: { [name: string]: string } = {
     "Azure Resource Manager (ARM) Parameters Template": emptyTemplate,
 
     "User Function Namespace": `{
-        "resources": [],
-        "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-        "contentVersion": "1.0.0.0",
-        "functions": [
-            // Insert here: namespace
-        ]
-    }`
+\t"resources": [
+\t],
+\t"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+\t"contentVersion": "1.0.0.0",
+\t"functions": [
+\t\t//Insert here: namespace
+\t]
+}`
 };
 
 // Override where to insert the snippet during the test - default is to insert with the "Resources" section, at "Insert here: resource"
 const overrideInsertPosition: { [name: string]: string } = {
-    "Azure Resource Manager (ARM) Template": "// Insert here: empty",
-    "Azure Resource Manager (ARM) Parameters Template": "// Insert here: empty",
-    Variable: "// Insert here: variable",
-    Parameter: "// Insert here: parameter",
-    Output: "// Insert here: output",
-    "User Function": "// Insert here: user function",
-    "User Function Namespace": "// Insert here: namespace"
+    "Azure Resource Manager (ARM) Template": "//Insert here: empty",
+    "Azure Resource Manager (ARM) Parameters Template": "//Insert here: empty",
+    Variable: "//Insert here: variable",
+    Parameter: "//Insert here: parameter",
+    Output: "//Insert here: output",
+    "User Function": "//Insert here: user function",
+    "User Function Namespace": "//Insert here: namespace"
 };
 
 // Override expected errors/warnings for the snippet test - default is none
@@ -109,14 +112,12 @@ const overrideExpectedDiagnostics: { [name: string]: string[] } = {
         "The parameter 'parameter1' is never used."
     ],
     "User Function": [
-        "Template validation failed: The template function 'function-name' at line '19' and column '30' is not valid. The function name contains invalid characters '-'. Please see https://aka.ms/arm-template/#functions for usage details.",
-        "The user-defined function 'udf.function-name' is never used.",
-        "The parameter 'parameter-name' of function 'udf.function-name' is never used."
+        "The user-defined function 'udf.functionname' is never used.",
+        "The parameter 'parametername' of function 'udf.functionname' is never used."
     ],
     "User Function Namespace": [
-        "Template validation failed: The template function at line '7' and column '45' is not valid. The function namespace 'namespace-name' contains invalid characters '-'. Please see https://aka.ms/arm-template/#functions for usage details.",
-        "The user-defined function 'namespace-name.function-name' is never used.",
-        "The parameter 'parameter-name' of function 'namespace-name.function-name' is never used."
+        "The user-defined function 'namespacename.functionname' is never used.",
+        "The parameter 'parametername' of function 'namespacename.functionname' is never used."
     ],
     "Automation Certificate": [
         // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
@@ -381,10 +382,13 @@ suite("Snippets functional tests", () => {
         // tslint:disable-next-line: strict-boolean-expressions
         const expectedDiagnostics = (overrideExpectedDiagnostics[snippetName] || []).sort();
         // tslint:disable-next-line: strict-boolean-expressions
-        const snippetInsertComment: string = overrideInsertPosition[snippetName] || "// Insert here: resource";
+        const snippetInsertComment: string = overrideInsertPosition[snippetName] || "//Insert here: resource";
         const snippetInsertIndex: number = template.indexOf(snippetInsertComment);
+        const snippetInsertLength: number = snippetInsertComment.length;
         assert(snippetInsertIndex >= 0, `Couldn't find location to insert snippet (looking for "${snippetInsertComment}")`);
-        const snippetInsertPos = getVSCodePositionFromPosition(new DeploymentTemplate(template, Uri.file("fake template")).getContextFromDocumentCharacterIndex(snippetInsertIndex, undefined).documentPosition);
+        const fakeDt = new DeploymentTemplate(template, Uri.file("fake template"));
+        const snippetInsertPos = getVSCodePositionFromPosition(fakeDt.getContextFromDocumentCharacterIndex(snippetInsertIndex, undefined).documentPosition);
+        const snippetInsertEndPos = getVSCodePositionFromPosition(fakeDt.getContextFromDocumentCharacterIndex(snippetInsertIndex + snippetInsertLength, undefined).documentPosition);
 
         const tempPath = getTempFilePath(`snippet ${snippetName}`, '.azrm');
 
@@ -406,7 +410,7 @@ suite("Snippets functional tests", () => {
             });
 
         // Insert snippet
-        window.activeTextEditor!.selection = new Selection(snippetInsertPos, snippetInsertPos);
+        window.activeTextEditor!.selection = new Selection(snippetInsertPos, snippetInsertEndPos);
         await delay(1);
 
         await commands.executeCommand('editor.action.insertSnippet', {
@@ -426,6 +430,11 @@ suite("Snippets functional tests", () => {
 
         let messages = diagnostics.map(d => d.message).sort();
         assert.deepStrictEqual(messages, expectedDiagnostics);
+
+        // Make sure formatting of the sippet is correct by formatting the document and seeing if it changes
+        await commands.executeCommand('editor.action.formatDocument');
+        const docTextAfterFormatting = window.activeTextEditor!.document.getText();
+        assert.deepStrictEqual(docTextAfterInsertion, docTextAfterFormatting, "Snippet is incorrectly formatted. Make sure to use \\t instead of spaces");
 
         // // NOTE: Even though we request the editor to be closed,
         // // there's no way to request the document actually be closed,
