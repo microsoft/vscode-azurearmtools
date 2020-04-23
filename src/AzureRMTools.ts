@@ -10,6 +10,7 @@ import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
+import { CompletionTriggerKind } from "vscode-languageclient";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import * as Completion from "./Completion";
 import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, extensionName, globalStateKeys } from "./constants";
@@ -710,7 +711,7 @@ export class AzureRMTools {
                 token: vscode.CancellationToken,
                 context: vscode.CompletionContext
             ): Promise<vscode.CompletionList | undefined> => {
-                return await this.onProvideCompletions(document, position, token);
+                return await this.onProvideCompletions(document, position, token, context);
             },
             resolveCompletionItem: (item: vscode.CompletionItem, token: vscode.CancellationToken): vscode.CompletionItem => {
                 return this.onResolveCompletionItem(item, token);
@@ -955,7 +956,12 @@ export class AzureRMTools {
         });
     }
 
-    private async onProvideCompletions(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList | undefined> {
+    private async onProvideCompletions(
+        document: vscode.TextDocument,
+        position: vscode.Position,
+        token: vscode.CancellationToken,
+        context: vscode.CompletionContext
+    ): Promise<vscode.CompletionList | undefined> {
         return await callWithTelemetryAndErrorHandling('provideCompletionItems', async (actionContext: IActionContext): Promise<vscode.CompletionList | undefined> => {
             actionContext.telemetry.suppressIfSuccessful = true;
             actionContext.errorHandling.suppressDisplay = true;
@@ -964,7 +970,10 @@ export class AzureRMTools {
 
             const pc: PositionContext | undefined = await this.getPositionContext(document, position, cancel);
             if (pc) {
-                const items: Completion.Item[] = pc.getCompletionItems();
+                const triggerCharacter = context.triggerKind === CompletionTriggerKind.TriggerCharacter
+                    ? context.triggerCharacter
+                    : undefined;
+                const items: Completion.Item[] = pc.getCompletionItems(triggerCharacter);
                 const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c));
                 ext.completionItemsSpy.postCompletionItemsResult(pc.document, items, vsCodeItems);
 

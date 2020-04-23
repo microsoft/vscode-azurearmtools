@@ -80,10 +80,10 @@ export class ParametersPositionContext extends PositionContext {
         return refInfo ? this.document.findReferencesToDefinition(refInfo.definition) : undefined;
     }
 
-    public getCompletionItems(): Completion.Item[] {
+    public getCompletionItems(triggerCharacter: string | undefined): Completion.Item[] {
         let completions: Completion.Item[] = [];
 
-        if (this.canAddPropertyHere) {
+        if (triggerCharacter === '' { this.canAddPropertyHere }) {
             completions.push(... this.getCompletionsForMissingParameters());
             completions.push(this.getCompletionForNewParameter());
         }
