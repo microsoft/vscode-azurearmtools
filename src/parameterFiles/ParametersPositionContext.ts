@@ -83,7 +83,7 @@ export class ParametersPositionContext extends PositionContext {
     public getCompletionItems(triggerCharacter: string | undefined): Completion.Item[] {
         let completions: Completion.Item[] = [];
 
-        if (triggerCharacter === '' { this.canAddPropertyHere }) {
+        if ((!triggerCharacter || triggerCharacter === '"') && this.canAddPropertyHere) { //asdf
             completions.push(... this.getCompletionsForMissingParameters());
             completions.push(this.getCompletionForNewParameter());
         }

@@ -10,7 +10,6 @@ import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
-import { CompletionTriggerKind } from "vscode-languageclient";
 import { uninstallDotnet } from "./acquisition/dotnetAcquisition";
 import * as Completion from "./Completion";
 import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, extensionName, globalStateKeys } from "./constants";
@@ -970,7 +969,7 @@ export class AzureRMTools {
 
             const pc: PositionContext | undefined = await this.getPositionContext(document, position, cancel);
             if (pc) {
-                const triggerCharacter = context.triggerKind === CompletionTriggerKind.TriggerCharacter
+                const triggerCharacter = context.triggerKind === vscode.CompletionTriggerKind.TriggerCharacter
                     ? context.triggerCharacter
                     : undefined;
                 const items: Completion.Item[] = pc.getCompletionItems(triggerCharacter);
