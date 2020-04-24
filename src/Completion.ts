@@ -18,6 +18,7 @@ export class Item {
     public readonly span: language.Span;
     public readonly kind: CompletionKind;
     public readonly detail: string | undefined;
+    public readonly detailCode: string | undefined;
     public readonly documention: string | MarkdownString | undefined;
     public readonly snippetName: string | undefined;
     public readonly additionalEdits: { span: language.Span; insertText: string }[] | undefined;
@@ -39,6 +40,10 @@ export class Item {
              * full text that will be inserted (if not in label)
              */
             detail?: string;
+            /**
+             * asdf
+             */
+            detailCode?: string;
             /**
              * A human-readable string that represents a doc-comment.
              */
@@ -68,6 +73,7 @@ export class Item {
         this.span = options.span;
         this.kind = options.kind;
         this.detail = options.detail;
+        //asdf this.detailCode = options.detailCode;
         this.documention = options.documentation;
         this.snippetName = options.snippetName;
         this.additionalEdits = options.additionalEdits;

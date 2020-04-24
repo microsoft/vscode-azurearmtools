@@ -460,8 +460,8 @@ suite("TemplatePositionContext", () => {
                 const dt = new DeploymentTemplate(documentText, fakeId);
                 const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex(index, undefined);
 
-                let completionItems: Completion.Item[] = pc.getCompletionItems();
-                const completionItems2: Completion.Item[] = pc.getCompletionItems();
+                let completionItems: Completion.Item[] = pc.getCompletionItems(undefined);
+                const completionItems2: Completion.Item[] = pc.getCompletionItems(undefined);
                 assert.deepStrictEqual(completionItems, completionItems2, "Got different results");
 
                 compareTestableCompletionItems(completionItems, expectedCompletionItems);

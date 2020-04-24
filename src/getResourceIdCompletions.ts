@@ -10,6 +10,7 @@ import { DeploymentTemplate } from "./DeploymentTemplate";
 import { assert } from "./fixed_assert";
 import { Behaviors } from "./IFunctionMetadata";
 import * as Json from "./JSON";
+import { PositionContext } from "./PositionContext";
 import { TemplatePositionContext } from "./TemplatePositionContext";
 import * as TLE from "./TLE";
 
@@ -25,6 +26,8 @@ export function getResourceIdCompletions(
     funcCall: TLE.FunctionCallValue,
     parentStringToken: Json.Token
 ): Completion.Item[] {
+    assert(parentStringToken.type === Json.TokenType.QuotedString, "parentStringToken should be a string token");
+
     if (!funcCall.isUserDefinedFunction && funcCall.name) {
         const functionMetadata = AzureRMAssets.getFunctionMetadataFromName(funcCall.name);
         if (functionMetadata?.hasBehavior(Behaviors.usesResourceIdCompletions)) {
@@ -53,7 +56,7 @@ function getCompletions(
     if (argIndexAtCursor === 0) {
         // For the first argument, we always provide completions for the list of resource types,
         // since we don't know if the user is adding optional args to the call
-        return getResourceTypeCompletions(funcCall, pc, resourceIdCompletions, argIndexAtCursor);
+        return getResourceTypeCompletions(funcCall, pc, resourceIdCompletions, argIndexAtCursor, parentStringToken);
     }
 
     const allResources = getResourcesInfo(pc.document);
@@ -69,15 +72,25 @@ function getCompletions(
     if (!argWithResourceType) {
         // None of the previous arguments matched a known resource type, so the current argument might
         // be intended to be a resource type.
-        return getResourceTypeCompletions(funcCall, pc, resourceIdCompletions, argIndexAtCursor);
+        return getResourceTypeCompletions(funcCall, pc, resourceIdCompletions, argIndexAtCursor, parentStringToken);
     }
 
     // Only look at resources with that type
     let filteredResources = filterResourceInfosByType(allResources, argWithResourceType.typeExpression);
 
     // Previous parts of the name must also match what is currently specified in the function call
+
+    // argIndex = index of the argument where the cursor is (including any optional parameters), e.g.:
+    //   resourceId('subscriptionId', 'resourceGroupName', 'Microsoft.Fake/resource', 'name1', 'name2')
+    // If the cursor is on 'name2', then argIndex = 4
     let argIndex = argWithResourceType.argIndex + 1;
+
+    // nameSegmentIndex = index of the name's segment where the cursor is, e.g.:
+    //   resourceId('subscriptionId', 'resourceGroupName', 'Microsoft.Fake/resource', 'name1', 'name2')
+    // If the cursor is on 'name2', then nameSegmentIndex = 1 (the 2nd segment of the name, which is after
+    //   all optional args and after the resource type)
     let nameSegmentIndex = 0;
+
     // tslint:disable-next-line:no-constant-condition
     while (true) {
         assert(argIndex <= argIndexAtCursor);
@@ -101,7 +114,9 @@ function getCompletions(
         const insertText = info.nameExpressions[nameSegmentIndex];
         if (insertText) {
             const label = insertText;
-            const span = new Language.Span(pc.documentCharacterIndex, 0);
+
+            let nameSegmentArgument = funcCall.argumentExpressions[argIndex];
+            let span = getReplacementSpan(pc, nameSegmentArgument, parentStringToken);
 
             results.push(new Completion.Item({
                 label,
@@ -189,7 +204,8 @@ function getResourceTypeCompletions(
     funcCall: TLE.FunctionCallValue,
     pc: TemplatePositionContext,
     resourceIdCompletions: { maxOptionalParameters: number },
-    argumentIndex: number
+    argumentIndex: number,
+    parentStringToken: Json.Token
 ): Completion.Item[] {
     if (argumentIndex > resourceIdCompletions.maxOptionalParameters) {
         // The resource type must be the argument after the optional arguments.
@@ -201,7 +217,8 @@ function getResourceTypeCompletions(
     for (let info of getResourcesInfo(pc.document)) {
         const insertText = getFullTypeName(info);
         const label = insertText;
-        const span = new Language.Span(pc.documentCharacterIndex, 0);
+        let typeArgument = funcCall.argumentExpressions[argumentIndex];
+        let span = getReplacementSpan(pc, typeArgument, parentStringToken);
 
         results.push(new Completion.Item({
             label,
@@ -223,6 +240,12 @@ function getResourceTypeCompletions(
     }
 
     return Completion.Item.dedupeByLabel(results);
+}
+
+function getReplacementSpan(pc: PositionContext, argument: TLE.Value | undefined, parentStringToken: Json.Token): Language.Span {
+    let span = argument?.getSpan()?.translate(parentStringToken.span.startIndex)
+        ?? pc.emptySpanAtDocumentCharacterIndex;
+    return span;
 }
 
 /**

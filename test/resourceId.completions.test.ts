@@ -21,9 +21,10 @@ suite("ResourceId completions", () => {
         expressionWithBang: string,
         // Can either be an array of completion names, or an array of
         //   [completion name, insert text] tuples
-        expectedCompletions: string[]
+        expectedCompletions: string[],
+        addFunctionCompletions: boolean = true
     ): void {
-        createResourceIdCompletionsTest2(undefined, template, expressionWithBang, expectedCompletions);
+        createResourceIdCompletionsTest2(undefined, template, expressionWithBang, expectedCompletions, addFunctionCompletions);
     }
 
     function createResourceIdCompletionsTest2(
@@ -32,7 +33,8 @@ suite("ResourceId completions", () => {
         expressionWithBang: string,
         // Can either be an array of completion names, or an array of
         //   [completion name, insert text] tuples
-        expectedCompletions: string[]
+        expectedCompletions: string[],
+        addFunctionCompletions: boolean = true
     ): void {
         if (!("outputs" in template)) {
             template.outputs = {};
@@ -45,8 +47,11 @@ suite("ResourceId completions", () => {
             };
         }
 
-        // Always add default completions
-        expectedCompletions = [...expectedCompletions, ...defaultCompletions];
+        if (addFunctionCompletions) {
+            // Add default completions for built-in functions
+            expectedCompletions = [...expectedCompletions, ...defaultCompletions];
+        }
+
         createExpressionCompletionsTest(
             expressionWithBang,
             expectedCompletions,
@@ -1000,6 +1005,58 @@ suite("ResourceId completions", () => {
                 `resourceId('look', 'ma', 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), !)`,
                 [`parameters('eventSourceKeyName')`]
             );
+        });
+    });
+
+    /////////////////
+
+    suite("Completions within an existing argument", () => {
+        const template: Partial<IPartialDeploymentTemplate> = {
+            resources: [
+                {
+                    name: "name1a",
+                    type: "type1"
+                },
+                {
+                    name: "name1b",
+                    type: "type1"
+                },
+                {
+                    name: "name2",
+                    type: "type2"
+                }
+            ]
+        };
+
+        suite("First arg completions - existing resource type", () => {
+            createResourceIdCompletionsTest(
+                template,
+                `resourceId('!','name1')`,
+                [`'type1'`, `'type2'`],
+                false);
+            createResourceIdCompletionsTest(
+                template,
+                `resourceId('tp!e1','nam!')`,
+                [`'type1'`, `'type2'`],
+                false);
+        });
+
+        suite("Second arg completions - existing resource name", () => {
+            createResourceIdCompletionsTest(
+                template,
+                `resourceId('type1','!')`,
+                [`'name1a'`, `'name1b'`],
+                false);
+            createResourceIdCompletionsTest(
+                template,
+                `resourceId('type1','nam!')`,
+                [`'name1a'`, `'name1b'`],
+                false);
+            createResourceIdCompletionsTest(
+                template,
+                `resourceId('type1','nam!e1a')`,
+                [`'name1a'`, `'name1b'`],
+                false);
         });
     });
 });

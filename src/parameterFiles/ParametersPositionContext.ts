@@ -2,15 +2,19 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { EOL } from "os";
+import * as path from 'path';
 import * as Completion from "../Completion";
 import { DeploymentTemplate } from "../DeploymentTemplate";
+import { ext } from '../extensionVariables';
+import { assert } from "../fixed_assert";
 import * as language from "../Language";
 import { createParameterFromTemplateParameter } from "../parameterFileGeneration";
 import { IReferenceSite, PositionContext, ReferenceSiteKind } from "../PositionContext";
 import { ReferenceList } from "../ReferenceList";
 import * as TLE from '../TLE';
 import { DeploymentParameters } from "./DeploymentParameters";
+
+const EOL = ext.EOL;
 
 /**
  * Represents a position inside the snapshot of a deployment parameter file, plus all related information
@@ -126,13 +130,18 @@ export class ParametersPositionContext extends PositionContext {
                     continue;
                 }
 
-                // tslint:disable-next-line:prefer-template
                 const isRequired = !param.defaultValue;
-                const label = `${param.nameValue.quotedValue} ${isRequired ? "(required)" : "(optional)"}`;
+                const label = param.nameValue.quotedValue;
+                //const label = `${param.nameValue.quotedValue} ${isRequired ? "(required)" : "(optional)"}`;
                 const paramText = createParameterFromTemplateParameter(this._associatedTemplate, param);
                 let replacement = paramText;
-                const documentation = `Insert a value for parameter '${param.nameValue.unquotedValue}' from the template file"`;
-                const detail = paramText;
+                const documentation = `Insert a value for parameter "${param.nameValue.unquotedValue}" from template file "${path.basename(this._associatedTemplate.documentId.fsPath)}"`;
+                const detail = (isRequired ? "(required parameter)" : "(optional parameter)")
+                    + EOL
+                    + EOL
+                    + paramText;
+
+                //const detail = paramText;
 
                 completions.push(
                     this.createParameterCompletion(
@@ -140,7 +149,7 @@ export class ParametersPositionContext extends PositionContext {
                         replacement,
                         Completion.CompletionKind.DtResourceIdResType,
                         detail,
-                        documentation));
+                        `documentation: ${documentation}`));
             }
         }
 
@@ -154,8 +163,9 @@ export class ParametersPositionContext extends PositionContext {
         detail: string,
         documentation: string
     ): Completion.Item {
-        // Replacement span
-        let span = this.determineCompletionSpan();
+        // The completion span is the entire JSON string
+        assert(!!this.jsonToken, "Should have a token here");
+        const span = this.jsonToken?.span ?? this.emptySpanAtDocumentCharacterIndex;
 
         // Comma after?
         if (this.needsCommaAfterCompletion()) {
@@ -174,22 +184,6 @@ export class ParametersPositionContext extends PositionContext {
             documentation,
             additionalEdits: commaEdit ? [commaEdit] : undefined
         });
-    }
-
-    private determineCompletionSpan(): language.Span {
-        let span = this.emptySpanAtDocumentCharacterIndex;
-
-        // If the completion is triggered inside double quotes, or from a trigger character of a double quotes (
-        // which ends up adding '""' first, then triggering the completion inside the quotes), then
-        // the insert range needs to subsume those quotes so they get deleted when the new param is inserted.
-        if (this.document.documentText.charAt(this.documentCharacterIndex - 1) === '"') {
-            span = span.extendLeft(1);
-        }
-        if (this.document.documentText.charAt(this.documentCharacterIndex) === '"') {
-            span = span.extendRight(1);
-        }
-
-        return span;
     }
 
     private needsCommaAfterCompletion(): boolean {
