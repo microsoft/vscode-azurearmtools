@@ -87,7 +87,7 @@ export class ParametersPositionContext extends PositionContext {
     public getCompletionItems(triggerCharacter: string | undefined): Completion.Item[] {
         let completions: Completion.Item[] = [];
 
-        if ((!triggerCharacter || triggerCharacter === '"') && this.canAddPropertyHere) { //asdf
+        if ((!triggerCharacter || triggerCharacter === '"') && this.canAddPropertyHere) {
             completions.push(... this.getCompletionsForMissingParameters());
             completions.push(this.getCompletionForNewParameter());
         }
@@ -132,7 +132,6 @@ export class ParametersPositionContext extends PositionContext {
 
                 const isRequired = !param.defaultValue;
                 const label = param.nameValue.quotedValue;
-                //const label = `${param.nameValue.quotedValue} ${isRequired ? "(required)" : "(optional)"}`;
                 const paramText = createParameterFromTemplateParameter(this._associatedTemplate, param);
                 let replacement = paramText;
                 const documentation = `Insert a value for parameter "${param.nameValue.unquotedValue}" from template file "${path.basename(this._associatedTemplate.documentId.fsPath)}"`;
@@ -141,15 +140,13 @@ export class ParametersPositionContext extends PositionContext {
                     + EOL
                     + paramText;
 
-                //const detail = paramText;
-
                 completions.push(
                     this.createParameterCompletion(
                         label,
                         replacement,
                         Completion.CompletionKind.DtResourceIdResType,
                         detail,
-                        `documentation: ${documentation}`));
+                        documentation));
             }
         }
 
