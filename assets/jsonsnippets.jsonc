@@ -3,13 +3,13 @@
         "prefix": "arm!",
         "body": [
             "{",
-            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\",",
-            "    \"contentVersion\": \"1.0.0.0\",",
-            "    \"parameters\": {},",
-            "    \"functions\": [],",
-            "    \"variables\": {},",
-            "    \"resources\": [],",
-            "    \"outputs\": {}",
+            "\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\",",
+            "\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\"parameters\": {},",
+            "\t\"functions\": [],",
+            "\t\"variables\": {},",
+            "\t\"resources\": [],",
+            "\t\"outputs\": {}",
             "}"
         ],
         "description": "Resource Group Template"
@@ -18,13 +18,13 @@
         "prefix": "arm!s",
         "body": [
             "{",
-            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#\",",
-            "    \"contentVersion\": \"1.0.0.0\",",
-            "    \"parameters\": {},",
-            "    \"functions\": [],",
-            "    \"variables\": {},",
-            "    \"resources\": [],",
-            "    \"outputs\": {}",
+            "\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#\",",
+            "\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\"parameters\": {},",
+            "\t\"functions\": [],",
+            "\t\"variables\": {},",
+            "\t\"resources\": [],",
+            "\t\"outputs\": {}",
             "}"
         ],
         "description": "Subscription Template"
@@ -33,13 +33,13 @@
         "prefix": "arm!mg",
         "body": [
             "{",
-            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#\",",
-            "    \"contentVersion\": \"1.0.0.0\",",
-            "    \"parameters\": {},",
-            "    \"functions\": [],",
-            "    \"variables\": {},",
-            "    \"resources\": [],",
-            "    \"outputs\": {}",
+            "\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#\",",
+            "\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\"parameters\": {},",
+            "\t\"functions\": [],",
+            "\t\"variables\": {},",
+            "\t\"resources\": [],",
+            "\t\"outputs\": {}",
             "}"
         ],
         "description": "Management Group Template"
@@ -48,13 +48,13 @@
         "prefix": "arm!t",
         "body": [
             "{",
-            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#\",",
-            "    \"contentVersion\": \"1.0.0.0\",",
-            "    \"parameters\": {},",
-            "    \"functions\": [],",
-            "    \"variables\": {},",
-            "    \"resources\": [],",
-            "    \"outputs\": {}",
+            "\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#\",",
+            "\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\"parameters\": {},",
+            "\t\"functions\": [],",
+            "\t\"variables\": {},",
+            "\t\"resources\": [],",
+            "\t\"outputs\": {}",
             "}"
         ],
         "description": "Tenant Template"
@@ -63,9 +63,10 @@
         "prefix": "armp!",
         "body": [
             "{",
-            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#\",",
-            "    \"contentVersion\": \"1.0.0.0\",",
-            "    \"parameters\": {}",
+            "\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#\",",
+            "\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\"parameters\": {",
+            "\t}",
             "}"
         ],
         "description": "Parameters Template"
@@ -74,7 +75,7 @@
         "prefix": "arm-param-value",
         "body": [
             "\"${1:parameter1}\": {",
-            "    \"value\": \"${2:value}\"",
+            "\t\"value\": \"${2:value}\"",
             "}"
         ],
         "description": "Parameter Value"
