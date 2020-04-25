@@ -168,8 +168,10 @@ suite("InsertItem", async (): Promise<void> => {
             "type": "Microsoft.Network/applicationSecurityGroups",
             "apiVersion": "2019-11-01",
             "location": "[resourceGroup().location]",
-            "tags": {},
-            "properties": {}
+            "tags": {
+            },
+            "properties": {
+            }
         }
     ]
 }`;
