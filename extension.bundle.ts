@@ -59,7 +59,7 @@ export { ParameterValueDefinition } from "./src/parameterFiles/ParameterValueDef
 export { IReferenceSite, PositionContext } from "./src/PositionContext";
 export { ReferenceList } from "./src/ReferenceList";
 export { containsArmSchema, getPreferredSchema, isArmSchema } from './src/schemas';
-export { SortType } from "./src/sortTemplate";
+export { TemplateSectionType } from "./src/sortTemplate";
 export * from "./src/survey";
 export { TemplatePositionContext } from "./src/TemplatePositionContext";
 export { ScopeContext, TemplateScope } from "./src/TemplateScope";

@@ -13,7 +13,7 @@ import * as vscode from "vscode";
 // tslint:disable-next-line:no-duplicate-imports
 import { commands, window, workspace } from "vscode";
 import { IAzureUserInput } from 'vscode-azureextensionui';
-import { DeploymentTemplate, getResourceSnippets, InsertItem, SortType } from '../../extension.bundle';
+import { DeploymentTemplate, getResourceSnippets, InsertItem, TemplateSectionType } from '../../extension.bundle';
 import { getTempFilePath } from "../support/getTempFilePath";
 
 suite("InsertItem", async (): Promise<void> => {
@@ -94,8 +94,8 @@ suite("InsertItem", async (): Promise<void> => {
     const totallyEmptyTemplate =
         `{}`;
 
-    async function doTestInsertItem(startTemplate: string, expectedTemplate: string, sortType: SortType, showInputBox: string[] = [], textToInsert: string = '', ignoreWhiteSpace: boolean = false): Promise<void> {
-        await testInsertItem(startTemplate, expectedTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, sortType, editor), showInputBox, textToInsert, ignoreWhiteSpace);
+    async function doTestInsertItem(startTemplate: string, expectedTemplate: string, sectionType: TemplateSectionType, showInputBox: string[] = [], textToInsert: string = '', ignoreWhiteSpace: boolean = false): Promise<void> {
+        await testInsertItem(startTemplate, expectedTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, sectionType, editor), showInputBox, textToInsert, ignoreWhiteSpace);
     }
 
     suite("Variables", async () => {
@@ -122,17 +122,17 @@ suite("InsertItem", async (): Promise<void> => {
     }
 }`;
         suite("Insert one variable", async () => {
-            await doTestInsertItem(emptyTemplate, oneVariableTemplate, SortType.Variables, ["variable1"], 'resourceGroup()');
+            await doTestInsertItem(emptyTemplate, oneVariableTemplate, TemplateSectionType.Variables, ["variable1"], 'resourceGroup()');
         });
         suite("Insert one more variable", async () => {
-            await doTestInsertItem(oneVariableTemplate, twoVariablesTemplate, SortType.Variables, ["variable2"], 'resourceGroup()');
+            await doTestInsertItem(oneVariableTemplate, twoVariablesTemplate, TemplateSectionType.Variables, ["variable2"], 'resourceGroup()');
         });
         suite("Insert even one more variable", async () => {
-            await doTestInsertItem(twoVariablesTemplate, threeVariablesTemplate, SortType.Variables, ["variable3"], 'resourceGroup()');
+            await doTestInsertItem(twoVariablesTemplate, threeVariablesTemplate, TemplateSectionType.Variables, ["variable3"], 'resourceGroup()');
         });
 
         suite("Insert one variable in totally empty template", async () => {
-            await doTestInsertItem(totallyEmptyTemplate, oneVariableTemplate, SortType.Variables, ["variable1"], 'resourceGroup()');
+            await doTestInsertItem(totallyEmptyTemplate, oneVariableTemplate, TemplateSectionType.Variables, ["variable1"], 'resourceGroup()');
         });
     });
 
@@ -175,13 +175,13 @@ suite("InsertItem", async (): Promise<void> => {
 }`;
 
         suite("Insert one resource (KeyVault Secret) into totally empty template", async () => {
-            await doTestInsertItem(totallyEmptyTemplate, oneResourceTemplate, SortType.Resources, ["KeyVault Secret"], '', true);
+            await doTestInsertItem(totallyEmptyTemplate, oneResourceTemplate, TemplateSectionType.Resources, ["KeyVault Secret"], '', true);
         });
         suite("Insert one resource (KeyVault Secret)", async () => {
-            await doTestInsertItem(emptyTemplate, oneResourceTemplate, SortType.Resources, ["KeyVault Secret"], '', true);
+            await doTestInsertItem(emptyTemplate, oneResourceTemplate, TemplateSectionType.Resources, ["KeyVault Secret"], '', true);
         });
         suite("Insert one more resource (Application Security Group)", async () => {
-            await doTestInsertItem(oneResourceTemplate, twoResourcesTemplate, SortType.Resources, ["Application Security Group"], '', true);
+            await doTestInsertItem(oneResourceTemplate, twoResourcesTemplate, TemplateSectionType.Resources, ["Application Security Group"], '', true);
         });
 
         suite("Resource snippets", async () => {
@@ -307,22 +307,22 @@ suite("InsertItem", async (): Promise<void> => {
     ]
 }`;
         suite("Insert function", async () => {
-            await doTestInsertItem(emptyTemplate, oneFunctionTemplate, SortType.Functions, ["ns", "function1", "String", "parameter1", "String", ""], "resourceGroup()");
+            await doTestInsertItem(emptyTemplate, oneFunctionTemplate, TemplateSectionType.Functions, ["ns", "function1", "String", "parameter1", "String", ""], "resourceGroup()");
         });
         suite("Insert one more function", async () => {
-            await doTestInsertItem(oneFunctionTemplate, twoFunctionsTemplate, SortType.Functions, ["function2", "String", ""], "resourceGroup()");
+            await doTestInsertItem(oneFunctionTemplate, twoFunctionsTemplate, TemplateSectionType.Functions, ["function2", "String", ""], "resourceGroup()");
         });
         suite("Insert one function in totally empty template", async () => {
-            await doTestInsertItem(totallyEmptyTemplate, oneFunctionTemplate, SortType.Functions, ["ns", "function1", "String", "parameter1", "String", ""], "resourceGroup()");
+            await doTestInsertItem(totallyEmptyTemplate, oneFunctionTemplate, TemplateSectionType.Functions, ["ns", "function1", "String", "parameter1", "String", ""], "resourceGroup()");
         });
         suite("Insert function in namespace", async () => {
-            await doTestInsertItem(namespaceTemplate, oneFunctionTemplate, SortType.Functions, ["function1", "String", "parameter1", "String", ""], "resourceGroup()");
+            await doTestInsertItem(namespaceTemplate, oneFunctionTemplate, TemplateSectionType.Functions, ["function1", "String", "parameter1", "String", ""], "resourceGroup()");
         });
         suite("Insert function in members", async () => {
-            await doTestInsertItem(membersTemplate, oneFunctionTemplate, SortType.Functions, ["function1", "String", "parameter1", "String", ""], "resourceGroup()");
+            await doTestInsertItem(membersTemplate, oneFunctionTemplate, TemplateSectionType.Functions, ["function1", "String", "parameter1", "String", ""], "resourceGroup()");
         });
         suite("Insert even one more function", async () => {
-            await doTestInsertItem(twoFunctionsTemplate, threeFunctionsTemplate, SortType.Functions, ["function3", "Secure string", "parameter1", "String", "parameter2", "Bool", ""], "resourceGroup()");
+            await doTestInsertItem(twoFunctionsTemplate, threeFunctionsTemplate, TemplateSectionType.Functions, ["function3", "Secure string", "parameter1", "String", "parameter2", "Bool", ""], "resourceGroup()");
         });
     });
 
@@ -377,16 +377,16 @@ suite("InsertItem", async (): Promise<void> => {
     }
 }`;
         suite("Insert one parameter", async () => {
-            await doTestInsertItem(emptyTemplate, oneParameterTemplate, SortType.Parameters, ["parameter1", "String", "default", "description"]);
+            await doTestInsertItem(emptyTemplate, oneParameterTemplate, TemplateSectionType.Parameters, ["parameter1", "String", "default", "description"]);
         });
         suite("Insert one more parameter", async () => {
-            await doTestInsertItem(oneParameterTemplate, twoParametersTemplate, SortType.Parameters, ["parameter2", "String", "", ""]);
+            await doTestInsertItem(oneParameterTemplate, twoParametersTemplate, TemplateSectionType.Parameters, ["parameter2", "String", "", ""]);
         });
         suite("Insert even one more parameter", async () => {
-            await doTestInsertItem(twoParametersTemplate, threeParametersTemplate, SortType.Parameters, ["parameter3", "Secure string", "", "description3"]);
+            await doTestInsertItem(twoParametersTemplate, threeParametersTemplate, TemplateSectionType.Parameters, ["parameter3", "Secure string", "", "description3"]);
         });
         suite("Insert one output in totally empty template", async () => {
-            await doTestInsertItem(totallyEmptyTemplate, oneParameterTemplate, SortType.Parameters, ["parameter1", "String", "default", "description"]);
+            await doTestInsertItem(totallyEmptyTemplate, oneParameterTemplate, TemplateSectionType.Parameters, ["parameter1", "String", "default", "description"]);
         });
     });
 
@@ -432,16 +432,16 @@ suite("InsertItem", async (): Promise<void> => {
     }
 }`;
         suite("Insert one output", async () => {
-            await doTestInsertItem(emptyTemplate, oneOutputTemplate, SortType.Outputs, ["output1", "String"], 'resourceGroup()');
+            await doTestInsertItem(emptyTemplate, oneOutputTemplate, TemplateSectionType.Outputs, ["output1", "String"], 'resourceGroup()');
         });
         suite("Insert one more output", async () => {
-            await doTestInsertItem(oneOutputTemplate, twoOutputsTemplate, SortType.Outputs, ["output2", "String"], 'resourceGroup()');
+            await doTestInsertItem(oneOutputTemplate, twoOutputsTemplate, TemplateSectionType.Outputs, ["output2", "String"], 'resourceGroup()');
         });
         suite("Insert even one more output", async () => {
-            await doTestInsertItem(twoOutputsTemplate, threeOutputsTemplate, SortType.Outputs, ["output3", "Secure string"], 'resourceGroup()');
+            await doTestInsertItem(twoOutputsTemplate, threeOutputsTemplate, TemplateSectionType.Outputs, ["output3", "Secure string"], 'resourceGroup()');
         });
         suite("Insert one output in totally empty template", async () => {
-            await doTestInsertItem(emptyTemplate, oneOutputTemplate, SortType.Outputs, ["output1", "String"], 'resourceGroup()');
+            await doTestInsertItem(emptyTemplate, oneOutputTemplate, TemplateSectionType.Outputs, ["output1", "String"], 'resourceGroup()');
         });
     });
 });

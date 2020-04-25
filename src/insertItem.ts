@@ -10,7 +10,7 @@ import { IAzureUserInput } from "vscode-azureextensionui";
 import { Json, templateKeys } from "../extension.bundle";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from './extensionVariables';
-import { SortType } from "./sortTemplate";
+import { TemplateSectionType } from "./sortTemplate";
 
 const insertCursorText = '[]';
 
@@ -113,13 +113,14 @@ export function getResourceSnippets(): vscode.QuickPickItem[] {
 export function getQuickPickItem(label: string): vscode.QuickPickItem {
     return { label: label };
 }
-export function getInsertItemType(): QuickPickItem<SortType>[] {
-    let items: QuickPickItem<SortType>[] = [];
-    items.push(new QuickPickItem<SortType>("Function", SortType.Functions, "Insert a function"));
-    items.push(new QuickPickItem<SortType>("Output", SortType.Outputs, "Insert an output"));
-    items.push(new QuickPickItem<SortType>("Parameter", SortType.Parameters, "Insert a parameter"));
-    items.push(new QuickPickItem<SortType>("Resource", SortType.Resources, "Insert a resource"));
-    items.push(new QuickPickItem<SortType>("Variable", SortType.Variables, "Insert a variable"));
+
+export function getItemTypeQuickPicks(): QuickPickItem<TemplateSectionType>[] {
+    let items: QuickPickItem<TemplateSectionType>[] = [];
+    items.push(new QuickPickItem<TemplateSectionType>("Function", TemplateSectionType.Functions, "Insert a function"));
+    items.push(new QuickPickItem<TemplateSectionType>("Output", TemplateSectionType.Outputs, "Insert an output"));
+    items.push(new QuickPickItem<TemplateSectionType>("Parameter", TemplateSectionType.Parameters, "Insert a parameter"));
+    items.push(new QuickPickItem<TemplateSectionType>("Resource", TemplateSectionType.Resources, "Insert a resource"));
+    items.push(new QuickPickItem<TemplateSectionType>("Variable", TemplateSectionType.Variables, "Insert a variable"));
     return items;
 }
 
@@ -130,33 +131,33 @@ export class InsertItem {
         this.ui = ui;
     }
 
-    public async insertItem(template: DeploymentTemplate | undefined, sortType: SortType, textEditor: vscode.TextEditor): Promise<void> {
+    public async insertItem(template: DeploymentTemplate | undefined, sectionType: TemplateSectionType, textEditor: vscode.TextEditor): Promise<void> {
         if (!template) {
             return;
         }
         ext.outputChannel.appendLine("Insert item");
-        switch (sortType) {
-            case SortType.Functions:
+        switch (sectionType) {
+            case TemplateSectionType.Functions:
                 if (await this.insertFunction(template, textEditor)) {
                     vscode.window.showInformationMessage("Please type the output of the function.");
                 }
                 break;
-            case SortType.Outputs:
+            case TemplateSectionType.Outputs:
                 if (await this.insertOutput(template, textEditor)) {
                     vscode.window.showInformationMessage("Please type the the value of the output.");
                 }
                 break;
-            case SortType.Parameters:
+            case TemplateSectionType.Parameters:
                 if (await this.insertParameter(template, textEditor)) {
                     vscode.window.showInformationMessage("Done inserting parameter.");
                 }
                 break;
-            case SortType.Resources:
+            case TemplateSectionType.Resources:
                 if (await this.insertResource(template, textEditor)) {
                     vscode.window.showInformationMessage("Press TAB to move between the tab stops.");
                 }
                 break;
-            case SortType.Variables:
+            case TemplateSectionType.Variables:
                 if (await this.insertVariable(template, textEditor)) {
                     vscode.window.showInformationMessage("Please type the the value of the variable.");
                 }

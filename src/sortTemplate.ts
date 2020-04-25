@@ -15,7 +15,7 @@ import { UserFunctionDefinition } from './UserFunctionDefinition';
 import { UserFunctionNamespaceDefinition } from './UserFunctionNamespaceDefinition';
 import { IVariableDefinition } from './VariableDefinition';
 
-export enum SortType {
+export enum TemplateSectionType {
     Resources,
     Outputs,
     Parameters,
@@ -29,10 +29,10 @@ type CommentsMap = Map<number, language.Span>;
 
 export class SortQuickPickItem implements vscode.QuickPickItem {
     public label: string;
-    public value: SortType;
+    public value: TemplateSectionType;
     public description: string;
 
-    constructor(label: string, value: SortType, description: string) {
+    constructor(label: string, value: TemplateSectionType, description: string) {
         this.label = label;
         this.value = value;
         this.description = description;
@@ -41,37 +41,37 @@ export class SortQuickPickItem implements vscode.QuickPickItem {
 
 export function getQuickPickItems(): SortQuickPickItem[] {
     let items: SortQuickPickItem[] = [];
-    items.push(new SortQuickPickItem("Functions", SortType.Functions, "Sort function namespaces and functions"));
-    items.push(new SortQuickPickItem("Outputs", SortType.Outputs, "Sort outputs"));
-    items.push(new SortQuickPickItem("Parameters", SortType.Parameters, "Sort parameters for the template"));
-    items.push(new SortQuickPickItem("Resources", SortType.Resources, "Sort resources based on the name including first level of child resources"));
-    items.push(new SortQuickPickItem("Variables", SortType.Variables, "Sort variables"));
-    items.push(new SortQuickPickItem("Top level", SortType.TopLevel, "Sort top level items based on recommended order (parameters, functions, variables, resources, outputs)"));
+    items.push(new SortQuickPickItem("Functions", TemplateSectionType.Functions, "Sort function namespaces and functions"));
+    items.push(new SortQuickPickItem("Outputs", TemplateSectionType.Outputs, "Sort outputs"));
+    items.push(new SortQuickPickItem("Parameters", TemplateSectionType.Parameters, "Sort parameters for the template"));
+    items.push(new SortQuickPickItem("Resources", TemplateSectionType.Resources, "Sort resources based on the name including first level of child resources"));
+    items.push(new SortQuickPickItem("Variables", TemplateSectionType.Variables, "Sort variables"));
+    items.push(new SortQuickPickItem("Top level", TemplateSectionType.TopLevel, "Sort top level items based on recommended order (parameters, functions, variables, resources, outputs)"));
     return items;
 }
 
-export async function sortTemplate(template: DeploymentTemplate | undefined, sortType: SortType, textEditor: vscode.TextEditor): Promise<void> {
+export async function sortTemplate(template: DeploymentTemplate | undefined, sectionType: TemplateSectionType, textEditor: vscode.TextEditor): Promise<void> {
     if (!template) {
         return;
     }
     ext.outputChannel.appendLine("Sorting template");
-    switch (sortType) {
-        case SortType.Functions:
+    switch (sectionType) {
+        case TemplateSectionType.Functions:
             await sortFunctions(template, textEditor);
             break;
-        case SortType.Outputs:
+        case TemplateSectionType.Outputs:
             await sortOutputs(template, textEditor);
             break;
-        case SortType.Parameters:
+        case TemplateSectionType.Parameters:
             await sortParameters(template, textEditor);
             break;
-        case SortType.Resources:
+        case TemplateSectionType.Resources:
             await sortResources(template, textEditor);
             break;
-        case SortType.Variables:
+        case TemplateSectionType.Variables:
             await sortVariables(template, textEditor);
             break;
-        case SortType.TopLevel:
+        case TemplateSectionType.TopLevel:
             await sortTopLevel(template, textEditor);
             break;
         default:

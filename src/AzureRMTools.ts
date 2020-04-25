@@ -20,7 +20,7 @@ import { Histogram } from "./Histogram";
 import * as Hover from './Hover';
 import { DefinitionKind } from "./INamedDefinition";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
-import { getInsertItemType, InsertItem } from "./insertItem";
+import { getItemTypeQuickPicks, InsertItem } from "./insertItem";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { reloadSchemas } from "./languageclient/reloadSchemas";
@@ -34,7 +34,7 @@ import { ReferenceList } from "./ReferenceList";
 import { resetGlobalState } from "./resetGlobalState";
 import { getPreferredSchema } from "./schemas";
 import { getFunctionParamUsage } from "./signatureFormatting";
-import { getQuickPickItems, sortTemplate, SortType } from "./sortTemplate";
+import { getQuickPickItems, sortTemplate, TemplateSectionType } from "./sortTemplate";
 import { Stopwatch } from "./Stopwatch";
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, templateDocumentSelector, templateOrParameterDocumentSelector } from "./supported";
 import { survey } from "./survey";
@@ -131,27 +131,27 @@ export class AzureRMTools {
                 uri = vscode.window.activeTextEditor?.document.uri;
             }
             if (uri && editor) {
-                const sortType = await ext.ui.showQuickPick(getQuickPickItems(), { placeHolder: 'What do you want to sort?' });
-                await this.sortTemplate(sortType.value, uri, editor);
+                const sectionType = await ext.ui.showQuickPick(getQuickPickItems(), { placeHolder: 'What do you want to sort?' });
+                await this.sortTemplate(sectionType.value, uri, editor);
             }
         });
         registerCommand("azurerm-vscode-tools.sortFunctions", async () => {
-            await this.sortTemplate(SortType.Functions);
+            await this.sortTemplate(TemplateSectionType.Functions);
         });
         registerCommand("azurerm-vscode-tools.sortOutputs", async () => {
-            await this.sortTemplate(SortType.Outputs);
+            await this.sortTemplate(TemplateSectionType.Outputs);
         });
         registerCommand("azurerm-vscode-tools.sortParameters", async () => {
-            await this.sortTemplate(SortType.Parameters);
+            await this.sortTemplate(TemplateSectionType.Parameters);
         });
         registerCommand("azurerm-vscode-tools.sortResources", async () => {
-            await this.sortTemplate(SortType.Resources);
+            await this.sortTemplate(TemplateSectionType.Resources);
         });
         registerCommand("azurerm-vscode-tools.sortVariables", async () => {
-            await this.sortTemplate(SortType.Variables);
+            await this.sortTemplate(TemplateSectionType.Variables);
         });
         registerCommand("azurerm-vscode-tools.sortTopLevel", async () => {
-            await this.sortTemplate(SortType.TopLevel);
+            await this.sortTemplate(TemplateSectionType.TopLevel);
         });
         registerCommand(
             "azurerm-vscode-tools.selectParameterFile", async (actionContext: IActionContext, source?: vscode.Uri) => {
@@ -175,24 +175,24 @@ export class AzureRMTools {
                 uri = vscode.window.activeTextEditor?.document.uri;
             }
             if (uri && editor) {
-                const sortType = await ext.ui.showQuickPick(getInsertItemType(), { placeHolder: 'What do you want to insert?' });
-                await this.insertItem(sortType.value, uri, editor);
+                const sectionType = await ext.ui.showQuickPick(getItemTypeQuickPicks(), { placeHolder: 'What do you want to insert?' });
+                await this.insertItem(sectionType.value, uri, editor);
             }
         });
         registerCommand("azurerm-vscode-tools.insertParameter", async () => {
-            await this.insertItem(SortType.Parameters);
+            await this.insertItem(TemplateSectionType.Parameters);
         });
         registerCommand("azurerm-vscode-tools.insertVariable", async () => {
-            await this.insertItem(SortType.Variables);
+            await this.insertItem(TemplateSectionType.Variables);
         });
         registerCommand("azurerm-vscode-tools.insertOutput", async () => {
-            await this.insertItem(SortType.Outputs);
+            await this.insertItem(TemplateSectionType.Outputs);
         });
         registerCommand("azurerm-vscode-tools.insertFunction", async () => {
-            await this.insertItem(SortType.Functions);
+            await this.insertItem(TemplateSectionType.Functions);
         });
         registerCommand("azurerm-vscode-tools.insertResource", async () => {
-            await this.insertItem(SortType.Resources);
+            await this.insertItem(TemplateSectionType.Resources);
         });
         registerCommand("azurerm-vscode-tools.resetGlobalState", resetGlobalState);
         registerCommand("azurerm-vscode-tools.codeAction.addAllMissingParameters", async (actionContext: IActionContext, source?: vscode.Uri) => {
@@ -246,21 +246,21 @@ export class AzureRMTools {
         }
     }
 
-    private async sortTemplate(sortType: SortType, documentUri?: vscode.Uri, editor?: vscode.TextEditor): Promise<void> {
+    private async sortTemplate(sectionType: TemplateSectionType, documentUri?: vscode.Uri, editor?: vscode.TextEditor): Promise<void> {
         editor = editor || vscode.window.activeTextEditor;
         documentUri = documentUri || editor?.document.uri;
         if (editor && documentUri && editor.document.uri.fsPath === documentUri.fsPath) {
             let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
-            await sortTemplate(deploymentTemplate, sortType, editor);
+            await sortTemplate(deploymentTemplate, sectionType, editor);
         }
     }
 
-    private async insertItem(sortType: SortType, documentUri?: vscode.Uri, editor?: vscode.TextEditor): Promise<void> {
+    private async insertItem(sectionType: TemplateSectionType, documentUri?: vscode.Uri, editor?: vscode.TextEditor): Promise<void> {
         editor = editor || vscode.window.activeTextEditor;
         documentUri = documentUri || editor?.document.uri;
         if (editor && documentUri && editor.document.uri.fsPath === documentUri.fsPath) {
             let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
-            await new InsertItem(ext.ui).insertItem(deploymentTemplate, sortType, editor);
+            await new InsertItem(ext.ui).insertItem(deploymentTemplate, sectionType, editor);
         }
     }
 
