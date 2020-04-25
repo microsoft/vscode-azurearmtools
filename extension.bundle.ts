@@ -46,7 +46,7 @@ export { HoverInfo } from "./src/Hover";
 export { httpGet } from './src/httpGet';
 export { DefinitionKind, INamedDefinition } from "./src/INamedDefinition";
 export { IncorrectArgumentsCountIssue } from "./src/IncorrectArgumentsCountIssue";
-export { getResourceSnippets, InsertItem } from "./src/insertItem";
+export { InsertItem } from "./src/insertItem";
 export { IParameterDefinition } from "./src/IParameterDefinition";
 export * from "./src/Language";
 export { LanguageServerState } from "./src/languageclient/startArmLanguageServer";

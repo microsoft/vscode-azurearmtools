@@ -13,7 +13,7 @@ import * as vscode from "vscode";
 // tslint:disable-next-line:no-duplicate-imports
 import { commands, window, workspace } from "vscode";
 import { IAzureUserInput } from 'vscode-azureextensionui';
-import { DeploymentTemplate, getResourceSnippets, InsertItem, TemplateSectionType } from '../../extension.bundle';
+import { DeploymentTemplate, InsertItem, TemplateSectionType } from '../../extension.bundle';
 import { getTempFilePath } from "../support/getTempFilePath";
 
 suite("InsertItem", async (): Promise<void> => {
@@ -184,14 +184,6 @@ suite("InsertItem", async (): Promise<void> => {
         });
         suite("Insert one more resource (Application Security Group)", async () => {
             await doTestInsertItem(oneResourceTemplate, twoResourcesTemplate, TemplateSectionType.Resources, ["Application Security Group"], '', true);
-        });
-
-        suite("Resource snippets", async () => {
-            for (const snippet of getResourceSnippets()) {
-                test(snippet.label, async () => {
-                    await testResourceSnippet(snippet.label);
-                });
-            }
         });
     });
 

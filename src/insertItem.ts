@@ -3,11 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as fse from 'fs-extra';
+import * as path from "path";
 import * as vscode from "vscode";
 // tslint:disable-next-line:no-duplicate-imports
 import { commands } from "vscode";
 import { IAzureUserInput } from "vscode-azureextensionui";
 import { Json, templateKeys } from "../extension.bundle";
+import { assetsPath } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from './extensionVariables';
 import { TemplateSectionType } from "./sortTemplate";
@@ -38,76 +41,39 @@ export function getItemType(): QuickPickItem<string>[] {
     return items;
 }
 
-export function getResourceSnippets(): vscode.QuickPickItem[] {
+function getResourceSnippets(): vscode.QuickPickItem[] {
     let items: vscode.QuickPickItem[] = [];
-    items.push(getQuickPickItem("Nested Deployment"));
-    items.push(getQuickPickItem("App Service Plan (Server Farm)"));
-    items.push(getQuickPickItem("Application Insights for Web Apps"));
-    items.push(getQuickPickItem("Application Security Group"));
-    items.push(getQuickPickItem("Automation Account"));
-    items.push(getQuickPickItem("Automation Certificate"));
-    items.push(getQuickPickItem("Automation Credential"));
-    items.push(getQuickPickItem("Automation Job Schedule"));
-    items.push(getQuickPickItem("Automation Runbook"));
-    items.push(getQuickPickItem("Automation Schedule"));
-    items.push(getQuickPickItem("Automation Variable"));
-    items.push(getQuickPickItem("Automation Module"));
-    items.push(getQuickPickItem("Availability Set"));
-    items.push(getQuickPickItem("Azure Firewall"));
-    items.push(getQuickPickItem("Container Group"));
-    items.push(getQuickPickItem("Container Registry"));
-    items.push(getQuickPickItem("Cosmos DB Database Account"));
-    items.push(getQuickPickItem("Cosmos DB SQL Database"));
-    items.push(getQuickPickItem("Cosmos DB Mongo Database"));
-    items.push(getQuickPickItem("Cosmos DB Gremlin Database"));
-    items.push(getQuickPickItem("Cosmos DB Cassandra Namespace"));
-    items.push(getQuickPickItem("Cosmos DB Cassandra Table"));
-    items.push(getQuickPickItem("Cosmos DB SQL Container"));
-    items.push(getQuickPickItem("Cosmos DB Gremlin Graph"));
-    items.push(getQuickPickItem("Cosmos DB Table Storage Table"));
-    items.push(getQuickPickItem("Data Lake Store Account"));
-    items.push(getQuickPickItem("DNS Record"));
-    items.push(getQuickPickItem("DNS Zone"));
-    items.push(getQuickPickItem("Function"));
-    items.push(getQuickPickItem("KeyVault"));
-    items.push(getQuickPickItem("KeyVault Secret"));
-    items.push(getQuickPickItem("Kubernetes Service Cluster"));
-    items.push(getQuickPickItem("Linux VM Custom Script"));
-    items.push(getQuickPickItem("Load Balancer External"));
-    items.push(getQuickPickItem("Load Balancer Internal"));
-    items.push(getQuickPickItem("Log Analytics Solution"));
-    items.push(getQuickPickItem("Log Analytics Workspace"));
-    items.push(getQuickPickItem("Logic App"));
-    items.push(getQuickPickItem("Logic App Connector"));
-    items.push(getQuickPickItem("Managed Identity (User Assigned)"));
-    items.push(getQuickPickItem("Media Services"));
-    items.push(getQuickPickItem("MySQL Database"));
-    items.push(getQuickPickItem("Network Interface"));
-    items.push(getQuickPickItem("Network Security Group"));
-    items.push(getQuickPickItem("Network Security Group Rule"));
-    items.push(getQuickPickItem("Public IP Address"));
-    items.push(getQuickPickItem("Public IP Prefix"));
-    items.push(getQuickPickItem("Recovery Service Vault"));
-    items.push(getQuickPickItem("Redis Cache"));
-    items.push(getQuickPickItem("Route Table"));
-    items.push(getQuickPickItem("Route Table Route"));
-    items.push(getQuickPickItem("SQL Database"));
-    items.push(getQuickPickItem("SQL Database Import"));
-    items.push(getQuickPickItem("SQL Server"));
-    items.push(getQuickPickItem("Storage Account"));
-    items.push(getQuickPickItem("Traffic Manager Profile"));
-    items.push(getQuickPickItem("Ubuntu Virtual Machine"));
-    items.push(getQuickPickItem("Virtual Network"));
-    items.push(getQuickPickItem("VPN Local Network Gateway"));
-    items.push(getQuickPickItem("VPN Virtual Network Gateway"));
-    items.push(getQuickPickItem("VPN Virtual Network Connection"));
-    items.push(getQuickPickItem("Web App"));
-    items.push(getQuickPickItem("Web Deploy for Web App"));
-    items.push(getQuickPickItem("Windows Virtual Machine"));
-    items.push(getQuickPickItem("Windows VM Custom Script"));
-    items.push(getQuickPickItem("Windows VM Diagnostics Extension"));
-    items.push(getQuickPickItem("Windows VM DSC PowerShell Script"));
-    return items;
+    let snippetPath = path.join(assetsPath, "armsnippets.jsonc");
+    let content = fse.readFileSync(snippetPath, "utf8");
+    let tree = Json.parse(content);
+    if (!(tree.value instanceof Json.ObjectValue)) {
+        return items;
+    }
+    for (const property of tree.value.properties) {
+        if (isResourceSnippet(property)) {
+            items.push(getQuickPickItem(property.nameValue.unquotedValue));
+        }
+    }
+    return items.sort((a, b) => a.label.localeCompare(b.label));
+}
+
+function isResourceSnippet(snippet: Json.Property): boolean {
+    if (!snippet.value || !(snippet.value instanceof Json.ObjectValue)) {
+        return false;
+    }
+    let body = snippet.value.getProperty("body");
+    if (!body || !(body.value instanceof Json.ArrayValue)) {
+        return false;
+    }
+    for (const row of body.value.elements) {
+        if (!(row instanceof Json.StringValue)) {
+            continue;
+        }
+        if (row.unquotedValue.indexOf("\"Microsoft.") >= 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
 export function getQuickPickItem(label: string): vscode.QuickPickItem {
