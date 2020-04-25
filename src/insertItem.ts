@@ -116,8 +116,8 @@ export function getQuickPickItem(label: string): vscode.QuickPickItem {
 export function getInsertItemType(): QuickPickItem<SortType>[] {
     let items: QuickPickItem<SortType>[] = [];
     items.push(new QuickPickItem<SortType>("Function", SortType.Functions, "Insert a function"));
-    items.push(new QuickPickItem<SortType>("Output", SortType.Outputs, "Inserts an output"));
-    items.push(new QuickPickItem<SortType>("Parameter", SortType.Parameters, "Inserts a parameter"));
+    items.push(new QuickPickItem<SortType>("Output", SortType.Outputs, "Insert an output"));
+    items.push(new QuickPickItem<SortType>("Parameter", SortType.Parameters, "Insert a parameter"));
     items.push(new QuickPickItem<SortType>("Resource", SortType.Resources, "Insert a resource"));
     items.push(new QuickPickItem<SortType>("Variable", SortType.Variables, "Insert a variable"));
     return items;

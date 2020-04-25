@@ -179,32 +179,56 @@
                 "$comment": "============= Template sorting =============",
                 "category": "Azure Resource Manager Tools",
                 "title": "Sort Template...",
-                "command": "azurerm-vscode-tools.sortTemplate"
+                "command": "azurerm-vscode-tools.sortTemplate",
+                "icon": {
+                    "light": "icons/sortLight.svg",
+                    "dark": "icons/sortDark.svg"
+                }
             },
             {
                 "category": "Azure Resource Manager Tools",
                 "title": "Sort Functions",
-                "command": "azurerm-vscode-tools.sortFunctions"
+                "command": "azurerm-vscode-tools.sortFunctions",
+                "icon": {
+                    "light": "icons/sortLight.svg",
+                    "dark": "icons/sortDark.svg"
+                }
             },
             {
                 "category": "Azure Resource Manager Tools",
                 "title": "Sort Outputs",
-                "command": "azurerm-vscode-tools.sortOutputs"
+                "command": "azurerm-vscode-tools.sortOutputs",
+                "icon": {
+                    "light": "icons/sortLight.svg",
+                    "dark": "icons/sortDark.svg"
+                }
             },
             {
                 "category": "Azure Resource Manager Tools",
                 "title": "Sort Parameters",
-                "command": "azurerm-vscode-tools.sortParameters"
+                "command": "azurerm-vscode-tools.sortParameters",
+                "icon": {
+                    "light": "icons/sortLight.svg",
+                    "dark": "icons/sortDark.svg"
+                }
             },
             {
                 "category": "Azure Resource Manager Tools",
                 "title": "Sort Resources",
-                "command": "azurerm-vscode-tools.sortResources"
+                "command": "azurerm-vscode-tools.sortResources",
+                "icon": {
+                    "light": "icons/sortLight.svg",
+                    "dark": "icons/sortDark.svg"
+                }
             },
             {
                 "category": "Azure Resource Manager Tools",
                 "title": "Sort Variables",
-                "command": "azurerm-vscode-tools.sortVariables"
+                "command": "azurerm-vscode-tools.sortVariables",
+                "icon": {
+                    "light": "icons/sortLight.svg",
+                    "dark": "icons/sortDark.svg"
+                }
             },
             {
                 "$comment": "============= Template file commands =============",
@@ -246,32 +270,56 @@
             {
                 "category": "Azure Resource Manager Tools",
                 "title": "Insert Item...",
-                "command": "azurerm-vscode-tools.insertItem"
+                "command": "azurerm-vscode-tools.insertItem",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
             },
             {
                 "category": "Azure Resource Manager Tools",
                 "title": "Insert Variable...",
-                "command": "azurerm-vscode-tools.insertVariable"
+                "command": "azurerm-vscode-tools.insertVariable",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
             },
             {
                 "category": "Azure Resource Manager Tools",
                 "title": "Insert Function...",
-                "command": "azurerm-vscode-tools.insertFunction"
+                "command": "azurerm-vscode-tools.insertFunction",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
             },
             {
                 "category": "Azure Resource Manager Tools",
                 "title": "Insert Resource...",
-                "command": "azurerm-vscode-tools.insertResource"
+                "command": "azurerm-vscode-tools.insertResource",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
             },
             {
                 "category": "Azure Resource Manager Tools",
                 "title": "Insert Parameter...",
-                "command": "azurerm-vscode-tools.insertParameter"
+                "command": "azurerm-vscode-tools.insertParameter",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
             },
             {
                 "category": "Azure Resource Manager Tools",
                 "title": "Insert Output...",
-                "command": "azurerm-vscode-tools.insertOutput"
+                "command": "azurerm-vscode-tools.insertOutput",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
             }
         ],
         "menus": {
@@ -355,64 +403,54 @@
             "view/item/context": [
                 {
                     "$comment": "============= Treeview commands =============",
-                    "command": "azurerm-vscode-tools.sortTemplate",
-                    "when": "azurerm-vscode-tools.template-outline.active == true",
-                    "group": "arm-template"
-                },
-                {
                     "command": "azurerm-vscode-tools.sortFunctions",
                     "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == functions",
-                    "group": "arm-template"
+                    "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortOutputs",
                     "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == outputs",
-                    "group": "arm-template"
+                    "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortParameters",
                     "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == parameters",
-                    "group": "arm-template"
+                    "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortResources",
                     "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == resources",
-                    "group": "arm-template"
+                    "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortVariables",
                     "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == variables",
-                    "group": "arm-template"
-                },
-                {
-                    "command": "azurerm-vscode-tools.insertItem",
-                    "when": "azurerm-vscode-tools.template-outline.active == true",
-                    "group": "arm-template"
+                    "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.insertParameter",
                     "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == parameters",
-                    "group": "arm-template"
+                    "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.insertVariable",
                     "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == variables",
-                    "group": "arm-template"
+                    "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.insertOutput",
                     "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == outputs",
-                    "group": "arm-template"
+                    "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.insertFunction",
                     "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == functions",
-                    "group": "arm-template"
+                    "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.insertResource",
                     "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == resources",
-                    "group": "arm-template"
+                    "group": "inline"
                 }
             ],
             "editor/title": [
@@ -455,6 +493,18 @@
                     "group": "zzz_arm-params@2",
                     "when": "azurerm-vscode-tools-isParamFile",
                     "$when.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
+                }
+            ],
+            "view/title": [
+                {
+                    "command": "azurerm-vscode-tools.insertItem",
+                    "when": "azurerm-vscode-tools.template-outline.active == true",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortTemplate",
+                    "when": "azurerm-vscode-tools.template-outline.active == true",
+                    "group": "navigation@2"
                 }
             ]
         }
