@@ -100,6 +100,13 @@
             "maximumArguments": 1
         },
         {
+            "name": "dateTimeAdd",
+            "expectedUsage": "dateTimeAdd(base, duration, [format])",
+            "description": "Adds a time duration to a base value. ISO 8601 format is expected.",
+            "minimumArguments": 2,
+            "maximumArguments": 3
+        },
+        {
             "name": "utcNow",
             "expectedUsage": "utcNow([format])",
             "description": "Returns the current (UTC) datetime value in the format provided. If no format is provided the ISO 8601 (yyyyMMddTHH:mm:ssZ) format will be used. This function may only be used as a defaultValue on a parameter.",
@@ -202,7 +209,10 @@
             "expectedUsage": "extensionResourceId(resourceId, resourceType, resourceName1, [resourceName2]...)",
             "description": "Returns the unique resource identifier of an extension resource. The resourceId parameter may be a resourceId of any scope or resourceId function. You use this function to create a resourceId for a given resource as required by a property value.",
             "minimumArguments": 3,
-            "maximumArguments": null
+            "maximumArguments": null,
+            "behaviors": [
+                "usesResourceIdCompletions"
+            ]
         },
         {
             "name": "first",
@@ -618,7 +628,10 @@
             "expectedUsage": "resourceId([subscriptionId], [resourceGroupName], resourceType, resourceName1, [resourceName2]...)",
             "description": "Returns the unique resource identifier of a resource group scoped resource. You use this function to create a resourceId for a given resource as required by a property value.",
             "minimumArguments": 2,
-            "maximumArguments": null
+            "maximumArguments": null,
+            "behaviors": [
+                "usesResourceIdCompletions"
+            ]
         },
         {
             "name": "skip",
@@ -681,7 +694,10 @@
             "expectedUsage": "subscriptionResourceId([subscriptionId], resourceType, resourceName1, [resourceName2]...)",
             "description": "Returns the unique resource identifier of a subscription scoped resource. You use this function to create a resourceId for a given resource as required by a property value.",
             "minimumArguments": 2,
-            "maximumArguments": null
+            "maximumArguments": null,
+            "behaviors": [
+                "usesResourceIdCompletions"
+            ]
         },
         {
             "name": "substring",
@@ -702,7 +718,10 @@
             "expectedUsage": "tenantResourceId(resourceType, resourceName1, [resourceName2]...)",
             "description": "Returns the unique resource identifier of a tenant scoped resource. You use this function to create a resourceId for a given resource as required by a property value.",
             "minimumArguments": 2,
-            "maximumArguments": null
+            "maximumArguments": null,
+            "behaviors": [
+                "usesResourceIdCompletions"
+            ]
         },
         {
             "name": "toLower",

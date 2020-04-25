@@ -10,6 +10,7 @@ import * as Completion from "./Completion";
 import { templateKeys } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { assert } from './fixed_assert';
+import { getResourceIdCompletions } from "./getResourceIdCompletions";
 import { IFunctionMetadata, IFunctionParameterMetadata } from "./IFunctionMetadata";
 import { INamedDefinition } from "./INamedDefinition";
 import { IParameterDefinition } from "./IParameterDefinition";
@@ -179,7 +180,7 @@ export class TemplatePositionContext extends PositionContext {
     public getCompletionItems(): Completion.Item[] {
         const tleInfo = this.tleInfo;
         if (!tleInfo) {
-            // No string at this position
+            // No string at this location
             return [];
         }
 
@@ -203,7 +204,9 @@ export class TemplatePositionContext extends PositionContext {
             }
 
         } else if (tleValue instanceof TLE.FunctionCallValue) {
-            return this.getFunctionCallCompletions(tleValue, tleInfo.tleCharacterIndex, scope);
+            assert(this.jsonToken);
+            // tslint:disable-next-line:no-non-null-assertion
+            return this.getFunctionCallCompletions(tleValue, this.jsonToken!, tleInfo.tleCharacterIndex, scope);
         } else if (tleValue instanceof TLE.StringValue) {
             return this.getStringLiteralCompletions(tleValue, tleInfo.tleCharacterIndex, scope);
         } else if (tleValue instanceof TLE.PropertyAccess) {
@@ -328,8 +331,10 @@ export class TemplatePositionContext extends PositionContext {
      * Return completions when we're anywhere inside a function call expression
      */
     // tslint:disable-next-line: max-func-body-length cyclomatic-complexity // Pretty straightforward, don't think further refactoring is important
-    private getFunctionCallCompletions(tleValue: TLE.FunctionCallValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
+    private getFunctionCallCompletions(tleValue: TLE.FunctionCallValue, parentStringToken: Json.Token, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
         assert(tleValue.getSpan().contains(tleCharacterIndex, language.Contains.extended), "Position should be inside the function call, or right after it");
+
+        const completions: Completion.Item[] = [];
 
         const namespaceName: string | undefined = tleValue.namespaceToken ? tleValue.namespaceToken.stringValue : undefined;
         // tslint:disable-next-line: strict-boolean-expressions
@@ -388,9 +393,11 @@ export class TemplatePositionContext extends PositionContext {
 
         } else if (tleValue.isCallToBuiltinWithName(templateKeys.parameters) && tleValue.argumentExpressions.length === 0) {
             // "parameters<CURSOR>" or "parameters(<CURSOR>)" or similar
+            // Don't bother bringing up any other completions
             return this.getMatchingParameterCompletions("", tleValue, tleCharacterIndex, scope);
         } else if (tleValue.isCallToBuiltinWithName(templateKeys.variables) && tleValue.argumentExpressions.length === 0) {
             // "variables<CURSOR>" or "variables(<CURSOR>)" or similar
+            // Don't bother bringing up any other completions
             return this.getMatchingVariableCompletions("", tleValue, tleCharacterIndex, scope);
         } else {
             // Anywhere else (e.g. whitespace after function name, or inside the arguments list).
@@ -406,6 +413,10 @@ export class TemplatePositionContext extends PositionContext {
             completeBuiltinFunctions = true;
             completeUserFunctions = false;
         }
+
+        // If the completion is for 'resourceId' or related function, then in addition
+        // to the regular completions, also add special completions for resourceId
+        completions.push(...getResourceIdCompletions(this, tleValue, parentStringToken));
 
         let replaceSpan: language.Span;
         let completionPrefix: string;
@@ -426,23 +437,22 @@ export class TemplatePositionContext extends PositionContext {
         }
 
         assert(completeBuiltinFunctions || completeUserFunctions || completeNamespaces, "Should be completing something");
-        let builtinCompletions: Completion.Item[] = [];
-        let userFunctionCompletions: Completion.Item[] = [];
-        let namespaceCompletions: Completion.Item[] = [];
-
         if (completeBuiltinFunctions || completeUserFunctions) {
             if (completeUserFunctions && namespace) {
-                userFunctionCompletions = TemplatePositionContext.getMatchingFunctionCompletions(scope, namespace, completionPrefix, replaceSpan);
+                const userFunctionCompletions = TemplatePositionContext.getMatchingFunctionCompletions(scope, namespace, completionPrefix, replaceSpan);
+                completions.push(...userFunctionCompletions);
             }
             if (completeBuiltinFunctions) {
-                builtinCompletions = TemplatePositionContext.getMatchingFunctionCompletions(scope, undefined, completionPrefix, replaceSpan);
+                const builtinCompletions = TemplatePositionContext.getMatchingFunctionCompletions(scope, undefined, completionPrefix, replaceSpan);
+                completions.push(...builtinCompletions);
             }
         }
         if (completeNamespaces) {
-            namespaceCompletions = TemplatePositionContext.getMatchingNamespaceCompletions(scope, completionPrefix, replaceSpan);
+            const namespaceCompletions = TemplatePositionContext.getMatchingNamespaceCompletions(scope, completionPrefix, replaceSpan);
+            completions.push(...namespaceCompletions);
         }
 
-        return builtinCompletions.concat(namespaceCompletions).concat(userFunctionCompletions);
+        return completions;
     }
 
     private getDeepPropertyAccessCompletions(propertyPrefix: string, variableOrParameterDefinition: Json.ObjectValue, sourcesNameStack: string[], replaceSpan: language.Span): Completion.Item[] {
@@ -556,24 +566,49 @@ export class TemplatePositionContext extends PositionContext {
                     functionMetadata = AzureRMAssets.getFunctionMetadataFromName(functionToHelpWith.name);
                 }
                 if (functionMetadata) {
-                    let currentArgumentIndex: number = 0;
+                    let currentArgumentIndex = this.getFunctionCallArgumentIndex();
+                    if (typeof currentArgumentIndex === 'number') {
+                        const functionMetadataParameters: IFunctionParameterMetadata[] = functionMetadata.parameters;
+                        if (functionMetadataParameters.length > 0 &&
+                            functionMetadataParameters.length <= currentArgumentIndex &&
+                            functionMetadataParameters[functionMetadataParameters.length - 1].name.endsWith("...")) {
 
-                    for (const commaToken of functionToHelpWith.commaTokens) {
-                        if (commaToken.span.startIndex < this.tleInfo.tleCharacterIndex) {
-                            ++currentArgumentIndex;
+                            currentArgumentIndex = functionMetadataParameters.length - 1;
                         }
+
+                        return new TLE.FunctionSignatureHelp(currentArgumentIndex, functionMetadata);
                     }
-
-                    const functionMetadataParameters: IFunctionParameterMetadata[] = functionMetadata.parameters;
-                    if (functionMetadataParameters.length > 0 &&
-                        functionMetadataParameters.length <= currentArgumentIndex &&
-                        functionMetadataParameters[functionMetadataParameters.length - 1].name.endsWith("...")) {
-
-                        currentArgumentIndex = functionMetadataParameters.length - 1;
-                    }
-
-                    return new TLE.FunctionSignatureHelp(currentArgumentIndex, functionMetadata);
                 }
+            }
+        }
+
+        return undefined;
+    }
+
+    /**
+     * Get the index (0-based) of the argument in the given function call, at the current position
+     */
+    public getFunctionCallArgumentIndex(functionCall?: TLE.FunctionCallValue): number | undefined {
+        const tleInfo = this.tleInfo;
+        const tleValue: TLE.Value | undefined = tleInfo?.tleValue;
+        if (tleInfo && tleValue) {
+            if (!functionCall) {
+                functionCall = TLE.asFunctionCallValue(tleValue);
+                if (!functionCall) {
+                    functionCall = TLE.asFunctionCallValue(tleValue.parent);
+                }
+            }
+
+            if (functionCall) {
+                let currentArgumentIndex: number = 0;
+
+                for (const commaToken of functionCall.commaTokens) {
+                    if (commaToken.span.startIndex < tleInfo.tleCharacterIndex) {
+                        ++currentArgumentIndex;
+                    }
+                }
+
+                return currentArgumentIndex;
             }
         }
 
@@ -692,5 +727,4 @@ interface ITleInfo {
      * an expression, etc.
      */
     tleValue: TLE.Value | undefined;
-
 }

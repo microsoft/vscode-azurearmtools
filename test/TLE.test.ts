@@ -1973,7 +1973,7 @@ suite("TLE", () => {
 
     suite("UnrecognizedFunctionVisitor", () => {
         suite("visit(tle.Value)", () => {
-            const functionMetadata: FunctionsMetadata = new FunctionsMetadata([new BuiltinFunctionMetadata("CONCAT", "", "", 1, 2, [])]);
+            const functionMetadata: FunctionsMetadata = new FunctionsMetadata([new BuiltinFunctionMetadata("CONCAT", "", "", 1, 2, [], undefined)]);
 
             test("with recognized function", () => {
                 const tleParseResult = parseExpressionWithScope("'[concat()]'");

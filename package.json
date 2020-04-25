@@ -2,10 +2,10 @@
     "name": "azurerm-vscode-tools",
     "displayName": "Azure Resource Manager (ARM) Tools",
     "description": "Language server, editing tools and snippets for Azure Resource Manager (ARM) template files.",
-    "version": "0.9.1-alpha",
+    "version": "0.10.0-alpha",
     "publisher": "msazurermtools",
     "config": {
-        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20209.4"
+        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20214.4"
     },
     "categories": [
         "Azure",
@@ -253,16 +253,15 @@
                 "$enablement.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
             },
             {
-                "$comment": "============= Parameter file commands =============",
                 "category": "Azure Resource Manager Tools",
-                "title": "Add all missing parameters",
+                "title": "Add All Missing Parameters",
                 "command": "azurerm-vscode-tools.codeAction.addAllMissingParameters",
                 "enablement": "azurerm-vscode-tools-hasTemplateFile",
                 "$enablement.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Add missing required parameters",
+                "title": "Add Missing Required Parameters",
                 "command": "azurerm-vscode-tools.codeAction.addMissingRequiredParameters",
                 "enablement": "azurerm-vscode-tools-hasTemplateFile",
                 "$enablement.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
@@ -534,12 +533,12 @@
         "@types/fs-extra": "^5.1.0",
         "@types/gulp": "^4.0.6",
         "@types/mocha": "^2.2.41",
-        "@types/node": "^12.12.26",
+        "@types/node": "^12.12.35",
         "@types/opn": "^5.5.0",
         "@types/recursive-readdir": "^2.2.0",
         "@types/rimraf": "2.0.2",
         "@types/shelljs": "0.8.3",
-        "@types/webpack": "^4.41.5",
+        "@types/webpack": "^4.41.11",
         "gulp": "^4.0.2",
         "mocha": "^5.2.0",
         "mocha-junit-reporter": "^1.23.3",
@@ -549,11 +548,11 @@
         "tslint": "^5.20.1",
         "tslint-microsoft-contrib": "5.0.3",
         "typescript": "^3.8.3",
-        "vsce": "^1.73.0",
+        "vsce": "^1.75.0",
         "vscode": "^1.1.33",
-        "vscode-azureextensiondev": "^0.2.4",
+        "vscode-azureextensiondev": "^0.3.1",
         "webpack": "4.28.1",
-        "webpack-cli": "^3.3.10"
+        "webpack-cli": "^3.3.11"
     },
     "dependencies": {
         "fs-extra": "^7.0.1",
@@ -562,7 +561,7 @@
         "opn": "^5.5.0",
         "rimraf": "2.6.3",
         "shelljs": "^0.8.3",
-        "vscode-azureextensionui": "^0.29.7",
+        "vscode-azureextensionui": "^0.29.12",
         "vscode-jsonrpc": "^4.0.0",
         "vscode-languageclient": "^4.4.0"
     }

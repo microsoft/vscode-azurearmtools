@@ -594,6 +594,26 @@ export abstract class Value {
     public get __debugDisplay(): string {
         return this.toString();
     }
+
+    public get asObjectValue(): ObjectValue | undefined {
+        return asObjectValue(this);
+    }
+
+    public get asArrayValue(): ArrayValue | undefined {
+        return asArrayValue(this);
+    }
+
+    public get asStringValue(): StringValue | undefined {
+        return asStringValue(this);
+    }
+
+    public get asNumberValue(): NumberValue | undefined {
+        return asNumberValue(this);
+    }
+
+    public get asBooleanValue(): BooleanValue | undefined {
+        return asBooleanValue(this);
+    }
 }
 
 /**
@@ -996,7 +1016,7 @@ export class ParseResult {
         } else {
             const nextLineIndex = this.getCharacterIndex(line + 1, 0);
 
-            for (let token of tokens) {
+            for (let token of tokens) { // CONSIDER: binary search
                 if (token.span.startIndex >= nextLineIndex) {
                     break;
                 }
@@ -1078,7 +1098,7 @@ export class ParseResult {
 
         let maxColumnIndex: number = this.lineLengths[lineIndex];
         if (lineIndex < this.lineLengths.length - 1) {
-            --maxColumnIndex;
+            --maxColumnIndex; // CONSIDER: Is this for LF?  What about CRLF?
         }
 
         return maxColumnIndex;

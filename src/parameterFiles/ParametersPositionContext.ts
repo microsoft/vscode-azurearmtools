@@ -104,7 +104,7 @@ export class ParametersPositionContext extends PositionContext {
         return this.createParameterCompletion(
             label,
             snippet,
-            Completion.CompletionKind.NewPropertyValue,
+            Completion.CompletionKind.DpNewPropertyValue,
             detail,
             documentation);
     }
@@ -138,7 +138,7 @@ export class ParametersPositionContext extends PositionContext {
                     this.createParameterCompletion(
                         label,
                         replacement,
-                        Completion.CompletionKind.PropertyValue,
+                        Completion.CompletionKind.DtResourceIdResType,
                         detail,
                         documentation));
             }
@@ -149,7 +149,7 @@ export class ParametersPositionContext extends PositionContext {
 
     private createParameterCompletion(
         label: string,
-        replacement: string,
+        insertText: string,
         kind: Completion.CompletionKind,
         detail: string,
         documentation: string
@@ -159,21 +159,21 @@ export class ParametersPositionContext extends PositionContext {
 
         // Comma after?
         if (this.needsCommaAfterCompletion()) {
-            replacement += ',';
+            insertText += ',';
         }
 
         // Comma before?
         const commaEdit = this.document.createEditToAddCommaBeforePosition(this.documentCharacterIndex);
 
-        return new Completion.Item(
+        return new Completion.Item({
             label,
-            replacement,
+            insertText,
             span,
             kind,
             detail,
             documentation,
-            undefined,
-            commaEdit ? [commaEdit] : undefined);
+            additionalEdits: commaEdit ? [commaEdit] : undefined
+        });
     }
 
     private determineCompletionSpan(): language.Span {
