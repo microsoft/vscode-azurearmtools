@@ -1,7 +1,7 @@
 
 import * as vscode from 'vscode';
 import { PositionContext } from './PositionContext';
-import { canRename } from './util/canRename';
+import { getRenameError } from './util/getRenameError';
 const command = 'editor.action.rename';
 export class RenameCodeActionProvider implements vscode.CodeActionProvider {
 
@@ -14,7 +14,7 @@ export class RenameCodeActionProvider implements vscode.CodeActionProvider {
             return;
         }
         const referenceSiteInfo = pc.getReferenceSiteInfo(true);
-        if (!referenceSiteInfo || canRename(referenceSiteInfo)) {
+        if (!referenceSiteInfo || getRenameError(referenceSiteInfo)) {
             return;
         }
         return [

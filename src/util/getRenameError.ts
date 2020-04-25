@@ -11,7 +11,7 @@ import { IReferenceSite } from "../PositionContext";
  * If it can be renamed: undefined is returned.
  * If it cannot be renamed: An error message is returned.
  */
-export function canRename(referenceSiteInfo: IReferenceSite): string | undefined {
+export function getRenameError(referenceSiteInfo: IReferenceSite): string | undefined {
     if (referenceSiteInfo.definition.definitionKind === DefinitionKind.BuiltinFunction) {
         return "Built-in functions cannot be renamed.";
     }

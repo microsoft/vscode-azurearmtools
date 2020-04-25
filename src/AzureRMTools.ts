@@ -41,7 +41,7 @@ import { TemplatePositionContext } from "./TemplatePositionContext";
 import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedBuiltinFunctionIssue } from "./UnrecognizedFunctionIssues";
-import { canRename } from "./util/canRename";
+import { getRenameError } from "./util/getRenameError";
 import { normalizePath } from "./util/normalizePath";
 import { Cancellation } from "./util/throwOnCancel";
 import { onCompletionActivated, toVsCodeCompletionItem } from "./util/toVsCodeCompletionItem";
@@ -110,15 +110,7 @@ export class AzureRMTools {
         const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
         ext.jsonOutlineProvider = jsonOutline;
         context.subscriptions.push(vscode.window.registerTreeDataProvider("azurerm-vscode-tools.template-outline", jsonOutline));
-        context.subscriptions.push(
-            // tslint:disable-next-line:typedef
-            vscode.languages.registerCodeActionsProvider(templateOrParameterDocumentSelector,
-                // tslint:disable-next-line:align
-                new RenameCodeActionProvider(async (document, position): Promise<PositionContext | undefined> => await this.getPositionContext(document, position, Cancellation.cantCancel)), {
-                providedCodeActionKinds: [
-                    vscode.CodeActionKind.RefactorRewrite
-                ]
-            }));
+        context.subscriptions.push(this.getRegisteredRenameCodeActionProvider());
         // For telemetry
         registerCommand("azurerm-vscode-tools.completion-activated", (actionContext: IActionContext, args: object) => {
             onCompletionActivated(actionContext, <{ [key: string]: string }>args);
@@ -206,6 +198,12 @@ export class AzureRMTools {
             const activeDocument = activeEditor.document;
             this.updateOpenedDocument(activeDocument);
         }
+    }
+
+    private getRegisteredRenameCodeActionProvider(): vscode.Disposable {
+        const metaData = { providedCodeActionKinds: [vscode.CodeActionKind.RefactorRewrite] };
+        const renameCodeActionProvider = new RenameCodeActionProvider(async (document, position): Promise<PositionContext | undefined> => await this.getPositionContext(document, position, Cancellation.cantCancel));
+        return vscode.languages.registerCodeActionsProvider(templateOrParameterDocumentSelector, renameCodeActionProvider, metaData);
     }
 
     private async addMissingParameters(
@@ -1246,9 +1244,10 @@ export class AzureRMTools {
             if (!token.isCancellationRequested && pc) {
                 // Make sure the kind of item being renamed is valid
                 const referenceSiteInfo: IReferenceSite | undefined = pc.getReferenceSiteInfo(true);
-                if (referenceSiteInfo && canRename(referenceSiteInfo)) {
+                let renameError = referenceSiteInfo && getRenameError(referenceSiteInfo);
+                if (renameError) {
                     actionContext.errorHandling.suppressDisplay = true;
-                    throw new Error(canRename(referenceSiteInfo));
+                    throw new Error(renameError);
                 }
 
                 if (referenceSiteInfo) {
@@ -1276,8 +1275,9 @@ export class AzureRMTools {
                 // Make sure the kind of item being renamed is valid
                 const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
                 const referenceSiteInfo: IReferenceSite | undefined = pc.getReferenceSiteInfo(true);
-                if (referenceSiteInfo && canRename(referenceSiteInfo)) {
-                    throw new Error(canRename(referenceSiteInfo));
+                let renameError = referenceSiteInfo && getRenameError(referenceSiteInfo);
+                if (renameError) {
+                    throw new Error(renameError);
                 }
 
                 const referenceList: ReferenceList | undefined = pc.getReferences();
