@@ -11,7 +11,7 @@ import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import * as vscode from "vscode";
 // tslint:disable-next-line:no-duplicate-imports
-import { commands, window, workspace } from "vscode";
+import { window, workspace } from "vscode";
 import { IAzureUserInput } from 'vscode-azureextensionui';
 import { DeploymentTemplate, InsertItem, TemplateSectionType } from '../../extension.bundle';
 import { getTempFilePath } from "../support/getTempFilePath";
@@ -79,16 +79,6 @@ suite("InsertItem", async (): Promise<void> => {
         await textEditor.edit(builder => builder.insert(textEditor.selection.active, textToInsert));
         const docTextAfterInsertion = document.getText();
         assertTemplate(docTextAfterInsertion, expected, textEditor, ignoreWhiteSpace);
-    }
-
-    async function testResourceSnippet(resourceSnippet: string): Promise<void> {
-        const tempPath = getTempFilePath(`insertItem`, '.azrm');
-        fse.writeFileSync(tempPath, '');
-        let document = await workspace.openTextDocument(tempPath);
-        await window.showTextDocument(document);
-        let timeout = setTimeout(() => assert.fail(`Invalid resource snippet: ${resourceSnippet}`), 1000);
-        await commands.executeCommand('editor.action.insertSnippet', { name: resourceSnippet });
-        clearTimeout(timeout);
     }
 
     const totallyEmptyTemplate =
