@@ -710,7 +710,7 @@ export class AzureRMTools {
                 token: vscode.CancellationToken,
                 context: vscode.CompletionContext
             ): Promise<vscode.CompletionList | undefined> => {
-                return await this.onProvideCompletions(document, position, token);
+                return await this.onProvideCompletions(document, position, token, context);
             },
             resolveCompletionItem: (item: vscode.CompletionItem, token: vscode.CancellationToken): vscode.CompletionItem => {
                 return this.onResolveCompletionItem(item, token);
@@ -955,7 +955,12 @@ export class AzureRMTools {
         });
     }
 
-    private async onProvideCompletions(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CompletionList | undefined> {
+    private async onProvideCompletions(
+        document: vscode.TextDocument,
+        position: vscode.Position,
+        token: vscode.CancellationToken,
+        context: vscode.CompletionContext
+    ): Promise<vscode.CompletionList | undefined> {
         return await callWithTelemetryAndErrorHandling('provideCompletionItems', async (actionContext: IActionContext): Promise<vscode.CompletionList | undefined> => {
             actionContext.telemetry.suppressIfSuccessful = true;
             actionContext.errorHandling.suppressDisplay = true;
@@ -964,7 +969,10 @@ export class AzureRMTools {
 
             const pc: PositionContext | undefined = await this.getPositionContext(document, position, cancel);
             if (pc) {
-                const items: Completion.Item[] = pc.getCompletionItems();
+                const triggerCharacter = context.triggerKind === vscode.CompletionTriggerKind.TriggerCharacter
+                    ? context.triggerCharacter
+                    : undefined;
+                const items: Completion.Item[] = pc.getCompletionItems(triggerCharacter);
                 const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c));
                 ext.completionItemsSpy.postCompletionItemsResult(pc.document, items, vsCodeItems);
 

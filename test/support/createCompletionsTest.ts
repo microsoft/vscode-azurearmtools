@@ -66,6 +66,7 @@ export function createExpressionCompletionsTestEx(
     options?: {
         name?: string;
         preps?: ITestPreparation[];
+        triggerCharacter?: string;
     }
 ): void {
     const name = options?.name;
@@ -83,7 +84,7 @@ export function createExpressionCompletionsTestEx(
             const { dt, markers: { bang } } = await parseTemplateWithMarkers(template, undefined, { ignoreBang: true });
             assert(bang, "Didn't find ! marker in text");
             const pc = dt.getContextFromDocumentCharacterIndex(bang.index, undefined);
-            const completions = pc.getCompletionItems();
+            const completions = pc.getCompletionItems(options?.triggerCharacter);
 
             const completionNames = completions.map(c => c.label).sort();
             const completionInserts = completions.map(c => c.insertText).sort();
