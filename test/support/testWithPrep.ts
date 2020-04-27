@@ -24,8 +24,8 @@ export function testWithPrep(expectation: string, preparations?: ITestPreparatio
 
             try {
                 if (!callback) {
-                    // This is a pending test - just pass it through as a pending test
-                    test(expectation);
+                    // This is a pending test
+                    this.skip();
                     return;
                 }
 
