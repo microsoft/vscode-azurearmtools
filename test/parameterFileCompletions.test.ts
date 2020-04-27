@@ -8,10 +8,9 @@
 import * as assert from 'assert';
 import { isNullOrUndefined } from 'util';
 import { DeploymentTemplate } from "../extension.bundle";
+import { newParamValueCompletionLabel } from './support/constants';
 import { IDeploymentParametersFile, IDeploymentTemplate } from "./support/diagnostics";
 import { parseParametersWithMarkers, parseTemplate } from "./support/parseTemplate";
-
-const newParamCompletionLabel = `"<new parameter>"`;
 
 suite("Parameter file completions", () => {
 
@@ -93,7 +92,7 @@ suite("Parameter file completions", () => {
             undefined,
             {},
             [
-                newParamCompletionLabel
+                newParamValueCompletionLabel
             ]);
 
         createParamsCompletionsTest(
@@ -108,7 +107,7 @@ suite("Parameter file completions", () => {
             emptyTemplate,
             {},
             [
-                newParamCompletionLabel
+                newParamValueCompletionLabel
             ]);
 
         suite("Offer completions for properties from template that aren't already defined in param file", () => {
@@ -134,9 +133,9 @@ suite("Parameter file completions", () => {
                 },
                 {},
                 [
-                    `"p2" (required)`,
-                    `"p10" (required)`,
-                    newParamCompletionLabel
+                    `"p2"`,
+                    `"p10"`,
+                    newParamValueCompletionLabel
                 ]);
 
             createParamsCompletionsTest(
@@ -165,8 +164,8 @@ suite("Parameter file completions", () => {
                 {},
                 [
                     // p2 already exists in param file
-                    `"p10" (required)`,
-                    newParamCompletionLabel
+                    `"p10"`,
+                    newParamValueCompletionLabel
                 ]);
 
             createParamsCompletionsTest(
@@ -195,8 +194,8 @@ suite("Parameter file completions", () => {
                 {},
                 [
                     // parameter2 already exists in param file
-                    `"Parameter10" (required)`, // Use casing in template file
-                    newParamCompletionLabel
+                    `"Parameter10"`, // Use casing in template file
+                    newParamValueCompletionLabel
                 ]);
 
             createParamsCompletionsTest(
@@ -231,8 +230,8 @@ suite("Parameter file completions", () => {
                 {},
                 [
                     // parameter2 already exists in param file
-                    `"Parameter30" (required)`,
-                    newParamCompletionLabel
+                    `"Parameter30"`,
+                    newParamValueCompletionLabel
                 ]);
 
             createParamsCompletionsTest(
@@ -263,7 +262,7 @@ suite("Parameter file completions", () => {
                 },
                 {},
                 [
-                    newParamCompletionLabel
+                    newParamValueCompletionLabel
                 ]);
 
             createParamsCompletionsTest(
@@ -289,9 +288,9 @@ suite("Parameter file completions", () => {
                 },
                 {},
                 [
-                    `"p1optional" (optional)`,
-                    `"p2required" (required)`,
-                    newParamCompletionLabel
+                    `"p1optional"`,
+                    `"p2required"`,
+                    newParamValueCompletionLabel
                 ]);
         });
     });

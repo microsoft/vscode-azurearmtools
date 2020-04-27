@@ -6,7 +6,7 @@ import * as path from 'path';
 import * as Completion from "../Completion";
 import { DeploymentTemplate } from "../DeploymentTemplate";
 import { ext } from '../extensionVariables';
-import { assert } from "../fixed_assert";
+import * as Json from '../JSON';
 import * as language from "../Language";
 import { createParameterFromTemplateParameter } from "../parameterFileGeneration";
 import { IReferenceSite, PositionContext, ReferenceSiteKind } from "../PositionContext";
@@ -15,6 +15,7 @@ import * as TLE from '../TLE';
 import { DeploymentParameters } from "./DeploymentParameters";
 
 const EOL = ext.EOL;
+const newParameterValueSnippetLabel = `new-parameter-value`;
 
 /**
  * Represents a position inside the snapshot of a deployment parameter file, plus all related information
@@ -103,7 +104,7 @@ export class ParametersPositionContext extends PositionContext {
             + `\t"value": "\${2:value}"` + EOL
             + `}`;
         const documentation = "documentation";
-        const label = `"<new parameter>"`;
+        const label = newParameterValueSnippetLabel;
 
         return this.createParameterCompletion(
             label,
@@ -161,8 +162,10 @@ export class ParametersPositionContext extends PositionContext {
         documentation: string
     ): Completion.Item {
         // The completion span is the entire JSON string
-        assert(!!this.jsonToken, "Should have a token here");
-        const span = this.jsonToken?.span ?? this.emptySpanAtDocumentCharacterIndex;
+        let token = this.jsonToken;
+        token = token ?? this.document.getJSONTokenAtDocumentCharacterIndex(this.documentCharacterIndex);
+        token = token ?? this.document.getJSONTokenAtDocumentCharacterIndex(this.documentCharacterIndex - 1); //asdf
+        const span = token?.span ?? this.emptySpanAtDocumentCharacterIndex;
 
         // Comma after?
         if (this.needsCommaAfterCompletion()) {
@@ -171,6 +174,15 @@ export class ParametersPositionContext extends PositionContext {
 
         // Comma before?
         const commaEdit = this.document.createEditToAddCommaBeforePosition(this.documentCharacterIndex);
+
+        // Use double quotes around the label if the token is a double-quoted string.
+        // That way, the snippet can be used inside or outside of a string, with correct
+        // filtering and insertion behavior
+        if (token?.type === Json.TokenType.QuotedString) {
+            if (label[0] !== '"') {
+                label = `"${label}"`;
+            }
+        }
 
         return new Completion.Item({
             label,
