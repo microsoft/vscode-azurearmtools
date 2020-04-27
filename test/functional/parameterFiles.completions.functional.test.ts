@@ -474,4 +474,52 @@ suite("Functional parameter file completions", () => {
 }
 }`
     );
+
+    createCompletionsFunctionalTest(
+        "Inside blank string (or double quote as trigger)",
+        `{
+"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+"contentVersion": "1.0.0.0",
+"parameters": {
+    "!"{EOL}
+}
+}`,
+        defaultTemplate,
+        `"optional1"`,
+        `{
+"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+"contentVersion": "1.0.0.0",
+"parameters": {
+    "optional1": {
+        "value": {
+          "abc": "def"
+        }
+    }
+}
+}`
+    );
+
+    createCompletionsFunctionalTest(
+        "Inside existing string (or double quote as trigger)",
+        `{
+"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+"contentVersion": "1.0.0.0",
+"parameters": {
+    "optiona!"{EOL}
+}
+}`,
+        defaultTemplate,
+        `"optional1"`,
+        `{
+"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+"contentVersion": "1.0.0.0",
+"parameters": {
+    "optional1": {
+        "value": {
+          "abc": "def"
+        }
+    }
+}
+}`
+    );
 });
