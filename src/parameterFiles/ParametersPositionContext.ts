@@ -15,7 +15,20 @@ import * as TLE from '../TLE';
 import { DeploymentParameters } from "./DeploymentParameters";
 
 const EOL = ext.EOL;
-const newParameterValueSnippetLabel = `new-parameter-value`;
+
+interface ISnippet {
+    label: string;
+    snippet: string;
+}
+
+// tslint:disable:prefer-template
+const newParameterValueSnippet: ISnippet = {
+    label: 'new-parameter-value',
+    snippet: `"\${1:parameter1}": {` + EOL
+        + `\t"value": "\${2:value}"` + EOL
+        + `}`
+};
+// tslint:enable:prefer-template
 
 /**
  * Represents a position inside the snapshot of a deployment parameter file, plus all related information
@@ -98,20 +111,12 @@ export class ParametersPositionContext extends PositionContext {
 
     private getCompletionForNewParameter(): Completion.Item {
         const detail = "Insert new parameter";
-        let snippet =
-            // tslint:disable-next-line:prefer-template
-            `"\${1:parameter1}": {` + EOL
-            + `\t"value": "\${2:value}"` + EOL
-            + `}`;
-        const documentation = "documentation";
-        const label = newParameterValueSnippetLabel;
-
         return this.createParameterCompletion(
-            label,
-            snippet,
+            newParameterValueSnippet.label,
+            newParameterValueSnippet.snippet,
             Completion.CompletionKind.DpNewPropertyValue,
             detail,
-            documentation);
+            undefined);
     }
 
     /**
@@ -159,10 +164,11 @@ export class ParametersPositionContext extends PositionContext {
         insertText: string,
         kind: Completion.CompletionKind,
         detail: string,
-        documentation: string
+        documentation?: string
     ): Completion.Item {
         // The completion span is the entire token at the cursor
         let token = this.jsonToken;
+        // ... or else the span of the token it's on
         token = token ?? this.document.getJSONTokenAtDocumentCharacterIndex(this.documentCharacterIndex);
 
         if (!token && this.documentCharacterIndex > 0) {
