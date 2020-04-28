@@ -5,7 +5,7 @@
 // tslint:disable:max-func-body-length
 
 import * as assert from "assert";
-import { createParameterFileContents, createParameterFromTemplateParameter } from "../extension.bundle";
+import { ContentKind, createParameterFileContents, createParameterFromTemplateParameter, WhichParams } from "../extension.bundle";
 import { IDeploymentParameterDefinition, IDeploymentTemplate } from "./support/diagnostics";
 import { normalizeString } from "./support/normalizeString";
 import { parseTemplate } from "./support/parseTemplate";
@@ -29,7 +29,7 @@ suite("parameterFileGeneration tests", () => {
                     parameters: <{ [key: string]: IDeploymentParameterDefinition }>parameters
                 };
                 const dt = await parseTemplate(template);
-                const paramFile = createParameterFileContents(dt, 4, onlyRequiredParams);
+                const paramFile = createParameterFileContents(dt, 4, WhichParams.required);
                 assert.equal(paramFile, expectedContents);
             });
         }
@@ -67,7 +67,7 @@ suite("parameterFileGeneration tests", () => {
                 const foundDefinition = dt.topLevelScope.getParameterDefinition(parameterName);
                 assert(foundDefinition);
                 // tslint:disable-next-line:no-non-null-assertion
-                const param = createParameterFromTemplateParameter(dt, foundDefinition!, spacesPerIndent);
+                const param = createParameterFromTemplateParameter(dt, foundDefinition!, ContentKind.text, spacesPerIndent); // asdf
                 assert.equal(param, expectedContents);
             });
         }

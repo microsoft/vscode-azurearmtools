@@ -8,7 +8,7 @@ import { DeploymentTemplate } from "../DeploymentTemplate";
 import { ext } from '../extensionVariables';
 import * as Json from '../JSON';
 import * as language from "../Language";
-import { createParameterFromTemplateParameter } from "../parameterFileGeneration";
+import { ContentKind, createParameterFromTemplateParameter } from "../parameterFileGeneration";
 import { IReferenceSite, PositionContext, ReferenceSiteKind } from "../PositionContext";
 import { ReferenceList } from "../ReferenceList";
 import * as TLE from '../TLE';
@@ -138,7 +138,7 @@ export class ParametersPositionContext extends PositionContext {
 
                 const isRequired = !param.defaultValue;
                 const label = param.nameValue.quotedValue;
-                const paramText = createParameterFromTemplateParameter(this._associatedTemplate, param);
+                const paramText = createParameterFromTemplateParameter(this._associatedTemplate, param, ContentKind.snippet); //asdf testpoint
                 let replacement = paramText;
                 const documentation = `Insert a value for parameter "${param.nameValue.unquotedValue}" from template file "${path.basename(this._associatedTemplate.documentId.fsPath)}"`;
                 const detail = (isRequired ? "(required parameter)" : "(optional parameter)")

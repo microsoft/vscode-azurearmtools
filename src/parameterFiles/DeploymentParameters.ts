@@ -4,7 +4,7 @@
 
 import * as assert from 'assert';
 import { EOL } from "os";
-import { CodeAction, CodeActionContext, CodeActionKind, Command, Range, Selection, TextEditor, Uri } from "vscode";
+import { CodeAction, CodeActionContext, CodeActionKind, Command, Range, Selection, SnippetString, TextEditor, Uri } from "vscode";
 import { CachedValue } from "../CachedValue";
 import { templateKeys } from "../constants";
 import { DeploymentDocument } from "../DeploymentDocument";
@@ -13,7 +13,7 @@ import { INamedDefinition } from "../INamedDefinition";
 import { IParameterDefinition } from "../IParameterDefinition";
 import * as Json from "../JSON";
 import * as language from "../Language";
-import { createParameterFromTemplateParameter, defaultTabSize } from "../parameterFileGeneration";
+import { ContentKind, createParametersFromTemplateParameters, defaultTabSize } from "../parameterFileGeneration";
 import { ReferenceList } from "../ReferenceList";
 import { isParametersSchema } from "../schemas";
 import { indentMultilineString } from "../util/multilineStrings";
@@ -200,19 +200,19 @@ export class DeploymentParameters extends DeploymentDocument {
             }
 
             // Create insertion text
-            let paramsAsText: string[] = [];
-            for (let param of missingParams) {
-                const paramText = createParameterFromTemplateParameter(template, param, defaultTabSize);
-                paramsAsText.push(paramText);
-            }
-            let newText = paramsAsText.join(`,${EOL}`);
+            const paramsAsText = createParametersFromTemplateParameters(
+                template,
+                missingParams,
+                ContentKind.snippet,
+                defaultTabSize // vscode will handle adding tabs
+            );
 
-            // Determine indentation
+            // Determine indentation of where to place the cursor asdf
             const parametersObjectIndent = this.getDocumentPosition(this.parametersProperty?.nameValue.span.startIndex).column;
             const lastParameter = this.parameterValues.length > 0 ? this.parameterValues[this.parameterValues.length - 1] : undefined;
             const lastParameterIndent = lastParameter ? this.getDocumentPosition(lastParameter?.fullSpan.startIndex).column : undefined;
             const newTextIndent = lastParameterIndent === undefined ? parametersObjectIndent + defaultTabSize : lastParameterIndent;
-            let indentedText = indentMultilineString(newText, newTextIndent);
+            let indentedText = indentMultilineString(paramsAsText, newTextIndent);
             let insertText = EOL + indentedText;
 
             // If insertion point is on the same line as the end of the parameters object, then add a newline
@@ -233,15 +233,18 @@ export class DeploymentParameters extends DeploymentDocument {
                 insertText = `,${insertText}`;
             }
 
-            await editor.edit(editBuilder => {
-
-                editBuilder.insert(getVSCodePositionFromPosition(insertPosition), insertText);
-                if (commaEdit) {
+            if (commaEdit) {
+                await editor.edit(editBuilder => {
                     editBuilder.replace(
-                        getVSCodeRangeFromSpan(this, commaEdit.span),
-                        commaEdit.insertText);
-                }
-            });
+                        // tslint:disable-next-line: no-non-null-assertion
+                        getVSCodeRangeFromSpan(this, commaEdit!.span),
+                        // tslint:disable-next-line: no-non-null-assertion
+                        commaEdit!.insertText);
+                });
+            }
+
+            //asdf undo/redo?
+            await editor.insertSnippet(new SnippetString(insertText), getVSCodePositionFromPosition(insertPosition));
         }
     }
 
