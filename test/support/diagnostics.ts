@@ -184,7 +184,7 @@ export interface IPartialDeploymentTemplateResource {
 }
 
 // tslint:disable-next-line:no-empty-interface
-interface ITestDiagnosticsOptions extends IGetDiagnosticsOptions {
+export interface ITestDiagnosticsOptions extends IGetDiagnosticsOptions {
 }
 
 interface IGetDiagnosticsOptions {

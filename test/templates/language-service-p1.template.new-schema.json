@@ -14,9 +14,8 @@
         * mini-F5 to evaluate only with defaultValues?
     - [OPEN QUESTION] will there be value in validation with round-trip to Azure?
 */
-
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "dnsLabelPrefix": {
@@ -120,7 +119,7 @@
         }
       }
     },
-    { // DEMO REQUIREMENT - case insensitivity - the Name property of the vnet is capitalized 
+    { // DEMO REQUIREMENT - case insensitivity - the Name property of the vnet is capitalized
       "apiVersion": "2018-12-01", // JUST A BUG: for some reason, this shows up when the subnet Name property is capitalized
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('virtualNetworkName')]", //bmoore - use a property in the properties object instead of one of the top level ones
@@ -190,51 +189,45 @@
           packages: -
           nginx -
           nodejs -
-          npm ')]"
-        },
-        "storageProfile": {
-          "imageReference": {
-            "publisher": "[variables('imagePublisher')]",
-            "offer": "[variables('imageOffer')]",
-            "sku": "[parameters('ubuntuOSVersion')]",
-            "version": "latest"
-          },
-          "osDisk": {
-            "createOption": "fromImage" // schema expects "FromImage" (title case)
-          }
-        },
-        "networkProfile": {
-          "networkInterfaces": [
-            {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
-            }
-          ]
-        },
-        "diagnosticsProfile": {
-          "bootDiagnostics": {
-            "enabled": true, // CHANGED to boolean
-            // open question on whether multi-line would work here, but I would expect it to. Maybe not for a demo, but a P0
-            // this seems more main-line than what the above cloud-init scenario or functions
-            "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))).primaryEndpoints.blob]" // this line uses both reference and resource id
-            // flagging this to check intellisenes on arm complex functions
-          }
-        }
-      }
-    }
-  ],
-  "outputs": {
-    "ssh-command": {
-      "type": "string",
-      // demo requirement/P0 - multi-line where newlines are important for code execution
-      "value": "[if(equals(parameters('publicIpNewOrExisting'), 'none'),
-      'no public ip',
-      concat('ssh ',
-      parameters('adminUsername'),
-      '@',
-      reference(resourceId('Microsoft.Network/publicIPAddresses',
-      parameters('publicIpAddressName')),
-      '2018-04-01').dnsSettings.fqdn)) ]
-      "
-    }
+          npm ')
+  ]
+  "
+}, "storageProfile": {
+  "imageReference": {
+    "publisher": "[variables('imagePublisher')]",
+    "offer": "[variables('imageOffer')]",
+    "sku": "[parameters('ubuntuOSVersion')]",
+    "version": "latest"
+  },
+  "osDisk": {
+    "createOption": "fromImage" // schema expects "FromImage" (title case)
   }
-}
+}, "networkProfile": {
+  "networkInterfaces": [
+    {
+      "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+    }
+  ]
+}, "diagnosticsProfile": {
+  "bootDiagnostics": {
+    "enabled": true, // CHANGED to boolean
+    // open question on whether multi-line would work here, but I would expect it to. Maybe not for a demo, but a P0
+    // this seems more main-line than what the above cloud-init scenario or functions
+    "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))).primaryEndpoints.blob]" // this line uses both reference and resource id
+    // flagging this to check intellisenes on arm complex functions
+  }
+} } } ], "outputs": {
+  "ssh-command": {
+    "type": "string",
+    // demo requirement/P0 - multi-line where newlines are important for code execution
+    "value": "[if(equals(parameters('publicIpNewOrExisting'), 'none'),
+    'no public ip',
+    concat('ssh ',
+    parameters('adminUsername'),
+    '@',
+    reference(resourceId('Microsoft.Network/publicIPAddresses',
+    parameters('publicIpAddressName')),
+    '2018-04-01').dnsSettings.fqdn)) ]
+    "
+  }
+} }

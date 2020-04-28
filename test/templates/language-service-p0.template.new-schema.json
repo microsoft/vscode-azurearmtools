@@ -1,22 +1,24 @@
 /*
-    P1s - GA
-    ETA for Release - September
+    P0s - "Preview"
+    ETA for Release - July
 
-    0. features parity with current extension (i.e. recongizing unused params)
-    1. function signature intellisense
-        a. including UDFs
-        b. hopefully things like resourceId and reference function can be contextual
-    2. intellisense for language constructs like copy loop
-        a. are there others? or is copy the only/main one?
-    3. portal and SDKs can deploy this new template
-    4. Expression evaluation using parameter file --> need to think this through more
-    - need "full" ARM validation for this
-        * mini-F5 to evaluate only with defaultValues?
-    - [OPEN QUESTION] will there be value in validation with round-trip to Azure?
+    FP = False Positive
+
+    0. Full RP schema validation based on type and apiVersion
+    1. // and /* comments
+    2. multiline strings
+      - code/script scenario where newlines are important
+      - just long strings where multiline should be ignored
+    3. case insensitivity
+    4. FP when expression is used, but logic is evaluated on the text of the expression syntax, 
+      not the contents of the expression
+    5. FP on property value type can be a string
+      - String vs "String", true vs "true", int vs "int" (possibly may introduce RP issues with this)
+    6. ps cmdlet, az cli command can all deploy this "new" template
 */
 
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "dnsLabelPrefix": {
@@ -69,13 +71,6 @@
       "metadata": {
         "description": "Determines whether or not a new public ip should be provisioned."
       }
-    },
-    "unusedParameter": { // this is caught by the extension today, noting for feature parity - ajf
-      "type": "string"
-    },
-    "publicIpAddressName": {
-      "type": "string",
-      "defaultValue": "[concat(resourceGroup().name, '-pip')]"
     }
   },
   "variables": {
@@ -101,8 +96,11 @@
       "name": "[variables('storageAccountName')]", // the false positive on the length is a P0, interestingly this didn't show up for api version 2015-06-15
       // the comment is a DEMO
       "apiVersion": "2018-07-01",
-      "location": "[parameters('location')]", // Need to sync with Steve on what is possible for syntax highlighting here
-      // for demo, I would expect the use of expressions ([]) to at least be highlighted
+      "kind": "storage",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "location": "[parameters('location')]",
       "properties": {
         "accountType": "[variables('storageAccountType')]"
       }
@@ -190,51 +188,46 @@
           packages: -
           nginx -
           nodejs -
-          npm ')]"
-        },
-        "storageProfile": {
-          "imageReference": {
-            "publisher": "[variables('imagePublisher')]",
-            "offer": "[variables('imageOffer')]",
-            "sku": "[parameters('ubuntuOSVersion')]",
-            "version": "latest"
-          },
-          "osDisk": {
-            "createOption": "fromImage" // schema expects "FromImage" (title case)
-          }
-        },
-        "networkProfile": {
-          "networkInterfaces": [
-            {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
-            }
-          ]
-        },
-        "diagnosticsProfile": {
-          "bootDiagnostics": {
-            "enabled": true, // CHANGED to boolean
-            // open question on whether multi-line would work here, but I would expect it to. Maybe not for a demo, but a P0
-            // this seems more main-line than what the above cloud-init scenario or functions
-            "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))).primaryEndpoints.blob]" // this line uses both reference and resource id
-            // flagging this to check intellisenes on arm complex functions
-          }
-        }
-      }
-    }
-  ],
-  "outputs": {
-    "ssh-command": {
-      "type": "string",
-      // demo requirement/P0 - multi-line where newlines are important for code execution
-      "value": "[if(equals(parameters('publicIpNewOrExisting'), 'none'),
-      'no public ip',
-      concat('ssh ',
-      parameters('adminUsername'),
-      '@',
-      reference(resourceId('Microsoft.Network/publicIPAddresses',
-      parameters('publicIpAddressName')),
-      '2018-04-01').dnsSettings.fqdn)) ]
-      "
-    }
+          npm' )
+  ]
+  "
+}, "storageProfile": {
+  "imageReference": {
+    "publisher": "[variables('imagePublisher')]",
+    "offer": "[variables('imageOffer')]",
+    "sku": "[parameters('ubuntuOSVersion')]",
+    "version": "latest"
+  },
+  "osDisk": {
+    "createOption": "fromImage" // schema expects "FromImage" (title case)
   }
-}
+}, "networkProfile": {
+  "networkInterfaces": [
+    {
+      "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+    }
+  ]
+}, "diagnosticsProfile": {
+  "bootDiagnostics": {
+    "enabled": true, // should be able to be true or "true"
+    // open question on whether multi-line would work here, but I would expect it to. Maybe not for a demo, but a P0
+    // this seems more main-line than what the above cloud-init scenario or functions
+    "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))).primaryEndpoints.blob]"
+  }
+} } } ], "outputs": {
+  "ssh-command": {
+    "type": "string",
+    // demo requirement/P0 - multi-line where newlines are important for code execution
+    "value": "[
+    if(equals(parameters('publicIpNewOrExisting'),
+    'none'),
+    'no public ip',
+    concat('ssh ',
+    parameters('adminUsername'),
+    '@',
+    reference(resourceId('Microsoft.Network/publicIPAddresses',
+    variables('publicIpAddressName')),
+    '2018-04-01').dnsSettings.fqdn)) ]
+    "
+  }
+} }
