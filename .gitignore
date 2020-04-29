@@ -236,9 +236,6 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 
-# Typescript v1 declaration files
-typings/
-
 # Visual Studio 6 build log
 *.plg
 
@@ -307,3 +304,7 @@ pkgs/**
 
 # Staged language server bits
 languageServer/**
+
+# Schema caches
+pre-cache
+post-cache

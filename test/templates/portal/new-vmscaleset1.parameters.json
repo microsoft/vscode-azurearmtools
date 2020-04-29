@@ -1,0 +1,79 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "virtualMachineScaleSetName": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "singlePlacementGroup": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "instanceSize": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "instanceCount": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "priority": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "osDiskType": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "addressPrefixes": {
+            "value": [
+                // TODO: Fill in parameter value
+            ]
+        },
+        "subnets": {
+            "value": [
+                // TODO: Fill in parameter value
+            ]
+        },
+        "virtualNetworkName": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "networkSecurityGroups": {
+            "value": [
+                // TODO: Fill in parameter value
+            ]
+        },
+        "networkInterfaceConfigurations": {
+            "value": [
+                // TODO: Fill in parameter value
+            ]
+        },
+        "diagnosticStorageAccount": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "diagnosticsStorageAccountKind": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "diagnosticsStorageAccountType": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "upgradePolicy": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "adminUsername": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "adminPassword": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "evictionPolicy": {
+            "value": "" // TODO: Fill in parameter value
+        },
+        "zone": {
+            "value": [
+                // TODO: Fill in parameter value
+            ]
+        },
+        "platformFaultDomainCount": {
+            "value": "" // TODO: Fill in parameter value
+        }
+    }
+}

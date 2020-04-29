@@ -7,8 +7,18 @@
  * and truncates the beginning and end of a long string.
  */
 // tslint:disable-next-line:function-name
-export function __debugMarkPositionInString(text: string, position: number, insertTextAtPosition: string, charactersBeforeIndex: number = 25, charactersAfterPosition: number = 50): string {
-    const preTextIndex = position - charactersBeforeIndex;
+export function __debugMarkPositionInString(
+    text: string,
+    position: number,
+    insertTextAtPosition: string = '<CURSOR>',
+    charactersBeforePosition: number = 45,
+    charactersAfterPosition: number = 50
+): string {
+    if (position >= text.length) {
+        const textAtEnd = `${text.slice(text.length - charactersAfterPosition)}<END(${text.length})>`;
+        return `${textAtEnd}...<CURSOR=${position}>`;
+    }
+    const preTextIndex = position - charactersBeforePosition;
     const preText = `${(preTextIndex > 0 ? "..." : "")}${text.slice(preTextIndex >= 0 ? preTextIndex : 0, position)}`;
 
     const postStart = position;
@@ -17,9 +27,23 @@ export function __debugMarkPositionInString(text: string, position: number, inse
     return `${preText}${insertTextAtPosition}${postTextIndex}`;
 }
 
+/**
+ * Same as __debugMarkPositionInString, but specifying a range instead of a position
+ */
 // tslint:disable-next-line:function-name
-export function __debugMarkSubstring(text: string, position: number, length: number, leftMarker: string = "<<", rightMarker: string = ">>", charactersBeforeIndex: number = 25, charactersAfterPosition: number = 50): string {
-    const preTextIndex = position - charactersBeforeIndex;
+export function __debugMarkRangeInString(
+    text: string,
+    position: number,
+    length: number,
+    leftMarker: string = "<<",
+    rightMarker: string = ">>",
+    charactersBeforePosition: number = 25,
+    charactersAfterPosition: number = 50
+): string {
+    if (position >= text.length) {
+        return __debugMarkPositionInString(text, position, leftMarker + rightMarker, charactersBeforePosition, charactersAfterPosition);
+    }
+    const preTextIndex = position - charactersBeforePosition;
     const preText = `${(preTextIndex > 0 ? "..." : "")}${text.slice(preTextIndex >= 0 ? preTextIndex : 0, position)}`;
 
     const postTextIndex = position + length;

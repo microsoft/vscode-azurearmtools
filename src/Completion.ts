@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { MarkdownString } from "vscode";
 import { IFunctionMetadata } from "./IFunctionMetadata";
 import { IParameterDefinition } from "./IParameterDefinition";
 import * as language from "./Language";
@@ -12,114 +13,171 @@ import { IVariableDefinition } from "./VariableDefinition";
  * A completion item in the list of completion suggestions that appear when a user invokes auto-completion (Ctrl + Space).
  */
 export class Item {
+    public readonly label: string;
+    public readonly insertText: string;
+    public readonly span: language.Span;
+    public readonly kind: CompletionKind;
+    public readonly detail: string | undefined;
+    public readonly documention: string | MarkdownString | undefined;
+    public readonly snippetName: string | undefined;
+    public readonly additionalEdits: { span: language.Span; insertText: string }[] | undefined;
+    public readonly sortText: string | undefined;
+    public readonly commitCharacters: string[] | undefined;
+    public readonly highPriority: boolean;
+    public readonly preselect: boolean;
+    public readonly telemetryProperties: { [key: string]: string } | undefined;
+
     constructor(
-        private _name: string,
-        private _insertText: string,
-        private _insertSpan: language.Span,
-        private _detail: string,
-        private _description: string | undefined,
-        private _type: CompletionKind
+        options: {
+            label: string;
+            insertText: string;
+            span: language.Span;
+            kind: CompletionKind;
+            /**
+             * A human-readable string with additional information
+             * about this item, like type or symbol information, or the
+             * full text that will be inserted (if not in label)
+             */
+            detail?: string;
+            /**
+             * A human-readable string that represents a doc-comment.
+             */
+            documentation?: string | MarkdownString;
+            snippetName?: string;
+            additionalEdits?: { span: language.Span; insertText: string }[];
+            /**
+             * A string that should be used when comparing this item
+             * with other items. When `falsy` the [label](#CompletionItem.label)
+             * is used.
+             */
+            sortText?: string;
+            commitCharacters?: string[];
+            /**
+             * Priority for sorting used in addition to sortText.
+             */
+            highPriority?: boolean;
+            preselect?: boolean;
+            /**
+             * Optional additional telemetry properties for if the completion is activated
+             */
+            telemetryProperties?: { [key: string]: string };
+        }
     ) {
+        this.label = options.label;
+        this.insertText = options.insertText;
+        this.span = options.span;
+        this.kind = options.kind;
+        this.detail = options.detail;
+        this.documention = options.documentation;
+        this.snippetName = options.snippetName;
+        this.additionalEdits = options.additionalEdits;
+        this.sortText = options.sortText;
+        this.commitCharacters = options.commitCharacters;
+        this.highPriority = !!options.highPriority;
+        this.preselect = !!options.preselect;
+        this.telemetryProperties = options.telemetryProperties;
     }
 
-    public static fromFunctionMetadata(metadata: IFunctionMetadata, replaceSpan: language.Span): Item {
+    public static fromFunctionMetadata(metadata: IFunctionMetadata, span: language.Span): Item {
         // We want to show the fully-qualified name in the completion's title, but we only need to insert the
         // unqualified name, since the namespace is already there (if any)
-        let insertText: string = metadata.unqualifiedName;
-        // CONSIDER: Adding parentheses is wrong if they're already there
-        if (metadata.maximumArguments === 0) {
-            // Cursor should go after the parentheses if no args
-            insertText += "()$0";
-        } else {
-            // ... or between them if there are args
-            insertText += "($0)";
+        const insertText: string = metadata.unqualifiedName;
+
+        // Note: We do *not* automtically add parentheses after the function name. This actually
+        // disrupts the normal flow that customers are expecting. Also, this means users will
+        // need to type "(" themselves, which will then open up the intellisense completion
+        // for the arguments, which otherwise wouldn't happen.
+        return new Item(
+            {
+                label: metadata.fullName,
+                insertText,
+                span,
+                kind: metadata.unqualifiedName === metadata.fullName ? CompletionKind.Function : CompletionKind.UserFunction,
+                detail: `(function) ${metadata.usage}`,
+                documentation: metadata.description
+            });
+    }
+
+    public static fromNamespaceDefinition(namespace: UserFunctionNamespaceDefinition, span: language.Span): Item {
+        const label: string = namespace.nameValue.unquotedValue;
+        let insertText: string = `${label}`;
+
+        return new Item({
+            label,
+            insertText,
+            span: span,
+            kind: CompletionKind.Parameter,
+            detail: `(namespace) ${label}`,
+            documentation: "User-defined namespace"
+        });
+    }
+
+    public static fromPropertyName(propertyName: string, span: language.Span): Item {
+        return new Item({
+            label: propertyName,
+            insertText: propertyName,
+            span,
+            kind: CompletionKind.Property,
+            detail: "(property)" // CONSIDER: Add type, default value, etc.
+        });
+    }
+
+    public static fromParameterDefinition(parameter: IParameterDefinition, span: language.Span, includeRightParenthesisInCompletion: boolean): Item {
+        const label: string = `'${parameter.nameValue.unquotedValue}'`;
+        return new Item({
+            label,
+            insertText: `${label}${includeRightParenthesisInCompletion ? ")" : ""}`,
+            span,
+            kind: CompletionKind.Parameter,
+            detail: `(parameter)`, // CONSIDER: Add type, default value, etc. from property definition
+            documentation: parameter.description
+        });
+    }
+
+    public static fromVariableDefinition(variable: IVariableDefinition, span: language.Span, includeRightParenthesisInCompletion: boolean): Item {
+        const label: string = `'${variable.nameValue.unquotedValue}'`;
+        return new Item({
+            label,
+            insertText: `${label}${includeRightParenthesisInCompletion ? ")" : ""}`,
+            span,
+            kind: CompletionKind.Variable,
+            detail: `(variable)`
+        });
+    }
+
+    /**
+     * Dupes the completions list by label, without affecting order
+     */
+    public static dedupeByLabel(items: Item[]): Item[] {
+        const addedLC = new Set<string>();
+        const deduped: Item[] = [];
+
+        for (let item of items) {
+            const itemLabelLC = item.label.toLowerCase();
+            if (!addedLC.has(itemLabelLC)) {
+                deduped.push(item);
+                addedLC.add(itemLabelLC);
+            }
         }
 
-        return new Item(
-            metadata.fullName,
-            insertText,
-            replaceSpan,
-            `(function) ${metadata.usage}`, // detail
-            metadata.description, // description
-            CompletionKind.Function);
-    }
-
-    public static fromNamespaceDefinition(namespace: UserFunctionNamespaceDefinition, replaceSpan: language.Span): Item {
-        const name: string = namespace.nameValue.unquotedValue;
-        let insertText: string = `${name}.$0`;
-
-        return new Item(
-            name,
-            insertText,
-            replaceSpan,
-            `(namespace) ${name}`, // detail
-            "User-defined namespace", // description
-            CompletionKind.Parameter
-        );
-    }
-
-    public static fromPropertyName(propertyName: string, replaceSpan: language.Span): Item {
-        return new Item(
-            propertyName,
-            `${propertyName}$0`,
-            replaceSpan,
-            "(property)", // detail  // CONSIDER: Add type, default value, etc.
-            "", // description
-            CompletionKind.Property
-        );
-    }
-
-    public static fromParameterDefinition(parameter: IParameterDefinition, replaceSpan: language.Span, includeRightParenthesisInCompletion: boolean): Item {
-        const name: string = `'${parameter.nameValue.unquotedValue}'`;
-        return new Item(
-            name,
-            `${name}${includeRightParenthesisInCompletion ? ")" : ""}$0`,
-            replaceSpan,
-            `(parameter)`, // detail // CONSIDER: Add type, default value, etc. from property definition
-            parameter.description, // description (from property definition's metadata)
-            CompletionKind.Parameter);
-    }
-
-    public static fromVariableDefinition(variable: IVariableDefinition, replaceSpan: language.Span, includeRightParenthesisInCompletion: boolean): Item {
-        const variableName: string = `'${variable.nameValue.unquotedValue}'`;
-        return new Item(
-            variableName,
-            `${variableName}${includeRightParenthesisInCompletion ? ")" : ""}$0`,
-            replaceSpan,
-            `(variable)`, // detail
-            "", // description
-            CompletionKind.Variable);
-    }
-
-    public get name(): string {
-        return this._name;
-    }
-
-    public get insertText(): string {
-        return this._insertText;
-    }
-
-    public get insertSpan(): language.Span {
-        return this._insertSpan;
-    }
-
-    public get detail(): string {
-        return this._detail;
-    }
-
-    public get description(): string | undefined {
-        return this._description;
-    }
-
-    public get kind(): CompletionKind {
-        return this._type;
+        return deduped;
     }
 }
 
 export enum CompletionKind {
+    // TLE completions
     Function = "Function",
     Parameter = "Parameter",
     Variable = "Variable",
     Property = "Property",
-    Namespace = "Namespace"
+    Namespace = "Namespace",
+    UserFunction = "UserFunction",
+
+    // Template file completions
+    DtResourceIdResType = "DtResourceIdResType", // First arg of resourceId
+    DtResourceIdResName = "DtResourceIdResName", // Second arg of resourceId
+
+    // Parameter file completions
+    DpPropertyValue = "DpPropertyValue", // Parameter from the template file
+    DpNewPropertyValue = "DpNewPropertyValue" // New, unnamed parameter
 }

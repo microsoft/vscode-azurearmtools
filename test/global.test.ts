@@ -5,7 +5,8 @@
 
 import * as mocha from 'mocha';
 import * as vscode from 'vscode';
-import { configKeys, configPrefix, ext, languageId } from "../extension.bundle";
+import { armTemplateLanguageId, configKeys, configPrefix, ext } from "../extension.bundle";
+import { displayCacheStatus, packageCache } from './support/clearCache';
 import { delay } from "./support/delay";
 import { useTestFunctionMetadata } from "./TestData";
 
@@ -18,6 +19,9 @@ let previousSettings = {
 
 // Runs before all tests
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
+
+    await displayCacheStatus();
+    await packageCache('pre-cache');
 
     // For tests, set up dotnet install path to something unusual to simulate installing with unusual usernames
     process.env.ARM_DOTNET_INSTALL_FOLDER = ".dotnet O'Hare O'Donald";
@@ -37,7 +41,7 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, true, vscode.ConfigurationTarget.Global);
     // ... Add {'*.azrm':'arm-template'} to file.assocations (so colorization tests use the correct grammar, since _workbench.captureSyntaxTokens doesn't actually load anything into an editor)
     let fileAssociations = previousSettings.fileAssociations = vscode.workspace.getConfiguration('files').get<{}>('associations');
-    let newAssociations = Object.assign({}, fileAssociations, { '*.azrm': languageId });
+    let newAssociations = Object.assign({}, fileAssociations, { '*.azrm': armTemplateLanguageId });
     vscode.workspace.getConfiguration('files', null).update('associations', newAssociations, vscode.ConfigurationTarget.Global);
 
     await delay(1000); // Give vscode time to update the setting
@@ -48,6 +52,9 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
 // Runs after all tests
 suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
     console.log('Done: global.test.ts: suiteTeardown');
+
+    await displayCacheStatus();
+    await packageCache('post-cache');
 
     console.log('Restoring settings');
     vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, previousSettings.autoDetectJsonTemplates, vscode.ConfigurationTarget.Global);

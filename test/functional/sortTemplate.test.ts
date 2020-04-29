@@ -12,6 +12,7 @@ import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import { commands, window, workspace } from "vscode";
 import { getTempFilePath } from "../support/getTempFilePath";
+import { DISABLE_SLOW_TESTS } from '../testConstants';
 
 suite("SortTemplate", async (): Promise<void> => {
     const topLevelCommand = 'azurerm-vscode-tools.sortTopLevel';
@@ -20,6 +21,10 @@ suite("SortTemplate", async (): Promise<void> => {
     const resourcesCommand = 'azurerm-vscode-tools.sortResources';
     const outputsCommand = 'azurerm-vscode-tools.sortOutputs';
     const functionsCommand = 'azurerm-vscode-tools.sortFunctions';
+
+    if (DISABLE_SLOW_TESTS) {
+        return;
+    }
 
     async function testSortTemplate(command: string, template: String, expected: String): Promise<void> {
         const tempPath = getTempFilePath(`sortTemplate`, '.azrm');

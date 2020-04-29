@@ -197,7 +197,7 @@ export class TopLevelCopyBlockVariableDefinition extends VariableDefinition {
         // E.g.
         //   "variables": {
         //         "copy": [
-        //             { <<<< This is passed to constructor
+        //             { <---- This is passed to constructor
         //                 "name": "top-level-string-array",
         //                 "count": 5,
         //                 "input": "[concat('myDataDisk', copyIndex('top-level-string-array', 1))]"

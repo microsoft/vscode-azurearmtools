@@ -2,10 +2,10 @@
     "name": "azurerm-vscode-tools",
     "displayName": "Azure Resource Manager (ARM) Tools",
     "description": "Language server, editing tools and snippets for Azure Resource Manager (ARM) template files.",
-    "version": "0.9.0-alpha",
+    "version": "0.10.0-alpha",
     "publisher": "msazurermtools",
     "config": {
-        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20157.1"
+        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20214.4"
     },
     "categories": [
         "Azure",
@@ -36,15 +36,13 @@
     "icon": "AzureRMTools128x128.png",
     "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
     "engines": {
-        "vscode": "^1.31.0"
+        "vscode": "^1.41.0"
     },
     "preview": true,
     "activationEvents": [
         "onLanguage:arm-template",
         "onLanguage:json",
         "onLanguage:jsonc",
-        "onCommand:azurerm-vscode-tools.uninstallDotnet",
-        "onCommand:azurerm-vscode-tools.reloadSchemas",
         "onCommand:azurerm-vscode-tools.sortTemplate",
         "onCommand:azurerm-vscode-tools.sortFunctions",
         "onCommand:azurerm-vscode-tools.sortOutputs",
@@ -53,6 +51,9 @@
         "onCommand:azurerm-vscode-tools.sortVariables",
         "onCommand:azurerm-vscode-tools.selectParameterFile",
         "onCommand:azurerm-vscode-tools.openParameterFile",
+        "onCommand:azurerm-vscode-tools.openTemplateFile",
+        "onCommand:azurerm-vscode-tools.codeAction.addAllMissingParameters",
+        "onCommand:azurerm-vscode-tools.codeAction.addMissingRequiredParameters",
         "onCommand:azurerm-vscode-tools.resetGlobalState"
     ],
     "contributes": {
@@ -129,7 +130,7 @@
                 },
                 "azureResourceManagerTools.parameterFiles": {
                     "type": "object",
-                    "description": "Specifies which parameter file to associate with each given template file. Specifying the parameter file allows more thorough validation.",
+                    "description": "Specifies which parameter file to use for each given template file. Specifying the parameter file allows more thorough validation.",
                     "default": {},
                     "additionalProperties": {
                         "type": "string"
@@ -158,15 +159,11 @@
         "commands": [
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Remove Local Dotnet Core Installation",
-                "command": "azurerm-vscode-tools.uninstallDotnet"
+                "title": "Reset Global State",
+                "command": "azurerm-vscode-tools.resetGlobalState"
             },
             {
-                "category": "Azure Resource Manager Tools",
-                "title": "Reload Cached Schemas",
-                "command": "azurerm-vscode-tools.reloadSchemas"
-            },
-            {
+                "$comment": "============= Template sorting =============",
                 "category": "Azure Resource Manager Tools",
                 "title": "Sort Template...",
                 "command": "azurerm-vscode-tools.sortTemplate"
@@ -197,6 +194,7 @@
                 "command": "azurerm-vscode-tools.sortVariables"
             },
             {
+                "$comment": "============= Template file commands =============",
                 "category": "Azure Resource Manager Tools",
                 "title": "Select/Create Parameter File...",
                 "command": "azurerm-vscode-tools.selectParameterFile",
@@ -204,14 +202,32 @@
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Open Associated Parameter File",
+                "title": "Open Parameter File",
                 "command": "azurerm-vscode-tools.openParameterFile",
-                "enablement": "editorLangId==arm-template"
+                "enablement": "azurerm-vscode-tools-hasParamFile",
+                "$enablement.comment": "Shows up when it's a template file, but only enabled if there is an associated param file"
+            },
+            {
+                "$comment": "============= Parameter file commands =============",
+                "category": "Azure Resource Manager Tools",
+                "title": "Open Template File",
+                "command": "azurerm-vscode-tools.openTemplateFile",
+                "enablement": "azurerm-vscode-tools-hasTemplateFile",
+                "$enablement.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
             },
             {
                 "category": "Azure Resource Manager Tools",
-                "title": "Reset Global State",
-                "command": "azurerm-vscode-tools.resetGlobalState"
+                "title": "Add All Missing Parameters",
+                "command": "azurerm-vscode-tools.codeAction.addAllMissingParameters",
+                "enablement": "azurerm-vscode-tools-hasTemplateFile",
+                "$enablement.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Add Missing Required Parameters",
+                "command": "azurerm-vscode-tools.codeAction.addMissingRequiredParameters",
+                "enablement": "azurerm-vscode-tools-hasTemplateFile",
+                "$enablement.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
             }
         ],
         "menus": {
@@ -235,10 +251,15 @@
                 {
                     "command": "azurerm-vscode-tools.sortVariables",
                     "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.openTemplateFile",
+                    "when": "never"
                 }
             ],
             "editor/context": [
                 {
+                    "$comment": "============= Template file commands =============",
                     "command": "azurerm-vscode-tools.selectParameterFile",
                     "group": "zzz_arm-template@1",
                     "when": "editorLangId==arm-template"
@@ -246,7 +267,8 @@
                 {
                     "command": "azurerm-vscode-tools.openParameterFile",
                     "group": "zzz_arm-template@2",
-                    "when": "editorLangId==arm-template"
+                    "when": "editorLangId==arm-template",
+                    "$when.comment": "Shows up when it's a template file, but only enabled if there is an associated param file"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortTemplate",
@@ -254,13 +276,16 @@
                     "group": "zzz_arm-template@3"
                 },
                 {
-                    "command": "azurerm-vscode-tools.reloadSchemas",
-                    "group": "zzz_arm-template@4",
-                    "when": "editorLangId==arm-template"
+                    "$comment": "============= Parameter file commands =============",
+                    "command": "azurerm-vscode-tools.openTemplateFile",
+                    "group": "zzz_arm-params@2",
+                    "when": "azurerm-vscode-tools-isParamFile",
+                    "$when.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
                 }
             ],
             "view/item/context": [
                 {
+                    "$comment": "============= Treeview commands =============",
                     "command": "azurerm-vscode-tools.sortTemplate",
                     "when": "azurerm-vscode-tools.template-outline.active == true",
                     "group": "arm-template"
@@ -293,6 +318,7 @@
             ],
             "editor/title": [
                 {
+                    "$comment": "============= Template file commands =============",
                     "command": "azurerm-vscode-tools.selectParameterFile",
                     "group": "zzz_arm-template@1",
                     "when": "editorLangId==arm-template"
@@ -300,11 +326,20 @@
                 {
                     "command": "azurerm-vscode-tools.openParameterFile",
                     "group": "zzz_arm-template@2",
-                    "when": "editorLangId==arm-template"
+                    "when": "editorLangId==arm-template",
+                    "$when.comment": "Shows up when it's a template file, but only enabled if there is an associated param file"
+                },
+                {
+                    "$comment": "============= Parameter file commands =============",
+                    "command": "azurerm-vscode-tools.openTemplateFile",
+                    "group": "zzz_arm-params@2",
+                    "when": "azurerm-vscode-tools-isParamFile",
+                    "$when.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
                 }
             ],
             "editor/title/context": [
                 {
+                    "$comment": "============= Template file commands =============",
                     "command": "azurerm-vscode-tools.selectParameterFile",
                     "group": "zzz_arm-template@1",
                     "when": "editorLangId==arm-template"
@@ -312,7 +347,15 @@
                 {
                     "command": "azurerm-vscode-tools.openParameterFile",
                     "group": "zzz_arm-template@2",
-                    "when": "editorLangId==arm-template"
+                    "when": "editorLangId==arm-template",
+                    "$when.comment": "Shows up when it's a template file, but only enabled if there is an associated param file"
+                },
+                {
+                    "$comment": "============= Parameter file commands =============",
+                    "command": "azurerm-vscode-tools.openTemplateFile",
+                    "group": "zzz_arm-params@2",
+                    "when": "azurerm-vscode-tools-isParamFile",
+                    "$when.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
                 }
             ]
         }
@@ -323,7 +366,7 @@
         "compile": "gulp build-grammars && npm run get-language-server && gulp verify-test-uses-extension-bundle && tsc -watch -p ./",
         "build": "gulp build-grammars && npm run get-language-server && gulp verify-test-uses-extension-bundle && tsc -p ./",
         "get-language-server": "gulp get-language-server",
-        "lint": "tslint --project tsconfig.json -t verbose",
+        "lint": "tslint --project tsconfig.json -e src/*.d.ts -t verbose",
         "lint-fix": "tslint --project tsconfig.json -t verbose --fix",
         "package": "npm run webpack-prod && npm run get-language-server && gulp package",
         "postinstall": "node ./node_modules/vscode/bin/install",
@@ -339,16 +382,21 @@
         "verify-test-uses-extension-bundle": "gulp verify-test-uses-extension-bundle"
     },
     "devDependencies": {
+        "@types/decompress": "^4.2.3",
         "@types/fs-extra": "^5.1.0",
         "@types/gulp": "^4.0.6",
         "@types/mocha": "^2.2.41",
-        "@types/node": "^12.12.26",
+        "@types/node": "^12.12.35",
         "@types/opn": "^5.5.0",
         "@types/recursive-readdir": "^2.2.0",
         "@types/rimraf": "2.0.2",
         "@types/shelljs": "0.8.3",
         "@types/webpack": "^4.41.5",
+        "decompress": "^4.2.0",
+        "glob": "^7.1.6",
         "gulp": "^4.0.2",
+        "gulp-decompress": "^2.0.2",
+        "gulp-download": "^0.0.1",
         "mocha": "^5.2.0",
         "mocha-junit-reporter": "^1.23.3",
         "mocha-multi-reporters": "^1.1.7",
@@ -356,12 +404,12 @@
         "ts-node": "^7.0.1",
         "tslint": "^5.20.1",
         "tslint-microsoft-contrib": "5.0.3",
-        "typescript": "^3.7.5",
-        "vsce": "^1.73.0",
+        "typescript": "^3.8.3",
+        "vsce": "^1.75.0",
         "vscode": "^1.1.33",
-        "vscode-azureextensiondev": "^0.2.4",
+        "vscode-azureextensiondev": "^0.3.1",
         "webpack": "4.28.1",
-        "webpack-cli": "^3.3.10"
+        "webpack-cli": "^3.3.11"
     },
     "dependencies": {
         "fs-extra": "^7.0.1",
@@ -370,8 +418,11 @@
         "opn": "^5.5.0",
         "rimraf": "2.6.3",
         "shelljs": "^0.8.3",
-        "vscode-azureextensionui": "^0.29.7",
+        "vscode-azureextensionui": "^0.29.14",
         "vscode-jsonrpc": "^4.0.0",
         "vscode-languageclient": "^4.4.0"
-    }
+    },
+    "extensionDependencies": [
+        "ms-dotnettools.vscode-dotnet-runtime"
+    ]
 }
