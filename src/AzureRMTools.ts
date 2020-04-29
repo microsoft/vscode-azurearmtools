@@ -816,6 +816,7 @@ export class AzureRMTools {
                         statusBarText = "No template file selected";
                     }
 
+                    this._paramsStatusBarItem.command = "azurerm-vscode-tools.openTemplateFile";
                     this._paramsStatusBarItem.text = statusBarText;
                 }
             }
