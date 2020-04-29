@@ -146,9 +146,9 @@
         "prefix": "arm-app-gateway",
         "body": [
             "{",
-            "\t\"name\": \"${1:applicationGatewayName}\",",
             "\t\"type\": \"Microsoft.Network/applicationGateways\",",
             "\t\"apiVersion\": \"2019-11-01\",",
+            "\t\"name\": \"${1:applicationGatewayName}\",",
             "\t\"location\": \"[resourceGroup().location]\",",
             "\t\"dependsOn\": [",
             "\t\t\"[resourceId('Microsoft.Network/virtualNetworks', '${2:virtualNetwork1}')]\",",
