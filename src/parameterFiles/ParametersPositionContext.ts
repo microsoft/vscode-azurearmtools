@@ -62,7 +62,7 @@ export class ParametersPositionContext extends PositionContext {
                 if (paramDef) {
                     return {
                         referenceKind: ReferenceSiteKind.reference,
-                        referenceSpan: paramValue.nameValue.unquotedSpan,
+                        unquotedReferenceSpan: paramValue.nameValue.unquotedSpan,
                         referenceDocument: this.document,
                         definition: paramDef,
                         definitionDocument: this._associatedTemplate
@@ -161,10 +161,15 @@ export class ParametersPositionContext extends PositionContext {
         detail: string,
         documentation: string
     ): Completion.Item {
-        // The completion span is the entire JSON string
+        // The completion span is the entire token at the cursor
         let token = this.jsonToken;
         token = token ?? this.document.getJSONTokenAtDocumentCharacterIndex(this.documentCharacterIndex);
-        token = token ?? this.document.getJSONTokenAtDocumentCharacterIndex(this.documentCharacterIndex - 1); //asdf
+
+        if (!token && this.documentCharacterIndex > 0) {
+            // Also pick up the token touching the cursor on the left, if none found right at it
+            token = this.document.getJSONTokenAtDocumentCharacterIndex(this.documentCharacterIndex - 1);
+        }
+
         const span = token?.span ?? this.emptySpanAtDocumentCharacterIndex;
 
         // Comma after?
