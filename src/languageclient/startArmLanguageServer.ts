@@ -153,9 +153,11 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
             window.showWarningMessage(`The ${configPrefix}.languageServer.waitForDebugger option is set.  The language server will pause on startup until a debugger is attached.`);
         }
 
-        client.onTelemetry((telemetryData) => {
-            // tslint:disable-next-line: no-unsafe-any
-            ext.reporter.sendTelemetryEvent(telemetryData.eventName, telemetryData.properties);
+        client.onTelemetry((telemetryData: { eventName: string; properties: { [key: string]: string | undefined } }) => {
+            callWithTelemetryAndErrorHandlingSync(telemetryData.eventName, telemetryActionContext => {
+                telemetryActionContext.errorHandling.suppressDisplay = true;
+                telemetryActionContext.telemetry.properties = telemetryData.properties;
+            });
         });
 
         try {

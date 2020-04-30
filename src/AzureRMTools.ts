@@ -9,7 +9,7 @@ import * as assert from "assert";
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as vscode from "vscode";
-import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
+import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import * as Completion from "./Completion";
 import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "./constants";
 import { DeploymentDocument } from "./DeploymentDocument";
@@ -58,7 +58,6 @@ const invalidRenameError = "Only parameters, variables, user namespaces and user
 // Your extension is activated the very first time the command is executed
 export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
     ext.context = context;
-    ext.reporter = createTelemetryReporter(context);
     ext.outputChannel = createAzExtOutputChannel(outputChannelName, configPrefix);
     ext.ui = new AzureUserInput(context.globalState);
 
@@ -461,32 +460,32 @@ export class AzureRMTools {
             issuesHistograph.add(`extWarn:${warning.kind}`);
         }
 
-        ext.reporter.sendTelemetryEvent(
-            "Deployment Template Opened",
-            {
-                docLangId: document.languageId,
-                docExtension: path.extname(document.fileName),
-                // tslint:disable-next-line: strict-boolean-expressions
-                schema: deploymentTemplate.schemaUri || "",
-                // tslint:disable-next-line: strict-boolean-expressions
-                apiProfile: deploymentTemplate.apiProfile || "",
-                issues: this.histogramToTelemetryString(issuesHistograph)
-            },
-            {
-                documentSizeInCharacters: document.getText().length,
-                parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds,
-                lineCount: deploymentTemplate.lineCount,
-                maxLineLength: deploymentTemplate.getMaxLineLength(),
-                paramsCount: deploymentTemplate.topLevelScope.parameterDefinitions.length,
-                varsCount: deploymentTemplate.topLevelScope.variableDefinitions.length,
-                namespacesCount: deploymentTemplate.topLevelScope.namespaceDefinitions.length,
-                userFunctionsCount: totalUserFunctionsCount,
-                multilineStringCount: deploymentTemplate.getMultilineStringCount(),
-                commentCount: deploymentTemplate.getCommentCount(),
-                extErrorsCount: errorsWarnings.errors.length,
-                extWarnCount: errorsWarnings.warnings.length,
-                linkedParameterFiles: this._mapping.getParameterFile(document.uri) ? 1 : 0
-            });
+        callWithTelemetryAndErrorHandlingSync("Deployment Template Opened", (actionContext: IActionContext) => {
+            actionContext.errorHandling.suppressDisplay = true;
+            const props = actionContext.telemetry.properties;
+            props.docLangId = document.languageId;
+            props.docExtension = path.extname(document.fileName);
+            // tslint:disable-next-line: strict-boolean-expressions
+            props.schema = deploymentTemplate.schemaUri || "";
+            // tslint:disable-next-line: strict-boolean-expressions
+            props.apiProfile = deploymentTemplate.apiProfile || "";
+            props.issues = this.histogramToTelemetryString(issuesHistograph);
+
+            const measurements = actionContext.telemetry.measurements;
+            measurements.documentSizeInCharacters = document.getText().length;
+            measurements.parseDurationInMilliseconds = stopwatch.duration.totalMilliseconds;
+            measurements.lineCount = deploymentTemplate.lineCount;
+            measurements.maxLineLength = deploymentTemplate.getMaxLineLength();
+            measurements.paramsCount = deploymentTemplate.topLevelScope.parameterDefinitions.length;
+            measurements.varsCount = deploymentTemplate.topLevelScope.variableDefinitions.length;
+            measurements.namespacesCount = deploymentTemplate.topLevelScope.namespaceDefinitions.length;
+            measurements.userFunctionsCount = totalUserFunctionsCount;
+            measurements.multilineStringCount = deploymentTemplate.getMultilineStringCount();
+            measurements.commentCount = deploymentTemplate.getCommentCount();
+            measurements.extErrorsCount = errorsWarnings.errors.length;
+            measurements.extWarnCount = errorsWarnings.warnings.length;
+            measurements.linkedParameterFiles = this._mapping.getParameterFile(document.uri) ? 1 : 0;
+        });
 
         this.logFunctionCounts(deploymentTemplate);
         this.logResourceUsage(deploymentTemplate);
@@ -506,24 +505,25 @@ export class AzureRMTools {
             issuesHistograph.add(`extWarn:${warning.kind}`);
         }
 
-        ext.reporter.sendTelemetryEvent(
-            "Parameter File Opened",
-            {
-                docLangId: document.languageId,
-                docExtension: path.extname(document.fileName),
-                schema: parameters.schemaUri ?? ""
-            },
-            {
-                documentSizeInCharacters: document.getText().length,
-                parseDurationInMilliseconds: stopwatch.duration.totalMilliseconds,
-                lineCount: parameters.lineCount,
-                maxLineLength: parameters.getMaxLineLength(),
-                paramsCount: parameters.parametersObjectValue?.length ?? 0,
-                commentCount: parameters.getCommentCount(),
-                linkedTemplateFiles: this._mapping.getTemplateFile(document.uri) ? 1 : 0,
-                extErrorsCount: errorsWarnings.errors.length,
-                extWarnCount: errorsWarnings.warnings.length
-            });
+        callWithTelemetryAndErrorHandlingSync('Parameter File Opened', (actionContext: IActionContext) => {
+            actionContext.errorHandling.suppressDisplay = true;
+
+            const props = actionContext.telemetry.properties;
+            props.docLangId = document.languageId;
+            props.docExtension = path.extname(document.fileName);
+            props.schema = parameters.schemaUri ?? "";
+
+            const measurements = actionContext.telemetry.measurements;
+            measurements.documentSizeInCharacters = document.getText().length;
+            measurements.parseDurationInMilliseconds = stopwatch.duration.totalMilliseconds;
+            measurements.lineCount = parameters.lineCount;
+            measurements.maxLineLength = parameters.getMaxLineLength();
+            measurements.paramsCount = parameters.parametersObjectValue?.length ?? 0;
+            measurements.commentCount = parameters.getCommentCount();
+            measurements.linkedTemplateFiles = this._mapping.getTemplateFile(document.uri) ? 1 : 0;
+            measurements.extErrorsCount = errorsWarnings.errors.length;
+            measurements.extWarnCount = errorsWarnings.warnings.length;
+        });
     }
 
     private async reportDeploymentDocumentErrors(

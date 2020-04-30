@@ -5,7 +5,7 @@
 
 import * as os from 'os';
 import * as vscode from "vscode";
-import { IAzExtOutputChannel, IAzureUserInput, ITelemetryReporter } from "vscode-azureextensionui";
+import { IAzExtOutputChannel, IAzureUserInput } from "vscode-azureextensionui";
 import { LanguageClient } from "vscode-languageclient";
 import { CompletionsSpy } from "./CompletionsSpy";
 import { IConfiguration, VsCodeConfiguration } from "./Configuration";
@@ -24,7 +24,6 @@ class ExtensionVariables {
     public readonly extensionId: string = "msazurermtools.azurerm-vscode-tools";
     private _context: InitializeBeforeUse<vscode.ExtensionContext> = new InitializeBeforeUse<vscode.ExtensionContext>();
     private _jsonOutlineProvider: InitializeBeforeUse<JsonOutlineProvider> = new InitializeBeforeUse<JsonOutlineProvider>();
-    private _reporter: InitializeBeforeUse<ITelemetryReporter> = new InitializeBeforeUse<ITelemetryReporter>();
     private _outputChannel: InitializeBeforeUse<IAzExtOutputChannel> = new InitializeBeforeUse<IAzExtOutputChannel>();
     private _ui: InitializeBeforeUse<IAzureUserInput> = new InitializeBeforeUse<IAzureUserInput>();
 
@@ -40,13 +39,6 @@ class ExtensionVariables {
     }
     public get jsonOutlineProvider(): JsonOutlineProvider {
         return this._jsonOutlineProvider.getValue();
-    }
-
-    public set reporter(reporter: ITelemetryReporter) {
-        this._reporter.setValue(reporter);
-    }
-    public get reporter(): ITelemetryReporter {
-        return this._reporter.getValue();
     }
 
     public set outputChannel(outputChannel: IAzExtOutputChannel) {
