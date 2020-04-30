@@ -21,7 +21,7 @@ export const languageFriendlyName = 'Azure Resource Manager Template';
 export const armTemplateLanguageId = 'arm-template';
 export const languageServerFolderName = 'languageServer';
 export const extensionName = 'Azure Resource Manager Tools';
-export const outputWindowName = extensionName;
+export const outputChannelName = extensionName;
 
 // String that shows up in our errors as the source in parentheses
 export const expressionsDiagnosticsSource = "arm-template (expressions)";

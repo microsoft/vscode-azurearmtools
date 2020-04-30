@@ -177,7 +177,7 @@ export class TemplatePositionContext extends PositionContext {
         return undefined;
     }
 
-    public getCompletionItems(): Completion.Item[] {
+    public getCompletionItems(triggerCharacter: string | undefined): Completion.Item[] {
         const tleInfo = this.tleInfo;
         if (!tleInfo) {
             // No string at this location
@@ -235,16 +235,29 @@ export class TemplatePositionContext extends PositionContext {
     /**
      * Get completions when we're anywhere inside a string literal
      */
-    private getStringLiteralCompletions(tleValue: TLE.StringValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
+    private getStringLiteralCompletions(tleStringValue: TLE.StringValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
         // Start at index 1 to skip past the opening single-quote.
-        const prefix: string = tleValue.toString().substring(1, tleCharacterIndex - tleValue.getSpan().startIndex);
+        const prefix: string = tleStringValue.toString().substring(1, tleCharacterIndex - tleStringValue.getSpan().startIndex);
 
-        if (tleValue.isParametersArgument()) {
+        if (tleStringValue.isParametersArgument()) {
             // The string is a parameter name inside a parameters('xxx') function
-            return this.getMatchingParameterCompletions(prefix, tleValue, tleCharacterIndex, scope);
-        } else if (tleValue.isVariablesArgument()) {
+            return this.getMatchingParameterCompletions(prefix, tleStringValue, tleCharacterIndex, scope);
+        } else if (tleStringValue.isVariablesArgument()) {
             // The string is a variable name inside a variables('xxx') function
-            return this.getMatchingVariableCompletions(prefix, tleValue, tleCharacterIndex, scope);
+            return this.getMatchingVariableCompletions(prefix, tleStringValue, tleCharacterIndex, scope);
+        }
+
+        const funcCall = tleStringValue.getFunctionCallParentOfArgument();
+        if (funcCall) {
+            assert(this.jsonToken && this.jsonToken.type === Json.TokenType.QuotedString);
+            // tslint:disable-next-line: no-non-null-assertion
+            const jsonParentStringToken = this.jsonToken!;
+            // It might be a resourceId/etc completion
+            return getResourceIdCompletions(
+                this,
+                funcCall,
+                jsonParentStringToken
+            );
         }
 
         return [];

@@ -3,9 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export enum EventType {
-    DotnetAcquisitionStart,
-    DotnetAcquisitionError,
-    DotnetAcquisitionCompleted,
-    DotnetAcquisitionMessage,
+declare module "gulp-download" {
+    import { Stream } from "stream";
+
+    function gulp_download(urls: string | string[]): Stream;
+
+    export = gulp_download;
 }

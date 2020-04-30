@@ -2,15 +2,20 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { EOL } from "os";
+import * as path from 'path';
 import * as Completion from "../Completion";
 import { DeploymentTemplate } from "../DeploymentTemplate";
+import { ext } from '../extensionVariables';
+import * as Json from '../JSON';
 import * as language from "../Language";
 import { createParameterFromTemplateParameter } from "../parameterFileGeneration";
 import { IReferenceSite, PositionContext, ReferenceSiteKind } from "../PositionContext";
 import { ReferenceList } from "../ReferenceList";
 import * as TLE from '../TLE';
 import { DeploymentParameters } from "./DeploymentParameters";
+
+const EOL = ext.EOL;
+const newParameterValueSnippetLabel = `new-parameter-value`;
 
 /**
  * Represents a position inside the snapshot of a deployment parameter file, plus all related information
@@ -80,10 +85,10 @@ export class ParametersPositionContext extends PositionContext {
         return refInfo ? this.document.findReferencesToDefinition(refInfo.definition) : undefined;
     }
 
-    public getCompletionItems(): Completion.Item[] {
+    public getCompletionItems(triggerCharacter: string | undefined): Completion.Item[] {
         let completions: Completion.Item[] = [];
 
-        if (this.canAddPropertyHere) {
+        if ((!triggerCharacter || triggerCharacter === '"') && this.canAddPropertyHere) {
             completions.push(... this.getCompletionsForMissingParameters());
             completions.push(this.getCompletionForNewParameter());
         }
@@ -99,7 +104,7 @@ export class ParametersPositionContext extends PositionContext {
             + `\t"value": "\${2:value}"` + EOL
             + `}`;
         const documentation = "documentation";
-        const label = `"<new parameter>"`;
+        const label = newParameterValueSnippetLabel;
 
         return this.createParameterCompletion(
             label,
@@ -126,13 +131,15 @@ export class ParametersPositionContext extends PositionContext {
                     continue;
                 }
 
-                // tslint:disable-next-line:prefer-template
                 const isRequired = !param.defaultValue;
-                const label = `${param.nameValue.quotedValue} ${isRequired ? "(required)" : "(optional)"}`;
+                const label = param.nameValue.quotedValue;
                 const paramText = createParameterFromTemplateParameter(this._associatedTemplate, param);
                 let replacement = paramText;
-                const documentation = `Insert a value for parameter '${param.nameValue.unquotedValue}' from the template file"`;
-                const detail = paramText;
+                const documentation = `Insert a value for parameter "${param.nameValue.unquotedValue}" from template file "${path.basename(this._associatedTemplate.documentId.fsPath)}"`;
+                const detail = (isRequired ? "(required parameter)" : "(optional parameter)")
+                    + EOL
+                    + EOL
+                    + paramText;
 
                 completions.push(
                     this.createParameterCompletion(
@@ -154,8 +161,11 @@ export class ParametersPositionContext extends PositionContext {
         detail: string,
         documentation: string
     ): Completion.Item {
-        // Replacement span
-        let span = this.determineCompletionSpan();
+        // The completion span is the entire JSON string
+        let token = this.jsonToken;
+        token = token ?? this.document.getJSONTokenAtDocumentCharacterIndex(this.documentCharacterIndex);
+        token = token ?? this.document.getJSONTokenAtDocumentCharacterIndex(this.documentCharacterIndex - 1); //asdf
+        const span = token?.span ?? this.emptySpanAtDocumentCharacterIndex;
 
         // Comma after?
         if (this.needsCommaAfterCompletion()) {
@@ -164,6 +174,15 @@ export class ParametersPositionContext extends PositionContext {
 
         // Comma before?
         const commaEdit = this.document.createEditToAddCommaBeforePosition(this.documentCharacterIndex);
+
+        // Use double quotes around the label if the token is a double-quoted string.
+        // That way, the snippet can be used inside or outside of a string, with correct
+        // filtering and insertion behavior
+        if (token?.type === Json.TokenType.QuotedString) {
+            if (label[0] !== '"') {
+                label = `"${label}"`;
+            }
+        }
 
         return new Completion.Item({
             label,
@@ -174,22 +193,6 @@ export class ParametersPositionContext extends PositionContext {
             documentation,
             additionalEdits: commaEdit ? [commaEdit] : undefined
         });
-    }
-
-    private determineCompletionSpan(): language.Span {
-        let span = this.emptySpanAtDocumentCharacterIndex;
-
-        // If the completion is triggered inside double quotes, or from a trigger character of a double quotes (
-        // which ends up adding '""' first, then triggering the completion inside the quotes), then
-        // the insert range needs to subsume those quotes so they get deleted when the new param is inserted.
-        if (this.document.documentText.charAt(this.documentCharacterIndex - 1) === '"') {
-            span = span.extendLeft(1);
-        }
-        if (this.document.documentText.charAt(this.documentCharacterIndex) === '"') {
-            span = span.extendRight(1);
-        }
-
-        return span;
     }
 
     private needsCommaAfterCompletion(): boolean {

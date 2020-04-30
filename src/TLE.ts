@@ -151,11 +151,18 @@ export class StringValue extends Value {
      * built-in function with the given name
      */
     private isBuiltinFunctionArgument(functionName: string): boolean {
+        const funcCall: FunctionCallValue | undefined = this.getFunctionCallParentOfArgument();
+        return !!funcCall && funcCall.isCallToBuiltinWithName(functionName) &&
+            funcCall.argumentExpressions[0] === this;
+    }
+
+    /**
+     * Checks whether the current position is at the argument of a function call, and
+     * if so, returns the function call expression
+     */
+    public getFunctionCallParentOfArgument(): FunctionCallValue | undefined {
         const parent: Value | undefined = this.parent;
-        return !!parent &&
-            parent instanceof FunctionCallValue &&
-            parent.isCallToBuiltinWithName(functionName) &&
-            parent.argumentExpressions[0] === this;
+        return parent instanceof FunctionCallValue ? parent : undefined;
     }
 
     public accept(visitor: Visitor): void {
