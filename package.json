@@ -403,52 +403,102 @@
                 {
                     "$comment": "============= Treeview commands =============",
                     "command": "azurerm-vscode-tools.sortFunctions",
-                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == functions",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == functions",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortOutputs",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == outputs",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortParameters",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == parameters",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortResources",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == resources",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortVariables",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == variables",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertParameter",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == parameters",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertVariable",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == variables",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertOutput",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == outputs",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertFunction",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == functions",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertResource",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == resources",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortFunctions",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == functions",
                     "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortOutputs",
-                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == outputs",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == outputs",
                     "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortParameters",
-                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == parameters",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == parameters",
                     "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortResources",
-                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == resources",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == resources",
                     "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortVariables",
-                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == variables",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == variables",
                     "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.insertParameter",
-                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == parameters",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == parameters",
                     "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.insertVariable",
-                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == variables",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == variables",
                     "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.insertOutput",
-                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == outputs",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == outputs",
                     "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.insertFunction",
-                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == functions",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == functions",
                     "group": "inline"
                 },
                 {
                     "command": "azurerm-vscode-tools.insertResource",
-                    "when": "azurerm-vscode-tools.template-outline.active == true && viewItem == resources",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == resources",
                     "group": "inline"
                 }
             ],
@@ -497,12 +547,12 @@
             "view/title": [
                 {
                     "command": "azurerm-vscode-tools.insertItem",
-                    "when": "azurerm-vscode-tools.template-outline.active == true",
+                    "when": "view == azurerm-vscode-tools.template-outline",
                     "group": "navigation@1"
                 },
                 {
                     "command": "azurerm-vscode-tools.sortTemplate",
-                    "when": "azurerm-vscode-tools.template-outline.active == true",
+                    "when": "view == azurerm-vscode-tools.template-outline",
                     "group": "navigation@2"
                 }
             ]
