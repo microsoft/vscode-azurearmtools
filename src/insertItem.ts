@@ -392,14 +392,14 @@ export class InsertItem {
     /**
      * Indents the given string
      * @param str  The string to be indented.
-     * @param numOfIndents  The amount of indentations to place at the
+     * @param numOfTabs  The amount of indentations to place at the
      *     beginning of each line of the string.
      * @return   The new string with each line beginning with the desired
      *     amount of indentation.
      */
-    private indent(str: string, numOfIndents: number): string {
+    private indent(str: string, numOfTabs: number): string {
         // tslint:disable-next-line:prefer-array-literal
-        str = str.replace(/^(?=.)/gm, new Array(numOfIndents + 1).join('\t'));
+        str = str.replace(/^(?=.)/gm, '\t'.repeat(numOfTabs));
         return str;
     }
 }
