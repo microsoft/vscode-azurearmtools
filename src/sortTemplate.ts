@@ -11,8 +11,10 @@ import { ext } from './extensionVariables';
 import { IParameterDefinition } from './IParameterDefinition';
 import * as Json from "./JSON";
 import * as language from "./Language";
+import { TemplateSectionType } from "./TemplateSectionType";
 import { UserFunctionDefinition } from './UserFunctionDefinition';
 import { UserFunctionNamespaceDefinition } from './UserFunctionNamespaceDefinition';
+import { assertNever } from "./util/assertNever";
 import { IVariableDefinition } from './VariableDefinition';
 
 // A map of [token starting index] to [span of all comments before that token]
@@ -66,8 +68,7 @@ export async function sortTemplate(template: DeploymentTemplate | undefined, sec
             await sortTopLevel(template, textEditor);
             break;
         default:
-            vscode.window.showWarningMessage("Unknown sort type!");
-            return;
+            assertNever(sectionType);
 
     }
     vscode.window.showInformationMessage("Done sorting template!");

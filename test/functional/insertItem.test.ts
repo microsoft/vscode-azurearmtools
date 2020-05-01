@@ -12,7 +12,7 @@ import * as fse from 'fs-extra';
 import * as vscode from "vscode";
 // tslint:disable-next-line:no-duplicate-imports
 import { window, workspace } from "vscode";
-import { IAzureUserInput } from 'vscode-azureextensionui';
+import { IActionContext, IAzureUserInput } from 'vscode-azureextensionui';
 import { DeploymentTemplate, InsertItem, TemplateSectionType } from '../../extension.bundle';
 import { getTempFilePath } from "../support/getTempFilePath";
 
@@ -85,7 +85,7 @@ suite("InsertItem", async (): Promise<void> => {
         `{}`;
 
     async function doTestInsertItem(startTemplate: string, expectedTemplate: string, sectionType: TemplateSectionType, showInputBox: string[] = [], textToInsert: string = '', ignoreWhiteSpace: boolean = false): Promise<void> {
-        await testInsertItem(startTemplate, expectedTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, sectionType, editor), showInputBox, textToInsert, ignoreWhiteSpace);
+        await testInsertItem(startTemplate, expectedTemplate, async (insertItem, template, editor) => await insertItem.insertItem(template, sectionType, editor, getActionContext()), showInputBox, textToInsert, ignoreWhiteSpace);
     }
 
     suite("Variables", async () => {
@@ -453,4 +453,21 @@ class MockUserInput implements IAzureUserInput {
     public async showOpenDialog(options: vscode.OpenDialogOptions): Promise<vscode.Uri[]> {
         return [vscode.Uri.file("c:\\some\\path")];
     }
+}
+
+function getActionContext(): IActionContext {
+    return {
+        telemetry: {
+            measurements: {},
+            properties: {},
+            suppressAll: true,
+            suppressIfSuccessful: true
+        },
+        errorHandling: {
+            issueProperties: {},
+            rethrow: false,
+            suppressDisplay: true,
+            suppressReportIssue: true
+        }
+    };
 }

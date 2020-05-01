@@ -34,11 +34,12 @@ import { ReferenceList } from "./ReferenceList";
 import { resetGlobalState } from "./resetGlobalState";
 import { getPreferredSchema } from "./schemas";
 import { getFunctionParamUsage } from "./signatureFormatting";
-import { getQuickPickItems, sortTemplate, TemplateSectionType } from "./sortTemplate";
+import { getQuickPickItems, sortTemplate } from "./sortTemplate";
 import { Stopwatch } from "./Stopwatch";
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, templateDocumentSelector, templateOrParameterDocumentSelector } from "./supported";
 import { survey } from "./survey";
 import { TemplatePositionContext } from "./TemplatePositionContext";
+import { TemplateSectionType } from "./TemplateSectionType";
 import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedBuiltinFunctionIssue } from "./UnrecognizedFunctionIssues";
@@ -169,7 +170,7 @@ export class AzureRMTools {
                 source = source ?? vscode.window.activeTextEditor?.document.uri;
                 await openTemplateFile(this._mapping, source, undefined);
             });
-        registerCommand("azurerm-vscode-tools.insertItem", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
+        registerCommand("azurerm-vscode-tools.insertItem", async (actionContext: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
             editor = editor || vscode.window.activeTextEditor;
             uri = uri || vscode.window.activeTextEditor?.document.uri;
             // If "Sort template..." was called from the context menu for ARM template outline
@@ -178,23 +179,23 @@ export class AzureRMTools {
             }
             if (uri && editor) {
                 const sectionType = await ext.ui.showQuickPick(getItemTypeQuickPicks(), { placeHolder: 'What do you want to insert?' });
-                await this.insertItem(sectionType.value, uri, editor);
+                await this.insertItem(sectionType.value, actionContext, uri, editor);
             }
         });
-        registerCommand("azurerm-vscode-tools.insertParameter", async () => {
-            await this.insertItem(TemplateSectionType.Parameters);
+        registerCommand("azurerm-vscode-tools.insertParameter", async (actionContext: IActionContext) => {
+            await this.insertItem(TemplateSectionType.Parameters, actionContext);
         });
-        registerCommand("azurerm-vscode-tools.insertVariable", async () => {
-            await this.insertItem(TemplateSectionType.Variables);
+        registerCommand("azurerm-vscode-tools.insertVariable", async (actionContext: IActionContext) => {
+            await this.insertItem(TemplateSectionType.Variables, actionContext);
         });
-        registerCommand("azurerm-vscode-tools.insertOutput", async () => {
-            await this.insertItem(TemplateSectionType.Outputs);
+        registerCommand("azurerm-vscode-tools.insertOutput", async (actionContext: IActionContext) => {
+            await this.insertItem(TemplateSectionType.Outputs, actionContext);
         });
-        registerCommand("azurerm-vscode-tools.insertFunction", async () => {
-            await this.insertItem(TemplateSectionType.Functions);
+        registerCommand("azurerm-vscode-tools.insertFunction", async (actionContext: IActionContext) => {
+            await this.insertItem(TemplateSectionType.Functions, actionContext);
         });
-        registerCommand("azurerm-vscode-tools.insertResource", async () => {
-            await this.insertItem(TemplateSectionType.Resources);
+        registerCommand("azurerm-vscode-tools.insertResource", async (actionContext: IActionContext) => {
+            await this.insertItem(TemplateSectionType.Resources, actionContext);
         });
         registerCommand("azurerm-vscode-tools.resetGlobalState", resetGlobalState);
         registerCommand("azurerm-vscode-tools.codeAction.addAllMissingParameters", async (actionContext: IActionContext, source?: vscode.Uri) => {
@@ -257,12 +258,12 @@ export class AzureRMTools {
         }
     }
 
-    private async insertItem(sectionType: TemplateSectionType, documentUri?: vscode.Uri, editor?: vscode.TextEditor): Promise<void> {
+    private async insertItem(sectionType: TemplateSectionType, context: IActionContext, documentUri?: vscode.Uri, editor?: vscode.TextEditor): Promise<void> {
         editor = editor || vscode.window.activeTextEditor;
         documentUri = documentUri || editor?.document.uri;
         if (editor && documentUri && editor.document.uri.fsPath === documentUri.fsPath) {
             let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
-            await new InsertItem(ext.ui).insertItem(deploymentTemplate, sectionType, editor);
+            await new InsertItem(ext.ui).insertItem(deploymentTemplate, sectionType, editor, context);
         }
     }
 

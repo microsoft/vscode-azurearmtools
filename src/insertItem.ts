@@ -3,17 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as assert from "assert";
 import * as fse from 'fs-extra';
 import * as path from "path";
 import * as vscode from "vscode";
 // tslint:disable-next-line:no-duplicate-imports
 import { commands } from "vscode";
-import { IAzureUserInput } from "vscode-azureextensionui";
+import { IActionContext, IAzureUserInput } from "vscode-azureextensionui";
 import { Json, templateKeys } from "../extension.bundle";
 import { assetsPath } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from './extensionVariables';
-import { TemplateSectionType } from "./sortTemplate";
+import { TemplateSectionType } from "./TemplateSectionType";
+import { assertNever } from './util/assertNever';
 
 const insertCursorText = '[]';
 
@@ -97,88 +99,78 @@ export class InsertItem {
         this.ui = ui;
     }
 
-    public async insertItem(template: DeploymentTemplate | undefined, sectionType: TemplateSectionType, textEditor: vscode.TextEditor): Promise<void> {
+    public async insertItem(template: DeploymentTemplate | undefined, sectionType: TemplateSectionType, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         if (!template) {
             return;
         }
         ext.outputChannel.appendLine("Insert item");
         switch (sectionType) {
             case TemplateSectionType.Functions:
-                if (await this.insertFunction(template, textEditor)) {
-                    vscode.window.showInformationMessage("Please type the output of the function.");
-                }
+                await this.insertFunction(template, textEditor, context);
+                vscode.window.showInformationMessage("Please type the output of the function.");
                 break;
             case TemplateSectionType.Outputs:
-                if (await this.insertOutput(template, textEditor)) {
-                    vscode.window.showInformationMessage("Please type the the value of the output.");
-                }
+                await this.insertOutput(template, textEditor, context);
+                vscode.window.showInformationMessage("Please type the the value of the output.");
                 break;
             case TemplateSectionType.Parameters:
-                if (await this.insertParameter(template, textEditor)) {
-                    vscode.window.showInformationMessage("Done inserting parameter.");
-                }
+                await this.insertParameter(template, textEditor, context);
+                vscode.window.showInformationMessage("Done inserting parameter.");
                 break;
             case TemplateSectionType.Resources:
-                if (await this.insertResource(template, textEditor)) {
-                    vscode.window.showInformationMessage("Press TAB to move between the tab stops.");
-                }
+                await this.insertResource(template, textEditor, context);
+                vscode.window.showInformationMessage("Press TAB to move between the tab stops.");
                 break;
             case TemplateSectionType.Variables:
-                if (await this.insertVariable(template, textEditor)) {
-                    vscode.window.showInformationMessage("Please type the the value of the variable.");
-                }
+                await this.insertVariable(template, textEditor, context);
+                vscode.window.showInformationMessage("Please type the the value of the variable.");
                 break;
+            case TemplateSectionType.TopLevel:
+                assert.fail("Unknown insert item type!");
             default:
-                vscode.window.showWarningMessage("Unknown insert item type!");
-                return;
+                assertNever(sectionType);
         }
     }
 
     private getTemplateObjectPart(template: DeploymentTemplate, templatePart: string): Json.ObjectValue | undefined {
-        let part = this.getTemplatePart(template, templatePart);
-        return Json.asObjectValue(part);
+        return this.getTemplatePart(template, templatePart)?.asObjectValue;
     }
 
     private getTemplateArrayPart(template: DeploymentTemplate, templatePart: string): Json.ArrayValue | undefined {
-        let part = this.getTemplatePart(template, templatePart);
-        return Json.asArrayValue(part);
+        return this.getTemplatePart(template, templatePart)?.asArrayValue;
     }
 
     private getTemplatePart(template: DeploymentTemplate, templatePart: string): Json.Value | undefined {
-        let rootValue = template.topLevelValue;
-        if (!rootValue) {
-            return undefined;
-        }
-        return rootValue.getPropertyValue(templatePart);
+        return template.topLevelValue?.getPropertyValue(templatePart);
     }
 
-    private async insertParameter(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
+    private async insertParameter(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         let name = await this.ui.showInputBox({ prompt: "Name of parameter?" });
         const parameterType = await this.ui.showQuickPick(getItemType(), { placeHolder: 'Type of parameter?' });
         let parameter: Parameter = {
             type: parameterType.value
         };
         let defaultValue = await this.ui.showInputBox({ prompt: "Default value? Leave empty for no default value.", });
-        if (defaultValue !== '') {
+        if (defaultValue) {
             parameter.defaultValue = defaultValue;
         }
         let description = await this.ui.showInputBox({ prompt: "Description? Leave empty for no description.", });
-        if (description !== '') {
+        if (description) {
             parameter.metadata = {
                 description: description
             };
         }
-        return await this.insertInObject(template, textEditor, templateKeys.parameters, parameter, name);
+        await this.insertInObject(template, textEditor, templateKeys.parameters, parameter, name, context);
     }
 
     // tslint:disable-next-line:no-any
-    private async insertInObject(template: DeploymentTemplate, textEditor: vscode.TextEditor, part: string, data: any, name: string): Promise<boolean> {
+    private async insertInObject(template: DeploymentTemplate, textEditor: vscode.TextEditor, part: string, data: any, name: string, context: IActionContext): Promise<void> {
         let templatePart = this.getTemplateObjectPart(template, part);
         if (!templatePart) {
             let topLevel = template.topLevelValue;
             if (!topLevel) {
-                vscode.window.showErrorMessage('Invalid ARM template!');
-                return false;
+                context.errorHandling.suppressReportIssue = true;
+                throw new Error("Invalid ARM template!");
             }
             // tslint:disable-next-line:no-any
             let subPart: any = {};
@@ -188,7 +180,6 @@ export class InsertItem {
         } else {
             await this.insertInObjectInternal(templatePart, textEditor, data, name);
         }
-        return true;
     }
 
     // tslint:disable-next-line:no-any
@@ -203,34 +194,32 @@ export class InsertItem {
         return await this.insertText(textEditor, index, `${startText}${indentedText}${endText}`);
     }
 
-    private async insertVariable(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
+    private async insertVariable(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         let name = await this.ui.showInputBox({ prompt: "Name of variable?" });
-        return await this.insertInObject(template, textEditor, templateKeys.variables, insertCursorText, name);
+        await this.insertInObject(template, textEditor, templateKeys.variables, insertCursorText, name, context);
     }
 
-    private async insertOutput(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
+    private async insertOutput(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         let name = await this.ui.showInputBox({ prompt: "Name of output?" });
         const outputType = await this.ui.showQuickPick(getItemType(), { placeHolder: 'Type of output?' });
         let output: Output = {
             type: outputType.value,
             value: insertCursorText.replace(/"/g, '')
         };
-        return await this.insertInObject(template, textEditor, templateKeys.outputs, output, name);
+        await this.insertInObject(template, textEditor, templateKeys.outputs, output, name, context);
     }
-    private async insertFunctionAsTopLevel(topLevel: Json.ObjectValue | undefined, textEditor: vscode.TextEditor): Promise<boolean> {
+    private async insertFunctionAsTopLevel(topLevel: Json.ObjectValue | undefined, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         if (!topLevel) {
-            vscode.window.showErrorMessage('Invalid ARM template!');
-            return false;
+            context.errorHandling.suppressReportIssue = true;
+            throw new Error("Invalid ARM template!");
         }
         let functions = [await this.getFunctionNamespace()];
         await this.insertInObjectInternal(topLevel, textEditor, functions, "functions", 1);
-        return true;
     }
 
-    private async insertFunctionAsNamespace(functions: Json.ArrayValue, textEditor: vscode.TextEditor): Promise<boolean> {
+    private async insertFunctionAsNamespace(functions: Json.ArrayValue, textEditor: vscode.TextEditor): Promise<void> {
         let namespace = await this.getFunctionNamespace();
         await this.insertInArray(functions, textEditor, namespace);
-        return true;
     }
 
     private async insertFunctionAsMembers(namespace: Json.ObjectValue, textEditor: vscode.TextEditor): Promise<void> {
@@ -249,43 +238,45 @@ export class InsertItem {
         await this.insertInObjectInternal(members, textEditor, functionDef, functionName, 4);
     }
 
-    private async insertFunction(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
+    private async insertFunction(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         let functions = this.getTemplateArrayPart(template, templateKeys.functions);
         if (!functions) {
             // tslint:disable-next-line:no-unsafe-any
-            return await this.insertFunctionAsTopLevel(template.topLevelValue, textEditor);
+            await this.insertFunctionAsTopLevel(template.topLevelValue, textEditor, context);
+            return;
         }
         if (functions.length === 0) {
-            return await this.insertFunctionAsNamespace(functions, textEditor);
+            await this.insertFunctionAsNamespace(functions, textEditor);
+            return;
         }
         let namespace = Json.asObjectValue(functions.elements[0]);
         if (!namespace) {
-            vscode.window.showErrorMessage('The first namespace in functions is not an object!');
-            return false;
+            context.errorHandling.suppressReportIssue = true;
+            throw new Error("The first namespace in functions is not an object!");
         }
         let members = namespace.getPropertyValue("members");
         if (!members) {
             await this.insertFunctionAsMembers(namespace, textEditor);
-            return true;
+            return;
         }
         let membersObject = Json.asObjectValue(members);
         if (!membersObject) {
-            vscode.window.showErrorMessage('The first namespace in functions does not have members as an object!');
-            return false;
+            context.errorHandling.suppressReportIssue = true;
+            throw new Error("The first namespace in functions does not have members as an object!");
         }
         await this.insertFunctionAsFunction(membersObject, textEditor);
-        return true;
+        return;
     }
 
-    private async insertResource(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
+    private async insertResource(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         let resources = this.getTemplateArrayPart(template, templateKeys.resources);
         let pos: vscode.Position;
         let index: number;
         let text = "\r\n\t\t\r\n\t";
         if (!resources) {
             if (!template.topLevelValue) {
-                vscode.window.showErrorMessage("Invalid ARM template!");
-                return false;
+                context.errorHandling.suppressReportIssue = true;
+                throw new Error("Invalid ARM template!");
             }
             // tslint:disable-next-line:no-any
             let subPart: any = [];
@@ -310,7 +301,6 @@ export class InsertItem {
         textEditor.selection = newSelection;
         await commands.executeCommand('editor.action.insertSnippet', { name: resource.label });
         textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
-        return true;
     }
 
     private async getFunction(): Promise<Function> {
