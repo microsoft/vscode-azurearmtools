@@ -15,15 +15,6 @@ import { UserFunctionDefinition } from './UserFunctionDefinition';
 import { UserFunctionNamespaceDefinition } from './UserFunctionNamespaceDefinition';
 import { IVariableDefinition } from './VariableDefinition';
 
-export enum TemplateSectionType {
-    Resources,
-    Outputs,
-    Parameters,
-    Variables,
-    Functions,
-    TopLevel
-}
-
 // A map of [token starting index] to [span of all comments before that token]
 type CommentsMap = Map<number, language.Span>;
 
