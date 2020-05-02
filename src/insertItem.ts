@@ -277,7 +277,6 @@ export class InsertItem {
 
     private async insertResource(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         let resources = this.getTemplateArrayPart(template, templateKeys.resources);
-        let pos: vscode.Position;
         let index: number;
         let prepend = "\r\n\t\t\r\n\t";
         if (!resources) {
@@ -288,7 +287,6 @@ export class InsertItem {
             // tslint:disable-next-line:no-any
             let subPart: any = [];
             index = await this.insertInObjectHelper(template.topLevelValue, textEditor, subPart, templateKeys.resources, 1);
-            pos = textEditor.selection.active;
         } else {
             index = resources.span.endIndex;
             if (resources.elements.length > 0) {
