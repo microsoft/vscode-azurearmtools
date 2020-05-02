@@ -179,6 +179,15 @@ export class InsertItem {
         }
     }
 
+    /**
+     * Insert data into an template object (parameters, variables and outputs).
+     * @param templatePart The template part to insert into.
+     * @param textEditor The text editor to insert into.
+     * @param data The data to insert.
+     * @param name The name (key) to be inserted.
+     * @param indentLevel Which indent level to use when inserting.
+     * @returns The document index of the cursor after the text has been inserted.
+     */
     // tslint:disable-next-line:no-any
     private async insertInObjectHelper(templatePart: Json.ObjectValue, textEditor: vscode.TextEditor, data: any, name: string, indentLevel: number = 2): Promise<number> {
         let isFirstItem = templatePart.properties.length === 0;
@@ -270,7 +279,7 @@ export class InsertItem {
         let resources = this.getTemplateArrayPart(template, templateKeys.resources);
         let pos: vscode.Position;
         let index: number;
-        let text = "\r\n\t\t\r\n\t";
+        let prepend = "\r\n\t\t\r\n\t";
         if (!resources) {
             if (!template.topLevelValue) {
                 context.errorHandling.suppressReportIssue = true;
@@ -278,27 +287,30 @@ export class InsertItem {
             }
             // tslint:disable-next-line:no-any
             let subPart: any = [];
-            index = await this.insertInObjectHelper(template.topLevelValue, textEditor, subPart, "resources", 1);
+            index = await this.insertInObjectHelper(template.topLevelValue, textEditor, subPart, templateKeys.resources, 1);
             pos = textEditor.selection.active;
         } else {
             index = resources.span.endIndex;
             if (resources.elements.length > 0) {
                 let lastIndex = resources.elements.length - 1;
                 index = resources.elements[lastIndex].span.afterEndIndex;
-                text = `,\r\n\t\t`;
+                prepend = `,\r\n\t\t`;
             }
         }
         const resource = await this.ui.showQuickPick(getResourceSnippets(), { placeHolder: 'What resource do you want to insert?' });
-        await this.insertText(textEditor, index, text, false);
-        let range = new vscode.Range(textEditor.document.positionAt(index), textEditor.document.positionAt(index + this.formatText(text, textEditor).length));
-        let insertedText = textEditor.document.getText(range);
-        let lookFor = this.formatText('\t\t', textEditor);
-        let cursorPos = insertedText.indexOf(lookFor);
-        pos = textEditor.document.positionAt(index + cursorPos + lookFor.length);
-        let newSelection = new vscode.Selection(pos, pos);
-        textEditor.selection = newSelection;
+        await this.insertText(textEditor, index, prepend);
+        let newCursorPosition = this.getCursorPositionForInsertResource(textEditor, index, prepend);
+        textEditor.selection = new vscode.Selection(newCursorPosition, newCursorPosition);
         await commands.executeCommand('editor.action.insertSnippet', { name: resource.label });
-        textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
+        textEditor.revealRange(new vscode.Range(newCursorPosition, newCursorPosition), vscode.TextEditorRevealType.Default);
+    }
+
+    private getCursorPositionForInsertResource(textEditor: vscode.TextEditor, index: number, prepend: string): vscode.Position {
+        let prependRange = new vscode.Range(textEditor.document.positionAt(index), textEditor.document.positionAt(index + this.formatText(prepend, textEditor).length));
+        let prependFromDocument = textEditor.document.getText(prependRange);
+        let lookFor = this.formatText('\t\t', textEditor);
+        let cursorPos = prependFromDocument.indexOf(lookFor);
+        return textEditor.document.positionAt(index + cursorPos + lookFor.length);
     }
 
     private async getFunction(): Promise<Function> {
@@ -336,7 +348,7 @@ export class InsertItem {
         let index = templatePart.span.endIndex;
         let text = JSON.stringify(data, null, '\t');
         let indentedText = this.indent(`\r\n${text}\r\n`, 2);
-        await this.insertText(textEditor, index, `${indentedText}\t`, true);
+        await this.insertText(textEditor, index, `${indentedText}\t`);
     }
 
     private async getFunctionNamespace(): Promise<FunctionNameSpace> {
@@ -359,7 +371,14 @@ export class InsertItem {
         return members;
     }
 
-    private async insertText(textEditor: vscode.TextEditor, index: number, text: string, setCursor: boolean = false): Promise<number> {
+    /**
+     * Insert text into the document.
+     * @param textEditor The text editor to insert the text into.
+     * @param index The document index where to insert the text.
+     * @param text The text to be inserted.
+     * @returns The document index of the cursor after the text has been inserted.
+     */
+    private async insertText(textEditor: vscode.TextEditor, index: number, text: string): Promise<number> {
         text = this.formatText(text, textEditor);
         let pos = textEditor.document.positionAt(index);
         await textEditor.edit(builder => builder.insert(pos, text));
@@ -380,9 +399,6 @@ export class InsertItem {
             text = text.replace(/\t/g, ' '.repeat(Number(textEditor.options.tabSize)));
         } else {
             text = text.replace(/ {4}/g, '\t');
-        }
-        if (textEditor.document.eol === vscode.EndOfLine.LF) {
-            text = text.replace(/\r\n/g, '\n');
         }
         return text;
     }
