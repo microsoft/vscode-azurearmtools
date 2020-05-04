@@ -46,6 +46,7 @@ export { HoverInfo } from "./src/Hover";
 export { httpGet } from './src/httpGet';
 export { DefinitionKind, INamedDefinition } from "./src/INamedDefinition";
 export { IncorrectArgumentsCountIssue } from "./src/IncorrectArgumentsCountIssue";
+export { InsertItem } from "./src/insertItem";
 export { IParameterDefinition } from "./src/IParameterDefinition";
 export * from "./src/Language";
 export { LanguageServerState } from "./src/languageclient/startArmLanguageServer";
@@ -62,6 +63,7 @@ export { containsArmSchema, getPreferredSchema, isArmSchema } from './src/schema
 export * from "./src/survey";
 export { TemplatePositionContext } from "./src/TemplatePositionContext";
 export { ScopeContext, TemplateScope } from "./src/TemplateScope";
+export { TemplateSectionType } from "./src/TemplateSectionType";
 export { FunctionSignatureHelp } from "./src/TLE";
 export { JsonOutlineProvider, shortenTreeLabel } from "./src/Treeview";
 export { UnrecognizedBuiltinFunctionIssue, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "./src/UnrecognizedFunctionIssues";
