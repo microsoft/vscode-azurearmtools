@@ -413,7 +413,7 @@ suite("TemplatePositionContext", () => {
         const hi: HoverInfo = pc.getHoverInfo()!;
         assert(hi);
         assert.deepStrictEqual(`**pName**${os.EOL}*(parameter)*`, hi.getHoverText());
-        assert.deepStrictEqual(new Language.Span("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters(".length, 7), hi.span);
+        assert.deepStrictEqual(new Language.Span("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters('".length, 'pName'.length), hi.span);
     });
 
     test("in parameter reference function with empty string parameter", () => {
@@ -443,7 +443,7 @@ suite("TemplatePositionContext", () => {
         const hi: HoverInfo | undefined = pc.getHoverInfo()!;
         assert(hi);
         assert.deepStrictEqual(`**vName**${os.EOL}*(variable)*`, hi.getHoverText());
-        assert.deepStrictEqual(new Language.Span("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables(".length, 7), hi.span);
+        assert.deepStrictEqual(new Language.Span("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables('".length, 'vName'.length), hi.span);
     });
 
     suite("completionItems", async () => {
