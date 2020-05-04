@@ -360,6 +360,18 @@ suite("InsertItem", async (): Promise<void> => {
         }
     }
 }`;
+
+        const oneParameterTemplateInt = `{
+    "parameters": {
+        "parameter1": {
+            "type": "int",
+            "defaultValue": 42,
+            "metadata": {
+                "description": "description"
+            }
+        }
+    }
+}`;
         suite("Insert one parameter", async () => {
             await doTestInsertItem(emptyTemplate, oneParameterTemplate, TemplateSectionType.Parameters, ["parameter1", "String", "default", "description"]);
         });
@@ -369,8 +381,12 @@ suite("InsertItem", async (): Promise<void> => {
         suite("Insert even one more parameter", async () => {
             await doTestInsertItem(twoParametersTemplate, threeParametersTemplate, TemplateSectionType.Parameters, ["parameter3", "Secure string", "", "description3"]);
         });
-        suite("Insert one output in totally empty template", async () => {
+        suite("Insert one parameter in totally empty template", async () => {
             await doTestInsertItem(totallyEmptyTemplate, oneParameterTemplate, TemplateSectionType.Parameters, ["parameter1", "String", "default", "description"]);
+        });
+
+        suite("Insert one int parameter in totally empty template", async () => {
+            await doTestInsertItem(totallyEmptyTemplate, oneParameterTemplateInt, TemplateSectionType.Parameters, ["parameter1", "Int", "42", "description"]);
         });
     });
 

@@ -152,7 +152,14 @@ export class InsertItem {
         };
         let defaultValue = await this.ui.showInputBox({ prompt: "Default value? Leave empty for no default value.", });
         if (defaultValue) {
-            parameter.defaultValue = defaultValue;
+            switch (parameterType.value) {
+                case "int": {
+                    parameter.defaultValue = Number(defaultValue);
+                    break;
+                }
+                default:
+                    parameter.defaultValue = defaultValue;
+            }
         }
         let description = await this.ui.showInputBox({ prompt: "Description? Leave empty for no description.", });
         if (description) {
@@ -423,7 +430,7 @@ interface ParameterMetaData {
 interface Parameter extends Data {
     // tslint:disable-next-line:no-reserved-keywords
     type: string;
-    defaultValue?: string;
+    defaultValue?: string | number;
     metadata?: ParameterMetaData;
 }
 
