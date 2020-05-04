@@ -111,7 +111,7 @@ export class InsertItem {
                 break;
             case TemplateSectionType.Outputs:
                 await this.insertOutput(template, textEditor, context);
-                vscode.window.showInformationMessage("Please type the the value of the output.");
+                vscode.window.showInformationMessage("Please type the value of the output.");
                 break;
             case TemplateSectionType.Parameters:
                 await this.insertParameter(template, textEditor, context);
@@ -123,7 +123,7 @@ export class InsertItem {
                 break;
             case TemplateSectionType.Variables:
                 await this.insertVariable(template, textEditor, context);
-                vscode.window.showInformationMessage("Please type the the value of the variable.");
+                vscode.window.showInformationMessage("Please type the value of the variable.");
                 break;
             case TemplateSectionType.TopLevel:
                 assert.fail("Unknown insert item type!");
