@@ -365,10 +365,39 @@ suite("InsertItem", async (): Promise<void> => {
     "parameters": {
         "parameter1": {
             "type": "int",
-            "defaultValue": 42,
-            "metadata": {
-                "description": "description"
-            }
+            "defaultValue": 42
+        }
+    }
+}`;
+        const oneParameterTemplateArray = `{
+    "parameters": {
+        "parameter1": {
+            "type": "array",
+            "defaultValue": []
+        }
+    }
+}`;
+        const oneParameterTemplateBool = `{
+    "parameters": {
+        "parameter1": {
+            "type": "bool",
+            "defaultValue": true
+        }
+    }
+}`;
+        const oneParameterTemplateObject = `{
+    "parameters": {
+        "parameter1": {
+            "type": "object",
+            "defaultValue": {}
+        }
+    }
+}`;
+        const oneParameterTemplateSecureObject = `{
+    "parameters": {
+        "parameter1": {
+            "type": "secureobject",
+            "defaultValue": {}
         }
     }
 }`;
@@ -384,9 +413,20 @@ suite("InsertItem", async (): Promise<void> => {
         suite("Insert one parameter in totally empty template", async () => {
             await doTestInsertItem(totallyEmptyTemplate, oneParameterTemplate, TemplateSectionType.Parameters, ["parameter1", "String", "default", "description"]);
         });
-
         suite("Insert one int parameter in totally empty template", async () => {
-            await doTestInsertItem(totallyEmptyTemplate, oneParameterTemplateInt, TemplateSectionType.Parameters, ["parameter1", "Int", "42", "description"]);
+            await doTestInsertItem(totallyEmptyTemplate, oneParameterTemplateInt, TemplateSectionType.Parameters, ["parameter1", "Int", "42", ""]);
+        });
+        suite("Insert one array parameter in totally empty template", async () => {
+            await doTestInsertItem(totallyEmptyTemplate, oneParameterTemplateArray, TemplateSectionType.Parameters, ["parameter1", "Array", "[]", ""]);
+        });
+        suite("Insert one bool parameter in totally empty template", async () => {
+            await doTestInsertItem(totallyEmptyTemplate, oneParameterTemplateBool, TemplateSectionType.Parameters, ["parameter1", "Bool", "true", ""]);
+        });
+        suite("Insert one object parameter in totally empty template", async () => {
+            await doTestInsertItem(totallyEmptyTemplate, oneParameterTemplateObject, TemplateSectionType.Parameters, ["parameter1", "Object", "{}", ""]);
+        });
+        suite("Insert one secure object parameter in totally empty template", async () => {
+            await doTestInsertItem(totallyEmptyTemplate, oneParameterTemplateSecureObject, TemplateSectionType.Parameters, ["parameter1", "Secure object", "{}", ""]);
         });
     });
 

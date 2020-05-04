@@ -152,14 +152,7 @@ export class InsertItem {
         };
         let defaultValue = await this.ui.showInputBox({ prompt: "Default value? Leave empty for no default value.", });
         if (defaultValue) {
-            switch (parameterType.value) {
-                case "int": {
-                    parameter.defaultValue = Number(defaultValue);
-                    break;
-                }
-                default:
-                    parameter.defaultValue = defaultValue;
-            }
+            parameter.defaultValue = this.getDefaultValue(defaultValue, parameterType.value, context);
         }
         let description = await this.ui.showInputBox({ prompt: "Description? Leave empty for no description.", });
         if (description) {
@@ -167,10 +160,55 @@ export class InsertItem {
                 description: description
             };
         }
-        await this.insertInObject(template, textEditor, templateKeys.parameters, parameter, name, context);
+        await this.insertInObject(template, textEditor, templateKeys.parameters, parameter, name, context, false);
     }
 
-    private async insertInObject(template: DeploymentTemplate, textEditor: vscode.TextEditor, part: string, data: Data | unknown, name: string, context: IActionContext): Promise<void> {
+    private throwError(message: string, context: IActionContext, suppressReportIssue: boolean = true): void {
+        context.errorHandling.suppressReportIssue = true;
+        throw new Error(message);
+    }
+
+    private getDefaultValue(defaultValue: string, parameterType: string, context: IActionContext): string | number | boolean | undefined {
+        switch (parameterType) {
+            case "int":
+                let intValue = Number(defaultValue);
+                if (isNaN(intValue)) {
+                    this.throwError("Invalid integer!", context);
+                }
+                return intValue;
+            case "array":
+                try {
+                    // tslint:disable-next-line: no-unsafe-any
+                    return JSON.parse(defaultValue);
+                } catch (error) {
+                    this.throwError("Invalid array!", context);
+                }
+                break;
+            case "object":
+            case "secureobject":
+                try {
+                    // tslint:disable-next-line: no-unsafe-any
+                    return JSON.parse(defaultValue);
+                } catch (error) {
+                    this.throwError("Invalid object!", context);
+                }
+                break;
+            case "bool":
+                switch (defaultValue) {
+                    case "true":
+                        return true;
+                    case "false":
+                        return false;
+                    default:
+                        this.throwError("Invalid boolean!", context);
+                }
+                break;
+            default:
+                return defaultValue;
+        }
+    }
+
+    private async insertInObject(template: DeploymentTemplate, textEditor: vscode.TextEditor, part: string, data: Data | unknown, name: string, context: IActionContext, setCursor: boolean = true): Promise<void> {
         let templatePart = this.getTemplateObjectPart(template, part);
         if (!templatePart) {
             let topLevel = template.topLevelValue;
@@ -180,9 +218,9 @@ export class InsertItem {
             }
             let subPart: Data = {};
             subPart[name] = data;
-            await this.insertInObjectHelper(topLevel, textEditor, subPart, part, 1);
+            await this.insertInObjectHelper(topLevel, textEditor, subPart, part, 1, setCursor);
         } else {
-            await this.insertInObjectHelper(templatePart, textEditor, data, name);
+            await this.insertInObjectHelper(templatePart, textEditor, data, name, undefined, setCursor);
         }
     }
 
@@ -196,7 +234,7 @@ export class InsertItem {
      * @returns The document index of the cursor after the text has been inserted.
      */
     // tslint:disable-next-line:no-any
-    private async insertInObjectHelper(templatePart: Json.ObjectValue, textEditor: vscode.TextEditor, data: any, name: string, indentLevel: number = 2): Promise<number> {
+    private async insertInObjectHelper(templatePart: Json.ObjectValue, textEditor: vscode.TextEditor, data: any, name: string, indentLevel: number = 2, setCursor: boolean = true): Promise<number> {
         let isFirstItem = templatePart.properties.length === 0;
         let startText = isFirstItem ? '' : ',';
         let index = isFirstItem ? templatePart.span.endIndex :
@@ -205,7 +243,7 @@ export class InsertItem {
         let endText = isFirstItem ? `\r\n${tabs}` : ``;
         let text = typeof (data) === 'object' ? JSON.stringify(data, null, '\t') : `"${data}"`;
         let indentedText = this.indent(`\r\n"${name}": ${text}`, indentLevel);
-        return await this.insertText(textEditor, index, `${startText}${indentedText}${endText}`);
+        return await this.insertText(textEditor, index, `${startText}${indentedText}${endText}`, setCursor);
     }
 
     private async insertVariable(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
@@ -383,12 +421,12 @@ export class InsertItem {
      * @param text The text to be inserted.
      * @returns The document index of the cursor after the text has been inserted.
      */
-    private async insertText(textEditor: vscode.TextEditor, index: number, text: string): Promise<number> {
+    private async insertText(textEditor: vscode.TextEditor, index: number, text: string, setCursor: boolean = true): Promise<number> {
         text = this.formatText(text, textEditor);
         let pos = textEditor.document.positionAt(index);
         await textEditor.edit(builder => builder.insert(pos, text));
         textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
-        if (text.lastIndexOf(insertCursorText) >= 0) {
+        if (setCursor && text.lastIndexOf(insertCursorText) >= 0) {
             let insertedText = textEditor.document.getText(new vscode.Range(pos, textEditor.document.positionAt(index + text.length)));
             let cursorPos = insertedText.lastIndexOf(insertCursorText);
             let newIndex = index + cursorPos + insertCursorText.length / 2;
@@ -430,7 +468,7 @@ interface ParameterMetaData {
 interface Parameter extends Data {
     // tslint:disable-next-line:no-reserved-keywords
     type: string;
-    defaultValue?: string | number;
+    defaultValue?: string | number | boolean;
     metadata?: ParameterMetaData;
 }
 
