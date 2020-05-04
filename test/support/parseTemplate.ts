@@ -76,7 +76,7 @@ export async function parseParametersWithMarkers(
     json: string | Partial<IDeploymentParametersFile>
 ): Promise<{ dp: DeploymentParameters; unmarkedText: string; markers: Markers }> {
     const { unmarkedText, markers } = getDocumentMarkers(json);
-    const dp: DeploymentParameters = new DeploymentParameters(unmarkedText, Uri.file("https://test parameter file"));
+    const dp: DeploymentParameters = new DeploymentParameters(unmarkedText, Uri.file("https://test parameter file.json"));
 
     // Always run these even if not checking against expected, to verify nothing throws
     // tslint:disable-next-line:no-unused-expression

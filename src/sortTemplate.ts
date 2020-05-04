@@ -277,7 +277,7 @@ function getNameFromResource(value: Json.Value): string {
     if (!nameProperty) {
         return "";
     }
-    let name = nameProperty.toFriendlyString();
+    let name = nameProperty.toShortFriendlyString();
     return name;
 }
 

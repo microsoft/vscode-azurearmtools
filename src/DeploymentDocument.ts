@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
+import { CodeAction, CodeActionContext, CodeLens, Command, Range, Selection, Uri } from "vscode";
 import { CachedValue } from "./CachedValue";
 import { __debugMarkPositionInString, __debugMarkRangeInString } from "./debugMarkStrings";
 import { INamedDefinition } from "./INamedDefinition";
@@ -11,6 +11,7 @@ import * as language from "./Language";
 import { PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
 import { nonNullValue } from "./util/nonNull";
+import { getVSCodeRangeFromSpan } from "./util/vscodePosition";
 
 /**
  * Represents a deployment-related JSON file
@@ -166,6 +167,10 @@ export abstract class DeploymentDocument {
      */
     public abstract async getCodeActions(associatedDocument: DeploymentDocument | undefined, range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]>;
 
+    // This should be as fast as possible
+    // Anything slow should occur during ResolvableCodeLens.resolve()
+    public abstract getCodeLenses(hasAssociatedParameters: boolean): ResolvableCodeLens[];
+
     // CONSIDER: Should we cache?  But that cache would depend on associatedTemplate not changing, not sure if that's
     // guaranteed.
     // Consider whether associated document should be a function passed in to constructor so that it's a permanent part of the
@@ -177,4 +182,15 @@ export abstract class DeploymentDocument {
     public abstract getErrorsCore(associatedDocument: DeploymentDocument | undefined): Promise<language.Issue[]>;
 
     public abstract getWarnings(): language.Issue[];
+}
+
+export abstract class ResolvableCodeLens extends CodeLens {
+    public constructor(public readonly deploymentDoc: DeploymentDocument, span: language.Span) {
+        super(getVSCodeRangeFromSpan(deploymentDoc, span));
+    }
+
+    /**
+     * Must fill in the code lens title and command, or return false if no longer valid
+     */
+    public abstract resolve(associatedDocument: DeploymentDocument | undefined): boolean;
 }

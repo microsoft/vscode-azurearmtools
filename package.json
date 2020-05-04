@@ -164,9 +164,71 @@
         ],
         "commands": [
             {
+                "$comment": "============= Global/Treeview =============",
                 "category": "Azure Resource Manager Tools",
                 "title": "Reset Global State",
                 "command": "azurerm-vscode-tools.resetGlobalState"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Go to parameter value",
+                "command": "azurerm-vscode-tools.codeLens.gotoParameterValue",
+                "$comment": "Code lens on a parameter definition - navigates to parameter value"
+            },
+            {
+                "$comment": "============= Insert Item =============",
+                "category": "Azure Resource Manager Tools",
+                "title": "Insert Item...",
+                "command": "azurerm-vscode-tools.insertItem",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Insert Variable...",
+                "command": "azurerm-vscode-tools.insertVariable",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Insert Function...",
+                "command": "azurerm-vscode-tools.insertFunction",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Insert Resource...",
+                "command": "azurerm-vscode-tools.insertResource",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Insert Parameter...",
+                "command": "azurerm-vscode-tools.insertParameter",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Insert Output...",
+                "command": "azurerm-vscode-tools.insertOutput",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
             },
             {
                 "$comment": "============= Template sorting =============",
@@ -258,60 +320,6 @@
                 "command": "azurerm-vscode-tools.codeAction.addMissingRequiredParameters",
                 "enablement": "azurerm-vscode-tools-hasTemplateFile",
                 "$enablement.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
-            },
-            {
-                "category": "Azure Resource Manager Tools",
-                "title": "Insert Item...",
-                "command": "azurerm-vscode-tools.insertItem",
-                "icon": {
-                    "light": "icons/insertItemLight.svg",
-                    "dark": "icons/insertItemDark.svg"
-                }
-            },
-            {
-                "category": "Azure Resource Manager Tools",
-                "title": "Insert Variable...",
-                "command": "azurerm-vscode-tools.insertVariable",
-                "icon": {
-                    "light": "icons/insertItemLight.svg",
-                    "dark": "icons/insertItemDark.svg"
-                }
-            },
-            {
-                "category": "Azure Resource Manager Tools",
-                "title": "Insert Function...",
-                "command": "azurerm-vscode-tools.insertFunction",
-                "icon": {
-                    "light": "icons/insertItemLight.svg",
-                    "dark": "icons/insertItemDark.svg"
-                }
-            },
-            {
-                "category": "Azure Resource Manager Tools",
-                "title": "Insert Resource...",
-                "command": "azurerm-vscode-tools.insertResource",
-                "icon": {
-                    "light": "icons/insertItemLight.svg",
-                    "dark": "icons/insertItemDark.svg"
-                }
-            },
-            {
-                "category": "Azure Resource Manager Tools",
-                "title": "Insert Parameter...",
-                "command": "azurerm-vscode-tools.insertParameter",
-                "icon": {
-                    "light": "icons/insertItemLight.svg",
-                    "dark": "icons/insertItemDark.svg"
-                }
-            },
-            {
-                "category": "Azure Resource Manager Tools",
-                "title": "Insert Output...",
-                "command": "azurerm-vscode-tools.insertOutput",
-                "icon": {
-                    "light": "icons/insertItemLight.svg",
-                    "dark": "icons/insertItemDark.svg"
-                }
             }
         ],
         "menus": {
@@ -358,6 +366,10 @@
                 },
                 {
                     "command": "azurerm-vscode-tools.openTemplateFile",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.codeLens.gotoParameterValue",
                     "when": "never"
                 }
             ],

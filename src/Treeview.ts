@@ -524,7 +524,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             return undefined;
         }
         if (level === 5) {
-            return this.getIcon(functionIcons, node.toFriendlyString(), "");
+            return this.getIcon(functionIcons, node.toShortFriendlyString(), "");
         }
         if (!elementInfo.current.collapsible) {
             return undefined;
@@ -631,7 +631,7 @@ export function shortenTreeLabel(label: string): string {
 
 function toFriendlyString(value: Json.Value | null | undefined): string {
     if (value instanceof Json.Value) {
-        return value.toFriendlyString();
+        return value.toShortFriendlyString();
     } else {
         return String(value);
     }
