@@ -312,6 +312,13 @@
                     "light": "icons/insertItemLight.svg",
                     "dark": "icons/insertItemDark.svg"
                 }
+            },
+            {
+                "$comment": "============= asdf =============",
+                "category": "Azure Resource Manager Tools",
+                "title": "Go to parameter value asdf",
+                "command": "azurerm-vscode-tools.codeLens.gotoParameterValue",
+                "$comment2": "asdf hide from command palette"
             }
         ],
         "menus": {
