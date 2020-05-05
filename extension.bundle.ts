@@ -57,7 +57,7 @@ export { DeploymentParameters } from "./src/parameterFiles/DeploymentParameters"
 export { mayBeMatchingParameterFile } from "./src/parameterFiles/parameterFiles";
 export { ParametersPositionContext } from "./src/parameterFiles/ParametersPositionContext";
 export { ParameterValueDefinition } from "./src/parameterFiles/ParameterValueDefinition";
-export { IReferenceSite, PositionContext } from "./src/PositionContext";
+export { IReferenceSite, PositionContext, ReferenceSiteKind } from "./src/PositionContext";
 export { ReferenceList } from "./src/ReferenceList";
 export { containsArmSchema, getPreferredSchema, isArmSchema } from './src/schemas';
 export * from "./src/survey";

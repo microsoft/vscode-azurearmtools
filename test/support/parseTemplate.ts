@@ -5,13 +5,13 @@
 import * as assert from 'assert';
 import { Uri } from 'vscode';
 import { DeploymentParameters, DeploymentTemplate, Issue } from "../../extension.bundle";
-import { IDeploymentParametersFile } from './diagnostics';
+import { IDeploymentParametersFile, IPartialDeploymentTemplate } from './diagnostics';
 import { stringify } from "./stringify";
 
 /**
  * Given a deployment template (string or object), parses it, optionally verifying expected diagnostic messages
  */
-export async function parseTemplate(template: string | {}, expectedDiagnosticMessages?: string[], options?: { ignoreWarnings: boolean }): Promise<DeploymentTemplate> {
+export async function parseTemplate(template: string | IPartialDeploymentTemplate, expectedDiagnosticMessages?: string[], options?: { ignoreWarnings: boolean }): Promise<DeploymentTemplate> {
     // Go ahead and allow markers in the document to be removed, we just won't mark them (makes it easier to share the same template in multiple places)
     const { dt } = await parseTemplateWithMarkers(template, expectedDiagnosticMessages, options);
     return dt;
@@ -31,7 +31,7 @@ interface Markers {
  * Returns the parsed document without the tags, plus a dictionary of the tags and their positions
  */
 export async function parseTemplateWithMarkers(
-    template: string | {},
+    template: string | IPartialDeploymentTemplate,
     expectedDiagnosticMessages?: string[],
     options?: {
         ignoreWarnings?: boolean;

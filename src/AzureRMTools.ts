@@ -1294,10 +1294,8 @@ export class AzureRMTools {
                 }
 
                 if (referenceSiteInfo) {
-                    // Get the correct span to replace.  In particular, this fixes the fact that in JSON the rename
-                    // dialog tends to pick up the entire string of a params/var name, along with quotation marks,
-                    // but we want just the unquoted string
-                    return getVSCodeRangeFromSpan(pc.document, referenceSiteInfo.referenceSpan);
+                    // Get the correct span to replace, without any quotes
+                    return getVSCodeRangeFromSpan(pc.document, referenceSiteInfo.unquotedReferenceSpan);
                 }
 
                 actionContext.errorHandling.suppressDisplay = true;

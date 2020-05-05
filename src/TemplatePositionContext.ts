@@ -111,11 +111,11 @@ export class TemplatePositionContext extends PositionContext {
                     const ns = tleFuncCall.namespaceToken.stringValue;
                     const nsDefinition = scope.getFunctionNamespaceDefinition(ns);
                     if (nsDefinition) {
-                        const referenceSpan: language.Span = tleFuncCall.namespaceToken.span.translate(this.jsonTokenStartIndex);
-                        return { referenceKind: ReferenceSiteKind.reference, referenceDocument, definition: nsDefinition, referenceSpan, definitionDocument };
+                        const unquotedReferenceSpan: language.Span = tleFuncCall.namespaceToken.span.translate(this.jsonTokenStartIndex);
+                        return { referenceKind: ReferenceSiteKind.reference, referenceDocument, definition: nsDefinition, unquotedReferenceSpan, definitionDocument };
                     }
                 } else if (tleFuncCall.nameToken) {
-                    const referenceSpan: language.Span = tleFuncCall.nameToken.span.translate(this.jsonTokenStartIndex);
+                    const unquotedReferenceSpan: language.Span = tleFuncCall.nameToken.span.translate(this.jsonTokenStartIndex);
                     const referenceKind = ReferenceSiteKind.reference;
 
                     if (tleFuncCall.nameToken.span.contains(tleCharacterIndex, language.Contains.strict)) {
@@ -126,13 +126,13 @@ export class TemplatePositionContext extends PositionContext {
                             const nsDefinition = scope.getFunctionNamespaceDefinition(ns);
                             const userFunctiondefinition = scope.getUserFunctionDefinition(ns, name);
                             if (nsDefinition && userFunctiondefinition) {
-                                return { referenceKind, referenceDocument, definition: userFunctiondefinition, referenceSpan, definitionDocument };
+                                return { referenceKind, referenceDocument, definition: userFunctiondefinition, unquotedReferenceSpan, definitionDocument };
                             }
                         } else {
                             // Inside a reference to a built-in function
                             const functionMetadata: BuiltinFunctionMetadata | undefined = AzureRMAssets.getFunctionMetadataFromName(tleFuncCall.nameToken.stringValue);
                             if (functionMetadata) {
-                                return { referenceKind, referenceDocument, definition: functionMetadata, referenceSpan, definitionDocument };
+                                return { referenceKind, referenceDocument, definition: functionMetadata, unquotedReferenceSpan, definitionDocument };
                             }
                         }
                     }
@@ -147,15 +147,15 @@ export class TemplatePositionContext extends PositionContext {
                     // Inside the 'xxx' of a parameters('xxx') reference
                     const parameterDefinition: IParameterDefinition | undefined = scope.getParameterDefinition(tleStringValue.toString());
                     if (parameterDefinition) {
-                        const referenceSpan: language.Span = tleStringValue.getSpan().translate(this.jsonTokenStartIndex);
-                        return { referenceKind, referenceDocument, definition: parameterDefinition, referenceSpan: referenceSpan, definitionDocument };
+                        const unquotedReferenceSpan: language.Span = tleStringValue.unquotedSpan.translate(this.jsonTokenStartIndex);
+                        return { referenceKind, referenceDocument, definition: parameterDefinition, unquotedReferenceSpan, definitionDocument };
                     }
                 } else if (tleStringValue.isVariablesArgument()) {
                     const variableDefinition: IVariableDefinition | undefined = scope.getVariableDefinition(tleStringValue.toString());
                     if (variableDefinition) {
                         // Inside the 'xxx' of a variables('xxx') reference
-                        const referenceSpan: language.Span = tleStringValue.getSpan().translate(this.jsonTokenStartIndex);
-                        return { referenceKind, referenceDocument, definition: variableDefinition, referenceSpan: referenceSpan, definitionDocument };
+                        const unquotedReferenceSpan: language.Span = tleStringValue.unquotedSpan.translate(this.jsonTokenStartIndex);
+                        return { referenceKind, referenceDocument, definition: variableDefinition, unquotedReferenceSpan, definitionDocument };
                     }
                 }
             }
@@ -169,7 +169,7 @@ export class TemplatePositionContext extends PositionContext {
                     definition: definition,
                     referenceDocument: this.document,
                     definitionDocument: this.document,
-                    referenceSpan: definition.nameValue?.unquotedSpan
+                    unquotedReferenceSpan: definition.nameValue?.unquotedSpan
                 };
             }
         }
