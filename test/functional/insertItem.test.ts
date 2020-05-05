@@ -120,7 +120,6 @@ suite("InsertItem", async (): Promise<void> => {
         suite("Insert even one more variable", async () => {
             createInsertItemTests(twoVariablesTemplate, threeVariablesTemplate, TemplateSectionType.Variables, ["variable3"], 'resourceGroup()');
         });
-
         suite("Insert one variable in totally empty template", async () => {
             createInsertItemTests(totallyEmptyTemplate, oneVariableTemplate, TemplateSectionType.Variables, ["variable1"], 'resourceGroup()');
         });
