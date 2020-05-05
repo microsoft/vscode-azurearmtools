@@ -30,16 +30,17 @@ export class QuickPickItem<T> implements vscode.QuickPickItem {
         this.description = description;
     }
 }
+type ItemType = "string" | "securestring" | "int" | "bool" | "bool" | "object" | "secureobject" | "array";
 
-export function getItemType(): QuickPickItem<string>[] {
-    let items: QuickPickItem<string>[] = [];
-    items.push(new QuickPickItem<string>("String", "string", "A string"));
-    items.push(new QuickPickItem<string>("Secure string", "securestring", "A secure string"));
-    items.push(new QuickPickItem<string>("Int", "int", "An integer"));
-    items.push(new QuickPickItem<string>("Bool", "bool", "A boolean"));
-    items.push(new QuickPickItem<string>("Object", "object", "An object"));
-    items.push(new QuickPickItem<string>("Secure object", "secureobject", "A secure object"));
-    items.push(new QuickPickItem<string>("Array", "array", "An array"));
+export function getItemType(): QuickPickItem<ItemType>[] {
+    let items: QuickPickItem<ItemType>[] = [];
+    items.push(new QuickPickItem<ItemType>("String", "string", "A string"));
+    items.push(new QuickPickItem<ItemType>("Secure string", "securestring", "A secure string"));
+    items.push(new QuickPickItem<ItemType>("Int", "int", "An integer"));
+    items.push(new QuickPickItem<ItemType>("Bool", "bool", "A boolean"));
+    items.push(new QuickPickItem<ItemType>("Object", "object", "An object"));
+    items.push(new QuickPickItem<ItemType>("Secure object", "secureobject", "A secure object"));
+    items.push(new QuickPickItem<ItemType>("Array", "array", "An array"));
     return items;
 }
 
@@ -160,37 +161,43 @@ export class InsertItem {
                 description: description
             };
         }
-        await this.insertInObject(template, textEditor, templateKeys.parameters, parameter, name, context, false);
+        await this.insertInObject({
+            template,
+            textEditor,
+            part: templateKeys.parameters,
+            data: parameter,
+            name,
+            context,
+            setCursor: false
+        });
     }
 
-    private throwError(message: string, context: IActionContext, suppressReportIssue: boolean = true): void {
-        context.errorHandling.suppressReportIssue = true;
+    private throwExpectedError(message: string, context: IActionContext, suppressReportIssue: boolean = true): void {
+        context.errorHandling.suppressReportIssue = suppressReportIssue;
         throw new Error(message);
     }
 
-    private getDefaultValue(defaultValue: string, parameterType: string, context: IActionContext): string | number | boolean | undefined {
+    private getDefaultValue(defaultValue: string, parameterType: ItemType, context: IActionContext): string | number | boolean | unknown | {} | [] {
         switch (parameterType) {
             case "int":
                 let intValue = Number(defaultValue);
                 if (isNaN(intValue)) {
-                    this.throwError("Invalid integer!", context);
+                    this.throwExpectedError("Invalid integer!", context);
                 }
                 return intValue;
             case "array":
                 try {
-                    // tslint:disable-next-line: no-unsafe-any
                     return JSON.parse(defaultValue);
                 } catch (error) {
-                    this.throwError("Invalid array!", context);
+                    this.throwExpectedError("Invalid array!", context);
                 }
                 break;
             case "object":
             case "secureobject":
                 try {
-                    // tslint:disable-next-line: no-unsafe-any
                     return JSON.parse(defaultValue);
                 } catch (error) {
-                    this.throwError("Invalid object!", context);
+                    this.throwExpectedError("Invalid object!", context);
                 }
                 break;
             case "bool":
@@ -200,15 +207,34 @@ export class InsertItem {
                     case "false":
                         return false;
                     default:
-                        this.throwError("Invalid boolean!", context);
+                        this.throwExpectedError("Invalid boolean!", context);
                 }
                 break;
-            default:
+            case "string":
+            case "securestring":
                 return defaultValue;
+            default:
+                assertNever(parameterType);
         }
     }
 
-    private async insertInObject(template: DeploymentTemplate, textEditor: vscode.TextEditor, part: string, data: Data | unknown, name: string, context: IActionContext, setCursor: boolean = true): Promise<void> {
+    private async insertInObject(
+        { template,
+            textEditor,
+            part,
+            data,
+            name,
+            context,
+            setCursor = true
+        }: {
+            template: DeploymentTemplate;
+            textEditor: vscode.TextEditor;
+            part: string;
+            data: Data | unknown;
+            name: string;
+            context: IActionContext;
+            setCursor?: boolean;
+        }): Promise<void> {
         let templatePart = this.getTemplateObjectPart(template, part);
         if (!templatePart) {
             let topLevel = template.topLevelValue;
@@ -218,23 +244,47 @@ export class InsertItem {
             }
             let subPart: Data = {};
             subPart[name] = data;
-            await this.insertInObjectHelper(topLevel, textEditor, subPart, part, 1, setCursor);
+            await this.insertInObjectHelper({
+                templatePart: topLevel,
+                textEditor,
+                data: subPart,
+                name: part,
+                indentLevel: 1,
+                setCursor
+            });
         } else {
-            await this.insertInObjectHelper(templatePart, textEditor, data, name, undefined, setCursor);
+            await this.insertInObjectHelper({
+                templatePart,
+                textEditor,
+                data,
+                name,
+                indentLevel: undefined,
+                setCursor
+            });
         }
     }
 
     /**
      * Insert data into an template object (parameters, variables and outputs).
-     * @param templatePart The template part to insert into.
-     * @param textEditor The text editor to insert into.
-     * @param data The data to insert.
-     * @param name The name (key) to be inserted.
-     * @param indentLevel Which indent level to use when inserting.
      * @returns The document index of the cursor after the text has been inserted.
      */
     // tslint:disable-next-line:no-any
-    private async insertInObjectHelper(templatePart: Json.ObjectValue, textEditor: vscode.TextEditor, data: any, name: string, indentLevel: number = 2, setCursor: boolean = true): Promise<number> {
+    private async insertInObjectHelper(
+        { templatePart,
+            textEditor,
+            data,
+            name,
+            indentLevel = 2,
+            setCursor = true
+        }: {
+            templatePart: Json.ObjectValue;
+            textEditor: vscode.TextEditor;
+            // tslint:disable-next-line:no-any
+            data: any;
+            name: string;
+            indentLevel?: number;
+            setCursor?: boolean;
+        }): Promise<number> {
         let isFirstItem = templatePart.properties.length === 0;
         let startText = isFirstItem ? '' : ',';
         let index = isFirstItem ? templatePart.span.endIndex :
@@ -248,7 +298,14 @@ export class InsertItem {
 
     private async insertVariable(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         let name = await this.ui.showInputBox({ prompt: "Name of variable?" });
-        await this.insertInObject(template, textEditor, templateKeys.variables, insertCursorText, name, context);
+        await this.insertInObject({
+            template,
+            textEditor,
+            part: templateKeys.variables,
+            data: insertCursorText,
+            name,
+            context
+        });
     }
 
     private async insertOutput(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
@@ -258,7 +315,14 @@ export class InsertItem {
             type: outputType.value,
             value: insertCursorText.replace(/"/g, '')
         };
-        await this.insertInObject(template, textEditor, templateKeys.outputs, output, name, context);
+        await this.insertInObject({
+            template,
+            textEditor,
+            part: templateKeys.outputs,
+            data: output,
+            name,
+            context
+        });
     }
     private async insertFunctionAsTopLevel(topLevel: Json.ObjectValue | undefined, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         if (!topLevel) {
@@ -266,7 +330,12 @@ export class InsertItem {
             throw new Error("Invalid ARM template!");
         }
         let functions = [await this.getFunctionNamespace()];
-        await this.insertInObjectHelper(topLevel, textEditor, functions, "functions", 1);
+        await this.insertInObjectHelper({
+            templatePart: topLevel,
+            textEditor,
+            data: functions,
+            name: "functions", indentLevel: 1
+        });
     }
 
     private async insertFunctionAsNamespace(functions: Json.ArrayValue, textEditor: vscode.TextEditor): Promise<void> {
@@ -281,13 +350,25 @@ export class InsertItem {
         let members: any = {};
         // tslint:disable-next-line:no-unsafe-any
         members[functionName] = functionDef;
-        await this.insertInObjectHelper(namespace, textEditor, members, 'members', 3);
+        await this.insertInObjectHelper({
+            templatePart: namespace,
+            textEditor,
+            data: members,
+            name: 'members',
+            indentLevel: 3
+        });
     }
 
     private async insertFunctionAsFunction(members: Json.ObjectValue, textEditor: vscode.TextEditor): Promise<void> {
         let functionName = await this.ui.showInputBox({ prompt: "Name of function?" });
         let functionDef = await this.getFunction();
-        await this.insertInObjectHelper(members, textEditor, functionDef, functionName, 4);
+        await this.insertInObjectHelper({
+            templatePart: members,
+            textEditor,
+            data: functionDef,
+            name: functionName,
+            indentLevel: 4
+        });
     }
 
     private async insertFunction(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
@@ -331,7 +412,13 @@ export class InsertItem {
             }
             // tslint:disable-next-line:no-any
             let subPart: any = [];
-            index = await this.insertInObjectHelper(template.topLevelValue, textEditor, subPart, templateKeys.resources, 1);
+            index = await this.insertInObjectHelper({
+                templatePart: template.topLevelValue,
+                textEditor,
+                data: subPart,
+                name: templateKeys.resources,
+                indentLevel: 1
+            });
         } else {
             index = resources.span.endIndex;
             if (resources.elements.length > 0) {
@@ -468,7 +555,7 @@ interface ParameterMetaData {
 interface Parameter extends Data {
     // tslint:disable-next-line:no-reserved-keywords
     type: string;
-    defaultValue?: string | number | boolean;
+    defaultValue?: string | number | boolean | unknown | {} | [];
     metadata?: ParameterMetaData;
 }
 
