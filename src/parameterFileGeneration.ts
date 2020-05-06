@@ -171,27 +171,33 @@ function createParameterFromTemplateParameterCore(template: DeploymentTemplate, 
 
 function getDefaultValueFromType(propType: ExpressionType | undefined, kind: ContentKind): string {
     const isSnippet = kind === ContentKind.snippet; //asdf testpoint
+
     // tslint:disable-next-line: no-invalid-template-strings
-    const value = isSnippet ? '${$$INDEX$$:value}' : 'value';
+    const typedValue = isSnippet ? `\${$$INDEX$$:${propType}-value}` : `${propType}-value`;
+    const childValue = isSnippet ? `\${$$INDEX$$:any-value}` : `any-value`;
 
     switch (propType) {
         case "array":
-            return `[${ext.EOL}\t${value}${ext.EOL}]`; //asdf testpoint
+            return `[${ext.EOL}\t${childValue}${ext.EOL}]`; //asdf testpoint
 
         case "bool":
-            return `false ${value}`; //asdf //asdf testpoint
+            // tslint:disable-next-line: no-invalid-template-strings
+            const boolValue = isSnippet ? '${$$INDEX$$|false,true|}' : 'value';
+            return boolValue; //asdf //asdf testpoint
 
         case "int":
-            return `${value}`; //asdf //asdf testpoint
+            return typedValue; //asdf //asdf testpoint
 
         case "object":
         case "secureobject":
-            return `{${ext.EOL}\t${value}${ext.EOL}}`; //asdf testpoint
+            // tslint:disable-next-line: no-invalid-template-strings
+            const prop = isSnippet ? '${$$INDEX$$:property1}' : 'property1';
+            return `{${ext.EOL}\t"${prop}": ${childValue}${ext.EOL}}`; //asdf testpoint
 
         case "securestring":
         case "string":
         case undefined:
-            return `"${value}"`;
+            return `"${typedValue}"`;
 
         default:
             assertNever(propType);
