@@ -102,7 +102,7 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
   } else if (result === quickPickList.newFile) {
     // New parameter file
 
-    let newUri: Uri = await queryCreateParameterFile(actionContext, templateUri, template);
+    let newUri: Uri = await queryCreateParameterFile(actionContext, templateUri, template, { insertSpaces: false, tabSize: 4 }); //asdf
     await mapping.mapParameterFile(templateUri, newUri);
     await commands.executeCommand('azurerm-vscode-tools.openParameterFile', templateUri, newUri);
   } else if (result === quickPickList.openCurrent) {

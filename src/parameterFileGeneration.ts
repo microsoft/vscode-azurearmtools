@@ -14,27 +14,33 @@ import { IParameterDefinition } from './IParameterDefinition';
 import * as Json from "./JSON";
 import * as TLE from './TLE';
 import { assertNever } from './util/assertNever';
-import { indentMultilineString, unindentMultilineString } from './util/multilineStrings';
+import { formatText, IFormatTextOptions, prependToEachLine } from './util/multilineStrings';
 
-export const defaultTabSize: number = 4;
 export enum ContentKind {
+    /**
+     * Generates a snippet that can be inserted
+     */
     snippet = "snippet",
+    /**
+     * Generates plain text that can be writen into a file or buffer
+     */
     text = "text"
 }
-export enum WhichParams {
+
+export enum ParamsToGenerate {
     all = "all",
     required = "required"
 }
 
-export async function queryCreateParameterFile(actionContext: IActionContext, templateUri: Uri, template: DeploymentTemplate, tabSize: number = defaultTabSize): Promise<Uri> {
+export async function queryCreateParameterFile(actionContext: IActionContext, templateUri: Uri, template: DeploymentTemplate, options: IFormatTextOptions): Promise<Uri> {
     const all = <QuickPickItem>{ label: "All parameters" };
     const required = <QuickPickItem>{ label: "Only required parameters", description: "Uses only parameters that have no default value in the template file" };
 
     const whichParamsResponse = await ext.ui.showQuickPick([all, required], {
         placeHolder: `Include which parameters from ${path.basename(templateUri.fsPath)}?`
     });
-    const whichParams = whichParamsResponse === required ? WhichParams.required : WhichParams.all;
-    actionContext.telemetry.properties.onlyRequiredParams = String(whichParams === WhichParams.required);
+    const whichParams = whichParamsResponse === required ? ParamsToGenerate.required : ParamsToGenerate.all;
+    actionContext.telemetry.properties.onlyRequiredParams = String(whichParams === ParamsToGenerate.required);
 
     const fileNameWithoutJsonC: string = path.basename(templateUri.fsPath)
         .replace(/\.[Jj][Ss][Oo][Nn][Cc]?$/, '');
@@ -52,7 +58,7 @@ export async function queryCreateParameterFile(actionContext: IActionContext, te
         throw new UserCancelledError();
     }
 
-    let paramsObj: string = createParameterFileContents(template, tabSize, whichParams);
+    let paramsObj: string = createParameterFileContents(template, options, whichParams);
     await fse.writeFile(newUri.fsPath, paramsObj, {
         encoding: 'utf8'
     });
@@ -60,7 +66,7 @@ export async function queryCreateParameterFile(actionContext: IActionContext, te
     return newUri;
 }
 
-export function createParameterFileContents(template: DeploymentTemplate, tabSize: number, whichParams: WhichParams): string {
+export function createParameterFileContents(template: DeploymentTemplate, options: IFormatTextOptions, whichParams: ParamsToGenerate): string {
     /* e.g.
 
     {
@@ -75,53 +81,51 @@ export function createParameterFileContents(template: DeploymentTemplate, tabSiz
 
     */
 
-    const tab = makeIndent(tabSize);
-
-    const params: CaseInsensitiveMap<string, string> = createParameters(template, tabSize, whichParams, ContentKind.text);
+    const params: CaseInsensitiveMap<string, string> = createParameters(template, options, whichParams, ContentKind.text);
     const paramsContent = params.map((key, value) => value).join(`,${ext.EOL}`);
 
     // tslint:disable-next-line: prefer-template
     let contents = `{` + ext.EOL +
-        `${tab}"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",` + ext.EOL +
-        `${tab}"contentVersion": "1.0.0.0",` + ext.EOL +
-        `${tab}"parameters": {` + ext.EOL;
+        `\t"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",` + ext.EOL +
+        `\t"contentVersion": "1.0.0.0",` + ext.EOL +
+        `\t"parameters": {` + ext.EOL;
 
     if (params.size > 0) {
-        contents += indentMultilineString(paramsContent, tabSize * 2) + ext.EOL;
+        contents += prependToEachLine(paramsContent, '\t\t') + ext.EOL; //asdf
     }
 
     // tslint:disable-next-line: prefer-template
-    contents += `${tab}}` + ext.EOL
+    contents += `\t}` + ext.EOL
         + `}`;
 
-    return contents;
+    return formatText(contents, options);
 }
 
 /**
  * Creates text for a property using information for that property in a template file
  * @param tabSize The number of spaces to indent at each level. The parameter text will start flush left
  */
-export function createParametersFromTemplateParameters(template: DeploymentTemplate, parameters: IParameterDefinition[], kind: ContentKind, tabSize: number = defaultTabSize): string {
+export function createParametersFromTemplateParameters(template: DeploymentTemplate, parameters: IParameterDefinition[], kind: ContentKind, options: IFormatTextOptions): string {
     let paramsAsText: string[] = [];
     for (let param of parameters) {
-        const paramText = createParameterFromTemplateParameterCore(template, param, kind, tabSize); //asdftestpoint
+        const paramText = createParameterFromTemplateParameterCore(template, param, kind, options); //asdftestpoint
         paramsAsText.push(paramText);
     }
 
     const text = paramsAsText.join(`,${ext.EOL}`);
-    return replaceIndices(text);
+    return makeIndicesUnique(text);
 }
 
 /**
  * Creates text for a property using information for that property in a template file
  * @param tabSize The number of spaces to indent at each level. The parameter text will start flush left
  */
-export function createParameterFromTemplateParameter(template: DeploymentTemplate, parameter: IParameterDefinition, kind: ContentKind, tabSize: number = defaultTabSize): string {
-    const text = createParameterFromTemplateParameterCore(template, parameter, kind, tabSize);
-    return replaceIndices(text);
+export function createParameterFromTemplateParameter(template: DeploymentTemplate, parameter: IParameterDefinition, kind: ContentKind, options: IFormatTextOptions): string {
+    const text = createParameterFromTemplateParameterCore(template, parameter, kind, options);
+    return makeIndicesUnique(text);
 }
 
-function createParameterFromTemplateParameterCore(template: DeploymentTemplate, parameter: IParameterDefinition, kind: ContentKind, tabSize: number = defaultTabSize): string {
+function createParameterFromTemplateParameterCore(template: DeploymentTemplate, parameter: IParameterDefinition, kind: ContentKind, options: IFormatTextOptions): string {
 
     /* e.g.
 
@@ -138,44 +142,51 @@ function createParameterFromTemplateParameterCore(template: DeploymentTemplate, 
         // If the parameter has a default value that's not an expression, then use it as the
         // value in the param file
         const isExpression = parameter.defaultValue instanceof Json.StringValue &&
-            TLE.isTleExpression(parameter.defaultValue.unquotedValue);
+            TLE.isTleExpression(parameter.defaultValue.unquotedValue); //asdf testpoint
         if (!isExpression) {
-            const defValueSpan = parameter.defaultValue.span;
+            const defValueSpan = parameter.defaultValue.span; //asdf testpoint
             const defValue: string = template.documentText.slice(defValueSpan.startIndex, defValueSpan.afterEndIndex);
-            value = unindentMultilineString(defValue, true);
+            // Reformat
+            value = defValue;
+            try {
+                value = JSON.stringify(JSON.parse(value), null, '\t');
+            } catch (err) {
+                // Ignore errors
+            }
         }
     }
     if (value === undefined) {
-        value = getDefaultValueFromType(parameter.validType, tabSize, kind);
+        value = getDefaultValueFromType(parameter.validType, kind);
     }
 
-    const valueIndentedAfterFirstLine: string = indentMultilineString(value.trimLeft(), tabSize).trimLeft();
+    const valueIndentedAfterFirstLine: string = prependToEachLine(value.trimLeft(), '\t').trimLeft(); //asdf
 
     // tslint:disable-next-line:prefer-template
-    return `"${parameter.nameValue.unquotedValue}": {` + ext.EOL
-        + `${makeIndent(tabSize)}"value": ${valueIndentedAfterFirstLine}` + ext.EOL
+    const result = `"${parameter.nameValue.unquotedValue}": {` + ext.EOL
+        + `\t"value": ${valueIndentedAfterFirstLine}` + ext.EOL
         + `}`;
+
+    return formatText(result, options);
 }
 
-function getDefaultValueFromType(propType: ExpressionType | undefined, indent: number, kind: ContentKind): string {
-    const isSnippet = kind === ContentKind.snippet;
+function getDefaultValueFromType(propType: ExpressionType | undefined, kind: ContentKind): string {
+    const isSnippet = kind === ContentKind.snippet; //asdf testpoint
     // tslint:disable-next-line: no-invalid-template-strings
     const value = isSnippet ? '${$$INDEX$$:value}' : 'value';
-    const tab = ' '.repeat(indent);
 
     switch (propType) {
         case "array":
-            return `[${ext.EOL}${tab}${value}${ext.EOL}]`;
+            return `[${ext.EOL}\t${value}${ext.EOL}]`; //asdf testpoint
 
         case "bool":
-            return `false ${value}`; //asdf
+            return `false ${value}`; //asdf //asdf testpoint
 
         case "int":
-            return `${value}`; //asdf
+            return `${value}`; //asdf //asdf testpoint
 
         case "object":
         case "secureobject":
-            return `{${ext.EOL}${tab}${value}${ext.EOL}}`;
+            return `{${ext.EOL}\t${value}${ext.EOL}}`; //asdf testpoint
 
         case "securestring":
         case "string":
@@ -187,34 +198,33 @@ function getDefaultValueFromType(propType: ExpressionType | undefined, indent: n
     }
 }
 
-function createParameters(template: DeploymentTemplate, tabSize: number, whichParams: WhichParams, kind: ContentKind): CaseInsensitiveMap<string, string> {
+function createParameters(template: DeploymentTemplate, options: IFormatTextOptions, whichParams: ParamsToGenerate, kind: ContentKind): CaseInsensitiveMap<string, string> {
     const params: CaseInsensitiveMap<string, string> = new CaseInsensitiveMap<string, string>();
-    const onlyRequiredParameters = whichParams === WhichParams.required;
+    const onlyRequiredParameters = whichParams === ParamsToGenerate.required;
 
     for (let paramDef of template.topLevelScope.parameterDefinitions) {
         if (!onlyRequiredParameters || !paramDef.defaultValue) {
-            params.set(paramDef.nameValue.unquotedValue, createParameterFromTemplateParameter(template, paramDef, kind, tabSize));
+            params.set(paramDef.nameValue.unquotedValue, createParameterFromTemplateParameter(template, paramDef, kind, options)); //asdf testpoint
         }
     }
 
     return params;
 }
 
-function makeIndent(tabSize: number): string {
-    return ' '.repeat(tabSize);
-}
-
-function replaceIndices(snippetText: string): string {
-    let index = 1;
+/**
+ * Replace eaach occurrence of the string '$$INDEX$$' with a unique integer starting at 1
+ */
+function makeIndicesUnique(snippetText: string): string {
+    let index = 1; //asdf testpoint
 
     // tslint:disable-next-line: no-constant-condition
     while (true) {
-        const newText = snippetText.replace('$$INDEX$$', String(index));
+        const newText = snippetText.replace('$$INDEX$$', String(index)); //asdf testpoint
         if (newText === snippetText) {
-            return snippetText;
+            return snippetText; //asdf testpoint
         }
 
-        snippetText = newText;
+        snippetText = newText; //asdf testpoint
         ++index;
     }
 }

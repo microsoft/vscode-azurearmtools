@@ -10,6 +10,7 @@ import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, createTelemetryReporter, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
+import { WhichParams } from "../extension.bundle";
 import * as Completion from "./Completion";
 import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "./constants";
 import { DeploymentDocument } from "./DeploymentDocument";
@@ -190,10 +191,10 @@ export class AzureRMTools {
         });
         registerCommand("azurerm-vscode-tools.resetGlobalState", resetGlobalState);
         registerCommand("azurerm-vscode-tools.codeAction.addAllMissingParameters", async (actionContext: IActionContext, source?: vscode.Uri) => {
-            await this.addMissingParameters(actionContext, source, false);
+            await this.addMissingParameters(actionContext, source, WhichParams.all);
         });
         registerCommand("azurerm-vscode-tools.codeAction.addMissingRequiredParameters", async (actionContext: IActionContext, source?: vscode.Uri) => {
-            await this.addMissingParameters(actionContext, source, true);
+            await this.addMissingParameters(actionContext, source, WhichParams.required);
         });
 
         this._paramsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
@@ -231,7 +232,7 @@ export class AzureRMTools {
     private async addMissingParameters(
         actionContext: IActionContext,
         source: vscode.Uri | undefined,
-        onlyRequiredParameters: boolean
+        whichParams: WhichParams
     ): Promise<void> {
         source = source || vscode.window.activeTextEditor?.document.uri;
         const editor = vscode.window.activeTextEditor;
@@ -242,7 +243,7 @@ export class AzureRMTools {
                 await doc.addMissingParameters(
                     editor,
                     <DeploymentTemplate>template,
-                    onlyRequiredParameters);
+                    whichParams);
             }
         }
     }

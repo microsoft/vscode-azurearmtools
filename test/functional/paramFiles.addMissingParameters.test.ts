@@ -8,7 +8,7 @@
 
 import * as assert from 'assert';
 import { commands } from 'vscode';
-import { ext } from '../../extension.bundle';
+import { ext, WhichParams } from '../../extension.bundle';
 import { IDeploymentParametersFile, IDeploymentTemplate } from "../support/diagnostics";
 import { getDocumentMarkers, removeEOLMarker } from "../support/parseTemplate";
 import { stringify } from '../support/stringify';
@@ -22,7 +22,7 @@ const longTemplate = {
         "requiredString": {
             "type": "string"
         },
-        "requiredArray": {
+        "requiredInt": {
             "type": "int"
         },
         "optionalObject": {
@@ -51,11 +51,6 @@ const templateWithOneOptionalParam = {
 
 suite("Add missing parameters - functional", () => {
 
-    enum Params {
-        "all",
-        "onlyRequired"
-    }
-
     function createAddMissingParamsTestAllAndRequired(
         testName: string,
         params: string | Partial<IDeploymentParametersFile>,
@@ -67,14 +62,14 @@ suite("Add missing parameters - functional", () => {
             `${testName} - all Parameters`,
             params,
             template,
-            Params.all,
+            WhichParams.all,
             expectedResultForAllParameters);
 
         createAddMissingParamsTest(
             `${testName} - only required parameters`,
             params,
             template,
-            Params.onlyRequired,
+            WhichParams.required,
             expectedResultForOnlyRequiredParameters);
     }
 
@@ -82,7 +77,7 @@ suite("Add missing parameters - functional", () => {
         testName: string,
         params: string | Partial<IDeploymentParametersFile>,
         template: string | Partial<IDeploymentTemplate> | undefined,
-        whichParams: Params,
+        whichParams: WhichParams,
         expectedResult: string
     ): void {
         testWithLanguageServer(testName, async () => {
@@ -110,7 +105,7 @@ suite("Add missing parameters - functional", () => {
                 await editor.open();
 
                 await commands.executeCommand(
-                    whichParams === Params.all
+                    whichParams === WhichParams.all
                         ? 'azurerm-vscode-tools.codeAction.addAllMissingParameters'
                         : 'azurerm-vscode-tools.codeAction.addMissingRequiredParameters'
                 );
@@ -142,10 +137,10 @@ suite("Add missing parameters - functional", () => {
     "contentVersion": "1.0.0.0",
     "parameters": {
         "requiredString": {
-            "value": "" // TODO: Fill in parameter value
+            "value": "value"
         },
-        "requiredArray": {
-            "value": 0 // TODO: Fill in parameter value
+        "requiredInt": {
+            "value": value
         },
         "optionalObject": {
             "value": {
@@ -162,10 +157,10 @@ suite("Add missing parameters - functional", () => {
     "contentVersion": "1.0.0.0",
     "parameters": {
         "requiredString": {
-            "value": "" // TODO: Fill in parameter value
+            "value": "value"
         },
-        "requiredArray": {
-            "value": 0 // TODO: Fill in parameter value
+        "requiredInt": {
+            "value": value
         }
     }
 }`
@@ -303,8 +298,8 @@ suite("Add missing parameters - functional", () => {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "requiredArray": {
-            "value": 0 // TODO: Fill in parameter value
+        "requiredInt": {
+            "value": value
         },
         "optionalObject": {
             "value": {
@@ -318,8 +313,8 @@ suite("Add missing parameters - functional", () => {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "requiredArray": {
-            "value": 0 // TODO: Fill in parameter value
+        "requiredInt": {
+            "value": value
         },
         "optionalObject": {
             "value": {
@@ -327,7 +322,7 @@ suite("Add missing parameters - functional", () => {
             }
         },
         "requiredString": {
-            "value": "" // TODO: Fill in parameter value
+            "value": "value"
         },
         "optionalInt": {
             "value": 1
@@ -338,8 +333,8 @@ suite("Add missing parameters - functional", () => {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "requiredArray": {
-            "value": 0 // TODO: Fill in parameter value
+        "requiredInt": {
+            "value": value
         },
         "optionalObject": {
             "value": {
@@ -347,7 +342,7 @@ suite("Add missing parameters - functional", () => {
             }
         },
         "requiredString": {
-            "value": "" // TODO: Fill in parameter value
+            "value": "value"
         }
     }
 }`
@@ -377,7 +372,7 @@ suite("Add missing parameters - functional", () => {
                 }
             }
         },
-        Params.all,
+        WhichParams.all,
         `{
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
@@ -386,7 +381,7 @@ suite("Add missing parameters - functional", () => {
             "value": true
         },
         "defValueIsExpression": {
-            "value": "" // TODO: Fill in parameter value
+            "value": "value"
         }
     }
 }`);

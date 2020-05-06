@@ -5,7 +5,7 @@
 // tslint:disable:max-func-body-length
 
 import * as assert from "assert";
-import { ContentKind, createParameterFileContents, createParameterFromTemplateParameter, WhichParams } from "../extension.bundle";
+import { ContentKind, createParameterFileContents, createParameterFromTemplateParameter, IFormatTextOptions, WhichParams } from "../extension.bundle";
 import { IDeploymentParameterDefinition, IDeploymentTemplate } from "./support/diagnostics";
 import { normalizeString } from "./support/normalizeString";
 import { parseTemplate } from "./support/parseTemplate";
@@ -14,11 +14,12 @@ suite("parameterFileGeneration tests", () => {
     suite("createParameterFileContents", () => {
         function testCreateFile(
             testName: string,
-            onlyRequiredParams: boolean,
+            whichParams: WhichParams,
             parameters: { [key: string]: Partial<IDeploymentParameterDefinition> },
-            expectedContents: string
+            expectedContents: string,
+            options: IFormatTextOptions = { insertSpaces: true, tabSize: 4 }
         ): void {
-            test(`${testName} (${onlyRequiredParams ? 'all params' : 'required params'})`, async () => {
+            test(`${testName} (${whichParams})`, async () => {
                 expectedContents = normalizeString(expectedContents);
 
                 const template: IDeploymentTemplate = {
@@ -29,7 +30,7 @@ suite("parameterFileGeneration tests", () => {
                     parameters: <{ [key: string]: IDeploymentParameterDefinition }>parameters
                 };
                 const dt = await parseTemplate(template);
-                const paramFile = createParameterFileContents(dt, 4, WhichParams.required);
+                const paramFile = createParameterFileContents(dt, options, whichParams);
                 assert.equal(paramFile, expectedContents);
             });
         }
@@ -39,17 +40,18 @@ suite("parameterFileGeneration tests", () => {
             parameterDefinition: Partial<IDeploymentParameterDefinition>,
             expectedContents: string
         ): void {
-            testSinglePropertyWithIndent(testName, 4, parameterDefinition, expectedContents);
+            testSinglePropertyWithIndent(testName, 4, parameterDefinition, expectedContents); //asdf
         }
 
         function testSinglePropertyWithIndent(
             testName: string,
             spacesPerIndent: number,
             parameterDefinition: Partial<IDeploymentParameterDefinition>,
-            expectedContents: string
+            expectedContentsWithSpaces: string/*,
+            expectedContentsWithTabs: string asdf*/
         ): void {
             test(testName, async () => {
-                expectedContents = normalizeString(expectedContents);
+                expectedContentsWithSpaces = normalizeString(expectedContentsWithSpaces);
 
                 const parameterName = "parameter1";
                 const template: IDeploymentTemplate = {
@@ -67,15 +69,15 @@ suite("parameterFileGeneration tests", () => {
                 const foundDefinition = dt.topLevelScope.getParameterDefinition(parameterName);
                 assert(foundDefinition);
                 // tslint:disable-next-line:no-non-null-assertion
-                const param = createParameterFromTemplateParameter(dt, foundDefinition!, ContentKind.text, spacesPerIndent); // asdf
-                assert.equal(param, expectedContents);
+                const param = createParameterFromTemplateParameter(dt, foundDefinition!, ContentKind.text, { insertSpaces: true, tabSize: spacesPerIndent }); // asdf
+                assert.equal(param, expectedContentsWithSpaces);
             });
         }
 
         suite("Create entire param file", () => {
             testCreateFile(
-                "single string param",
-                false, // onlyRequiredParams
+                "single string param, spaces, tabsize=4",
+                WhichParams.all,
                 {
                     p1: {
                         type: "string"
@@ -86,15 +88,61 @@ suite("parameterFileGeneration tests", () => {
     "contentVersion": "1.0.0.0",
     "parameters": {
         "p1": {
-            "value": "" // TODO: Fill in parameter value
+            "value": "value"
         }
     }
 }`
             );
 
             testCreateFile(
+                "single string param, spaces, tabsize=7",
+                WhichParams.all,
+                {
+                    p1: {
+                        type: "string"
+                    }
+                },
+                `{
+       "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+       "contentVersion": "1.0.0.0",
+       "parameters": {
+              "p1": {
+                     "value": "value"
+              }
+       }
+}`,
+                {
+                    insertSpaces: true,
+                    tabSize: 7
+                }
+            );
+
+            testCreateFile(
+                "single string param, tabs",
+                WhichParams.all,
+                {
+                    p1: {
+                        type: "string"
+                    }
+                },
+                `{
+\t"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+\t"contentVersion": "1.0.0.0",
+\t"parameters": {
+\t\t"p1": {
+\t\t\t"value": "value"
+\t\t}
+\t}
+}`,
+                {
+                    insertSpaces: false,
+                    tabSize: 7
+                }
+            );
+
+            testCreateFile(
                 "no params",
-                false, // onlyRequiredParams
+                WhichParams.all,
                 {
                 },
                 `{
@@ -107,7 +155,7 @@ suite("parameterFileGeneration tests", () => {
 
             testCreateFile(
                 "multiple parameters, all",
-                false,
+                WhichParams.all,
                 {
                     p1: {
                         type: "string",
@@ -128,19 +176,51 @@ suite("parameterFileGeneration tests", () => {
     "contentVersion": "1.0.0.0",
     "parameters": {
         "p1": {
-            "value": "" // TODO: Fill in parameter value
+            "value": "value"
         },
         "p2": {
             "value": 123
         },
         "p3": {
-            "value": 0 // TODO: Fill in parameter value
+            "value": value
         }
     }
 }`
             );
 
         });
+
+        testCreateFile(
+            "multiple parameters, only required",
+            WhichParams.required,
+            {
+                p1: {
+                    type: "string",
+                    metadata: {
+                        description: "my description"
+                    }
+                },
+                p2: {
+                    type: "int",
+                    defaultValue: 123
+                },
+                p3: {
+                    type: "int"
+                }
+            },
+            `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "p1": {
+            "value": "value"
+        },
+        "p3": {
+            "value": value
+        }
+    }
+}`
+        );
 
         suite("Required properties", () => {
             testSingleProperty(
@@ -149,7 +229,7 @@ suite("parameterFileGeneration tests", () => {
                     type: "string"
                 },
                 `"parameter1": {
-    "value": "" // TODO: Fill in parameter value
+    "value": "value"
 }`
             );
 
@@ -159,7 +239,7 @@ suite("parameterFileGeneration tests", () => {
                     type: "int"
                 },
                 `"parameter1": {
-    "value": 0 // TODO: Fill in parameter value
+    "value": value
 }`
             );
 
@@ -170,7 +250,7 @@ suite("parameterFileGeneration tests", () => {
                 },
                 `"parameter1": {
     "value": [
-        // TODO: Fill in parameter value
+        value
     ]
 }`
             );
@@ -182,7 +262,7 @@ suite("parameterFileGeneration tests", () => {
                 },
                 `"parameter1": {
     "value": {
-        // TODO: Fill in parameter value
+        value
     }
 }`);
 

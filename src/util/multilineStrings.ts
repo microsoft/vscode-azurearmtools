@@ -2,14 +2,30 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { ext } from "../extensionVariables";
+import * as vscode from 'vscode';
+import { ext } from "../extensionVariables"; //asdf
+
+export type IFormatTextOptions = {
+    insertSpaces: boolean;
+    tabSize: number;
+};
+
+/*
+/** asdf
+ * Indents each line of a multi-line string by 'indent' number of spaces
+ *
+export function indentMultilineString(multilineText: string, indent: number): string { // asdf spaces vs tabs?
+    const lines = splitIntoLines(multilineText); //asdf testpoint
+    const indentation: string = ' '.repeat(indent); //asdf
+    return indentation + lines.join(ext.EOL + indentation);
+}
+*/
 
 /**
- * Indents each line of a multi-line string by 'indent' number of spaces
+ * Indents each line of a multi-line string by 'indent' number of spaces asdf
  */
-export function indentMultilineString(multilineText: string, indent: number): string {
-    const lines = splitIntoLines(multilineText);
-    const indentation: string = ' '.repeat(indent);
+export function prependToEachLine(multilineText: string, indentation: string): string { // asdf spaces vs tabs?
+    const lines = splitIntoLines(multilineText); //asdf testpoint
     return indentation + lines.join(ext.EOL + indentation);
 }
 
@@ -18,7 +34,7 @@ export function indentMultilineString(multilineText: string, indent: number): st
  * any given line
  */
 export function unindentMultilineString(multilineText: string, ignoreFirstLineWhenCalculatingIndent: boolean = false): string {
-    const lines = splitIntoLines(multilineText);
+    const lines = splitIntoLines(multilineText); //asdf testpoint
     const linesToCalculateIndent = ignoreFirstLineWhenCalculatingIndent ? lines.slice(1) : lines;
     const minIndent = linesToCalculateIndent.map(getLineIndentation).reduce((previous, current) => Math.min(previous, current), Number.MAX_SAFE_INTEGER);
     const removeFromStart = new RegExp(`^\\s{0,${minIndent}}`, "gm");
@@ -36,6 +52,24 @@ export function getLineIndentation(singleLineText: string): number {
     }
 
     return indentation[0].length;
+}
+
+export function formatText(text: string, textEditor: vscode.TextEditor): string;
+// tslint:disable-next-line: unified-signatures
+export function formatText(text: string, options: IFormatTextOptions): string;
+export function formatText(text: string, textEditorOrFormatOptions: vscode.TextEditor | IFormatTextOptions): string {
+    const options: IFormatTextOptions = "document" in textEditorOrFormatOptions
+        ? <IFormatTextOptions>{
+            tabSize: <number>(<vscode.TextEditor>textEditorOrFormatOptions).options.tabSize,
+            // tslint:disable-next-line: no-any
+            insertSpaces: <boolean><any>(<vscode.TextEditor>textEditorOrFormatOptions).options.insertSpaces
+        }
+        : <IFormatTextOptions>textEditorOrFormatOptions;
+
+    if (options.insertSpaces) {
+        text = text.replace(/\t/g, ' '.repeat(Number(options.tabSize)));
+    }
+    return text;
 }
 
 function splitIntoLines(multilineText: string): string[] {

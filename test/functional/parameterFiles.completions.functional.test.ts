@@ -395,7 +395,7 @@ suite("Functional parameter file completions", () => {
     "contentVersion": "1.0.0.0",
     "parameters": {
         "required1": {
-            "value": "" // TODO: Fill in parameter value
+            "value": "value"
         }
     }
 }`
@@ -427,7 +427,7 @@ suite("Functional parameter file completions", () => {
         },
         "optional1": {
             "value": {
-              "abc": "def"
+                "abc": "def"
             }
         },
         "required2": {
@@ -465,7 +465,7 @@ suite("Functional parameter file completions", () => {
     },
     "optional1": {
         "value": {
-          "abc": "def"
+            "abc": "def"
         }
     },
     "required2": {
@@ -492,7 +492,7 @@ suite("Functional parameter file completions", () => {
 "parameters": {
     "optional1": {
         "value": {
-          "abc": "def"
+            "abc": "def"
         }
     }
 }
@@ -516,7 +516,7 @@ suite("Functional parameter file completions", () => {
 "parameters": {
     "optional1": {
         "value": {
-          "abc": "def"
+            "abc": "def"
         }
     }
 }
@@ -540,7 +540,7 @@ suite("Functional parameter file completions", () => {
 "parameters": {
     "optional1": {
         "value": {
-          "abc": "def"
+            "abc": "def"
         }
     }
 }

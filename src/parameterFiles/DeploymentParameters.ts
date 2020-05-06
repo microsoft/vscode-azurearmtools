@@ -3,8 +3,8 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from 'assert';
-import { EOL } from "os";
 import { CodeAction, CodeActionContext, CodeActionKind, Command, Range, Selection, SnippetString, TextEditor, Uri } from "vscode";
+import { WhichParams } from '../../extension.bundle';
 import { CachedValue } from "../CachedValue";
 import { templateKeys } from "../constants";
 import { DeploymentDocument } from "../DeploymentDocument";
@@ -13,10 +13,10 @@ import { INamedDefinition } from "../INamedDefinition";
 import { IParameterDefinition } from "../IParameterDefinition";
 import * as Json from "../JSON";
 import * as language from "../Language";
-import { ContentKind, createParametersFromTemplateParameters, defaultTabSize } from "../parameterFileGeneration";
+import { ContentKind, createParametersFromTemplateParameters } from "../parameterFileGeneration";
 import { ReferenceList } from "../ReferenceList";
 import { isParametersSchema } from "../schemas";
-import { indentMultilineString } from "../util/multilineStrings";
+import { formatText, prependToEachLine } from '../util/multilineStrings';
 import { getVSCodePositionFromPosition, getVSCodeRangeFromSpan } from "../util/vscodePosition";
 import { ParametersPositionContext } from "./ParametersPositionContext";
 import { ParameterValueDefinition } from "./ParameterValueDefinition";
@@ -113,7 +113,7 @@ export class DeploymentParameters extends DeploymentDocument {
         if (parametersProperty) {
             const lineIndex = this.getDocumentPosition(parametersProperty?.nameValue.span.startIndex).line;
             if (lineIndex >= range.start.line && lineIndex <= range.end.line) {
-                const missingParameters: IParameterDefinition[] = this.getMissingParameters(template, false);
+                const missingParameters: IParameterDefinition[] = this.getMissingParameters(template, WhichParams.all);
 
                 // Add missing required parameters
                 if (missingParameters.some(p => this.isParameterRequired(p))) {
@@ -150,7 +150,7 @@ export class DeploymentParameters extends DeploymentDocument {
         return !paramDef.defaultValue;
     }
 
-    private getMissingParameters(template: DeploymentTemplate | undefined, onlyRequiredParameters: boolean): IParameterDefinition[] {
+    private getMissingParameters(template: DeploymentTemplate | undefined, whichParams: WhichParams): IParameterDefinition[] {
         if (!template) {
             return [];
         }
@@ -163,18 +163,25 @@ export class DeploymentParameters extends DeploymentDocument {
             }
         }
 
-        if (onlyRequiredParameters) {
+        if (whichParams === WhichParams.required) {
             return results.filter(p => this.isParameterRequired(p));
         }
 
         return results;
     }
 
+    // tslint:disable-next-line: max-func-body-length asdf
     public async addMissingParameters(
         editor: TextEditor,
         template: DeploymentTemplate,
-        onlyRequiredParameters: boolean
+        whichParams: WhichParams
     ): Promise<void> {
+        // Find missing params
+        const missingParams: IParameterDefinition[] = this.getMissingParameters(template, whichParams);
+        if (missingParams.length === 0) {
+            return;
+        }
+
         // Find the location to insert new stuff in the parameters section
         if (this.parametersProperty && this.parametersObjectValue) {
             // Where insert?
@@ -188,44 +195,80 @@ export class DeploymentParameters extends DeploymentDocument {
                     break;
                 }
             }
-            const insertIndex: number = lastTokenInParameters
+            let insertIndex: number = lastTokenInParameters
                 ? lastTokenInParameters.span.afterEndIndex
                 : this.parametersObjectValue.span.endIndex;
-            const insertPosition = this.getDocumentPosition(insertIndex);
+            let insertPosition = this.getDocumentPosition(insertIndex);
 
-            // Find missing params
-            const missingParams: IParameterDefinition[] = this.getMissingParameters(template, onlyRequiredParameters);
-            if (missingParams.length === 0) {
-                return;
+            // Need comma before?
+            let commaEdit = this.createEditToAddCommaBeforePosition(insertIndex);
+            assert(!commaEdit || commaEdit.span.endIndex <= insertIndex);
+
+            // // Need comma before? asdf
+            // const commaEdit = this.createEditToAddCommaBeforePosition(insertIndex);
+            // assert(!commaEdit || commaEdit.span.endIndex <= insertIndex);
+            // if (commaEdit) {
+            //     await editor.edit(_ => commaEdit);
+
+            //     //asdf
+            //     // // vscode doesn't like both edits starting at the same location, so
+            //     // //   just add the comma directly to the string (this is the common case)
+            //     // commaEdit = undefined;
+            //     // insertText = `,${insertText}`;
+            // }
+
+            // Insert newline if not on a blank line, and move insertion point to the new line
+            if (!editor.document.lineAt(insertPosition.line).isEmptyOrWhitespace) {
+                const insertVsCodePosition = getVSCodePositionFromPosition(insertPosition);
+                editor.selection = new Selection(insertVsCodePosition, insertVsCodePosition);
+                await editor.edit(
+                    edit => {
+                        // Note: vscode will automatically convert \n as necessary
+                        edit.insert(insertVsCodePosition, '\n');
+                    },
+                    {
+                        undoStopBefore: true,
+                        undoStopAfter: false
+                    });
+                insertPosition = new language.Position(editor.selection.anchor.line, editor.selection.anchor.character);
+                insertIndex = this.getDocumentCharacterIndex(insertPosition.line, insertPosition.column);
             }
+
+            // Move to start of current line
+            editor.selection = new Selection(
+                editor.selection.anchor.line, 0,
+                editor.selection.anchor.line, 0);
 
             // Create insertion text
             const paramsAsText = createParametersFromTemplateParameters(
                 template,
                 missingParams,
                 ContentKind.snippet,
-                defaultTabSize // vscode will handle adding tabs
+                { insertSpaces: false, tabSize: 4 } // vscode handles converting tabs for snippets
             );
 
-            // Determine indentation of where to place the cursor asdf
-            const parametersObjectIndent = this.getDocumentPosition(this.parametersProperty?.nameValue.span.startIndex).column;
-            const lastParameter = this.parameterValues.length > 0 ? this.parameterValues[this.parameterValues.length - 1] : undefined;
-            const lastParameterIndent = lastParameter ? this.getDocumentPosition(lastParameter?.fullSpan.startIndex).column : undefined;
-            const newTextIndent = lastParameterIndent === undefined ? parametersObjectIndent + defaultTabSize : lastParameterIndent;
-            let indentedText = indentMultilineString(paramsAsText, newTextIndent);
-            let insertText = EOL + indentedText;
+            // Indent two levels, since it's inside the "parameters" property object
+            let insertText = prependToEachLine(paramsAsText, '\t\t');
 
-            // If insertion point is on the same line as the end of the parameters object, then add a newline
-            // afterwards and indent it (e.g. parameters object = empty, {})
-            if (this.getDocumentPosition(insertIndex).line
-                === this.getDocumentPosition(this.parametersObjectValue.span.endIndex).line
-            ) {
-                insertText += EOL + ' '.repeat(defaultTabSize);
+            // If insertion point is still not empty, add a newline and indentation after the insert
+            //   text to move the existing text onto a separate line
+            if (!editor.document.lineAt(insertPosition.line).isEmptyOrWhitespace) {
+                // Note: vscode will automatically convert \n as necessary
+                // tslint:disable-next-line: prefer-template
+                insertText += '\n\t'; //asdf //asdf testpoint
             }
 
-            // Add comma before?
-            let commaEdit = this.createEditToAddCommaBeforePosition(insertIndex);
-            assert(!commaEdit || commaEdit.span.endIndex <= insertIndex);
+            //asdf
+            // // If insertion point is on the same line as the end of the parameters object, then add a newline
+            // // afterwards and indent it (e.g. parameters object = empty, {})
+            // if (this.getDocumentPosition(insertIndex).line
+            //     === this.getDocumentPosition(this.parametersObjectValue.span.endIndex).line
+            // ) {
+            //     // Note: vscode will automatically convert \n as necessary
+            //     // tslint:disable-next-line: prefer-template
+            //     insertText += '\n\t'; //asdf //asdf testpoint
+            // }
+
             if (commaEdit?.span.startIndex === insertIndex) {
                 // vscode doesn't like both edits starting at the same location, so
                 //   just add the comma directly to the string (this is the common case)
@@ -243,8 +286,14 @@ export class DeploymentParameters extends DeploymentDocument {
                 });
             }
 
-            //asdf undo/redo?
-            await editor.insertSnippet(new SnippetString(insertText), getVSCodePositionFromPosition(insertPosition));
+            //asdfconst startOfInsertLine = new language.Position(insertPosition.line, 0);
+            //insertText = insertText.trimLeft(); //asdf
+            //insertPosition = new language.Position(insertPosition.line, <number>editor.options.tabSize * 2); //asdf
+            insertText = formatText(insertText, editor);
+            await editor.insertSnippet(new SnippetString(insertText), getVSCodePositionFromPosition(insertPosition), {
+                undoStopBefore: false,
+                undoStopAfter: true
+            });
         }
     }
 
@@ -283,7 +332,7 @@ export class DeploymentParameters extends DeploymentDocument {
     }
 
     public async getErrorsCore(associatedTemplate: DeploymentTemplate | undefined): Promise<language.Issue[]> {
-        const missingRequiredParams: IParameterDefinition[] = this.getMissingParameters(associatedTemplate, true);
+        const missingRequiredParams: IParameterDefinition[] = this.getMissingParameters(associatedTemplate, WhichParams.required);
         if (missingRequiredParams.length === 0) {
             return [];
         }

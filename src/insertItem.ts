@@ -16,6 +16,7 @@ import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from './extensionVariables';
 import { TemplateSectionType } from "./TemplateSectionType";
 import { assertNever } from './util/assertNever';
+import { formatText } from "./util/multilineStrings";
 
 const insertCursorText = '[]';
 
@@ -436,9 +437,9 @@ export class InsertItem {
     }
 
     private getCursorPositionForInsertResource(textEditor: vscode.TextEditor, index: number, prepend: string): vscode.Position {
-        let prependRange = new vscode.Range(textEditor.document.positionAt(index), textEditor.document.positionAt(index + this.formatText(prepend, textEditor).length));
+        let prependRange = new vscode.Range(textEditor.document.positionAt(index), textEditor.document.positionAt(index + formatText(prepend, textEditor).length));
         let prependFromDocument = textEditor.document.getText(prependRange);
-        let lookFor = this.formatText('\t\t', textEditor);
+        let lookFor = formatText('\t\t', textEditor);
         let cursorPos = prependFromDocument.indexOf(lookFor);
         return textEditor.document.positionAt(index + cursorPos + lookFor.length);
     }
@@ -509,7 +510,7 @@ export class InsertItem {
      * @returns The document index of the cursor after the text has been inserted.
      */
     private async insertText(textEditor: vscode.TextEditor, index: number, text: string, setCursor: boolean = true): Promise<number> {
-        text = this.formatText(text, textEditor);
+        text = formatText(text, textEditor);
         let pos = textEditor.document.positionAt(index);
         await textEditor.edit(builder => builder.insert(pos, text));
         textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
@@ -524,15 +525,6 @@ export class InsertItem {
         return 0;
     }
 
-    private formatText(text: string, textEditor: vscode.TextEditor): string {
-        if (textEditor.options.insertSpaces === true) {
-            text = text.replace(/\t/g, ' '.repeat(Number(textEditor.options.tabSize)));
-        } else {
-            text = text.replace(/ {4}/g, '\t');
-        }
-        return text;
-    }
-
     /**
      * Indents the given string
      * @param str  The string to be indented.
@@ -541,7 +533,7 @@ export class InsertItem {
      * @return   The new string with each line beginning with the desired
      *     amount of indentation.
      */
-    private indent(str: string, numOfTabs: number): string {
+    private indent(str: string, numOfTabs: number): string { //asdf?
         // tslint:disable-next-line:prefer-array-literal
         str = str.replace(/^(?=.)/gm, '\t'.repeat(numOfTabs));
         return str;

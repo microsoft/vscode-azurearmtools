@@ -138,7 +138,12 @@ export class ParametersPositionContext extends PositionContext {
 
                 const isRequired = !param.defaultValue;
                 const label = param.nameValue.quotedValue;
-                const paramText = createParameterFromTemplateParameter(this._associatedTemplate, param, ContentKind.snippet); //asdf testpoint
+                const paramText = createParameterFromTemplateParameter(
+                    this._associatedTemplate,
+                    param,
+                    ContentKind.snippet,
+                    { insertSpaces: false, tabSize: 1 } // vscode will convert to spaces if needed
+                ); //asdf //asdf testpoint
                 let replacement = paramText;
                 const documentation = `Insert a value for parameter "${param.nameValue.unquotedValue}" from template file "${path.basename(this._associatedTemplate.documentId.fsPath)}"`;
                 const detail = (isRequired ? "(required parameter)" : "(optional parameter)")
