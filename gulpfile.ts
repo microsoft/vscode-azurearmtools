@@ -17,7 +17,7 @@ import * as recursiveReadDir from 'recursive-readdir';
 import * as shelljs from 'shelljs';
 import { Stream } from 'stream';
 import { gulp_webpack } from 'vscode-azureextensiondev';
-import { dotnetVersion, languageServerFolderName } from './src/constants';
+import { langServerDotnetVersion, languageServerFolderName } from './src/constants';
 import { assert } from './src/fixed_assert';
 import { getTempFilePath } from './test/support/getTempFilePath';
 
@@ -177,7 +177,7 @@ async function getLanguageServer(): Promise<void> {
             'install',
             languageServerNugetPackage,
             '-Version', languageServerVersion,
-            '-Framework', `netcoreapp${dotnetVersion}`,
+            '-Framework', `netcoreapp${langServerDotnetVersion}`,
             '-OutputDirectory', 'pkgs',
             //'-Verbosity', 'detailed',
             '-ExcludeVersion', // Keeps the package version from being included in the output folder name
@@ -196,7 +196,7 @@ async function getLanguageServer(): Promise<void> {
         console.log(`Removing ${languageServerFolderName}`);
         rimraf.sync(languageServerFolderName);
         console.log(`Copying language server binaries to ${languageServerFolderName}`);
-        const srcPath = path.join(__dirname, 'pkgs', languageServerNugetPackage, 'lib', `netcoreapp${dotnetVersion}`);
+        const srcPath = path.join(__dirname, 'pkgs', languageServerNugetPackage, 'lib', `netcoreapp${langServerDotnetVersion}`);
         let destPath = path.join(__dirname, languageServerFolderName);
         fse.mkdirpSync(destPath);
         copyFolder(srcPath, destPath);

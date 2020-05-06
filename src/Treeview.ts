@@ -297,11 +297,10 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
      * menu, as viewItem == <contextValue>
      */
     private getContextValue(elementInfo: IElementInfo): string | undefined {
-        if (elementInfo.current.level === 1) {
-            const keyNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.key.start, Contains.strict);
-            if (keyNode instanceof Json.StringValue) {
-                return keyNode.unquotedValue;
-            }
+        let element = elementInfo.current.level === 1 ? elementInfo.current : elementInfo.root;
+        const keyNode = this.tree && this.tree.getValueAtCharacterIndex(element.key.start, Contains.strict);
+        if (keyNode instanceof Json.StringValue) {
+            return keyNode.unquotedValue;
         }
         return undefined;
     }

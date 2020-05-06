@@ -10,7 +10,7 @@ import { ProgressLocation, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
 import { acquireSharedDotnetInstallation } from '../acquisition/acquireSharedDotnetInstallation';
-import { armTemplateLanguageId, configKeys, configPrefix, dotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName } from '../constants';
+import { armTemplateLanguageId, configKeys, configPrefix, downloadDotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName } from '../constants';
 import { ext } from '../extensionVariables';
 import { assert } from '../fixed_assert';
 import { templateDocumentSelector } from '../supported';
@@ -188,7 +188,7 @@ async function getDotNetPath(): Promise<string | undefined> {
         } else {
             actionContext.telemetry.properties.overriddenDotNetExePath = "false";
 
-            dotnetPath = await acquireSharedDotnetInstallation(dotnetVersion);
+            dotnetPath = await acquireSharedDotnetInstallation(downloadDotnetVersion);
             if (!dotnetPath) {
                 // Acquisition failed. Error will already have been displayed.
                 return undefined;

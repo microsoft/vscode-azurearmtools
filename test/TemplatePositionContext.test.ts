@@ -8,10 +8,10 @@
 import * as assert from "assert";
 import * as os from 'os';
 import { Uri } from "vscode";
-import { Completion, DeploymentTemplate, FunctionSignatureHelp, HoverInfo, IParameterDefinition, IReferenceSite, isVariableDefinition, IVariableDefinition, Json, Language, nonNullValue, TemplatePositionContext, TLE, UserFunctionMetadata, Utilities } from "../extension.bundle";
+import { Completion, DeploymentTemplate, FunctionSignatureHelp, HoverInfo, IParameterDefinition, IReferenceSite, isVariableDefinition, IVariableDefinition, Json, Language, nonNullValue, ParametersPositionContext, ReferenceSiteKind, TemplatePositionContext, TLE, UserFunctionMetadata, Utilities } from "../extension.bundle";
 import * as jsonTest from "./JSON.test";
 import { IDeploymentTemplate } from "./support/diagnostics";
-import { parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
+import { parseParametersWithMarkers, parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
 import { allTestDataCompletionNames, allTestDataExpectedCompletions, expectedConcatCompletion, expectedCopyIndexCompletion, expectedPadLeftCompletion, expectedParametersCompletion, expectedProvidersCompletion, expectedReferenceCompletion, expectedReplaceCompletion, expectedResourceGroupCompletion, expectedResourceIdCompletion, expectedSkipCompletion, expectedSplitCompletion, expectedStringCompletion, expectedSubCompletion, expectedSubscriptionCompletion, expectedSubscriptionResourceIdCompletion, expectedSubstringCompletion, expectedVariablesCompletion, parameterCompletion, propertyCompletion, variableCompletion } from "./TestData";
 
@@ -413,7 +413,7 @@ suite("TemplatePositionContext", () => {
         const hi: HoverInfo = pc.getHoverInfo()!;
         assert(hi);
         assert.deepStrictEqual(`**pName**${os.EOL}*(parameter)*`, hi.getHoverText());
-        assert.deepStrictEqual(new Language.Span("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters(".length, 7), hi.span);
+        assert.deepStrictEqual(new Language.Span("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters('".length, 'pName'.length), hi.span);
     });
 
     test("in parameter reference function with empty string parameter", () => {
@@ -443,7 +443,7 @@ suite("TemplatePositionContext", () => {
         const hi: HoverInfo | undefined = pc.getHoverInfo()!;
         assert(hi);
         assert.deepStrictEqual(`**vName**${os.EOL}*(variable)*`, hi.getHoverText());
-        assert.deepStrictEqual(new Language.Span("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables(".length, 7), hi.span);
+        assert.deepStrictEqual(new Language.Span("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables('".length, 'vName'.length), hi.span);
     });
 
     suite("completionItems", async () => {
@@ -1546,6 +1546,179 @@ suite("TemplatePositionContext", () => {
             const vDef: IVariableDefinition = nonNullValue(getVariableDefinitionIfAtReference(context));
             assert.deepStrictEqual(vDef.nameValue.toString(), "vName");
             assert.deepStrictEqual(vDef.span, new Language.Span(17, 11));
+        });
+    });
+
+    suite("getReferenceSiteInfo", () => {
+        const template1: IDeploymentTemplate = {
+            $schema: "whatever",
+            contentVersion: "whoever",
+            resources: [],
+            parameters: {
+                "<!param1def!>parameter1": {
+                    type: "string"
+                }
+            },
+            variables: {
+                "<!var1def!>variable1": "who there"
+            },
+            outputs: {
+                o1: {
+                    type: "int",
+                    value: "[<!builtinref!>add(parameters('p<!param1ref!>arameter1'),variables('v<!var1ref!>ariable1'))]"
+                },
+                o2: {
+                    type: "string",
+                    value: "[n<!ns1ref!>s1.<!func1ref!>func1()]"
+                }
+            },
+            functions: [
+                {
+                    namespace: "ns<!ns1def!>1",
+                    members: {
+                        "func<!func1def!>1": {
+                        }
+                    }
+                }
+            ]
+        };
+
+        const params1 = {
+            parameters: {
+                "<!param1def!>parameter1": {
+                    type: "string",
+                    value: "hi"
+                }
+            }
+        };
+
+        suite("Templates", () => {
+            test("Parameter reference", async () => {
+                const { dt, markers: { param1ref } } = await parseTemplateWithMarkers(template1);
+                const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, param1ref.index, undefined);
+                const site = pc.getReferenceSiteInfo(false);
+                assert.notEqual(site, undefined);
+                assert.equal(site?.definition.nameValue?.quotedValue, '"parameter1"');
+                assert.equal(site?.definitionDocument, dt);
+                assert.equal(site?.referenceDocument, dt);
+                assert.equal(site?.referenceKind, ReferenceSiteKind.reference);
+                assert.equal(site?.unquotedReferenceSpan.getText(dt.documentText), 'parameter1');
+            });
+
+            test("Parameter definition", async () => {
+                const { dt, markers: { param1def } } = await parseTemplateWithMarkers(template1);
+                const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, param1def.index, undefined);
+                const site = pc.getReferenceSiteInfo(true);
+                assert.notEqual(site, undefined);
+                assert.equal(site?.definition.nameValue?.quotedValue, '"parameter1"');
+                assert.equal(site?.definitionDocument, dt);
+                assert.equal(site?.referenceDocument, dt);
+                assert.equal(site?.referenceKind, ReferenceSiteKind.definition);
+                assert.equal(JSON.stringify(site?.unquotedReferenceSpan), JSON.stringify(site?.definition.nameValue?.unquotedSpan));
+                assert.equal(site?.unquotedReferenceSpan.getText(dt.documentText), 'parameter1');
+            });
+
+            test("Variable reference", async () => {
+                const { dt, markers: { var1ref } } = await parseTemplateWithMarkers(template1);
+                const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, var1ref.index, undefined);
+                const site = pc.getReferenceSiteInfo(false);
+                assert.notEqual(site, undefined);
+                assert.equal(site?.definition.nameValue?.quotedValue, '"variable1"');
+                assert.equal(site?.definitionDocument, dt);
+                assert.equal(site?.referenceDocument, dt);
+                assert.equal(site?.referenceKind, ReferenceSiteKind.reference);
+                assert.equal(site?.unquotedReferenceSpan.getText(dt.documentText), 'variable1');
+            });
+
+            test("Variable definition", async () => {
+                const { dt, markers: { var1def } } = await parseTemplateWithMarkers(template1);
+                const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, var1def.index, undefined);
+                const site = pc.getReferenceSiteInfo(true);
+                assert.notEqual(site, undefined);
+                assert.equal(site?.definition.nameValue?.quotedValue, '"variable1"');
+                assert.equal(site?.definitionDocument, dt);
+                assert.equal(site?.referenceDocument, dt);
+                assert.equal(site?.referenceKind, ReferenceSiteKind.definition);
+                assert.equal(JSON.stringify(site?.unquotedReferenceSpan), JSON.stringify(site?.definition.nameValue?.unquotedSpan));
+                assert.equal(site?.unquotedReferenceSpan.getText(dt.documentText), 'variable1');
+            });
+
+            test("namespace definition", async () => {
+                const { dt, markers: { ns1def } } = await parseTemplateWithMarkers(template1);
+                const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, ns1def.index, undefined);
+                const site = pc.getReferenceSiteInfo(true);
+                assert.notEqual(site, undefined);
+                assert.equal(site?.definition.nameValue?.quotedValue, '"ns1"');
+                assert.equal(site?.definitionDocument, dt);
+                assert.equal(site?.referenceDocument, dt);
+                assert.equal(site?.referenceKind, ReferenceSiteKind.definition);
+                assert.equal(JSON.stringify(site?.unquotedReferenceSpan), JSON.stringify(site?.definition.nameValue?.unquotedSpan));
+                assert.equal(site?.unquotedReferenceSpan.getText(dt.documentText), 'ns1');
+            });
+
+            test("namespace reference", async () => {
+                const { dt, markers: { ns1ref } } = await parseTemplateWithMarkers(template1);
+                const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, ns1ref.index, undefined);
+                const site = pc.getReferenceSiteInfo(true);
+                assert.notEqual(site, undefined);
+                assert.equal(site?.definition.nameValue?.quotedValue, '"ns1"');
+                assert.equal(site?.definitionDocument, dt);
+                assert.equal(site?.referenceDocument, dt);
+                assert.equal(site?.referenceKind, ReferenceSiteKind.reference);
+                assert.equal(site?.unquotedReferenceSpan.getText(dt.documentText), 'ns1');
+            });
+
+            test("user function definition", async () => {
+                const { dt, markers: { func1def } } = await parseTemplateWithMarkers(template1);
+                const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, func1def.index, undefined);
+                const site = pc.getReferenceSiteInfo(true);
+                assert.notEqual(site, undefined);
+                assert.equal(site?.definition.nameValue?.quotedValue, '"func1"');
+                assert.equal(site?.definitionDocument, dt);
+                assert.equal(site?.referenceDocument, dt);
+                assert.equal(site?.referenceKind, ReferenceSiteKind.definition);
+                assert.equal(JSON.stringify(site?.unquotedReferenceSpan), JSON.stringify(site?.definition.nameValue?.unquotedSpan));
+                assert.equal(site?.unquotedReferenceSpan.getText(dt.documentText), 'func1');
+            });
+
+            test("user function reference", async () => {
+                const { dt, markers: { func1ref } } = await parseTemplateWithMarkers(template1);
+                const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, func1ref.index, undefined);
+                const site = pc.getReferenceSiteInfo(true);
+                assert.notEqual(site, undefined);
+                assert.equal(site?.definition.nameValue?.quotedValue, '"func1"');
+                assert.equal(site?.definitionDocument, dt);
+                assert.equal(site?.referenceDocument, dt);
+                assert.equal(site?.referenceKind, ReferenceSiteKind.reference);
+                assert.equal(site?.unquotedReferenceSpan.getText(dt.documentText), 'func1');
+            });
+
+            test("built-in function reference", async () => {
+                const { dt, markers: { builtinref } } = await parseTemplateWithMarkers(template1);
+                const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, builtinref.index, undefined);
+                const site = pc.getReferenceSiteInfo(true);
+                assert.notEqual(site, undefined);
+                assert.equal(site?.definition.nameValue, undefined);
+                assert.equal(site?.definitionDocument, dt);
+                assert.equal(site?.referenceDocument, dt);
+                assert.equal(site?.referenceKind, ReferenceSiteKind.reference);
+                assert.equal(site?.unquotedReferenceSpan.getText(dt.documentText), 'add');
+            });
+        });
+
+        suite("Parameter files", () => {
+            test("Deployment parameter file parameter definition", async () => {
+                const { dt } = await parseTemplateWithMarkers(template1);
+                const { dp, markers: { param1def } } = await parseParametersWithMarkers(params1);
+                const ppc = ParametersPositionContext.fromDocumentCharacterIndex(dp, param1def.index, dt);
+                const site = ppc.getReferenceSiteInfo(true);
+                assert.notEqual(site, undefined);
+                assert.equal(site?.definition.nameValue?.quotedValue, '"parameter1"');
+                assert.equal(site?.definitionDocument, dt);
+                assert.equal(site?.referenceDocument, dp);
+                assert.equal(site?.referenceKind, ReferenceSiteKind.reference);
+                assert.equal(site?.unquotedReferenceSpan.getText(site.referenceDocument.documentText), 'parameter1');
+            });
         });
     });
 });

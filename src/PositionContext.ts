@@ -29,9 +29,9 @@ export interface IReferenceSite {
     referenceKind: ReferenceSiteKind;
 
     /**
-     * Where the reference or definition occurs in the template
+     * Where the reference or definition occurs in the template, without any quotes
      */
-    referenceSpan: language.Span;
+    unquotedReferenceSpan: language.Span;
 
     /**
      * The document that contains the reference
@@ -183,7 +183,7 @@ export abstract class PositionContext {
     public getHoverInfo(): HoverInfo | undefined {
         const reference: IReferenceSite | undefined = this.getReferenceSiteInfo(false);
         if (reference) {
-            const span = reference.referenceSpan;
+            const span = reference.unquotedReferenceSpan;
             const definition = reference.definition;
             return new HoverInfo(definition.usageInfo, span);
         }
