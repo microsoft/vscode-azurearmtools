@@ -14,11 +14,13 @@ import * as fse from 'fs-extra';
 import { ITestCallbackContext } from 'mocha';
 import * as path from 'path';
 import { commands, Diagnostic, Selection, Uri, window, workspace } from "vscode";
-import { DeploymentTemplate, getVSCodePositionFromPosition } from '../../extension.bundle';
+import { DeploymentTemplate, ext, getVSCodePositionFromPosition } from '../../extension.bundle';
 import { delay } from '../support/delay';
 import { getDiagnosticsForDocument, sources, testFolder } from '../support/diagnostics';
 import { getTempFilePath } from "../support/getTempFilePath";
 import { testWithLanguageServer } from '../support/testWithLanguageServer';
+
+const EOL = ext.EOL;
 
 let resourceTemplate: string = `{
 \t"resources": [
@@ -100,6 +102,15 @@ const overrideInsertPosition: { [name: string]: string } = {
 
 // Override expected errors/warnings for the snippet test - default is none
 const overrideExpectedDiagnostics: { [name: string]: string[] } = {
+    "Application Gateway": [
+        // Expected (by design)
+        `Value must conform to exactly one of the associated schemas${EOL}|   Value must be one of the following types: object${EOL}|   or${EOL}|   Value must be one of the following types: string`
+    ],
+    "Application Gateway and Firewall": [
+        // Expected (by design)
+        `Value must conform to exactly one of the associated schemas${EOL}|   Value must be one of the following types: object${EOL}|   or${EOL}|   Value must be one of the following types: string`
+    ],
+
     "Azure Resource Manager (ARM) Parameters Template":
         [
             "Template validation failed: Required property 'resources' not found in JSON. Path '', line 5, position 1."
@@ -434,7 +445,7 @@ suite("Snippets functional tests", () => {
         // Make sure formatting of the sippet is correct by formatting the document and seeing if it changes
         await commands.executeCommand('editor.action.formatDocument');
         const docTextAfterFormatting = window.activeTextEditor!.document.getText();
-        assert.deepStrictEqual(docTextAfterInsertion, docTextAfterFormatting, "Snippet is incorrectly formatted. Make sure to use \\t instead of spaces");
+        assert.deepStrictEqual(docTextAfterInsertion, docTextAfterFormatting, "Snippet is incorrectly formatted. Make sure to use \\t instead of spaces, and make sure the tabbing/indentations are correctly structured");
 
         // // NOTE: Even though we request the editor to be closed,
         // // there's no way to request the document actually be closed,
