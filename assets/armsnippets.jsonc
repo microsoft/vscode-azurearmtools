@@ -241,7 +241,7 @@
         ],
         "description": "Application Gateway"
     },
-    "Application Gateway Firewall": {
+    "Application Gateway and Firewall": {
         "prefix": "arm-app-gateway-waf",
         "body": [
             "{",
@@ -366,7 +366,7 @@
             "\t}",
             "}"
         ],
-        "description": "Application Gateway Firewall"
+        "description": "Application Gateway and Firewall"
     },
     "Application Insights for Web Apps": {
         "prefix": "arm-app-insights",
