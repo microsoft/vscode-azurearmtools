@@ -366,7 +366,7 @@
             "\t}",
             "}"
         ],
-        "description": "Application Gateway and Firewall"
+        "description": "Application Gateway with Web Application Firewall"
     },
     "Application Insights for Web Apps": {
         "prefix": "arm-app-insights",
