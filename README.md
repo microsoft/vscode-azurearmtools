@@ -21,6 +21,7 @@ The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language 
   - [Variable references](https://go.microsoft.com/fwlink/?LinkID=733960)
   - [resourceGroup() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#resourcegroup)
   - [subscription() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#subscription)
+  - [resourceId() function](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#resourceid)
   - Properties of references to variables that are objects
 
   ## Parameter files
@@ -28,21 +29,11 @@ The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language 
   - Associate a parameter file with a template for full validation of both
   - Open associated parameter file from the template
   - Create a new parameter file from parameters defined within a template
+  - Add all missing parameters to a parameter file
+  - Rename all instances of a parameter (across both template and mapped parameter file)
+  - Find and goto all instances of a parameter (across both template and mapped parameter file)
 
 ![Associate a parameters file with template and create parameters file](./images/params-support.gif)
-
-## Other features:
-
-  - [Signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
-  - [Go To Definition](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-definition) for variable and parameter references
-  - [Peek](https://code.visualstudio.com/docs/editor/editingevolved#_peek) for variable and parameter definitions
-  - Find all references (Shift + F12) for variables and parameters
-  - Rename all references (F2) for variables and parameters
-  - [Hover](https://code.visualstudio.com/docs/editor/editingevolved#_hover) for parameter description
-  - [TLE brace matching](https://code.visualstudio.com/docs/editor/editingevolved#_bracket-matching)
-  - User-defined template functions, see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#functions)
-  - Variable iteration ("copy blocks"), see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration)
-  - Sort template and template sections alphabetically
 
 ## Snippets
 
@@ -60,6 +51,63 @@ Snippets for deployment template and 70+ Azure resources.
 | `arm-userfunc` | Adds a user function to a template. |
 | `arm-userfunc-namespace` | Adds a user function namespace to a template. |
 | `arm-` | Displays 70+ snippets for creating Azure resources. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine. |
+
+## Insert Item
+
+In addition to adding snippets from the code editor, the Insert Item feature can be used to insert new parameters, user-defined functions, variables, resources, and outputs. To do so right-click on the template in the code editor, select **Insert Item**, and follow the on-screen prompts.
+
+![Inserting an item into an Azure Resource Manager template](./images/insert-item.png)
+
+You can also right-click on any element in the ARM Template Outline to initiate the insert item process.
+
+![Inserting an item into an Azure Resource Manager template](./images/insert-item.png)
+
+## Other features:
+
+  - [Signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
+  - [Go To Definition](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-definition) for variable and parameter references
+  - [Peek](https://code.visualstudio.com/docs/editor/editingevolved#_peek) for variable and parameter definitions
+  - Find all references (Shift + F12) for variables and parameters
+  - Rename all references (F2) for variables and parameters
+  - [Hover](https://code.visualstudio.com/docs/editor/editingevolved#_hover) for parameter description
+  - [TLE brace matching](https://code.visualstudio.com/docs/editor/editingevolved#_bracket-matching)
+  - User-defined template functions, see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#functions)
+  - Variable iteration ("copy blocks"), see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration)
+  - Sort template and template sections alphabetically
+
+## Extension configurations:
+
+You may be interested in adjusting one of the following extension configurations. These can be configured in VS Code USer Settings.
+
+**Auto-detect ARM Templates**
+
+Enables auto-detection of deployment template files with the extension *.json or *.jsonc. If set to true (default), the editor language will automatically be set to Azure Resource Manager Template for any *.json/*.jsonc file which contains an appropriate Azure Resource Manager Template schema.
+
+```
+"azureResourceManagerTools.autoDetectJsonTemplates": true,
+```
+
+**Detect latest root schema**
+
+Check if the root schema for deployment templates is using an out-of-date version and suggest updating it to the latest version.
+
+```
+"azureResourceManagerTools.checkForLatestSchema": true,
+```
+
+**Parameter files**
+
+Check if an opened template file has a matching params file and prompt to create a mapping.
+
+```
+"azureResourceManagerTools.checkForMatchingParameterFiles": true,
+```
+
+Parameter file mappings are stored in the `azureResourceManagerTools.parameterFiles` user setting.
+
+```
+"azureResourceManagerTools.parameterFiles": {}
+```
 
 ## Automatic Detection of deployment template files
 
