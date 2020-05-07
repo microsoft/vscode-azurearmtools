@@ -31,8 +31,9 @@ export const languageServerStateSource = "arm-template";
 
 export const configPrefix = 'azureResourceManagerTools'; // Prefix for user settings
 
-// The dotnet version the language server is compiled against
-export const langServerDotnetVersion = '3.0';
+// The dotnet version the language server is compiled against (affects where the
+// assembly is found in the langServer folder)
+export const langServerDotnetVersion = '3.1';
 // The dotnet version to download and run the language server against (minor version
 // may be greater than langServerDotnetVersion)
 export const downloadDotnetVersion = '3.1';
