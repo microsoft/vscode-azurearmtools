@@ -598,7 +598,7 @@
         "typescript": "^3.8.3",
         "vsce": "^1.75.0",
         "vscode": "^1.1.33",
-        "vscode-azureextensiondev": "^0.3.1",
+        "vscode-azureextensiondev": "^0.3.3",
         "webpack": "4.28.1",
         "webpack-cli": "^3.3.11"
     },
