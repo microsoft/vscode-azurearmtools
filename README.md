@@ -60,9 +60,9 @@ In addition to adding snippets from the code editor, the Insert Item feature can
 
 You can also right-click on any element in the ARM Template Outline to initiate the insert item process.
 
-![Inserting an item into an Azure Resource Manager template](./images/insert-item.png)
+![Inserting an item into an Azure Resource Manager template](./images/insert-item-outline.png)
 
-## Other features:
+## Other features
 
   - [Signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
   - [Go To Definition](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-definition) for variable and parameter references
@@ -75,9 +75,9 @@ You can also right-click on any element in the ARM Template Outline to initiate 
   - Variable iteration ("copy blocks"), see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration)
   - Sort template and template sections alphabetically
 
-## Extension configurations:
+## Extension configurations
 
-You may be interested in adjusting one of the following extension configurations. These can be configured in VS Code USer Settings.
+You may be interested in adjusting the following extension configurations. These can be configured in [VS Code User Settings](https://code.visualstudio.com/docs/getstarted/settings).
 
 **Auto-detect ARM Templates**
 
