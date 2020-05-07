@@ -12,7 +12,7 @@ import * as fse from 'fs-extra';
 import * as vscode from "vscode";
 // tslint:disable-next-line:no-duplicate-imports
 import { window, workspace } from "vscode";
-import { IActionContext, IAzureUserInput } from 'vscode-azureextensionui';
+import { IActionContext, IAzureUserInput, PromptResult } from 'vscode-azureextensionui';
 import { DeploymentTemplate, InsertItem, TemplateSectionType } from '../../extension.bundle';
 import { getTempFilePath } from "../support/getTempFilePath";
 
@@ -485,11 +485,19 @@ suite("InsertItem", async (): Promise<void> => {
     });
 });
 
+// CONSIDER: Switch to using TestUserInput from vscode-azureextensiondev
 class MockUserInput implements IAzureUserInput {
     private showInputBoxTexts: string[] = [];
+    private _onDidFinishPromptEmitter: vscode.EventEmitter<PromptResult> = new vscode.EventEmitter<PromptResult>();
+
     constructor(showInputBox: string[]) {
         this.showInputBoxTexts = Object.assign([], showInputBox);
     }
+
+    public get onDidFinishPrompt(): vscode.Event<PromptResult> {
+        return this._onDidFinishPromptEmitter.event;
+    }
+
     public async showQuickPick<T extends vscode.QuickPickItem>(items: T[] | Thenable<T[]>, options: import("vscode-azureextensionui").IAzureQuickPickOptions): Promise<T> {
         let result = await items;
         let label = this.showInputBoxTexts.shift()!;
