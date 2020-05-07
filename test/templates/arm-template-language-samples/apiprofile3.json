@@ -1,0 +1,41 @@
+//https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates-cloud-consistency#track-versions-using-api-profiles
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "apiProfile": "2018-03-01-hybrid",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "metadata": {
+                "description": "Location the resources will be deployed to."
+            },
+            "defaultValue": "[resourceGroup().location]"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "name": "sa1",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2016-01-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "accessTier": "Cool"
+            },
+            "kind": "BlobStorage",
+            "sku": {
+                "name": "Standard_LRS"
+            }
+        },
+        {
+            "name": "sa2",
+            "type": "Microsoft.Compute/availabilitySets",
+            "location": "[parameters('location')]",
+            "properties": {
+                "platformFaultDomainCount": 2,
+                "platformUpdateDomainCount": 2
+            }
+        }
+    ],
+    "outputs": {}
+}
