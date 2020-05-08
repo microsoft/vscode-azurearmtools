@@ -49,7 +49,7 @@ In addition to adding snippets from the code editor, the Insert Item feature can
 
 ![Inserting an item into an Azure Resource Manager template](./images/insert-item.png)
 
-You can also right-click on any element in the ARM template Outline to initiate the insert item process.
+You can also right-click on any element in the ARM Template Outline view to initiate the insert item process.
 
 ![Inserting an item into an Azure Resource Manager template](./images/insert-item-outline.png)
 
