@@ -62,7 +62,8 @@
           }
         },
         "getSubscriptionId": {
-          "parameters": [],
+          "parameters": [
+          ],
           "output": {
             "type": "string",
             "value": "[subscription().subscriptionId]"
@@ -72,7 +73,7 @@
     }
   ],
   "parameters": {
-    "p1": {
+    /*"p1": {
       "type": "string",
       "defaultValue": "[udf.storageUri('p1')]"
     },
@@ -91,17 +92,17 @@
     "p5": {
       "type": "string",
       "defaultValue": "[udf.getSubscriptionId()]"
-    },
+    },*/
     "storageAccountName": {
       "type": "string"
     }
   },
   "variables": {
-    "uri": "[udf.storageUri('uri')]",
+    /*/"uri": "[udf.storageUri('uri')]",
     "time": "[udf.date(2017, 11, 2)]",
     "condition1": "[udf.odd(3)]",
     "condition2": "[udf.even(3)]",
-    "subscriptionId": "[udf.getSubscriptionId()]"
+    "subscriptionId": "[udf.getSubscriptionId()]"*/
   },
   "resources": [
     {

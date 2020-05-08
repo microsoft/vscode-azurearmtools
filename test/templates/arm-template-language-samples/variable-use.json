@@ -6,7 +6,7 @@
       "type": "string",
       "metadata": {
         "description": "The principal to assign the role to"
-      }      
+      }
     },
     "builtInRoleType": {
       "type": "string",
@@ -17,13 +17,13 @@
       ],
       "metadata": {
         "description": "Built-in role to assign"
-      }      
+      }
     },
     "roleNameGuid": {
       "type": "string",
       "metadata": {
         "description": "A new GUID used to identify the role"
-      }      
+      }
     }
   },
   "variables": {
@@ -35,7 +35,7 @@
   "resources": [
     {
       "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2017-05-01",
+      "apiVersion": "2014-10-01-preview", // "2017-05-01",
       "name": "[parameters('roleNameGuid')]",
       "properties": {
         "roleDefinitionId": "[variables(parameters('builtInRoleType'))]",
@@ -43,5 +43,11 @@
         "scope": "[concat(subscription().id, '/resourceGroups/unifi')]"
       }
     }
-  ]
+  ],
+  "outputs": {
+    "o1": {
+      "type": "string",
+      "value": "[concat(variables('Contributor'),variables('Owner'),variables('Reader'),variables('scope'))]"
+    }
+  }
 }

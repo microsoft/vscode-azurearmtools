@@ -2,18 +2,18 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "subscriptionId": {
+        /*"subscriptionId": {
             "type": "string",
             "metadata": {
                 "description": "Subscription Id to be used for provisioning the cluster"
             }
-        },
-        "rgName": {
+        },*/
+        /*"rgName": {
             "type": "string",
             "metadata": {
                 "description": "Resource Group under which the cluster is provisioned"
             }
-        },        
+        },*/
         "cloudEnvironment": {
             "type": "string",
             "defaultValue": "public",
@@ -34,7 +34,7 @@
                 "description": "Name of your cluster - Between 3 and 23 characters. Letters and numbers only"
             }
         },
-        "clusterType": {
+        /*"clusterType": {
             "type": "string",
             "metadata": {
                 "description": "Type of the Cluster"
@@ -44,7 +44,7 @@
                 "Test"
             ],
             "defaultValue": "Test"
-        },
+        },*/
         "clusterEndpoint": {
             "type": "string",
             "metadata": {
@@ -58,13 +58,13 @@
                 "description": "Dsms Url"
             }
         },
-        "DsmsToolsPath": {
+        /*"DsmsToolsPath": {
             "type": "string",
             "defaultValue": "DsmsToolsPath",
             "metadata": {
                 "description": "dsmstools path"
             }
-        },
+        },*/
         "WarmPathEndpoint": {
             "type": "string",
             "defaultValue": "diagnosticsprod",
@@ -72,12 +72,12 @@
                 "description": "Geneva warm path endpoint"
             }
         },
-        "shortClusterName": {
+        /*"shortClusterName": {
             "type": "string",
             "metadata": {
                 "description": "Short hand name for the cluster"
             }
-        },
+        },*/
         "DSTSDnsName": {
             "type": "string",
             "metadata": {
@@ -202,7 +202,7 @@
         "computeLocation": {
             "type": "string"
         },
-        "vmStorageAccountName": {
+        /*"vmStorageAccountName": {
             "type": "string"
         },
         "publicIPAddressName": {
@@ -215,7 +215,7 @@
                 "Dynamic"
             ],
             "defaultValue": "Dynamic"
-        },
+        },*/
         "vmStorageAccountContainerName": {
             "type": "string",
             "defaultValue": "vhds"
@@ -227,9 +227,9 @@
         "archiveStorageAccountName": {
             "type": "string"
         },
-        "keyVaultName": {
+        /*"keyVaultName": {
             "type": "string"
-        },
+        },*/
         "archiveBackendTenantName": {
             "type": "string",
             "metadata": {
@@ -306,10 +306,10 @@
             "type": "string",
             "defaultValue": "NIC"
         },
-        "lbName": {
+        /*"lbName": {
             "type": "string",
             "defaultValue": "LoadBalancer"
-        },
+        },*/
         "lbIPName": {
             "type": "string",
             "defaultValue": "PublicIP-LB-FE"
@@ -471,11 +471,8 @@
         }
     },
     "variables": {
-        "vmssApiVersion": "2018-06-01",
-        "lbApiVersion": "2015-06-15",
-        "vNetApiVersion": "2015-06-15",
+
         "storageApiVersion": "2016-01-01",
-        "publicIPApiVersion": "2015-06-15",
         "vnetID": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
         "subnet0Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet0Name'))]",
         "lbID0": "[resourceId('Microsoft.Network/loadBalancers', concat('LB','-', parameters('clusterName'),'-',parameters('vmNodeType0Name')))]",
@@ -505,23 +502,25 @@
             "[concat(variables('vmStorageAccountName0'), '2')]",
             "[concat(variables('vmStorageAccountName0'), '3')]",
             "[concat(variables('vmStorageAccountName0'), '4')]"
-        ],
+        ]
         /* cluster node type OS image */
-        "nodeImageReference": {
+        /*"nodeImageReference": {
             "publisher": "MicrosoftWindowsServer",
             "offer": "WindowsServer",
             "sku": "2012-R2-Datacenter",
             "version": "latest"
-        }
+        }*/
     },
     "resources": [
         {
-            "apiVersion": "[variables('storageApiVersion')]",
+            "apiVersion": "2016-01-01",
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[parameters('supportLogStorageAccountName')]",
             "location": "[parameters('computeLocation')]",
-            "dependsOn": [],
-            "properties": {},
+            "dependsOn": [
+            ],
+            "properties": {
+            },
             "kind": "Storage",
             "sku": {
                 "name": "[parameters('supportLogStorageAccountType')]"
@@ -532,12 +531,14 @@
             }
         },
         {
-            "apiVersion": "[variables('storageApiVersion')]",
+            "apiVersion": "2016-01-01",
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[parameters('applicationDiagnosticsStorageAccountName')]",
             "location": "[parameters('computeLocation')]",
-            "dependsOn": [],
-            "properties": {},
+            "dependsOn": [
+            ],
+            "properties": {
+            },
             "kind": "Storage",
             "sku": {
                 "name": "[parameters('applicationDiagnosticsStorageAccountType')]"
@@ -548,7 +549,7 @@
             }
         },
         {
-            "apiVersion": "[variables('vNetApiVersion')]",
+            "apiVersion": "2015-06-15",
             "type": "Microsoft.Network/virtualNetworks",
             "name": "[parameters('virtualNetworkName')]",
             "location": "[parameters('computeLocation')]",
@@ -597,7 +598,7 @@
             }
         },
         {
-            "apiVersion": "[variables('publicIPApiVersion')]",
+            "apiVersion": "2015-06-15",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[concat(parameters('lbIPName'),'-','0')]",
             "location": "[parameters('computeLocation')]",
@@ -613,7 +614,7 @@
             }
         },
         {
-            "apiVersion": "[variables('publicIPApiVersion')]",
+            "apiVersion": "2015-06-15",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[concat(parameters('lbIPName'),'-','1')]",
             "location": "[parameters('computeLocation')]",
@@ -629,7 +630,7 @@
             }
         },
         {
-            "apiVersion": "[variables('publicIPApiVersion')]",
+            "apiVersion": "2015-06-15",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[concat(parameters('lbIPName'),'-','2')]",
             "location": "[parameters('computeLocation')]",
@@ -645,7 +646,7 @@
             }
         },
         {
-            "apiVersion": "[variables('lbApiVersion')]",
+            "apiVersion": "2015-06-15",
             "type": "Microsoft.Network/loadBalancers",
             "name": "[concat('LB','-', parameters('clusterName'),'-',parameters('vmNodeType0Name'))]",
             "location": "[parameters('computeLocation')]",
@@ -666,7 +667,8 @@
                 "backendAddressPools": [
                     {
                         "name": "LoadBalancerBEAddressPool",
-                        "properties": {}
+                        "properties": {
+                        }
                     }
                 ],
                 "loadBalancingRules": [
@@ -750,7 +752,7 @@
             }
         },
         {
-            "apiVersion": "[variables('lbApiVersion')]",
+            "apiVersion": "2015-06-15",
             "type": "Microsoft.Network/loadBalancers",
             "name": "[concat('LB','-', parameters('clusterName'),'-',parameters('vmNodeType1Name'))]",
             "location": "[parameters('computeLocation')]",
@@ -771,7 +773,8 @@
                 "backendAddressPools": [
                     {
                         "name": "LoadBalancerBEAddressPool",
-                        "properties": {}
+                        "properties": {
+                        }
                     }
                 ],
                 "loadBalancingRules": [
@@ -855,7 +858,7 @@
             }
         },
         {
-            "apiVersion": "[variables('lbApiVersion')]",
+            "apiVersion": "2015-06-15",
             "type": "Microsoft.Network/loadBalancers",
             "name": "[concat('LB','-', parameters('clusterName'),'-',parameters('vmNodeType2Name'))]",
             "location": "[parameters('computeLocation')]",
@@ -876,7 +879,8 @@
                 "backendAddressPools": [
                     {
                         "name": "LoadBalancerBEAddressPool",
-                        "properties": {}
+                        "properties": {
+                        }
                     }
                 ],
                 "loadBalancingRules": [
@@ -1296,12 +1300,14 @@
             }
         },
         {
-            "apiVersion": "[variables('storageApiVersion')]",
+            "apiVersion": "2016-01-01",
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[variables('uniqueStringArray0')[copyIndex()]]",
             "location": "[parameters('computeLocation')]",
-            "dependsOn": [],
-            "properties": {},
+            "dependsOn": [
+            ],
+            "properties": {
+            },
             "copy": {
                 "name": "storageLoop",
                 "count": 5
@@ -1316,7 +1322,7 @@
             }
         },
         {
-            "apiVersion": "[variables('vmssApiVersion')]",
+            "apiVersion": "2018-06-01",
             "type": "Microsoft.Compute/virtualMachineScaleSets",
             "name": "[parameters('vmNodeType0Name')]",
             "location": "[parameters('computeLocation')]",
@@ -1359,7 +1365,7 @@
                                         "certificate": {
                                             "commonNames": [
                                                 "[parameters('certificateCommonName')]"
-                                             ],
+                                            ],
                                             "x509StoreName": "[parameters('certificateStoreValue')]"
                                         }
                                     },
@@ -1597,7 +1603,7 @@
             }
         },
         {
-            "apiVersion": "[variables('vmssApiVersion')]",
+            "apiVersion": "2018-06-01",
             "type": "Microsoft.Compute/virtualMachineScaleSets",
             "name": "[parameters('vmNodeType1Name')]",
             "location": "[parameters('computeLocation')]",
@@ -1640,7 +1646,7 @@
                                         "certificate": {
                                             "commonNames": [
                                                 "[parameters('certificateCommonName')]"
-                                             ],
+                                            ],
                                             "x509StoreName": "[parameters('certificateStoreValue')]"
                                         }
                                     },
@@ -1778,7 +1784,7 @@
                                     "storeLocation": "LocalMachine",
                                     "sourceLocation": "[concat('https://', parameters('DsmsHostName'), '/dsms/storage-archive/certificates/selfsigned/bt/', parameters('archiveBackendTenantName'), '/encryption-02.pfx')]"
                                 },
-                                {                                
+                                {
                                     "storeName": "my",
                                     "storeLocation": "LocalMachine",
                                     "sourceLocation": "[concat('https://', parameters('DsmsHostName'), '/dsms/genevacustomers/monitoring/warmpath/', parameters('cloudEnvironment'), '/', parameters('WarmPathEndpoint'), '/azurearchivestorage/certificates/chained/stgcs.pfx')]"
@@ -1878,7 +1884,7 @@
             }
         },
         {
-            "apiVersion": "[variables('vmssApiVersion')]",
+            "apiVersion": "2019-07-01",
             "type": "Microsoft.Compute/virtualMachineScaleSets",
             "name": "[parameters('vmNodeType2Name')]",
             "location": "[parameters('computeLocation')]",
@@ -1921,7 +1927,7 @@
                                         "certificate": {
                                             "commonNames": [
                                                 "[parameters('certificateCommonName')]"
-                                             ],
+                                            ],
                                             "x509StoreName": "[parameters('certificateStoreValue')]"
                                         }
                                     },
@@ -2059,7 +2065,7 @@
                                     "storeLocation": "LocalMachine",
                                     "sourceLocation": "[concat('https://', parameters('DsmsHostName'), '/dsms/storage-archive/certificates/selfsigned/bt/', parameters('archiveBackendTenantName'), '/encryption-02.pfx')]"
                                 },
-                                {                                
+                                {
                                     "storeName": "my",
                                     "storeLocation": "LocalMachine",
                                     "sourceLocation": "[concat('https://', parameters('DsmsHostName'), '/dsms/genevacustomers/monitoring/warmpath/', parameters('cloudEnvironment'), '/', parameters('WarmPathEndpoint'), '/azurearchivestorage/certificates/chained/stgcs.pfx')]"
@@ -2169,15 +2175,17 @@
             "properties": {
                 "certificateCommonNames": {
                     "commonNames": [
-                    {
-                        "certificateCommonName": "[parameters('certificateCommonName')]",
-                        "certificateIssuerThumbprint": ""
-                    }
+                        {
+                            "certificateCommonName": "[parameters('certificateCommonName')]",
+                            "certificateIssuerThumbprint": ""
+                        }
                     ],
                     "x509StoreName": "[parameters('certificateStoreValue')]"
                 },
-                "clientCertificateCommonNames": [],
-                "clientCertificateThumbprints": [],
+                "clientCertificateCommonNames": [
+                ],
+                "clientCertificateThumbprints": [
+                ],
                 "clusterState": "Default",
                 "diagnosticsStorageAccountConfig": {
                     "blobEndpoint": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('supportLogStorageAccountName')), variables('storageApiVersion')).primaryEndpoints.blob]",
