@@ -19,6 +19,7 @@ import * as path from 'path';
 import { Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument } from "vscode";
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
+import { parseParametersWithMarkers } from "./parseTemplate";
 import { stringify } from "./stringify";
 import { TempDocument, TempEditor, TempFile } from "./TempFile";
 
@@ -57,7 +58,11 @@ export interface IDeploymentParameterDefinition {
 export interface IDeploymentOutput {
     // tslint:disable-next-line:no-reserved-keywords
     type: ExpressionType | string;
-    value: number | unknown[] | string | {};
+    value?: number | unknown[] | string | {};
+    copy?: {
+        count: string;
+        input: string;
+    };
 }
 
 export interface IDeploymentFunctionDefinition {
@@ -148,7 +153,7 @@ export interface IDeploymentTemplateResource {
     // tslint:disable-next-line:no-reserved-keywords
     type: string;
     name: string;
-    apiVersion: string;
+    apiVersion?: string;
     location?: string;
     dependsOn?: string[];
     tags?: { [key: string]: string } | string;
@@ -188,6 +193,7 @@ export interface ITestDiagnosticsOptions extends IGetDiagnosticsOptions {
 }
 
 interface IGetDiagnosticsOptions {
+    parameters?: string | Partial<IDeploymentParametersFile>;
     includeSources?: Source[]; // Error sources to include in the comparison - defaults to all
     ignoreSources?: Source[];  // Error sources to ignore in the comparison - defaults to ignoring none
     includeRange?: boolean;    // defaults to false - whether to include the error range in the results for comparison (if true, ignored when expected messages don't have ranges)
@@ -342,6 +348,7 @@ export async function getDiagnosticsForTemplate(
 ): Promise<Diagnostic[]> {
     let templateContents: string | undefined;
     let tempPathSuffix: string = '';
+    let paramsFile: TempFile | undefined;
 
     // tslint:disable-next-line: strict-boolean-expressions
     options = options || {};
@@ -372,8 +379,18 @@ export async function getDiagnosticsForTemplate(
         templateContents = newContents;
     }
 
-    const tempFile = new TempFile(templateContents, tempPathSuffix);
-    const document = new TempDocument(tempFile);
+    const templateFile = new TempFile(templateContents, tempPathSuffix);
+    const document = new TempDocument(templateFile);
+
+    // Parameter file
+    if (options.parameters) {
+        const { unmarkedText: unmarkedParams } = await parseParametersWithMarkers(options.parameters);
+        paramsFile = new TempFile(unmarkedParams);
+
+        // Map template to params
+        await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, paramsFile.uri);
+    }
+
     const editor = new TempEditor(document);
     await editor.open();
 
