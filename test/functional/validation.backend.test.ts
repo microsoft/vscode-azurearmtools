@@ -5,7 +5,7 @@
 // tslint:disable:object-literal-key-quotes no-http-string max-func-body-length
 // tslint:disable: no-suspicious-comment
 
-import { testDiagnostics } from "../support/diagnostics";
+import { testDiagnostics, testDiagnosticsFromFile } from "../support/diagnostics";
 import { testWithLanguageServer } from "../support/testWithLanguageServer";
 
 suite("Backend validation", () => {
@@ -221,6 +221,22 @@ suite("Backend validation", () => {
                 // TODO: There should be no errors
                 //  https://github.com/microsoft/vscode-azurearmtools/issues/695
                 `Warning: Missing required property "value" (arm-template (schema))`
+            ]
+        );
+    });
+
+    testWithLanguageServer("param-with-keyvault-reference.json", async () => {
+        await testDiagnosticsFromFile(
+            "templates/param-with-keyvault-reference.json",
+            {
+                parametersFile: "templates/param-with-keyvault-reference.params.json"
+            },
+            [
+                "Warning: The parameter 'administratorLoginPassword' is never used. (arm-template (expressions))",
+
+                // TODO: This error shouldn't occur
+                // https://github.com/microsoft/vscode-azurearmtools/issues/609
+                "Error: Template validation failed: The value for the template parameter 'administratorLoginPassword' at line '5' and column '39' is not provided. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation))",
             ]
         );
     });
