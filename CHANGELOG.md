@@ -36,6 +36,8 @@ Look for this in the editor context menu or the ARM Template Outline view!
 - Space after colon (:) removes IntelliSense Selection List [#482](https://github.com/microsoft/vscode-azurearmtools/issues/482)
 - Pop up 2 dialogs when renaming a resource that can't be renamed [#407](https://github.com/microsoft/vscode-azurearmtools/issues/407)
 - autocomplete of params/var replaces needed code [#127](https://github.com/microsoft/vscode-azurearmtools/issues/127)
+- ARM template validation cannot handle "copy" in outputs section [#600](https://github.com/microsoft/vscode-azurearmtools/issues/600)
+  - Note: Currently works only for resource group deployment, see [#695](https://github.com/microsoft/vscode-azurearmtools/issues/695)
 
 ## Version 0.9.2 (2020-04-25)
 
