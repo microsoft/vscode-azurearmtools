@@ -2,6 +2,41 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.10.0
+
+### Added
+
+- Improved parameter file support:
+  - Completions for missing and new parameter values (type double quote or CTRL+SPACE)
+  - Quick fix and code actions for adding missing parameter values
+  - Rename parameters across template and parameter file
+  - Go To Definition and Find References for parameters across both files
+
+- Insert item... (variables, parameters, resources, functions, outputs) **implemented by Nils Hedström @nilshedstrom, thanks!**
+Look for this in the editor context menu or the ARM Template Outline view!
+- Completions for resourceId arguments based on resources found inside the template
+- New `Application Gateway` and `Application Gateway and Firewall` snippets (thanks Emmanuel Auffray @ManuInNZ!)
+
+### Changed
+
+- Suggestion: Auto-complete should not insert "()" [#501](https://github.com/microsoft/vscode-azurearmtools/issues/501)
+- Removed `arm-param-value` snippet in parameter files (replaced by new parameter auto-completions)
+- Add lightbulbs to increase discoverability of parameter/variable renames
+
+### Fixed
+
+- Variable autocomplete does not show variables without quotes [#361](https://github.com/microsoft/vscode-azurearmtools/issues/361)
+- Use latest schema version for ARM Template parameter file (thanks Wilfried Woivre @wilfriedwoivre!) [#622](https://github.com/microsoft/vscode-azurearmtools/issues/622)
+- Ensure snippet resource definitions align with best practices doc [#525](https://github.com/microsoft/vscode-azurearmtools/issues/525)
+- Snippets should use tabs instead of spaces so the editor can adjust the tabs to the current editor settings [#633](https://github.com/microsoft/vscode-azurearmtools/issues/633)
+- dateTimeAdd function not recognized [#636](https://github.com/microsoft/vscode-azurearmtools/issues/636)
+- Rename dialog should not include quotes (#660)(https://github.com/microsoft/vscode-azurearmtools/issues/660)
+- Rename doesn't work on a variable/parameter with a hyphen [#661](https://github.com/microsoft/vscode-azurearmtools/issues/661)
+- Template validation doesn't recognize 'environment()' function when full validation enabled [#531]((https://github.com/microsoft/vscode-azurearmtools/issues/531)
+- Space after colon (:) removes IntelliSense Selection List [#482](https://github.com/microsoft/vscode-azurearmtools/issues/482)
+- Pop up 2 dialogs when renaming a resource that can't be renamed [#407](https://github.com/microsoft/vscode-azurearmtools/issues/407)
+- autocomplete of params/var replaces needed code [#127](https://github.com/microsoft/vscode-azurearmtools/issues/127)
+
 ## Version 0.9.2 (2020-04-25)
 
 ### Changed
