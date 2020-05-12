@@ -280,6 +280,19 @@ export class Issue {
         return this._message;
     }
 
+    public get isUnnecessaryCode(): boolean {
+        switch (this.kind) {
+            case IssueKind.unusedVar:
+            case IssueKind.unusedParam:
+            case IssueKind.unusedUdfParam:
+            case IssueKind.unusedUdf:
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
     public translate(movement: number): Issue {
         return new Issue(this._span.translate(movement), this._message, this.kind);
     }
