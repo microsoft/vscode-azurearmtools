@@ -21,7 +21,7 @@ Look for this in the editor context menu or the ARM Template Outline view!
 
 - Suggestion: Auto-complete should not insert "()" [#501](https://github.com/microsoft/vscode-azurearmtools/issues/501)
 - Removed `arm-param-value` snippet in parameter files (replaced by new parameter auto-completions)
-- Add lightbulbs to increase discoverability of parameter/variable renames
+- Add lightbulbs to increase discoverability of parameter/variable renames **implemented by Nils Hedström @nilshedstrom, thanks!**
 
 ### Fixed
 
