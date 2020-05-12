@@ -170,6 +170,10 @@ const overrideExpectedDiagnostics: { [name: string]: string[] } = {
         // Full validation temporarily disabled, so we don't currently get this error
         // "Template validation failed: The template resource 'dnsRecord1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '50' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
+    "Logic App": [
+        // TODO: this regressed in the schemas
+        `For full schema validation, consider updating the value to one of the following: \"2015-02-01-preview\", \"2016-06-01\", \"2016-10-01\", \"2017-07-01\". It is possible that the current resource version is valid but that a schema has not been generated. For more information see https://aka.ms/arm-tools-apiversion.`
+    ],
     "Network Security Group Rule": [
         // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
         // Full validation temporarily disabled, so we don't currently get this error
