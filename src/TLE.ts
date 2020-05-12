@@ -901,6 +901,7 @@ export class Parser {
         tokenizer.next();
 
         // Check for <namespace>.<functionname>
+        // tslint:disable-next-line: strict-boolean-expressions
         if (tokenizer.current && tokenizer.current.getType() === TokenType.Period) {
             // It's a user-defined function because it has a namespace before the function name
             periodToken = tokenizer.current;
@@ -923,6 +924,7 @@ export class Parser {
         let commaTokens: Token[] = [];
         let argumentExpressions: (Value | undefined)[] = [];
 
+        // tslint:disable-next-line: strict-boolean-expressions
         if (tokenizer.current) {
             // tslint:disable-next-line: strict-boolean-expressions // False positive
             while (tokenizer.current) {
@@ -946,6 +948,7 @@ export class Parser {
         if (tokenizer.hasCurrent()) {
             let expectingArgument: boolean = true;
 
+            // tslint:disable-next-line: strict-boolean-expressions
             while (tokenizer.current) {
                 if (tokenizer.current.getType() === TokenType.RightParenthesis || tokenizer.current.getType() === TokenType.RightSquareBracket) {
                     break;
@@ -969,6 +972,7 @@ export class Parser {
             if (Parser.isMissingArgument(expectingArgument, leftParenthesisToken, argumentExpressions.length, tokenizer)) {
                 argumentExpressions.push(undefined);
                 let errorSpan: language.Span;
+                // tslint:disable-next-line: strict-boolean-expressions
                 if (tokenizer.current) {
                     errorSpan = tokenizer.current.span;
                 } else {
@@ -982,6 +986,7 @@ export class Parser {
             errors.push(new language.Issue(leftParenthesisToken.span, "Expected a right parenthesis (')').", tleSyntax));
         }
 
+        // tslint:disable-next-line: strict-boolean-expressions
         if (tokenizer.current) {
             switch (tokenizer.current.getType()) {
                 case TokenType.RightParenthesis:
