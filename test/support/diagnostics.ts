@@ -17,7 +17,7 @@ import * as assert from "assert";
 import * as fs from 'fs';
 import * as path from 'path';
 import { Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument } from "vscode";
-import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
+import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource, validationDiagnosticsSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { stringify } from "./stringify";
 import { TempDocument, TempEditor, TempFile } from "./TempFile";
@@ -32,7 +32,7 @@ export const sources = {
     expressions: { name: expressionsDiagnosticsSource },
     schema: { name: 'arm-template (schema)' },
     syntax: { name: 'arm-template (syntax)' },
-    template: { name: 'arm-template (validation)' },
+    template: { name: validationDiagnosticsSource },
 };
 
 function isSourceFromLanguageServer(source: Source): boolean {

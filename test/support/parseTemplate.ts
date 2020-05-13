@@ -36,9 +36,11 @@ export async function parseTemplateWithMarkers(
     options?: {
         ignoreWarnings?: boolean;
         ignoreBang?: boolean;
+        expectedMarkers?: string[]; //asdf
     }
 ): Promise<{ dt: DeploymentTemplate; markers: Markers }> {
-    const { unmarkedText, markers } = getDocumentMarkers(template, options);
+    //asdf const { unmarkedText, markers } = getDocumentMarkers(template, options);
+    const { unmarkedText, markers } = getDocumentMarkers(template, { expectedMarkers: options?.expectedMarkers }); //asdf?
     const dt: DeploymentTemplate = new DeploymentTemplate(unmarkedText, Uri.file("https://parseTemplate template"));
 
     // Always run these even if not checking against expected, to verify nothing throws
@@ -88,6 +90,13 @@ export function removeEOLMarker(s: string): string {
  * Returns the document without the tags, plus a dictionary of the tags and their positions
  */
 export function getDocumentMarkers(doc: object | string, options?: { ignoreBang?: boolean }): { unmarkedText: string; markers: Markers } {
+    // asdf export function getDocumentMarkers(
+    //     doc: object | string,
+    //     options?: {
+    //         expectedMarkers?: string[];
+    //     }
+    // ): { unmarkedText: string; markers: Markers } {
+
     let markers: Markers = {};
     doc = typeof doc === "string" ? doc : stringify(doc);
     let modified = doc;
@@ -96,19 +105,28 @@ export function getDocumentMarkers(doc: object | string, options?: { ignoreBang?
 
     // tslint:disable-next-line:no-constant-condition
     while (true) {
-        let match: RegExpMatchArray | null = modified.match(/<!([a-zA-Z][a-zA-Z0-9$]*)!>/);
+        let match: RegExpMatchArray | null = modified.match(/<!([a-zA-Z][a-zA-Z0-9$]*)!>|!/);
         if (!match) {
             break;
         }
 
         // tslint:disable-next-line:no-non-null-assertion // Tested above
         const index: number = match.index!;
-        const name = match[1];
+        let name: string;
+        let length: number;
+        if (match[0] === '!') {
+            // This is the shortcut marker "!" with id "bang" used in some tests
+            name = 'bang';
+            length = 1;
+        } else {
+            name = match[1];
+            length = match[0].length;
+        }
         const marker: Marker = { name, index };
         markers[marker.name] = marker;
 
         // Remove marker from the document
-        modified = modified.slice(0, marker.index) + modified.slice(index + match[0].length);
+        modified = modified.slice(0, marker.index) + modified.slice(index + length);
     }
 
     // Also look for shortcut marker "!" with id "bang" used in some tests
@@ -128,6 +146,12 @@ export function getDocumentMarkers(doc: object | string, options?: { ignoreBang?
         ;
     if (malformed) {
         throw new Error(`Malformed marker "${malformed[0]}" in text: ${doc}`);
+    }
+
+    for (let name of options?.expectedMarkers ?? []) {
+        if (!(name in markers)) {
+            assert.fail(`Didn't find expected marker '${name}'`);
+        }
     }
 
     return {

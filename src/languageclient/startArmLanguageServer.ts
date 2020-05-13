@@ -6,13 +6,16 @@
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
-import { ProgressLocation, window, workspace } from 'vscode';
+import { Diagnostic, ProgressLocation, Uri, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
-import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
+import { HandleDiagnosticsSignature, LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
 import { acquireSharedDotnetInstallation } from '../acquisition/acquireSharedDotnetInstallation';
+import { adjustValidationDiagnostics } from '../adjustValidationDiagnostics';
 import { armTemplateLanguageId, configKeys, configPrefix, downloadDotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName } from '../constants';
+import { DeploymentTemplate } from '../DeploymentTemplate';
 import { ext } from '../extensionVariables';
 import { assert } from '../fixed_assert';
+import { DeploymentFileMapping } from '../parameterFiles/DeploymentFileMapping';
 import { templateDocumentSelector } from '../supported';
 import { WrappedErrorHandler } from './WrappedErrorHandler';
 
@@ -40,7 +43,10 @@ export async function stopArmLanguageServer(): Promise<void> {
     ext.outputChannel.appendLine("Language server stopped");
 }
 
-export async function startArmLanguageServer(): Promise<void> {
+export async function startArmLanguageServer(
+    getTemplate: (uri: Uri) => Promise<DeploymentTemplate | undefined>,
+    mapping: DeploymentFileMapping
+): Promise<void> {
     window.withProgress(
         {
             location: ProgressLocation.Window,
@@ -58,7 +64,7 @@ export async function startArmLanguageServer(): Promise<void> {
                     return;
                 }
 
-                await startLanguageClient(serverDllPath, dotnetExePath);
+                await startLanguageClient(serverDllPath, dotnetExePath, getTemplate, mapping);
 
                 ext.languageServerState = LanguageServerState.Started;
             } catch (error) {
@@ -79,7 +85,12 @@ async function getLangServerVersion(): Promise<string | undefined> {
     });
 }
 
-export async function startLanguageClient(serverDllPath: string, dotnetExePath: string): Promise<void> {
+export async function startLanguageClient(
+    serverDllPath: string,
+    dotnetExePath: string,
+    getTemplate: (uri: Uri) => Promise<DeploymentTemplate | undefined>,
+    mapping: DeploymentFileMapping
+): Promise<void> {
     // tslint:disable-next-line: no-suspicious-comment
     // tslint:disable-next-line: max-func-body-length // TODO: Refactor function
     await callWithTelemetryAndErrorHandling('startArmLanguageClient', async (actionContext: IActionContext) => {
@@ -127,6 +138,12 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
             revealOutputChannelOn: RevealOutputChannelOn.Error,
             synchronize: {
                 configurationSection: configPrefix
+            },
+            middleware: {
+                handleDiagnostics: async (uri: Uri, diagnostics: Diagnostic[], next: HandleDiagnosticsSignature): Promise<void> => {
+                    await adjustValidationDiagnostics(uri, diagnostics, getTemplate, mapping);
+                    next(uri, diagnostics);
+                }
             }
         };
 
@@ -171,6 +188,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
                 `${languageServerName}: An error occurred starting the language server.${os.EOL}${os.EOL}${parseError(error).message}`
             );
         }
+
     });
 }
 
