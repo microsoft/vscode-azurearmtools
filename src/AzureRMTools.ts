@@ -707,6 +707,7 @@ export class AzureRMTools {
         }
         this._areDeploymentTemplateEventsHookedUp = true;
 
+        // tslint:disable-next-line: max-func-body-length asdf
         callWithTelemetryAndErrorHandlingSync("ensureDeploymentTemplateEventsHookedUp", (actionContext: IActionContext) => {
             actionContext.telemetry.suppressIfSuccessful = true;
 

@@ -39,8 +39,8 @@ export async function parseTemplateWithMarkers(
         expectedMarkers?: string[]; //asdf
     }
 ): Promise<{ dt: DeploymentTemplate; markers: Markers }> {
-    //asdf const { unmarkedText, markers } = getDocumentMarkers(template, options);
-    const { unmarkedText, markers } = getDocumentMarkers(template, { expectedMarkers: options?.expectedMarkers }); //asdf?
+    const { unmarkedText, markers } = getDocumentMarkers(template, options);
+    //const { unmarkedText, markers } = getDocumentMarkers(template, { expectedMarkers: options?.expectedMarkers }); //asdf?
     const dt: DeploymentTemplate = new DeploymentTemplate(unmarkedText, Uri.file("https://parseTemplate template"));
 
     // Always run these even if not checking against expected, to verify nothing throws
@@ -148,11 +148,12 @@ export function getDocumentMarkers(doc: object | string, options?: { ignoreBang?
         throw new Error(`Malformed marker "${malformed[0]}" in text: ${doc}`);
     }
 
-    for (let name of options?.expectedMarkers ?? []) {
-        if (!(name in markers)) {
-            assert.fail(`Didn't find expected marker '${name}'`);
-        }
-    }
+    //asdf?
+    // for (let name of options?.expectedMarkers ?? []) {
+    //     if (!(name in markers)) {
+    //         assert.fail(`Didn't find expected marker '${name}'`);
+    //     }
+    // }
 
     return {
         unmarkedText: modified,
