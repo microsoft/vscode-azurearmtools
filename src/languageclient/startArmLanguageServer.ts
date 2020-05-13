@@ -13,6 +13,7 @@ import { acquireSharedDotnetInstallation } from '../acquisition/acquireSharedDot
 import { armTemplateLanguageId, configKeys, configPrefix, downloadDotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName, notifications } from '../constants';
 import { ext } from '../extensionVariables';
 import { assert } from '../fixed_assert';
+import { loadLinkedFile } from '../linkedTemplates';
 import { templateDocumentSelector } from '../supported';
 import { WrappedErrorHandler } from './WrappedErrorHandler';
 
@@ -178,7 +179,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
                     //asdf const workspaceFolder = workspace.getWorkspaceFolder(uri2)?.uri;
                     let filePath: string;
                     if (path.isAbsolute(requestedPath)) {
-                        filePath = requestedPath;
+                        filePath = requestedPath;//asdf
                         ext.outputChannel.appendLine(`... Using absolute path: ${filePath}`);
 
                     } else {
@@ -200,17 +201,6 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
             );
         }
     });
-}
-
-async function loadLinkedFile(filePath: string): Promise<void> {
-    try {
-        const uri = Uri.parse(filePath); //asdf
-        // asdf existing?
-        const doc = await workspace.openTextDocument(uri);
-        await window.showTextDocument(doc);
-    } catch (err) {
-        window.showErrorMessage(parseError(err).message); //asdf
-    }
 }
 
 async function getDotNetPath(): Promise<string | undefined> {
