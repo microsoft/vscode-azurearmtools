@@ -3,50 +3,96 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from 'assert';
-import { Utilities } from '../extension.bundle';
+import { Json, Utilities } from '../extension.bundle';
+import { CachedValue } from './CachedValue';
 import { templateKeys } from './constants';
 import { IParameterDefinition } from "./IParameterDefinition";
+import { IResource } from './IResource';
 import * as TLE from "./TLE";
 import { UserFunctionDefinition } from './UserFunctionDefinition';
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
 import { IVariableDefinition } from './VariableDefinition';
 
-export enum ScopeContext {
+export enum TemplateScopeKind {
     TopLevel = "TopLevel",
     ParameterDefaultValue = "ParameterDefaultValue",
-    UserFunction = "UserFunction"
+    UserFunction = "UserFunction",
+    NestedDeploymentWithInnerScope = "NestedDeploymentWithInnerScope",
+    NestedDeploymentWithOuterScope = "NestedDeploymentWithOuterScope",
 }
 
 /**
  * Represents the scoped access of parameters/variables/functions at a particular point in the template tree.
  */
-export class TemplateScope {
-    /**
-     * Constructor
-     */
+export abstract class TemplateScope {
+    private _parameterDefinitions: CachedValue<IParameterDefinition[] | undefined> = new CachedValue<IParameterDefinition[] | undefined>();
+    private _variableDefinitions: CachedValue<IVariableDefinition[] | undefined> = new CachedValue<IVariableDefinition[] | undefined>();
+    private _functionDefinitions: CachedValue<UserFunctionNamespaceDefinition[] | undefined> = new CachedValue<UserFunctionNamespaceDefinition[] | undefined>();
+    private _resources: CachedValue<IResource[] | undefined> = new CachedValue<IResource[] | undefined>();
+
+    public readonly abstract scopeKind: TemplateScopeKind;
+
+    // undefined means not supported in this context
+    protected getParameterDefinitions(): IParameterDefinition[] | undefined {
+        // undefined means not supported in this context
+        return undefined;
+    }
+    protected getVariableDefinitions(): IVariableDefinition[] | undefined {
+        // undefined means not supported in this context
+        return undefined;
+    }
+    protected getNamespaceDefinitions(): UserFunctionNamespaceDefinition[] | undefined {
+        // undefined means not supported in this context
+        return undefined;
+    }
+    protected getResources(): IResource[] | undefined {
+        // undefined means not supported in this context
+        return undefined;
+    }
+
     constructor(
-        public readonly scopeContext: ScopeContext,
-        private readonly _parameterDefinitions: IParameterDefinition[] | undefined, // undefined means not supported in this context
-        private readonly _variableDefinitions: IVariableDefinition[] | undefined, // undefined means not supported in this context
-        private readonly _namespaceDefinitions: UserFunctionNamespaceDefinition[] | undefined, // undefined means not supported in this context
+        public readonly rootObject: Json.ObjectValue | undefined,
         // tslint:disable-next-line:variable-name
-        public readonly __debugDisplay: string // Convenience for debugging
+        public readonly __debugDisplay: string // Provides context for debugging
     ) {
     }
 
     public get parameterDefinitions(): IParameterDefinition[] {
-        // tslint:disable-next-line: strict-boolean-expressions
-        return this._parameterDefinitions || [];
+        return this._parameterDefinitions.getOrCacheValue(() => this.getParameterDefinitions())
+            ?? [];
     }
 
     public get variableDefinitions(): IVariableDefinition[] {
-        // tslint:disable-next-line: strict-boolean-expressions
-        return this._variableDefinitions || [];
+        return this._variableDefinitions.getOrCacheValue(() => this.getVariableDefinitions())
+            ?? [];
     }
 
     public get namespaceDefinitions(): UserFunctionNamespaceDefinition[] {
-        // tslint:disable-next-line: strict-boolean-expressions
-        return this._namespaceDefinitions || [];
+        return this._functionDefinitions.getOrCacheValue(() => this.getNamespaceDefinitions())
+            ?? [];
+
+    }
+
+    public get resources(): IResource[] {
+        return this._resources.getOrCacheValue(() => this.getResources())
+            ?? [];
+    }
+
+    public get childScopes(): TemplateScope[] {
+        const scopes: TemplateScope[] = [];
+        for (let resource of this.resources ?? []) {
+            if (resource.childDeployment) {
+                scopes.push(resource.childDeployment);
+            }
+        }
+
+        for (let namespace of this.namespaceDefinitions) {
+            for (let member of namespace.members) {
+                scopes.push(member.scope);
+            }
+        }
+
+        return scopes;
     }
 
     // parameterName can be surrounded with single quotes or not.  Search is case-insensitive
@@ -205,6 +251,6 @@ export class TemplateScope {
     }
 
     public get isInUserFunction(): boolean {
-        return this.scopeContext === ScopeContext.UserFunction;
+        return this.scopeKind === TemplateScopeKind.UserFunction;
     }
 }
