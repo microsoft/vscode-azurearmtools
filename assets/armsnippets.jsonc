@@ -1715,7 +1715,7 @@
             "{",
             "\t\"name\": \"${1:logicApp1}\",",
             "\t\"type\": \"Microsoft.Logic/workflows\",",
-            "\t\"apiVersion\": \"2019-05-01\",",
+            "\t\"apiVersion\": \"2017-07-01\",",
             "\t\"location\": \"[resourceGroup().location]\",",
             "\t\"properties\": {",
             "\t\t\"definition\": {",
