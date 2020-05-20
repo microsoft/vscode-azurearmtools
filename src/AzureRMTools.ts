@@ -962,6 +962,9 @@ export class AzureRMTools {
         let diagnostic = new vscode.Diagnostic(range, message, severity);
         diagnostic.source = expressionsDiagnosticsSource;
         diagnostic.code = "";
+        if (issue.isUnnecessaryCode) {
+            diagnostic.tags = [vscode.DiagnosticTag.Unnecessary];
+        }
         return diagnostic;
     }
 
