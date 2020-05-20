@@ -7,6 +7,10 @@ import * as assert from 'assert';
 export class Duration {
     private _milliseconds: number;
 
+    private constructor(milliseconds: number) {
+        this._milliseconds = milliseconds;
+    }
+
     public get totalMilliseconds(): number {
         return this._milliseconds;
     }
@@ -36,9 +40,7 @@ export class Duration {
     public static zero: Duration = Duration.milliseconds(0);
 
     public static milliseconds(milliseconds: number): Duration {
-        let result = new Duration();
-        result._milliseconds = milliseconds;
-        return result;
+        return new Duration(milliseconds);
     }
 
     public static seconds(seconds: number): Duration {

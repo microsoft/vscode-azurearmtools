@@ -3,10 +3,17 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as os from 'os';
 import * as vscode from "vscode";
-import { IAzureUserInput, ITelemetryReporter } from "vscode-azureextensionui";
+import { IAzExtOutputChannel, IAzureUserInput } from "vscode-azureextensionui";
+import { LanguageClient } from "vscode-languageclient";
+import { CompletionsSpy } from "./CompletionsSpy";
+import { IConfiguration, VsCodeConfiguration } from "./Configuration";
+import { configPrefix, isWebpack } from "./constants";
 import { LanguageServerState } from "./languageclient/startArmLanguageServer";
+import { DeploymentFileMapping } from "./parameterFiles/DeploymentFileMapping";
 import { JsonOutlineProvider } from "./Treeview";
+import { InitializeBeforeUse } from "./util/InitializeBeforeUse";
 
 /**
  * Namespace for common variables used throughout the extension. They must be initialized in the activate() method of extension.ts
@@ -15,17 +22,53 @@ import { JsonOutlineProvider } from "./Treeview";
 // tslint:disable-next-line: class-name
 class ExtensionVariables {
     public readonly extensionId: string = "msazurermtools.azurerm-vscode-tools";
+    private _context: InitializeBeforeUse<vscode.ExtensionContext> = new InitializeBeforeUse<vscode.ExtensionContext>();
+    private _jsonOutlineProvider: InitializeBeforeUse<JsonOutlineProvider> = new InitializeBeforeUse<JsonOutlineProvider>();
+    private _outputChannel: InitializeBeforeUse<IAzExtOutputChannel> = new InitializeBeforeUse<IAzExtOutputChannel>();
+    private _ui: InitializeBeforeUse<IAzureUserInput> = new InitializeBeforeUse<IAzureUserInput>();
 
-    public context: vscode.ExtensionContext;
-    public jsonOutlineProvider: JsonOutlineProvider;
-    public reporter: ITelemetryReporter;
-    public outputChannel: vscode.OutputChannel;
-    public ui: IAzureUserInput;
+    public set context(context: vscode.ExtensionContext) {
+        this._context.setValue(context);
+    }
+    public get context(): vscode.ExtensionContext {
+        return this._context.getValue();
+    }
 
+    public set jsonOutlineProvider(context: JsonOutlineProvider) {
+        this._jsonOutlineProvider.setValue(context);
+    }
+    public get jsonOutlineProvider(): JsonOutlineProvider {
+        return this._jsonOutlineProvider.getValue();
+    }
+
+    public set outputChannel(outputChannel: IAzExtOutputChannel) {
+        this._outputChannel.setValue(outputChannel);
+    }
+    public get outputChannel(): IAzExtOutputChannel {
+        return this._outputChannel.getValue();
+    }
+
+    public set ui(ui: IAzureUserInput) {
+        this._ui.setValue(ui);
+    }
+    public get ui(): IAzureUserInput {
+        return this._ui.getValue();
+    }
+
+    public EOL: string = os.EOL;
+
+    public readonly ignoreBundle: boolean = !isWebpack;
+
+    public languageServerClient: LanguageClient | undefined;
     public languageServerState: LanguageServerState = LanguageServerState.NotStarted;
 
     // Suite support - lets us know when diagnostics have been completely published for a file
-    public addCompletedDiagnostic: boolean;
+    public addCompletedDiagnostic: boolean = false;
+
+    public readonly configuration: IConfiguration = new VsCodeConfiguration(configPrefix);
+
+    public readonly completionItemsSpy: CompletionsSpy = new CompletionsSpy();
+    public deploymentFileMapping: InitializeBeforeUse<DeploymentFileMapping> = new InitializeBeforeUse<DeploymentFileMapping>();
 }
 
 // tslint:disable-next-line: no-any

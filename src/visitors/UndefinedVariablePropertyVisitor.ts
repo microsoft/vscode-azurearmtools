@@ -21,15 +21,15 @@ export class UndefinedVariablePropertyVisitor extends Visitor {
     }
     public visitPropertyAccess(tlePropertyAccess: PropertyAccess): void {
         if (tlePropertyAccess.nameToken) {
-            const functionSource: FunctionCallValue | null = tlePropertyAccess.functionSource;
+            const functionSource: FunctionCallValue | undefined = tlePropertyAccess.functionSource;
             if (functionSource) {
                 // Get the definition for the variable that's being referenced via a variables('v') call
-                const variableProperty: IVariableDefinition | null = this._scope.getVariableDefinitionFromFunctionCall(functionSource);
+                const variableProperty: IVariableDefinition | undefined = this._scope.getVariableDefinitionFromFunctionCall(functionSource);
                 if (variableProperty) {
-                    const variableDefinition: Json.ObjectValue | null = Json.asObjectValue(variableProperty.value);
+                    const variableDefinition: Json.ObjectValue | undefined = Json.asObjectValue(variableProperty.value);
                     const sourcesNameStack: string[] = tlePropertyAccess.sourcesNameStack;
                     if (variableDefinition) {
-                        const sourcePropertyDefinition: Json.ObjectValue | null = Json.asObjectValue(variableDefinition.getPropertyValueFromStack(sourcesNameStack));
+                        const sourcePropertyDefinition: Json.ObjectValue | undefined = Json.asObjectValue(variableDefinition.getPropertyValueFromStack(sourcesNameStack));
                         if (sourcePropertyDefinition && !sourcePropertyDefinition.hasProperty(tlePropertyAccess.nameToken.stringValue)) {
                             this.addIssue(tlePropertyAccess);
                         }
@@ -51,7 +51,7 @@ export class UndefinedVariablePropertyVisitor extends Visitor {
             `Property "${propertyName}" is not a defined property of "${sourceString}".`,
             language.IssueKind.undefinedVarProp));
     }
-    public static visit(tleValue: Value | null, scope: TemplateScope): UndefinedVariablePropertyVisitor {
+    public static visit(tleValue: Value | undefined, scope: TemplateScope): UndefinedVariablePropertyVisitor {
         const visitor = new UndefinedVariablePropertyVisitor(scope);
         if (tleValue) {
             tleValue.accept(visitor);

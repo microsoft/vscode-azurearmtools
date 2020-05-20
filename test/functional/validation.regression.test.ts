@@ -6,8 +6,7 @@
 
 import * as os from 'os';
 import { testDiagnostics, testDiagnosticsFromFile } from "../support/diagnostics";
-import { testWithLanguageServer } from "../support/testWithLanguageServer";
-import { testWithRealFunctionMetadata } from "../TestData";
+import { testWithLanguageServer, testWithLanguageServerAndRealFunctionMetadata } from "../support/testWithLanguageServer";
 
 suite("Validation regression tests", () => {
     testWithLanguageServer("Template validation error for evaluated variables (https://github.com/microsoft/vscode-azurearmtools/issues/380)", async () =>
@@ -81,7 +80,7 @@ suite("Validation regression tests", () => {
                 "Warning: The variable 'NSGRules' is never used. (arm-template (expressions))"])
     );
 
-    testWithRealFunctionMetadata(
+    testWithLanguageServerAndRealFunctionMetadata(
         'validation fails using int() with parameter (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1016832)',
         async () =>
             testDiagnosticsFromFile(
@@ -90,7 +89,7 @@ suite("Validation regression tests", () => {
                     includeRange: true
                 },
                 [
-                    // Expected no validation errors
+                    // Expected no backend validation errors
 
                     // Unrelated errors:
 
@@ -98,7 +97,8 @@ suite("Validation regression tests", () => {
                     // TODO: https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1016835
                     "Error: Expected a comma (','). (arm-template (expressions))",
 
-                    `Warning: OneOf (Require 1 match, following 2 not matched):${os.EOL}    Value must match the regular expression ^\\[([^\\[].*)?\\]$${os.EOL}    boolean (arm-template (schema))`
+                    // Expected schema errors:
+                    `Warning: Value must conform to exactly one of the associated schemas${os.EOL}|   Value must be one of the following types: boolean${os.EOL}|   or${os.EOL}|   Value must match the regular expression ^\\[([^\\[].*)?\\]$ (arm-template (schema))`
                 ]
             )
     );

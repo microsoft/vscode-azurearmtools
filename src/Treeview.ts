@@ -10,9 +10,12 @@
 
 import * as path from 'path';
 import * as vscode from "vscode";
-import { iconsPath, languageId, templateKeys } from "./constants";
+import { armTemplateLanguageId, iconsPath, templateKeys } from "./constants";
 import { assert } from './fixed_assert';
 import * as Json from "./JSON";
+import * as language from "./Language";
+
+const Contains = language.Contains;
 
 const topLevelIcons: [string, string][] = [
     ["$schema", "label.svg"],
@@ -21,6 +24,7 @@ const topLevelIcons: [string, string][] = [
     ["handler", "label.svg"],
     [templateKeys.parameters, "parameters.svg"],
     [templateKeys.variables, "variables.svg"],
+    [templateKeys.functions, "functions.svg"],
     ["resources", "resources.svg"],
     ["outputs", "outputs.svg"],
 ];
@@ -31,19 +35,146 @@ const topLevelChildIconsByRootNode: [string, string][] = [
     ["outputs", "outputs.svg"],
 ];
 
+const functionIcons: [string, string][] = [
+    [templateKeys.parameters, "parameters.svg"],
+    ["output", "outputs.svg"],
+];
+
 const resourceIcons: [string, string][] = [
+    ["Microsoft.Automation/automationAccounts", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/certificates", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/compilationjobs", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/configurations", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/connectionTypes", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/connections", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/credentials", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/jobSchedules", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/jobs", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/modules", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/nodeConfigurations", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/python2Packages", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/runbooks", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/schedules", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/softwareUpdateConfigurations", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/sourceControls", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/sourceControls/sourceControlSyncJobs", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/variables", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/watchers", "automation.svg"],
+    ["Microsoft.Automation/automationAccounts/webhooks", "automation.svg"],
+    ["Microsoft.Cdn/profiles", "cdnprofiles.svg"],
     ["Microsoft.Compute/virtualMachines", "virtualmachines.svg"],
-    ["Microsoft.Storage/storageAccounts", "storageaccounts.svg"],
-    ["Microsoft.Network/virtualNetworks", "virtualnetworks.svg"],
     ["Microsoft.Compute/virtualMachines/extensions", "extensions.svg"],
-    ["Microsoft.Network/networkSecurityGroups", "nsg.svg"],
+    ["Microsoft.ContainerInstance/containerGroups", "containerinstances.svg"],
+    ["Microsoft.DocumentDB/databaseAccounts", "cosmosdb.svg"],
+    ["Microsoft.DocumentDB/databaseAccounts/apis/databases", "cosmosdb.svg"],
+    ["Microsoft.DocumentDB/databaseAccounts/apis/databases/collections", "cosmosdb.svg"],
+    ["Microsoft.DocumentDB/databaseAccounts/apis/databases/containers", "cosmosdb.svg"],
+    ["Microsoft.DocumentDB/databaseAccounts/apis/databases/graphs", "cosmosdb.svg"],
+    ["Microsoft.DocumentDB/databaseAccounts/apis/keyspaces", "cosmosdb.svg"],
+    ["Microsoft.DocumentDB/databaseAccounts/apis/tables", "cosmosdb.svg"],
+    ["Microsoft.DocumentDB/databaseAccounts/cassandraKeyspaces", "cosmosdb.svg"],
+    ["Microsoft.DocumentDB/databaseAccounts/gremlinDatabases", "cosmosdb.svg"],
+    ["Microsoft.DocumentDB/databaseAccounts/mongodbDatabases/collections", "cosmosdb.svg"],
+    ["Microsoft.DocumentDB/databaseAccounts/sqlDatabases", "cosmosdb.svg"],
+    ["Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers", "cosmosdb.svg"],
+    ["Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/storedProcedures", "cosmosdb.svg"],
+    ["Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/triggers", "cosmosdb.svg"],
+    ["Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/userDefinedFunctions", "cosmosdb.svg"],
+    ["Microsoft.DocumentDB/databaseAccounts/tables", "cosmosdb.svg"],
+    ["Microsoft.Insights/QueryPacks/queries", "applicationinsights.svg"],
+    ["Microsoft.Insights/actionGroups", "applicationinsights.svg"],
+    ["Microsoft.Insights/activityLogAlerts", "applicationinsights.svg"],
+    ["Microsoft.Insights/alertrules", "applicationinsights.svg"],
+    ["Microsoft.Insights/autoscalesettings", "applicationinsights.svg"],
+    ["Microsoft.Insights/components", "applicationinsights.svg"],
+    ["Microsoft.Insights/components/ProactiveDetectionConfigs", "applicationinsights.svg"],
+    ["Microsoft.Insights/diagnosticSettings", "applicationinsights.svg"],
+    ["Microsoft.Insights/guestDiagnosticSettings", "applicationinsights.svg"],
+    ["Microsoft.Insights/guestDiagnosticSettingsAssociation", "applicationinsights.svg"],
+    ["Microsoft.Insights/logprofiles", "applicationinsights.svg"],
+    ["Microsoft.Insights/metricAlerts", "applicationinsights.svg"],
+    ["Microsoft.Insights/queryPacks", "applicationinsights.svg"],
+    ["Microsoft.Insights/scheduledQueryRules", "applicationinsights.svg"],
+    ["Microsoft.Insights/webtests", "applicationinsights.svg"],
+    ["Microsoft.Insights/workbooks", "applicationinsights.svg"],
+    ["Microsoft.KeyVault/vaults", "keyvaults.svg"],
+    ["Microsoft.KeyVault/vaults/secrets", "keyvaults.svg"],
+    ["Microsoft.Media/mediaServices", "mediaservices.svg"],
+    ["Microsoft.Network/azureFirewalls", "firewall.svg"],
     ["Microsoft.Network/networkInterfaces", "nic.svg"],
-    ["Microsoft.Network/publicIPAddresses", "publicip.svg"]
+    ["Microsoft.Network/networkSecurityGroups", "nsg.svg"],
+    ["Microsoft.Network/networkSecurityGroups/securityRules", "nsg.svg"],
+    ["Microsoft.Network/publicIPAddresses", "publicip.svg"],
+    ["Microsoft.Network/publicIPPrefixes", "publicip.svg"],
+    ["Microsoft.Network/routeTables/routes", "routetables.svg"],
+    ["Microsoft.Network/trafficManagerProfiles", "trafficmanagerprofiles.svg"],
+    ["Microsoft.Network/virtualNetworkGateways", "virtualnetworkgateways.svg"],
+    ["Microsoft.Network/virtualNetworks", "virtualnetworks.svg"],
+    ["Microsoft.Sql/instancePools", "sqlservers.svg"],
+    ["Microsoft.Sql/locations/instanceFailoverGroups", "sqlservers.svg"],
+    ["Microsoft.Sql/managedInstances", "sqlservers.svg"],
+    ["Microsoft.Sql/managedInstances/administrators", "sqlservers.svg"],
+    ["Microsoft.Sql/managedInstances/databases", "sqlservers.svg"],
+    ["Microsoft.Sql/managedInstances/databases/backupShortTermRetentionPolicies", "sqlservers.svg"],
+    ["Microsoft.Sql/managedInstances/databases/schemas/tables/columns/sensitivityLabels", "sqlservers.svg"],
+    ["Microsoft.Sql/managedInstances/databases/securityAlertPolicies", "sqlservers.svg"],
+    ["Microsoft.Sql/managedInstances/databases/vulnerabilityAssessments", "sqlservers.svg"],
+    ["Microsoft.Sql/managedInstances/databases/vulnerabilityAssessments/rules/baselines", "sqlservers.svg"],
+    ["Microsoft.Sql/managedInstances/encryptionProtector", "sqlservers.svg"],
+    ["Microsoft.Sql/managedInstances/keys", "sqlservers.svg"],
+    ["Microsoft.Sql/managedInstances/restorableDroppedDatabases/backupShortTermRetentionPolicies", "sqlservers.svg"],
+    ["Microsoft.Sql/managedInstances/securityAlertPolicies", "sqlservers.svg"],
+    ["Microsoft.Sql/managedInstances/vulnerabilityAssessments", "sqlservers.svg"],
+    ["Microsoft.Sql/servers", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/administrators", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/auditingSettings", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/backupLongTermRetentionVaults", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/communicationLinks", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/connectionPolicies", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/databases", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/databases/auditingSettings", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/databases/backupLongTermRetentionPolicies", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/databases/backupShortTermRetentionPolicies", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/databases/connectionPolicies", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/databases/dataMaskingPolicies", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/databases/dataMaskingPolicies/rules", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/databases/extendedAuditingSettings", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/databases/extensions", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/databases/geoBackupPolicies", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/databases/schemas/tables/columns/sensitivityLabels", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/databases/securityAlertPolicies	", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/databases/syncGroups", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/databases/syncGroups/syncMembers", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/databases/transparentDataEncryption", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/databases/vulnerabilityAssessments", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/databases/vulnerabilityAssessments/rules/baselines", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/disasterRecoveryConfiguration", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/dnsAliases", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/elasticPools", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/encryptionProtector", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/extendedAuditingSettings", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/failoverGroups", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/firewallRules", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/jobAgents", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/jobAgents/credentials", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/jobAgents/jobs", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/jobAgents/jobs/executions", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/jobAgents/jobs/steps", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/jobAgents/targetGroups", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/keys", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/privateEndpointConnections", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/securityAlertPolicies", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/syncAgents", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/virtualNetworkRules", "sqlservers.svg"],
+    ["Microsoft.Sql/servers/vulnerabilityAssessments", "sqlservers.svg"],
+    ["Microsoft.Storage/storageAccounts", "storageaccounts.svg"],
+    ["Microsoft.Web/sites", "appservices.svg"],
+    ["config", "appconfiguration.svg"],
 ];
 
 export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     private tree: Json.ParseResult | undefined;
-    private text: string;
+    private text: string | undefined;
 
     public readonly onDidChangeTreeDataEmitter: vscode.EventEmitter<string | null> =
         new vscode.EventEmitter<string | null>();
@@ -52,6 +183,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     constructor(context: vscode.ExtensionContext) {
         context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(() => this.updateTreeState()));
         context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(() => this.updateTreeState()));
+        context.subscriptions.push(vscode.workspace.onDidOpenTextDocument(() => this.updateTreeState()));
 
         setTimeout(
             () => {
@@ -86,7 +218,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     }
                 } else {
                     let elementInfo = <IElementInfo>JSON.parse(element);
-                    let valueNode = elementInfo.current.value.start !== undefined ? this.tree.getValueAtCharacterIndex(elementInfo.current.value.start) : undefined;
+                    let valueNode = elementInfo.current.value.start !== undefined ? this.tree.getValueAtCharacterIndex(elementInfo.current.value.start, Contains.strict) : undefined;
 
                     // Value is an object and is collapsible
                     if (valueNode instanceof Json.ObjectValue && elementInfo.current.collapsible) {
@@ -127,6 +259,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         const end = elementInfo.current.value.end !== undefined ? document.positionAt(elementInfo.current.value.end) : start;
 
         let treeItem: vscode.TreeItem = {
+            contextValue: this.getContextValue(elementInfo),
             label: this.getTreeNodeLabel(elementInfo),
             collapsibleState: elementInfo.current.collapsible ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
             iconPath: this.getIconPath(elementInfo),
@@ -159,12 +292,24 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         }
     }
 
+    /**
+     * Retrieves the context value of the tree item, which can be used in the "where" clause of an view/item/context
+     * menu, as viewItem == <contextValue>
+     */
+    private getContextValue(elementInfo: IElementInfo): string | undefined {
+        let element = elementInfo.current.level === 1 ? elementInfo.current : elementInfo.root;
+        const keyNode = this.tree && this.tree.getValueAtCharacterIndex(element.key.start, Contains.strict);
+        if (keyNode instanceof Json.StringValue) {
+            return keyNode.unquotedValue;
+        }
+        return undefined;
+    }
+
     private getTreeNodeLabel(elementInfo: IElementInfo): string {
-        const keyNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.key.start);
+        const keyNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.key.start, Contains.strict);
 
         // Key is an object (e.g. a resource object)
         if (keyNode instanceof Json.ObjectValue) {
-            let foundName = false;
             // Object contains no elements
             if (keyNode.properties.length === 0) {
                 return "{}";
@@ -183,22 +328,18 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     }
                 }
 
-                // Look for name element
-                // tslint:disable-next-line:one-variable-per-declaration
-                for (var i = 0, l = keyNode.properties.length; i < l; i++) {
-                    let props = keyNode.properties[i];
-                    // If name element is found
-                    if (props.nameValue instanceof Json.StringValue && props.nameValue.toString().toUpperCase() === "name".toUpperCase()) {
-                        let name = toFriendlyString(props.value);
+                let label = this.getLabelFromProperties("name", keyNode);
+                if (label !== undefined) {
+                    return label;
+                }
 
-                        return shortenTreeLabel(name);
-                    }
+                label = this.getLabelFromProperties("namespace", keyNode);
+                if (label !== undefined) {
+                    return label;
                 }
 
                 // Object contains elements, but not a name element
-                if (!foundName) {
-                    return "{...}";
-                }
+                return "{...}";
             }
 
         } else if (elementInfo.current.value.kind === Json.ValueKind.ArrayValue || elementInfo.current.value.kind === Json.ValueKind.ObjectValue) {
@@ -206,12 +347,25 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             return toFriendlyString(keyNode);
         } else if (elementInfo.current.value.start !== undefined) {
             // For other value types, display key and value since they won't be expandable
-            const valueNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.value.start);
+            const valueNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.value.start, Contains.strict);
 
             return `${keyNode instanceof Json.StringValue ? toFriendlyString(keyNode) : "?"}: ${toFriendlyString(valueNode)}`;
         }
 
         return "";
+    }
+
+    private getLabelFromProperties(propertyName: string, keyNode: Json.ObjectValue): string | undefined {
+        // tslint:disable-next-line:one-variable-per-declaration
+        for (var i = 0, l = keyNode.properties.length; i < l; i++) {
+            let props = keyNode.properties[i];
+            // If element is found
+            if (props.nameValue instanceof Json.StringValue && props.nameValue.toString().toUpperCase() === propertyName.toUpperCase()) {
+                let name = toFriendlyString(props.value);
+                return shortenTreeLabel(name);
+            }
+        }
+        return undefined;
     }
 
     /**
@@ -314,7 +468,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     private getIconPath(elementInfo: IElementInfo): string | undefined {
 
         let icon: string | undefined;
-        const keyOrResourceNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.key.start);
+        const keyOrResourceNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.current.key.start, Contains.strict);
 
         // Is current element a root element?
         if (elementInfo.current.level === 1) {
@@ -325,7 +479,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             // Is current element an element of a root element?
 
             // Get root value
-            const rootNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.root.key.start);
+            const rootNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.root.key.start, Contains.strict);
             if (rootNode) {
                 icon = this.getIcon(topLevelChildIconsByRootNode, rootNode.toString(), "");
             }
@@ -333,10 +487,11 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
 
         // If resourceType element is found on resource objects set to specific resourceType Icon or else a default resource icon
         // tslint:disable-next-line: strict-boolean-expressions
-        if (elementInfo.current.level && elementInfo.current.level > 1 && elementInfo.current.key.kind === Json.ValueKind.ObjectValue) {
-            const rootNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.root.key.start);
+        if (elementInfo.current.level && elementInfo.current.level > 1) {
+            const rootNode = this.tree && this.tree.getValueAtCharacterIndex(elementInfo.root.key.start, Contains.strict);
 
-            if (rootNode && rootNode.toString().toUpperCase() === "resources".toUpperCase() && keyOrResourceNode instanceof Json.ObjectValue) {
+            if (elementInfo.current.key.kind === Json.ValueKind.ObjectValue &&
+                rootNode && rootNode.toString().toUpperCase() === "resources".toUpperCase() && keyOrResourceNode instanceof Json.ObjectValue) {
                 // tslint:disable-next-line:one-variable-per-declaration
                 for (var i = 0, il = keyOrResourceNode.properties.length; i < il; i++) {
                     const name = keyOrResourceNode.properties[i].nameValue;
@@ -349,12 +504,36 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     }
                 }
             }
+
+            if (rootNode && rootNode.toString().toUpperCase() === "functions".toUpperCase()) {
+                icon = this.getFunctionsIcon(elementInfo, keyOrResourceNode);
+            }
         }
 
         if (icon) {
             return path.join(iconsPath, icon);
         }
 
+        return undefined;
+    }
+
+    private getFunctionsIcon(elementInfo: IElementInfo, node: Json.Value | null | undefined): string | undefined {
+        const level: number | undefined = elementInfo.current.level;
+        if (!node || level === undefined) {
+            return undefined;
+        }
+        if (level === 5) {
+            return this.getIcon(functionIcons, node.toFriendlyString(), "");
+        }
+        if (!elementInfo.current.collapsible) {
+            return undefined;
+        }
+        if (level < 5) {
+            return this.getIcon(topLevelIcons, templateKeys.functions, "");
+        }
+        if (elementInfo.current.level === 6) {
+            return this.getIcon(functionIcons, "parameters", "");
+        }
         return undefined;
     }
 
@@ -373,7 +552,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
 
     private shouldShowTreeForDocument(document: vscode.TextDocument): boolean {
         // Only show view if the language is set to Azure Resource Manager Template
-        return document.languageId === languageId;
+        return document.languageId === armTemplateLanguageId;
     }
 
     private setTreeViewContext(visible: boolean): void {

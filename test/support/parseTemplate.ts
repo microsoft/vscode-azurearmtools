@@ -3,14 +3,15 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from 'assert';
-import { DeploymentTemplate } from "../../extension.bundle";
-import { Issue } from '../../src/Language';
+import { Uri } from 'vscode';
+import { DeploymentParameters, DeploymentTemplate, Issue } from "../../extension.bundle";
+import { IDeploymentParametersFile, IPartialDeploymentTemplate } from './diagnostics';
 import { stringify } from "./stringify";
 
 /**
  * Given a deployment template (string or object), parses it, optionally verifying expected diagnostic messages
  */
-export async function parseTemplate(template: string | {}, expectedDiagnosticMessages?: string[], options?: { ignoreWarnings: boolean }): Promise<DeploymentTemplate> {
+export async function parseTemplate(template: string | IPartialDeploymentTemplate, expectedDiagnosticMessages?: string[], options?: { ignoreWarnings: boolean }): Promise<DeploymentTemplate> {
     // Go ahead and allow markers in the document to be removed, we just won't mark them (makes it easier to share the same template in multiple places)
     const { dt } = await parseTemplateWithMarkers(template, expectedDiagnosticMessages, options);
     return dt;
@@ -30,16 +31,19 @@ interface Markers {
  * Returns the parsed document without the tags, plus a dictionary of the tags and their positions
  */
 export async function parseTemplateWithMarkers(
-    template: string | {},
+    template: string | IPartialDeploymentTemplate,
     expectedDiagnosticMessages?: string[],
-    options?: { ignoreWarnings: boolean }
+    options?: {
+        ignoreWarnings?: boolean;
+        ignoreBang?: boolean;
+    }
 ): Promise<{ dt: DeploymentTemplate; markers: Markers }> {
-    const { text: templateWithoutMarkers, markers } = getDocumentMarkers(template);
-    const dt: DeploymentTemplate = new DeploymentTemplate(templateWithoutMarkers, "parseTemplate() template");
+    const { unmarkedText, markers } = getDocumentMarkers(template, options);
+    const dt: DeploymentTemplate = new DeploymentTemplate(unmarkedText, Uri.file("https://parseTemplate template"));
 
     // Always run these even if not checking against expected, to verify nothing throws
-    const errors: Issue[] = await dt.errorsPromise;
-    const warnings: Issue[] = dt.warnings;
+    const errors: Issue[] = await dt.getErrors(undefined);
+    const warnings: Issue[] = dt.getWarnings();
     const errorMessages = errors.map(e => `Error: ${e.message}`);
     const warningMessages = warnings.map(e => `Warning: ${e.message}`);
 
@@ -55,16 +59,44 @@ export async function parseTemplateWithMarkers(
 }
 
 /**
+ * Pass in a parameter file with positions marked using the notation <!tagname!>
+ * Returns the parsed document without the tags, plus a dictionary of the tags and their positions
+ */
+export async function parseParametersWithMarkers(
+    json: string | Partial<IDeploymentParametersFile>
+): Promise<{ dp: DeploymentParameters; unmarkedText: string; markers: Markers }> {
+    const { unmarkedText, markers } = getDocumentMarkers(json);
+    const dp: DeploymentParameters = new DeploymentParameters(unmarkedText, Uri.file("https://test parameter file"));
+
+    // Always run these even if not checking against expected, to verify nothing throws
+    // tslint:disable-next-line:no-unused-expression
+    dp.parametersObjectValue;
+    // tslint:disable-next-line:no-unused-expression
+    dp.parameterValues;
+
+    return { dp, unmarkedText, markers };
+}
+
+export function removeEOLMarker(s: string): string {
+    // Remove {EOL} markers (as convenience for some test results expressed as strings to
+    //   express in a literal string where the end of line is, etc.)
+    return s.replace(/{EOL}/g, '');
+}
+
+/**
  * Pass in a template with positions marked using the notation <!tagname!>
  * Returns the document without the tags, plus a dictionary of the tags and their positions
  */
-export function getDocumentMarkers(template: object | string): { text: string; markers: Markers } {
+export function getDocumentMarkers(doc: object | string, options?: { ignoreBang?: boolean }): { unmarkedText: string; markers: Markers } {
     let markers: Markers = {};
-    template = typeof template === "string" ? template : stringify(template);
+    doc = typeof doc === "string" ? doc : stringify(doc);
+    let modified = doc;
+
+    modified = removeEOLMarker(modified);
 
     // tslint:disable-next-line:no-constant-condition
     while (true) {
-        let match: RegExpMatchArray | null = template.match(/<!([a-zA-Z][a-zA-Z0-9]*)!>/);
+        let match: RegExpMatchArray | null = modified.match(/<!([a-zA-Z][a-zA-Z0-9$]*)!>/);
         if (!match) {
             break;
         }
@@ -76,18 +108,30 @@ export function getDocumentMarkers(template: object | string): { text: string; m
         markers[marker.name] = marker;
 
         // Remove marker from the document
-        template = template.slice(0, marker.index) + template.slice(index + match[0].length);
+        modified = modified.slice(0, marker.index) + modified.slice(index + match[0].length);
     }
 
     // Also look for shortcut marker "!" with id "bang" used in some tests
-    let bangIndex = template.indexOf('!');
-    if (bangIndex >= 0) {
-        markers.bang = { name: 'bang', index: bangIndex };
-        template = template.slice(0, bangIndex) + template.slice(bangIndex + 1);
+    if (!options?.ignoreBang) {
+        let bangIndex = modified.indexOf('!');
+        if (bangIndex >= 0) {
+            markers.bang = { name: 'bang', index: bangIndex };
+            modified = modified.slice(0, bangIndex) + modified.slice(bangIndex + 1);
+        }
+    }
+
+    const malformed =
+        modified.match(/<?!?([a-zA-Z][a-zA-Z0-9]*)>!/)
+        || modified.match(/!<([a-zA-Z][a-zA-Z0-9]*)!?>?/)
+        || modified.match(/<!([a-zA-Z][a-zA-Z0-9]*)!?>?/)
+        || modified.match(/<?!?([a-zA-Z][a-zA-Z0-9]*)!>/)
+        ;
+    if (malformed) {
+        throw new Error(`Malformed marker "${malformed[0]}" in text: ${doc}`);
     }
 
     return {
-        text: template,
+        unmarkedText: modified,
         markers
     };
 }

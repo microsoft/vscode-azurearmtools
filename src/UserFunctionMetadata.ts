@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { ExpressionType } from "./ExpressionType";
-import { IFunctionMetadata, IFunctionParameterMetadata } from "./IFunctionMetadata";
+import { Behaviors, IFunctionMetadata, IFunctionParameterMetadata } from "./IFunctionMetadata";
 import { getUserFunctionUsage } from "./signatureFormatting";
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
 
@@ -17,7 +17,7 @@ export class UserFunctionMetadata implements IFunctionMetadata {
         public readonly usage: string,
         public readonly description: string,
         public readonly parameters: IFunctionParameterMetadata[],
-        public readonly returnType: ExpressionType | null,
+        public readonly returnType: ExpressionType | undefined,
         public readonly returnValueMembers: string[]
     ) {
         this.minimumArguments = this.maximumArguments = parameters.length;
@@ -39,5 +39,9 @@ export class UserFunctionMetadata implements IFunctionMetadata {
                 }),
             func.output && func.output.validOutputType,
             []);
+    }
+
+    public hasBehavior(behavior: Behaviors): boolean {
+        return false;
     }
 }

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "adminUsername": {
@@ -66,7 +66,8 @@
         "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
       },
       "defaultValue": "https://raw.githubusercontent.com/MyriamFentanes/azure-quickstart-templates/master/101-dukes-eap-openshift"
-    },
+    }
+    /*
     "_artifactsLocationSasToken": {
       "type": "securestring",
       "metadata": {
@@ -80,21 +81,21 @@
       "metadata": {
         "description": "Location for all resources."
       }
-    }
+    }*/
   },
   "variables": {
     "ScriptFolder": "scripts",
     "ScriptFileName": "allinone.sh",
-    "gituser": "openshift",
-    "branch": "master",
-    "version": "3.7",
-    "baseTemplateUrl": "https://raw.githubusercontent.com/MyriamFentanes/azure-quickstart-templates/master/101-dukes-eap-openshift",
+    //"gituser": "openshift",
+    //"branch": "master",
+    //"version": "3.7",
+    //"baseTemplateUrl": "https://raw.githubusercontent.com/MyriamFentanes/azure-quickstart-templates/master/101-dukes-eap-openshift",
     "location": "[resourceGroup().location]",
     "virtualNetworkName": "openshiftVnet",
     "addressPrefix": "10.0.0.0/16",
-    "vhdStorageType": "Premium_LRS",
+    //"vhdStorageType": "Premium_LRS",
     "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
-    "rhel": {
+    /*"rhel": {
       "publisher": "Redhat",
       "offer": "RHEL",
       "sku": "7-RAW",
@@ -121,19 +122,19 @@
     },
     "Standard_DS16_v3": {
       "storageAccountType": "Premium_LRS"
-    },
-    "apiVersion": "2015-06-15",
-    "apiVersionCompute": "2015-06-15",
+    },*/
+    //"apiVersion": "2015-06-15",
+    /*"apiVersionCompute": "2015-06-15",
     "apiVersionNetwork": "2016-03-30",
     "tmApiVersion": "2015-11-01",
     "apiVersionStorage": "2016-01-01",
-    "apiVersionLinkTemplate": "2015-01-01",
+    "apiVersionLinkTemplate": "2015-01-01",*/
     "nicName": "OneVmNic",
     "publicIPAddressName": "onevmPublicIP",
-    "publicIPAddressType": "Dynamic",
+    //"publicIPAddressType": "Dynamic",
     "subnetRef": "[concat(variables('vnetID'),'/subnets/',variables('virtualNetworkName'))]",
     "sshKeyPath": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]",
-    "publicIpRef": "[concat('Microsoft.Network/publicIPAddresses/',variables('publicIPAddressName'))]",
+    //"publicIpRef": "[concat('Microsoft.Network/publicIPAddresses/',variables('publicIPAddressName'))]",
     "sQuote": "\""
   },
   "resources": [
@@ -205,7 +206,7 @@
       }
     },
     {
-      "apiVersion": "2017-04-01",
+      "apiVersion": "2017-06-01", // "2017-04-01",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('nicName')]",
       "location": "[resourceGroup().location]",
@@ -231,7 +232,7 @@
       }
     },
     {
-      "apiVersion": "2017-04-01",
+      "apiVersion": "2017-06-01",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('publicIPAddressName')]",
       "location": "[resourceGroup().location]",
@@ -243,7 +244,7 @@
       }
     },
     {
-      "apiVersion": "[variables('apiVersion')]",
+      "apiVersion": "2017-06-01", // "[variables('apiVersion')]",
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('virtualNetworkName')]",
       "location": "[variables('location')]",
@@ -269,7 +270,7 @@
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(resourceGroup().name,'/installcustomscript')]",
-      "apiVersion": "[variables('apiVersion')]",
+      "apiVersion": "2019-07-01", // "[variables('apiVersion')]",
       "location": "[resourceGroup().location]",
       "tags": {
         "displayName": "VirtualMachineCustomScriptExtension"
@@ -288,7 +289,9 @@
           ]
         },
         "protectedSettings": {
-          "commandToExecute": "[ concat('bash allinone.sh ',' ', resourceGroup().name, ' ', parameters('dnsLabelPrefix'), ' ',  parameters('adminUsername'), ' ', parameters('adminPassword'), ' ', reference(variables('publicIPAddressName')).dnsSettings.fqdn, ' ', parameters('rhsmUser'), ' ', parameters('rhsmPassword'), ' ', parameters('rhsmPool'), ' ', reference('onevmPublicIP').ipAddress, variables('sQuote'), parameters('sshKeyData'), variables('sQuote'))]"
+          "commandToExecute": "[ concat('bash allinone.sh ',' ', resourceGroup().name, ' ', parameters('dnsLabelPrefix'), ' ',  parameters('adminUsername'), ' ', parameters('adminPassword'), ' ', reference(variables('publicIPAddressName')).dnsSettings.fqdn, ' ', parameters('rhsmUser'), ' ', parameters('rhsmPassword'), ' ', parameters('rhsmPool'), ' ', reference('onevmPublicIP').ipAddress, variables('sQuote'), parameters('sshKeyData'), variables('sQuote'))]",
+          "storageAccountName": "added this property",
+          "storageAccountKey": "added this property"
         }
       }
     },
@@ -298,7 +301,7 @@
       "tags": {
         "displayName": "NetworkSecurityGroup"
       },
-      "apiVersion": "[variables('apiVersion')]",
+      "apiVersion": "2017-06-01", // "[variables('apiVersion')]",
       "location": "[resourceGroup().location]",
       "properties": {
         "securityRules": [

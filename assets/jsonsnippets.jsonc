@@ -3,35 +3,72 @@
         "prefix": "arm!",
         "body": [
             "{",
-            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#\",",
-            "    \"contentVersion\": \"1.0.0.0\",",
-            "    \"parameters\": {},",
-            "    \"variables\": {},",
-            "    \"resources\": [],",
-            "    \"outputs\": {},",
-            "    \"functions\": []",
+            "\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\",",
+            "\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\"parameters\": {},",
+            "\t\"functions\": [],",
+            "\t\"variables\": {},",
+            "\t\"resources\": [],",
+            "\t\"outputs\": {}",
             "}"
         ],
-        "description": "Skeleton ARM Template"
+        "description": "Resource Group Template"
+    },
+    "Azure Resource Manager (ARM) Template Subscription": {
+        "prefix": "arm!s",
+        "body": [
+            "{",
+            "\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#\",",
+            "\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\"parameters\": {},",
+            "\t\"functions\": [],",
+            "\t\"variables\": {},",
+            "\t\"resources\": [],",
+            "\t\"outputs\": {}",
+            "}"
+        ],
+        "description": "Subscription Template"
+    },
+    "Azure Resource Manager (ARM) Template Management Group": {
+        "prefix": "arm!mg",
+        "body": [
+            "{",
+            "\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#\",",
+            "\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\"parameters\": {},",
+            "\t\"functions\": [],",
+            "\t\"variables\": {},",
+            "\t\"resources\": [],",
+            "\t\"outputs\": {}",
+            "}"
+        ],
+        "description": "Management Group Template"
+    },
+    "Azure Resource Manager (ARM) Template Tenant": {
+        "prefix": "arm!t",
+        "body": [
+            "{",
+            "\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#\",",
+            "\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\"parameters\": {},",
+            "\t\"functions\": [],",
+            "\t\"variables\": {},",
+            "\t\"resources\": [],",
+            "\t\"outputs\": {}",
+            "}"
+        ],
+        "description": "Tenant Template"
     },
     "Azure Resource Manager (ARM) Parameters Template": {
         "prefix": "armp!",
         "body": [
             "{",
-            "    \"\\$schema\": \"https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#\",",
-            "    \"contentVersion\": \"1.0.0.0\",",
-            "    \"parameters\": {}",
+            "\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#\",",
+            "\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\"parameters\": {",
+            "\t}",
             "}"
         ],
-        "description": "Skeleton ARM Parameters Template"
-    },
-    "Parameter Value": {
-        "prefix": "arm-param-value",
-        "body": [
-            "\"${1:parameter1}\": {",
-            "    \"value\": \"${2:value}\"",
-            "}"
-        ],
-        "description": "ARM Template Parameter value used in a azuredeploy.parameters.json file"
+        "description": "Parameters Template"
     }
 }

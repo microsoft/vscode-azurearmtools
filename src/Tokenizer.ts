@@ -6,6 +6,9 @@
 // tslint:disable:cyclomatic-complexity // Grandfathered in
 // tslint:disable:variable-name
 
+// tslint:disable-next-line:no-suspicious-comment
+// TODO: rename this module to refer to "basic tokens", etc.
+
 import * as utilities from "./Utilities";
 
 /**

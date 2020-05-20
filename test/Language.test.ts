@@ -8,6 +8,7 @@
 import * as assert from "assert";
 import { Language } from "../extension.bundle";
 
+const Contains = Language.Contains;
 const IssueKind = Language.IssueKind;
 
 suite("Language", () => {
@@ -30,31 +31,83 @@ suite("Language", () => {
         });
 
         suite("contains()", () => {
-            test("With index less than startIndex", () => {
-                assert.deepStrictEqual(false, new Language.Span(3, 4).contains(2));
+            suite("Contains.strict", () => {
+                test("With index less than startIndex", () => {
+                    assert.deepStrictEqual(false, new Language.Span(3, 4).contains(2, Contains.strict));
+                });
+
+                test("With index equal to startIndex", () => {
+                    assert(new Language.Span(3, 4).contains(3, Contains.strict));
+                });
+
+                test("With index between the start and end indexes", () => {
+                    assert(new Language.Span(3, 4).contains(5, Contains.strict));
+                });
+
+                test("With index equal to endIndex", () => {
+                    assert(new Language.Span(3, 4).contains(6, Contains.strict));
+                });
+
+                test("With index directly after end index", () => {
+                    assert.deepStrictEqual(false, new Language.Span(3, 4).contains(7, Contains.strict));
+                });
             });
 
-            test("With index equal to startIndex", () => {
-                assert(new Language.Span(3, 4).contains(3));
+            suite("Contains.extended", () => {
+                test("With index less than startIndex", () => {
+                    assert.deepStrictEqual(false, new Language.Span(3, 4).contains(2, Contains.extended));
+                });
+
+                test("With index equal to startIndex", () => {
+                    assert(new Language.Span(3, 4).contains(3, Contains.extended));
+                });
+
+                test("With index between the start and end indexes", () => {
+                    assert(new Language.Span(3, 4).contains(5, Contains.extended));
+                });
+
+                test("With index equal to endIndex", () => {
+                    assert(new Language.Span(3, 4).contains(6, Contains.extended));
+                });
+
+                test("With index directly after end index", () => {
+                    // Extended, so this should be true
+                    assert.deepStrictEqual(true, new Language.Span(3, 4).contains(7, Contains.extended));
+                });
+
+                test("With index two after end index", () => {
+                    assert.deepStrictEqual(false, new Language.Span(3, 4).contains(8, Contains.extended));
+                });
             });
 
-            test("With index between the start and end indexes", () => {
-                assert(new Language.Span(3, 4).contains(5));
-            });
+            suite("Contains.enclosed", () => {
+                test("With index less than startIndex", () => {
+                    assert.deepStrictEqual(false, new Language.Span(3, 4).contains(2, Contains.enclosed));
+                });
 
-            test("With index equal to endIndex", () => {
-                assert(new Language.Span(3, 4).contains(6));
-            });
+                test("With index equal to startIndex", () => {
+                    // With enclosed, this should be false
+                    assert.equal(new Language.Span(3, 4).contains(3, Contains.enclosed), false);
+                });
 
-            test("With index directly after end index", () => {
-                assert.deepStrictEqual(false, new Language.Span(3, 4).contains(7));
+                test("With index between the start and end indexes", () => {
+                    assert(new Language.Span(3, 4).contains(5, Contains.enclosed));
+                });
+
+                test("With index equal to endIndex", () => {
+                    assert(new Language.Span(3, 4).contains(6, Contains.enclosed));
+                });
+
+                test("With index directly after end index", () => {
+                    assert.deepStrictEqual(false, new Language.Span(3, 4).contains(7, Contains.enclosed));
+                });
             });
         });
 
         suite("union()", () => {
             test("With null", () => {
                 let s = new Language.Span(5, 7);
-                assert.deepStrictEqual(s, s.union(null));
+                assert.deepStrictEqual(s, s.union(undefined));
             });
 
             test("With same span", () => {
@@ -70,6 +123,104 @@ suite("Language", () => {
             test("With subset span", () => {
                 let s = new Language.Span(5, 17);
                 assert.deepEqual(s, s.union(new Language.Span(10, 2)));
+            });
+        });
+
+        suite("intersect()", () => {
+
+            test("With null", () => {
+                let s = Language.Span.fromStartAndAfterEnd(5, 7);
+                assert.deepStrictEqual(s.intersect(undefined), undefined);
+            });
+
+            test("With same span", () => {
+                let s = Language.Span.fromStartAndAfterEnd(5, 7);
+                assert.deepEqual(s, s.intersect(s));
+            });
+
+            test("With equal span", () => {
+                let s = Language.Span.fromStartAndAfterEnd(5, 7);
+                assert.deepEqual(s, s.intersect(new Language.Span(5, 7)));
+            });
+
+            test("second span to left", () => {
+                assert.deepEqual(
+                    Language.Span.fromStartAndAfterEnd(10, 20).intersect(Language.Span.fromStartAndAfterEnd(0, 9)),
+                    undefined
+                );
+            });
+
+            test("second touches the left", () => {
+                assert.deepEqual(
+                    Language.Span.fromStartAndAfterEnd(10, 20).intersect(Language.Span.fromStartAndAfterEnd(0, 10)),
+                    // Two results could be argued here: len 0 span at 10, or undefined
+                    // We'll go with the former until sometimes finds a reason why it should
+                    //   be different
+                    new Language.Span(10, 0)
+                );
+            });
+
+            test("second span to left and overlap", () => {
+                assert.deepEqual(
+                    new Language.Span(10, 20).intersect(new Language.Span(0, 11)),
+                    new Language.Span(10, 1)
+                );
+            });
+
+            test("second span is superset", () => {
+                assert.deepEqual(
+                    Language.Span.fromStartAndAfterEnd(10, 20).intersect(Language.Span.fromStartAndAfterEnd(0, 21)),
+                    Language.Span.fromStartAndAfterEnd(10, 20)
+                );
+            });
+
+            test("second span is subset", () => {
+                assert.deepEqual(
+                    Language.Span.fromStartAndAfterEnd(10, 20).intersect(new Language.Span(11, 8)),
+                    new Language.Span(11, 8)
+                );
+            });
+
+            test("second span is len 0 subset, touching on the left", () => {
+                assert.deepEqual(
+                    new Language.Span(10, 10).intersect(new Language.Span(10, 0)),
+                    new Language.Span(10, 0)
+                );
+            });
+
+            test("second span is len 0 subset, touching on the right", () => {
+                assert.deepEqual(
+                    new Language.Span(10, 10).intersect(new Language.Span(20, 0)),
+                    new Language.Span(20, 0)
+                );
+            });
+
+            test("second span to right and overlapping", () => {
+                assert.deepEqual(
+                    Language.Span.fromStartAndAfterEnd(10, 20).intersect(new Language.Span(19, 10)),
+                    new Language.Span(19, 1)
+                );
+            });
+
+            test("second span to right", () => {
+                assert.deepEqual(
+                    Language.Span.fromStartAndAfterEnd(10, 20).intersect(new Language.Span(21, 9)),
+                    undefined
+                );
+            });
+
+            test("length 0", () => {
+                assert.deepEqual(
+                    Language.Span.fromStartAndAfterEnd(10, 20).intersect(new Language.Span(15, 0)),
+                    new Language.Span(15, 0)
+                );
+            });
+
+            test("length 1", () => {
+                assert.deepEqual(
+                    Language.Span.fromStartAndAfterEnd(10, 20).intersect(new Language.Span(15, 1)),
+                    new Language.Span(15, 1)
+                );
             });
         });
 

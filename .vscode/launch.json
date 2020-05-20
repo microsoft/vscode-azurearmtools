@@ -2,6 +2,7 @@
 {
     "version": "0.1.0",
     "configurations": [
+        // Launch extension
         {
             "name": "Launch Extension",
             "type": "extensionHost",
@@ -23,27 +24,7 @@
                 "NODE_DEBUG": ""
             }
         },
-        {
-            "name": "Launch Extension (webpack)",
-            "type": "extensionHost",
-            "request": "launch",
-            "runtimeExecutable": "${execPath}",
-            "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}"
-            ],
-            "stopOnEntry": false,
-            "sourceMaps": true,
-            "outFiles": [
-                "${workspaceFolder}/dist/**/*.js"
-            ],
-            "preLaunchTask": "npm: webpack",
-            "env": {
-                "DEBUGTELEMETRY": "1", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
-                "NODE_DEBUG": "",
-                "DEBUG_WEBPACK": "",
-                "AZCODE_ARM_IGNORE_BUNDLE": "0",
-            }
-        },
+        // Launch tests
         {
             "name": "Launch Tests",
             "type": "extensionHost",
@@ -67,10 +48,33 @@
                 "MOCHA_enableTimeouts": "0", // Disable time-outs
                 "DEBUGTELEMETRY": "1", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
                 "NODE_DEBUG": "",
-                "DISABLE_LANGUAGE_SERVER_TESTS": "0",
+                "DISABLE_LANGUAGE_SERVER": "0",
                 "DISABLE_SLOW_TESTS": "0"
             }
         },
+        // Launch extension with webpack
+        {
+            "name": "Launch Extension (webpack)",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}"
+            ],
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceFolder}/dist/**/*.js"
+            ],
+            "preLaunchTask": "npm: webpack",
+            "env": {
+                "DEBUGTELEMETRY": "1", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
+                "NODE_DEBUG": "",
+                "DEBUG_WEBPACK": "",
+                "AZCODE_ARM_IGNORE_BUNDLE": "0",
+            }
+        },
+        // Launch tests with webpack
         {
             "name": "Launch Tests (webpack)",
             "type": "extensionHost",

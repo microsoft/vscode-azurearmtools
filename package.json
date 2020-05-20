@@ -1,200 +1,619 @@
 {
-  "name": "azurerm-vscode-tools",
-  "displayName": "Azure Resource Manager (ARM) Tools",
-  "description": "Language server, editing tools and snippets for Azure Resource Manager (ARM) template files.",
-  "version": "0.8.3-alpha",
-  "publisher": "msazurermtools",
-  "config": {
-    "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.19558.3"
-  },
-  "categories": [
-    "Azure",
-    "Programming Languages",
-    "Linters",
-    "Formatters",
-    "Snippets"
-  ],
-  "keywords": [
-    "Azure Template",
-    "ARM",
-    "Resource Manager",
-    "Azure",
-    "Snippets"
-  ],
-  "repository": {
-    "url": "https://github.com/Microsoft/vscode-azurearmtools.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Microsoft/vscode-azurearmtools/issues"
-  },
-  "galleryBanner": {
-    "color": "E7F1FA",
-    "theme": "light"
-  },
-  "homepage": "https://github.com/Microsoft/vscode-azurearmtools/blob/master/README.md",
-  "license": "SEE LICENSE IN LICENSE.md",
-  "icon": "AzureRMTools128x128.png",
-  "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
-  "engines": {
-    "vscode": "^1.31.0"
-  },
-  "preview": true,
-  "activationEvents": [
-    "onLanguage:arm-template",
-    "onLanguage:json",
-    "onLanguage:jsonc",
-    "onCommand:azurerm-vscode-tools.uninstallDotnet"
-  ],
-  "contributes": {
-    "grammars": [
-      {
-        "language": "arm-template",
-        "scopeName": "source.json.arm-template",
-        "path": "dist/grammars/JSONC.arm.tmLanguage.json"
-      },
-      {
-        "scopeName": "source.tle.arm-template",
-        "path": "dist/grammars/arm-expression-string.tmLanguage.json"
-      }
-    ],
-    "snippets": [
-      {
-        "language": "arm-template",
-        "path": "./assets/armsnippets.jsonc"
-      },
-      {
-        "language": "json",
-        "path": "./assets/jsonsnippets.jsonc"
-      },
-      {
-        "language": "jsonc",
-        "path": "./assets/jsonsnippets.jsonc"
-      }
-    ],
-    "configuration": {
-      "type": "object",
-      "title": "Azure Resource Manager Tools",
-      "properties": {
-        "azureResourceManagerTools.autoDetectJsonTemplates": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enables auto-detection of deployment template files with the extension *.json or *.jsonc. If set to true (default), the editor language will automatically be set to Azure Resource Manager Template for any *.json/*.jsonc file which contains an appropriate Azure Resource Manager Template schema."
-        },
-        "azureResourceManagerTools.languageServer.path": {
-          "type": "string",
-          "description": "Override the default location of the language server assembly folder or file path (requires restart)"
-        },
-        "azureResourceManagerTools.languageServer.waitForDebugger": {
-          "type": "boolean",
-          "default": false,
-          "description": "If set to true, the language server process will wait in startup until a debugger is attached, and then will force a break (requires restart)"
-        },
-        "azureResourceManagerTools.languageServer.traceLevel": {
-          "type": "string",
-          "enum": [
-            "Trace",
-            "Debug",
-            "Information",
-            "Warning",
-            "Error",
-            "Critical",
-            "None"
-          ],
-          "default": "Warning",
-          "description": "Sets the trace level in the Output window for the Azure Template Language Server (requires restart)"
-        },
-        "azureResourceManagerTools.languageServer.dotnetExePath": {
-          "type": "string",
-          "description": "(Not recommended, requires restart) If specified, overrides the use of a local version of dotnet core the extension and instead points to another installed version of dotnet.exe (must match the version needed by the extension)"
-        },
-        "azureResourceManagerTools.checkForLatestSchema": {
-          "type": "boolean",
-          "description": "Check if the schema for deployment templates is using an out-of-date version and suggest updating",
-          "default": true
-        }
-      }
+    "name": "azurerm-vscode-tools",
+    "displayName": "Azure Resource Manager (ARM) Tools",
+    "description": "Language server, editing tools and snippets for Azure Resource Manager (ARM) template files.",
+    "version": "0.10.1-alpha",
+    "publisher": "msazurermtools",
+    "config": {
+        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20262.5"
     },
-    "views": {
-      "explorer": [
-        {
-          "id": "azurerm-vscode-tools.template-outline",
-          "name": "ARM Template Outline",
-          "when": "showAzureTemplateView"
-        }
-      ]
+    "categories": [
+        "Azure",
+        "Programming Languages",
+        "Linters",
+        "Formatters",
+        "Snippets"
+    ],
+    "keywords": [
+        "Azure Template",
+        "ARM",
+        "Resource Manager",
+        "Azure",
+        "Snippets"
+    ],
+    "repository": {
+        "url": "https://github.com/Microsoft/vscode-azurearmtools.git"
     },
-    "languages": [
-      {
-        "id": "arm-template",
-        "aliases": [
-          "Azure Resource Manager Template"
+    "bugs": {
+        "url": "https://github.com/Microsoft/vscode-azurearmtools/issues"
+    },
+    "galleryBanner": {
+        "color": "E7F1FA",
+        "theme": "light"
+    },
+    "homepage": "https://github.com/Microsoft/vscode-azurearmtools/blob/master/README.md",
+    "license": "SEE LICENSE IN LICENSE.md",
+    "icon": "AzureRMTools128x128.png",
+    "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
+    "engines": {
+        "vscode": "^1.41.0"
+    },
+    "preview": true,
+    "activationEvents": [
+        "onLanguage:arm-template",
+        "onLanguage:json",
+        "onLanguage:jsonc",
+        "onCommand:azurerm-vscode-tools.sortTemplate",
+        "onCommand:azurerm-vscode-tools.sortFunctions",
+        "onCommand:azurerm-vscode-tools.sortOutputs",
+        "onCommand:azurerm-vscode-tools.sortParameters",
+        "onCommand:azurerm-vscode-tools.sortResources",
+        "onCommand:azurerm-vscode-tools.sortVariables",
+        "onCommand:azurerm-vscode-tools.selectParameterFile",
+        "onCommand:azurerm-vscode-tools.openParameterFile",
+        "onCommand:azurerm-vscode-tools.openTemplateFile",
+        "onCommand:azurerm-vscode-tools.codeAction.addAllMissingParameters",
+        "onCommand:azurerm-vscode-tools.codeAction.addMissingRequiredParameters",
+        "onCommand:azurerm-vscode-tools.insertItem",
+        "onCommand:azurerm-vscode-tools.insertParameter",
+        "onCommand:azurerm-vscode-tools.insertVariable",
+        "onCommand:azurerm-vscode-tools.insertOutput",
+        "onCommand:azurerm-vscode-tools.insertFunction",
+        "onCommand:azurerm-vscode-tools.insertResource",
+        "onCommand:azurerm-vscode-tools.resetGlobalState"
+    ],
+    "contributes": {
+        "grammars": [
+            {
+                "language": "arm-template",
+                "scopeName": "source.json.arm-template",
+                "path": "dist/grammars/JSONC.arm.tmLanguage.json"
+            },
+            {
+                "scopeName": "source.tle.arm-template",
+                "path": "dist/grammars/arm-expression-string.tmLanguage.json"
+            }
         ],
-        "configuration": "dist/grammars/jsonc.arm.language-configuration.json"
-      }
-    ],
-    "commands": [
-      {
-        "category": "Azure Resource Manager Tools",
-        "title": "Uninstall dotnet core for this extension",
-        "command": "azurerm-vscode-tools.uninstallDotnet"
-      }
+        "snippets": [
+            {
+                "language": "arm-template",
+                "path": "./assets/armsnippets.jsonc"
+            },
+            {
+                "language": "json",
+                "path": "./assets/jsonsnippets.jsonc"
+            },
+            {
+                "language": "jsonc",
+                "path": "./assets/jsonsnippets.jsonc"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "Azure Resource Manager Tools",
+            "properties": {
+                "azureResourceManagerTools.autoDetectJsonTemplates": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enables auto-detection of deployment template files with the extension *.json or *.jsonc. If set to true (default), the editor language will automatically be set to Azure Resource Manager Template for any *.json/*.jsonc file which contains an appropriate Azure Resource Manager Template schema."
+                },
+                "azureResourceManagerTools.languageServer.path": {
+                    "type": "string",
+                    "description": "Override the default location of the language server assembly folder or file path (requires restart)"
+                },
+                "azureResourceManagerTools.languageServer.waitForDebugger": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If set to true, the language server process will wait in startup until a debugger is attached, and then will force a break (requires restart)"
+                },
+                "azureResourceManagerTools.languageServer.traceLevel": {
+                    "type": "string",
+                    "enum": [
+                        "Trace",
+                        "Debug",
+                        "Information",
+                        "Warning",
+                        "Error",
+                        "Critical",
+                        "None"
+                    ],
+                    "default": "Warning",
+                    "description": "Sets the trace (log) level in the Output window for the Azure Template Language Server (requires restart)"
+                },
+                "azureResourceManagerTools.languageServer.dotnetExePath": {
+                    "type": "string",
+                    "description": "(Not recommended, requires restart) If specified, overrides the use of a local version of dotnet core the extension and instead points to another installed version of dotnet.exe (must match the version needed by the extension)"
+                },
+                "azureResourceManagerTools.checkForLatestSchema": {
+                    "type": "boolean",
+                    "description": "Check if the schema for deployment templates is using an out-of-date version and suggest updating",
+                    "default": true
+                },
+                "azureResourceManagerTools.checkForMatchingParameterFiles": {
+                    "type": "boolean",
+                    "description": "Check if an opened template file has a matching params file and ask to use it",
+                    "default": true
+                },
+                "azureResourceManagerTools.parameterFiles": {
+                    "type": "object",
+                    "description": "Specifies which parameter file to use for each given template file. Specifying the parameter file allows more thorough validation.",
+                    "default": {},
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "views": {
+            "explorer": [
+                {
+                    "id": "azurerm-vscode-tools.template-outline",
+                    "name": "ARM Template Outline",
+                    "when": "showAzureTemplateView"
+                }
+            ]
+        },
+        "languages": [
+            {
+                "id": "arm-template",
+                "aliases": [
+                    "Azure Resource Manager Template"
+                ],
+                "configuration": "dist/grammars/jsonc.arm.language-configuration.json"
+            }
+        ],
+        "commands": [
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Reset Global State",
+                "command": "azurerm-vscode-tools.resetGlobalState"
+            },
+            {
+                "$comment": "============= Template sorting =============",
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort Template...",
+                "command": "azurerm-vscode-tools.sortTemplate",
+                "icon": {
+                    "light": "icons/sortLight.svg",
+                    "dark": "icons/sortDark.svg"
+                }
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort Functions",
+                "command": "azurerm-vscode-tools.sortFunctions",
+                "icon": {
+                    "light": "icons/sortLight.svg",
+                    "dark": "icons/sortDark.svg"
+                }
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort Outputs",
+                "command": "azurerm-vscode-tools.sortOutputs",
+                "icon": {
+                    "light": "icons/sortLight.svg",
+                    "dark": "icons/sortDark.svg"
+                }
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort Parameters",
+                "command": "azurerm-vscode-tools.sortParameters",
+                "icon": {
+                    "light": "icons/sortLight.svg",
+                    "dark": "icons/sortDark.svg"
+                }
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort Resources",
+                "command": "azurerm-vscode-tools.sortResources",
+                "icon": {
+                    "light": "icons/sortLight.svg",
+                    "dark": "icons/sortDark.svg"
+                }
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Sort Variables",
+                "command": "azurerm-vscode-tools.sortVariables",
+                "icon": {
+                    "light": "icons/sortLight.svg",
+                    "dark": "icons/sortDark.svg"
+                }
+            },
+            {
+                "$comment": "============= Template file commands =============",
+                "category": "Azure Resource Manager Tools",
+                "title": "Select/Create Parameter File...",
+                "command": "azurerm-vscode-tools.selectParameterFile",
+                "enablement": "editorLangId==arm-template"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Open Parameter File",
+                "command": "azurerm-vscode-tools.openParameterFile",
+                "enablement": "azurerm-vscode-tools-hasParamFile",
+                "$enablement.comment": "Shows up when it's a template file, but only enabled if there is an associated param file"
+            },
+            {
+                "$comment": "============= Parameter file commands =============",
+                "category": "Azure Resource Manager Tools",
+                "title": "Open Template File",
+                "command": "azurerm-vscode-tools.openTemplateFile",
+                "enablement": "azurerm-vscode-tools-hasTemplateFile",
+                "$enablement.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Add All Missing Parameters",
+                "command": "azurerm-vscode-tools.codeAction.addAllMissingParameters",
+                "enablement": "azurerm-vscode-tools-hasTemplateFile",
+                "$enablement.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Add Missing Required Parameters",
+                "command": "azurerm-vscode-tools.codeAction.addMissingRequiredParameters",
+                "enablement": "azurerm-vscode-tools-hasTemplateFile",
+                "$enablement.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Insert Item...",
+                "command": "azurerm-vscode-tools.insertItem",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Insert Variable...",
+                "command": "azurerm-vscode-tools.insertVariable",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Insert Function...",
+                "command": "azurerm-vscode-tools.insertFunction",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Insert Resource...",
+                "command": "azurerm-vscode-tools.insertResource",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Insert Parameter...",
+                "command": "azurerm-vscode-tools.insertParameter",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Insert Output...",
+                "command": "azurerm-vscode-tools.insertOutput",
+                "icon": {
+                    "light": "icons/insertItemLight.svg",
+                    "dark": "icons/insertItemDark.svg"
+                }
+            }
+        ],
+        "menus": {
+            "commandPalette": [
+                {
+                    "command": "azurerm-vscode-tools.sortFunctions",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortOutputs",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortParameters",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortResources",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortVariables",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertParameter",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertVariable",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertOutput",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertFunction",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertResource",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.openTemplateFile",
+                    "when": "never"
+                }
+            ],
+            "editor/context": [
+                {
+                    "$comment": "============= Template file commands =============",
+                    "command": "azurerm-vscode-tools.selectParameterFile",
+                    "group": "zzz_arm-template@1",
+                    "when": "editorLangId==arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.openParameterFile",
+                    "group": "zzz_arm-template@2",
+                    "when": "editorLangId==arm-template",
+                    "$when.comment": "Shows up when it's a template file, but only enabled if there is an associated param file"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortTemplate",
+                    "when": "editorLangId==arm-template",
+                    "group": "zzz_arm-template@3"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertItem",
+                    "when": "editorLangId==arm-template",
+                    "group": "zzz_arm-template@4"
+                },
+                {
+                    "$comment": "============= Parameter file commands =============",
+                    "command": "azurerm-vscode-tools.openTemplateFile",
+                    "group": "zzz_arm-params@2",
+                    "when": "azurerm-vscode-tools-isParamFile",
+                    "$when.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "$comment": "============= Treeview commands =============",
+                    "command": "azurerm-vscode-tools.sortFunctions",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == functions",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortOutputs",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == outputs",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortParameters",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == parameters",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortResources",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == resources",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortVariables",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == variables",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertParameter",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == parameters",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertVariable",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == variables",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertOutput",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == outputs",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertFunction",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == functions",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertResource",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == resources",
+                    "group": "arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortFunctions",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == functions",
+                    "group": "inline"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortOutputs",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == outputs",
+                    "group": "inline"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortParameters",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == parameters",
+                    "group": "inline"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortResources",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == resources",
+                    "group": "inline"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortVariables",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == variables",
+                    "group": "inline"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertParameter",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == parameters",
+                    "group": "inline"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertVariable",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == variables",
+                    "group": "inline"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertOutput",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == outputs",
+                    "group": "inline"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertFunction",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == functions",
+                    "group": "inline"
+                },
+                {
+                    "command": "azurerm-vscode-tools.insertResource",
+                    "when": "view == azurerm-vscode-tools.template-outline && viewItem == resources",
+                    "group": "inline"
+                }
+            ],
+            "editor/title": [
+                {
+                    "$comment": "============= Template file commands =============",
+                    "command": "azurerm-vscode-tools.selectParameterFile",
+                    "group": "zzz_arm-template@1",
+                    "when": "editorLangId==arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.openParameterFile",
+                    "group": "zzz_arm-template@2",
+                    "when": "editorLangId==arm-template",
+                    "$when.comment": "Shows up when it's a template file, but only enabled if there is an associated param file"
+                },
+                {
+                    "$comment": "============= Parameter file commands =============",
+                    "command": "azurerm-vscode-tools.openTemplateFile",
+                    "group": "zzz_arm-params@2",
+                    "when": "azurerm-vscode-tools-isParamFile",
+                    "$when.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
+                }
+            ],
+            "editor/title/context": [
+                {
+                    "$comment": "============= Template file commands =============",
+                    "command": "azurerm-vscode-tools.selectParameterFile",
+                    "group": "zzz_arm-template@1",
+                    "when": "editorLangId==arm-template"
+                },
+                {
+                    "command": "azurerm-vscode-tools.openParameterFile",
+                    "group": "zzz_arm-template@2",
+                    "when": "editorLangId==arm-template",
+                    "$when.comment": "Shows up when it's a template file, but only enabled if there is an associated param file"
+                },
+                {
+                    "$comment": "============= Parameter file commands =============",
+                    "command": "azurerm-vscode-tools.openTemplateFile",
+                    "group": "zzz_arm-params@2",
+                    "when": "azurerm-vscode-tools-isParamFile",
+                    "$when.comment": "Shows up when it's a param file, but only enabled if there is an associated template file"
+                }
+            ],
+            "view/title": [
+                {
+                    "command": "azurerm-vscode-tools.insertItem",
+                    "when": "view == azurerm-vscode-tools.template-outline",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "azurerm-vscode-tools.sortTemplate",
+                    "when": "view == azurerm-vscode-tools.template-outline",
+                    "group": "navigation@2"
+                }
+            ]
+        }
+    },
+    "main": "main",
+    "scripts": {
+        "vscode:prepublish": "gulp error-vsce-package",
+        "compile": "gulp build-grammars && npm run get-language-server && gulp verify-test-uses-extension-bundle && tsc -watch -p ./",
+        "build": "gulp build-grammars && npm run get-language-server && gulp verify-test-uses-extension-bundle && tsc -p ./",
+        "get-language-server": "gulp get-language-server",
+        "lint": "tslint --project tsconfig.json -e src/*.d.ts -t verbose",
+        "lint-fix": "tslint --project tsconfig.json -t verbose --fix",
+        "package": "npm run webpack-prod && npm run get-language-server && gulp package",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "pretest": "npm run build && npm run webpack-prod",
+        "pretest-dev": "npm run build && npm run webpack",
+        "test": "gulp test",
+        "all": "npm i && npm test && npm    run lint",
+        "webpack": "gulp webpack-dev",
+        "webpack-prod": "gulp webpack-prod",
+        "webpack-profile": "webpack --profile --json --mode production > webpack-stats.json && echo Use http://webpack.github.io/analyse to analyze the stats",
+        "build-grammars": "gulp build-grammars",
+        "watch-grammars": "gulp watch-grammars",
+        "verify-test-uses-extension-bundle": "gulp verify-test-uses-extension-bundle"
+    },
+    "devDependencies": {
+        "@types/decompress": "^4.2.3",
+        "@types/fs-extra": "^5.1.0",
+        "@types/gulp": "^4.0.6",
+        "@types/mocha": "^2.2.41",
+        "@types/node": "^12.12.38",
+        "@types/opn": "^5.5.0",
+        "@types/recursive-readdir": "^2.2.0",
+        "@types/rimraf": "2.0.2",
+        "@types/shelljs": "0.8.3",
+        "@types/webpack": "^4.41.12",
+        "decompress": "^4.2.0",
+        "glob": "^7.1.6",
+        "gulp": "^4.0.2",
+        "gulp-decompress": "^2.0.2",
+        "gulp-download": "^0.0.1",
+        "mocha": "^5.2.0",
+        "mocha-junit-reporter": "^1.23.3",
+        "mocha-multi-reporters": "^1.1.7",
+        "recursive-readdir": "^2.2.2",
+        "ts-node": "^7.0.1",
+        "tslint": "^5.20.1",
+        "tslint-microsoft-contrib": "5.0.3",
+        "typescript": "^3.8.3",
+        "vsce": "^1.75.0",
+        "vscode": "^1.1.37",
+        "vscode-azureextensiondev": "^0.3.3",
+        "webpack": "4.28.1",
+        "webpack-cli": "^3.3.11"
+    },
+    "dependencies": {
+        "fs-extra": "^7.0.1",
+        "moment": "^2.25.3",
+        "nuget": "^2.0.2",
+        "opn": "^5.5.0",
+        "rimraf": "2.6.3",
+        "shelljs": "^0.8.4",
+        "vscode-azureextensionui": "^0.32.0",
+        "vscode-jsonrpc": "^4.0.0",
+        "vscode-languageclient": "^4.4.0"
+    },
+    "extensionDependencies": [
+        "ms-dotnettools.vscode-dotnet-runtime"
     ]
-  },
-  "main": "main",
-  "scripts": {
-    "vscode:prepublish": "gulp error-vsce-package",
-    "compile": "gulp build-grammars && npm run get-language-server && gulp verify-test-uses-extension-bundle && tsc -watch -p ./",
-    "build": "gulp build-grammars && npm run get-language-server && gulp verify-test-uses-extension-bundle && tsc -p ./",
-    "get-language-server": "gulp get-language-server",
-    "lint": "tslint --project tsconfig.json -t verbose",
-    "lint-fix": "tslint --project tsconfig.json -t verbose --fix",
-    "package": "npm run webpack-prod && npm run get-language-server && gulp package",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "pretest": "npm run build && npm run webpack-prod",
-    "pretest-dev": "npm run build && npm run webpack",
-    "test": "gulp test",
-    "all": "npm i && npm test && npm    run lint",
-    "webpack": "gulp webpack-dev",
-    "webpack-prod": "gulp webpack-prod",
-    "webpack-profile": "webpack --profile --json --mode production > webpack-stats.json && echo Use http://webpack.github.io/analyse to analyze the stats",
-    "build-grammars": "gulp build-grammars",
-    "watch-grammars": "gulp watch-grammars",
-    "verify-test-uses-extension-bundle": "gulp verify-test-uses-extension-bundle"
-  },
-  "devDependencies": {
-    "@types/fs-extra": "^5.1.0",
-    "@types/gulp": "^4.0.6",
-    "@types/mocha": "^2.2.41",
-    "@types/node": "^12.7.8",
-    "@types/opn": "^5.5.0",
-    "@types/recursive-readdir": "^2.2.0",
-    "@types/rimraf": "2.0.2",
-    "@types/shelljs": "0.8.3",
-    "@types/webpack": "^4.39.1",
-    "gulp": "^4.0.2",
-    "mocha": "^5.2.0",
-    "mocha-junit-reporter": "^1.23.1",
-    "mocha-multi-reporters": "^1.1.7",
-    "recursive-readdir": "^2.2.2",
-    "ts-node": "^7.0.1",
-    "tslint": "^5.20.0",
-    "tslint-microsoft-contrib": "5.0.3",
-    "typescript": "^3.6.3",
-    "vsce": "^1.66.0",
-    "vscode": "^1.1.33",
-    "vscode-azureextensiondev": "^0.2.3",
-    "webpack": "4.28.1",
-    "webpack-cli": "^3.3.9"
-  },
-  "dependencies": {
-    "fs-extra": "^7.0.1",
-    "moment": "^2.24.0",
-    "nuget": "^2.0.2",
-    "opn": "^5.5.0",
-    "rimraf": "2.6.3",
-    "shelljs": "^0.8.3",
-    "vscode-azureextensionui": "^0.26.5",
-    "vscode-jsonrpc": "^4.0.0",
-    "vscode-languageclient": "^4.4.0"
-  }
 }

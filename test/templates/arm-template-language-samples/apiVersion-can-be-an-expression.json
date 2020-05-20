@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "location": {
@@ -199,7 +199,7 @@
     }
   },
   "variables": {
-    "comment": "admin account below is hardcoded on-purpose. During the bootup of the instance, a script removes this user from the system",
+    // "comment": "admin account below is hardcoded on-purpose. During the bootup of the instance, a script removes this user from the system",
     "adminUserName": "accadmin",
     "adminPassword": "[concat('!1', toLower(substring(uniqueString(resourceGroup().id), 1, 1)), toUpper(substring(uniqueString(resourceGroup().id), 2, 1)), parameters('password'))]",
     "templateApiVersion": "2016-02-01",
@@ -207,7 +207,7 @@
     "publicIPAddressType": "Static",
     "uniqueId": "[uniqueString(resourceGroup().id)]",
     "vmName": "[concat(variables('uniqueId'),'-h0')]",
-    "vmStorageAccountContainerName": "vhds",
+    // "vmStorageAccountContainerName": "vhds",
     "secret": "\\xfd\\xc0\\x84\\x9aEug\\x1b\\xc1\\xc5\\xc1.\\x8a\\xc4\\x0ck\\xb7\\x06\\x00r\\x80\\xae\\xc9p\\xdc\\x06\\xb1\\x91\\xe0\\x8d\\xcd\\x921\\xdem\\x81\\x8cW\\xce\\x9a\\xf0\\x8a1\\x86\\x05\\xf0I\\x91\\xe7L\\xff\\xf3\\x0e=7\"\\x97?\\xa5\\x12\\xab%\\xdf\\xa0",
     "trustedProxyUrl": "B\\xbc\\xbb\\xfcm\\xdeU\\xb5\"\\x19\\xa9\\xf8\\x0f\\xcd\\xa4f\\x85n]iP\\xfc\\xe8<\\xd7O\\xf7\\xbc\\xba\\xbfS\\x1f\\xc1\\x98\\x9bM\\xc7;\\xa8\\xe5\\x88\\xd4\\xfe\\xc9\\x9c\\xde\\x86\\x87\\xcf\\xdcH +\\xb3\\xa5\\x88\\x08LzY\\xf4\\xaf\\x01\\xbe",
     "azureForm": "azure_enterprise_eval",
@@ -491,7 +491,7 @@
       "properties": {
         "diagnosticsProfile": {
           "bootDiagnostics": {
-            "enabled": "true",
+            "enabled": true, // Changed from "true"
             "storageUri": "[concat('http://', parameters('diagStorageAccountName'),'.blob.core.windows.net')]"
           }
         },

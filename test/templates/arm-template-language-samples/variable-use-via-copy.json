@@ -1,9 +1,10 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-    "parameters": { },
+    "parameters": {
+    },
     "variables": {
-        "comment": "this works with property copy as well", 
+        // "comment": "this works with property copy as well", 
         "copy": [
             {
                 "name": "arrayTest",
@@ -12,7 +13,8 @@
             }
         ]
     },
-    "resources": [],
+    "resources": [
+    ],
     "outputs": {
         "foo": {
             "type": "array",

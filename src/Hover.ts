@@ -10,7 +10,7 @@ import * as language from "./Language";
 export interface IUsageInfo {
     usage: string;
     friendlyType: string; // e.g "parameter", "user function"
-    description: string | undefined | null;
+    description: string | undefined;
 }
 
 /**

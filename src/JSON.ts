@@ -17,6 +17,8 @@ import { CaseInsensitiveMap } from "./CaseInsensitiveMap";
 import { assert } from "./fixed_assert";
 import * as language from "./Language";
 import * as basic from "./Tokenizer";
+import { assertNever } from "./util/assertNever";
+import { nonNullValue } from "./util/nonNull";
 import * as utilities from "./Utilities";
 
 export enum ValueKind {
@@ -33,20 +35,28 @@ export enum ValueKind {
  * The different types of tokens that can be parsed from a JSON string.
  */
 export enum TokenType {
-    LeftCurlyBracket,
-    RightCurlyBracket,
-    LeftSquareBracket,
-    RightSquareBracket,
-    Comma,
-    Colon,
-    Whitespace,
-    QuotedString,
-    Number,
-    Boolean,
-    Literal,
-    Null,
-    Comment,
-    Unrecognized
+    LeftCurlyBracket = 0,
+    RightCurlyBracket = 1,
+    LeftSquareBracket = 2,
+    RightSquareBracket = 3,
+    Comma = 4,
+    Colon = 5,
+    Whitespace = 6,
+    QuotedString = 7,
+    Number = 8,
+    Boolean = 9,
+    Literal = 10,
+    Null = 11,
+    Comment = 12,
+    Unrecognized = 13
+}
+
+export enum Comments {
+    /**
+     * Default (parser generally ignores comments)
+     */
+    ignoreCommentTokens,
+    includeCommentTokens
 }
 
 /**
@@ -166,24 +176,24 @@ export function Unrecognized(startIndex: number, basicToken: basic.Token): Token
     return new Token(TokenType.Unrecognized, startIndex, [basicToken]);
 }
 
-export function asObjectValue(value: Value | null): ObjectValue | null {
-    return value instanceof ObjectValue ? value : null;
+export function asObjectValue(value: Value | undefined): ObjectValue | undefined {
+    return value instanceof ObjectValue ? value : undefined;
 }
 
-export function asArrayValue(value: Value | null): ArrayValue | null {
-    return value instanceof ArrayValue ? value : null;
+export function asArrayValue(value: Value | undefined): ArrayValue | undefined {
+    return value instanceof ArrayValue ? value : undefined;
 }
 
-export function asStringValue(value: Value | null): StringValue | null {
-    return value instanceof StringValue ? value : null;
+export function asStringValue(value: Value | undefined): StringValue | undefined {
+    return value instanceof StringValue ? value : undefined;
 }
 
-export function asNumberValue(value: Value | null): NumberValue | null {
-    return value instanceof NumberValue ? value : null;
+export function asNumberValue(value: Value | undefined): NumberValue | undefined {
+    return value instanceof NumberValue ? value : undefined;
 }
 
-export function asBooleanValue(value: Value | null): BooleanValue | null {
-    return value instanceof BooleanValue ? value : null;
+export function asBooleanValue(value: Value | undefined): BooleanValue | undefined {
+    return value instanceof BooleanValue ? value : undefined;
 }
 
 /**
@@ -323,7 +333,7 @@ export function readNumber(iterator: utilities.Iterator<basic.Token>): basic.Tok
  */
 export class Tokenizer {
     private _innerTokenizer: basic.Tokenizer;
-    private _current: Token | null;
+    private _current: Token | undefined;
     private _currentTokenStartIndex: number;
     private _lineLengths: number[] = [0];
     private _commentsCount: number = 0;
@@ -337,7 +347,7 @@ export class Tokenizer {
         return this._innerTokenizer.hasStarted();
     }
 
-    public get current(): Token | null {
+    public get current(): Token | undefined {
         return this._current;
     }
 
@@ -397,7 +407,7 @@ export class Tokenizer {
             this._currentTokenStartIndex += this.current.length();
         }
 
-        this._current = null;
+        this._current = undefined;
         if (this.currentBasicToken()) {
             switch (this.currentBasicTokenType()) {
                 case basic.TokenType.LeftCurlyBracket:
@@ -584,6 +594,26 @@ export abstract class Value {
     public get __debugDisplay(): string {
         return this.toString();
     }
+
+    public get asObjectValue(): ObjectValue | undefined {
+        return asObjectValue(this);
+    }
+
+    public get asArrayValue(): ArrayValue | undefined {
+        return asArrayValue(this);
+    }
+
+    public get asStringValue(): StringValue | undefined {
+        return asStringValue(this);
+    }
+
+    public get asNumberValue(): NumberValue | undefined {
+        return asNumberValue(this);
+    }
+
+    public get asBooleanValue(): BooleanValue | undefined {
+        return asBooleanValue(this);
+    }
 }
 
 /**
@@ -591,7 +621,7 @@ export abstract class Value {
  */
 export class ObjectValue extends Value {
     // Last set with the same (case-insensitive) key wins (just like in Azure template deployment)
-    private _caseInsensitivePropertyMap: CachedValue<CaseInsensitiveMap<string, Value | null>> = new CachedValue<CaseInsensitiveMap<string, Value | null>>();
+    private _caseInsensitivePropertyMap: CachedValue<CaseInsensitiveMap<string, Property | undefined>> = new CachedValue<CaseInsensitiveMap<string, Property | undefined>>();
 
     constructor(span: language.Span, private _properties: Property[]) {
         super(span);
@@ -603,16 +633,16 @@ export class ObjectValue extends Value {
     }
 
     /**
-     * Get the map of property names to property values for this ObjectValue. This mapping is
+     * Get the map of property names to properties for this ObjectValue. This mapping is
      * created lazily.
      */
-    private get caseInsensitivePropertyMap(): CaseInsensitiveMap<string, Value | null> {
+    private get caseInsensitivePropertyMap(): CaseInsensitiveMap<string, Property | undefined> {
         return this._caseInsensitivePropertyMap.getOrCacheValue(() => {
-            const caseInsensitivePropertyMap = new CaseInsensitiveMap<string, Value | null>();
+            const caseInsensitivePropertyMap = new CaseInsensitiveMap<string, Property | undefined>();
 
             if (this._properties.length > 0) {
                 for (const property of this._properties) {
-                    caseInsensitivePropertyMap.set(property.nameValue.toString(), property.value);
+                    caseInsensitivePropertyMap.set(property.nameValue.toString(), property);
                 }
             }
 
@@ -635,28 +665,37 @@ export class ObjectValue extends Value {
      * Get the property value for the provided property name. If no property exists with the
      * provided name (case-insensitive), then undefined will be returned.
      */
-    public getPropertyValue(propertyName: string): Value | null {
-        const result = this.caseInsensitivePropertyMap.get(propertyName);
-        return result ? result : null;
+    public getPropertyValue(propertyName: string): Value | undefined {
+        const result: Property | undefined = this.caseInsensitivePropertyMap.get(propertyName);
+        return result ? result.value : undefined;
+    }
+
+    /**
+     * Get the property for the provided property name. If no property exists with the
+     * provided name (case-insensitive), then undefined will be returned.
+     */
+    public getProperty(propertyName: string): Property | undefined {
+        const result: Property | undefined = this.caseInsensitivePropertyMap.get(propertyName);
+        return result ? result : undefined;
     }
 
     /**
      * Get the property value that is at the chain of properties in the provided property name
      * stack. If the provided property name stack is empty, then return this value.
      */
-    public getPropertyValueFromStack(propertyNameStack: string[]): Value | null {
+    public getPropertyValueFromStack(propertyNameStack: string[]): Value | undefined {
         // tslint:disable-next-line:no-this-assignment
-        let result: Value | null = <Value | null>this;
+        let result: Value | undefined = <Value | undefined>this;
 
         while (result && propertyNameStack.length > 0) {
-            const objectValue: ObjectValue | null = asObjectValue(result);
+            const objectValue: ObjectValue | undefined = asObjectValue(result);
 
             // We only handle evaluating properties in objects (e.g. not arrays)
             if (objectValue) {
                 const propertyName = propertyNameStack.pop();
-                result = propertyName ? objectValue.getPropertyValue(propertyName) : null;
+                result = propertyName ? objectValue.getPropertyValue(propertyName) : undefined;
             } else {
-                assert(false);
+                return undefined;
             }
         }
 
@@ -690,7 +729,7 @@ export class ObjectValue extends Value {
  * A property in a JSON ObjectValue.
  */
 export class Property extends Value {
-    constructor(span: language.Span, private _name: StringValue, private _value: Value | null) {
+    constructor(span: language.Span, private _name: StringValue, private _value: Value | undefined) {
         super(span);
     }
 
@@ -708,7 +747,7 @@ export class Property extends Value {
     /**
      * The value of the property.
      */
-    public get value(): Value | null {
+    public get value(): Value | undefined {
         return this._value;
     }
 
@@ -722,7 +761,7 @@ export class Property extends Value {
 
     public get __debugDisplay(): string {
         // tslint:disable-next-line: prefer-template
-        return this._name.toString() + ":" + (this.value instanceof Value ? this.value.__debugDisplay : String(this.value));
+        return this._name.quotedValue + ":" + (this.value instanceof Value ? this.value.__debugDisplay : String(this.value));
     }
 }
 
@@ -904,12 +943,9 @@ export class NullValue extends Value {
 export class ParseResult {
     private readonly _debugText: string; // Used only for debugging - copy of the original text being parsed
 
-    constructor(private _tokens: Token[], private _lineLengths: number[], private _value: Value | null, text: string, public readonly commentCount: number) {
-        assert(_tokens !== null);
-        assert(_tokens !== undefined);
-        assert(_lineLengths !== null);
-        assert(_lineLengths !== undefined);
-        assert(_value !== undefined);
+    constructor(private _tokens: Token[], private _commentTokens: Token[], private _lineLengths: number[], private _value: Value | undefined, text: string, public readonly commentCount: number) {
+        nonNullValue(_tokens, "_tokens");
+        nonNullValue(_lineLengths, "_lineLengths");
 
         this._debugText = text;
         this._debugText = this._debugText; // Make compiler happy
@@ -923,12 +959,80 @@ export class ParseResult {
         return this._tokens;
     }
 
+    public get commentTokens(): Token[] {
+        return this._commentTokens;
+    }
+
+    public get commentTokenCount(): number {
+        return this._commentTokens.length;
+    }
+
     public get lineLengths(): number[] {
         return this._lineLengths;
     }
 
+    // Might or might not make a copy
+    public getTokens(commentBehavior: Comments): Token[] {
+        if (commentBehavior === Comments.includeCommentTokens) {
+            const tokens = this.tokens.concat(this.commentTokens);
+            tokens.sort((a, b) => a.span.startIndex - b.span.startIndex);
+            return tokens;
+        } else {
+            return this.tokens;
+        }
+    }
+
+    // Might or might not make a copy
+    public getTokensInSpan(span: language.Span, commentsBehavior: Comments): Token[] {
+        const results: Token[] = [];
+        const tokens = this.getTokens(commentsBehavior);
+        const spanStartIndex = span.startIndex;
+        const spanEndIndex = span.endIndex;
+
+        for (let token of tokens) {
+            if (token.span.endIndex >= spanStartIndex) {
+                if (token.span.startIndex > spanEndIndex) {
+                    break;
+                }
+
+                results.push(token);
+            }
+        }
+
+        return results;
+    }
+
+    public getLastTokenOnLine(line: number, commentBehavior: Comments = Comments.ignoreCommentTokens): Token | undefined {
+        const startOfLineIndex = this.getCharacterIndex(line, 0);
+        const lastLine = this.lineLengths.length - 1;
+
+        const tokens = this.getTokens(commentBehavior);
+
+        let lastSeenToken;
+
+        if (line === lastLine) {
+            // On last line, check the very last token
+            lastSeenToken = tokens[tokens.length - 1];
+        } else {
+            const nextLineIndex = this.getCharacterIndex(line + 1, 0);
+
+            for (let token of tokens) { // CONSIDER: binary search
+                if (token.span.startIndex >= nextLineIndex) {
+                    break;
+                }
+                lastSeenToken = token;
+            }
+        }
+
+        if (lastSeenToken && lastSeenToken.span.endIndex >= startOfLineIndex) {
+            return lastSeenToken;
+        } else {
+            return undefined;
+        }
+    }
+
     /**
-     * Get the last character index in this JSON parse result.
+     * Get the highest character index of any line in this JSON parse result.
      */
     public get maxCharacterIndex(): number {
         let result = 0;
@@ -938,8 +1042,8 @@ export class ParseResult {
         return result;
     }
 
-    // The top-level value, if any
-    public get value(): Value | null {
+    // The top-level value, if any (e.g. the JSON could be blank or only comments)
+    public get value(): Value | undefined {
         return this._value;
     }
 
@@ -994,40 +1098,101 @@ export class ParseResult {
 
         let maxColumnIndex: number = this.lineLengths[lineIndex];
         if (lineIndex < this.lineLengths.length - 1) {
-            --maxColumnIndex;
+            --maxColumnIndex; // CONSIDER: Is this for LF?  What about CRLF?
         }
 
         return maxColumnIndex;
     }
 
-    private getToken(tokenIndex: number): Token {
+    private static getToken(tokens: Token[], tokenIndex: number): Token {
         // tslint:disable-next-line:max-line-length
-        assert(0 <= tokenIndex && tokenIndex < this.tokenCount, `The tokenIndex (${tokenIndex}) must always be between 0 and the token count - 1 (${this.tokenCount - 1}).`);
+        assert(0 <= tokenIndex && tokenIndex < tokens.length, `The tokenIndex (${tokenIndex}) must always be between 0 and the token count - 1 (${tokens.length - 1}).`);
 
-        return this._tokens[tokenIndex];
+        return tokens[tokenIndex];
     }
 
-    private get lastToken(): Token | null {
-        let tokenCount = this.tokenCount;
-        return tokenCount > 0 ? this.getToken(tokenCount - 1) : null;
+    private static getLastToken(tokens: Token[]): Token | undefined {
+        // Returns undefined if no tokens
+        return tokens[tokens.length - 1];
+    }
+
+    // Unlike getTokenAtCharacterIndex by itself, also handles the
+    // case of being at the end of a line comment ("// comment")
+    public getCommentTokenAtDocumentIndex(
+        characterIndex: number,
+        containsBehavior: language.Contains
+    ): Token | undefined {
+        // Check if we're inside a comment token
+        const token = this.getTokenAtCharacterIndex(
+            characterIndex,
+            Comments.includeCommentTokens);
+        if (token?.type === TokenType.Comment) {
+            switch (containsBehavior) {
+                case language.Contains.strict:
+                    return token;
+
+                case language.Contains.extended:
+                    assert.fail("language.Contains.extended not implemented here (somewhat unambiguous and not clear it's useful)");
+
+                case language.Contains.enclosed:
+                    if (token.span.startIndex === characterIndex) {
+                        return undefined;
+                    }
+                    return token;
+
+                default:
+                    assertNever(containsBehavior);
+            }
+        }
+
+        // Are we after a line comment on the same line (if we're on the \r or \n after
+        //   a line comment, the enclosing token is a whitespace token)
+        const line = this.getPositionFromCharacterIndex(characterIndex).line;
+        const lastTokenOnLineIncludingComments = this.getLastTokenOnLine(
+            line,
+            Comments.includeCommentTokens);
+        if (lastTokenOnLineIncludingComments
+            && lastTokenOnLineIncludingComments.type === TokenType.Comment
+            && lastTokenOnLineIncludingComments.toString().startsWith('//')
+            && lastTokenOnLineIncludingComments.span.startIndex < characterIndex
+        ) {
+            return lastTokenOnLineIncludingComments;
+        }
+
+        return undefined;
     }
 
     /**
-     * Get the JSON Token that contains the provided characterIndex, if any (e.g. returns null if at whitespace)
+     * Get the JSON Token that contains the provided characterIndex
+     * if any (returns undefined if at whitespace or comment)
      */
-    public getTokenAtCharacterIndex(characterIndex: number): Token | null {
+    public getTokenAtCharacterIndex(
+        characterIndex: number,
+        commentBehavior: Comments = Comments.includeCommentTokens
+    ): Token | undefined {
         assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);
 
-        let token: Token | null = null;
+        const tokens = this.getTokens(commentBehavior);
+        return ParseResult.getTokenAtCharacterIndex(tokens, characterIndex);
+    }
 
-        if (this.lastToken !== null && this.lastToken.span.afterEndIndex === characterIndex) {
-            token = this.lastToken;
+    private static getTokenAtCharacterIndex(tokens: Token[], characterIndex: number): Token | undefined {
+        assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);
+
+        const tokenCount: number = tokens.length;
+        const lastToken: Token | undefined = ParseResult.getLastToken(tokens);
+
+        let token: Token | undefined;
+        // tslint:disable-next-line: strict-boolean-expressions
+        if (!!lastToken && lastToken.span.afterEndIndex === characterIndex) {
+            token = lastToken;
         } else {
+            // Perform a binary search
             let minTokenIndex = 0;
-            let maxTokenIndex = this.tokenCount - 1;
-            while (token === null && minTokenIndex <= maxTokenIndex) {
+            let maxTokenIndex = tokenCount - 1;
+            while (!token && minTokenIndex <= maxTokenIndex) {
                 let midTokenIndex = Math.floor((maxTokenIndex + minTokenIndex) / 2);
-                let currentToken = this.getToken(midTokenIndex);
+                let currentToken = ParseResult.getToken(tokens, midTokenIndex);
                 let currentTokenSpan = currentToken.span;
 
                 if (characterIndex < currentTokenSpan.startIndex) {
@@ -1043,29 +1208,32 @@ export class ParseResult {
         return token;
     }
 
-    public getValueAtCharacterIndex(characterIndex: number): Value | null {
+    public getValueAtCharacterIndex(characterIndex: number, containsBehavior: language.Contains): Value | undefined {
         assert(0 <= characterIndex, `characterIndex (${characterIndex}) cannot be negative.`);
 
-        let result: Value | null = null;
+        let result: Value | undefined;
 
-        // Find the Value at the given character index via a binary search through the value tree
-        if (this.value && this.value.span.contains(characterIndex, true)) {
+        // Find the Value at the given character index by starting at the outside and finding the innermost
+        //   child that contains the point.
+        if (this.value && this.value.span.contains(characterIndex, containsBehavior)) {
             let current: Value = this.value;
 
-            while (result === null) {
+            while (!result) {
                 const currentValue: Value = current;
 
+                // tslint:disable-next-line:no-suspicious-comment
+                // TODO: This should not depend on knowledge of the various value types' implementations
                 if (currentValue instanceof Property) {
-                    if (currentValue.nameValue.span.contains(characterIndex, true)) {
+                    if (currentValue.nameValue.span.contains(characterIndex, containsBehavior)) {
                         current = currentValue.nameValue;
-                    } else if (currentValue.value && currentValue.value.span.contains(characterIndex, true)) {
+                    } else if (currentValue.value && currentValue.value.span.contains(characterIndex, containsBehavior)) {
                         current = currentValue.value;
                     }
                 } else if (currentValue instanceof ObjectValue) {
                     assert(currentValue.properties);
                     for (const property of currentValue.properties) {
                         assert(property);
-                        if (property.span.contains(characterIndex, true)) {
+                        if (property.span.contains(characterIndex, containsBehavior)) {
                             current = property;
                         }
                     }
@@ -1073,7 +1241,7 @@ export class ParseResult {
                     assert(currentValue.elements);
                     for (const element of currentValue.elements) {
                         assert(element);
-                        if (element.span.contains(characterIndex, true)) {
+                        if (element.span.contains(characterIndex, containsBehavior)) {
                             current = element;
                         }
                     }
@@ -1093,61 +1261,61 @@ export class ParseResult {
  * Parse the provided JSON string.
  */
 export function parse(stringValue: string): ParseResult {
-    assert(stringValue !== null);
-    assert(stringValue !== undefined);
+    nonNullValue(stringValue, "stringValue");
 
     const tokens: Token[] = [];
+    const commentTokens: Token[] = [];
     const jt = new Tokenizer(stringValue);
-    const value: Value | null = parseValue(jt, tokens);
+    const value: Value | undefined = parseValue(jt, tokens, commentTokens);
 
     // Read the rest of the Tokens so that they will be put into the tokens array.
     while (jt.current) {
-        next(jt, tokens);
+        next(jt, tokens, commentTokens);
     }
 
-    return new ParseResult(tokens, jt.lineLengths, value, stringValue, jt.commentsCount);
+    return new ParseResult(tokens, commentTokens, jt.lineLengths, value, stringValue, jt.commentsCount);
 }
 
 /**
  * Read a JSON object from the provided tokenizer's stream of Tokens.
  * All of the Tokens that are read will be placed into the provided
- * tokens array.
+ * tokens arrays.
  */
-function parseValue(tokenizer: Tokenizer, tokens: Token[]): Value | null {
-    let value: Value | null = null;
+function parseValue(tokenizer: Tokenizer, tokens: Token[], commentTokens: Token[]): Value | undefined {
+    let value: Value | undefined;
 
     if (!tokenizer.hasStarted()) {
-        next(tokenizer, tokens);
+        next(tokenizer, tokens, commentTokens);
     }
 
     if (tokenizer.current) {
         switch (tokenizer.current.type) {
             case TokenType.QuotedString:
                 value = new StringValue(tokenizer.current.span, tokenizer.current.toString());
-                next(tokenizer, tokens);
+                next(tokenizer, tokens, commentTokens);
                 break;
 
             case TokenType.Number:
                 value = new NumberValue(tokenizer.current.span, tokenizer.current.toString());
-                next(tokenizer, tokens);
+                next(tokenizer, tokens, commentTokens);
                 break;
 
             case TokenType.Boolean:
                 value = new BooleanValue(tokenizer.current.span, tokenizer.current.toString() === "true");
-                next(tokenizer, tokens);
+                next(tokenizer, tokens, commentTokens);
                 break;
 
             case TokenType.LeftCurlyBracket:
-                value = parseObject(tokenizer, tokens);
+                value = parseObject(tokenizer, tokens, commentTokens);
                 break;
 
             case TokenType.LeftSquareBracket:
-                value = parseArray(tokenizer, tokens);
+                value = parseArray(tokenizer, tokens, commentTokens);
                 break;
 
             case TokenType.Null:
                 value = new NullValue(tokenizer.current.span);
-                next(tokenizer, tokens);
+                next(tokenizer, tokens, commentTokens);
                 break;
         }
     }
@@ -1155,7 +1323,7 @@ function parseValue(tokenizer: Tokenizer, tokens: Token[]): Value | null {
     return value;
 }
 
-function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
+function parseObject(tokenizer: Tokenizer, tokens: Token[], commentTokens: Token[]): ObjectValue {
     if (!tokenizer.current) {
         throw new Error("Precondition failed");
     }
@@ -1163,40 +1331,40 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
     let objectSpan: language.Span = tokenizer.current.span;
     const properties: Property[] = [];
 
-    next(tokenizer, tokens);
+    next(tokenizer, tokens, commentTokens);
 
-    let propertySpan: language.Span | null = null;
-    let propertyName: StringValue | null = null;
+    let propertySpan: language.Span | undefined;
+    let propertyName: StringValue | undefined;
     let foundColon: boolean = false;
     // tslint:disable-next-line: strict-boolean-expressions
     while (tokenizer.current) {
         objectSpan = objectSpan.union(tokenizer.current.span);
 
         if (tokenizer.current.type === TokenType.RightCurlyBracket) {
-            next(tokenizer, tokens);
+            next(tokenizer, tokens, commentTokens);
             break;
-        } else if (propertyName === null) {
+        } else if (!propertyName) {
             if (tokenizer.current.type === TokenType.QuotedString) {
                 propertySpan = tokenizer.current.span;
                 propertyName = new StringValue(propertySpan, tokenizer.current.toString());
-                next(tokenizer, tokens);
+                next(tokenizer, tokens, commentTokens);
             } else {
-                next(tokenizer, tokens);
+                next(tokenizer, tokens, commentTokens);
             }
         } else if (!foundColon) {
             propertySpan = propertySpan ? propertySpan.union(tokenizer.current.span) : tokenizer.current.span;
             if (tokenizer.current.type === TokenType.Colon) {
                 foundColon = true;
-                next(tokenizer, tokens);
+                next(tokenizer, tokens, commentTokens);
             } else {
-                propertyName = null;
+                propertyName = undefined;
             }
         } else {
             // Shouldn't be able to reach here without these two assertions being true
             assert(foundColon);
             assert(propertyName);
 
-            const propertyValue: Value | null = parseValue(tokenizer, tokens);
+            const propertyValue: Value | undefined = parseValue(tokenizer, tokens, commentTokens);
             if (propertyValue) {
                 propertySpan = propertySpan ? propertySpan.union(propertyValue.span) : propertyValue.span;
                 objectSpan = objectSpan.union(propertyValue.span);
@@ -1205,8 +1373,8 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
             // tslint:disable-next-line: strict-boolean-expressions no-non-null-assertion // Asserted propertyName
             properties.push(new Property(propertySpan || objectSpan, propertyName!, propertyValue));
 
-            propertySpan = null;
-            propertyName = null;
+            propertySpan = undefined;
+            propertyName = undefined;
             foundColon = false;
         }
     }
@@ -1214,7 +1382,7 @@ function parseObject(tokenizer: Tokenizer, tokens: Token[]): ObjectValue {
     return new ObjectValue(objectSpan, properties);
 }
 
-function parseArray(tokenizer: Tokenizer, tokens: Token[]): ArrayValue {
+function parseArray(tokenizer: Tokenizer, tokens: Token[], commentTokens: Token[]): ArrayValue {
     if (!tokenizer.current) {
         throw new Error("Precondition failed");
     }
@@ -1222,7 +1390,7 @@ function parseArray(tokenizer: Tokenizer, tokens: Token[]): ArrayValue {
     let span: language.Span = tokenizer.current.span;
     const elements: Value[] = [];
 
-    next(tokenizer, tokens);
+    next(tokenizer, tokens, commentTokens);
 
     let expectElement: boolean = true;
     // tslint:disable-next-line: strict-boolean-expressions
@@ -1230,35 +1398,36 @@ function parseArray(tokenizer: Tokenizer, tokens: Token[]): ArrayValue {
         span = span.union(tokenizer.current.span);
 
         if (tokenizer.current.type === TokenType.RightSquareBracket) {
-            next(tokenizer, tokens);
+            next(tokenizer, tokens, commentTokens);
             break;
         } else if (expectElement) {
-            const element: Value | null = parseValue(tokenizer, tokens);
+            const element: Value | undefined = parseValue(tokenizer, tokens, commentTokens);
             if (element) {
                 span = span.union(element.span);
 
                 elements.push(element);
                 expectElement = false;
             } else {
-                next(tokenizer, tokens);
+                next(tokenizer, tokens, commentTokens);
             }
         } else {
             if (tokenizer.current.type === TokenType.Comma) {
                 expectElement = true;
             }
-            next(tokenizer, tokens);
+            next(tokenizer, tokens, commentTokens);
         }
     }
 
     return new ArrayValue(span, elements);
 }
 
-function next(tokenizer: Tokenizer, tokens: Token[]): void {
+function next(tokenizer: Tokenizer, tokens: Token[], commentTokens: Token[]): void {
     while (tokenizer.moveNext()) {
         // tslint:disable-next-line: no-non-null-assertion // Guaranteed by tokenizer.moveNext() returning true
         const current: Token = tokenizer.current!;
-        if (current.type !== TokenType.Whitespace &&
-            current.type !== TokenType.Comment) {
+        if (current.type === TokenType.Comment) {
+            commentTokens.push(current);
+        } else if (current.type !== TokenType.Whitespace) {
             tokens.push(current);
             break;
         }
@@ -1269,7 +1438,7 @@ function next(tokenizer: Tokenizer, tokens: Token[]): void {
  * Traverses every node in a given Value tree
  */
 export abstract class Visitor {
-    public visitProperty(property: Property | null): void {
+    public visitProperty(property: Property | undefined): void {
         if (property) {
             assert(property.nameValue);
             property.nameValue.accept(this);
@@ -1292,7 +1461,7 @@ export abstract class Visitor {
         // Nothing to do
     }
 
-    public visitObjectValue(objectValue: ObjectValue | null): void {
+    public visitObjectValue(objectValue: ObjectValue | undefined): void {
         if (objectValue) {
             for (const property of objectValue.properties) {
                 property.accept(this);
@@ -1300,7 +1469,7 @@ export abstract class Visitor {
         }
     }
 
-    public visitArrayValue(arrayValue: ArrayValue | null): void {
+    public visitArrayValue(arrayValue: ArrayValue | undefined): void {
         if (arrayValue) {
             for (const element of arrayValue.elements) {
                 assert(element);

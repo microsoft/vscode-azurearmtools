@@ -6,12 +6,15 @@
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name no-constant-condition no-any
 
 import * as assert from 'assert';
+import { Uri } from 'vscode';
 import { DeploymentTemplate, IVariableDefinition, Json } from "../extension.bundle";
-import { createCompletionsTest } from './support/createCompletionsTest';
+import { createExpressionCompletionsTestEx } from './support/createCompletionsTest';
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
 import { testGetReferences } from './support/testGetReferences';
+
+const fakeId = Uri.file("https://fake-id");
 
 suite("Variable iteration (copy blocks)", () => {
 
@@ -107,7 +110,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }]
                     }
                 }),
-                "id");
+                fakeId);
             assert(!!dt.topLevelScope.getVariableDefinition('diskNames'));
         });
 
@@ -121,14 +124,14 @@ suite("Variable iteration (copy blocks)", () => {
                         }]
                     }
                 }),
-                "id");
+                fakeId);
 
             // Right now we still create the variable
             // CONSIDER: Instead add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)
             assert(!!dt.topLevelScope.getVariableDefinition('diskNames'));
             const diskNames = dt.topLevelScope.getVariableDefinition('diskNames')!;
             assert(diskNames);
-            assert(diskNames.value === null);
+            assert(diskNames.value === undefined);
         });
 
         test("no name property", () => {
@@ -141,7 +144,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }]
                     }
                 }),
-                "id");
+                fakeId);
 
             // Right now we just don't create the variable
             // CONSIDER: Instead add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)
@@ -158,7 +161,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }]
                     }
                 }),
-                "id");
+                fakeId);
 
             // Right now we just don't create the variable
             // CONSIDER: Instead add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)
@@ -180,7 +183,7 @@ suite("Variable iteration (copy blocks)", () => {
                         "var2": "hello 2",
                     }
                 }),
-                "id");
+                fakeId);
 
             assert.deepStrictEqual(
                 dt.topLevelScope.variableDefinitions.map(v => v.nameValue.unquotedValue),
@@ -234,11 +237,11 @@ suite("Variable iteration (copy blocks)", () => {
                 }
             };
 
-            createCompletionsTest(disksTopLevelArrayTemplate, '<output1>', '[variables(!)]', ["'disks-top-level-array-of-object'"]);
+            createExpressionCompletionsTestEx(disksTopLevelArrayTemplate, '<output1>', '[variables(!)]', ["'disks-top-level-array-of-object'"]);
 
             // We don't currently support completions from an array, so these should return an empty list
-            createCompletionsTest(disksTopLevelArrayTemplate, '<output1>', "[variables('disks-top-level-array-of-object').!]", []);
-            createCompletionsTest(disksTopLevelArrayTemplate, '<output1>', "[variables('disks-top-level-array-of-object').data!]", []);
+            createExpressionCompletionsTestEx(disksTopLevelArrayTemplate, '<output1>', "[variables('disks-top-level-array-of-object').!]", []);
+            createExpressionCompletionsTestEx(disksTopLevelArrayTemplate, '<output1>', "[variables('disks-top-level-array-of-object').data!]", []);
 
         });
 
@@ -298,7 +301,7 @@ suite("Variable iteration (copy blocks)", () => {
         });
 
         test("No errors", async () => {
-            const errors = await dt.errorsPromise;
+            const errors = await dt.getErrors(undefined);
             assert.deepStrictEqual(errors, []);
         });
 
@@ -307,7 +310,7 @@ suite("Variable iteration (copy blocks)", () => {
         });
 
         test("'copy' not found as member of the variable's value", async () => {
-            assert.equal(Json.asObjectValue(variable.value)!.getPropertyValue('copy'), null);
+            assert.equal(Json.asObjectValue(variable.value)!.getPropertyValue('copy'), undefined);
         });
 
         test("copy block names are added as members of the variable", async () => {
@@ -391,7 +394,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }
                     }
                 }),
-                "id");
+                fakeId);
             assert.deepStrictEqual(Json.asObjectValue(dt2.topLevelScope.getVariableDefinition('object')!.value)!.propertyNames, ["array1"]);
         });
 
@@ -409,7 +412,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }
                     }
                 }),
-                "id");
+                fakeId);
 
             // Right now we don't process as a copy block.  Backend does and gives an error.
             // CONSIDER: Add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)
@@ -431,7 +434,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }
                     }
                 }),
-                "id");
+                fakeId);
 
             // Right now we just don't process as a copy block
             // CONSIDER: Instead add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)
@@ -452,7 +455,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }
                     }
                 }),
-                "id");
+                fakeId);
 
             // Right now we just don't process as a copy block
             // CONSIDER: Instead add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)
@@ -569,8 +572,8 @@ suite("Variable iteration (copy blocks)", () => {
                 }
             };
 
-            createCompletionsTest(template, '<output1>', '[variables(!)]', ["'disk-array-in-object'"]);
-            createCompletionsTest(template, '<output1>', "[variables('disk-array-in-object').!]", ["member1", "member2", "array1", "array2"]);
+            createExpressionCompletionsTestEx(template, '<output1>', '[variables(!)]', ["'disk-array-in-object'"]);
+            createExpressionCompletionsTestEx(template, '<output1>', "[variables('disk-array-in-object').!]", ["member1", "member2", "array1", "array2"]);
         });
 
     }); // end suite embedded variable copy blocks

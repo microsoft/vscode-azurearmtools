@@ -6,7 +6,10 @@
 
 import * as assert from 'assert';
 import * as os from 'os';
+import { Uri } from 'vscode';
 import { containsArmSchema, DeploymentTemplate, isArmSchema } from "../extension.bundle";
+
+const fakeId = Uri.file("https://fake-id");
 
 suite("supported", () => {
     suite("doesJsonContainArmSchema(string)", () => {
@@ -94,7 +97,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplate(template, "id");
+                    let dt = new DeploymentTemplate(template, fakeId);
                     assert(dt.hasArmSchemaUri());
                 });
 
@@ -107,7 +110,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplate(template, "id");
+                    let dt = new DeploymentTemplate(template, fakeId);
                     assert(dt.hasArmSchemaUri());
                 });
 
@@ -122,7 +125,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplate(template, "id");
+                    let dt = new DeploymentTemplate(template, fakeId);
                     assert(dt.hasArmSchemaUri());
                 });
 
@@ -133,7 +136,7 @@ suite("supported", () => {
                         "contentVersion": "1.0.0.0",
                     `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplate(template, "id");
+                    let dt = new DeploymentTemplate(template, fakeId);
                     assert(dt.hasArmSchemaUri());
                 });
 
@@ -148,7 +151,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplate(template, "id");
+                    let dt = new DeploymentTemplate(template, fakeId);
                     assert(!dt.hasArmSchemaUri());
                 });
 
@@ -158,7 +161,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplate(template, "id");
+                    let dt = new DeploymentTemplate(template, fakeId);
                     assert(!dt.hasArmSchemaUri());
 
                 });
@@ -169,7 +172,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplate(template, "id");
+                    let dt = new DeploymentTemplate(template, fakeId);
                     assert(!dt.hasArmSchemaUri());
                 });
 
@@ -179,7 +182,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplate(template, "id");
+                    let dt = new DeploymentTemplate(template, fakeId);
                     assert(!dt.hasArmSchemaUri());
                 });
 
@@ -191,7 +194,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplate(template, "id");
+                    let dt = new DeploymentTemplate(template, fakeId);
                     assert(!dt.hasArmSchemaUri());
                 });
 
@@ -203,7 +206,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplate(template, "id");
+                    let dt = new DeploymentTemplate(template, fakeId);
                     assert(!dt.hasArmSchemaUri());
                 });
 

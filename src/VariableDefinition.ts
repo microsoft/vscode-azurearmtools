@@ -16,7 +16,7 @@ import { mapJsonObjectValue } from './util/mapJsonObjectValue';
  */
 export interface IVariableDefinition extends INamedDefinition {
     nameValue: Json.StringValue;
-    value: Json.Value | null;
+    value: Json.Value | undefined;
     span: Language.Span;
     usageInfo: IUsageInfo;
 }
@@ -29,13 +29,13 @@ abstract class VariableDefinition implements IVariableDefinition {
     public readonly definitionKind: DefinitionKind = DefinitionKind.Variable;
 
     public abstract nameValue: Json.StringValue;
-    public abstract value: Json.Value | null;
+    public abstract value: Json.Value | undefined;
     public abstract span: Language.Span;
     public abstract usageInfo: IUsageInfo;
 }
 
 export class TopLevelVariableDefinition extends VariableDefinition {
-    private readonly _value: CachedValue<Json.Value | null> = new CachedValue<Json.Value | null>();
+    private readonly _value: CachedValue<Json.Value | undefined> = new CachedValue<Json.Value | undefined>();
 
     constructor(private readonly _property: Json.Property) {
         super();
@@ -46,7 +46,7 @@ export class TopLevelVariableDefinition extends VariableDefinition {
         return this._property.nameValue;
     }
 
-    public get value(): Json.Value | null {
+    public get value(): Json.Value | undefined {
         return this._value.getOrCacheValue(() => {
             const value = this._property.value;
             const valueObject = Json.asObjectValue(value);
@@ -77,7 +77,7 @@ export class TopLevelVariableDefinition extends VariableDefinition {
         return `${this.nameValue.toString()} (var)`;
     }
 
-    private expandCopyBlocks(value: Json.Value | null): Json.Value | null {
+    private expandCopyBlocks(value: Json.Value | undefined): Json.Value | undefined {
         const valueAsObject = Json.asObjectValue(value);
         if (!valueAsObject) {
             return value;
@@ -163,7 +163,7 @@ export class TopLevelVariableDefinition extends VariableDefinition {
  * This class represents the definition of a top-level parameter in a deployment template.
  */
 export class TopLevelCopyBlockVariableDefinition extends VariableDefinition {
-    public readonly value: Json.Value | null;
+    public readonly value: Json.Value | undefined;
 
     public constructor(
         /**
@@ -180,7 +180,7 @@ export class TopLevelCopyBlockVariableDefinition extends VariableDefinition {
          * The "input" property from the copy block, represents the value of each instance of the
          * resulting variable array
          */
-        input: Json.Value | null
+        input: Json.Value | undefined
     ) {
         super();
 
@@ -190,14 +190,14 @@ export class TopLevelCopyBlockVariableDefinition extends VariableDefinition {
         // We don't actually support expression evaluation in a meaningful way right now, so we don't
         // need to be accurate with the representation, we just need to ensure we have an array of
         // some value.  We'll create an array with a single element using the 'input' expression.
-        this.value = input ? new Json.ArrayValue(input.span, [input]) : null;
+        this.value = input ? new Json.ArrayValue(input.span, [input]) : undefined;
     }
 
     public static createIfValid(copyVariableObject: Json.Value): IVariableDefinition | undefined {
         // E.g.
         //   "variables": {
         //         "copy": [
-        //             { <<<< This is passed to constructor
+        //             { <---- This is passed to constructor
         //                 "name": "top-level-string-array",
         //                 "count": 5,
         //                 "input": "[concat('myDataDisk', copyIndex('top-level-string-array', 1))]"
