@@ -459,6 +459,18 @@
             ]
         },
         {
+            "name": "listKeyValue",
+            "expectedUsage": "listKeyValue(resourceName\/resourceIdentifier, apiVersion, KeyLabelObject)",
+            "description": "Creates and returns a value from the App Config store with Key/Label specified in the request. The KeyLabelObject parameters is a JSON object with the two properties \"key\" and \"label\" as required by the values in the store.",
+            "minimumArguments": 3,
+            "maximumArguments": 3,
+            "returnValueMembers": [
+                {
+                    "name": "value"
+                }
+            ]
+        },
+        {
             "name": "listPackage",
             "expectedUsage": "listPackage(resourceName\/resourceIdentifier, apiVersion)",
             "description": "Lists the virtual network gateway package. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
