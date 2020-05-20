@@ -461,7 +461,7 @@
         {
             "name": "listKeyValue",
             "expectedUsage": "listKeyValue(resourceName\/resourceIdentifier, apiVersion, KeyLabelObject)",
-            "description": "Creates and returns a value from the App Config store with Key/Label specified in the request. The KeyLabelObject parameters is a JSON object with the two properties \"key\" and \"label\" as required by the values in the store.",
+            "description": "Returns a value from the App Config store with Key/Label specified in the request. The KeyLabelObject parameters is a JSON object with the two properties \"key\" and \"label\" as required by the values in the store.",
             "minimumArguments": 3,
             "maximumArguments": 3,
             "returnValueMembers": [
