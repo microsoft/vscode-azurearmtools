@@ -50,81 +50,89 @@ export async function sortTemplate(template: DeploymentTemplate | undefined, sec
     ext.outputChannel.appendLine("Sorting template");
     switch (sectionType) {
         case TemplateSectionType.Functions:
-            await sortFunctions(template, textEditor);
+            await showSortingResultMessage(() => sortFunctions(template, textEditor), "Functions");
             break;
         case TemplateSectionType.Outputs:
-            await sortOutputs(template, textEditor);
+            await showSortingResultMessage(() => sortOutputs(template, textEditor), "Outputs");
             break;
         case TemplateSectionType.Parameters:
-            await sortParameters(template, textEditor);
+            await showSortingResultMessage(() => sortParameters(template, textEditor), "Parameters");
             break;
         case TemplateSectionType.Resources:
-            await sortResources(template, textEditor);
+            await showSortingResultMessage(() => sortResources(template, textEditor), "Resources");
             break;
         case TemplateSectionType.Variables:
-            await sortVariables(template, textEditor);
+            await showSortingResultMessage(() => sortVariables(template, textEditor), "Variables");
             break;
         case TemplateSectionType.TopLevel:
-            await sortTopLevel(template, textEditor);
+            await showSortingResultMessage(() => sortTopLevel(template, textEditor), "Top level items");
             break;
         default:
             assertNever(sectionType);
-
     }
-    vscode.window.showInformationMessage("Done sorting template!");
 }
 
-async function sortOutputs(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
+async function showSortingResultMessage(sortAction: () => Promise<boolean>, part: string): Promise<void> {
+    let didSorting = await sortAction();
+    let message = didSorting ? `${part} were sorted` : `No ${part.toLowerCase()} needed sorting`;
+    vscode.window.showInformationMessage(message);
+}
+
+async function sortOutputs(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
     let rootValue = template.topLevelValue;
     if (!rootValue) {
-        return;
+        return false;
     }
     let outputs = Json.asObjectValue(rootValue.getPropertyValue(templateKeys.outputs));
     if (outputs) {
-        await sortGeneric<Json.Property>(outputs.properties, x => x.nameValue.quotedValue, x => x.span, template, textEditor);
+        return await sortGeneric<Json.Property>(outputs.properties, x => x.nameValue.quotedValue, x => x.span, template, textEditor);
     }
+    return false;
 }
 
-async function sortResources(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
+async function sortResources(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
     let rootValue = template.topLevelValue;
     if (!rootValue) {
-        return;
+        return false;
     }
     let resources = Json.asArrayValue(rootValue.getPropertyValue(templateKeys.resources));
     if (resources) {
-        await sortGenericDeep<Json.Value, Json.Value>(
+        let didSort1 = await sortGenericDeep<Json.Value, Json.Value>(
             resources.elements, getResourcesFromResource, getNameFromResource, x => x.span, template, textEditor);
-        await sortGeneric<Json.Value>(resources.elements, getNameFromResource, x => x.span, template, textEditor);
+        let didSort2 = await sortGeneric<Json.Value>(resources.elements, getNameFromResource, x => x.span, template, textEditor);
+        return didSort1 || didSort2;
     }
+    return false;
 }
 
-async function sortTopLevel(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
+async function sortTopLevel(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
     let rootValue = template.topLevelValue;
     if (!rootValue) {
-        return;
+        return false;
     }
-    await sortGeneric<Json.Property>(rootValue.properties, x => getTopLevelOrder(x.nameValue.quotedValue), x => x.span, template, textEditor);
+    return await sortGeneric<Json.Property>(rootValue.properties, x => getTopLevelOrder(x.nameValue.quotedValue), x => x.span, template, textEditor);
 }
 
-async function sortVariables(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
-    await sortGeneric<IVariableDefinition>(
+async function sortVariables(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
+    return await sortGeneric<IVariableDefinition>(
         template.topLevelScope.variableDefinitions,
         x => x.nameValue.quotedValue, x => x.span, template, textEditor);
 }
 
-async function sortParameters(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
-    await sortGeneric<IParameterDefinition>(
+async function sortParameters(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
+    return await sortGeneric<IParameterDefinition>(
         template.topLevelScope.parameterDefinitions,
         x => x.nameValue.quotedValue, x => x.fullSpan, template, textEditor);
 }
 
-async function sortFunctions(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
-    await sortGenericDeep<UserFunctionNamespaceDefinition, UserFunctionDefinition>(
+async function sortFunctions(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
+    let didSort1 = await sortGenericDeep<UserFunctionNamespaceDefinition, UserFunctionDefinition>(
         template.topLevelScope.namespaceDefinitions,
         x => x.members, x => x.nameValue.quotedValue, x => x.span, template, textEditor);
-    await sortGeneric<UserFunctionNamespaceDefinition>(
+    let didSort2 = await sortGeneric<UserFunctionNamespaceDefinition>(
         template.topLevelScope.namespaceDefinitions,
         x => x.nameValue.quotedValue, x => x.span, template, textEditor);
+    return didSort1 || didSort2;
 }
 
 function createCommentsMap(tokens: Json.Token[], commentTokens: Json.Token[], lastSpan: language.Span): CommentsMap {
@@ -185,9 +193,9 @@ function getTopLevelOrder(key: string): string {
     }
 }
 
-async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spanSelector: (value: T) => language.Span, template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
+async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spanSelector: (value: T) => language.Span, template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
     if (list.length < 2) {
-        return;
+        return false;
     }
     let document = textEditor.document;
     let lastSpan = spanSelector(list[list.length - 1]);
@@ -198,20 +206,25 @@ async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spa
     let sorted = list.sort((a, b) => sortSelector(a).localeCompare(sortSelector(b)));
     let orderAfter = list.map(sortSelector);
     if (arraysEqual<string>(orderBefore, orderAfter)) {
-        return;
+        return false;
     }
     let sortedTexts = sorted.map(value => getText(expandSpanToPrecedingComments(spanSelector(value), comments), document));
     let joined = joinTexts(sortedTexts, indentedTexts);
     await textEditor.edit(x => x.replace(selectionWithComments, joined));
+    return true;
 }
 
-async function sortGenericDeep<T, TChild>(list: T[], childSelector: (value: T) => TChild[] | undefined, sortSelector: (value: TChild) => string, spanSelector: (value: TChild) => language.Span, template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<void> {
+async function sortGenericDeep<T, TChild>(list: T[], childSelector: (value: T) => TChild[] | undefined, sortSelector: (value: TChild) => string, spanSelector: (value: TChild) => language.Span, template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
+    let didSorting = false;
     for (let item of list) {
         let children = childSelector(item);
         if (children) {
-            await sortGeneric(children, sortSelector, spanSelector, template, textEditor);
+            if (await sortGeneric(children, sortSelector, spanSelector, template, textEditor)) {
+                didSorting = true;
+            }
         }
     }
+    return didSorting;
 }
 
 function getNameFromResource(value: Json.Value): string {
