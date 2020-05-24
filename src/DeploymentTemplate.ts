@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from 'assert';
-import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
+import { CodeAction, CodeActionContext, CodeActionKind, Command, Range, Selection, Uri } from "vscode";
 import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
 import { templateKeys } from "./constants";
@@ -533,12 +533,32 @@ export class DeploymentTemplate extends DeploymentDocument {
         context: CodeActionContext
     ): Promise<(Command | CodeAction)[]> {
         assert(!associatedDocument || associatedDocument instanceof DeploymentParameters, "Associated document is of the wrong type");
-        return [];
+        const actions: (Command | CodeAction)[] = [];
+        let pc = this.getContextFromDocumentLineAndColumnIndexes(range.start.line, range.start.character, undefined);
+        if (range.start.line === range.end.line && range.start.character !== range.end.character) {
+            let jsonToken = pc.document.getJSONValueAtDocumentCharacterIndex(pc.jsonTokenStartIndex - 1, language.Contains.extended);
+            if (jsonToken instanceof Json.Property) {
+                let startIndex = this.getDocumentCharacterIndex(range.start.line, range.start.character);
+                let endIndex = this.getDocumentCharacterIndex(range.end.line, range.end.character);
+                let span: language.Span = new language.Span(startIndex, endIndex - startIndex);
+                const selectedText = this.getDocumentText(span);
+                if (pc.jsonValue && jsonToken.value && jsonToken.value.span === pc.jsonValue.span && selectedText && pc.jsonValue.asStringValue?.unquotedValue === selectedText) {
+                    actions.push(this.createExtractParameterCommand());
+                }
+            }
+        }
+        return actions;
     }
 
     public getTextAtTleValue(tleValue: TLE.Value, parentStringToken: Json.Token): string {
         assert.equal(parentStringToken.type, Json.TokenType.QuotedString);
         const spanOfValueInsideString = tleValue.getSpan();
         return this.getDocumentText(spanOfValueInsideString, parentStringToken.span.startIndex);
+    }
+
+    private createExtractParameterCommand(): CodeAction {
+        const action = new CodeAction('Extract Parameter...', CodeActionKind.RefactorExtract);
+        action.command = { command: 'editor.action.rename', title: '' };
+        return action;
     }
 }

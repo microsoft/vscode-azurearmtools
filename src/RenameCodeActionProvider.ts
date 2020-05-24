@@ -1,7 +1,5 @@
 
 import * as vscode from 'vscode';
-import { Property } from './JSON';
-import { Contains } from './Language';
 import { PositionContext } from './PositionContext';
 import { TemplatePositionContext } from './TemplatePositionContext';
 import { getRenameError } from './util/getRenameError';
@@ -17,17 +15,6 @@ export class RenameCodeActionProvider implements vscode.CodeActionProvider {
             return;
         }
         const referenceSiteInfo = pc.getReferenceSiteInfo(true);
-        if (range.start.line === range.end.line && range.start.character !== range.end.character) {
-            let jsonToken = pc.document.getJSONValueAtDocumentCharacterIndex(pc.jsonTokenStartIndex - 1, Contains.extended);
-            if (jsonToken instanceof Property) {
-                const selectedText = document.getText(range);
-                if (pc.jsonValue && jsonToken.value && jsonToken.value.span === pc.jsonValue.span && selectedText && pc.jsonValue.asStringValue?.unquotedValue === selectedText) {
-                    return [
-                        this.createExtractParameterCommand()
-                    ];
-                }
-            }
-        }
         if (!referenceSiteInfo || getRenameError(referenceSiteInfo)) {
             return;
         }
