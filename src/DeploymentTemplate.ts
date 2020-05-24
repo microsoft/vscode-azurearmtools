@@ -558,7 +558,7 @@ export class DeploymentTemplate extends DeploymentDocument {
 
     private createExtractParameterCommand(): CodeAction {
         const action = new CodeAction('Extract Parameter...', CodeActionKind.RefactorExtract);
-        action.command = { command: 'editor.action.rename', title: '' };
+        action.command = { command: 'azurerm-vscode-tools.extractParameter', title: '' };
         return action;
     }
 }

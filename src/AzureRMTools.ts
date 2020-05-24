@@ -128,6 +128,21 @@ export class AzureRMTools {
                 await this.sortTemplate(sectionType.value, uri, editor);
             }
         });
+        registerCommand("azurerm-vscode-tools.extractParameter", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
+            editor = editor || vscode.window.activeTextEditor;
+            uri = uri || vscode.window.activeTextEditor?.document.uri;
+            if (editor) {
+                let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
+                if (!deploymentTemplate) {
+                    return;
+                }
+                let selection = editor.selection;
+                let selectedText = editor.document.getText(selection);
+                let name = await ext.ui.showInputBox({ prompt: "Name of parameter?" });
+                await editor.edit(builder => builder.replace(selection, `[parameters('${name}')]`));
+                await new InsertItem(ext.ui).insertParameterWithDefaultValue(deploymentTemplate, editor, _context, name, selectedText);
+            }
+        });
         registerCommand("azurerm-vscode-tools.sortFunctions", async () => {
             await this.sortTemplate(TemplateSectionType.Functions);
         });
