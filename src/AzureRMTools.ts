@@ -15,6 +15,7 @@ import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnostics
 import { DeploymentDocument } from "./DeploymentDocument";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
+import { ExtractItem } from "./extractItem";
 import { Histogram } from "./Histogram";
 import * as Hover from './Hover';
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
@@ -136,11 +137,7 @@ export class AzureRMTools {
                 if (!deploymentTemplate) {
                     return;
                 }
-                let selection = editor.selection;
-                let selectedText = editor.document.getText(selection);
-                let name = await ext.ui.showInputBox({ prompt: "Name of parameter?" });
-                await editor.edit(builder => builder.replace(selection, `[parameters('${name}')]`));
-                await new InsertItem(ext.ui).insertParameterWithDefaultValue(deploymentTemplate, editor, _context, name, selectedText);
+                await new ExtractItem(ext.ui).extractParameter(editor, deploymentTemplate, _context);
             }
         });
         registerCommand("azurerm-vscode-tools.sortFunctions", async () => {
