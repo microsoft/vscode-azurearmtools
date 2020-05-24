@@ -300,7 +300,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
         let element = elementInfo.current.level === 1 ? elementInfo.current : elementInfo.root;
         const keyNode = this.tree && this.tree.getValueAtCharacterIndex(element.key.start, Contains.strict);
         if (keyNode instanceof Json.StringValue) {
-            return keyNode.unquotedValue;
+            return `${keyNode.unquotedValue}${elementInfo.current.level}`;
         }
         return undefined;
     }
