@@ -15,7 +15,7 @@ import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnostics
 import { DeploymentDocument } from "./DeploymentDocument";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
-import { ExtractItem } from "./extractItem";
+import { ExtractItem } from "./ExtractItem";
 import { Histogram } from "./Histogram";
 import * as Hover from './Hover';
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
@@ -748,7 +748,8 @@ export class AzureRMTools {
                     codeActionProvider,
                     {
                         providedCodeActionKinds: [
-                            vscode.CodeActionKind.QuickFix
+                            vscode.CodeActionKind.QuickFix,
+                            vscode.CodeActionKind.RefactorExtract
                         ]
                     }
                 ));

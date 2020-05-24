@@ -28,11 +28,4 @@ export class RenameCodeActionProvider implements vscode.CodeActionProvider {
         action.command = { command: command, title: '' };
         return action;
     }
-
-    private createExtractParameterCommand(): vscode.CodeAction {
-        const action = new vscode.CodeAction('Extract Parameter...', vscode.CodeActionKind.RefactorExtract);
-        action.command = { command: command, title: '' };
-        return action;
-    }
-
 }

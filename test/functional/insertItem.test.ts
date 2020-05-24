@@ -12,8 +12,9 @@ import * as fse from 'fs-extra';
 import * as vscode from "vscode";
 // tslint:disable-next-line:no-duplicate-imports
 import { window, workspace } from "vscode";
-import { IActionContext, IAzureUserInput, PromptResult } from 'vscode-azureextensionui';
+import { IAzureUserInput, PromptResult } from 'vscode-azureextensionui';
 import { DeploymentTemplate, InsertItem, TemplateSectionType } from '../../extension.bundle';
+import { getActionContext } from '../support/getActionContext';
 import { getTempFilePath } from "../support/getTempFilePath";
 
 suite("InsertItem", async (): Promise<void> => {
@@ -516,21 +517,4 @@ class MockUserInput implements IAzureUserInput {
     public async showOpenDialog(options: vscode.OpenDialogOptions): Promise<vscode.Uri[]> {
         return [vscode.Uri.file("c:\\some\\path")];
     }
-}
-
-function getActionContext(): IActionContext {
-    return {
-        telemetry: {
-            measurements: {},
-            properties: {},
-            suppressAll: true,
-            suppressIfSuccessful: true
-        },
-        errorHandling: {
-            issueProperties: {},
-            rethrow: false,
-            suppressDisplay: true,
-            suppressReportIssue: true
-        }
-    };
 }
