@@ -21,4 +21,13 @@ export class ExtractItem {
         await new InsertItem(this.ui).insertParameterWithDefaultValue(template, editor, context, name, selectedText, description);
         editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.end), vscode.TextEditorRevealType.Default);
     }
+
+    public async extractVariable(editor: vscode.TextEditor, template: DeploymentTemplate, context: IActionContext): Promise<void> {
+        let selection = editor.selection;
+        let selectedText = editor.document.getText(selection);
+        let name = await this.ui.showInputBox({ prompt: "Name of variable?" });
+        await editor.edit(builder => builder.replace(selection, `[variables('${name}')]`));
+        await new InsertItem(this.ui).insertVariableWithValue(template, editor, context, name, selectedText);
+        editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.end), vscode.TextEditorRevealType.Default);
+    }
 }

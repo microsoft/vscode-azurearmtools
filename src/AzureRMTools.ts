@@ -140,6 +140,17 @@ export class AzureRMTools {
                 await new ExtractItem(ext.ui).extractParameter(editor, deploymentTemplate, _context);
             }
         });
+        registerCommand("azurerm-vscode-tools.extractVariable", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
+            editor = editor || vscode.window.activeTextEditor;
+            uri = uri || vscode.window.activeTextEditor?.document.uri;
+            if (editor) {
+                let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
+                if (!deploymentTemplate) {
+                    return;
+                }
+                await new ExtractItem(ext.ui).extractVariable(editor, deploymentTemplate, _context);
+            }
+        });
         registerCommand("azurerm-vscode-tools.sortFunctions", async () => {
             await this.sortTemplate(TemplateSectionType.Functions);
         });

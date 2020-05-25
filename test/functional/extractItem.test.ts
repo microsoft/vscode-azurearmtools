@@ -34,6 +34,23 @@ suite("ExtractItem", async (): Promise<void> => {
         assert.equal(docTextAfterInsertion, expectedTemplate);
     }
 
+    async function createExtractVariableTests(startTemplate: string, expectedTemplate: string, selectedText: string): Promise<void> {
+        const tempPath = getTempFilePath(`insertItem`, '.azrm');
+        fse.writeFileSync(tempPath, startTemplate);
+        let document = await vscode.workspace.openTextDocument(tempPath);
+        let textEditor = await vscode.window.showTextDocument(document);
+        let extractItem = new ExtractItem(testUserInput);
+        let deploymentTemplate = new DeploymentTemplate(document.getText(), document.uri);
+        let text = document.getText(undefined);
+        let index = text.indexOf(selectedText);
+        let position = document.positionAt(index);
+        let position2 = document.positionAt(index + selectedText.length);
+        textEditor.selection = new vscode.Selection(position, position2);
+        await extractItem.extractVariable(textEditor, deploymentTemplate, getActionContext());
+        const docTextAfterInsertion = document.getText();
+        assert.equal(docTextAfterInsertion, expectedTemplate);
+    }
+
     suite("ExtractParameter", () => {
         const baseTemplate =
             `{
@@ -51,7 +68,7 @@ suite("ExtractItem", async (): Promise<void> => {
         }
     ]
 }`;
-        const extractedTemplate =
+        const storageNameTemplate =
             `{
     "parameters": {
         "param1": {
@@ -75,9 +92,102 @@ suite("ExtractItem", async (): Promise<void> => {
         }
     ]
 }`;
+        const locationTemplate =
+            `{
+    "parameters": {
+        "param1": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Description"
+            }
+        }
+    },
+    "resources": [
+        {
+            "name": "storageaccount1",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01",
+            "location": "[parameters('param1')]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "Premium_LRS"
+            }
+        }
+    ]
+}`;
         test('Storageaccount1', async () => {
             await testUserInput.runWithInputs(["param1", "Description"], async () => {
-                await createExtractParameterTests(baseTemplate, extractedTemplate, "storageaccount1");
+                await createExtractParameterTests(baseTemplate, storageNameTemplate, "storageaccount1");
+            });
+        });
+        test('[resourceGroup().location]', async () => {
+            await testUserInput.runWithInputs(["param1", "Description"], async () => {
+                await createExtractParameterTests(baseTemplate, locationTemplate, "[resourceGroup().location]");
+            });
+        });
+    });
+    suite("ExtractVariable", () => {
+        const baseTemplate =
+            `{
+    "variables": {},
+    "resources": [
+        {
+            "name": "storageaccount1",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01",
+            "location": "[resourceGroup().location]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "Premium_LRS"
+            }
+        }
+    ]
+}`;
+        const storageNameTemplate =
+            `{
+    "variables": {
+        "var1": "storageaccount1"
+    },
+    "resources": [
+        {
+            "name": "[variables('var1')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01",
+            "location": "[resourceGroup().location]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "Premium_LRS"
+            }
+        }
+    ]
+}`;
+        const locationTemplate =
+            `{
+    "variables": {
+        "var1": "[resourceGroup().location]"
+    },
+    "resources": [
+        {
+            "name": "storageaccount1",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01",
+            "location": "[variables('var1')]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "Premium_LRS"
+            }
+        }
+    ]
+}`;
+        test('Storageaccount1', async () => {
+            await testUserInput.runWithInputs(["var1"], async () => {
+                await createExtractVariableTests(baseTemplate, storageNameTemplate, "storageaccount1");
+            });
+        });
+        test('[resourceGroup().location]', async () => {
+            await testUserInput.runWithInputs(["var1"], async () => {
+                await createExtractVariableTests(baseTemplate, locationTemplate, "[resourceGroup().location]");
             });
         });
     });

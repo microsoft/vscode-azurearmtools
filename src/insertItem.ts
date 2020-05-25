@@ -337,6 +337,19 @@ export class InsertItem {
         });
     }
 
+    public async insertVariableWithValue(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext, name: string, value: string): Promise<void> {
+        await this.insertInObject({
+            template,
+            textEditor,
+            part: templateKeys.variables,
+            data: value,
+            name,
+            context,
+            setCursor: false,
+            reveal: false
+        });
+    }
+
     private async insertOutput(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         let name = await this.ui.showInputBox({ prompt: "Name of output?" });
         const outputType = await this.ui.showQuickPick(getItemType(), { placeHolder: 'Type of output?' });

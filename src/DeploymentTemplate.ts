@@ -543,7 +543,8 @@ export class DeploymentTemplate extends DeploymentDocument {
                 let span: language.Span = new language.Span(startIndex, endIndex - startIndex);
                 const selectedText = this.getDocumentText(span);
                 if (pc.jsonValue && jsonToken.value && jsonToken.value.span === pc.jsonValue.span && selectedText && pc.jsonValue.asStringValue?.unquotedValue === selectedText) {
-                    actions.push(this.createExtractParameterCommand());
+                    actions.push(this.createExtractCommand('Extract Parameter...', 'extractParameter'));
+                    actions.push(this.createExtractCommand('Extract Variable...', 'extractVariable'));
                 }
             }
         }
@@ -556,9 +557,9 @@ export class DeploymentTemplate extends DeploymentDocument {
         return this.getDocumentText(spanOfValueInsideString, parentStringToken.span.startIndex);
     }
 
-    private createExtractParameterCommand(): CodeAction {
-        const action = new CodeAction('Extract Parameter...', CodeActionKind.RefactorExtract);
-        action.command = { command: 'azurerm-vscode-tools.extractParameter', title: '' };
+    private createExtractCommand(title: string, command: string): CodeAction {
+        const action = new CodeAction(title, CodeActionKind.RefactorExtract);
+        action.command = { command: `azurerm-vscode-tools.${command}`, title: '' };
         return action;
     }
 }
