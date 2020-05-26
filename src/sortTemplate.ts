@@ -72,12 +72,25 @@ export async function sortTemplate(template: DeploymentTemplate | undefined, sec
     }
 }
 
+/**
+ * Shows an information message on the result of the sorting.
+ * Could be "Resources section was sorted" or "Nothing in resources needed sorting"
+ * @param sortAction The action that is invoked to do the sorting
+ * @param part The part of the template (example: Resources)
+ * @returns A promise of void
+ */
 async function showSortingResultMessage(sortAction: () => Promise<boolean>, part: string): Promise<void> {
     let didSorting = await sortAction();
-    let message = didSorting ? `${part} were sorted` : `No ${part.toLowerCase()} needed sorting`;
+    let message = didSorting ? `${part} section was sorted` : `Nothing in ${part.toLowerCase()} needed sorting`;
     vscode.window.showInformationMessage(message);
 }
 
+/**
+ * Sorts the outputs.
+ * @param template The template to be sorted
+ * @param textEditor The current text editor
+ * @returns True if order was changed when sorting, otherwise false
+ */
 async function sortOutputs(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
     let rootValue = template.topLevelValue;
     if (!rootValue) {
@@ -90,6 +103,12 @@ async function sortOutputs(template: DeploymentTemplate, textEditor: vscode.Text
     return false;
 }
 
+/**
+ * Sorts the resources and first level of their sub resources.
+ * @param  template The deployment template to be sorted
+ * @param textEditor The current text editor
+ * @returns True if the order was changed when sorting, otherwise false
+ */
 async function sortResources(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
     let rootValue = template.topLevelValue;
     if (!rootValue) {
@@ -105,6 +124,12 @@ async function sortResources(template: DeploymentTemplate, textEditor: vscode.Te
     return false;
 }
 
+/**
+ * Sorts the top-level items (parameters, variables, functions, resources and outputs).
+ * @param template The deployment template to be sorted
+ * @param textEditor The current text editor
+ * @returns True if order was changed after sorting, otherwise false
+ */
 async function sortTopLevel(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
     let rootValue = template.topLevelValue;
     if (!rootValue) {
@@ -113,18 +138,36 @@ async function sortTopLevel(template: DeploymentTemplate, textEditor: vscode.Tex
     return await sortGeneric<Json.Property>(rootValue.properties, x => getTopLevelOrder(x.nameValue.quotedValue), x => x.span, template, textEditor);
 }
 
+/**
+ * Sort the variables.
+ * @param template The deployment template to be sorted
+ * @param textEditor The current text editor
+ * @returns True if order was changed after sorting, otherwise false
+ */
 async function sortVariables(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
     return await sortGeneric<IVariableDefinition>(
         template.topLevelScope.variableDefinitions,
         x => x.nameValue.quotedValue, x => x.span, template, textEditor);
 }
 
+/**
+ * Sorts the parameters.
+ * @param template The deployment template to be sorted
+ * @param textEditor The current text editor
+ * @returns True if order was changed after sorting, otherwise false
+ */
 async function sortParameters(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
     return await sortGeneric<IParameterDefinition>(
         template.topLevelScope.parameterDefinitions,
         x => x.nameValue.quotedValue, x => x.fullSpan, template, textEditor);
 }
 
+/**
+ * Sorts the functions and namespaces.
+ * @param template The deployment template to be sorted
+ * @param textEditor The current text editor
+ * @returns True if order was changed after sorting, otherwise false
+ */
 async function sortFunctions(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
     let didSort1 = await sortGenericDeep<UserFunctionNamespaceDefinition, UserFunctionDefinition>(
         template.topLevelScope.namespaceDefinitions,
