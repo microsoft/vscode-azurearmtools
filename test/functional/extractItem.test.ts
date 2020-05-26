@@ -130,6 +130,11 @@ suite("ExtractItem", async (): Promise<void> => {
                 await createExtractParameterTests(baseTemplate, locationTemplate, "[resourceGroup().location]");
             });
         });
+        test('resourceGroup().location', async () => {
+            await testUserInput.runWithInputs(["location", "Location of resource"], async () => {
+                await createExtractParameterTests(baseTemplate, locationTemplate, "resourceGroup().location");
+            });
+        });
     });
     suite("ExtractVariable", () => {
         const storageKindTemplate =
