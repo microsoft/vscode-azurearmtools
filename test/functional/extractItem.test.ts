@@ -50,14 +50,13 @@ suite("ExtractItem", async (): Promise<void> => {
         const docTextAfterInsertion = document.getText();
         assert.equal(docTextAfterInsertion, expectedTemplate);
     }
-
-    suite("ExtractParameter", () => {
-        const baseTemplate =
-            `{
+    const baseTemplate =
+        `{
     "parameters": {},
+    "variables": {},
     "resources": [
         {
-            "name": "storageaccount1",
+            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-06-01",
             "location": "[resourceGroup().location]",
@@ -68,24 +67,28 @@ suite("ExtractItem", async (): Promise<void> => {
         }
     ]
 }`;
+
+    suite("ExtractParameter", () => {
+
         const storageNameTemplate =
             `{
     "parameters": {
-        "param1": {
+        "storageKind": {
             "type": "string",
-            "defaultValue": "storageaccount1",
+            "defaultValue": "StorageV2",
             "metadata": {
-                "description": "Description"
+                "description": "Kind of storage"
             }
         }
     },
+    "variables": {},
     "resources": [
         {
-            "name": "[parameters('param1')]",
+            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-06-01",
             "location": "[resourceGroup().location]",
-            "kind": "StorageV2",
+            "kind": "[parameters('storageKind')]",
             "sku": {
                 "name": "Premium_LRS"
             }
@@ -95,20 +98,21 @@ suite("ExtractItem", async (): Promise<void> => {
         const locationTemplate =
             `{
     "parameters": {
-        "param1": {
+        "location": {
             "type": "string",
             "defaultValue": "[resourceGroup().location]",
             "metadata": {
-                "description": "Description"
+                "description": "Location of resource"
             }
         }
     },
+    "variables": {},
     "resources": [
         {
-            "name": "storageaccount1",
+            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-06-01",
-            "location": "[parameters('param1')]",
+            "location": "[parameters('location')]",
             "kind": "StorageV2",
             "sku": {
                 "name": "Premium_LRS"
@@ -116,46 +120,31 @@ suite("ExtractItem", async (): Promise<void> => {
         }
     ]
 }`;
-        test('Storageaccount1', async () => {
-            await testUserInput.runWithInputs(["param1", "Description"], async () => {
-                await createExtractParameterTests(baseTemplate, storageNameTemplate, "storageaccount1");
+        test('StorageKind', async () => {
+            await testUserInput.runWithInputs(["storageKind", "Kind of storage"], async () => {
+                await createExtractParameterTests(baseTemplate, storageNameTemplate, "StorageV2");
             });
         });
         test('[resourceGroup().location]', async () => {
-            await testUserInput.runWithInputs(["param1", "Description"], async () => {
+            await testUserInput.runWithInputs(["location", "Location of resource"], async () => {
                 await createExtractParameterTests(baseTemplate, locationTemplate, "[resourceGroup().location]");
             });
         });
     });
     suite("ExtractVariable", () => {
-        const baseTemplate =
+        const storageKindTemplate =
             `{
-    "variables": {},
-    "resources": [
-        {
-            "name": "storageaccount1",
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-06-01",
-            "location": "[resourceGroup().location]",
-            "kind": "StorageV2",
-            "sku": {
-                "name": "Premium_LRS"
-            }
-        }
-    ]
-}`;
-        const storageNameTemplate =
-            `{
+    "parameters": {},
     "variables": {
-        "var1": "storageaccount1"
+        "storageKind": "StorageV2"
     },
     "resources": [
         {
-            "name": "[variables('var1')]",
+            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-06-01",
             "location": "[resourceGroup().location]",
-            "kind": "StorageV2",
+            "kind": "[variables('storageKind')]",
             "sku": {
                 "name": "Premium_LRS"
             }
@@ -164,15 +153,16 @@ suite("ExtractItem", async (): Promise<void> => {
 }`;
         const locationTemplate =
             `{
+    "parameters": {},
     "variables": {
-        "var1": "[resourceGroup().location]"
+        "location": "[resourceGroup().location]"
     },
     "resources": [
         {
-            "name": "storageaccount1",
+            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-06-01",
-            "location": "[variables('var1')]",
+            "location": "[variables('location')]",
             "kind": "StorageV2",
             "sku": {
                 "name": "Premium_LRS"
@@ -181,12 +171,12 @@ suite("ExtractItem", async (): Promise<void> => {
     ]
 }`;
         test('Storageaccount1', async () => {
-            await testUserInput.runWithInputs(["var1"], async () => {
-                await createExtractVariableTests(baseTemplate, storageNameTemplate, "storageaccount1");
+            await testUserInput.runWithInputs(["storageKind"], async () => {
+                await createExtractVariableTests(baseTemplate, storageKindTemplate, "StorageV2");
             });
         });
         test('[resourceGroup().location]', async () => {
-            await testUserInput.runWithInputs(["var1"], async () => {
+            await testUserInput.runWithInputs(["location"], async () => {
                 await createExtractVariableTests(baseTemplate, locationTemplate, "[resourceGroup().location]");
             });
         });
