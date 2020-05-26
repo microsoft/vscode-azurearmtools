@@ -65,7 +65,7 @@ export async function sortTemplate(template: DeploymentTemplate | undefined, sec
             await showSortingResultMessage(() => sortVariables(template, textEditor), "Variables");
             break;
         case TemplateSectionType.TopLevel:
-            await showSortingResultMessage(() => sortTopLevel(template, textEditor), "Top level items");
+            await showSortingResultMessage(() => sortTopLevel(template, textEditor), "Top-level items");
             break;
         default:
             assertNever(sectionType);
