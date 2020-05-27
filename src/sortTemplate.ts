@@ -81,7 +81,7 @@ export async function sortTemplate(template: DeploymentTemplate | undefined, sec
  */
 async function showSortingResultMessage(sortAction: () => Promise<boolean>, part: string): Promise<void> {
     let didSorting = await sortAction();
-    let message = didSorting ? `${part} section was sorted` : `Nothing in ${part.toLowerCase()} needed sorting`;
+    let message = didSorting ? `"${part}" section was sorted` : `Nothing in "${part.toLowerCase()}" needed sorting`;
     vscode.window.showInformationMessage(message);
 }
 
