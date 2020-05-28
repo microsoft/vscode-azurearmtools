@@ -432,7 +432,7 @@ export class InsertItem {
         let newCursorPosition = this.getCursorPositionForInsertResource(textEditor, index, prepend);
         textEditor.selection = new vscode.Selection(newCursorPosition, newCursorPosition);
         await commands.executeCommand('editor.action.insertSnippet', { name: resource.label });
-        textEditor.revealRange(new vscode.Range(newCursorPosition, newCursorPosition), vscode.TextEditorRevealType.Default);
+        textEditor.revealRange(new vscode.Range(newCursorPosition, newCursorPosition), vscode.TextEditorRevealType.AtTop);
     }
 
     private getCursorPositionForInsertResource(textEditor: vscode.TextEditor, index: number, prepend: string): vscode.Position {
@@ -512,7 +512,8 @@ export class InsertItem {
         text = this.formatText(text, textEditor);
         let pos = textEditor.document.positionAt(index);
         await textEditor.edit(builder => builder.insert(pos, text));
-        textEditor.revealRange(new vscode.Range(pos, pos), vscode.TextEditorRevealType.Default);
+        let endPos = textEditor.document.positionAt(index + text.length);
+        textEditor.revealRange(new vscode.Range(pos, endPos), vscode.TextEditorRevealType.Default);
         if (setCursor && text.lastIndexOf(insertCursorText) >= 0) {
             let insertedText = textEditor.document.getText(new vscode.Range(pos, textEditor.document.positionAt(index + text.length)));
             let cursorPos = insertedText.lastIndexOf(insertCursorText);
