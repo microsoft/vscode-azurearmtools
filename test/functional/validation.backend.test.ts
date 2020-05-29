@@ -232,11 +232,7 @@ suite("Backend validation", () => {
                 parametersFile: "templates/param-with-keyvault-reference.params.json"
             },
             [
-                "Warning: The parameter 'administratorLoginPassword' is never used. (arm-template (expressions))",
-
-                // TODO: This error shouldn't occur
-                // https://github.com/microsoft/vscode-azurearmtools/issues/609
-                "Error: Template validation failed: The value for the template parameter 'administratorLoginPassword' at line '5' and column '39' is not provided. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation))",
+                "Warning: The parameter 'administratorLoginPassword' is never used. (arm-template (expressions))"
             ]
         );
     });
