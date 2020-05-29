@@ -7,7 +7,6 @@ import * as vscode from "vscode";
 import { Language } from "../extension.bundle";
 import { templateKeys } from './constants';
 import { DeploymentTemplate } from "./DeploymentTemplate";
-import { ext } from './extensionVariables';
 import { IParameterDefinition } from './IParameterDefinition';
 import * as Json from "./JSON";
 import * as language from "./Language";
@@ -47,7 +46,6 @@ export async function sortTemplate(template: DeploymentTemplate | undefined, sec
     if (!template) {
         return;
     }
-    ext.outputChannel.appendLine("Sorting template");
     switch (sectionType) {
         case TemplateSectionType.Functions:
             await showSortingResultMessage(() => sortFunctions(template, textEditor), "Functions");
