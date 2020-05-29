@@ -13,7 +13,6 @@ import { IActionContext, IAzureUserInput } from "vscode-azureextensionui";
 import { Json, templateKeys } from "../extension.bundle";
 import { assetsPath } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
-import { ext } from './extensionVariables';
 import { TemplateSectionType } from "./TemplateSectionType";
 import { assertNever } from './util/assertNever';
 
@@ -104,7 +103,6 @@ export class InsertItem {
         if (!template) {
             return;
         }
-        ext.outputChannel.appendLine("Insert item");
         switch (sectionType) {
             case TemplateSectionType.Functions:
                 await this.insertFunction(template, textEditor, context);
