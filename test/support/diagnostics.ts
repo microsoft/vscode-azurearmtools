@@ -19,6 +19,7 @@ import * as path from 'path';
 import { Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument } from "vscode";
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
+import { parseParametersWithMarkers } from "./parseTemplate";
 import { stringify } from "./stringify";
 import { TempDocument, TempEditor, TempFile } from "./TempFile";
 
@@ -57,7 +58,11 @@ export interface IDeploymentParameterDefinition {
 export interface IDeploymentOutput {
     // tslint:disable-next-line:no-reserved-keywords
     type: ExpressionType | string;
-    value: number | unknown[] | string | {};
+    value?: number | unknown[] | string | {};
+    copy?: {
+        count: string;
+        input: string;
+    };
 }
 
 export interface IDeploymentFunctionDefinition {
@@ -148,7 +153,7 @@ export interface IDeploymentTemplateResource {
     // tslint:disable-next-line:no-reserved-keywords
     type: string;
     name: string;
-    apiVersion: string;
+    apiVersion?: string;
     location?: string;
     dependsOn?: string[];
     tags?: { [key: string]: string } | string;
@@ -188,6 +193,8 @@ export interface ITestDiagnosticsOptions extends IGetDiagnosticsOptions {
 }
 
 interface IGetDiagnosticsOptions {
+    parameters?: string | Partial<IDeploymentParametersFile>;
+    parametersFile?: string;
     includeSources?: Source[]; // Error sources to include in the comparison - defaults to all
     ignoreSources?: Source[];  // Error sources to ignore in the comparison - defaults to ignoring none
     includeRange?: boolean;    // defaults to false - whether to include the error range in the results for comparison (if true, ignored when expected messages don't have ranges)
@@ -342,46 +349,80 @@ export async function getDiagnosticsForTemplate(
 ): Promise<Diagnostic[]> {
     let templateContents: string | undefined;
     let tempPathSuffix: string = '';
+    let templateFile: TempFile | undefined;
+    let paramsFile: TempFile | undefined;
+    let editor: TempEditor | undefined;
 
-    // tslint:disable-next-line: strict-boolean-expressions
-    options = options || {};
+    try {
 
-    if (typeof templateContentsOrFileName === 'string') {
-        if (!!templateContentsOrFileName.match(/\.jsonc?$/)) {
-            // It's a filename
-            let sourcePath = path.join(testFolder, templateContentsOrFileName);
-            templateContents = fs.readFileSync(sourcePath).toString();
-            tempPathSuffix = path.basename(templateContentsOrFileName, path.extname(templateContentsOrFileName));
+        // tslint:disable-next-line: strict-boolean-expressions
+        options = options || {};
+
+        if (typeof templateContentsOrFileName === 'string') {
+            if (!!templateContentsOrFileName.match(/\.jsonc?$/)) {
+                // It's a filename
+                let sourcePath = path.join(testFolder, templateContentsOrFileName);
+                templateContents = fs.readFileSync(sourcePath).toString();
+                tempPathSuffix = path.basename(templateContentsOrFileName, path.extname(templateContentsOrFileName));
+            } else {
+                // It's a string
+                templateContents = templateContentsOrFileName;
+            }
         } else {
-            // It's a string
-            templateContents = templateContentsOrFileName;
+            // It's a (flying?) object
+            let templateObject: Partial<IDeploymentTemplate> = templateContentsOrFileName;
+            templateContents = stringify(templateObject);
         }
-    } else {
-        // It's a (flying?) object
-        let templateObject: Partial<IDeploymentTemplate> = templateContentsOrFileName;
-        templateContents = stringify(templateObject);
+
+        // Add schema if not already present (to make it easier to write tests)
+        if (!options.doNotAddSchema && !templateContents.includes('$schema')) {
+            templateContents = templateContents.replace(/\s*{\s*/, '{\n"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",\n');
+        }
+
+        if (options.search) {
+            let newContents = templateContents.replace(options.search, options.replace!);
+            templateContents = newContents;
+        }
+
+        templateFile = new TempFile(templateContents, tempPathSuffix);
+        const document = new TempDocument(templateFile);
+
+        // Parameter file
+        if (options.parameters || options.parametersFile) {
+            if (options.parameters) {
+                const { unmarkedText: unmarkedParams } = await parseParametersWithMarkers(options.parameters);
+                paramsFile = new TempFile(unmarkedParams);
+            } else {
+                const absPath = path.join(testFolder, options.parametersFile!);
+                paramsFile = TempFile.fromExistingFile(absPath);
+            }
+
+            // Map template to params
+            await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, paramsFile.uri);
+        }
+
+        editor = new TempEditor(document);
+        await editor.open();
+
+        let diagnostics: Diagnostic[] = await getDiagnosticsForDocument(document.realDocument, options);
+        assert(diagnostics);
+
+        await editor.dispose();
+        return diagnostics;
+    } finally {
+        if (editor) {
+            await editor.dispose();
+        }
+
+        if (templateFile) {
+            // Unmap template file
+            await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, undefined);
+            templateFile.dispose();
+        }
+        if (paramsFile) {
+            paramsFile.dispose();
+        }
     }
-
-    // Add schema if not already present (to make it easier to write tests)
-    if (!options.doNotAddSchema && !templateContents.includes('$schema')) {
-        templateContents = templateContents.replace(/\s*{\s*/, '{\n"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",\n');
-    }
-
-    if (options.search) {
-        let newContents = templateContents.replace(options.search, options.replace!);
-        templateContents = newContents;
-    }
-
-    const tempFile = new TempFile(templateContents, tempPathSuffix);
-    const document = new TempDocument(tempFile);
-    const editor = new TempEditor(document);
-    await editor.open();
-
-    let diagnostics: Diagnostic[] = await getDiagnosticsForDocument(document.realDocument, options);
-    assert(diagnostics);
-
-    await editor.dispose();
-    return diagnostics;
 }
 
 function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOptions, includeRange: boolean): string {

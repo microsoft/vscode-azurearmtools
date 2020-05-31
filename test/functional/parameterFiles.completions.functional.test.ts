@@ -125,6 +125,7 @@ suite("Functional parameter file completions", () => {
                 }
                 if (templateFile) {
                     await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, undefined);
+                    templateFile.dispose();
                 }
             }
         });
