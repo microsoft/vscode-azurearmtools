@@ -86,4 +86,10 @@ export namespace templateKeys {
     export const resourceApiVersion = 'apiVersion';
     export const resourceDependsOn = 'dependsOn';
     export const resourceName = 'name';
+
+    // Nested templates
+    export const nestedDeploymentExprEvalOptions = 'expressionEvaluationOptions';
+    export const nestedDeploymentExprEvalScope = 'scope';
+    export const nestedDeploymentExprEvalScopeInner = 'inner';
+    export const nestedDeploymentTemplateProperty = 'template';
 }

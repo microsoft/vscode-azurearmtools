@@ -48,6 +48,10 @@ suite("arm-template-language-samples", () => {
         testSample("variable-use-via-copy.json");
         testSample("variable-use.json");
 
+        // Nested templates
+        // https://github.com/microsoft/vscode-azurearmtools/issues/484
+        testSample("nested-deployment-scoping.json");
+        testSample("azuredeploy.inline.json");
     });
 
     // ====== TODO: NOT PASSING YET (https://github.com/microsoft/vscode-azurearmtools/issues/687)
@@ -59,11 +63,6 @@ suite("arm-template-language-samples", () => {
         // TODO: apiProfile bugs: https://github.com/microsoft/vscode-azurearmtools/issues/688
         test("apiProfile.json");
         test("apiprofile2.json");
-
-        // TODO: Support nested templates
-        // https://github.com/microsoft/vscode-azurearmtools/issues/484
-        test("nested-deployment-scoping.json");
-        test("azuredeploy.inline.json");
 
         // TODO: Evaluating expressions in apiVersion
         // https://github.com/microsoft/vscode-azurearmtools/issues/624

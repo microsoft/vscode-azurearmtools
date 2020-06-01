@@ -4,6 +4,7 @@
 
 import * as assert from 'assert';
 import { Uri } from 'vscode';
+import { parseError } from 'vscode-azureextensionui';
 import { DeploymentParameters, DeploymentTemplate, Issue } from "../../extension.bundle";
 import { IDeploymentParametersFile, IPartialDeploymentTemplate } from './diagnostics';
 import { stringify } from "./stringify";
@@ -11,7 +12,14 @@ import { stringify } from "./stringify";
 /**
  * Given a deployment template (string or object), parses it, optionally verifying expected diagnostic messages
  */
-export async function parseTemplate(template: string | IPartialDeploymentTemplate, expectedDiagnosticMessages?: string[], options?: { ignoreWarnings: boolean }): Promise<DeploymentTemplate> {
+export async function parseTemplate(
+    template: string | IPartialDeploymentTemplate,
+    expectedDiagnosticMessages?: string[],
+    options?: {
+        ignoreWarnings?: boolean;
+        replacements?: { [key: string]: string | { [key: string]: unknown } };
+    }
+): Promise<DeploymentTemplate> {
     // Go ahead and allow markers in the document to be removed, we just won't mark them (makes it easier to share the same template in multiple places)
     const { dt } = await parseTemplateWithMarkers(template, expectedDiagnosticMessages, options);
     return dt;
@@ -36,9 +44,11 @@ export async function parseTemplateWithMarkers(
     options?: {
         ignoreWarnings?: boolean;
         ignoreBang?: boolean;
+        replacements?: { [key: string]: string | { [key: string]: unknown } };
     }
 ): Promise<{ dt: DeploymentTemplate; markers: Markers }> {
-    const { unmarkedText, markers } = getDocumentMarkers(template, options);
+    const withReplacements = options?.replacements ? replaceInTemplate(template, options.replacements) : template;
+    const { unmarkedText, markers } = getDocumentMarkers(withReplacements, options);
     const dt: DeploymentTemplate = new DeploymentTemplate(unmarkedText, Uri.file("https://parseTemplate template"));
 
     // Always run these even if not checking against expected, to verify nothing throws
@@ -134,4 +144,50 @@ export function getDocumentMarkers(doc: object | string, options?: { ignoreBang?
         unmarkedText: modified,
         markers
     };
+}
+
+export function replaceInTemplate(
+    template: string | IPartialDeploymentTemplate,
+    replacements: { [key: string]: string | { [key: string]: unknown } }
+): IPartialDeploymentTemplate {
+    let templateString = stringify(template);
+
+    // $REPLACE_PROP_LINE$
+    function getPropLineReplacementString(s: string, addComma: boolean): string {
+        const result = templateString.replace(
+            /"\$REPLACE_PROP_LINE\$": "([^"]*)"\s*,?/g,
+            // tslint:disable-next-line: no-any
+            (_substring: string, ...args: any[]) => {
+                const key = args[0];
+                const replacement = replacements[key];
+                assert(replacement !== undefined, `Replacement not specified for $REPLACE_PROP_LINE$ with key '${key}'`);
+                if (typeof replacement === 'string') {
+                    return replacement;
+                }
+
+                const props = Object.getOwnPropertyNames(replacement).map(
+                    propName =>
+                        `"${propName}": ${stringify(replacement[propName])}`)
+                    .join(',');
+
+                return addComma ? `${props},` : props;
+            });
+        return result;
+    }
+
+    // First try with comma
+    try {
+        const newTemplateWithComma = getPropLineReplacementString(templateString, true);
+        return <IPartialDeploymentTemplate>JSON.parse(newTemplateWithComma);
+    } catch (err) {
+        // ignore
+    }
+
+    // Then try without comma
+    try {
+        const newTemplateWithoutComma = getPropLineReplacementString(templateString, false);
+        return <IPartialDeploymentTemplate>JSON.parse(newTemplateWithoutComma);
+    } catch (err) {
+        throw new Error(`replaceInTemplate: Could not parse resulting template:\n${parseError(err).message}\nTemplate:\n${templateString}`);
+    }
 }
