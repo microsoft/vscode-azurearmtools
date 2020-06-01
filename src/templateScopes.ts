@@ -282,6 +282,7 @@ export class NestedTemplateOuterScope extends TemplateScope {
     }
 }
 
+// Note: This is here instead of in Resource.ts to avoid a circular dependence
 export function getChildTemplateForResourceObject(
     parentScope: TemplateScope,
     resourceObject: Json.ObjectValue | undefined // an element of the "resources" section
@@ -311,11 +312,11 @@ export function getChildTemplateForResourceObject(
         // Get the template property under properties
         const nestedTemplateObject =
             resourceObject?.getPropertyValue(templateKeys.properties)?.asObjectValue
-                ?.getPropertyValue('template')?.asObjectValue;
+                ?.getPropertyValue(templateKeys.nestedDeploymentTemplateProperty)?.asObjectValue;
         if (nestedTemplateObject) {
             const scopeKind = getExpressionScopeKind(resourceObject);
             const templateName: string = resourceObject?.getPropertyValue(templateKeys.resourceName)?.asStringValue?.unquotedValue
-                ?? '(unnamed template';
+                ?? '(unnamed template)';
             switch (scopeKind) {
                 case ExpressionScopeKind.outer:
                     return new NestedTemplateOuterScope(parentScope, nestedTemplateObject, `Nested template "${templateName}" with outer scope`);
@@ -330,18 +331,12 @@ export function getChildTemplateForResourceObject(
     }
 }
 
-export function isResourceADeployment(resourceObject: Json.ObjectValue): boolean {
-    const resourceTypeLC = resourceObject?.getPropertyValue(templateKeys.resourceType)?.asStringValue
-        ?.unquotedValue;
-    return resourceTypeLC?.toLowerCase() === deploymentsResourceTypeLC;
-}
-
 function getExpressionScopeKind(resourceObject: Json.ObjectValue | undefined): ExpressionScopeKind {
     const scopeValue = resourceObject?.getPropertyValue(templateKeys.properties)?.asObjectValue
-        ?.getPropertyValue('expressionEvaluationOptions')?.asObjectValue
-        ?.getPropertyValue('scope')
+        ?.getPropertyValue(templateKeys.nestedDeploymentExprEvalOptions)?.asObjectValue
+        ?.getPropertyValue(templateKeys.nestedDeploymentExprEvalScope)
         ?.asStringValue?.unquotedValue;
-    return scopeValue?.toLowerCase() === 'inner'
+    return scopeValue?.toLowerCase() === templateKeys.nestedDeploymentExprEvalScopeInner
         ? ExpressionScopeKind.inner
         : ExpressionScopeKind.outer; // Defaults to outer
 }

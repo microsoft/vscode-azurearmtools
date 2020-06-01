@@ -88,8 +88,7 @@ export class DeploymentTemplate extends DeploymentDocument {
      */
     private get quotedStringToTleParseResultMap(): Map<Json.StringValue, TLE.ParseResult> {
         return this._jsonStringValueToTleParseResultMap.getOrCacheValue(() => {
-            const visitor = new StringParseAndScopeAssignmentVisitor(this);
-            return visitor.createParsedStringMap();
+            return StringParseAndScopeAssignmentVisitor.createParsedStringMap(this);
         });
     }
 
@@ -409,7 +408,12 @@ class StringParseAndScopeAssignmentVisitor extends Json.Visitor {
         this._currentScope = _dt.topLevelScope;
     }
 
-    public createParsedStringMap(): Map<Json.StringValue, TLE.ParseResult> {
+    public static createParsedStringMap(dt: DeploymentTemplate): Map<Json.StringValue, TLE.ParseResult> {
+        const visitor = new StringParseAndScopeAssignmentVisitor(dt);
+        return visitor.createMap();
+    }
+
+    private createMap(): Map<Json.StringValue, TLE.ParseResult> {
         this.findAllScopes(this._dt.topLevelScope);
 
         this._dt.topLevelValue?.accept(this);

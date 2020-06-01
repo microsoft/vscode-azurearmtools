@@ -70,7 +70,6 @@ export abstract class TemplateScope {
     public get namespaceDefinitions(): UserFunctionNamespaceDefinition[] {
         return this._functionDefinitions.getOrCacheValue(() => this.getNamespaceDefinitions())
             ?? [];
-
     }
 
     public get resources(): IResource[] {
