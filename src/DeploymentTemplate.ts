@@ -23,6 +23,7 @@ import { TemplatePositionContext } from "./TemplatePositionContext";
 import { TemplateScope } from "./TemplateScope";
 import { TopLevelTemplateScope } from './templateScopes';
 import * as TLE from "./TLE";
+import { UserFunctionParameterDefinition } from './UserFunctionParameterDefinition';
 import { nonNullValue } from './util/nonNull';
 import { FindReferencesVisitor } from "./visitors/FindReferencesVisitor";
 import { FunctionCountVisitor } from "./visitors/FunctionCountVisitor";
@@ -169,58 +170,24 @@ export class DeploymentTemplate extends DeploymentDocument {
     }
 
     public getWarnings(): language.Issue[] {
-        const unusedParams = this.findUnusedParameters();
-        const unusedVars = this.findUnusedVariables();
-        const unusedUserFuncs = this.findUnusedUserFunctions();
+        const allScopes = this.findAllScopes();
+        const unusedParams = this.findUnusedParameters(allScopes);
+        const unusedVars = this.findUnusedVariables(allScopes);
+        const unusedUserFuncs = this.findUnusedUserFunctions(allScopes);
         return unusedParams.concat(unusedVars).concat(unusedUserFuncs);
     }
 
     // CONSIDER: PERF: findUnused{Variables,Parameters,findUnusedNamespacesAndUserFunctions} are very inefficient}
 
-    private findUnusedVariables(): language.Issue[] {
+    private findUnusedVariables(allScopes: TemplateScope[]): language.Issue[] {
         const warnings: language.Issue[] = [];
 
-        for (const variableDefinition of this.topLevelScope.variableDefinitions) {
-            // Variables are only supported at the top level
-            const variableReferences: ReferenceList = this.findReferencesToDefinition(variableDefinition);
-            if (variableReferences.length === 1) {
-                warnings.push(
-                    new language.Issue(variableDefinition.nameValue.span, `The variable '${variableDefinition.nameValue.toString()}' is never used.`, language.IssueKind.unusedVar));
-            }
-        }
-
-        return warnings;
-    }
-
-    private findUnusedParameters(): language.Issue[] {
-        const warnings: language.Issue[] = [];
-
-        // Top-level parameters
-        for (const parameterDefinition of this.topLevelScope.parameterDefinitions) {
-            const parameterReferences: ReferenceList =
-                this.findReferencesToDefinition(parameterDefinition);
-            if (parameterReferences.length === 1) {
-                warnings.push(
-                    new language.Issue(
-                        parameterDefinition.nameValue.span,
-                        `The parameter '${parameterDefinition.nameValue.toString()}' is never used.`,
-                        language.IssueKind.unusedParam));
-            }
-        }
-
-        // User function parameters
-        for (const ns of this.topLevelScope.namespaceDefinitions) {
-            for (const member of ns.members) {
-                for (const parameterDefinition of member.parameterDefinitions) {
-                    const parameterReferences: ReferenceList =
-                        this.findReferencesToDefinition(parameterDefinition);
-                    if (parameterReferences.length === 1) {
-                        warnings.push(
-                            new language.Issue(
-                                parameterDefinition.nameValue.span,
-                                `The parameter '${parameterDefinition.nameValue.toString()}' of function '${member.fullName}' is never used.`,
-                                language.IssueKind.unusedUdfParam));
-                    }
+        for (const scope of allScopes) {
+            for (const variableDefinition of scope.variableDefinitions) {
+                const variableReferences: ReferenceList = this.findReferencesToDefinition(variableDefinition);
+                if (variableReferences.length === 1) {
+                    warnings.push(
+                        new language.Issue(variableDefinition.nameValue.span, `The variable '${variableDefinition.nameValue.toString()}' is never used.`, language.IssueKind.unusedVar));
                 }
             }
         }
@@ -228,20 +195,45 @@ export class DeploymentTemplate extends DeploymentDocument {
         return warnings;
     }
 
-    private findUnusedUserFunctions(): language.Issue[] {
+    private findUnusedParameters(allScopes: TemplateScope[]): language.Issue[] {
         const warnings: language.Issue[] = [];
 
-        // User function parameters
-        for (const ns of this.topLevelScope.namespaceDefinitions) {
-            for (const member of ns.members) {
-                const userFuncReferences: ReferenceList =
-                    this.findReferencesToDefinition(member);
-                if (userFuncReferences.length === 1) {
+        for (const scope of allScopes) {
+            for (const parameterDefinition of scope.parameterDefinitions) {
+                const parameterReferences: ReferenceList =
+                    this.findReferencesToDefinition(parameterDefinition);
+                if (parameterReferences.length === 1) {
+                    const message = parameterDefinition instanceof UserFunctionParameterDefinition
+                        ? `User-function parameter '${parameterDefinition.nameValue.toString()}' is never used.`
+                        : `The parameter '${parameterDefinition.nameValue.toString()}' is never used.`;
+
                     warnings.push(
                         new language.Issue(
-                            member.nameValue.span,
-                            `The user-defined function '${member.fullName}' is never used.`,
-                            language.IssueKind.unusedUdf));
+                            parameterDefinition.nameValue.span,
+                            message,
+                            language.IssueKind.unusedParam));
+                }
+            }
+        }
+
+        return warnings;
+    }
+
+    private findUnusedUserFunctions(allScopes: TemplateScope[]): language.Issue[] {
+        const warnings: language.Issue[] = [];
+
+        for (const scope of allScopes) {
+            for (const ns of scope.namespaceDefinitions) {
+                for (const member of ns.members) {
+                    const userFuncReferences: ReferenceList =
+                        this.findReferencesToDefinition(member);
+                    if (userFuncReferences.length === 1) {
+                        warnings.push(
+                            new language.Issue(
+                                member.nameValue.span,
+                                `The user-defined function '${member.fullName}' is never used.`,
+                                language.IssueKind.unusedUdf));
+                    }
                 }
             }
         }

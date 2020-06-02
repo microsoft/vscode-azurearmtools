@@ -620,6 +620,30 @@ suite("Nested templates", () => {
         });
     });
 
+    test("errors/warnings", async () => {
+        await parseTemplate(
+            'templates/nestedTemplateScopesErrorsAndWarnings.json',
+            [
+                "8: Warning: The parameter 'p2' is never used.",
+                "12: Warning: The parameter 'p4' is never used.",
+                "17: Warning: The variable 'v1' is never used.",
+                "35: Warning: The variable 'v2' is never used.",
+                "53: Error: Undefined parameter reference: 'p4'",
+                "60: Warning: The parameter 'p2' is never used.",
+                "71: Warning: User-function parameter 'p1' is never used.",
+                "80: Warning: The user-defined function 'udf.func2' is never used.",
+                "97: Warning: The user-defined function 'udf2.func3' is never used.",
+                "121: Error: Inaccessible varaibles",
+                "125: Error: Inaccessible parameters",
+                "130: Error: Inaccessible functoins",
+                "147: Error: Undefined parameter reference: 'p3'"
+            ],
+            {
+                fromFile: true,
+                includeDiagnosticLineNumbers: true
+            });
+    });
+
     suite("deeply nested", () => {
         const deeplyNestedTemplate = {
             "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",

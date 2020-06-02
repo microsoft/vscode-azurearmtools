@@ -3,10 +3,12 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from 'assert';
+import * as fse from 'fs-extra';
 import { Uri } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
 import { DeploymentParameters, DeploymentTemplate, Issue } from "../../extension.bundle";
 import { IDeploymentParametersFile, IPartialDeploymentTemplate } from './diagnostics';
+import { resolveInTestFolder } from './resolveInTestFolder';
 import { stringify } from "./stringify";
 
 /**
@@ -16,7 +18,9 @@ export async function parseTemplate(
     template: string | IPartialDeploymentTemplate,
     expectedDiagnosticMessages?: string[],
     options?: {
+        fromFile?: boolean; // if true, template is a path
         ignoreWarnings?: boolean;
+        includeDiagnosticLineNumbers?: boolean;
         replacements?: { [key: string]: string | { [key: string]: unknown } };
     }
 ): Promise<DeploymentTemplate> {
@@ -42,26 +46,54 @@ export async function parseTemplateWithMarkers(
     template: string | IPartialDeploymentTemplate,
     expectedDiagnosticMessages?: string[],
     options?: {
+        fromFile?: boolean; // if true, template is a path
         ignoreWarnings?: boolean;
+        includeDiagnosticLineNumbers?: boolean;
         ignoreBang?: boolean;
         replacements?: { [key: string]: string | { [key: string]: unknown } };
     }
 ): Promise<{ dt: DeploymentTemplate; markers: Markers }> {
+    if (options?.fromFile) {
+        const absPath = resolveInTestFolder(<string>template);
+        const contents: string = fse.readFileSync(absPath).toString();
+        template = contents;
+    }
+
     const withReplacements = options?.replacements ? replaceInTemplate(template, options.replacements) : template;
     const { unmarkedText, markers } = getDocumentMarkers(withReplacements, options);
     const dt: DeploymentTemplate = new DeploymentTemplate(unmarkedText, Uri.file("https://parseTemplate template"));
 
+    type DiagIssue = {
+        line: number;
+        msg: string;
+        kind: 'Error' | 'Warning';
+    };
+
     // Always run these even if not checking against expected, to verify nothing throws
     const errors: Issue[] = await dt.getErrors(undefined);
     const warnings: Issue[] = dt.getWarnings();
-    const errorMessages = errors.map(e => `Error: ${e.message}`);
-    const warningMessages = warnings.map(e => `Warning: ${e.message}`);
+    const errorMessages = errors.map(e => <DiagIssue>{ line: e.span.startIndex, msg: getMessage(e, true), kind: 'Error' });
+    const warningMessages = warnings.map(e => <DiagIssue>{ line: e.span.startIndex, msg: getMessage(e, false), kind: 'Warning' });
+
+    function getMessage(d: Issue, isError: boolean): string {
+        const typeString = isError ? 'Error' : 'Warning';
+        let msg = `${typeString}: ${d.message}`;
+        if (options?.includeDiagnosticLineNumbers) {
+            msg = `${dt.getDocumentPosition(d.span.startIndex).line + 1}: ${msg}`;
+        }
+
+        return msg;
+    }
 
     if (expectedDiagnosticMessages) {
-        let expectedMessages = errorMessages;
+        let expected = errorMessages;
         if (!options || !options.ignoreWarnings) {
-            expectedMessages = expectedMessages.concat(warningMessages);
+            expected = expected.concat(warningMessages);
         }
+        const expectedMessages = expected.sort((d1, d2) => {
+            return d1.line - d2.line;
+        }).map(d => d.msg);
+
         assert.deepStrictEqual(expectedMessages, expectedDiagnosticMessages);
     }
 

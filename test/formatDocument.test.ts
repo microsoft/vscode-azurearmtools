@@ -14,9 +14,10 @@ import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
 import * as path from 'path';
 import { commands, languages, Range, Selection, TextDocument, TextEditor, window, workspace } from "vscode";
 import { armTemplateLanguageId } from "../extension.bundle";
-import { diagnosticsTimeout, testFolder } from "./support/diagnostics";
+import { diagnosticsTimeout } from "./support/diagnostics";
 import { ensureLanguageServerAvailable } from "./support/ensureLanguageServerAvailable";
 import { getTempFilePath } from "./support/getTempFilePath";
+import { resolveInTestFolder } from "./support/resolveInTestFolder";
 import { testWithLanguageServer } from "./support/testWithLanguageServer";
 
 const formatDocumentCommand = 'editor.action.formatDocument';
@@ -31,11 +32,11 @@ suite("Format document", function (this: ISuiteCallbackContext): void {
             let jsonUnformatted: string = source;
             if (source.match(/\.jsonc?$/)) {
                 sourceIsFile = true;
-                jsonUnformatted = fs.readFileSync(path.join(testFolder, source)).toString().trim();
+                jsonUnformatted = fs.readFileSync(resolveInTestFolder(source)).toString().trim();
             }
             let jsonExpected: string = expected;
             if (jsonExpected.match(/\.jsonc?$/)) {
-                jsonExpected = fs.readFileSync(path.join(testFolder, expected)).toString().trim();
+                jsonExpected = fs.readFileSync(resolveInTestFolder(expected)).toString().trim();
             }
 
             if (source === 'format-me.json') {
