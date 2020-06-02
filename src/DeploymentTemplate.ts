@@ -20,7 +20,7 @@ import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
 import { ReferenceList } from "./ReferenceList";
 import { isArmSchema } from "./schemas";
 import { TemplatePositionContext } from "./TemplatePositionContext";
-import { TemplateScope } from "./TemplateScope";
+import { TemplateScope, TemplateScopeKind } from "./TemplateScope";
 import { TopLevelTemplateScope } from './templateScopes';
 import * as TLE from "./TLE";
 import { UserFunctionParameterDefinition } from './UserFunctionParameterDefinition';
@@ -174,7 +174,8 @@ export class DeploymentTemplate extends DeploymentDocument {
         const unusedParams = this.findUnusedParameters(allScopes);
         const unusedVars = this.findUnusedVariables(allScopes);
         const unusedUserFuncs = this.findUnusedUserFunctions(allScopes);
-        return unusedParams.concat(unusedVars).concat(unusedUserFuncs);
+        const inaccessibleScopeMembers = this.findInaccessibleScopeMembers(allScopes);
+        return unusedParams.concat(unusedVars).concat(unusedUserFuncs).concat(inaccessibleScopeMembers);
     }
 
     // CONSIDER: PERF: findUnused{Variables,Parameters,findUnusedNamespacesAndUserFunctions} are very inefficient}
@@ -234,6 +235,42 @@ export class DeploymentTemplate extends DeploymentDocument {
                                 `The user-defined function '${member.fullName}' is never used.`,
                                 language.IssueKind.unusedUdf));
                     }
+                }
+            }
+        }
+
+        return warnings;
+    }
+
+    /**
+     * Finds parameters/variables/functions inside outer-scoped nested templates, which
+     * by definition can't be accessed in any expressions.
+     */
+    private findInaccessibleScopeMembers(allScopes: TemplateScope[]): language.Issue[] {
+        const warnings: language.Issue[] = [];
+        const warningMessage =
+            // tslint:disable-next-line: prefer-template
+            'Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. '
+            + `If you want inner scope, set properties.nestedDeploymentExprEvalOptions.scope to 'inner'.`;
+
+        for (const scope of allScopes) {
+            if (scope.scopeKind === TemplateScopeKind.NestedDeploymentWithOuterScope) {
+                const parameters = scope.rootObject?.getProperty(templateKeys.parameters);
+                if (parameters) {
+                    warnings.push(
+                        new language.Issue(parameters.span, warningMessage, language.IssueKind.inaccessibleNestedScopeMembers));
+                }
+
+                const variables = scope.rootObject?.getProperty(templateKeys.variables);
+                if (variables) {
+                    warnings.push(
+                        new language.Issue(variables.span, warningMessage, language.IssueKind.inaccessibleNestedScopeMembers));
+                }
+
+                const namespaces = scope.rootObject?.getProperty(templateKeys.functions);
+                if (namespaces) {
+                    warnings.push(
+                        new language.Issue(namespaces.span, warningMessage, language.IssueKind.inaccessibleNestedScopeMembers));
                 }
             }
         }

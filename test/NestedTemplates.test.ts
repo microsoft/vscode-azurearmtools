@@ -633,9 +633,9 @@ suite("Nested templates", () => {
                 "71: Warning: User-function parameter 'p1' is never used.",
                 "80: Warning: The user-defined function 'udf.func2' is never used.",
                 "97: Warning: The user-defined function 'udf2.func3' is never used.",
-                "121: Error: Inaccessible varaibles",
-                "125: Error: Inaccessible parameters",
-                "130: Error: Inaccessible functoins",
+                "121: Warning: Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. If you want inner scope, set properties.nestedDeploymentExprEvalOptions.scope to 'inner'.",
+                "125: Warning: Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. If you want inner scope, set properties.nestedDeploymentExprEvalOptions.scope to 'inner'.",
+                "130: Warning: Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. If you want inner scope, set properties.nestedDeploymentExprEvalOptions.scope to 'inner'.",
                 "147: Error: Undefined parameter reference: 'p3'"
             ],
             {

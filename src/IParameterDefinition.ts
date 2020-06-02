@@ -25,6 +25,4 @@ export interface IParameterDefinition extends INamedDefinition {
     // Description and defaultValue are only supported for top-level parameters
     description: string | undefined;
     defaultValue: Json.Value | undefined;
-
-    //parentContext: string | undefined; //asdf
 }
