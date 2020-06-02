@@ -898,7 +898,7 @@ export class StringValue extends Value {
     }
 
     public toShortFriendlyString(): string {
-        return this.quotedValue;
+        return this.unquotedValue;
     }
 
     public toFullFriendlyString(): string {
