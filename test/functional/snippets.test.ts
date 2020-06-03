@@ -16,7 +16,7 @@ import * as path from 'path';
 import { commands, Diagnostic, Selection, Uri, window, workspace } from "vscode";
 import { DeploymentTemplate, ext, getVSCodePositionFromPosition } from '../../extension.bundle';
 import { delay } from '../support/delay';
-import { getDiagnosticsForDocument, sources, testFolder } from '../support/diagnostics';
+import { diagnosticSources, getDiagnosticsForDocument, testFolder } from '../support/diagnostics';
 import { getTempFilePath } from "../support/getTempFilePath";
 import { testWithLanguageServer } from '../support/testWithLanguageServer';
 
@@ -417,7 +417,7 @@ suite("Snippets functional tests", () => {
             doc,
             {
                 waitForChange: true,
-                ignoreSources: (overrideIgnoreSchemaValidation[snippetName]) ? [sources.schema] : []
+                ignoreSources: (overrideIgnoreSchemaValidation[snippetName]) ? [diagnosticSources.schema] : []
             });
 
         // Insert snippet
