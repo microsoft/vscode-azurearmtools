@@ -5,6 +5,8 @@
 
 // tslint:disable:promise-function-async max-line-length // Grandfathered in
 
+// CONSIDER: Refactor this file
+
 import * as assert from "assert";
 import * as fse from 'fs-extra';
 import * as path from 'path';
@@ -203,19 +205,7 @@ export class AzureRMTools {
         registerCommand(
             "azurerm-vscode-tools.codeLens.gotoParameterValue",
             async (actionContext: IActionContext, uri: vscode.Uri, param: string) => {
-                let textDocument: vscode.TextDocument = await vscode.workspace.openTextDocument(uri);
-                const editor = await vscode.window.showTextDocument(textDocument);
-                const dp = this.getOpenedDeploymentParameters(uri);
-                if (dp) {
-                    // If the parameter isn't in the param file, show the properties section or beginning
-                    //   of file.
-                    const span = dp.getParameterValue(param)?.value?.span
-                        ?? dp.parametersProperty?.nameValue.span
-                        ?? new Language.Span(0, 0);
-                    const range = getVSCodeRangeFromSpan(dp, span);
-                    editor.selection = new vscode.Selection(range.start, range.end);
-                    editor.revealRange(range);
-                }
+                await this.onGotoParameterValue(actionContext, uri, param);
             });
 
         this._paramsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
@@ -1109,6 +1099,22 @@ export class AzureRMTools {
     private onResolveCompletionItem(item: vscode.CompletionItem, _token: vscode.CancellationToken): vscode.CompletionItem {
         ext.completionItemsSpy.postCompletionItemResolution(item);
         return item;
+    }
+
+    private async onGotoParameterValue(actionContext: IActionContext, uri: vscode.Uri, param: string): Promise<void> {
+        let textDocument: vscode.TextDocument = await vscode.workspace.openTextDocument(uri);
+        const editor = await vscode.window.showTextDocument(textDocument);
+        const dp = this.getOpenedDeploymentParameters(uri);
+        if (dp) {
+            // If the parameter isn't in the param file, show the properties section or beginning
+            //   of file.
+            const span = dp.getParameterValue(param)?.value?.span
+                ?? dp.parametersProperty?.nameValue.span
+                ?? new Language.Span(0, 0);
+            const range = getVSCodeRangeFromSpan(dp, span);
+            editor.selection = new vscode.Selection(range.start, range.end);
+            editor.revealRange(range);
+        }
     }
 
     // CONSIDER: Cache when we have to read from disk, or better, load into text

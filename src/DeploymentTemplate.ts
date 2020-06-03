@@ -448,9 +448,6 @@ export class DeploymentTemplate extends DeploymentDocument {
             for (let childScope of scope?.childScopes ?? []) {
                 if (allScopes.indexOf(childScope) < 0) {
                     allScopes.push(childScope);
-                } else {
-                    let a = 1;
-                    a = a;
                 }
 
                 traverse(childScope);
