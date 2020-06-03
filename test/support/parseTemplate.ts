@@ -90,11 +90,14 @@ export async function parseTemplateWithMarkers(
         if (!options || !options.ignoreWarnings) {
             expected = expected.concat(warningMessages);
         }
-        const expectedMessages = expected.sort((d1, d2) => {
-            return d1.line - d2.line;
-        }).map(d => d.msg);
+        const sortedExpectedDiag =
+            expected.sort(
+                options?.includeDiagnosticLineNumbers
+                    ? (d1, d2): number => d1.line - d2.line
+                    : undefined);
+        const expectedMessages = sortedExpectedDiag.map(d => d.msg);
 
-        assert.deepStrictEqual(expectedMessages, expectedDiagnosticMessages);
+        assert.deepEqual(expectedMessages, expectedDiagnosticMessages);
     }
 
     return { dt, markers };

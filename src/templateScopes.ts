@@ -265,6 +265,9 @@ export class NestedTemplateOuterScope extends TemplateScope {
 
     public readonly scopeKind: TemplateScopeKind = TemplateScopeKind.NestedDeploymentWithOuterScope;
 
+    // Shares its members with its parent
+    public readonly hasUniqueParamsVarsAndFunctions: boolean = false;
+
     protected getParameterDefinitions(): IParameterDefinition[] | undefined {
         return this.parentScope.parameterDefinitions;
     }

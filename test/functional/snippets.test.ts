@@ -134,11 +134,11 @@ const overrideExpectedDiagnostics: { [name: string]: string[] } = {
     ],
     "User Function": [
         "The user-defined function 'udf.functionname' is never used.",
-        "The parameter 'parametername' of function 'udf.functionname' is never used."
+        "User-function parameter 'parametername' is never used."
     ],
     "User Function Namespace": [
         "The user-defined function 'namespacename.functionname' is never used.",
-        "The parameter 'parametername' of function 'namespacename.functionname' is never used."
+        "User-function parameter 'parametername' is never used."
     ],
     "Automation Certificate": [
         // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620

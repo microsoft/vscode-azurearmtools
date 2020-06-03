@@ -256,7 +256,9 @@ suite("Nested templates", () => {
             const {
                 dt,
                 markers: { p1rootdef, p1rootref1, p1rootref2, p1rootref3, p1innerdef, p1innerref1, p1innerref2, p1innerref3 }
-            } = await parseTemplateWithMarkers(template, []);
+            } = await parseTemplateWithMarkers(template, [
+                "Warning: The variable 'v1' is never used."
+            ]);
 
             // root p1
             const p1rootref1pc = dt.getContextFromDocumentCharacterIndex(p1rootref1.index, undefined);
@@ -443,7 +445,12 @@ suite("Nested templates", () => {
             const {
                 dt,
                 markers: { v1def, v1ref1, v1ref2, v1ref3, v1ref4, v2def, v2ref1 }
-            } = await parseTemplateWithMarkers(template, []);
+            } = await parseTemplateWithMarkers(
+                template,
+                [
+                    "Warning: Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. If you want inner scope, set properties.nestedDeploymentExprEvalOptions.scope to 'inner'."
+                ]
+            );
 
             // v1
             const v1ref1pc = dt.getContextFromDocumentCharacterIndex(v1ref1.index, undefined);
@@ -513,7 +520,15 @@ suite("Nested templates", () => {
             const {
                 dt,
                 markers: { p1def, p1ref1, p1ref2, p1ref3, p1ref4, p1ref5 }
-            } = await parseTemplateWithMarkers(template, []);
+            } = await parseTemplateWithMarkers(
+                template,
+                [
+                    "19: Warning: Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. If you want inner scope, set properties.nestedDeploymentExprEvalOptions.scope to 'inner'.",
+                    "22: Warning: Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. If you want inner scope, set properties.nestedDeploymentExprEvalOptions.scope to 'inner'."
+                ],
+                {
+                    includeDiagnosticLineNumbers: true
+                });
 
             // p1
             const p1ref1pc = dt.getContextFromDocumentCharacterIndex(p1ref1.index, undefined);
@@ -642,6 +657,52 @@ suite("Nested templates", () => {
                 fromFile: true,
                 includeDiagnosticLineNumbers: true
             });
+    });
+    test("No duplicate warnings from outer scoped nested template using same scope as parent", async () => {
+        await parseTemplate(
+            {
+                "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "parameters": {
+                    "p2": { // WARNING: unused
+                        "type": "string",
+                        "defaultValue": "abc"
+                    },
+                },
+                "variables": {
+                    "v1": "warning: unused"
+                },
+                "functions": [
+                    {
+                        "namespace": "udf",
+                        "members": {
+                            "notUsed": {
+                            }
+                        }
+                    }
+                ],
+                "resources": [
+                    {
+                        "type": "Microsoft.Resources/deployments",
+                        "apiVersion": "2015-01-01",
+                        "name": "outer1",
+                        "properties": {
+                            "mode": "Incremental",
+                            "template": {
+                                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                                "contentVersion": "1.2.3.4",
+                                "resources": []
+                            }
+                        }
+                    }
+                ]
+            },
+            [
+                "Warning: The parameter 'p2' is never used.",
+                "Warning: The variable 'v1' is never used.",
+                "Warning: The user-defined function 'udf.notUsed' is never used."
+            ]
+        );
     });
 
     suite("deeply nested", () => {
