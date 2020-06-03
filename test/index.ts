@@ -53,16 +53,26 @@ for (let envVar of Object.keys(environmentVariables)) {
     let match = envVar.match(/^mocha_(.+)/i);
     if (match) {
         let [, option] = match;
-        let value: string | number = environmentVariables[envVar];
+        let value: string | number | RegExp = environmentVariables[envVar];
         if (typeof value === 'string' && !isNaN(parseInt(value, undefined))) {
             value = parseInt(value, undefined);
         }
 
+        if (option === 'grep' && typeof value === 'string') {
+            // Use case-insensitive pattern
+            value = new RegExp(value, "i");
+        }
         options[option] = value;
     }
 }
 
-console.warn(`Mocha options: ${JSON.stringify(options, null, 2)}`);
+// tslint:disable-next-line: prefer-template
+console.warn("Mocha options: " + JSON.stringify(
+    options,
+    (key, value) =>
+        // tslint:disable-next-line: no-unsafe-any
+        value instanceof RegExp ? value.toString() : value,
+    2));
 
 // tslint:disable-next-line: no-unsafe-any
 testRunner.configure(options);
