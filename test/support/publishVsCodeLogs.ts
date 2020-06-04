@@ -8,11 +8,11 @@ import * as path from 'path';
 import { ext } from '../../extension.bundle';
 import { logsFolder } from '../testConstants';
 
-export async function publishVsCodeLogs(extensionid: string): Promise<void> {
-    console.log(`Copying the vscode logs for ${extensionid}...`);
+export async function publishVsCodeLogs(extensionid: string | undefined): Promise<void> {
+    console.log(`Copying the vscode logs for ${extensionid ?? 'all'}...`);
     const parentPath = path.dirname(ext.context.logPath);
-    const sourcePath = path.join(parentPath, extensionid);
-    const destFolderPath = path.join(logsFolder, extensionid);
+    const sourcePath = path.join(parentPath, extensionid ?? '..');
+    const destFolderPath = path.join(logsFolder, extensionid ?? 'all');
     await fse.mkdir(destFolderPath);
 
     if (fse.pathExistsSync(sourcePath)) {

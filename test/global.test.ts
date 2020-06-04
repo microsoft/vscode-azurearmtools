@@ -65,8 +65,9 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
 
     await displayCacheStatus();
     await publishCache(path.join(logsFolder, 'post-cache'));
-    await publishVsCodeLogs('ms-dotnettools.vscode-dotnet-runtime');
-    await publishVsCodeLogs(path.basename(ext.context.logPath));
+    // await publishVsCodeLogs('ms-dotnettools.vscode-dotnet-runtime');
+    // await publishVsCodeLogs(path.basename(ext.context.logPath));
+    await publishVsCodeLogs(undefined);
 
     console.log('Restoring settings');
     vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, previousSettings.autoDetectJsonTemplates, vscode.ConfigurationTarget.Global);
