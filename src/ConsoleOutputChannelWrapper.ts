@@ -43,7 +43,6 @@ export class ConsoleOutputChannelWrapper implements IAzExtOutputChannel {
     public show(column?: vscode.ViewColumn | undefined, preserveFocus?: boolean | undefined): void;
 
     // tslint:disable-next-line: no-any
-
     public show(column?: any, preserveFocus?: boolean | undefined): void {
         // tslint:disable-next-line: no-unsafe-any
         this.outputChannel.show(column, preserveFocus);
