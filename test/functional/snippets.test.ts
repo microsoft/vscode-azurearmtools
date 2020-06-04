@@ -86,7 +86,16 @@ const overrideTemplateForSnippet: { [name: string]: string } = {
 \t"functions": [
 \t\t//Insert here: namespace
 \t]
+}`,
+
+    "Resource Group": `{
+\t"$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+\t"contentVersion": "1.0.0.0",
+\t"resources": [
+\t\t//Insert here: resource
+\t]
 }`
+
 };
 
 // Override where to insert the snippet during the test - default is to insert with the "Resources" section, at "Insert here: resource"

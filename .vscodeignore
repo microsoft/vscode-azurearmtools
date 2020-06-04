@@ -31,5 +31,4 @@ webpack.config*
 *.zip
 pkgs
 tools
-pre-cache
-post-cache
+logs
