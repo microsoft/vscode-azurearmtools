@@ -7,7 +7,7 @@ import { EOL } from "os";
 import { CodeAction, CodeActionContext, CodeActionKind, Command, Range, Selection, TextEditor, Uri } from "vscode";
 import { CachedValue } from "../CachedValue";
 import { templateKeys } from "../constants";
-import { DeploymentDocument } from "../DeploymentDocument";
+import { DeploymentDocument, ResolvableCodeLens } from "../DeploymentDocument";
 import { DeploymentTemplate } from "../DeploymentTemplate";
 import { INamedDefinition } from "../INamedDefinition";
 import { IParameterDefinition } from "../IParameterDefinition";
@@ -97,6 +97,10 @@ export class DeploymentParameters extends DeploymentDocument {
             }
         }
         return results;
+    }
+
+    public getCodeLenses(_hasAssociatedParameters: boolean): ResolvableCodeLens[] {
+        return [];
     }
 
     public async getCodeActions(

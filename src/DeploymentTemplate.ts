@@ -2,12 +2,15 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable: max-classes-per-file // Private classes are related to DeploymentTemplate implementation
+
 import * as assert from 'assert';
 import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
 import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
 import { templateKeys } from "./constants";
-import { DeploymentDocument } from "./DeploymentDocument";
+import { DeploymentDocument, ResolvableCodeLens } from "./DeploymentDocument";
+import { NestedTemplateCodeLen, ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
 import { Histogram } from "./Histogram";
 import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
@@ -395,17 +398,76 @@ export class DeploymentTemplate extends DeploymentDocument {
         const spanOfValueInsideString = tleValue.getSpan();
         return this.getDocumentText(spanOfValueInsideString, parentStringToken.span.startIndex);
     }
+
+    public getCodeLenses(hasAssociatedParameters: boolean): ResolvableCodeLens[] {
+        return this.getParameterCodeLenses(hasAssociatedParameters)
+            .concat(this.getNestedTemplateCodeLenses());
+    }
+
+    private getParameterCodeLenses(hasAssociatedParameters: boolean): ResolvableCodeLens[] {
+        const lenses: ResolvableCodeLens[] = [];
+
+        // Code lens for the "parameters" section itself - indicates currently-selected parameter file and allows
+        // user to chnage it
+        const parametersCodeLensSpan = this.topLevelValue?.getProperty(templateKeys.parameters)?.span
+            ?? new language.Span(0, 0);
+        if (hasAssociatedParameters) {
+            lenses.push(new ShowCurrentParameterFileCodeLens(this, parametersCodeLensSpan));
+        }
+        lenses.push(new SelectParameterFileCodeLens(this, parametersCodeLensSpan));
+
+        if (hasAssociatedParameters) {
+            // Code lens for each parameter definition
+            lenses.push(...this.topLevelScope.parameterDefinitions.map(pd => new ParameterDefinitionCodeLens(this, pd)));
+        }
+
+        return lenses;
+    }
+
+    private getNestedTemplateCodeLenses(): ResolvableCodeLens[] {
+        const lenses: ResolvableCodeLens[] = [];
+        const allScopes = this.findAllScopes();
+        for (let scope of allScopes) {
+            if (scope.rootObject) {
+                const lens = NestedTemplateCodeLen.create(this, scope.rootObject.span, scope.scopeKind);
+                if (lens) {
+                    lenses.push(lens);
+                }
+            }
+        }
+
+        return lenses;
+    }
+
+    public findAllScopes(): TemplateScope[] {
+        const allScopes: TemplateScope[] = [];
+        traverse(this.topLevelScope);
+        return allScopes;
+
+        function traverse(scope: TemplateScope | undefined): void {
+            for (let childScope of scope?.childScopes ?? []) {
+                if (allScopes.indexOf(childScope) < 0) {
+                    allScopes.push(childScope);
+                }
+
+                traverse(childScope);
+            }
+        }
+    }
 }
+
+//#region StringParseAndScopeAssignmentVisitor
 
 class StringParseAndScopeAssignmentVisitor extends Json.Visitor {
     private readonly _jsonStringValueToTleParseResultMap: Map<Json.StringValue, TLE.ParseResult> = new Map<Json.StringValue, TLE.ParseResult>();
     private readonly _scopeStack: TemplateScope[] = [];
     private _currentScope: TemplateScope;
-    private readonly _allScopesInTemplate: TemplateScope[] = [];
+    private readonly _allScopesInTemplate: TemplateScope[];
 
     public constructor(private readonly _dt: DeploymentTemplate) {
         super();
         this._currentScope = _dt.topLevelScope;
+        this._allScopesInTemplate = _dt.findAllScopes();
     }
 
     public static createParsedStringMap(dt: DeploymentTemplate): Map<Json.StringValue, TLE.ParseResult> {
@@ -414,17 +476,8 @@ class StringParseAndScopeAssignmentVisitor extends Json.Visitor {
     }
 
     private createMap(): Map<Json.StringValue, TLE.ParseResult> {
-        this.findAllScopes(this._dt.topLevelScope);
-
         this._dt.topLevelValue?.accept(this);
         return this._jsonStringValueToTleParseResultMap;
-    }
-
-    private findAllScopes(scope: TemplateScope): void {
-        for (let childScope of scope.childScopes) {
-            this._allScopesInTemplate.push(childScope);
-            this.findAllScopes(childScope);
-        }
     }
 
     public visitStringValue(jsonStringValue: Json.StringValue): void {
@@ -451,3 +504,5 @@ class StringParseAndScopeAssignmentVisitor extends Json.Visitor {
         }
     }
 }
+
+//#endregion

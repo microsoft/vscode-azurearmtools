@@ -1036,4 +1036,47 @@ suite("JSON", () => {
             );
         });
     });
+
+    suite("Value.toFullFriendlyString", () => {
+        function createTest(json: string | object, expected: string): void {
+            const jsonString: string = typeof json === 'string' ? json : JSON.stringify(json);
+            test(jsonString, () => {
+                const parsed = Json.parse(jsonString);
+                const formatted = parsed.value?.toFullFriendlyString();
+                assert.equal(formatted, expected);
+            });
+        }
+
+        createTest(`null`, `null`);
+
+        createTest(`""`, `""`);
+        createTest(`"abc"`, `"abc"`);
+
+        createTest(`123`, `123`);
+        createTest(`-123.45`, `-123.45`);
+        createTest(`-123e83`, `-123e83`);
+        createTest(`0`, `0`);
+
+        createTest(`false`, `false`);
+        createTest(`true`, `true`);
+
+        createTest(`[]`, `[]`);
+        createTest(`[true]`, `[true]`);
+        createTest(`[1, false]`, `[1, false]`);
+        createTest(`[1, false, []]`, `[1, false, []]`);
+        createTest(`[1, false, [], null]`, `[1, false, [], null]`);
+
+        createTest(`{}`, `{}`);
+        createTest(`{ "a": "b" }`, `{"a": "b"}`);
+        createTest(`{ "a": -123 }`, `{"a": -123}`);
+        createTest(`{ "a": true }`, `{"a": true}`);
+        createTest(`{ "array": [true] }`, `{"array": [true]}`);
+
+        createTest(`{ "object": {"a": true} }`, `{"object": {"a": true}}`);
+        createTest(`{ "object": {"a": [ true,1 ]] }`, `{"object": {"a": [true, 1]}}`);
+
+        createTest(`{ "array": [1,{"a": [ true,1 ]] ]}`, `{"array": [1, {"a": [true, 1]}]}`);
+
+        createTest(`{ \t\n\r\t\n\r"array":   \t\n\r [true] }`, `{"array": [true]}`);
+    });
 });

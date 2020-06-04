@@ -564,6 +564,10 @@ export abstract class Value {
     constructor(private _span: language.Span) {
     }
 
+    public static toFullFriendlyString(value: Value | undefined): string {
+        return value === undefined ? 'undefined' : value.toFullFriendlyString();
+    }
+
     public abstract get valueKind(): ValueKind;
 
     /**
@@ -584,15 +588,21 @@ export abstract class Value {
     public abstract accept(visitor: Visitor): void;
 
     /**
-     * A user-friendly string that represents this value, suitable for display in a label, etc.
+     * A short version of a user-friendly string that represents this value, suitable for display in a label, etc.
+     * For example, displays (object) instead of the full object value.
      */
-    public abstract toFriendlyString(): string;
+    public abstract toShortFriendlyString(): string;
+
+    /**
+     * A full version of a user-friendly string that represents this value, suitable for display in a label, etc.
+     */
+    public abstract toFullFriendlyString(): string;
 
     /**
      * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
      */
     public get __debugDisplay(): string {
-        return this.toString();
+        return this.toFullFriendlyString();
     }
 
     public get asObjectValue(): ObjectValue | undefined {
@@ -713,14 +723,15 @@ export class ObjectValue extends Value {
         visitor.visitObjectValue(this);
     }
 
-    public toFriendlyString(): string {
+    public toShortFriendlyString(): string {
         return "(object)";
     }
 
-    public get __debugDisplay(): string {
+    public toFullFriendlyString(): string {
         // tslint:disable-next-line: prefer-template
         return "{" +
-            this.properties.map(pv => pv.nameValue.toString() + ':' + (pv.value instanceof Value ? pv.value.__debugDisplay : String(pv.value))).join(",")
+            this.properties.map(pv =>
+                `"${pv.nameValue.toString()}": ${Value.toFullFriendlyString(pv.value)}`).join(", ")
             + "}";
     }
 }
@@ -755,13 +766,13 @@ export class Property extends Value {
         visitor.visitProperty(this);
     }
 
-    public toFriendlyString(): string {
+    public toShortFriendlyString(): string {
         return "(property)";
     }
 
-    public get __debugDisplay(): string {
+    public toFullFriendlyString(): string {
         // tslint:disable-next-line: prefer-template
-        return this._name.quotedValue + ":" + (this.value instanceof Value ? this.value.__debugDisplay : String(this.value));
+        return this._name.quotedValue + ": " + Value.toFullFriendlyString(this.value);
     }
 }
 
@@ -803,14 +814,14 @@ export class ArrayValue extends Value {
         visitor.visitArrayValue(this);
     }
 
-    public toFriendlyString(): string {
+    public toShortFriendlyString(): string {
         return "(array)";
     }
 
-    public get __debugDisplay(): string {
+    public toFullFriendlyString(): string {
         // tslint:disable-next-line: prefer-template
         return "[" +
-            this.elements.map(e => e.__debugDisplay).join(",")
+            this.elements.map(e => e.toFullFriendlyString()).join(", ")
             + "]";
     }
 }
@@ -842,7 +853,11 @@ export class BooleanValue extends Value {
         visitor.visitBooleanValue(this);
     }
 
-    public toFriendlyString(): string {
+    public toShortFriendlyString(): string {
+        return this.toString();
+    }
+
+    public toFullFriendlyString(): string {
         return this.toString();
     }
 }
@@ -882,8 +897,12 @@ export class StringValue extends Value {
         visitor.visitStringValue(this);
     }
 
-    public toFriendlyString(): string {
-        return this.toString();
+    public toShortFriendlyString(): string {
+        return this.unquotedValue;
+    }
+
+    public toFullFriendlyString(): string {
+        return this.quotedValue;
     }
 }
 
@@ -907,7 +926,11 @@ export class NumberValue extends Value {
         visitor.visitNumberValue(this);
     }
 
-    public toFriendlyString(): string {
+    public toShortFriendlyString(): string {
+        return this.toString();
+    }
+
+    public toFullFriendlyString(): string {
         return this.toString();
     }
 }
@@ -932,7 +955,11 @@ export class NullValue extends Value {
         visitor.visitNullValue(this);
     }
 
-    public toFriendlyString(): string {
+    public toShortFriendlyString(): string {
+        return this.toString();
+    }
+
+    public toFullFriendlyString(): string {
         return this.toString();
     }
 }
