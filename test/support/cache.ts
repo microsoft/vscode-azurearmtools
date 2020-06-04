@@ -9,7 +9,7 @@ import * as path from 'path';
 import * as process from 'process';
 import * as rimraf from 'rimraf';
 import { parseError } from 'vscode-azureextensionui';
-import { basePath, isWin32 } from '../../extension.bundle';
+import { isWin32 } from '../../extension.bundle';
 
 const homedir = os.homedir();
 const cacheFolder = isWin32
@@ -62,9 +62,8 @@ export async function displayCacheStatus(): Promise<void> {
     }
 }
 
-export async function packageCache(destFolderName: string): Promise<void> {
+export async function publishCache(destFolderPath: string): Promise<void> {
     console.log(`Copying the cache...`);
-    const destFolderPath = path.join(basePath, destFolderName);
     const destFolderExpirationPath = path.join(destFolderPath, 'Expiration');
 
     if (await fse.pathExists(destFolderExpirationPath)) {
