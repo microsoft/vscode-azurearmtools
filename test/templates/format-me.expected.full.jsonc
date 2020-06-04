@@ -1,4 +1,4 @@
-// Be sure to turn off editor.formatOnSave setting before editing...
+// Be sure to use "File: Save Without Formatting..." when saving this file
 {
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",

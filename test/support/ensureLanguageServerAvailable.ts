@@ -18,7 +18,7 @@ export async function ensureLanguageServerAvailable(): Promise<void> {
         while (true) {
             switch (ext.languageServerState) {
                 case LanguageServerState.Failed:
-                    throw new Error('Language server failed to start');
+                    throw new Error(`Language server failed on start-up`);
                 case LanguageServerState.NotStarted:
                 case LanguageServerState.Starting:
                     await delay(100);

@@ -267,7 +267,7 @@ export async function getDiagnosticsForDocument(
 
             if (includesLanguageServerSource) {
                 if (ext.languageServerState === LanguageServerState.Failed) {
-                    throw new Error("Language server failed to start");
+                    throw new Error(`Language server failed on start-up`);
                 }
             }
 
@@ -434,7 +434,7 @@ function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOpti
         case DiagnosticSeverity.Warning: severity = "Warning"; break;
         case DiagnosticSeverity.Information: severity = "Information"; break;
         case DiagnosticSeverity.Hint: severity = "Hint"; break;
-        default: assert.fail(`Expected severity ${diagnostic.severity}`); break;
+        default: assert.fail(`Expected severity ${diagnostic.severity}`);
     }
 
     let s = `${severity}: ${diagnostic.message} (${diagnostic.source})`;
