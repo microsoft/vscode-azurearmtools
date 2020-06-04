@@ -3,11 +3,16 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as fse from 'fs-extra';
 import * as mocha from 'mocha';
+import * as path from 'path';
+import * as rimraf from 'rimraf';
 import * as vscode from 'vscode';
 import { armTemplateLanguageId, configKeys, configPrefix, ext } from "../extension.bundle";
-import { displayCacheStatus, packageCache } from './support/clearCache';
+import { displayCacheStatus, publishCache } from './support/cache';
 import { delay } from "./support/delay";
+import { publishVsCodeLogs } from './support/publishVsCodeLogs';
+import { logsFolder } from './testConstants';
 import { useTestFunctionMetadata } from "./TestData";
 
 // tslint:disable:no-console no-function-expression
@@ -19,9 +24,14 @@ let previousSettings = {
 
 // Runs before all tests
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
+    // Create logs folder
+    if (await fse.pathExists(logsFolder)) {
+        rimraf.sync(logsFolder);
+    }
+    await fse.mkdir(logsFolder);
 
     await displayCacheStatus();
-    await packageCache('pre-cache');
+    await publishCache(path.join(logsFolder, 'pre-cache'));
 
     // For tests, set up dotnet install path to something unusual to simulate installing with unusual usernames
     process.env.ARM_DOTNET_INSTALL_FOLDER = ".dotnet O'Hare O'Donald";
@@ -54,7 +64,9 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
     console.log('Done: global.test.ts: suiteTeardown');
 
     await displayCacheStatus();
-    await packageCache('post-cache');
+    await publishCache(path.join(logsFolder, 'post-cache'));
+    await publishVsCodeLogs('ms-dotnettools.vscode-dotnet-runtime');
+    await publishVsCodeLogs(path.basename(ext.context.logPath));
 
     console.log('Restoring settings');
     vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, previousSettings.autoDetectJsonTemplates, vscode.ConfigurationTarget.Global);
