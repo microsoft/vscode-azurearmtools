@@ -93,6 +93,98 @@ suite("Format document", function (this: ISuiteCallbackContext): void {
         // tslint:disable-next-line: no-suspicious-comment
         // TODO: Currently fails due to https://dev.azure.com/devdiv/DevDiv/_workitems/edit/892851
         //testFormat('empty', '', '');
+
+        suite('Multiline strings', () => {
+            const template435 =
+                `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "identity": {
+            "type": "string"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deploymentScripts",
+            "name": "scriptInTemplate1",
+            "apiVersion": "2019-10-01-preview",
+            "location": "[resourceGroup().location]",
+            "kind": "AzurePowerShell",
+            "identity": {
+                "type": "userAssigned",
+                "userAssignedIdentities": {
+                    "[parameters('identity')]": {
+                    }
+                }
+            },
+            "properties": {
+                "azPowerShellVersion": "2.7",
+                "scriptContent": "
+                    param([string
+                ] $textToEcho)
+                    Write-Output $textToEcho
+                    $DeploymentScriptOutputs['text'
+                ] = $textToEcho",
+                "Arguments": "-textToEcho 'test'",
+                "timeout": "PT30M",
+                "retentionInterval": "P1D",
+                "cleanupPreference": "OnSuccess",
+                "forceUpdateTag": "1"
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deploymentScripts",
+            "name": "scriptInTemplate2",
+            "apiVersion": "2019-10-01-preview",
+            "location": "[resourceGroup().location]",
+            "kind": "AzurePowerShell",
+            "dependsOn": [
+                "scriptInTemplate1"
+            ],
+            "identity": {
+                "type": "userAssigned",
+                "userAssignedIdentities": {
+                    "[parameters('identity')]": {
+                    }
+                }
+            },
+            "properties": {
+                "azPowerShellVersion": "2.7",
+                "scriptContent": "
+                    param([string
+                ] $textToEcho)
+                    Write-Output $textToEcho
+                    $DeploymentScriptOutputs['text'
+                ] = $textToEcho
+                ",
+                "arguments": "[concat('-textToEcho ', reference('scriptInTemplate1').outputs.text, '-morestuff')]",
+                "timeout": "PT30M",
+                "retentionInterval": "P1D"
+            }
+        }
+    ],
+    "outputs": {
+        "result": {
+            "value": "[reference('scriptInTemplate2').outputs.text]",
+            "type": "string"
+        }
+    }
+}`;
+            testFormat(
+                'regress https://github.com/microsoft/vscode-azurearmtools/issues/435',
+                template435,
+                template435
+            );
+
+            const template2 =
+                `{
+    "whatever": "[concat('This is a ',
+        3, '-line ',
+        'expression ', 4, ' you!')]"
+};`;
+            testFormat('template2', template2, template2);
+        });
     });
 
     suite("Format range", () => {
