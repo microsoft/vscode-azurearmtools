@@ -11,6 +11,7 @@ import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import * as Completion from "./Completion";
+import { ConsoleOutputChannelWrapper } from "./ConsoleOutputChannelWrapper";
 import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "./constants";
 import { DeploymentDocument } from "./DeploymentDocument";
 import { DeploymentTemplate } from "./DeploymentTemplate";
@@ -21,7 +22,7 @@ import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 import { getItemTypeQuickPicks, InsertItem } from "./insertItem";
 import * as Json from "./JSON";
 import * as language from "./Language";
-import { startArmLanguageServer } from "./languageclient/startArmLanguageServer";
+import { startArmLanguageServerInBackground } from "./languageclient/startArmLanguageServer";
 import { DeploymentFileMapping } from "./parameterFiles/DeploymentFileMapping";
 import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
 import { considerQueryingForParameterFile, getFriendlyPathToFile, openParameterFile, openTemplateFile, selectParameterFile } from "./parameterFiles/parameterFiles";
@@ -54,12 +55,18 @@ interface IErrorsAndWarnings {
 
 const invalidRenameError = "Only parameters, variables, user namespaces and user functions can be renamed.";
 
+const echoOutputChannelToConsole: boolean = /^(true|1)?$/i.test(process.env.ECHO_OUTPUT_CHANNEL_TO_CONSOLE ?? '');
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
     ext.context = context;
     ext.outputChannel = createAzExtOutputChannel(outputChannelName, configPrefix);
     ext.ui = new AzureUserInput(context.globalState);
+
+    if (echoOutputChannelToConsole) {
+        ext.outputChannel = new ConsoleOutputChannelWrapper(ext.outputChannel);
+    }
 
     context.subscriptions.push(ext.completionItemsSpy);
 
@@ -707,6 +714,8 @@ export class AzureRMTools {
         }
         this._areDeploymentTemplateEventsHookedUp = true;
 
+        // tslint:disable-next-line: no-suspicious-comment
+        // tslint:disable-next-line: max-func-body-length // TODO: refactor
         callWithTelemetryAndErrorHandlingSync("ensureDeploymentTemplateEventsHookedUp", (actionContext: IActionContext) => {
             actionContext.telemetry.suppressIfSuccessful = true;
 
@@ -803,8 +812,7 @@ export class AzureRMTools {
             };
             ext.context.subscriptions.push(vscode.languages.registerRenameProvider(templateOrParameterDocumentSelector, renameProvider));
 
-            // tslint:disable-next-line:no-floating-promises // Don't wait
-            startArmLanguageServer();
+            startArmLanguageServerInBackground();
         });
     }
 

@@ -40,31 +40,35 @@ export async function stopArmLanguageServer(): Promise<void> {
     ext.outputChannel.appendLine("Language server stopped");
 }
 
-export async function startArmLanguageServer(): Promise<void> {
+export function startArmLanguageServerInBackground(): void {
     window.withProgress(
         {
             location: ProgressLocation.Window,
             title: `Starting ${languageServerName}`
         },
         async () => {
-            ext.languageServerState = LanguageServerState.Starting;
-            try {
-                // The server is implemented in .NET Core. We run it by calling 'dotnet' with the dll as an argument
-                let serverDllPath: string = findLanguageServer();
-                let dotnetExePath: string | undefined = await getDotNetPath();
-                if (!dotnetExePath) {
-                    // Acquisition failed
+            await callWithTelemetryAndErrorHandling('startArmLanguageServer', async (actionContext: IActionContext) => {
+                actionContext.telemetry.suppressIfSuccessful = true;
+
+                ext.languageServerState = LanguageServerState.Starting;
+                try {
+                    // The server is implemented in .NET Core. We run it by calling 'dotnet' with the dll as an argument
+                    let serverDllPath: string = findLanguageServer();
+                    let dotnetExePath: string | undefined = await getDotNetPath();
+                    if (!dotnetExePath) {
+                        // Acquisition failed
+                        ext.languageServerState = LanguageServerState.Failed;
+                        return;
+                    }
+
+                    await startLanguageClient(serverDllPath, dotnetExePath);
+
+                    ext.languageServerState = LanguageServerState.Started;
+                } catch (error) {
                     ext.languageServerState = LanguageServerState.Failed;
-                    return;
+                    throw error;
                 }
-
-                await startLanguageClient(serverDllPath, dotnetExePath);
-
-                ext.languageServerState = LanguageServerState.Started;
-            } catch (error) {
-                ext.languageServerState = LanguageServerState.Failed;
-                throw error;
-            }
+            });
         });
 }
 
@@ -84,6 +88,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
     // tslint:disable-next-line: max-func-body-length // TODO: Refactor function
     await callWithTelemetryAndErrorHandling('startArmLanguageClient', async (actionContext: IActionContext) => {
         actionContext.errorHandling.rethrow = true;
+        actionContext.errorHandling.suppressDisplay = true; // Let caller handle
 
         // These trace levels are available in the server:
         //   Trace
@@ -177,6 +182,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
 async function getDotNetPath(): Promise<string | undefined> {
     return await callWithTelemetryAndErrorHandling("getDotNetPath", async (actionContext: IActionContext) => {
         actionContext.errorHandling.rethrow = true;
+        actionContext.errorHandling.suppressDisplay = true; // Let caller handle
 
         let dotnetPath: string | undefined;
 
@@ -192,8 +198,7 @@ async function getDotNetPath(): Promise<string | undefined> {
 
             dotnetPath = await acquireSharedDotnetInstallation(downloadDotnetVersion);
             if (!dotnetPath) {
-                // Acquisition failed. Error will already have been displayed.
-                return undefined;
+                throw new Error("acquireSharedDotnetInstallation didn't return a path");
             }
 
             if (!(await isFile(dotnetPath))) {
@@ -221,6 +226,7 @@ async function getDotNetPath(): Promise<string | undefined> {
 function findLanguageServer(): string {
     const serverDllPath: string | undefined = callWithTelemetryAndErrorHandlingSync('findLanguageServer', (actionContext: IActionContext) => {
         actionContext.errorHandling.rethrow = true;
+        actionContext.errorHandling.suppressDisplay = true; // Let caller handle
 
         let serverDllPathSetting: string | undefined = workspace.getConfiguration(configPrefix).get<string | undefined>(configKeys.langServerPath);
         if (typeof serverDllPathSetting !== 'string' || serverDllPathSetting === '') {
