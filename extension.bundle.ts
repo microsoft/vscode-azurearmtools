@@ -76,6 +76,7 @@ export { mapJsonObjectValue } from "./src/util/mapJsonObjectValue";
 export { indentMultilineString, unindentMultilineString as removeIndentation } from "./src/util/multilineStrings";
 export * from "./src/util/nonNull";
 export { normalizePath } from "./src/util/normalizePath";
+export * from "./src/util/readUtf8FileWithBom";
 export * from './src/util/time';
 export { getVSCodePositionFromPosition } from "./src/util/vscodePosition";
 export { wrapError } from "./src/util/wrapError";

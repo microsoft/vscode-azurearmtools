@@ -13,6 +13,7 @@ import { ext } from '../extensionVariables';
 import { queryCreateParameterFile } from '../parameterFileGeneration';
 import { containsParametersSchema } from '../schemas';
 import { normalizePath } from '../util/normalizePath';
+import { readUtf8FileWithBom } from '../util/readUtf8FileWithBom';
 import { DeploymentFileMapping } from './DeploymentFileMapping';
 
 const readAtMostBytesToFindParamsSchema = 4 * 1024;
@@ -47,8 +48,8 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
   let templateUri: Uri = sourceUri;
 
   // Verify it's a template file (have to read in entire file to do full validation)
-  const contents = (await fse.readFile(templateUri.fsPath, { encoding: "utf8" })).toString();
-  const template: DeploymentTemplate = new DeploymentTemplate(contents, Uri.file("https://Check file is template"));
+  const contents = await readUtf8FileWithBom(templateUri.fsPath);
+  const template: DeploymentTemplate = new DeploymentTemplate(contents, templateUri);
   if (!template.hasArmSchemaUri()) {
     throw new Error(`"${templateUri.fsPath}" does not appear to be an Azure Resource Manager deployment template file.`);
   }

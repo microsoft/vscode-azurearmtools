@@ -47,6 +47,7 @@ import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedBuiltinFunctionIssue } from "./UnrecognizedFunctionIssues";
 import { getRenameError } from "./util/getRenameError";
 import { normalizePath } from "./util/normalizePath";
+import { readUtf8FileWithBom } from "./util/readUtf8FileWithBom";
 import { Cancellation } from "./util/throwOnCancel";
 import { onCompletionActivated, toVsCodeCompletionItem } from "./util/toVsCodeCompletionItem";
 import { getVSCodeRangeFromSpan } from "./util/vscodePosition";
@@ -1199,7 +1200,7 @@ export class AzureRMTools {
         }
 
         // Nope, have to read it from disk
-        const contents = (await fse.readFile(uri.fsPath, { encoding: 'utf8' })).toString();
+        const contents = await readUtf8FileWithBom(uri.fsPath);
         return new DeploymentTemplate(contents, uri);
     }
 
@@ -1215,7 +1216,7 @@ export class AzureRMTools {
         }
 
         // Nope, have to read it from disk
-        const contents = (await fse.readFile(uri.fsPath, { encoding: 'utf8' })).toString();
+        const contents = await readUtf8FileWithBom(uri.fsPath);
         return new DeploymentParameters(contents, uri);
     }
 
