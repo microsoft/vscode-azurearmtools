@@ -458,7 +458,9 @@ export class InsertItem {
         let parameterName: string;
         let parameters = [];
         do {
-            parameterName = await this.ui.showInputBox({ prompt: "Name of parameter? Leave empty for no more parameters" });
+            const msg = parameters.length === 0 ? "Name of first parameter?" : "Name of next parameter?";
+            const leaveEmpty = "Press 'Enter' if there are no more parameters.";
+            parameterName = await this.ui.showInputBox({ prompt: msg, placeHolder: leaveEmpty });
             if (parameterName !== '') {
                 const parameterType = await this.ui.showQuickPick(getItemType(), { placeHolder: `Type of parameter ${parameterName}?` });
                 parameters.push({
