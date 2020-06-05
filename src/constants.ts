@@ -62,6 +62,10 @@ export namespace globalStateKeys {
     }
 }
 
+export namespace notifications {
+    export const parameterFilesChanged = "arm-template/parameterFilesChanged";
+}
+
 // For testing: We create a diagnostic with this message during testing to indicate when all (expression) diagnostics have been calculated
 export const diagnosticsCompletePrefix = "Diagnostics complete: ";
 export const expressionsDiagnosticsCompletionMessage = diagnosticsCompletePrefix + expressionsDiagnosticsSource;

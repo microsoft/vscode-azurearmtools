@@ -588,6 +588,9 @@ export class AzureRMTools {
         // tslint:disable-next-line: no-floating-promises
         ++this._diagnosticsVersion;
 
+        // tslint:disable-next-line: no-console
+        // console.log(`reportDeploymentDocumentErrors: ${deploymentDocument.documentUri}, ${associatedDocument?.documentUri}`);
+
         let errors: language.Issue[] = await deploymentDocument.getErrors(associatedDocument);
         const diagnostics: vscode.Diagnostic[] = [];
 

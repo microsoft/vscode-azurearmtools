@@ -16,3 +16,5 @@ console.log(`DISABLE_LANGUAGE_SERVER = ${DISABLE_LANGUAGE_SERVER}`);
 
 // This folder gets published as an artifact after the pipeline runs
 export const logsFolder = path.join(basePath, 'logs');
+
+export const parameterFilesChangedNotification = "arm-template/parameterFilesChanged";

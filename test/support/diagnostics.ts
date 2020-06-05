@@ -18,7 +18,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument } from "vscode";
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
-import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
+import { DISABLE_LANGUAGE_SERVER, parameterFilesChangedNotification } from "../testConstants";
+import { delay } from "./delay";
+import { ensureLanguageServerAvailable } from "./ensureLanguageServerAvailable";
 import { parseParametersWithMarkers } from "./parseTemplate";
 import { resolveInTestFolder } from "./resolveInTestFolder";
 import { stringify } from "./stringify";
@@ -217,6 +219,38 @@ async function testDiagnosticsCore(templateContentsOrFileName: string | Partial<
     compareDiagnostics(actual, expected, options);
 }
 
+let paramFilesChangedEventsHookedUp = false;
+let paramFilesChangedEvents = 0;
+
+export async function waitForParameterFilesChanged(action: () => Promise<void>): Promise<void> {
+    await ensureLanguageServerAvailable();
+
+    if (!paramFilesChangedEventsHookedUp) {
+        paramFilesChangedEventsHookedUp = true;
+        ext.languageServerClient?.onNotification(parameterFilesChangedNotification, () => {
+            ++paramFilesChangedEvents;
+        });
+    }
+
+    const expected = paramFilesChangedEvents + 1;
+
+    await action();
+
+    const timeOutAt = Date.now() + diagnosticsTimeout;
+    await new Promise(async (resolve, reject): Promise<void> => {
+        // tslint:disable-next-line: no-constant-condition
+        while (true) {
+            if (paramFilesChangedEvents >= expected) {
+                resolve();
+            } else if (Date.now() > timeOutAt) {
+                reject(new Error('Timed out waiting for notification from language server that the parameter files configuration changed'));
+            }
+
+            await delay(25);
+        }
+    });
+}
+
 export async function getDiagnosticsForDocument(
     document: TextDocument,
     options: IGetDiagnosticsOptions
@@ -293,8 +327,8 @@ export async function getDiagnosticsForDocument(
         const requiredSourceCompletionVersions = Object.assign({}, initialResults.sourceCompletionVersions);
         if (options.waitForChange) {
             // tslint:disable-next-line:no-for-in forin
-            for (let source in requiredSourceCompletionVersions) {
-                requiredSourceCompletionVersions[source] = requiredSourceCompletionVersions[source] + 1;
+            for (let source of filterSources) {
+                requiredSourceCompletionVersions[source.name] = requiredSourceCompletionVersions[source.name] + 1;
             }
         }
 
@@ -394,7 +428,7 @@ export async function getDiagnosticsForTemplate(
                 paramsFile = new TempFile(unmarkedParams);
             } else {
                 const absPath = resolveInTestFolder(options.parametersFile!);
-                paramsFile = await TempFile.fromExistingFile(absPath);
+                paramsFile = await TempFile.copyFromExistingFile(absPath);
             }
 
             // Map template to params

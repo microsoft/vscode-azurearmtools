@@ -1,6 +1,9 @@
+// tslint:disable: no-useless-files
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
+
+/*
 
 // tslint:disable:no-http-string
 // tslint:disable:promise-function-async
@@ -71,3 +74,4 @@ suite("HttpClient", () => {
         // });
     });
 });
+*/

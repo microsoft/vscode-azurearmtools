@@ -22,7 +22,7 @@ export class TempFile {
         fs.writeFileSync(this.fsPath, contents);
     }
 
-    public static async fromExistingFile(filepath: string): Promise<TempFile> {
+    public static async copyFromExistingFile(filepath: string): Promise<TempFile> {
         const contents: string = await readUtf8FileWithBom(filepath);
         return new TempFile(contents, path.basename(filepath), path.extname(filepath));
     }
