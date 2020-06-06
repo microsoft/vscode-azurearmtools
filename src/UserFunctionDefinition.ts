@@ -10,7 +10,8 @@ import * as Json from "./JSON";
 import * as language from "./Language";
 import { OutputDefinition } from "./OutputDefinition";
 import { getUserFunctionUsage } from "./signatureFormatting";
-import { ScopeContext, TemplateScope } from "./TemplateScope";
+import { TemplateScope } from "./TemplateScope";
+import { UserFunctionScope } from "./templateScopes";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
 import { UserFunctionParameterDefinition } from "./UserFunctionParameterDefinition";
 
@@ -32,7 +33,7 @@ export class UserFunctionDefinition implements INamedDefinition {
         public readonly namespace: UserFunctionNamespaceDefinition,
         public readonly nameValue: Json.StringValue,
         public readonly objectValue: Json.ObjectValue,
-        public readonly spanValue: language.Span
+        public readonly span: language.Span
     ) { }
 
     /**
@@ -45,22 +46,11 @@ export class UserFunctionDefinition implements INamedDefinition {
     public get scope(): TemplateScope {
         return this._scope.getOrCacheValue(() => {
             // Each user function has a scope of its own
-            return new TemplateScope(
-                ScopeContext.UserFunction,
-                // User functions can only use their own parameters, they do
-                //   not have access to top-level parameters
+            return new UserFunctionScope(
+                this.objectValue,
                 this.parameterDefinitions,
-                // variable references not supported in user functions
-                undefined,
-                // nested user functions not supported in user functions
-                undefined,
-                `'${this.fullName}' (UDF) scope`
-            );
+                `'${this.fullName}' (UDF) scope`);
         });
-    }
-
-    public get span(): language.Span {
-        return this.spanValue;
     }
 
     public get fullName(): string {

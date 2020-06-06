@@ -6,6 +6,8 @@
 
 import * as assert from 'assert';
 import * as fs from 'fs';
+import * as fse from 'fs-extra';
+import * as path from 'path';
 import { commands, TextDocument, TextEditor, Uri, window, workspace } from 'vscode';
 import { getTempFilePath } from './getTempFilePath';
 
@@ -18,6 +20,11 @@ export class TempFile {
         this.uri = Uri.file(this.fsPath);
 
         fs.writeFileSync(this.fsPath, contents);
+    }
+
+    public static fromExistingFile(filepath: string): TempFile {
+        const contents: string = fse.readFileSync(filepath).toString();
+        return new TempFile(contents, path.basename(filepath), path.extname(filepath));
     }
 
     public dispose(): void {

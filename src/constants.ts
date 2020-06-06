@@ -6,8 +6,7 @@
 import * as os from 'os';
 import * as path from 'path';
 
-// tslint:disable-next-line: strict-boolean-expressions
-export const isWebpack: boolean = /^(false|0)?$/i.test(process.env.AZCODE_ARM_IGNORE_BUNDLE || '');
+export const isWebpack: boolean = /^(false|0)?$/i.test(process.env.AZCODE_ARM_IGNORE_BUNDLE ?? '');
 
 export const isWin32: boolean = os.platform() === 'win32';
 export const isCaseSensitiveFileSystem: boolean = !isWin32;
@@ -86,4 +85,10 @@ export namespace templateKeys {
     export const resourceApiVersion = 'apiVersion';
     export const resourceDependsOn = 'dependsOn';
     export const resourceName = 'name';
+
+    // Nested templates
+    export const nestedDeploymentExprEvalOptions = 'expressionEvaluationOptions';
+    export const nestedDeploymentExprEvalScope = 'scope';
+    export const nestedDeploymentExprEvalScopeInner = 'inner';
+    export const nestedDeploymentTemplateProperty = 'template';
 }

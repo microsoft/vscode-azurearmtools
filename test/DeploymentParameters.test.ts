@@ -49,7 +49,7 @@ suite("DeploymentParameters", () => {
             const pd0: ParameterValueDefinition = parameterValues[0];
             assert(pd0);
             assert.deepStrictEqual(pd0.nameValue.toString(), "num");
-            assert.deepStrictEqual(pd0.value?.toFriendlyString(), "1");
+            assert.deepStrictEqual(pd0.value?.toShortFriendlyString(), "1");
         });
 
         test("JSON stringValue with one parameter definition with null value", () => {
@@ -59,7 +59,7 @@ suite("DeploymentParameters", () => {
             assert.deepStrictEqual(parameterValues.length, 1);
             const pd0: ParameterValueDefinition = parameterValues[0];
             assert(pd0);
-            assert.deepStrictEqual(pd0.value?.toFriendlyString(), "null");
+            assert.deepStrictEqual(pd0.value?.toShortFriendlyString(), "null");
         });
 
         test("JSON stringValue with one parameter definition with no value", () => {

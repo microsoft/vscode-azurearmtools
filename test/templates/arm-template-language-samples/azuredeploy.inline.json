@@ -19,6 +19,9 @@
             "name": "fetchSecret",
             "type": "Microsoft.Resources/deployments",
             "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
                 "mode": "Incremental",
                 "template": {
                     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",

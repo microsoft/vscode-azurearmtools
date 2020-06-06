@@ -252,8 +252,8 @@ function getReplacementSpan(pc: PositionContext, argument: TLE.Value | undefined
  * Get useful info about each resource in the template
  */
 function getResourcesInfo(template: DeploymentTemplate): IResourceInfo[] {
-    if (template.resources) {
-        return getInfoFromResourcesArray(template.resources, undefined, template);
+    if (template.resourceObjects) {
+        return getInfoFromResourcesArray(template.resourceObjects, undefined, template);
     }
 
     return [];

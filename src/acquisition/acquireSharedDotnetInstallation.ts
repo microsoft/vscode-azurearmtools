@@ -17,7 +17,8 @@ export async function acquireSharedDotnetInstallation(version: string): Promise<
     return await callWithTelemetryAndErrorHandling('acquireSharedDotnet', async (actionContext: IActionContext) => {
         // If this fails, the dotnet.acquire extension should display its own error, so no need to do
         // it here, other than to our output channel.
-        actionContext.errorHandling.suppressDisplay = true;
+        actionContext.errorHandling.suppressDisplay = true; // Allow caller to handle
+        actionContext.errorHandling.rethrow = true;
 
         let message: string | undefined;
         let result: IDotnetAcquireResult | undefined;

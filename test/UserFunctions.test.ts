@@ -377,7 +377,7 @@ suite("User functions", () => {
             assert(!dt.topLevelScope.getParameterDefinition('notfound'));
             assert.equal(dt.topLevelScope.namespaceDefinitions.length, 1);
             assert.equal(dt.topLevelScope.namespaceDefinitions[0].members.length, 2);
-            assert.equal(dt.topLevelScope.namespaceDefinitions[0].nameValue.toFriendlyString(), "udf");
+            assert.equal(dt.topLevelScope.namespaceDefinitions[0].nameValue.toShortFriendlyString(), "udf");
             assert.equal(dt.topLevelScope.namespaceDefinitions[0].getMemberDefinition('odd')!.nameValue.toString(), "odd");
             assert.equal(dt.topLevelScope.namespaceDefinitions[0].getMemberDefinition('ODD')!.nameValue.toString(), "odd");
             assert.equal(dt.topLevelScope.namespaceDefinitions[0].members[0].parameterDefinitions.length, 1);

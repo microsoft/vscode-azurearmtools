@@ -2,25 +2,27 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable: max-classes-per-file // Private classes are related to DeploymentTemplate implementation
+
 import * as assert from 'assert';
 import { CodeAction, CodeActionContext, CodeActionKind, Command, Range, Selection, Uri } from "vscode";
 import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
 import { templateKeys } from "./constants";
-import { DeploymentDocument } from "./DeploymentDocument";
+import { DeploymentDocument, ResolvableCodeLens } from "./DeploymentDocument";
+import { NestedTemplateCodeLen, ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
 import { Histogram } from "./Histogram";
 import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
-import { ParameterDefinition } from "./ParameterDefinition";
 import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
 import { ReferenceList } from "./ReferenceList";
 import { isArmSchema } from "./schemas";
 import { TemplatePositionContext } from "./TemplatePositionContext";
-import { ScopeContext, TemplateScope } from "./TemplateScope";
+import { TemplateScope } from "./TemplateScope";
+import { TopLevelTemplateScope } from './templateScopes';
 import * as TLE from "./TLE";
-import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
-import { IVariableDefinition, TopLevelCopyBlockVariableDefinition, TopLevelVariableDefinition } from "./VariableDefinition";
+import { nonNullValue } from './util/nonNull';
 import { FindReferencesVisitor } from "./visitors/FindReferencesVisitor";
 import { FunctionCountVisitor } from "./visitors/FunctionCountVisitor";
 import { GenericStringVisitor } from "./visitors/GenericStringVisitor";
@@ -32,14 +34,10 @@ import * as UnrecognizedFunctionVisitor from "./visitors/UnrecognizedFunctionVis
 
 export class DeploymentTemplate extends DeploymentDocument {
     // The top-level parameters and variables (as opposed to those in user functions and deployment resources)
-    private _topLevelScope: TemplateScope;
+    private _topLevelScope: CachedValue<TemplateScope> = new CachedValue<TemplateScope>();
 
     // A map from all JSON string value nodes to their cached TLE parse results
     private _jsonStringValueToTleParseResultMap: CachedValue<Map<Json.StringValue, TLE.ParseResult>> = new CachedValue<Map<Json.StringValue, TLE.ParseResult>>();
-
-    private _topLevelNamespaceDefinitions: CachedValue<UserFunctionNamespaceDefinition[]> = new CachedValue<UserFunctionNamespaceDefinition[]>();
-    private _topLevelVariableDefinitions: CachedValue<IVariableDefinition[]> = new CachedValue<IVariableDefinition[]>();
-    private _topLevelParameterDefinitions: CachedValue<ParameterDefinition[]> = new CachedValue<ParameterDefinition[]>();
 
     /**
      * Create a new DeploymentTemplate object.
@@ -49,17 +47,15 @@ export class DeploymentTemplate extends DeploymentDocument {
      */
     constructor(documentText: string, documentId: Uri) {
         super(documentText, documentId);
-
-        this._topLevelScope = new TemplateScope(
-            ScopeContext.TopLevel,
-            this.getTopLevelParameterDefinitions(),
-            this.getTopLevelVariableDefinitions(),
-            this.getTopLevelNamespaceDefinitions(),
-            'Top-level scope');
     }
 
     public get topLevelScope(): TemplateScope {
-        return this._topLevelScope;
+        return this._topLevelScope.getOrCacheValue(() =>
+            new TopLevelTemplateScope(
+                this.topLevelValue,
+                `Top-level template scope for ${this.documentId}`
+            )
+        );
     }
 
     public hasArmSchemaUri(): boolean {
@@ -77,7 +73,8 @@ export class DeploymentTemplate extends DeploymentDocument {
         return undefined;
     }
 
-    public get resources(): Json.ArrayValue | undefined {
+    // CONSIDER: Should we be using scope.resources instead?
+    public get resourceObjects(): Json.ArrayValue | undefined {
         if (this.topLevelValue) {
             return this.topLevelValue?.getPropertyValue(templateKeys.resources)?.asArrayValue;
         }
@@ -94,41 +91,7 @@ export class DeploymentTemplate extends DeploymentDocument {
      */
     private get quotedStringToTleParseResultMap(): Map<Json.StringValue, TLE.ParseResult> {
         return this._jsonStringValueToTleParseResultMap.getOrCacheValue(() => {
-            const jsonStringValueToTleParseResultMap = new Map<Json.StringValue, TLE.ParseResult>();
-
-            // First assign all strings under user functions their own scope
-            for (let ns of this.getTopLevelNamespaceDefinitions()) {
-                for (let member of ns.members) {
-                    parseSubstrings(member.objectValue, member.scope);
-                }
-            }
-
-            // All strings which have not been parsed yet will be assigned top-level scope.
-            // This does not include strings which are not in the reachable Json.Value tree due to syntax or other issues.
-            this.visitAllReachableStringValues(jsonStringValue => {
-                if (!jsonStringValueToTleParseResultMap.has(jsonStringValue)) {
-                    // Not parsed yet, parse with top-level scope
-                    let tleParseResult: TLE.ParseResult = TLE.Parser.parse(jsonStringValue.quotedValue, this.topLevelScope);
-                    jsonStringValueToTleParseResultMap.set(jsonStringValue, tleParseResult);
-                }
-            });
-
-            return jsonStringValueToTleParseResultMap;
-
-            // (local function) Parse all substrings of the given JSON value node
-            function parseSubstrings(value: Json.Value | undefined, scope: TemplateScope): void {
-                if (value) {
-                    GenericStringVisitor.visit(
-                        value,
-                        jsonStringValue => {
-                            if (!jsonStringValueToTleParseResultMap.has(jsonStringValue)) {
-                                // Parse the string as a possible TLE expression and cache
-                                let tleParseResult: TLE.ParseResult = TLE.Parser.parse(jsonStringValue.quotedValue, scope);
-                                jsonStringValueToTleParseResultMap.set(jsonStringValue, tleParseResult);
-                            }
-                        });
-                }
-            }
+            return StringParseAndScopeAssignmentVisitor.createParsedStringMap(this);
         });
     }
 
@@ -216,7 +179,7 @@ export class DeploymentTemplate extends DeploymentDocument {
     private findUnusedVariables(): language.Issue[] {
         const warnings: language.Issue[] = [];
 
-        for (const variableDefinition of this.getTopLevelVariableDefinitions()) {
+        for (const variableDefinition of this.topLevelScope.variableDefinitions) {
             // Variables are only supported at the top level
             const variableReferences: ReferenceList = this.findReferencesToDefinition(variableDefinition);
             if (variableReferences.length === 1) {
@@ -367,112 +330,6 @@ export class DeploymentTemplate extends DeploymentDocument {
         return count;
     }
 
-    private getTopLevelParameterDefinitions(): ParameterDefinition[] {
-        return this._topLevelParameterDefinitions.getOrCacheValue(() => {
-            const parameterDefinitions: ParameterDefinition[] = [];
-
-            if (this.topLevelValue) {
-                const parameters: Json.ObjectValue | undefined = Json.asObjectValue(this.topLevelValue.getPropertyValue(templateKeys.parameters));
-                if (parameters) {
-                    for (const parameter of parameters.properties) {
-                        parameterDefinitions.push(new ParameterDefinition(parameter));
-                    }
-                }
-            }
-
-            return parameterDefinitions;
-        });
-    }
-
-    private getTopLevelVariableDefinitions(): IVariableDefinition[] {
-        return this._topLevelVariableDefinitions.getOrCacheValue(() => {
-            if (this.topLevelValue) {
-                const variables: Json.ObjectValue | undefined = Json.asObjectValue(this.topLevelValue.getPropertyValue(templateKeys.variables));
-                if (variables) {
-                    const varDefs: IVariableDefinition[] = [];
-                    for (let prop of variables.properties) {
-                        if (prop.nameValue.unquotedValue.toLowerCase() === templateKeys.loopVarCopy) {
-                            // We have a top-level copy block, e.g.:
-                            //
-                            // "copy": [
-                            //   {
-                            //     "name": "top-level-object-array",
-                            //     "count": 5,
-                            //     "input": {
-                            //       "name": "[concat('myDataDisk', copyIndex('top-level-object-array', 1))]",
-                            //       "diskSizeGB": "1",
-                            //       "diskIndex": "[copyIndex('top-level-object-array')]"
-                            //     }
-                            //   },
-                            // ]
-                            //
-                            // Each element of the array is a TopLevelCopyBlockVariableDefinition
-                            const varsArray: Json.ArrayValue | undefined = Json.asArrayValue(prop.value);
-                            // tslint:disable-next-line: strict-boolean-expressions
-                            for (let varElement of (varsArray && varsArray.elements) || []) {
-                                const def = TopLevelCopyBlockVariableDefinition.createIfValid(varElement);
-                                if (def) {
-                                    varDefs.push(def);
-                                }
-                            }
-                        } else {
-                            varDefs.push(new TopLevelVariableDefinition(prop));
-                        }
-                    }
-
-                    return varDefs;
-                }
-            }
-
-            return [];
-        });
-    }
-
-    private getTopLevelNamespaceDefinitions(): UserFunctionNamespaceDefinition[] {
-        return this._topLevelNamespaceDefinitions.getOrCacheValue(() => {
-            const namespaceDefinitions: UserFunctionNamespaceDefinition[] = [];
-
-            // Example of function definitions
-            //
-            // "functions": [
-            //     { << This is a UserFunctionNamespaceDefinition
-            //       "namespace": "<namespace-for-functions>",
-            //       "members": { << This is a UserFunctionDefinition
-            //         "<function-name>": {
-            //           "parameters": [
-            //             {
-            //               "name": "<parameter-name>",
-            //               "type": "<type-of-parameter-value>"
-            //             }
-            //           ],
-            //           "output": {
-            //             "type": "<type-of-output-value>",
-            //             "value": "<function-return-value>"
-            //           }
-            //         }
-            //       }
-            //     }
-            //   ],
-
-            if (this.topLevelValue) {
-                const functionNamespacesArray: Json.ArrayValue | undefined = Json.asArrayValue(this.topLevelValue.getPropertyValue("functions"));
-                if (functionNamespacesArray) {
-                    for (let namespaceElement of functionNamespacesArray.elements) {
-                        const namespaceObject = Json.asObjectValue(namespaceElement);
-                        if (namespaceObject) {
-                            let namespace = UserFunctionNamespaceDefinition.createIfValid(namespaceObject);
-                            if (namespace) {
-                                namespaceDefinitions.push(namespace);
-                            }
-                        }
-                    }
-                }
-            }
-
-            return namespaceDefinitions;
-        });
-    }
-
     public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentParameters | undefined): TemplatePositionContext {
         return TemplatePositionContext.fromDocumentLineAndColumnIndexes(this, documentLineIndex, documentColumnIndex, associatedTemplate);
     }
@@ -557,9 +414,116 @@ export class DeploymentTemplate extends DeploymentDocument {
         return this.getDocumentText(spanOfValueInsideString, parentStringToken.span.startIndex);
     }
 
+    public getCodeLenses(hasAssociatedParameters: boolean): ResolvableCodeLens[] {
+        return this.getParameterCodeLenses(hasAssociatedParameters)
+            .concat(this.getNestedTemplateCodeLenses());
+    }
+
+    private getParameterCodeLenses(hasAssociatedParameters: boolean): ResolvableCodeLens[] {
+        const lenses: ResolvableCodeLens[] = [];
+
+        // Code lens for the "parameters" section itself - indicates currently-selected parameter file and allows
+        // user to chnage it
+        const parametersCodeLensSpan = this.topLevelValue?.getProperty(templateKeys.parameters)?.span
+            ?? new language.Span(0, 0);
+        if (hasAssociatedParameters) {
+            lenses.push(new ShowCurrentParameterFileCodeLens(this, parametersCodeLensSpan));
+        }
+        lenses.push(new SelectParameterFileCodeLens(this, parametersCodeLensSpan));
+
+        if (hasAssociatedParameters) {
+            // Code lens for each parameter definition
+            lenses.push(...this.topLevelScope.parameterDefinitions.map(pd => new ParameterDefinitionCodeLens(this, pd)));
+        }
+
+        return lenses;
+	}
+
     private createExtractCommand(title: string, command: string): CodeAction {
         const action = new CodeAction(title, CodeActionKind.RefactorExtract);
         action.command = { command: `azurerm-vscode-tools.${command}`, title: '' };
         return action;
     }
+
+    private getNestedTemplateCodeLenses(): ResolvableCodeLens[] {
+        const lenses: ResolvableCodeLens[] = [];
+        const allScopes = this.findAllScopes();
+        for (let scope of allScopes) {
+            if (scope.rootObject) {
+                const lens = NestedTemplateCodeLen.create(this, scope.rootObject.span, scope.scopeKind);
+                if (lens) {
+                    lenses.push(lens);
+                }
+            }
+        }
+
+        return lenses;
+    }
+
+    public findAllScopes(): TemplateScope[] {
+        const allScopes: TemplateScope[] = [];
+        traverse(this.topLevelScope);
+        return allScopes;
+
+        function traverse(scope: TemplateScope | undefined): void {
+            for (let childScope of scope?.childScopes ?? []) {
+                if (allScopes.indexOf(childScope) < 0) {
+                    allScopes.push(childScope);
+                }
+
+                traverse(childScope);
+            }
+        }
+    }
 }
+
+//#region StringParseAndScopeAssignmentVisitor
+
+class StringParseAndScopeAssignmentVisitor extends Json.Visitor {
+    private readonly _jsonStringValueToTleParseResultMap: Map<Json.StringValue, TLE.ParseResult> = new Map<Json.StringValue, TLE.ParseResult>();
+    private readonly _scopeStack: TemplateScope[] = [];
+    private _currentScope: TemplateScope;
+    private readonly _allScopesInTemplate: TemplateScope[];
+
+    public constructor(private readonly _dt: DeploymentTemplate) {
+        super();
+        this._currentScope = _dt.topLevelScope;
+        this._allScopesInTemplate = _dt.findAllScopes();
+    }
+
+    public static createParsedStringMap(dt: DeploymentTemplate): Map<Json.StringValue, TLE.ParseResult> {
+        const visitor = new StringParseAndScopeAssignmentVisitor(dt);
+        return visitor.createMap();
+    }
+
+    private createMap(): Map<Json.StringValue, TLE.ParseResult> {
+        this._dt.topLevelValue?.accept(this);
+        return this._jsonStringValueToTleParseResultMap;
+    }
+
+    public visitStringValue(jsonStringValue: Json.StringValue): void {
+        assert(!this._jsonStringValueToTleParseResultMap.has(jsonStringValue), "Already parsed this string");
+        // Parse the string as a possible TLE expression and cache
+        let tleParseResult: TLE.ParseResult = TLE.Parser.parse(jsonStringValue.quotedValue, this._currentScope);
+        this._jsonStringValueToTleParseResultMap.set(jsonStringValue, tleParseResult);
+    }
+
+    public visitObjectValue(jsonObjectValue: Json.ObjectValue): void {
+        const currentScope = this._currentScope;
+        const newScope = this._allScopesInTemplate.find(scope => scope.rootObject === jsonObjectValue);
+        if (newScope) {
+            this._scopeStack.push(this._currentScope);
+            this._currentScope = newScope;
+        }
+
+        super.visitObjectValue(jsonObjectValue);
+
+        if (newScope) {
+            assert(this._currentScope === newScope);
+            this._currentScope = nonNullValue(this._scopeStack.pop(), "Scopes stack should not be empty");
+            assert(this._currentScope === currentScope);
+        }
+    }
+}
+
+//#endregion

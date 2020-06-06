@@ -7,7 +7,7 @@
 
 import * as assert from "assert";
 import { Uri } from "vscode";
-import { AzureRMAssets, BuiltinFunctionMetadata, DefinitionKind, DeploymentTemplate, FindReferencesVisitor, FunctionsMetadata, IncorrectArgumentsCountIssue, IncorrectFunctionArgumentCountVisitor, Language, nonNullValue, ReferenceList, ScopeContext, TemplatePositionContext, TemplateScope, TLE, UndefinedParameterAndVariableVisitor, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue, UnrecognizedFunctionVisitor } from "../extension.bundle";
+import { AzureRMAssets, BuiltinFunctionMetadata, DefinitionKind, DeploymentTemplate, FindReferencesVisitor, FunctionsMetadata, IncorrectArgumentsCountIssue, IncorrectFunctionArgumentCountVisitor, Language, nonNullValue, ReferenceList, TemplatePositionContext, TemplateScope, TLE, TopLevelTemplateScope, UndefinedParameterAndVariableVisitor, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue, UnrecognizedFunctionVisitor } from "../extension.bundle";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 
@@ -17,7 +17,7 @@ const tleSyntax = IssueKind.tleSyntax;
 const fakeId = Uri.file("https://fake-id");
 
 suite("TLE", () => {
-    const emptyScope = new TemplateScope(ScopeContext.TopLevel, [], [], [], "empty scope");
+    const emptyScope = new TopLevelTemplateScope(undefined, "empty scope");
 
     function parseExpressionWithScope(stringValue: string, scope?: TemplateScope): TLE.ParseResult {
         scope = scope ? scope : emptyScope;
