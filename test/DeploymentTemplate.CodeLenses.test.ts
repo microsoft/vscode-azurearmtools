@@ -145,7 +145,7 @@ suite("DeploymentTemplate code lenses", () => {
 
                 const selectLens = lenses[1];
                 assert.equal(stringify(selectLens.range), stringify(new Range(new Position(3, 2), new Position(63, 3))));
-                assert.equal(selectLens.command?.title, `Select parameter file...`);
+                assert.equal(selectLens.command?.title, `Change...`);
                 assert.equal(selectLens.command?.command, "azurerm-vscode-tools.selectParameterFile");
                 assert.equal(selectLens.command?.arguments?.length, 1);
                 assert(selectLens.command?.arguments![0] instanceof Uri);

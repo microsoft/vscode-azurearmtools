@@ -48,7 +48,7 @@ export class SelectParameterFileCodeLens extends ResolvableCodeLens {
         let title: string;
         if (associatedDocument) {
             assert(associatedDocument instanceof DeploymentParameters);
-            title = `Select parameter file...`;
+            title = `Change...`;
         } else {
             title = "Select or create a parameter file to enable full validation...";
         }

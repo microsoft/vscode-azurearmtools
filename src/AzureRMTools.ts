@@ -868,7 +868,7 @@ export class AzureRMTools {
                             statusBarText += " $(error) Not found";
                         }
                     } else {
-                        statusBarText = "Select Parameter File...";
+                        statusBarText = "Select/Create Parameter File...";
                     }
 
                     this._paramsStatusBarItem.command = "azurerm-vscode-tools.selectParameterFile";
