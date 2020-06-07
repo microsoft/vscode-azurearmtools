@@ -13,6 +13,7 @@ import * as vscode from "vscode";
 import { TestUserInput } from 'vscode-azureextensiondev';
 import { DeploymentTemplate, ExtractItem } from '../../extension.bundle';
 import { getActionContext } from '../support/getActionContext';
+import { getCodeActionContext } from '../support/getCodeActionContext';
 import { getTempFilePath } from '../support/getTempFilePath';
 
 suite("ExtractItem", async (): Promise<void> => {
@@ -29,9 +30,11 @@ suite("ExtractItem", async (): Promise<void> => {
         let position = document.positionAt(index);
         let position2 = document.positionAt(index + selectedText.length);
         textEditor.selection = new vscode.Selection(position, position2);
+        let codeActions = await deploymentTemplate.getCodeActions(undefined, textEditor.selection, getCodeActionContext());
+        assert.equal(codeActions.length, 2, "GetCodeAction should return 2");
         await extractItem.extractParameter(textEditor, deploymentTemplate, getActionContext());
         const docTextAfterInsertion = document.getText();
-        assert.equal(docTextAfterInsertion, expectedTemplate);
+        assert.equal(docTextAfterInsertion, expectedTemplate, "Extract Item should perform expected result");
     }
 
     async function createExtractVariableTests(startTemplate: string, expectedTemplate: string, selectedText: string): Promise<void> {

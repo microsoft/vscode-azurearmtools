@@ -399,13 +399,26 @@ export class DeploymentTemplate extends DeploymentDocument {
                 let endIndex = this.getDocumentCharacterIndex(range.end.line, range.end.character);
                 let span: language.Span = new language.Span(startIndex, endIndex - startIndex);
                 const selectedText = this.getDocumentText(span);
-                if (pc.jsonValue && jsonToken.value && jsonToken.value.span === pc.jsonValue.span && selectedText && pc.jsonValue.asStringValue?.unquotedValue === selectedText) {
+                if (pc.jsonValue && jsonToken.value && jsonToken.value.span === pc.jsonValue.span && selectedText && this.equalsWithSqareBrackets(pc.jsonValue.asStringValue?.unquotedValue, selectedText)) {
                     actions.push(this.createExtractCommand('Extract Parameter...', 'extractParameter'));
                     actions.push(this.createExtractCommand('Extract Variable...', 'extractVariable'));
                 }
             }
         }
         return actions;
+    }
+
+    private equalsWithSqareBrackets(text: string | undefined, selectedText: string): boolean {
+        if (!text) {
+            return false;
+        }
+        if (text === selectedText) {
+            return true;
+        }
+        if (text.startsWith("[") && text.endsWith("]")) {
+            text = text.substr(1, text.length - 2);
+        }
+        return text === selectedText;
     }
 
     public getTextAtTleValue(tleValue: TLE.Value, parentStringToken: Json.Token): string {
@@ -437,7 +450,7 @@ export class DeploymentTemplate extends DeploymentDocument {
         }
 
         return lenses;
-	}
+    }
 
     private createExtractCommand(title: string, command: string): CodeAction {
         const action = new CodeAction(title, CodeActionKind.RefactorExtract);
