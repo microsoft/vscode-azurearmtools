@@ -10,7 +10,7 @@ import { randomBytes } from "crypto";
 import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
 import { Uri } from "vscode";
 import { DefinitionKind, DeploymentTemplate, Histogram, INamedDefinition, IncorrectArgumentsCountIssue, IParameterDefinition, IVariableDefinition, Json, Language, ReferenceInVariableDefinitionsVisitor, ReferenceList, TemplateScope, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "../extension.bundle";
-import { IDeploymentTemplate, sources, testDiagnostics } from "./support/diagnostics";
+import { diagnosticSources, IDeploymentTemplate, testDiagnostics } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
 import { testWithLanguageServer } from "./support/testWithLanguageServer";
@@ -1112,7 +1112,7 @@ suite("DeploymentTemplate", () => {
                         },
                     },
                     {
-                        includeSources: [sources.expressions]
+                        includeSources: [diagnosticSources.expressions]
                     },
                     [
                         "Error: reference() cannot be invoked inside of a variable definition. (arm-template (expressions))",
@@ -1128,7 +1128,7 @@ suite("DeploymentTemplate", () => {
                         },
                     },
                     {
-                        includeSources: [sources.expressions]
+                        includeSources: [diagnosticSources.expressions]
                     },
                     [
                         "Error: reference() cannot be invoked inside of a variable definition. (arm-template (expressions))",
