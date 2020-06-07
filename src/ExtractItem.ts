@@ -32,7 +32,7 @@ export class ExtractItem {
         editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.end), vscode.TextEditorRevealType.Default);
     }
 
-    private expandSelectionToSquareBrackets(selection: vscode.Selection, document: vscode.TextDocument): vscode.Selection {
+    public expandSelectionToSquareBrackets(selection: vscode.Selection, document: vscode.TextDocument): vscode.Selection {
         if (selection.start.character === 0) {
             return selection;
         }

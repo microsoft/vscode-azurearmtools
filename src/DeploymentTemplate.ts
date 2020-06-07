@@ -398,7 +398,10 @@ export class DeploymentTemplate extends DeploymentDocument {
                 let startIndex = this.getDocumentCharacterIndex(range.start.line, range.start.character);
                 let endIndex = this.getDocumentCharacterIndex(range.end.line, range.end.character);
                 let span: language.Span = new language.Span(startIndex, endIndex - startIndex);
-                const selectedText = this.getDocumentText(span);
+                const selectedText = this.getDocumentTextWithSquareBrackets(span);
+                if (this.isParameterOrVariableReference(selectedText)) {
+                    return actions;
+                }
                 if (pc.jsonValue && jsonToken.value && jsonToken.value.span === pc.jsonValue.span && selectedText && this.equalsWithSqareBrackets(pc.jsonValue.asStringValue?.unquotedValue, selectedText)) {
                     actions.push(this.createExtractCommand('Extract Parameter...', 'extractParameter'));
                     actions.push(this.createExtractCommand('Extract Variable...', 'extractVariable'));
@@ -406,6 +409,24 @@ export class DeploymentTemplate extends DeploymentDocument {
             }
         }
         return actions;
+    }
+
+    private getDocumentTextWithSquareBrackets(span: language.Span): string {
+        let text = this.getDocumentText(span);
+        if (text.startsWith("[") && text.endsWith("]")) {
+            return text;
+        }
+        let extendedSpan = span.extendLeft(1).extendRight(1);
+        let extendedText = this.getDocumentText(extendedSpan);
+        if (extendedText.startsWith("[") && extendedText.endsWith("]")) {
+            return extendedText;
+        }
+        return text;
+    }
+
+    private isParameterOrVariableReference(text: string): boolean {
+        const regEx = /"?\[(parameters|variables)\('.+'\)]"?/gi;
+        return regEx.test(text);
     }
 
     private equalsWithSqareBrackets(text: string | undefined, selectedText: string): boolean {

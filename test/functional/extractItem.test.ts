@@ -18,7 +18,15 @@ import { getTempFilePath } from '../support/getTempFilePath';
 
 suite("ExtractItem", async (): Promise<void> => {
     let testUserInput: TestUserInput = new TestUserInput(vscode);
-    async function createExtractParameterTests(startTemplate: string, expectedTemplate: string, selectedText: string): Promise<void> {
+    async function createExtractParameterTests(startTemplate: string, expectedTemplate: string, selectedText: string, codeActionsCount: number = 2): Promise<void> {
+        await runExtractItemTests(startTemplate, expectedTemplate, selectedText, codeActionsCount, async (extractItem, template, editor) => await extractItem.extractParameter(editor, template, getActionContext()));
+    }
+
+    async function createExtractVariableTests(startTemplate: string, expectedTemplate: string, selectedText: string, codeActionsCount: number = 2): Promise<void> {
+        await runExtractItemTests(startTemplate, expectedTemplate, selectedText, codeActionsCount, async (extractItem, template, editor) => await extractItem.extractVariable(editor, template, getActionContext()));
+    }
+
+    async function runExtractItemTests(startTemplate: string, expectedTemplate: string, selectedText: string, codeActionsCount: number, action: (extractItem: ExtractItem, deploymentTemplate: DeploymentTemplate, textEditor: vscode.TextEditor) => Promise<void>): Promise<void> {
         const tempPath = getTempFilePath(`insertItem`, '.azrm');
         fse.writeFileSync(tempPath, startTemplate);
         let document = await vscode.workspace.openTextDocument(tempPath);
@@ -31,27 +39,12 @@ suite("ExtractItem", async (): Promise<void> => {
         let position2 = document.positionAt(index + selectedText.length);
         textEditor.selection = new vscode.Selection(position, position2);
         let codeActions = await deploymentTemplate.getCodeActions(undefined, textEditor.selection, getCodeActionContext());
-        assert.equal(codeActions.length, 2, "GetCodeAction should return 2");
-        await extractItem.extractParameter(textEditor, deploymentTemplate, getActionContext());
-        const docTextAfterInsertion = document.getText();
-        assert.equal(docTextAfterInsertion, expectedTemplate, "Extract Item should perform expected result");
-    }
-
-    async function createExtractVariableTests(startTemplate: string, expectedTemplate: string, selectedText: string): Promise<void> {
-        const tempPath = getTempFilePath(`insertItem`, '.azrm');
-        fse.writeFileSync(tempPath, startTemplate);
-        let document = await vscode.workspace.openTextDocument(tempPath);
-        let textEditor = await vscode.window.showTextDocument(document);
-        let extractItem = new ExtractItem(testUserInput);
-        let deploymentTemplate = new DeploymentTemplate(document.getText(), document.uri);
-        let text = document.getText(undefined);
-        let index = text.indexOf(selectedText);
-        let position = document.positionAt(index);
-        let position2 = document.positionAt(index + selectedText.length);
-        textEditor.selection = new vscode.Selection(position, position2);
-        await extractItem.extractVariable(textEditor, deploymentTemplate, getActionContext());
-        const docTextAfterInsertion = document.getText();
-        assert.equal(docTextAfterInsertion, expectedTemplate);
+        assert.equal(codeActions.length, codeActionsCount, `GetCodeAction should return ${codeActionsCount}`);
+        if (codeActionsCount > 0) {
+            await action(extractItem, deploymentTemplate, textEditor);
+            const docTextAfterInsertion = document.getText();
+            assert.equal(docTextAfterInsertion, expectedTemplate, "extractVaraiable should perform expected result");
+        }
     }
     const baseTemplate =
         `{
@@ -138,6 +131,12 @@ suite("ExtractItem", async (): Promise<void> => {
                 await createExtractParameterTests(baseTemplate, locationTemplate, "resourceGroup().location");
             });
         });
+        test('[parameters(\'location\')] should not generate code action', async () => {
+            await createExtractParameterTests(locationTemplate, '', "[parameters('location')]", 0);
+        });
+        test('[parameters(\'location\')] should not generate code action', async () => {
+            await createExtractParameterTests(locationTemplate, '', "parameters('location')", 0);
+        });
     });
     suite("ExtractVariable", () => {
         const storageKindTemplate =
@@ -187,6 +186,17 @@ suite("ExtractItem", async (): Promise<void> => {
             await testUserInput.runWithInputs(["location"], async () => {
                 await createExtractVariableTests(baseTemplate, locationTemplate, "[resourceGroup().location]");
             });
+        });
+        test('resourceGroup().location', async () => {
+            await testUserInput.runWithInputs(["location"], async () => {
+                await createExtractVariableTests(baseTemplate, locationTemplate, "resourceGroup().location");
+            });
+        });
+        test('[variables(\'location\')] should not generate code action', async () => {
+            await createExtractParameterTests(locationTemplate, '', "[variables('location')]", 0);
+        });
+        test('variables(\'location\') should not generate code action', async () => {
+            await createExtractParameterTests(locationTemplate, '', "variables('location')", 0);
         });
     });
 });
