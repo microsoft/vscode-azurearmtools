@@ -1,18 +1,15 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-    "apiProfile": "2017-03-09-profile",
-    "parameters": {
-    },
-    "variables": {
-    },
+    "apiProfile": "2018-06-01-profile",
+    "parameters": {},
+    "variables": {},
     "resources": [
         {
             "name": "as",
             "type": "Microsoft.Compute/availabilitySets",
             "location": "[resourceGroup().location]",
-            "properties": {
-            }
+            "properties": {}
         },
         {
             "type": "Microsoft.Storage/storageAccounts",
@@ -22,8 +19,7 @@
                 "name": "Standard_LRS"
             },
             "kind": "Storage",
-            "properties": {
-            }
+            "properties": {}
         }
     ]
 }
