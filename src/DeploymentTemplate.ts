@@ -8,9 +8,10 @@ import * as assert from 'assert';
 import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
 import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
-import { templateKeys } from "./constants";
+import { configKeys, templateKeys } from "./constants";
 import { DeploymentDocument, ResolvableCodeLens } from "./DeploymentDocument";
 import { NestedTemplateCodeLen, ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
+import { ext } from './extensionVariables';
 import { Histogram } from "./Histogram";
 import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
@@ -405,6 +406,10 @@ export class DeploymentTemplate extends DeploymentDocument {
     }
 
     private getParameterCodeLenses(hasAssociatedParameters: boolean): ResolvableCodeLens[] {
+        if (!ext.configuration.get<boolean>(configKeys.codeLensForParameters)) {
+            return [];
+        }
+
         const lenses: ResolvableCodeLens[] = [];
 
         // Code lens for the "parameters" section itself - indicates currently-selected parameter file and allows

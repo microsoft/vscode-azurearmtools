@@ -141,6 +141,16 @@
                     "additionalProperties": {
                         "type": "string"
                     }
+                },
+                "azureResourceManagerTools.codelens.enable": {
+                    "type": "boolean",
+                    "description": "Enables or disables all code lens features",
+                    "default": true
+                },
+                "azureResourceManagerTools.codelens.parameters": {
+                    "type": "boolean",
+                    "description": "Enables code lens for parameter definitions and values",
+                    "default": true
                 }
             }
         },

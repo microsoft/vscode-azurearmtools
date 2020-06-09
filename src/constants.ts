@@ -46,6 +46,8 @@ export namespace configKeys {
     export const checkForLatestSchema = 'checkForLatestSchema';
     export const checkForMatchingParameterFiles = 'checkForMatchingParameterFiles';
     export const parameterFiles = 'parameterFiles';
+    export const enableCodeLens = 'codelens.enable';
+    export const codeLensForParameters = 'codelens.parameters';
 }
 
 export namespace globalStateKeys {
