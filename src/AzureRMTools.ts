@@ -529,6 +529,11 @@ export class AzureRMTools {
             measurements.extErrorsCount = errorsWarnings.errors.length;
             measurements.extWarnCount = errorsWarnings.warnings.length;
             measurements.linkedParameterFiles = this._mapping.getParameterFile(document.uri) ? 1 : 0;
+
+            const getChildTemplatesInfo = deploymentTemplate.getChildTemplatesInfo();
+            measurements.linkedTemplatesCount = getChildTemplatesInfo.linkedTemplatesCount;
+            measurements.nestedInnerCount = getChildTemplatesInfo.nestedInnerCount;
+            measurements.nestedOuterCount = getChildTemplatesInfo.nestedOuterCount;
         });
 
         this.logFunctionCounts(deploymentTemplate);

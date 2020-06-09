@@ -19,6 +19,7 @@ export enum TemplateScopeKind {
     UserFunction = "UserFunction",
     NestedDeploymentWithInnerScope = "NestedDeploymentWithInnerScope",
     NestedDeploymentWithOuterScope = "NestedDeploymentWithOuterScope",
+    LinkedDeployment = "LinkedDeployment",
 }
 
 /**

@@ -6,11 +6,12 @@
 
 import * as assert from 'assert';
 import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
+import { ScopeKind } from '../extension.bundle';
 import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
 import { configKeys, templateKeys } from "./constants";
 import { DeploymentDocument, ResolvableCodeLens } from "./DeploymentDocument";
-import { NestedTemplateCodeLen, ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
+import { LinkedTemplateCodeLens, NestedTemplateCodeLen, ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
 import { ext } from './extensionVariables';
 import { Histogram } from "./Histogram";
 import { INamedDefinition } from "./INamedDefinition";
@@ -20,7 +21,7 @@ import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
 import { ReferenceList } from "./ReferenceList";
 import { isArmSchema } from "./schemas";
 import { TemplatePositionContext } from "./TemplatePositionContext";
-import { TemplateScope } from "./TemplateScope";
+import { TemplateScope, TemplateScopeKind } from "./TemplateScope";
 import { TopLevelTemplateScope } from './templateScopes';
 import * as TLE from "./TLE";
 import { nonNullValue } from './util/nonNull';
@@ -249,6 +250,8 @@ export class DeploymentTemplate extends DeploymentDocument {
         return warnings;
     }
 
+    //#region Telemetry
+
     /**
      * Gets info about TLE function usage, useful for telemetry
      */
@@ -331,6 +334,21 @@ export class DeploymentTemplate extends DeploymentDocument {
         return count;
     }
 
+    public getChildTemplatesInfo(): {
+        nestedOuterCount: number;
+        nestedInnerCount: number;
+        linkedTemplatesCount: number;
+    } {
+        const scopes = this.findAllScopes();
+        return {
+            nestedOuterCount: scopes.filter(s => s.scopeKind === TemplateScopeKind.NestedDeploymentWithOuterScope).length,
+            nestedInnerCount: scopes.filter(s => s.scopeKind === TemplateScopeKind.NestedDeploymentWithInnerScope).length,
+            linkedTemplatesCount: scopes.filter(s => s.scopeKind === TemplateScopeKind.LinkedDeployment).length
+        };
+    }
+
+    //#endregion
+
     public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentParameters | undefined): TemplatePositionContext {
         return TemplatePositionContext.fromDocumentLineAndColumnIndexes(this, documentLineIndex, documentColumnIndex, associatedTemplate);
     }
@@ -402,7 +420,7 @@ export class DeploymentTemplate extends DeploymentDocument {
 
     public getCodeLenses(hasAssociatedParameters: boolean): ResolvableCodeLens[] {
         return this.getParameterCodeLenses(hasAssociatedParameters)
-            .concat(this.getNestedTemplateCodeLenses());
+            .concat(this.getChildTemplateCodeLenses());
     }
 
     private getParameterCodeLenses(hasAssociatedParameters: boolean): ResolvableCodeLens[] {
@@ -429,14 +447,24 @@ export class DeploymentTemplate extends DeploymentDocument {
         return lenses;
     }
 
-    private getNestedTemplateCodeLenses(): ResolvableCodeLens[] {
+    private getChildTemplateCodeLenses(): ResolvableCodeLens[] {
         const lenses: ResolvableCodeLens[] = [];
         const allScopes = this.findAllScopes();
         for (let scope of allScopes) {
             if (scope.rootObject) {
-                const lens = NestedTemplateCodeLen.create(this, scope.rootObject.span, scope.scopeKind);
-                if (lens) {
-                    lenses.push(lens);
+                switch (scope.scopeKind) {
+                    case ScopeKind.NestedDeploymentWithInnerScope:
+                    case ScopeKind.NestedDeploymentWithOuterScope:
+                        const lens = NestedTemplateCodeLen.create(this, scope.rootObject.span, scope.scopeKind);
+                        if (lens) {
+                            lenses.push(lens);
+                        }
+                        break;
+                    case ScopeKind.LinkedDeployment:
+                        lenses.push(LinkedTemplateCodeLens.create(this, scope.rootObject.span));
+                        break;
+                    default:
+                        break;
                 }
             }
         }
