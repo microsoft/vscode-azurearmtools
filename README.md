@@ -4,31 +4,34 @@
 
 The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language support, resource snippets, and resource auto-completion to help you create and validate Azure Resource Manager templates. See the [Azure Resource Manager templates with Visual Studio Code quickstart](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/quickstart-create-templates-use-visual-studio-code?tabs=CLI) for a guided tutorial experience.
 
-![ARM Tools creating web app](./images/arm-tools.gif)
+## Getting Started
 
-## Language Server
+The following guides detail how to use the ARM Tools extension features.
 
-  - Azure Resource Manager template language server for providing ARM template language completion, validation, and error guidance.
-  - Resources are validated against Azure schemas, which provide validation based on resource type and apiVersion.
-  - ARM Template Outline view for easy navigation through large templates
-  - Colorization for Template Language Expressions (TLE)
-  - Analyze and validate JSON syntax, JSON schema conformance, and string expressions.
-
-## Parameter files
-
-Template files can be mapped to a parameter file for an enhanced authoring and validation experience. To do so use the parameter file control in the Visual Studio Code status bar, or use the right-click contextual menu on an ARM template. Once a parameter file has been mapped, the following features are available.
-
-  - Full validation across both the template and parameter file
-  - Open an associated parameter file from a template
-  - Add all missing parameters to the parameter file and parameter auto-completion
-  - Rename parameters and all references across both the template and mapped parameter file
-  - Find and goto all references of a parameter across both the template and mapped parameter file
-
-![Associate a parameters file with template and create parameters file](./images/params-support.gif)
+- [Snippets](#Snippets)
+- [Parameter file support](#parameter-files)
+- [Completions](#completions)
+- [Validation](#validation)
+- [Other feature](#other-features)
+- [Extension configuration](#extension-configuration)
 
 ## Snippets
 
-Snippets for deployment template scaffolding and 70+ Azure resources.
+Snippets are used to create basic templates and add elements such as parameters, resources, and outputs to existing templates.
+
+When in an empty JSON file, entering `arm` produces a list of scaffolding snippets. These can be used to create an empty template for any ARM deployment scope (Tenant, Subscription, Management Group, and Resource Group).
+
+![](./images/json-snippets.png)
+
+Once you are working in an ARM template, typing `arm` produces a list of 70+ snippets for Azure resources.
+
+![](./images/arm-snippets.png)
+
+Each snippet includes tab stops to help navigate through commonly modified configurations. Press the tab key to navigate through each stop, and shift + tab to navigate to the previous stop. Some stops are pre-populated with a list of common values for quick selection.
+
+![](./images/tab-stops.png)
+
+**Snippet Reference**
 
 | Snippet | Description |
 |---|---|
@@ -43,17 +46,21 @@ Snippets for deployment template scaffolding and 70+ Azure resources.
 | `arm-userfunc-namespace` | Adds a user function namespace to a template. |
 | `arm-` | Displays 70+ snippets for creating Azure resources. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine. |
 
-## Insert Item
+## Parameter files
 
-In addition to adding snippets from the code editor, the Insert Item feature can be used to insert new parameters, user-defined functions, variables, resources, and outputs. To do so right-click on the template in the code editor, select **Insert Item** and follow the on-screen prompts.
+Template files can be mapped to a parameter file for an enhanced authoring and validation experience. To do so use the parameter file control in the Visual Studio Code status bar, or use the right-click contextual menu on an ARM template. Once a parameter file has been mapped, the following features are available.
 
-![Inserting an item into an Azure Resource Manager template](./images/insert-item.png)
+  - Full validation across both the template and parameter file
+  - Open an associated parameter file from a template
+  - Add all missing parameters to the parameter file and parameter auto-completion
+  - Rename parameters and all references across both the template and mapped parameter file
+  - Find and goto all references of a parameter across both the template and mapped parameter file
 
-You can also right-click on any element in the ARM Template Outline view to initiate the insert item process.
+![Associate a parameters file with template and create parameters file](./images/params-support.gif)
 
-![Inserting an item into an Azure Resource Manager template](./images/insert-item-outline.png)
+## Completions
 
-## Intellisense
+The ARM Tools extension provides code completions for the following:
 
   - [Built-in functions](https://go.microsoft.com/fwlink/?LinkID=733958)
   - [Parameter references](https://go.microsoft.com/fwlink/?LinkID=733959)
@@ -63,7 +70,31 @@ You can also right-click on any element in the ARM Template Outline view to init
   - [resourceId() function](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#resourceid)
   - Properties of references to variables that are objects
 
-## Other features
+## Validation
+
+Validate is used to provide pre-deployment feedback that an ARM template does not container configuration errors.
+
+- ARM Template and expression syntax
+- Azure Resource Configuration (based on Azure Schemas)
+- Pre-flight validation
+
+In the following example, the Azure Storage resource configuration is missing an element named *kind*.
+
+![](./images/validation.png)
+
+## Other feature
+
+**Insert Item**
+
+In addition to adding snippets from the code editor, the Insert Item feature can be used to insert new parameters, user-defined functions, variables, resources, and outputs. To do so right-click on the template in the code editor, select **Insert Item** and follow the on-screen prompts.
+
+![Inserting an item into an Azure Resource Manager template](./images/insert-item.png)
+
+You can also right-click on any element in the ARM Template Outline view to initiate the insert item process.
+
+![Inserting an item into an Azure Resource Manager template](./images/insert-item-outline.png)
+
+**Miscellaneous Features**
 
   - [Signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
   - [Go To Definition](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-definition) for variable and parameter references
@@ -76,7 +107,15 @@ You can also right-click on any element in the ARM Template Outline view to init
   - Variable iteration ("copy blocks"), see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration)
   - Sort template and template sections alphabetically
 
-## Extension configurations
+## Language Server
+
+  - Azure Resource Manager template language server for providing ARM template language completion, validation, and error guidance.
+  - Resources are validated against Azure schemas, which provide validation based on resource type and apiVersion.
+  - ARM Template Outline view for easy navigation through large templates
+  - Colorization for Template Language Expressions (TLE)
+  - Analyze and validate JSON syntax, JSON schema conformance, and string expressions.
+
+## Extension configuration
 
 You may be interested in adjusting the following extension configurations. These can be configured in [VS Code User Settings](https://code.visualstudio.com/docs/getstarted/settings).
 
