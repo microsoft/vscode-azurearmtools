@@ -1030,18 +1030,20 @@ export class AzureRMTools {
 
             if (codeLens instanceof ResolvableCodeLens) {
                 const cancel = new Cancellation(token);
-                const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(codeLens.deploymentDoc.documentId, cancel);
-                if (doc && codeLens.deploymentDoc === doc) {
-                    if (codeLens.resolve(associatedDoc)) {
-                        assert(codeLens.command?.command && codeLens.command.title, "CodeLens wasn't resolved");
-                        return codeLens;
-                    }
+                const { associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(codeLens.deploymentDoc.documentId, cancel);
+                if (codeLens.resolve(associatedDoc)) {
+                    assert(codeLens.command?.command && codeLens.command.title, "CodeLens wasn't resolved");
+                    return codeLens;
                 }
             } else {
                 assert.fail('Expected ResolvableCodeLens instance');
             }
 
-            return undefined;
+            codeLens.command = {
+                title: '',
+                command: ''
+            };
+            return codeLens;
         });
     }
 
