@@ -26,6 +26,8 @@ suite("arm-template-language-samples", () => {
     suite("passing", () => {
 
         testSample("any-property-at-any-level-can-be-an-expression.json");
+        testSample("apiProfile.json");
+        testSample("apiprofile2.json");
         testSample("apiprofile3.json");
         testSample("arm-is-not-case-sensitive.json");
         testSample("copy-and-multiline-values.json");
@@ -59,10 +61,6 @@ suite("arm-template-language-samples", () => {
     suite("failing", () => {
 
         // Replace 'test' with 'testSample' to activate test
-
-        // TODO: apiProfile bugs: https://github.com/microsoft/vscode-azurearmtools/issues/688
-        test("apiProfile.json");
-        test("apiprofile2.json");
 
         // TODO: Evaluating expressions in apiVersion
         // https://github.com/microsoft/vscode-azurearmtools/issues/624
