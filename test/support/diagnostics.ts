@@ -394,7 +394,7 @@ export async function getDiagnosticsForTemplate(
                 paramsFile = new TempFile(unmarkedParams);
             } else {
                 const absPath = path.join(testFolder, options.parametersFile!);
-                paramsFile = TempFile.fromExistingFile(absPath);
+                paramsFile = await TempFile.fromExistingFile(absPath);
             }
 
             // Map template to params
