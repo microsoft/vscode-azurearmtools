@@ -8,7 +8,7 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import * as path from 'path';
 import { commands, TextDocument, TextEditor, Uri, window, workspace } from 'vscode';
-import { readUtf8FileWithBom } from '../../src/util/readUtf8FileWithBom';
+import { readUtf8FileWithBom } from "../../extension.bundle";
 import { getTempFilePath } from './getTempFilePath';
 
 export class TempFile {
