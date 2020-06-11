@@ -61,7 +61,7 @@ const invalidRenameError = "Only parameters, variables, user namespaces and user
 
 const echoOutputChannelToConsole: boolean = /^(true|1)?$/i.test(process.env.ECHO_OUTPUT_CHANNEL_TO_CONSOLE ?? '');
 
-// This method is called when your extension is activated
+// This method is called when the extension is activated
 // Your extension is activated the very first time the command is executed
 export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
     ext.context = context;
@@ -81,10 +81,30 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     await callWithTelemetryAndErrorHandling('activate', async (actionContext: IActionContext): Promise<void> => {
         actionContext.telemetry.properties.isActivationEvent = 'true';
         actionContext.telemetry.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
-        actionContext.telemetry.properties.autoDetectJsonTemplates = String(vscode.workspace.getConfiguration(configPrefix).get<boolean>(configKeys.autoDetectJsonTemplates));
+
+        recordConfigValuesToTelemetry(actionContext);
 
         context.subscriptions.push(new AzureRMTools(context));
     });
+}
+
+function recordConfigValuesToTelemetry(actionContext: IActionContext): void {
+    const config = ext.configuration;
+    actionContext.telemetry.properties.autoDetectJsonTemplates =
+        String(config.get<boolean>(configKeys.autoDetectJsonTemplates));
+
+    const paramFiles = config.get<unknown[]>(configKeys.parameterFiles);
+    actionContext.telemetry.properties[`${configKeys.parameterFiles}.length`] =
+        String(paramFiles ? Object.keys(paramFiles).length : 0);
+
+    recordConfigValue<boolean>(configKeys.checkForLatestSchema);
+    recordConfigValue<boolean>(configKeys.checkForMatchingParameterFiles);
+    recordConfigValue<boolean>(configKeys.enableCodeLens);
+    recordConfigValue<boolean>(configKeys.codeLensForParameters);
+
+    function recordConfigValue<T>(key: string): void {
+        actionContext.telemetry.properties[key] = String(config.get<T>(key));
+    }
 }
 
 // this method is called when your extension is deactivated
@@ -628,7 +648,7 @@ export class AzureRMTools {
         // tslint:disable-next-line: strict-boolean-expressions
         const schemaUri: string | undefined = deploymentTemplate.schemaUri || undefined;
         const preferredSchemaUri: string | undefined = schemaUri && getPreferredSchema(schemaUri);
-        const checkForLatestSchema = !!vscode.workspace.getConfiguration(configPrefix).get<boolean>(configKeys.checkForLatestSchema);
+        const checkForLatestSchema = !!ext.configuration.get<boolean>(configKeys.checkForLatestSchema);
 
         if (preferredSchemaUri && schemaValue) {
             // tslint:disable-next-line: no-floating-promises // Don't wait
@@ -1011,6 +1031,10 @@ export class AzureRMTools {
     }
 
     private async onProvideCodeLenses(textDocument: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.CodeLens[] | undefined> {
+        if (!ext.configuration.get<boolean>(configKeys.enableCodeLens)) {
+            return undefined;
+        }
+
         return await callWithTelemetryAndErrorHandling('ProvideCodeLenses', async (actionContext: IActionContext): Promise<vscode.CodeLens[] | undefined> => {
             actionContext.errorHandling.suppressDisplay = true;
             actionContext.telemetry.suppressIfSuccessful = true;
