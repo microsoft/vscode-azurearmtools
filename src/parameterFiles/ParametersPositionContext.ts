@@ -135,7 +135,7 @@ export class ParametersPositionContext extends PositionContext {
                 const label = param.nameValue.quotedValue;
                 const paramText = createParameterFromTemplateParameter(this._associatedTemplate, param);
                 let replacement = paramText;
-                const documentation = `Insert a value for parameter "${param.nameValue.unquotedValue}" from template file "${path.basename(this._associatedTemplate.documentId.fsPath)}"`;
+                const documentation = `Insert a value for parameter "${param.nameValue.unquotedValue}" from template file "${path.basename(this._associatedTemplate.documentUri.fsPath)}"`;
                 const detail = (isRequired ? "(required parameter)" : "(optional parameter)")
                     + EOL
                     + EOL

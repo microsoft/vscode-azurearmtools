@@ -1040,7 +1040,7 @@ export class AzureRMTools {
             actionContext.telemetry.suppressIfSuccessful = true;
             const doc = this.getOpenedDeploymentDocument(textDocument.uri);
             if (doc) {
-                const hasAssociatedParameters = !!this._mapping.getParameterFile(doc.documentId);
+                const hasAssociatedParameters = !!this._mapping.getParameterFile(doc.documentUri);
                 return doc.getCodeLenses(hasAssociatedParameters);
             }
 
@@ -1054,7 +1054,7 @@ export class AzureRMTools {
 
             if (codeLens instanceof ResolvableCodeLens) {
                 const cancel = new Cancellation(token);
-                const { associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(codeLens.deploymentDoc.documentId, cancel);
+                const { associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(codeLens.deploymentDoc.documentUri, cancel);
                 if (codeLens.resolve(associatedDoc)) {
                     assert(codeLens.command?.command && codeLens.command.title, "CodeLens wasn't resolved");
                     return codeLens;
@@ -1286,7 +1286,7 @@ export class AzureRMTools {
                     properties.definitionType = refInfo.definition.definitionKind;
 
                     return new vscode.Location(
-                        refInfo.definitionDocument.documentId,
+                        refInfo.definitionDocument.documentUri,
                         getVSCodeRangeFromSpan(refInfo.definitionDocument, refInfo.definition.nameValue.span)
                     );
                 }
@@ -1307,7 +1307,7 @@ export class AzureRMTools {
                     actionContext.telemetry.properties.referenceType = references.kind;
 
                     for (const ref of references.references) {
-                        const locationUri: vscode.Uri = ref.document.documentId;
+                        const locationUri: vscode.Uri = ref.document.documentUri;
                         const referenceRange: vscode.Range = getVSCodeRangeFromSpan(ref.document, ref.span);
                         results.push(new vscode.Location(locationUri, referenceRange));
                     }
@@ -1463,7 +1463,7 @@ export class AzureRMTools {
 
                     for (const ref of referenceList.references) {
                         const referenceRange: vscode.Range = getVSCodeRangeFromSpan(ref.document, ref.span);
-                        result.replace(ref.document.documentId, referenceRange, newName);
+                        result.replace(ref.document.documentUri, referenceRange, newName);
                     }
                 } else {
                     throw new Error(invalidRenameError);

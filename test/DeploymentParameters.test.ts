@@ -17,27 +17,27 @@ suite("DeploymentParameters", () => {
         test("Empty stringValue", () => {
             const dt = new DeploymentParameters("", fakeId);
             assert.deepStrictEqual("", dt.documentText);
-            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             assert.deepStrictEqual([], dt.parameterValues);
         });
 
         test("Non-JSON stringValue", () => {
             const dt = new DeploymentParameters("I'm not a JSON file", fakeId);
             assert.deepStrictEqual("I'm not a JSON file", dt.documentText);
-            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             assert.deepStrictEqual([], dt.parameterValues);
         });
 
         test("JSON stringValue with number parameters definition", () => {
             const dt = new DeploymentParameters("{ 'parameters': 21 }", fakeId);
-            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             assert.deepStrictEqual([], dt.parameterValues);
         });
 
         test("JSON stringValue with empty object parameters definition", () => {
             const dt = new DeploymentParameters("{ 'parameters': {} }", fakeId);
             assert.deepStrictEqual("{ 'parameters': {} }", dt.documentText);
-            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             assert.deepStrictEqual([], dt.parameterValues);
         });
 

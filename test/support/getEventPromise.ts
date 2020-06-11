@@ -58,7 +58,7 @@ export function getCompletionItemsPromise(document: TextDocument, timeout: numbe
         "onCompletionItems",
         (resolve, reject) => {
             const disposable = ext.completionItemsSpy.onCompletionItems(e => {
-                if (e.document.documentId.fsPath === document.uri.fsPath) {
+                if (e.document.documentUri.fsPath === document.uri.fsPath) {
                     disposable.dispose();
                     resolve(e);
                 }

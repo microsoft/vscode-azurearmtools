@@ -123,7 +123,7 @@ suite("DeploymentTemplate code lenses", () => {
                 assert.equal(lenses[0].command?.command, "azurerm-vscode-tools.selectParameterFile");
                 assert.equal(lenses[0].command?.arguments?.length, 1);
                 assert(lenses[0].command?.arguments![0] instanceof Uri);
-                assert.equal(lenses[0].command?.arguments![0].toString(), dt.documentId.toString());
+                assert.equal(lenses[0].command?.arguments![0].toString(), dt.documentUri.toString());
             });
         });
 
@@ -141,7 +141,7 @@ suite("DeploymentTemplate code lenses", () => {
                 assert.equal(openLens.command?.command, "azurerm-vscode-tools.openParameterFile");
                 assert.equal(openLens.command?.arguments?.length, 1);
                 assert(openLens.command?.arguments![0] instanceof Uri);
-                assert.equal(openLens.command?.arguments![0].toString(), dt.documentId.toString());
+                assert.equal(openLens.command?.arguments![0].toString(), dt.documentUri.toString());
 
                 const selectLens = lenses[1];
                 assert.equal(stringify(selectLens.range), stringify(new Range(new Position(3, 2), new Position(63, 3))));
@@ -149,7 +149,7 @@ suite("DeploymentTemplate code lenses", () => {
                 assert.equal(selectLens.command?.command, "azurerm-vscode-tools.selectParameterFile");
                 assert.equal(selectLens.command?.arguments?.length, 1);
                 assert(selectLens.command?.arguments![0] instanceof Uri);
-                assert.equal(selectLens.command?.arguments![0].toString(), dt.documentId.toString());
+                assert.equal(selectLens.command?.arguments![0].toString(), dt.documentUri.toString());
             });
         });
     });
@@ -185,7 +185,7 @@ suite("DeploymentTemplate code lenses", () => {
                 lens.resolve(dp);
                 assert.equal(lens.command?.command, "azurerm-vscode-tools.codeLens.gotoParameterValue");
                 assert.deepEqual(lens.command?.arguments, [
-                    dp.documentId,
+                    dp.documentUri,
                     param.nameValue.unquotedValue
                 ]);
                 assert.equal(lens.command?.title, expectedTitle);

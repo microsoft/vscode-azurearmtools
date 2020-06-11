@@ -44,17 +44,17 @@ export class DeploymentTemplate extends DeploymentDocument {
      * Create a new DeploymentTemplate object.
      *
      * @param _documentText The string text of the document.
-     * @param _documentId A unique identifier for this document. Usually this will be a URI to the document.
+     * @param _documentUri A unique identifier for this document. Usually this will be a URI to the document.
      */
-    constructor(documentText: string, documentId: Uri) {
-        super(documentText, documentId);
+    constructor(documentText: string, documentUri: Uri) {
+        super(documentText, documentUri);
     }
 
     public get topLevelScope(): TemplateScope {
         return this._topLevelScope.getOrCacheValue(() =>
             new TopLevelTemplateScope(
                 this.topLevelValue,
-                `Top-level template scope for ${this.documentId}`
+                `Top-level template scope for ${this.documentUri}`
             )
         );
     }

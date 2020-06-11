@@ -28,11 +28,11 @@ export abstract class DeploymentDocument {
     /**
      * Constructor
      *
-     * @param _documentText The string text of the document.
-     * @param _documentId A unique identifier for this document. Usually this will be a URI to the document.
+     * @param _documentText The string text of the document
+     * @param _documentUri The location of the document
      */
-    constructor(private _documentText: string, private _documentId: Uri) {
-        nonNullValue(_documentId, "_documentId");
+    constructor(private _documentText: string, private _documentUri: Uri) {
+        nonNullValue(_documentUri, "_documentUri");
 
         this._jsonParseResult = Json.parse(_documentText);
         this._topLevelValue = Json.asObjectValue(this._jsonParseResult.value);
@@ -64,8 +64,8 @@ export abstract class DeploymentDocument {
     /**
      * The unique identifier for this deployment template, which indicates its location
      */
-    public get documentId(): Uri {
-        return this._documentId;
+    public get documentUri(): Uri {
+        return this._documentUri;
     }
 
     // Parse result for the template JSON document as a whole
