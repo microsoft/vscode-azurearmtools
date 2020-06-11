@@ -39,6 +39,15 @@ export class ParameterValueDefinition implements INamedDefinition {
         return undefined;
     }
 
+    public get reference(): Json.Value | undefined {
+        const parameterValue: Json.ObjectValue | undefined = Json.asObjectValue(this._property.value);
+        if (parameterValue) {
+            return parameterValue.getPropertyValue("reference");
+        }
+
+        return undefined;
+    }
+
     public get usageInfo(): IUsageInfo {
         return {
             usage: this.nameValue.unquotedValue,
