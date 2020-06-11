@@ -2,7 +2,7 @@
 
 [![Version](https://vsmarketplacebadge.apphb.com/version/msazurermtools.azurerm-vscode-tools.svg)](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) [![Installs](https://vsmarketplacebadge.apphb.com/installs-short/msazurermtools.azurerm-vscode-tools.svg)](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) [![Build Status](https://dev.azure.com/ms-azuretools/AzCode/_apis/build/status/vscode-azurearmtools)](https://dev.azure.com/ms-azuretools/AzCode/_build/latest?definitionId=10)
 
-The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language support, resource snippets, and resource auto-completion to help you create and validate Azure Resource Manager templates. See the [Azure Resource Manager templates with Visual Studio Code quickstart](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/quickstart-create-templates-use-visual-studio-code?tabs=CLI) for a guided tutorial experience.
+The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language support, resource snippets, and resource auto-completion to help you create and validate Azure Resource Manager templates.
 
 ## Getting Started
 
@@ -12,7 +12,7 @@ The following guides detail how to use the ARM Tools extension features.
 - [Azure schema integration](#Azure-schema-completion-and-validation)
 - [Parameter file support](#parameter-files)
 - [Completions](#completions)
-- [Validation](#validation)
+- [Template navigation](#template-navigation)
 - [Other feature](#other-features)
 - [Extension configuration](#extension-configuration)
 
@@ -20,19 +20,29 @@ The following guides detail how to use the ARM Tools extension features.
 
 Snippets are used to create basic templates and add elements such as parameters, resources, and outputs to existing templates.
 
-When in an empty JSON file, entering `arm` produces a list of scaffolding snippets. These can be used to create an empty template for any ARM deployment scope (Tenant, Subscription, Management Group, and Resource Group).
+**Create a new ARM template**
+
+When in an empty JSON file, typing `arm` produces a list of scaffolding snippets. These snippets can be used to create an empty template for any ARM deployment scope (Tenant, Subscription, Management Group, and Resource Group).
 
 ![](./images/json-snippets.png)
 
-Once you are working in an ARM template, typing `arm` produces a list of 70+ snippets for Azure resources.
+Notice that adding scaffolding for an ARM template changes the Visual Studio Code to *Azure Resource Manager Templates*.
+
+![](./images/arm-template-language.png)
+
+**Add Azure resource to an ARM template**
+
+Once you are working in an ARM template, placing your cursor in the resource and typing `arm` produces a list of 70+ snippets for Azure resources. Selecting a snippet adds a fully configured instance of the resource type to the ARM template.
 
 ![](./images/arm-snippets.png)
 
-Each snippet includes tab stops to help navigate through commonly modified configurations. Press the tab key to navigate through each stop, and shift + tab to navigate to the previous stop. Some stops are pre-populated with a list of common values for quick selection.
+Each snippet includes tab stops to help navigate through commonly modified configurations. Press the `tab` key to navigate to the next stop, and `shift` + `tab` to navigate to the previous stop. As seen in the following example, some stops are pre-populated with a list of common values for quick selection.
 
 ![](./images/tab-stops.png)
 
 **Snippet Reference**
+
+The following table lists the available ARM Tools snippets.
 
 | Snippet | Description |
 |---|---|
@@ -53,7 +63,7 @@ The ARM Tools extension uses Azure schemas to provide resource completion and va
 
 **Completions**
 
-Entering double quotes `""` or selecting `ctrl` + `space` while the cursor is in a resource declaration provides a list of potential properties and valid values for each property.
+Entering double quotes `""` or selecting `ctrl` + `space` while the cursor is in a resource declaration provides a list of potential properties and property values for each Azure resource.
 
 In the following example, the potential values for an Azure Storage account tier are returned from the Azure Storage schema.
 
@@ -61,35 +71,77 @@ In the following example, the potential values for an Azure Storage account tier
 
 **Validation**
 
-If an invalid property or property value is specified, a validation warning is thrown. In the following example, a value of `Super` is provided for the storage account tier, which is invalid. Also notice that a list of valid values is provided in the warning message.
+If an invalid property or property value is specified, a validation warning is thrown. In the following example, a value of `Super` is provided for the storage account tier (line 19), which is invalid. Also notice that a list of valid values is provided in the warning message.
 
 ![](./images/schema-validation.png)
 
 ## Parameter files
 
-A parameter file can be created from an existing template or an existing parameter file can be mapped to a template.
+Associating a parameter file with an ARM template enables full validation across both the parameter file and template. A parameter file association can be made by either creating a new parameter file from an existing template or by associating an existing parameter file to the template.
 
 **Create a new parameter file**
 
+To create a new parameter file from an existing template, click on the code lense text `**Select or create a parameter file to enable full validation..**.
+
 ![](./images/create-parameter-file.png)
+
+Select **New** from the context menu.
 
 ![](./images/create-parameter-file-2.png)
 
+Selecting **All parameters** adds every parameter from the template into the new parameter file. Selecting **Only required parameters** adds only parameters that do not have a default value in the template file.
+
 ![](./images/create-parameter-file-3.png)
+
+Select a name and location for the parameter file.
 
 ![](./images/create-parameter-file-4.png)
 
+Once done, a parameter file has been created. Where needed, remove the comment indicating that a parameter value is needed, and add a parameter value.
+
+![](./images/parameter-file.png)
+
+Also, notice that on the template file that the code lense text has been updated to reflect the current parameter file association.
+
+![](./images/code-lense.png)
+
+**Associate an existing parameter file**
+
+To create an association with an existing parameter file, click on the code lense text `**Select or create a parameter file to enable full validation..**.
+
+![](./images/create-parameter-file.png)
+
+Select **Browse** from the context menu and then select the parameter file.
+
+![](./images/create-parameter-file-2.png)
+
 **Parameter validation**
+
+![](./images/param-file-validation.png)
 
 **Add missing parameters**
 
+![](./images/missing-params-one.png)
+
+![](./images/missing-params-two.png)
+
+![](./images/missing-params-three.png)
+
 **Find all parameter references**
+
+Right-click on a parameter name and select **Go to References**. Double-clicking on any reference moved your cursor to the reference location.
+
+![](./images/parameter-references.png)
 
 **Rename a parameter**
 
-**Remove parameter file mapping**
+![](./images/rename-parameter.png)
 
-![Associate a parameters file with template and create parameters file](./images/params-support.gif)
+**Remove or update parameter file mapping**
+
+![](./images/undo-change-mapping.png)
+
+![](./images/undo-change-mapping-two.png)
 
 ## Completions
 
@@ -103,17 +155,17 @@ The ARM Tools extension provides code completions for the following:
   - [resourceId() function](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#resourceid)
   - Properties of references to variables that are objects
 
-## Validation
+## Template navigation
 
-Validate is used to provide pre-deployment feedback that an ARM template does not container configuration errors.
+**ARM template outline**
 
-- ARM Template and expression syntax
-- Azure Resource Configuration (based on Azure Schemas)
-- Pre-flight validation
+![](./images/arm-template-outline.png)
 
-In the following example, the Azure Storage resource configuration is missing an element named *kind*.
+**Go to Definition**
 
-![](./images/validation.png)
+Go to definition can be used to navigate to both parameter and variable definitions. To use go to definition, place your cursor on the parameter or variable name (in the reference) and press `F12` or right-click and select **Go to Definition**.
+
+![](./images/go-to-definition.png)
 
 ## Other feature
 
@@ -127,10 +179,15 @@ You can also right-click on any element in the ARM Template Outline view to init
 
 ![Inserting an item into an Azure Resource Manager template](./images/insert-item-outline.png)
 
+**Sort template**
+
+![](./images/sort-template.png)
+
+![](./images/sort-template-two.png)
+
 **Miscellaneous Features**
 
   - [Signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
-  - [Go To Definition](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-definition) for variable and parameter references
   - [Peek](https://code.visualstudio.com/docs/editor/editingevolved#_peek) for variable and parameter definitions
   - Find all references (Shift + F12) for variables and parameters
   - Rename (F2) variables and parameters and their references
@@ -139,14 +196,6 @@ You can also right-click on any element in the ARM Template Outline view to init
   - User-defined template functions, see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#functions)
   - Variable iteration ("copy blocks"), see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration)
   - Sort template and template sections alphabetically
-
-## Language Server
-
-  - Azure Resource Manager template language server for providing ARM template language completion, validation, and error guidance.
-  - Resources are validated against Azure schemas, which provide validation based on resource type and apiVersion.
-  - ARM Template Outline view for easy navigation through large templates
-  - Colorization for Template Language Expressions (TLE)
-  - Analyze and validate JSON syntax, JSON schema conformance, and string expressions.
 
 ## Extension configuration
 
