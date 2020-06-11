@@ -9,6 +9,7 @@ The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language 
 The following guides detail how to use the ARM Tools extension features.
 
 - [Snippets](#Snippets)
+- [Azure schema integration](#Azure-schema-completion-and-validation)
 - [Parameter file support](#parameter-files)
 - [Completions](#completions)
 - [Validation](#validation)
@@ -46,15 +47,47 @@ Each snippet includes tab stops to help navigate through commonly modified confi
 | `arm-userfunc-namespace` | Adds a user function namespace to a template. |
 | `arm-` | Displays 70+ snippets for creating Azure resources. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine. |
 
+## Azure schema completion and validation
+
+The ARM Tools extension uses Azure schemas to provide resource completion and validation. These schemas help you verify that Azure resources are configured correctly before deployment time.
+
+**Completions**
+
+Entering double quotes `""` or selecting `ctrl` + `space` while the cursor is in a resource declaration provides a list of potential properties and valid values for each property.
+
+In the following example, the potential values for an Azure Storage account tier are returned from the Azure Storage schema.
+
+![](./images/completion.png)
+
+**Validation**
+
+If an invalid property or property value is specified, a validation warning is thrown. In the following example, a value of `Super` is provided for the storage account tier, which is invalid. Also notice that a list of valid values is provided in the warning message.
+
+![](./images/schema-validation.png)
+
 ## Parameter files
 
-Template files can be mapped to a parameter file for an enhanced authoring and validation experience. To do so use the parameter file control in the Visual Studio Code status bar, or use the right-click contextual menu on an ARM template. Once a parameter file has been mapped, the following features are available.
+A parameter file can be created from an existing template or an existing parameter file can be mapped to a template.
 
-  - Full validation across both the template and parameter file
-  - Open an associated parameter file from a template
-  - Add all missing parameters to the parameter file and parameter auto-completion
-  - Rename parameters and all references across both the template and mapped parameter file
-  - Find and goto all references of a parameter across both the template and mapped parameter file
+**Create a new parameter file**
+
+![](./images/create-parameter-file.png)
+
+![](./images/create-parameter-file-2.png)
+
+![](./images/create-parameter-file-3.png)
+
+![](./images/create-parameter-file-4.png)
+
+**Parameter validation**
+
+**Add missing parameters**
+
+**Find all parameter references**
+
+**Rename a parameter**
+
+**Remove parameter file mapping**
 
 ![Associate a parameters file with template and create parameters file](./images/params-support.gif)
 
