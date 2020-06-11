@@ -25,9 +25,9 @@ export class ShowCurrentParameterFileCodeLens extends ResolvableCodeLens {
         if (associatedDocument) {
             assert(associatedDocument instanceof DeploymentParameters);
             this.command = {
-                title: `Parameter file: "${getRelativeParameterFilePath(this.deploymentDoc.documentId, associatedDocument.documentId)}"`,
+                title: `Parameter file: "${getRelativeParameterFilePath(this.deploymentDoc.documentUri, associatedDocument.documentUri)}"`,
                 command: 'azurerm-vscode-tools.openParameterFile',
-                arguments: [this.deploymentDoc.documentId]
+                arguments: [this.deploymentDoc.documentUri]
             };
             return true;
         }
@@ -56,7 +56,7 @@ export class SelectParameterFileCodeLens extends ResolvableCodeLens {
         this.command = {
             title,
             command: 'azurerm-vscode-tools.selectParameterFile',
-            arguments: [this.deploymentDoc.documentId]
+            arguments: [this.deploymentDoc.documentUri]
         };
         return true;
     }
@@ -105,7 +105,7 @@ export class ParameterDefinitionCodeLens extends ResolvableCodeLens {
                 title: title,
                 command: "azurerm-vscode-tools.codeLens.gotoParameterValue",
                 arguments: [
-                    dp.documentId,
+                    dp.documentUri,
                     this.parameterDefinition.nameValue.unquotedValue
                 ]
             };
