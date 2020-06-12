@@ -5,7 +5,7 @@
 // tslint:disable: max-classes-per-file
 
 import * as assert from 'assert';
-import { Json, Language } from '../extension.bundle';
+import { Language } from '../extension.bundle';
 import { DeploymentDocument, ResolvableCodeLens } from "./DeploymentDocument";
 import { DeploymentTemplate } from './DeploymentTemplate';
 import { IParameterDefinition } from './IParameterDefinition';
@@ -78,18 +78,17 @@ export class ParameterDefinitionCodeLens extends ResolvableCodeLens {
             assert(associatedDocument instanceof DeploymentParameters);
             const dp = associatedDocument as DeploymentParameters;
 
-            const paramValue = dp.getParameterValue(this.parameterDefinition.nameValue.unquotedValue)
-                ?.value;
+            const param = dp.getParameterValue(this.parameterDefinition.nameValue.unquotedValue);
+            const paramValue = param?.value;
+            const paramReference = param?.reference;
             const givenValueAsString = paramValue?.toFullFriendlyString();
             const defaultValueAsString = this.parameterDefinition.defaultValue?.toFullFriendlyString();
 
             let title;
-            if (givenValueAsString !== undefined) {
-                if (this.isKeyVaultReference(paramValue)) {
-                    title = 'Value: (KeyVault reference)';
-                } else {
-                    title = `Value: ${givenValueAsString}`;
-                }
+            if (!!paramReference) {
+                title = 'Value: (KeyVault reference)';
+            } else if (givenValueAsString !== undefined) {
+                title = `Value: ${givenValueAsString}`;
             } else if (defaultValueAsString !== undefined) {
                 title = `Using default value: ${defaultValueAsString}`;
             } else {
@@ -113,29 +112,6 @@ export class ParameterDefinitionCodeLens extends ResolvableCodeLens {
         }
 
         return false;
-    }
-
-    private isKeyVaultReference(paramValue: Json.Value | undefined): boolean {
-        /* keyVault references inside a parameter file look like this:
-            {
-                "reference": {
-                    "keyVault": {
-                        "id": "/subscriptions/xxxxx/resourceGroups/yyyyy/providers/Microsoft.KeyVault/vaults/zzzzz"
-                    },
-                    "secretName": "mysecretpassword"
-                }
-            }
-        */
-        const keyVaultReferenceProperty: string = 'reference';
-        const keyVaultReferenceKeyVaultProperty: string = 'keyvault';
-        const keyVaultReferenceKeyVaultIdProperty: string = 'id';
-
-        return !!paramValue?.asObjectValue
-            ?.getPropertyValue(keyVaultReferenceProperty)
-            ?.asObjectValue
-            ?.getPropertyValue(keyVaultReferenceKeyVaultProperty)
-            ?.asObjectValue
-            ?.getPropertyValue(keyVaultReferenceKeyVaultIdProperty);
     }
 }
 
