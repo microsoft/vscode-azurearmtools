@@ -255,25 +255,29 @@ export class DeploymentTemplate extends DeploymentDocument {
             + `If you intended inner scope, set properties.nestedDeploymentExprEvalOptions.scope to 'inner'.`;
 
         for (const scope of this.allScopes.filter(ts => ts.scopeKind === TemplateScopeKind.NestedDeploymentWithOuterScope)) {
-            const parameters = scope.rootObject?.getProperty(templateKeys.parameters)?.value;
+            const parameters = getPropertyValueOfScope(templateKeys.parameters);
             // tslint:disable-next-line: strict-boolean-expressions
             if (!!parameters?.asObjectValue?.properties?.length) {
                 warnings.push(
                     new language.Issue(parameters.span, warningMessage, language.IssueKind.inaccessibleNestedScopeMembers));
             }
 
-            const variables = scope.rootObject?.getProperty(templateKeys.variables)?.value;
+            const variables = getPropertyValueOfScope(templateKeys.variables);
             // tslint:disable-next-line: strict-boolean-expressions
             if (!!variables?.asObjectValue?.properties.length) {
                 warnings.push(
                     new language.Issue(variables.span, warningMessage, language.IssueKind.inaccessibleNestedScopeMembers));
             }
 
-            const namespaces = scope.rootObject?.getProperty(templateKeys.functions)?.value;
+            const namespaces = getPropertyValueOfScope(templateKeys.functions);
             // tslint:disable-next-line: strict-boolean-expressions
             if (!!namespaces?.asArrayValue?.elements.length) {
                 warnings.push(
                     new language.Issue(namespaces.span, warningMessage, language.IssueKind.inaccessibleNestedScopeMembers));
+            }
+
+            function getPropertyValueOfScope(propertyName: string): Json.Value | undefined {
+                return scope.rootObject?.getProperty(propertyName)?.value;
             }
         }
 
