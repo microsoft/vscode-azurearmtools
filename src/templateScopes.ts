@@ -362,11 +362,11 @@ export function getChildTemplateForResourceObject(
                     assertNever(scopeKind);
             }
         } else {
-            const templateLinkObect =
+            const templateLinkObject =
                 propertiesObject
                     ?.getPropertyValue(templateKeys.linkedDeploymentTemplateLink)?.asObjectValue;
-            if (templateLinkObect) {
-                return new LinkedTemplate(templateLinkObect, `Linked template "${templateName}"`);
+            if (templateLinkObject) {
+                return new LinkedTemplate(templateLinkObject, `Linked template "${templateName}"`);
             }
         }
 
