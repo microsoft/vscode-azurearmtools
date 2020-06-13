@@ -93,4 +93,7 @@ export namespace templateKeys {
     export const nestedDeploymentExprEvalScope = 'scope';
     export const nestedDeploymentExprEvalScopeInner = 'inner';
     export const nestedDeploymentTemplateProperty = 'template';
+
+    // Linked templates
+    export const linkedDeploymentTemplateLink = 'templateLink';
 }
