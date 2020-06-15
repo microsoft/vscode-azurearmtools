@@ -1485,7 +1485,7 @@ suite("User functions", () => {
                 };
 
                 await parseTemplate(template, [
-                    "Warning: The parameter 'param1' of function 'udf.odd' is never used.",
+                    "Warning: User-function parameter 'param1' is never used.",
                     "Warning: The user-defined function 'udf.odd' is never used."
                 ]);
             });
@@ -1526,7 +1526,7 @@ suite("User functions", () => {
                 };
 
                 await parseTemplate(template, [
-                    "Warning: The parameter 'param1' of function 'udf.odd' is never used.",
+                    "Warning: User-function parameter 'param1' is never used.",
                     "Warning: The user-defined function 'udf.odd' is never used."
                 ]);
             });
@@ -1562,7 +1562,7 @@ suite("User functions", () => {
 
                 await parseTemplate(template, [
                     "Warning: The parameter 'param1' is never used.",
-                    "Warning: The parameter 'param1' of function 'udf.odd' is never used.",
+                    "Warning: User-function parameter 'param1' is never used.",
                     'Warning: The user-defined function \'udf.odd\' is never used.'
                 ]);
             });

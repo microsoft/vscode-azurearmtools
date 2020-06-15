@@ -16,8 +16,9 @@ import * as path from 'path';
 import { commands, Diagnostic, Selection, Uri, window, workspace } from "vscode";
 import { DeploymentTemplate, ext, getVSCodePositionFromPosition } from '../../extension.bundle';
 import { delay } from '../support/delay';
-import { diagnosticSources, getDiagnosticsForDocument, testFolder } from '../support/diagnostics';
+import { diagnosticSources, getDiagnosticsForDocument } from '../support/diagnostics';
 import { getTempFilePath } from "../support/getTempFilePath";
+import { resolveInTestFolder } from '../support/resolveInTestFolder';
 import { testWithLanguageServer } from '../support/testWithLanguageServer';
 
 const EOL = ext.EOL;
@@ -133,11 +134,11 @@ const overrideExpectedDiagnostics: { [name: string]: string[] } = {
     ],
     "User Function": [
         "The user-defined function 'udf.functionname' is never used.",
-        "The parameter 'parametername' of function 'udf.functionname' is never used."
+        "User-function parameter 'parametername' is never used."
     ],
     "User Function Namespace": [
         "The user-defined function 'namespacename.functionname' is never used.",
-        "The parameter 'parametername' of function 'namespacename.functionname' is never used."
+        "User-function parameter 'parametername' is never used."
     ],
     "Automation Certificate": [
         // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
@@ -379,7 +380,7 @@ suite("Snippets functional tests", () => {
 
     function createSnippetTests(snippetsFile: string): void {
         suite(snippetsFile, () => {
-            const snippetsPath = path.join(testFolder, '..', 'assets', snippetsFile);
+            const snippetsPath = resolveInTestFolder(path.join('..', 'assets', snippetsFile));
             const snippets = <{ [name: string]: ISnippet }>fse.readJsonSync(snippetsPath);
             // tslint:disable-next-line:no-for-in forin
             for (let snippetName in snippets) {

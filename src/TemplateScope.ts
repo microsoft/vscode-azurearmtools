@@ -33,6 +33,15 @@ export abstract class TemplateScope {
 
     public readonly abstract scopeKind: TemplateScopeKind;
 
+    // CONSIDER: Better design. Split out resources from params/vars/functions, or separate
+    //   concept of deployment from concept of scope?
+    /**
+     * Indicates whether this scope's params, vars and namespaces are unique.
+     * False if it shares its members with its parents.
+     * Note that resources are always unique for a scope.
+     */
+    public readonly hasUniqueParamsVarsAndFunctions: boolean = true;
+
     // undefined means not supported in this context
     protected getParameterDefinitions(): IParameterDefinition[] | undefined {
         // undefined means not supported in this context
@@ -86,9 +95,13 @@ export abstract class TemplateScope {
             }
         }
 
-        for (let namespace of this.namespaceDefinitions) {
-            for (let member of namespace.members) {
-                scopes.push(member.scope);
+        // If it's not unique, we'll end up getting the parent's function definitions
+        // instead of our own
+        if (this.hasUniqueParamsVarsAndFunctions) {
+            for (let namespace of this.namespaceDefinitions) {
+                for (let member of namespace.members) {
+                    scopes.push(member.scope);
+                }
             }
         }
 
