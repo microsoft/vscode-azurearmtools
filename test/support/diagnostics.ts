@@ -192,7 +192,7 @@ export interface IPartialDeploymentTemplateResource {
 export interface ITestDiagnosticsOptions extends IGetDiagnosticsOptions {
 }
 
-interface IGetDiagnosticsOptions {
+export interface IGetDiagnosticsOptions {
     parameters?: string | Partial<IDeploymentParametersFile>;
     parametersFile?: string;
     includeSources?: DiagnosticSource[]; // Error sources to include in the comparison - defaults to all

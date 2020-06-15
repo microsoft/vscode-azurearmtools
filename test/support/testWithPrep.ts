@@ -10,7 +10,7 @@ export interface ITestPreparation {
 }
 
 export interface ITestPreparationResult {
-    postTest?(): void;
+    postTestActions?(): void;
 
     // If non-empty, skips the test, displaying the string as a message
     skipTest?: string;
@@ -38,8 +38,8 @@ export function testWithPrep(expectation: string, preparations?: ITestPreparatio
                         return;
                     }
 
-                    if (prepResult.postTest) {
-                        postTests.push(prepResult.postTest);
+                    if (prepResult.postTestActions) {
+                        postTests.push(prepResult.postTestActions);
                     }
                 }
 

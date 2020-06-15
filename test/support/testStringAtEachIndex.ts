@@ -7,11 +7,11 @@ import * as assert from 'assert';
 import { __debugMarkPositionInString } from '../../extension.bundle';
 import { getDocumentMarkers } from "./parseTemplate";
 
-// See testCanAddPropertyHere for example usage
+// See createCanAddPropertyHereTest for example usage
 export async function testStringAtEachIndex<T>(
     textWithMarkers: string,
     expectedValues: { [marker: string]: T },
-    getTestResult: (text: string, index: number) => T
+    getTestResult: (text: string, index: number) => T | Promise<T>
 ): Promise<void> {
     // Make the true/false markers unique so we can pass them to parseParametersWithMarkers
     for (let marker of Object.keys(expectedValues)) {
@@ -47,7 +47,7 @@ export async function testStringAtEachIndex<T>(
         }
 
         // Make test call
-        const actualResultHere: T = getTestResult(unmarkedText, i);
+        const actualResultHere: T = await getTestResult(unmarkedText, i);
 
         // Validate
         assert.equal(

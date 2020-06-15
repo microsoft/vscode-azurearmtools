@@ -13,12 +13,15 @@ import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import { ITestCallbackContext } from 'mocha';
 import * as path from 'path';
-import { commands, Diagnostic, Selection, Uri, window, workspace } from "vscode";
+import { commands, Selection, Uri, window, workspace } from "vscode";
 import { DeploymentTemplate, ext, getVSCodePositionFromPosition } from '../../extension.bundle';
 import { delay } from '../support/delay';
 import { diagnosticSources, getDiagnosticsForDocument, testFolder } from '../support/diagnostics';
 import { getTempFilePath } from "../support/getTempFilePath";
-import { testWithLanguageServer } from '../support/testWithLanguageServer';
+import { UseRealSnippets } from '../support/TestSnippets';
+import { RequiresLanguageServer } from '../support/testWithLanguageServer';
+import { testWithPrep } from '../support/testWithPrep';
+import { triggerCompletion } from '../support/triggerCompletion';
 
 const EOL = ext.EOL;
 
@@ -383,9 +386,12 @@ suite("Snippets functional tests", () => {
             const snippets = <{ [name: string]: ISnippet }>fse.readJsonSync(snippetsPath);
             // tslint:disable-next-line:no-for-in forin
             for (let snippetName in snippets) {
-                testWithLanguageServer(`snippet: ${snippetName}`, async function (this: ITestCallbackContext): Promise<void> {
-                    await testSnippet(this, snippetsPath, snippetName, snippets[snippetName]);
-                });
+                testWithPrep(
+                    `snippet: ${snippetName}`,
+                    [RequiresLanguageServer.instance, UseRealSnippets.instance],
+                    async function (this: ITestCallbackContext): Promise<void> {
+                        await testSnippet(this, snippetsPath, snippetName, snippets[snippetName]);
+                    });
             }
         });
     }
@@ -415,53 +421,58 @@ suite("Snippets functional tests", () => {
         fse.writeFileSync(tempPath, template);
 
         let doc = await workspace.openTextDocument(tempPath);
-        await window.showTextDocument(doc);
+        let editor = await window.showTextDocument(doc);
 
         // Wait for first set of diagnostics to finish.
         await getDiagnosticsForDocument(doc, {});
-        const initialDocText = window.activeTextEditor!.document.getText();
+        const initialDocText = doc.getText();
 
         // Start waiting for next set of diagnostics (so it picks up the current completion versions)
-        let diagnosticsPromise: Promise<Diagnostic[]> = getDiagnosticsForDocument(
+        // let diagnosticsPromise: Promise<Diagnostic[]> = getDiagnosticsForDocument(
+        //     doc,
+
+        //     {
+        //         waitForChange: true,
+        //         ignoreSources: (overrideIgnoreSchemaValidation[snippetName]) ? [diagnosticSources.schema] : []
+        //     });
+
+        // Insert snippet
+        editor.selection = new Selection(snippetInsertEndPos, snippetInsertPos);
+        await delay(1);
+
+        await triggerCompletion(
             doc,
+            snippet.prefix,
             {
+                expected: expectedDiagnostics,
                 waitForChange: true,
                 ignoreSources: (overrideIgnoreSchemaValidation[snippetName]) ? [diagnosticSources.schema] : []
             });
 
-        // Insert snippet
-        window.activeTextEditor!.selection = new Selection(snippetInsertPos, snippetInsertEndPos);
-        await delay(1);
-
-        await commands.executeCommand('editor.action.insertSnippet', {
-            name: snippetName
-        });
-
         // Wait for diagnostics to finish
-        let diagnostics: Diagnostic[] = await diagnosticsPromise;
+        //let diagnostics: Diagnostic[] = await diagnosticsPromise;
 
         if (DEBUG_BREAK_AFTER_INSERTING_SNIPPET) {
             // tslint:disable-next-line: no-debugger
             debugger;
         }
 
-        const docTextAfterInsertion = window.activeTextEditor!.document.getText();
+        const docTextAfterInsertion = doc.getText();
         validateDocumentWithSnippet();
 
-        let messages = diagnostics.map(d => d.message).sort();
-        assert.deepStrictEqual(messages, expectedDiagnostics);
+        // let messages = diagnostics.map(d => d.message).sort();
+        // assert.deepStrictEqual(messages, expectedDiagnostics);
 
         // Make sure formatting of the sippet is correct by formatting the document and seeing if it changes
         await commands.executeCommand('editor.action.formatDocument');
         const docTextAfterFormatting = window.activeTextEditor!.document.getText();
         assert.deepStrictEqual(docTextAfterInsertion, docTextAfterFormatting, "Snippet is incorrectly formatted. Make sure to use \\t instead of spaces, and make sure the tabbing/indentations are correctly structured");
 
-        // // NOTE: Even though we request the editor to be closed,
-        // // there's no way to request the document actually be closed,
-        // //   and when you open it via an API, it doesn't close for a while,
-        // //   so the diagnostics won't go away
-        // // See https://github.com/Microsoft/vscode/issues/43056
-        await commands.executeCommand("undo");
+        // NOTE: Even though we request the editor to be closed,
+        // there's no way to request the document actually be closed,
+        //   and when you open it via an API, it doesn't close for a while,
+        //   so the diagnostics won't go away
+        // See https://github.com/Microsoft/vscode/issues/43056
         fse.unlinkSync(tempPath);
         await commands.executeCommand('workbench.action.closeAllEditors');
 

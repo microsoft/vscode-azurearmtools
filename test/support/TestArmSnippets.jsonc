@@ -1,0 +1,56 @@
+{
+    "Test Azure Resource Manager (ARM) Template": {
+        "prefix": "arm!test",
+        "body": [
+            "{",
+            "\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\",",
+            "\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\"parameters\": {},",
+            "\t\"functions\": [],",
+            "\t\"variables\": {},",
+            "\t\"resources\": [],",
+            "\t\"outputs\": {}",
+            "}"
+        ],
+        "description": "Test Resource Group Template"
+    },
+    "Test Kubernetes Service Cluster": {
+        "prefix": "arm-aks-cluster-test",
+        "body": [
+            "{",
+            "\t\"name\": \"${1:aksCluster1}\",",
+            "\t\"type\": \"Microsoft.ContainerService/managedClusters\",",
+            "\t\"apiVersion\": \"2020-02-01\",",
+            "\t\"location\": \"[resourceGroup().location]\",",
+            "\t\"properties\": {",
+            "\t\t\"kubernetesVersion\": \"${2|1.15.7,1.15.5,1.14.8|}\",",
+            "\t\t\"dnsPrefix\": \"${3:dnsprefix}\",",
+            "\t\t\"agentPoolProfiles\": [",
+            "\t\t\t{",
+            "\t\t\t\t\"name\": \"agentpool\",",
+            "\t\t\t\t\"count\": ${4:2},",
+            "\t\t\t\t\"vmSize\": \"${5:Standard_A1}\",",
+            "\t\t\t\t\"osType\": \"Linux\",",
+            "\t\t\t\t\"storageProfile\": \"${6|ManagedDisks,StorageAccount|}\"",
+            "\t\t\t}",
+            "\t\t],",
+            "\t\t\"linuxProfile\": {",
+            "\t\t\t\"adminUsername\": \"${7:adminUserName}\",",
+            "\t\t\t\"ssh\": {",
+            "\t\t\t\t\"publicKeys\": [",
+            "\t\t\t\t\t{",
+            "\t\t\t\t\t\t\"keyData\": \"${8:keyData}\"",
+            "\t\t\t\t\t}",
+            "\t\t\t\t]",
+            "\t\t\t}",
+            "\t\t},",
+            "\t\t\"servicePrincipalProfile\": {",
+            "\t\t\t\"clientId\": \"${9:servicePrincipalAppId}\",",
+            "\t\t\t\"secret\": \"${10:servicePrincipalAppPassword}\"",
+            "\t\t}",
+            "\t}",
+            "}"
+        ],
+        "description": "Kubernetes Service Cluster"
+    }
+}

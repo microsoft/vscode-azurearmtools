@@ -191,7 +191,7 @@ export abstract class PositionContext {
         return undefined;
     }
 
-    public abstract getCompletionItems(triggerCharacter: string | undefined): Completion.Item[];
+    public abstract getCompletionItems(triggerCharacter: string | undefined): Promise<Completion.Item[]>;
 
     public abstract getSignatureHelp(): TLE.FunctionSignatureHelp | undefined;
 }

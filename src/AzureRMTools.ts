@@ -36,6 +36,7 @@ import { RenameCodeActionProvider } from "./RenameCodeActionProvider";
 import { resetGlobalState } from "./resetGlobalState";
 import { getPreferredSchema } from "./schemas";
 import { getFunctionParamUsage } from "./signatureFormatting";
+import { SnippetManager } from "./SnippetManager";
 import { getQuickPickItems, sortTemplate } from "./sortTemplate";
 import { Stopwatch } from "./Stopwatch";
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, templateDocumentSelector, templateOrParameterDocumentSelector } from "./supported";
@@ -75,6 +76,9 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     context.subscriptions.push(ext.completionItemsSpy);
 
     ext.deploymentFileMapping.value = new DeploymentFileMapping(ext.configuration);
+    if (!ext.snippetManager.hasValue) {
+        ext.snippetManager.value = SnippetManager.createDefault();
+    }
 
     registerUIExtensionVariables(ext);
 
@@ -1117,7 +1121,7 @@ export class AzureRMTools {
                 const triggerCharacter = context.triggerKind === vscode.CompletionTriggerKind.TriggerCharacter
                     ? context.triggerCharacter
                     : undefined;
-                const items: Completion.Item[] = pc.getCompletionItems(triggerCharacter);
+                const items: Completion.Item[] = await pc.getCompletionItems(triggerCharacter);
                 const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c));
                 ext.completionItemsSpy.postCompletionItemsResult(pc.document, items, vsCodeItems);
 

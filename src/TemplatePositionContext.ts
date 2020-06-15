@@ -9,6 +9,7 @@ import { CachedValue } from "./CachedValue";
 import * as Completion from "./Completion";
 import { templateKeys } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
+import { ext } from "./extensionVariables";
 import { assert } from './fixed_assert';
 import { getResourceIdCompletions } from "./getResourceIdCompletions";
 import { IFunctionMetadata, IFunctionParameterMetadata } from "./IFunctionMetadata";
@@ -177,11 +178,13 @@ export class TemplatePositionContext extends PositionContext {
         return undefined;
     }
 
-    public getCompletionItems(triggerCharacter: string | undefined): Completion.Item[] {
+    public async getCompletionItems(triggerCharacter: string | undefined): Promise<Completion.Item[]> {
         const tleInfo = this.tleInfo;
         if (!tleInfo) {
-            // No string at this location
-            return [];
+            // No string at this location, so we ask the snippet manager
+            // for valid completions
+            let replacementSpan = this.getJsonReplacementSpan() ?? this.emptySpanAtDocumentCharacterIndex;
+            return await ext.snippetManager.value.getCompletionItems(replacementSpan, triggerCharacter);
         }
 
         // We're inside a JSON string. It may or may not contain square brackets.
@@ -658,7 +661,7 @@ export class TemplatePositionContext extends PositionContext {
     }
 
     private getMatchingParameterCompletions(prefix: string, tleValue: TLE.StringValue | TLE.FunctionCallValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
-        const replaceSpanInfo: ReplaceSpanInfo = this.getReplaceSpanInfo(tleValue, tleCharacterIndex);
+        const replaceSpanInfo: ReplaceSpanInfo = this.getTleReplaceSpanInfo(tleValue, tleCharacterIndex);
 
         const parameterCompletions: Completion.Item[] = [];
         const parameterDefinitionMatches: IParameterDefinition[] = scope.findParameterDefinitionsWithPrefix(prefix);
@@ -669,7 +672,7 @@ export class TemplatePositionContext extends PositionContext {
     }
 
     private getMatchingVariableCompletions(prefix: string, tleValue: TLE.StringValue | TLE.FunctionCallValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
-        const replaceSpanInfo: ReplaceSpanInfo = this.getReplaceSpanInfo(tleValue, tleCharacterIndex);
+        const replaceSpanInfo: ReplaceSpanInfo = this.getTleReplaceSpanInfo(tleValue, tleCharacterIndex);
 
         const variableCompletions: Completion.Item[] = [];
         const variableDefinitionMatches: IVariableDefinition[] = scope.findVariableDefinitionsWithPrefix(prefix);
@@ -679,7 +682,7 @@ export class TemplatePositionContext extends PositionContext {
         return variableCompletions;
     }
 
-    private getReplaceSpanInfo(tleValue: TLE.StringValue | TLE.FunctionCallValue, tleCharacterIndex: number): ReplaceSpanInfo {
+    private getTleReplaceSpanInfo(tleValue: TLE.StringValue | TLE.FunctionCallValue, tleCharacterIndex: number): ReplaceSpanInfo {
         let includeRightParenthesisInCompletion: boolean = true;
         let replaceSpan: language.Span;
         if (tleValue instanceof TLE.StringValue) {
@@ -715,6 +718,43 @@ export class TemplatePositionContext extends PositionContext {
             includeRightParenthesisInCompletion: includeRightParenthesisInCompletion,
             replaceSpan: replaceSpan
         };
+    }
+
+    /**
+     * Gets the "word" at the cursor or right after the cursor position (i.e.,
+     * the token that the cursor is "touching"), to indicate the span that
+     * an Intellisense completi should replace
+     */
+    public getJsonReplacementSpan(): language.Span | undefined {
+        const index = this.documentCharacterIndex;
+        let tokenAtCursor = this.document.getJSONTokenAtDocumentCharacterIndex(index);
+
+        // If there's no token at the current location, try again right before the cursor
+        if (!tokenAtCursor && index > 0) {
+            const tokenAfterCursor = this.document.getJSONTokenAtDocumentCharacterIndex(index - 1);
+            if (tokenAfterCursor) {
+                const line = this.document.getDocumentPosition(tokenAfterCursor.span.startIndex).line;
+                if (line === this.documentPosition.line) {
+                    tokenAtCursor = tokenAfterCursor;
+                }
+            }
+        }
+
+        if (tokenAtCursor && tokenAtCursor.type !== Json.TokenType.QuotedString) {
+            // We want to include hyphens in our definition of word, so that snippets such as
+            // "arm-keyvault" or "arm!mg" are replaced in whole by the snippet.  But such characters
+            // aren't part of literals in JSON, so look for a match directly in the text.
+            let start = tokenAtCursor.span.startIndex;
+            const documentText = this.document.documentText;
+            while (start > 0 && documentText.charAt(start - 1).match(/^[\w-!\$]/)) {
+                --start;
+            }
+
+            const match = this.document.documentText.slice(start).match(/^[\w-!\$]+/);
+            return match ? new language.Span(start, match[0].length) : undefined;
+        }
+
+        return undefined;
     }
 }
 

@@ -1215,7 +1215,7 @@ suite("DeploymentTemplate", () => {
                     pc.tleInfo;
                     pc.getReferenceSiteInfo(true);
                     pc.getHoverInfo();
-                    pc.getCompletionItems(undefined);
+                    await pc.getCompletionItems(undefined);
                 } catch (err) {
                     throw new Error(`exercisePositionContextAtRandomPointsInTheDoc: Threw at index ${i}:\n${json.slice(i)}<***HERE***>${json.slice(i)}`);
                 }

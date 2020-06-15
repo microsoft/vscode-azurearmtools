@@ -17,6 +17,7 @@ export async function parseTemplate(
     expectedDiagnosticMessages?: string[],
     options?: {
         ignoreWarnings?: boolean;
+        ignoreBang?: boolean;
         replacements?: { [key: string]: string | { [key: string]: unknown } };
     }
 ): Promise<DeploymentTemplate> {
