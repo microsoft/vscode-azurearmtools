@@ -195,11 +195,11 @@ suite("DeploymentTemplate code lenses", () => {
         createParamLensTest('requiredInt', '123', 'Value: 123');
         createParamLensTest('requiredInt', '-123', 'Value: -123');
         createParamLensTest('optionalInt', undefined, 'Using default value: 123');
-        createParamLensTest('requiredInt', undefined, 'No value found');
+        createParamLensTest('requiredInt', undefined, '$(warning) No value found');
 
         createParamLensTest('requiredString', '"def"', 'Value: "def"');
         createParamLensTest('optionalString', undefined, 'Using default value: "abc"');
-        createParamLensTest('requiredString', undefined, 'No value found');
+        createParamLensTest('requiredString', undefined, '$(warning) No value found');
 
         // Value too long
         createParamLensTest(
