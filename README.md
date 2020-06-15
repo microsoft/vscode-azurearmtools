@@ -26,13 +26,13 @@ When in an empty JSON file, typing `arm` produces a list of scaffolding snippets
 
 ![](./images/json-snippets.png)
 
-Notice that adding scaffolding for an ARM template changes the Visual Studio Code to *Azure Resource Manager Templates*.
+Notice that adding scaffolding for an ARM template changes the Visual Studio Code language mode to *Azure Resource Manager Templates*.
 
 ![](./images/arm-template-language.png)
 
 ### Add Azure resource to an ARM template
 
-Once you are working in an ARM template, placing your cursor in the resource and typing `arm` produces a list of 70+ snippets for Azure resources. Selecting a snippet adds a fully configured instance of the resource type to the ARM template.
+Once you are working in an ARM template, placing your cursor in the resource and typing `arm` produces a list of 70+ snippets for Azure resources. Selecting a snippet adds an instance of the resource type to the ARM template.
 
 ![](./images/arm-snippets.png)
 
@@ -71,7 +71,7 @@ In the following example, the potential values for an Azure Storage account tier
 
 ### Validation
 
-If an invalid property or property value is specified, a validation warning is thrown. In the following example, a value of `Super` is provided for the storage account tier (line 19), which is invalid. Also notice that a list of valid values is provided in the warning message.
+If an invalid property or property value is specified, a validation warning is thrown. In the following example, an invalid value is provided for the storage account tier (line 19). Notice that the warning message includes a list of valid values.
 
 ![](./images/schema-validation.png)
 
@@ -89,7 +89,7 @@ Select **New** from the context menu.
 
 ![](./images/create-parameter-file-2.png)
 
-Selecting **All parameters** adds every parameter from the template into the new parameter file. Selecting **Only required parameters** adds only parameters that do not have a default value in the template file.
+Selecting **All parameters** adds every parameter from the template into the new parameter file. Selecting **Only required parameters** adds only parameters that do not have a default value specified in the template file.
 
 ![](./images/create-parameter-file-3.png)
 
@@ -97,7 +97,7 @@ Select a name and location for the parameter file.
 
 ![](./images/create-parameter-file-4.png)
 
-Once done, a parameter file has been created. Where needed, remove the comment indicating that a parameter value is needed, and add a parameter value.
+Once done, a parameter file has been created. Where needed, remove the comment indicating that a parameter value is needed and add a parameter value.
 
 ![](./images/parameter-file.png)
 
@@ -123,11 +123,11 @@ Once a parameter file has been associated with a template, the extension provide
 
 ### Add missing parameters
 
-To add missing parameters to an existing parameter file, ensure that a mapping has been created, select `parameters`, and then click the light bulb icon.
+To add missing parameters to an existing parameter file, ensure that an association has been created, select `parameters`, and then click the light bulb icon.
 
 ![](./images/missing-params-one.png)
 
-Select the option to only required or all missing parameters.
+Select the option to add only required or all missing parameters.
 
 ![](./images/missing-params-two.png)
 
@@ -137,7 +137,7 @@ Enter a value for the added parameters and also remove the 'TODO' comment.
 
 ### Find all parameter references
 
-Right-click on a parameter name and select **Go to References**. Double-clicking on any reference moved your cursor to the reference location.
+Right-click on a parameter name and select **Go to References**. Double-clicking on any reference moves your cursor to the reference location.
 
 ![](./images/parameter-references.png)
 
@@ -147,13 +147,13 @@ Right-click on the parameter name and select **Rename Symbol**. This action rena
 
 ![](./images/rename-parameter.png)
 
-### Remove or update parameter file mapping
+### Remove or update parameter file association
 
-Click on the code lense option for changing a parameter mapping.
+Click on the code lense option for changing a parameter association.
 
 ![](./images/undo-change-mapping.png)
 
-Select a new parameter file, create a new parameter file, or select **None** to remove the parameter file mapping.
+Select a new parameter file or create a new parameter file to update the association. Select **None** to remove the parameter file association.
 
 ![](./images/undo-change-mapping-two.png)
 
@@ -171,7 +171,7 @@ In addition to navigation, several features such as insert item and template sor
 
 ### Go to Definition
 
-Go to definition can be used to navigate to both parameter and variable definitions. To use go to definition, place your cursor on the parameter or variable name (in the reference) and press `F12` or right-click and select **Go to Definition**.
+Go to definition can be used to navigate to both parameter and variable definitions. To use go to definition, place your cursor on the parameter or variable name and press `F12` or right-click and select **Go to Definition**.
 
 ![](./images/go-to-definition.png)
 
@@ -245,13 +245,13 @@ Check if the root schema for deployment templates is using an out-of-date versio
 
 ### Parameter files
 
-Check if an opened template file has a matching params file and prompt to create a mapping.
+Check if an opened template file has a matching params file and prompt to create an association.
 
 ```
 "azureResourceManagerTools.checkForMatchingParameterFiles": true,
 ```
 
-Parameter file mappings are stored in the `azureResourceManagerTools.parameterFiles` user setting.
+Parameter file assoications are stored in the `azureResourceManagerTools.parameterFiles` user setting.
 
 ```
 "azureResourceManagerTools.parameterFiles": {}
@@ -261,7 +261,7 @@ Parameter file mappings are stored in the `azureResourceManagerTools.parameterFi
 
 By default, the extension recognizes a .json or .jsonc file as a deployment template file based on the \$schema specified in the file (for instance, `https://schema.management.azure.com/schemas/2018-05-01/deploymentTemplate.json#`) and will switch the editor language to "Azure Resource Manager Template" automatically. If you do not want that behavior, you can set the `azureResourceManagerTools.autoDetectJsonTemplates` setting to false and use the below methods to determine which files to treat as deployment templates.
 
-Besides automatic detection, you can also use the `files.associations` setting to set up your own specific mappings based on specific files paths or patterns to mark them as deployment templates, e.g.
+Besides automatic detection, you can also use the `files.associations` setting to set up your own specific associations based on specific files paths or patterns to mark them as deployment templates, e.g.
 
 ```json
 "files.associations": {
