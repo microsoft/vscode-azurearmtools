@@ -20,7 +20,7 @@ The following guides detail how to use the ARM Tools extension features.
 
 Snippets are used to create basic templates and add elements such as parameters, resources, and outputs to existing templates.
 
-**Create a new ARM template**
+### Create a new ARM template
 
 When in an empty JSON file, typing `arm` produces a list of scaffolding snippets. These snippets can be used to create an empty template for any ARM deployment scope (Tenant, Subscription, Management Group, and Resource Group).
 
@@ -30,7 +30,7 @@ Notice that adding scaffolding for an ARM template changes the Visual Studio Cod
 
 ![](./images/arm-template-language.png)
 
-**Add Azure resource to an ARM template**
+### Add Azure resource to an ARM template
 
 Once you are working in an ARM template, placing your cursor in the resource and typing `arm` produces a list of 70+ snippets for Azure resources. Selecting a snippet adds a fully configured instance of the resource type to the ARM template.
 
@@ -40,7 +40,7 @@ Each snippet includes tab stops to help navigate through commonly modified confi
 
 ![](./images/tab-stops.png)
 
-**Snippet Reference**
+### Snippet Reference
 
 The following table lists the available ARM Tools snippets.
 
