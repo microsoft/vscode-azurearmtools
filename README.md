@@ -61,7 +61,7 @@ The following table lists the available ARM Tools snippets.
 
 The ARM Tools extension uses Azure schemas to provide resource completion and validation. These schemas help you verify that Azure resources are configured correctly before deployment time.
 
-**Completions**
+### Completions
 
 Entering double quotes `""` or selecting `ctrl` + `space` while the cursor is in a resource declaration provides a list of potential properties and property values for each Azure resource.
 
@@ -69,7 +69,7 @@ In the following example, the potential values for an Azure Storage account tier
 
 ![](./images/completion.png)
 
-**Validation**
+### Validation
 
 If an invalid property or property value is specified, a validation warning is thrown. In the following example, a value of `Super` is provided for the storage account tier (line 19), which is invalid. Also notice that a list of valid values is provided in the warning message.
 
@@ -79,7 +79,7 @@ If an invalid property or property value is specified, a validation warning is t
 
 Associating a parameter file with an ARM template enables full validation across both the parameter file and template. A parameter file association can be made by either creating a new parameter file from an existing template or by associating an existing parameter file to the template.
 
-**Create a new parameter file**
+### Create a new parameter file
 
 To create a new parameter file from an existing template, click on the code lense text `**Select or create a parameter file to enable full validation..**.
 
@@ -105,7 +105,7 @@ Also, notice that on the template file that the code lense text has been updated
 
 ![](./images/code-lense.png)
 
-**Associate an existing parameter file**
+### Associate an existing parameter file
 
 To create an association with an existing parameter file, click on the code lense text `**Select or create a parameter file to enable full validation..**.
 
@@ -115,13 +115,13 @@ Select **Browse** from the context menu and then select the parameter file.
 
 ![](./images/create-parameter-file-2.png)
 
-**Parameter validation**
+### Parameter validation
 
 Once a parameter file has been associated with a template, the extension provides parameter validation across both files. In the following example, a parameter is specified with a set of allowed values. In the parameter file, a value is specified that is not part of the allowed values list. Because of this, the extension produces an error.
 
 ![](./images/param-file-validation.png)
 
-**Add missing parameters**
+### Add missing parameters
 
 To add missing parameters to an existing parameter file, ensure that a mapping has been created, select `parameters`, and then click the light bulb icon.
 
@@ -135,19 +135,19 @@ Enter a value for the added parameters and also remove the 'TODO' comment.
 
 ![](./images/missing-params-three.png)
 
-**Find all parameter references**
+### Find all parameter references
 
 Right-click on a parameter name and select **Go to References**. Double-clicking on any reference moved your cursor to the reference location.
 
 ![](./images/parameter-references.png)
 
-**Rename a parameter**
+### Rename a parameter
 
 Right-click on the parameter name and select **Rename Symbol**. This action renames the parameter and all template references to the parameter.
 
 ![](./images/rename-parameter.png)
 
-**Remove or update parameter file mapping**
+### Remove or update parameter file mapping
 
 Click on the code lense option for changing a parameter mapping.
 
@@ -161,7 +161,7 @@ Select a new parameter file, create a new parameter file, or select **None** to 
 
 The ARM tools extension for VS Code offers several features for navigating around an ARM template.
 
-**ARM template outline**
+### ARM template outline
 
 The ARM template outline is used to navigate to and select any element of an ARM template.
 
@@ -169,7 +169,7 @@ The ARM template outline is used to navigate to and select any element of an ARM
 
 In addition to navigation, several features such as insert item and template sorting can be engaged using the buttons found on the ARM template outline.
 
-**Go to Definition**
+### Go to Definition
 
 Go to definition can be used to navigate to both parameter and variable definitions. To use go to definition, place your cursor on the parameter or variable name (in the reference) and press `F12` or right-click and select **Go to Definition**.
 
@@ -189,7 +189,7 @@ The ARM Tools extension provides code completions for the following:
 
 ## Other feature
 
-**Insert Item**
+### Insert Item
 
 In addition to adding snippets from the code editor, the Insert Item feature can be used to insert new parameters, user-defined functions, variables, resources, and outputs. To do so right-click on the template in the code editor, select **Insert Item** and follow the on-screen prompts.
 
@@ -199,7 +199,7 @@ You can also right-click on any element in the ARM Template Outline view to init
 
 ![Inserting an item into an Azure Resource Manager template](./images/insert-item-outline.png)
 
-**Sort template**
+### Sort template
 
 To sort elements of an ARM template alphabetically, right-click on the template and select **Sort Template...**.
 
@@ -211,7 +211,7 @@ Select the element that you want to sort.
 
 Template sorting can also be engaged using the ARM template outline.
 
-**Miscellaneous Features**
+### Miscellaneous Features
 
   - [Signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
   - [Peek](https://code.visualstudio.com/docs/editor/editingevolved#_peek) for variable and parameter definitions
@@ -227,7 +227,7 @@ Template sorting can also be engaged using the ARM template outline.
 
 You may be interested in adjusting the following extension configurations. These can be configured in [VS Code User Settings](https://code.visualstudio.com/docs/getstarted/settings).
 
-**Auto-detect ARM Templates**
+### Auto-detect ARM Templates
 
 Enables auto-detection of deployment template files with the extension *.json or *.jsonc. If set to true (default), the editor language will automatically be set to Azure Resource Manager Template for any *.json/*.jsonc file which contains an appropriate Azure Resource Manager Template schema.
 
@@ -235,7 +235,7 @@ Enables auto-detection of deployment template files with the extension *.json or
 "azureResourceManagerTools.autoDetectJsonTemplates": true,
 ```
 
-**Detect latest root schema**
+### Detect latest root schema
 
 Check if the root schema for deployment templates is using an out-of-date version and suggest updating it to the latest version.
 
@@ -243,7 +243,7 @@ Check if the root schema for deployment templates is using an out-of-date versio
 "azureResourceManagerTools.checkForLatestSchema": true,
 ```
 
-**Parameter files**
+### Parameter files
 
 Check if an opened template file has a matching params file and prompt to create a mapping.
 
