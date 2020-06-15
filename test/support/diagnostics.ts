@@ -398,7 +398,7 @@ export async function getDiagnosticsForTemplate(
             }
 
             // Map template to params
-            await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, paramsFile.uri);
+            await ext.deploymentFileMapping.value.mapParameterFile(templateFile.uri, paramsFile.uri);
         }
 
         editor = new TempEditor(document);
@@ -416,7 +416,7 @@ export async function getDiagnosticsForTemplate(
 
         if (templateFile) {
             // Unmap template file
-            await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, undefined);
+            await ext.deploymentFileMapping.value.mapParameterFile(templateFile.uri, undefined);
             templateFile.dispose();
         }
         if (paramsFile) {

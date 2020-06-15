@@ -74,7 +74,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
 
     context.subscriptions.push(ext.completionItemsSpy);
 
-    ext.deploymentFileMapping.setValue(new DeploymentFileMapping(ext.configuration));
+    ext.deploymentFileMapping.value = new DeploymentFileMapping(ext.configuration);
 
     registerUIExtensionVariables(ext);
 
@@ -119,7 +119,7 @@ export class AzureRMTools {
     private readonly _paramsStatusBarItem: vscode.StatusBarItem;
     private _areDeploymentTemplateEventsHookedUp: boolean = false;
     private _diagnosticsVersion: number = 0;
-    private _mapping: DeploymentFileMapping = ext.deploymentFileMapping.getValue();
+    private _mapping: DeploymentFileMapping = ext.deploymentFileMapping.value;
     private _codeLensChangedEmitter: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
 
     // More information can be found about this definition at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
