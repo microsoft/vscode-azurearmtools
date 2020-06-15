@@ -48,5 +48,5 @@ export interface ISnippetManager {
     /**
      * Retrieve completion items for all snippets
      */
-    getCompletionItems(span: language.Span, _triggerCharacter: string | undefined): Promise<Completion.Item[]>;
+    getSnippetsAsCompletionItems(span: language.Span, _triggerCharacter: string | undefined): Promise<Completion.Item[]>;
 }

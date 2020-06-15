@@ -427,19 +427,9 @@ suite("Snippets functional tests", () => {
         await getDiagnosticsForDocument(doc, {});
         const initialDocText = doc.getText();
 
-        // Start waiting for next set of diagnostics (so it picks up the current completion versions)
-        // let diagnosticsPromise: Promise<Diagnostic[]> = getDiagnosticsForDocument(
-        //     doc,
-
-        //     {
-        //         waitForChange: true,
-        //         ignoreSources: (overrideIgnoreSchemaValidation[snippetName]) ? [diagnosticSources.schema] : []
-        //     });
-
-        // Insert snippet
+        // Insert snippet (and wait for and verify diagnotics)
         editor.selection = new Selection(snippetInsertEndPos, snippetInsertPos);
         await delay(1);
-
         await triggerCompletion(
             doc,
             snippet.prefix,
@@ -449,9 +439,6 @@ suite("Snippets functional tests", () => {
                 ignoreSources: (overrideIgnoreSchemaValidation[snippetName]) ? [diagnosticSources.schema] : []
             });
 
-        // Wait for diagnostics to finish
-        //let diagnostics: Diagnostic[] = await diagnosticsPromise;
-
         if (DEBUG_BREAK_AFTER_INSERTING_SNIPPET) {
             // tslint:disable-next-line: no-debugger
             debugger;
@@ -459,9 +446,6 @@ suite("Snippets functional tests", () => {
 
         const docTextAfterInsertion = doc.getText();
         validateDocumentWithSnippet();
-
-        // let messages = diagnostics.map(d => d.message).sort();
-        // assert.deepStrictEqual(messages, expectedDiagnostics);
 
         // Make sure formatting of the sippet is correct by formatting the document and seeing if it changes
         await commands.executeCommand('editor.action.formatDocument');

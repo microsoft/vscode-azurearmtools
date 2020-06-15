@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import { commands, Diagnostic, TextDocument } from 'vscode';
+import { delay } from './delay';
 import { getDiagnosticsForDocument, IGetDiagnosticsOptions } from './diagnostics';
 import { getCompletionItemResolutionPromise, getCompletionItemsPromise } from './getEventPromise';
 
@@ -8,18 +9,19 @@ export async function triggerCompletion(
     completion: string,
     diagnosticsOptions?: { expected: string[] } & IGetDiagnosticsOptions
 ): Promise<void> {
+    // Bring up completion UI
     const completionItemsPromise = getCompletionItemsPromise(document);
     await commands.executeCommand('editor.action.triggerSuggest');
 
     // Wait for our code to return completion items
     let items = await completionItemsPromise;
-    items = items;
+    items = items; // (make result easily avaible while debugging)
 
     // Wait for any resolution to be sure the UI is ready
     const resolutionPromise = getCompletionItemResolutionPromise();
-    //await delay(1);
     await resolutionPromise;
 
+    // Type the desired completion prefix
     let diagnosticsPromise1: Promise<Diagnostic[]> = Promise.resolve([]);
     if (diagnosticsOptions) {
         diagnosticsPromise1 = getDiagnosticsForDocument(
@@ -34,22 +36,16 @@ export async function triggerCompletion(
         diagnosticsPromise2 = getDiagnosticsForDocument(
             document, diagnosticsOptions);
     }
-    //await delay(1); //asdf
+    // ... Accept current suggestion
     await commands.executeCommand('acceptSelectedSuggestion');
     const diagnostics = await diagnosticsPromise2;
 
     // Some completions have additional text edits, and vscode doesn't
     // seem to have made all the changes when it fires didDocumentChange,
     // so give a slight delay to allow it to finish
-    //await delay(1000);
+    await delay(1);
 
-    // function failed(): void {
-    //     // tslint:disable-next-line: prefer-template
-    //     assert.fail(`Did not find a completion item matching ${JSON.stringify(completion)}. Completions found: ` +
-    //         completionsFound.join(', '));
-
-    // }
-
+    // Wait for final diagnostics and compare
     if (diagnosticsOptions?.expected) {
         let messages = diagnostics.map(d => d.message).sort();
         assert.deepEqual(messages, diagnosticsOptions?.expected);

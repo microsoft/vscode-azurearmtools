@@ -10,7 +10,7 @@ import { CompletionItem, TextDocument, workspace } from 'vscode';
 import { ext, ICompletionsSpyResult } from '../../extension.bundle';
 import { delay } from '../support/delay';
 
-const defaultTimeout: number = 3000 * 1000;
+const defaultTimeout: number = 30 * 1000;
 
 export function getEventPromise<T>(
     eventName: string,
@@ -19,8 +19,6 @@ export function getEventPromise<T>(
     // tslint:disable-next-line:promise-must-complete
     return new Promise<T>(
         async (resolve: (value?: T | PromiseLike<T>) => void, reject: (reason?: unknown) => void): Promise<void> => {
-            timeout = 300000;
-
             let completed = false;
             executor(
                 (value?: T | PromiseLike<T>) => {
