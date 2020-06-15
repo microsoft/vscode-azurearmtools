@@ -157,6 +157,24 @@ Select a new parameter file, create a new parameter file, or select **None** to 
 
 ![](./images/undo-change-mapping-two.png)
 
+## Template navigation
+
+The ARM tools extension for VS Code offers several features for navigating around an ARM template.
+
+**ARM template outline**
+
+The ARM template outline is used to navigate to and select any element of an ARM template.
+
+![](./images/arm-template-outline.png)
+
+In addition to navigation, several features such as insert item and template sorting can be engaged using the buttons found on the ARM template outline.
+
+**Go to Definition**
+
+Go to definition can be used to navigate to both parameter and variable definitions. To use go to definition, place your cursor on the parameter or variable name (in the reference) and press `F12` or right-click and select **Go to Definition**.
+
+![](./images/go-to-definition.png)
+
 ## Completions
 
 The ARM Tools extension provides code completions for the following:
@@ -168,18 +186,6 @@ The ARM Tools extension provides code completions for the following:
   - [subscription() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#subscription)
   - [resourceId() function](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#resourceid)
   - Properties of references to variables that are objects
-
-## Template navigation
-
-**ARM template outline**
-
-![](./images/arm-template-outline.png)
-
-**Go to Definition**
-
-Go to definition can be used to navigate to both parameter and variable definitions. To use go to definition, place your cursor on the parameter or variable name (in the reference) and press `F12` or right-click and select **Go to Definition**.
-
-![](./images/go-to-definition.png)
 
 ## Other feature
 
@@ -195,9 +201,15 @@ You can also right-click on any element in the ARM Template Outline view to init
 
 **Sort template**
 
+To sort elements of an ARM template alphabetically, right-click on the template and select **Sort Template...**.
+
 ![](./images/sort-template.png)
 
+Select the element that you want to sort.
+
 ![](./images/sort-template-two.png)
+
+Template sorting can also be engaged using the ARM template outline.
 
 **Miscellaneous Features**
 
