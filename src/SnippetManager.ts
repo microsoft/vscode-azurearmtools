@@ -71,7 +71,7 @@ export class SnippetManager implements ISnippetManager {
     /**
      * Retrieve completion items for all snippets
      */
-    public async getCompletionItems(span: language.Span, _triggerCharacter: string | undefined): Promise<Completion.Item[]> {
+    public async getSnippetsAsCompletionItems(span: language.Span, _triggerCharacter: string | undefined): Promise<Completion.Item[]> {
         const map = await this.getMap();
 
         const items: Completion.Item[] = [];
