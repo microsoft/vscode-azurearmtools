@@ -184,7 +184,7 @@ export class TemplatePositionContext extends PositionContext {
             // No string at this location, so we ask the snippet manager
             // for valid completions
             let replacementSpan = this.getJsonReplacementSpan() ?? this.emptySpanAtDocumentCharacterIndex;
-            return await ext.snippetManager.value.getCompletionItems(replacementSpan, triggerCharacter);
+            return await ext.snippetManager.value.getSnippetsAsCompletionItems(replacementSpan, triggerCharacter);
         }
 
         // We're inside a JSON string. It may or may not contain square brackets.
