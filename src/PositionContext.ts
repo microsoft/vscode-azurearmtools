@@ -71,8 +71,8 @@ export abstract class PositionContext {
         assert(documentColumnIndex >= 0, "documentColumnIndex cannot be negative");
         assert(documentColumnIndex <= this._document.getMaxColumnIndex(documentLineIndex), `documentColumnIndex (${documentColumnIndex}) cannot be greater than the line's maximum index (${this._document.getMaxColumnIndex(documentLineIndex)})`);
 
-        this._documentPosition.setValue(new language.Position(documentLineIndex, documentColumnIndex));
-        this._documentCharacterIndex.setValue(this._document.getDocumentCharacterIndex(documentLineIndex, documentColumnIndex));
+        this._documentPosition.value = new language.Position(documentLineIndex, documentColumnIndex);
+        this._documentCharacterIndex.value = this._document.getDocumentCharacterIndex(documentLineIndex, documentColumnIndex);
     }
 
     protected initFromDocumentCharacterIndex(documentCharacterIndex: number): void {
@@ -80,8 +80,8 @@ export abstract class PositionContext {
         assert(documentCharacterIndex >= 0, "documentCharacterIndex cannot be negative");
         assert(documentCharacterIndex <= this._document.maxCharacterIndex, `documentCharacterIndex (${documentCharacterIndex}) cannot be greater than the maximum character index (${this._document.maxCharacterIndex})`);
 
-        this._documentCharacterIndex.setValue(documentCharacterIndex);
-        this._documentPosition.setValue(this._document.getDocumentPosition(documentCharacterIndex));
+        this._documentCharacterIndex.value = documentCharacterIndex;
+        this._documentPosition.value = this._document.getDocumentPosition(documentCharacterIndex);
     }
 
     public get document(): DeploymentDocument {
@@ -105,7 +105,7 @@ export abstract class PositionContext {
     }
 
     public get documentPosition(): language.Position {
-        return this._documentPosition.getValue();
+        return this._documentPosition.value;
     }
 
     public get documentLineIndex(): number {
@@ -117,7 +117,7 @@ export abstract class PositionContext {
     }
 
     public get documentCharacterIndex(): number {
-        return this._documentCharacterIndex.getValue();
+        return this._documentCharacterIndex.value;
     }
 
     public get jsonToken(): Json.Token | undefined {
