@@ -143,11 +143,17 @@ Right-click on a parameter name and select **Go to References**. Double-clicking
 
 **Rename a parameter**
 
+Right-click on the parameter name and select **Rename Symbol**. This action renames the parameter and all template references to the parameter.
+
 ![](./images/rename-parameter.png)
 
 **Remove or update parameter file mapping**
 
+Click on the code lense option for changing a parameter mapping.
+
 ![](./images/undo-change-mapping.png)
+
+Select a new parameter file, create a new parameter file, or select **None** to remove the parameter file mapping.
 
 ![](./images/undo-change-mapping-two.png)
 
