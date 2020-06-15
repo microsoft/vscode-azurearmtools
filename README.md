@@ -117,13 +117,21 @@ Select **Browse** from the context menu and then select the parameter file.
 
 **Parameter validation**
 
+Once a parameter file has been associated with a template, the extension provides parameter validation across both files. In the following example, a parameter is specified with a set of allowed values. In the parameter file, a value is specified that is not part of the allowed values list. Because of this, the extension produces an error.
+
 ![](./images/param-file-validation.png)
 
 **Add missing parameters**
 
+To add missing parameters to an existing parameter file, ensure that a mapping has been created, select `parameters`, and then click the light bulb icon.
+
 ![](./images/missing-params-one.png)
 
+Select the option to only required or all missing parameters.
+
 ![](./images/missing-params-two.png)
+
+Enter a value for the added parameters and also remove the 'TODO' comment.
 
 ![](./images/missing-params-three.png)
 
