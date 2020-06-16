@@ -256,6 +256,7 @@ export enum IssueKind {
     undefinedVar = "undefinedVar",
     varInUdf = "varInUdf",
     undefinedVarProp = "undefinedVarProp",
+    inaccessibleNestedScopeMembers = "inaccessibleNestedScopeMembers",
 
     // Parameter file issues
     params_missingRequiredParam = "params_missingRequiredParam",

@@ -20,11 +20,11 @@ import { Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument } f
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { parseParametersWithMarkers } from "./parseTemplate";
+import { resolveInTestFolder } from "./resolveInTestFolder";
 import { stringify } from "./stringify";
 import { TempDocument, TempEditor, TempFile } from "./TempFile";
 
 export const diagnosticsTimeout = 2 * 60 * 1000; // CONSIDER: Use this long timeout only for first test, or for suite setup
-export const testFolder = path.join(__dirname, '..', '..', '..', 'test');
 
 export interface DiagnosticSource {
     name: string;
@@ -361,7 +361,7 @@ export async function getDiagnosticsForTemplate(
         if (typeof templateContentsOrFileName === 'string') {
             if (!!templateContentsOrFileName.match(/\.jsonc?$/)) {
                 // It's a filename
-                let sourcePath = path.join(testFolder, templateContentsOrFileName);
+                let sourcePath = resolveInTestFolder(templateContentsOrFileName);
                 templateContents = fs.readFileSync(sourcePath).toString();
                 tempPathSuffix = path.basename(templateContentsOrFileName, path.extname(templateContentsOrFileName));
             } else {
@@ -393,7 +393,7 @@ export async function getDiagnosticsForTemplate(
                 const { unmarkedText: unmarkedParams } = await parseParametersWithMarkers(options.parameters);
                 paramsFile = new TempFile(unmarkedParams);
             } else {
-                const absPath = path.join(testFolder, options.parametersFile!);
+                const absPath = resolveInTestFolder(options.parametersFile!);
                 paramsFile = await TempFile.fromExistingFile(absPath);
             }
 

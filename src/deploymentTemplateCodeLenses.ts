@@ -92,7 +92,7 @@ export class ParameterDefinitionCodeLens extends ResolvableCodeLens {
             } else if (defaultValueAsString !== undefined) {
                 title = `Using default value: ${defaultValueAsString}`;
             } else {
-                title = "No value found";
+                title = "$(warning) No value found";
             }
 
             if (title.length > this._maxCharactersInValue) {
