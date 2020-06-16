@@ -1548,4 +1548,48 @@ suite("DeploymentTemplate", () => {
             assert.equal(dt.apiProfile, "2018–03-01-hybrid");
         });
     });
+
+    suite("getDocumentPosition", () => {
+        function createGetDocumentPositionTest(json: string, index: number, expectedPosition: Language.Position): void {
+            test(`${JSON.stringify(json)}, index=${index}`, async () => {
+                const dt = await parseTemplate(json);
+                const pos: Language.Position = dt.getDocumentPosition(index);
+                assert.deepEqual(pos, expectedPosition);
+            });
+        }
+
+        suite('empty', () => {
+            createGetDocumentPositionTest('', 0, new Language.Position(0, 0));
+        });
+
+        suite('two lines', async () => {
+            createGetDocumentPositionTest('a\n', 0, new Language.Position(0, 0));
+            createGetDocumentPositionTest('a\n', 1, new Language.Position(0, 1));
+            createGetDocumentPositionTest('a\n', 2, new Language.Position(1, 0));
+            createGetDocumentPositionTest('a\n', 3, new Language.Position(1, 0));
+
+            createGetDocumentPositionTest('a\r\n', 0, new Language.Position(0, 0));
+            createGetDocumentPositionTest('a\r\n', 1, new Language.Position(0, 1));
+            createGetDocumentPositionTest('a\r\n', 2, new Language.Position(0, 2));
+            createGetDocumentPositionTest('a\r\n', 3, new Language.Position(1, 0));
+            createGetDocumentPositionTest('a\r\n', 4, new Language.Position(1, 0));
+        });
+
+        suite('last line', async () => {
+            createGetDocumentPositionTest('a\nbc', 0, new Language.Position(0, 0));
+            createGetDocumentPositionTest('a\nbc', 1, new Language.Position(0, 1));
+            createGetDocumentPositionTest('a\nbc', 2, new Language.Position(1, 0));
+            createGetDocumentPositionTest('a\nbc', 3, new Language.Position(1, 1));
+            createGetDocumentPositionTest('a\nbc', 4, new Language.Position(1, 2));
+            createGetDocumentPositionTest('a\nbc', 5, new Language.Position(1, 2));
+
+            createGetDocumentPositionTest('a\r\nbc', 0, new Language.Position(0, 0));
+            createGetDocumentPositionTest('a\r\nbc', 1, new Language.Position(0, 1));
+            createGetDocumentPositionTest('a\r\nbc', 2, new Language.Position(0, 2));
+            createGetDocumentPositionTest('a\r\nbc', 3, new Language.Position(1, 0));
+            createGetDocumentPositionTest('a\r\nbc', 4, new Language.Position(1, 1));
+            createGetDocumentPositionTest('a\r\nbc', 5, new Language.Position(1, 2));
+            createGetDocumentPositionTest('a\r\nbc', 5, new Language.Position(1, 2));
+        });
+    });
 });

@@ -181,10 +181,19 @@ export class TemplatePositionContext extends PositionContext {
     public async getCompletionItems(triggerCharacter: string | undefined): Promise<Completion.Item[]> {
         const tleInfo = this.tleInfo;
         if (!tleInfo) {
-            // No string at this location, so we ask the snippet manager
-            // for valid completions
-            let replacementSpan = this.getJsonReplacementSpan() ?? this.emptySpanAtDocumentCharacterIndex;
-            return await ext.snippetManager.value.getSnippetsAsCompletionItems(replacementSpan, triggerCharacter);
+            const jsonToken = this.jsonToken;
+            if (jsonToken && jsonToken.type === Json.TokenType.QuotedString) {
+                // We're inside a string.  The fact that tleInfo is undefined indicates that the string
+                // may not yet be valid JSON.  For instance, if typing double quotes for the property
+                // name of a property but there is no property value yet.
+
+                return [];
+            } else {
+                // No string at this location, so we ask the snippet manager
+                // for valid snippet completions
+                let replacementSpan = this.getJsonReplacementSpan() ?? this.emptySpanAtDocumentCharacterIndex;
+                return await ext.snippetManager.value.getSnippetsAsCompletionItems(replacementSpan, triggerCharacter);
+            }
         }
 
         // We're inside a JSON string. It may or may not contain square brackets.

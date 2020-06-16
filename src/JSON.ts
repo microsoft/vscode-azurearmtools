@@ -994,6 +994,17 @@ export class ParseResult {
         return this._commentTokens.length;
     }
 
+    /**
+     * Each line's length includes the terminating CR or CR/LF, if present, except for
+     * the last line, which doesn't.
+     * This means:
+     *   - If the last character in the JSON is an LF or CR/LF, there is one line after
+     *   that of length 0
+     *   - If the text is empty, there is one line of length 0
+     *   - Line length is affected by whether it' terminated by LF or CR/LF
+     *
+     * CONSIDER: redesign
+     */
     public get lineLengths(): number[] {
         return this._lineLengths;
     }
@@ -1115,6 +1126,12 @@ export class ParseResult {
                 column = remainingChars;
                 break;
             }
+        }
+
+        if (line >= this.lineLengths.length) {
+            // Past the last line
+            line = this.lineLengths.length - 1;
+            column = this.lineLengths[line];
         }
 
         return new language.Position(line, column);
