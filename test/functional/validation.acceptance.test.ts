@@ -4,11 +4,8 @@
 
 // tslint:disable:no-suspicious-comment
 
-import { ext } from "../../extension.bundle";
 import { ITestDiagnosticsOptions, minimalDeploymentTemplate, testDiagnostics, testDiagnosticsFromFile } from "../support/diagnostics";
 import { testWithLanguageServer } from "../support/testWithLanguageServer";
-
-const EOL = ext.EOL;
 
 suite("Acceptance validation tests (all sources)", () => {
 
