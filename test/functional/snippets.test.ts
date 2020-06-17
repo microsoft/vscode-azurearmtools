@@ -114,11 +114,11 @@ const overrideInsertPosition: { [name: string]: string } = {
 const overrideExpectedDiagnostics: { [name: string]: string[] } = {
     "Application Gateway": [
         // Expected (by design)
-        `Value must conform to exactly one of the associated schemas${EOL}|   Value must be one of the following types: object${EOL}|   or${EOL}|   Value must be one of the following types: string`
+        `Value must be one of the following types: object`
     ],
     "Application Gateway and Firewall": [
         // Expected (by design)
-        `Value must conform to exactly one of the associated schemas${EOL}|   Value must be one of the following types: object${EOL}|   or${EOL}|   Value must be one of the following types: string`
+        `Value must be one of the following types: object`
     ],
 
     "Azure Resource Manager (ARM) Parameters Template":
