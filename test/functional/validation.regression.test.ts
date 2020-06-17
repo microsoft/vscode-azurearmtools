@@ -4,7 +4,6 @@
 
 // tslint:disable:object-literal-key-quotes no-http-string max-func-body-length
 
-import * as os from 'os';
 import { diagnosticSources, testDiagnostics, testDiagnosticsFromFile } from "../support/diagnostics";
 import { testWithLanguageServer, testWithLanguageServerAndRealFunctionMetadata } from "../support/testWithLanguageServer";
 
@@ -94,11 +93,11 @@ suite("Validation regression tests", () => {
                     // Unrelated errors:
 
                     // tslint:disable-next-line: no-suspicious-comment
-                    // TODO: https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1016835
+                    // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/673
                     "Error: Expected a comma (','). (arm-template (expressions))",
 
                     // Expected schema errors:
-                    `Warning: Value must conform to exactly one of the associated schemas${os.EOL}|   Value must be one of the following types: boolean${os.EOL}|   or${os.EOL}|   Value must match the regular expression ^\\[([^\\[].*)?\\]$ (arm-template (schema))`
+                    `Warning: Value must be one of the following types: boolean (arm-template (schema))`
                 ]
             )
     );
