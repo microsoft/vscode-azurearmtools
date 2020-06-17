@@ -14,14 +14,12 @@ import * as fse from 'fs-extra';
 import { ITestCallbackContext } from 'mocha';
 import * as path from 'path';
 import { commands, Diagnostic, Selection, Uri, window, workspace } from "vscode";
-import { DeploymentTemplate, ext, getVSCodePositionFromPosition } from '../../extension.bundle';
+import { DeploymentTemplate, getVSCodePositionFromPosition } from '../../extension.bundle';
 import { delay } from '../support/delay';
 import { diagnosticSources, getDiagnosticsForDocument } from '../support/diagnostics';
 import { getTempFilePath } from "../support/getTempFilePath";
 import { resolveInTestFolder } from '../support/resolveInTestFolder';
 import { testWithLanguageServer } from '../support/testWithLanguageServer';
-
-const EOL = ext.EOL;
 
 let resourceTemplate: string = `{
 \t"resources": [
