@@ -5,7 +5,7 @@
     "version": "0.10.1-alpha",
     "publisher": "msazurermtools",
     "config": {
-        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20272.4"
+        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20317.6"
     },
     "categories": [
         "Azure",
@@ -76,10 +76,6 @@
         ],
         "snippets": [
             {
-                "language": "arm-template",
-                "path": "./assets/armsnippets.jsonc"
-            },
-            {
                 "language": "json",
                 "path": "./assets/jsonsnippets.jsonc"
             },
@@ -141,6 +137,16 @@
                     "additionalProperties": {
                         "type": "string"
                     }
+                },
+                "azureResourceManagerTools.codelens.enable": {
+                    "type": "boolean",
+                    "description": "Enables or disables all code lens features",
+                    "default": true
+                },
+                "azureResourceManagerTools.codelens.parameters": {
+                    "type": "boolean",
+                    "description": "Enables code lens for parameter definitions and values",
+                    "default": true
                 }
             }
         },

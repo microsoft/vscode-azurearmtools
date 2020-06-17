@@ -5,7 +5,7 @@
 // tslint:disable: max-classes-per-file
 
 import * as assert from 'assert';
-import { Json, Language } from '../extension.bundle';
+import { Language } from '../extension.bundle';
 import { DeploymentDocument, ResolvableCodeLens } from "./DeploymentDocument";
 import { DeploymentTemplate } from './DeploymentTemplate';
 import { IParameterDefinition } from './IParameterDefinition';
@@ -25,9 +25,9 @@ export class ShowCurrentParameterFileCodeLens extends ResolvableCodeLens {
         if (associatedDocument) {
             assert(associatedDocument instanceof DeploymentParameters);
             this.command = {
-                title: `Parameter file: "${getRelativeParameterFilePath(this.deploymentDoc.documentId, associatedDocument.documentId)}"`,
+                title: `Parameter file: "${getRelativeParameterFilePath(this.deploymentDoc.documentUri, associatedDocument.documentUri)}"`,
                 command: 'azurerm-vscode-tools.openParameterFile',
-                arguments: [this.deploymentDoc.documentId]
+                arguments: [this.deploymentDoc.documentUri]
             };
             return true;
         }
@@ -48,7 +48,7 @@ export class SelectParameterFileCodeLens extends ResolvableCodeLens {
         let title: string;
         if (associatedDocument) {
             assert(associatedDocument instanceof DeploymentParameters);
-            title = `Select parameter file...`;
+            title = `Change...`;
         } else {
             title = "Select or create a parameter file to enable full validation...";
         }
@@ -56,7 +56,7 @@ export class SelectParameterFileCodeLens extends ResolvableCodeLens {
         this.command = {
             title,
             command: 'azurerm-vscode-tools.selectParameterFile',
-            arguments: [this.deploymentDoc.documentId]
+            arguments: [this.deploymentDoc.documentUri]
         };
         return true;
     }
@@ -78,22 +78,21 @@ export class ParameterDefinitionCodeLens extends ResolvableCodeLens {
             assert(associatedDocument instanceof DeploymentParameters);
             const dp = associatedDocument as DeploymentParameters;
 
-            const paramValue = dp.getParameterValue(this.parameterDefinition.nameValue.unquotedValue)
-                ?.value;
+            const param = dp.getParameterValue(this.parameterDefinition.nameValue.unquotedValue);
+            const paramValue = param?.value;
+            const paramReference = param?.reference;
             const givenValueAsString = paramValue?.toFullFriendlyString();
             const defaultValueAsString = this.parameterDefinition.defaultValue?.toFullFriendlyString();
 
             let title;
-            if (givenValueAsString !== undefined) {
-                if (this.isKeyVaultReference(paramValue)) {
-                    title = 'Value: (KeyVault reference)';
-                } else {
-                    title = `Value: ${givenValueAsString}`;
-                }
+            if (!!paramReference) {
+                title = 'Value: (KeyVault reference)';
+            } else if (givenValueAsString !== undefined) {
+                title = `Value: ${givenValueAsString}`;
             } else if (defaultValueAsString !== undefined) {
                 title = `Using default value: ${defaultValueAsString}`;
             } else {
-                title = "No value found";
+                title = "$(warning) No value found";
             }
 
             if (title.length > this._maxCharactersInValue) {
@@ -105,7 +104,7 @@ export class ParameterDefinitionCodeLens extends ResolvableCodeLens {
                 title: title,
                 command: "azurerm-vscode-tools.codeLens.gotoParameterValue",
                 arguments: [
-                    dp.documentId,
+                    dp.documentUri,
                     this.parameterDefinition.nameValue.unquotedValue
                 ]
             };
@@ -113,29 +112,6 @@ export class ParameterDefinitionCodeLens extends ResolvableCodeLens {
         }
 
         return false;
-    }
-
-    private isKeyVaultReference(paramValue: Json.Value | undefined): boolean {
-        /* keyVault references inside a parameter file look like this:
-            {
-                "reference": {
-                    "keyVault": {
-                        "id": "/subscriptions/xxxxx/resourceGroups/yyyyy/providers/Microsoft.KeyVault/vaults/zzzzz"
-                    },
-                    "secretName": "mysecretpassword"
-                }
-            }
-        */
-        const keyVaultReferenceProperty: string = 'reference';
-        const keyVaultReferenceKeyVaultProperty: string = 'keyvault';
-        const keyVaultReferenceKeyVaultIdProperty: string = 'id';
-
-        return !!paramValue?.asObjectValue
-            ?.getPropertyValue(keyVaultReferenceProperty)
-            ?.asObjectValue
-            ?.getPropertyValue(keyVaultReferenceKeyVaultProperty)
-            ?.asObjectValue
-            ?.getPropertyValue(keyVaultReferenceKeyVaultIdProperty);
     }
 }
 
@@ -161,6 +137,29 @@ export class NestedTemplateCodeLen extends ResolvableCodeLens {
             default:
                 return undefined;
         }
+    }
+
+    public resolve(_associatedDocument: DeploymentDocument | undefined): boolean {
+        // Nothing else to do
+        return true;
+    }
+}
+
+export class LinkedTemplateCodeLens extends ResolvableCodeLens {
+    private constructor(
+        dt: DeploymentTemplate,
+        span: Language.Span,
+        title: string
+    ) {
+        super(dt, span);
+        this.command = {
+            title: title,
+            command: ''
+        };
+    }
+
+    public static create(dt: DeploymentTemplate, span: Language.Span): LinkedTemplateCodeLens {
+        return new LinkedTemplateCodeLens(dt, span, "Linked template");
     }
 
     public resolve(_associatedDocument: DeploymentDocument | undefined): boolean {

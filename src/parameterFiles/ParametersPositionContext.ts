@@ -85,7 +85,7 @@ export class ParametersPositionContext extends PositionContext {
         return refInfo ? this.document.findReferencesToDefinition(refInfo.definition) : undefined;
     }
 
-    public getCompletionItems(triggerCharacter: string | undefined): Completion.Item[] {
+    public async getCompletionItems(triggerCharacter: string | undefined): Promise<Completion.Item[]> {
         let completions: Completion.Item[] = [];
 
         if ((!triggerCharacter || triggerCharacter === '"') && this.canAddPropertyHere) {
@@ -135,7 +135,7 @@ export class ParametersPositionContext extends PositionContext {
                 const label = param.nameValue.quotedValue;
                 const paramText = createParameterFromTemplateParameter(this._associatedTemplate, param);
                 let replacement = paramText;
-                const documentation = `Insert a value for parameter "${param.nameValue.unquotedValue}" from template file "${path.basename(this._associatedTemplate.documentId.fsPath)}"`;
+                const documentation = `Insert a value for parameter "${param.nameValue.unquotedValue}" from template file "${path.basename(this._associatedTemplate.documentUri.fsPath)}"`;
                 const detail = (isRequired ? "(required parameter)" : "(optional parameter)")
                     + EOL
                     + EOL

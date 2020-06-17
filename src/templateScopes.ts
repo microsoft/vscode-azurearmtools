@@ -265,6 +265,9 @@ export class NestedTemplateOuterScope extends TemplateScope {
 
     public readonly scopeKind: TemplateScopeKind = TemplateScopeKind.NestedDeploymentWithOuterScope;
 
+    // Shares its members with its parent
+    public readonly hasUniqueParamsVarsAndFunctions: boolean = false;
+
     protected getParameterDefinitions(): IParameterDefinition[] | undefined {
         return this.parentScope.parameterDefinitions;
     }
@@ -279,6 +282,40 @@ export class NestedTemplateOuterScope extends TemplateScope {
 
     protected getResources(): IResource[] | undefined {
         return getResourcesFromObject(this, this.nestedTemplateObject);
+    }
+}
+
+export class LinkedTemplate extends TemplateScope {
+    public constructor(
+        public readonly templateLinkObject: Json.ObjectValue | undefined,
+        // tslint:disable-next-line: variable-name
+        __debugDisplay: string
+    ) {
+        super(
+            templateLinkObject,
+            __debugDisplay
+        );
+    }
+
+    public readonly scopeKind: TemplateScopeKind = TemplateScopeKind.LinkedDeployment;
+
+    protected getParameterDefinitions(): IParameterDefinition[] | undefined {
+        // Not supported yet
+        return undefined;
+    }
+
+    protected getVariableDefinitions(): IVariableDefinition[] | undefined {
+        // Not supported yet
+        return undefined;
+    }
+
+    protected getNamespaceDefinitions(): UserFunctionNamespaceDefinition[] | undefined {
+        // Not supported yet
+        return undefined;
+    }
+
+    protected getResources(): IResource[] | undefined {
+        return undefined;
     }
 }
 
@@ -309,14 +346,16 @@ export function getChildTemplateForResourceObject(
     const resourceTypeLC = resourceObject?.getPropertyValue(templateKeys.resourceType)?.asStringValue
         ?.unquotedValue;
     if (resourceTypeLC?.toLowerCase() === deploymentsResourceTypeLC) {
-        // Get the template property under properties
-        const nestedTemplateObject =
-            resourceObject?.getPropertyValue(templateKeys.properties)?.asObjectValue
-                ?.getPropertyValue(templateKeys.nestedDeploymentTemplateProperty)?.asObjectValue;
+        // Is it a nested or linked template?
+        const propertiesObject = resourceObject?.getPropertyValue(templateKeys.properties)?.asObjectValue;
+        const nestedTemplateObject = propertiesObject
+            ?.getPropertyValue(templateKeys.nestedDeploymentTemplateProperty)?.asObjectValue;
+        const templateName: string = resourceObject?.getPropertyValue(templateKeys.resourceName)?.asStringValue?.unquotedValue
+            ?? '(unnamed)';
+
         if (nestedTemplateObject) {
+            // It's a nested (embedded) template
             const scopeKind = getExpressionScopeKind(resourceObject);
-            const templateName: string = resourceObject?.getPropertyValue(templateKeys.resourceName)?.asStringValue?.unquotedValue
-                ?? '(unnamed template)';
             switch (scopeKind) {
                 case ExpressionScopeKind.outer:
                     return new NestedTemplateOuterScope(parentScope, nestedTemplateObject, `Nested template "${templateName}" with outer scope`);
@@ -324,6 +363,13 @@ export function getChildTemplateForResourceObject(
                     return new NestedTemplateInnerScope(nestedTemplateObject, `Nested template "${templateName}" with inner scope`);
                 default:
                     assertNever(scopeKind);
+            }
+        } else {
+            const templateLinkObject =
+                propertiesObject
+                    ?.getPropertyValue(templateKeys.linkedDeploymentTemplateLink)?.asObjectValue;
+            if (templateLinkObject) {
+                return new LinkedTemplate(templateLinkObject, `Linked template "${templateName}"`);
             }
         }
 

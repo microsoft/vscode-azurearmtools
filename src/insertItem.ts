@@ -4,15 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as assert from "assert";
-import * as fse from 'fs-extra';
-import * as path from "path";
 import * as vscode from "vscode";
 // tslint:disable-next-line:no-duplicate-imports
 import { commands } from "vscode";
-import { IActionContext, IAzureUserInput } from "vscode-azureextensionui";
+import { IActionContext, IAzureQuickPickItem, IAzureUserInput } from "vscode-azureextensionui";
 import { Json, templateKeys } from "../extension.bundle";
-import { assetsPath } from "./constants";
 import { DeploymentTemplate } from "./DeploymentTemplate";
+import { ext } from "./extensionVariables";
+import { ISnippet } from "./ISnippetManager";
 import { TemplateSectionType } from "./TemplateSectionType";
 import { assertNever } from './util/assertNever';
 
@@ -43,43 +42,22 @@ export function getItemType(): QuickPickItem<ItemType>[] {
     return items;
 }
 
-function getResourceSnippets(): vscode.QuickPickItem[] {
-    let items: vscode.QuickPickItem[] = [];
-    let snippetPath = path.join(assetsPath, "armsnippets.jsonc");
-    let content = fse.readFileSync(snippetPath, "utf8");
-    let tree = Json.parse(content);
-    if (!(tree.value instanceof Json.ObjectValue)) {
-        return items;
-    }
-    for (const property of tree.value.properties) {
-        if (isResourceSnippet(property)) {
-            items.push(getQuickPickItem(property.nameValue.unquotedValue));
+async function getResourceSnippets(): Promise<IAzureQuickPickItem<ISnippet>[]> {
+    let items: IAzureQuickPickItem<ISnippet>[] = [];
+    const snippets = await ext.snippetManager.value.getSnippets();
+    for (const snippet of snippets) {
+        if (snippet.context.isResource) {
+            items.push({
+                label: snippet.name,
+                data: snippet
+            });
         }
     }
     return items.sort((a, b) => a.label.localeCompare(b.label));
 }
 
-function isResourceSnippet(snippet: Json.Property): boolean {
-    if (!snippet.value || !(snippet.value instanceof Json.ObjectValue)) {
-        return false;
-    }
-    let body = snippet.value.getProperty("body");
-    if (!body || !(body.value instanceof Json.ArrayValue)) {
-        return false;
-    }
-    for (const row of body.value.elements) {
-        if (!(row instanceof Json.StringValue)) {
-            continue;
-        }
-        if (row.unquotedValue.indexOf("\"Microsoft.") >= 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-export function getQuickPickItem(label: string): vscode.QuickPickItem {
-    return { label: label };
+export function getQuickPickItem(label: string, snippet: ISnippet): IAzureQuickPickItem<ISnippet> {
+    return { label: label, data: snippet };
 }
 
 export function getItemTypeQuickPicks(): QuickPickItem<TemplateSectionType>[] {
@@ -425,11 +403,11 @@ export class InsertItem {
                 prepend = `,\r\n\t\t`;
             }
         }
-        const resource = await this.ui.showQuickPick(getResourceSnippets(), { placeHolder: 'What resource do you want to insert?' });
+        const resource = await this.ui.showQuickPick(await getResourceSnippets(), { placeHolder: 'What resource do you want to insert?' });
         await this.insertText(textEditor, index, prepend);
         let newCursorPosition = this.getCursorPositionForInsertResource(textEditor, index, prepend);
         textEditor.selection = new vscode.Selection(newCursorPosition, newCursorPosition);
-        await commands.executeCommand('editor.action.insertSnippet', { name: resource.label });
+        await commands.executeCommand('editor.action.insertSnippet', { snippet: resource.data.insertText });
         textEditor.revealRange(new vscode.Range(newCursorPosition, newCursorPosition), vscode.TextEditorRevealType.AtTop);
     }
 
@@ -458,7 +436,9 @@ export class InsertItem {
         let parameterName: string;
         let parameters = [];
         do {
-            parameterName = await this.ui.showInputBox({ prompt: "Name of parameter? Leave empty for no more parameters" });
+            const msg = parameters.length === 0 ? "Name of first parameter?" : "Name of next parameter?";
+            const leaveEmpty = "Press 'Enter' if there are no more parameters.";
+            parameterName = await this.ui.showInputBox({ prompt: msg, placeHolder: leaveEmpty });
             if (parameterName !== '') {
                 const parameterType = await this.ui.showQuickPick(getItemType(), { placeHolder: `Type of parameter ${parameterName}?` });
                 parameters.push({

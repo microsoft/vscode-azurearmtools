@@ -63,7 +63,7 @@ suite("Functional parameter file completions", () => {
 
                 // Map template to params
                 if (templateFile) {
-                    await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, paramsFile.uri);
+                    await ext.deploymentFileMapping.value.mapParameterFile(templateFile.uri, paramsFile.uri);
                 }
 
                 // Open params in editor
@@ -124,7 +124,7 @@ suite("Functional parameter file completions", () => {
                     await editor.dispose();
                 }
                 if (templateFile) {
-                    await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, undefined);
+                    await ext.deploymentFileMapping.value.mapParameterFile(templateFile.uri, undefined);
                     templateFile.dispose();
                 }
             }

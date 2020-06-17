@@ -6,11 +6,13 @@
 
 import * as assert from 'assert';
 import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
+import { ScopeKind } from '../extension.bundle';
 import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
-import { templateKeys } from "./constants";
+import { configKeys, templateKeys } from "./constants";
 import { DeploymentDocument, ResolvableCodeLens } from "./DeploymentDocument";
-import { NestedTemplateCodeLen, ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
+import { LinkedTemplateCodeLens, NestedTemplateCodeLen, ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
+import { ext } from './extensionVariables';
 import { Histogram } from "./Histogram";
 import { INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
@@ -19,9 +21,10 @@ import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
 import { ReferenceList } from "./ReferenceList";
 import { isArmSchema } from "./schemas";
 import { TemplatePositionContext } from "./TemplatePositionContext";
-import { TemplateScope } from "./TemplateScope";
+import { TemplateScope, TemplateScopeKind } from "./TemplateScope";
 import { TopLevelTemplateScope } from './templateScopes';
 import * as TLE from "./TLE";
+import { UserFunctionParameterDefinition } from './UserFunctionParameterDefinition';
 import { nonNullValue } from './util/nonNull';
 import { FindReferencesVisitor } from "./visitors/FindReferencesVisitor";
 import { FunctionCountVisitor } from "./visitors/FunctionCountVisitor";
@@ -39,21 +42,23 @@ export class DeploymentTemplate extends DeploymentDocument {
     // A map from all JSON string value nodes to their cached TLE parse results
     private _jsonStringValueToTleParseResultMap: CachedValue<Map<Json.StringValue, TLE.ParseResult>> = new CachedValue<Map<Json.StringValue, TLE.ParseResult>>();
 
+    private _allScopes: CachedValue<TemplateScope[]> = new CachedValue<TemplateScope[]>();
+
     /**
      * Create a new DeploymentTemplate object.
      *
      * @param _documentText The string text of the document.
-     * @param _documentId A unique identifier for this document. Usually this will be a URI to the document.
+     * @param _documentUri A unique identifier for this document. Usually this will be a URI to the document.
      */
-    constructor(documentText: string, documentId: Uri) {
-        super(documentText, documentId);
+    constructor(documentText: string, documentUri: Uri) {
+        super(documentText, documentUri);
     }
 
     public get topLevelScope(): TemplateScope {
         return this._topLevelScope.getOrCacheValue(() =>
             new TopLevelTemplateScope(
                 this.topLevelValue,
-                `Top-level template scope for ${this.documentId}`
+                `Top-level template scope for ${this.documentUri}`
             )
         );
     }
@@ -171,7 +176,8 @@ export class DeploymentTemplate extends DeploymentDocument {
         const unusedParams = this.findUnusedParameters();
         const unusedVars = this.findUnusedVariables();
         const unusedUserFuncs = this.findUnusedUserFunctions();
-        return unusedParams.concat(unusedVars).concat(unusedUserFuncs);
+        const inaccessibleScopeMembers = this.findInaccessibleScopeMembers();
+        return unusedParams.concat(unusedVars).concat(unusedUserFuncs).concat(inaccessibleScopeMembers);
     }
 
     // CONSIDER: PERF: findUnused{Variables,Parameters,findUnusedNamespacesAndUserFunctions} are very inefficient}
@@ -179,12 +185,13 @@ export class DeploymentTemplate extends DeploymentDocument {
     private findUnusedVariables(): language.Issue[] {
         const warnings: language.Issue[] = [];
 
-        for (const variableDefinition of this.topLevelScope.variableDefinitions) {
-            // Variables are only supported at the top level
-            const variableReferences: ReferenceList = this.findReferencesToDefinition(variableDefinition);
-            if (variableReferences.length === 1) {
-                warnings.push(
-                    new language.Issue(variableDefinition.nameValue.span, `The variable '${variableDefinition.nameValue.toString()}' is never used.`, language.IssueKind.unusedVar));
+        for (const scope of this.uniqueScopes) {
+            for (const variableDefinition of scope.variableDefinitions) {
+                const variableReferences: ReferenceList = this.findReferencesToDefinition(variableDefinition);
+                if (variableReferences.length === 1) {
+                    warnings.push(
+                        new language.Issue(variableDefinition.nameValue.span, `The variable '${variableDefinition.nameValue.toString()}' is never used.`, language.IssueKind.unusedVar));
+                }
             }
         }
 
@@ -194,32 +201,20 @@ export class DeploymentTemplate extends DeploymentDocument {
     private findUnusedParameters(): language.Issue[] {
         const warnings: language.Issue[] = [];
 
-        // Top-level parameters
-        for (const parameterDefinition of this.topLevelScope.parameterDefinitions) {
-            const parameterReferences: ReferenceList =
-                this.findReferencesToDefinition(parameterDefinition);
-            if (parameterReferences.length === 1) {
-                warnings.push(
-                    new language.Issue(
-                        parameterDefinition.nameValue.span,
-                        `The parameter '${parameterDefinition.nameValue.toString()}' is never used.`,
-                        language.IssueKind.unusedParam));
-            }
-        }
+        for (const scope of this.uniqueScopes) {
+            for (const parameterDefinition of scope.parameterDefinitions) {
+                const parameterReferences: ReferenceList =
+                    this.findReferencesToDefinition(parameterDefinition);
+                if (parameterReferences.length === 1) {
+                    const message = parameterDefinition instanceof UserFunctionParameterDefinition
+                        ? `User-function parameter '${parameterDefinition.nameValue.toString()}' is never used.`
+                        : `The parameter '${parameterDefinition.nameValue.toString()}' is never used.`;
 
-        // User function parameters
-        for (const ns of this.topLevelScope.namespaceDefinitions) {
-            for (const member of ns.members) {
-                for (const parameterDefinition of member.parameterDefinitions) {
-                    const parameterReferences: ReferenceList =
-                        this.findReferencesToDefinition(parameterDefinition);
-                    if (parameterReferences.length === 1) {
-                        warnings.push(
-                            new language.Issue(
-                                parameterDefinition.nameValue.span,
-                                `The parameter '${parameterDefinition.nameValue.toString()}' of function '${member.fullName}' is never used.`,
-                                language.IssueKind.unusedUdfParam));
-                    }
+                    warnings.push(
+                        new language.Issue(
+                            parameterDefinition.nameValue.span,
+                            message,
+                            language.IssueKind.unusedParam));
                 }
             }
         }
@@ -230,23 +225,67 @@ export class DeploymentTemplate extends DeploymentDocument {
     private findUnusedUserFunctions(): language.Issue[] {
         const warnings: language.Issue[] = [];
 
-        // User function parameters
-        for (const ns of this.topLevelScope.namespaceDefinitions) {
-            for (const member of ns.members) {
-                const userFuncReferences: ReferenceList =
-                    this.findReferencesToDefinition(member);
-                if (userFuncReferences.length === 1) {
-                    warnings.push(
-                        new language.Issue(
-                            member.nameValue.span,
-                            `The user-defined function '${member.fullName}' is never used.`,
-                            language.IssueKind.unusedUdf));
+        for (const scope of this.uniqueScopes) {
+            for (const ns of scope.namespaceDefinitions) {
+                for (const member of ns.members) {
+                    const userFuncReferences: ReferenceList =
+                        this.findReferencesToDefinition(member);
+                    if (userFuncReferences.length === 1) {
+                        warnings.push(
+                            new language.Issue(
+                                member.nameValue.span,
+                                `The user-defined function '${member.fullName}' is never used.`,
+                                language.IssueKind.unusedUdf));
+                    }
                 }
             }
         }
 
         return warnings;
     }
+
+    /**
+     * Finds parameters/variables/functions inside outer-scoped nested templates, which
+     * by definition can't be accessed in any expressions.
+     */
+    private findInaccessibleScopeMembers(): language.Issue[] {
+        const warnings: language.Issue[] = [];
+        const warningMessage =
+            // tslint:disable-next-line: prefer-template
+            'Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. '
+            + `If you intended inner scope, set properties.nestedDeploymentExprEvalOptions.scope to 'inner'.`;
+
+        for (const scope of this.allScopes.filter(ts => ts.scopeKind === TemplateScopeKind.NestedDeploymentWithOuterScope)) {
+            const parameters = getPropertyValueOfScope(templateKeys.parameters);
+            // tslint:disable-next-line: strict-boolean-expressions
+            if (!!parameters?.asObjectValue?.properties?.length) {
+                warnings.push(
+                    new language.Issue(parameters.span, warningMessage, language.IssueKind.inaccessibleNestedScopeMembers));
+            }
+
+            const variables = getPropertyValueOfScope(templateKeys.variables);
+            // tslint:disable-next-line: strict-boolean-expressions
+            if (!!variables?.asObjectValue?.properties.length) {
+                warnings.push(
+                    new language.Issue(variables.span, warningMessage, language.IssueKind.inaccessibleNestedScopeMembers));
+            }
+
+            const namespaces = getPropertyValueOfScope(templateKeys.functions);
+            // tslint:disable-next-line: strict-boolean-expressions
+            if (!!namespaces?.asArrayValue?.elements.length) {
+                warnings.push(
+                    new language.Issue(namespaces.span, warningMessage, language.IssueKind.inaccessibleNestedScopeMembers));
+            }
+
+            function getPropertyValueOfScope(propertyName: string): Json.Value | undefined {
+                return scope.rootObject?.getProperty(propertyName)?.value;
+            }
+        }
+
+        return warnings;
+    }
+
+    //#region Telemetry
 
     /**
      * Gets info about TLE function usage, useful for telemetry
@@ -330,6 +369,21 @@ export class DeploymentTemplate extends DeploymentDocument {
         return count;
     }
 
+    public getChildTemplatesInfo(): {
+        nestedOuterCount: number;
+        nestedInnerCount: number;
+        linkedTemplatesCount: number;
+    } {
+        const scopes = this.allScopes;
+        return {
+            nestedOuterCount: scopes.filter(s => s.scopeKind === TemplateScopeKind.NestedDeploymentWithOuterScope).length,
+            nestedInnerCount: scopes.filter(s => s.scopeKind === TemplateScopeKind.NestedDeploymentWithInnerScope).length,
+            linkedTemplatesCount: scopes.filter(s => s.scopeKind === TemplateScopeKind.LinkedDeployment).length
+        };
+    }
+
+    //#endregion
+
     public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentParameters | undefined): TemplatePositionContext {
         return TemplatePositionContext.fromDocumentLineAndColumnIndexes(this, documentLineIndex, documentColumnIndex, associatedTemplate);
     }
@@ -401,10 +455,14 @@ export class DeploymentTemplate extends DeploymentDocument {
 
     public getCodeLenses(hasAssociatedParameters: boolean): ResolvableCodeLens[] {
         return this.getParameterCodeLenses(hasAssociatedParameters)
-            .concat(this.getNestedTemplateCodeLenses());
+            .concat(this.getChildTemplateCodeLenses());
     }
 
     private getParameterCodeLenses(hasAssociatedParameters: boolean): ResolvableCodeLens[] {
+        if (!ext.configuration.get<boolean>(configKeys.codeLensForParameters)) {
+            return [];
+        }
+
         const lenses: ResolvableCodeLens[] = [];
 
         // Code lens for the "parameters" section itself - indicates currently-selected parameter file and allows
@@ -424,14 +482,23 @@ export class DeploymentTemplate extends DeploymentDocument {
         return lenses;
     }
 
-    private getNestedTemplateCodeLenses(): ResolvableCodeLens[] {
+    private getChildTemplateCodeLenses(): ResolvableCodeLens[] {
         const lenses: ResolvableCodeLens[] = [];
-        const allScopes = this.findAllScopes();
-        for (let scope of allScopes) {
+        for (let scope of this.allScopes) {
             if (scope.rootObject) {
-                const lens = NestedTemplateCodeLen.create(this, scope.rootObject.span, scope.scopeKind);
-                if (lens) {
-                    lenses.push(lens);
+                switch (scope.scopeKind) {
+                    case ScopeKind.NestedDeploymentWithInnerScope:
+                    case ScopeKind.NestedDeploymentWithOuterScope:
+                        const lens = NestedTemplateCodeLen.create(this, scope.rootObject.span, scope.scopeKind);
+                        if (lens) {
+                            lenses.push(lens);
+                        }
+                        break;
+                    case ScopeKind.LinkedDeployment:
+                        lenses.push(LinkedTemplateCodeLens.create(this, scope.rootObject.span));
+                        break;
+                    default:
+                        break;
                 }
             }
         }
@@ -439,20 +506,30 @@ export class DeploymentTemplate extends DeploymentDocument {
         return lenses;
     }
 
-    public findAllScopes(): TemplateScope[] {
-        const allScopes: TemplateScope[] = [];
-        traverse(this.topLevelScope);
-        return allScopes;
+    /**
+     * Returns all scopes which actually host unique members
+     */
+    public get uniqueScopes(): TemplateScope[] {
+        return this.allScopes.filter(scope => scope.hasUniqueParamsVarsAndFunctions);
+    }
 
-        function traverse(scope: TemplateScope | undefined): void {
-            for (let childScope of scope?.childScopes ?? []) {
-                if (allScopes.indexOf(childScope) < 0) {
-                    allScopes.push(childScope);
+    /**
+     * Returns all scopes, including those that just repeat their parents' scopes
+     */
+    public get allScopes(): TemplateScope[] {
+        return this._allScopes.getOrCacheValue(() => {
+            let scopes: TemplateScope[] = [this.topLevelScope];
+            traverse(this.topLevelScope);
+            return scopes;
+
+            function traverse(scope: TemplateScope | undefined): void {
+                for (let childScope of scope?.childScopes ?? []) {
+                    assert(scopes.indexOf(childScope) < 0, "Already in array");
+                    scopes.push(childScope);
+                    traverse(childScope);
                 }
-
-                traverse(childScope);
             }
-        }
+        });
     }
 }
 
@@ -462,12 +539,12 @@ class StringParseAndScopeAssignmentVisitor extends Json.Visitor {
     private readonly _jsonStringValueToTleParseResultMap: Map<Json.StringValue, TLE.ParseResult> = new Map<Json.StringValue, TLE.ParseResult>();
     private readonly _scopeStack: TemplateScope[] = [];
     private _currentScope: TemplateScope;
-    private readonly _allScopesInTemplate: TemplateScope[];
+    private readonly _uniqueTemplateScopes: TemplateScope[] = [];
 
     public constructor(private readonly _dt: DeploymentTemplate) {
         super();
         this._currentScope = _dt.topLevelScope;
-        this._allScopesInTemplate = _dt.findAllScopes();
+        this._uniqueTemplateScopes = _dt.uniqueScopes;
     }
 
     public static createParsedStringMap(dt: DeploymentTemplate): Map<Json.StringValue, TLE.ParseResult> {
@@ -489,7 +566,7 @@ class StringParseAndScopeAssignmentVisitor extends Json.Visitor {
 
     public visitObjectValue(jsonObjectValue: Json.ObjectValue): void {
         const currentScope = this._currentScope;
-        const newScope = this._allScopesInTemplate.find(scope => scope.rootObject === jsonObjectValue);
+        const newScope = this._uniqueTemplateScopes.find(scope => scope.rootObject === jsonObjectValue);
         if (newScope) {
             this._scopeStack.push(this._currentScope);
             this._currentScope = newScope;

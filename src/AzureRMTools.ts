@@ -36,6 +36,7 @@ import { RenameCodeActionProvider } from "./RenameCodeActionProvider";
 import { resetGlobalState } from "./resetGlobalState";
 import { getPreferredSchema } from "./schemas";
 import { getFunctionParamUsage } from "./signatureFormatting";
+import { SnippetManager } from "./SnippetManager";
 import { getQuickPickItems, sortTemplate } from "./sortTemplate";
 import { Stopwatch } from "./Stopwatch";
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, templateDocumentSelector, templateOrParameterDocumentSelector } from "./supported";
@@ -47,6 +48,7 @@ import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedBuiltinFunctionIssue } from "./UnrecognizedFunctionIssues";
 import { getRenameError } from "./util/getRenameError";
 import { normalizePath } from "./util/normalizePath";
+import { readUtf8FileWithBom } from "./util/readUtf8FileWithBom";
 import { Cancellation } from "./util/throwOnCancel";
 import { onCompletionActivated, toVsCodeCompletionItem } from "./util/toVsCodeCompletionItem";
 import { getVSCodeRangeFromSpan } from "./util/vscodePosition";
@@ -60,7 +62,7 @@ const invalidRenameError = "Only parameters, variables, user namespaces and user
 
 const echoOutputChannelToConsole: boolean = /^(true|1)?$/i.test(process.env.ECHO_OUTPUT_CHANNEL_TO_CONSOLE ?? '');
 
-// This method is called when your extension is activated
+// This method is called when the extension is activated
 // Your extension is activated the very first time the command is executed
 export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
     ext.context = context;
@@ -73,17 +75,40 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
 
     context.subscriptions.push(ext.completionItemsSpy);
 
-    ext.deploymentFileMapping.setValue(new DeploymentFileMapping(ext.configuration));
+    ext.deploymentFileMapping.value = new DeploymentFileMapping(ext.configuration);
+    if (!ext.snippetManager.hasValue) {
+        ext.snippetManager.value = SnippetManager.createDefault();
+    }
 
     registerUIExtensionVariables(ext);
 
     await callWithTelemetryAndErrorHandling('activate', async (actionContext: IActionContext): Promise<void> => {
         actionContext.telemetry.properties.isActivationEvent = 'true';
         actionContext.telemetry.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
-        actionContext.telemetry.properties.autoDetectJsonTemplates = String(vscode.workspace.getConfiguration(configPrefix).get<boolean>(configKeys.autoDetectJsonTemplates));
+
+        recordConfigValuesToTelemetry(actionContext);
 
         context.subscriptions.push(new AzureRMTools(context));
     });
+}
+
+function recordConfigValuesToTelemetry(actionContext: IActionContext): void {
+    const config = ext.configuration;
+    actionContext.telemetry.properties.autoDetectJsonTemplates =
+        String(config.get<boolean>(configKeys.autoDetectJsonTemplates));
+
+    const paramFiles = config.get<unknown[]>(configKeys.parameterFiles);
+    actionContext.telemetry.properties[`${configKeys.parameterFiles}.length`] =
+        String(paramFiles ? Object.keys(paramFiles).length : 0);
+
+    recordConfigValue<boolean>(configKeys.checkForLatestSchema);
+    recordConfigValue<boolean>(configKeys.checkForMatchingParameterFiles);
+    recordConfigValue<boolean>(configKeys.enableCodeLens);
+    recordConfigValue<boolean>(configKeys.codeLensForParameters);
+
+    function recordConfigValue<T>(key: string): void {
+        actionContext.telemetry.properties[key] = String(config.get<T>(key));
+    }
 }
 
 // this method is called when your extension is deactivated
@@ -98,7 +123,7 @@ export class AzureRMTools {
     private readonly _paramsStatusBarItem: vscode.StatusBarItem;
     private _areDeploymentTemplateEventsHookedUp: boolean = false;
     private _diagnosticsVersion: number = 0;
-    private _mapping: DeploymentFileMapping = ext.deploymentFileMapping.getValue();
+    private _mapping: DeploymentFileMapping = ext.deploymentFileMapping.value;
     private _codeLensChangedEmitter: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
 
     // More information can be found about this definition at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
@@ -508,6 +533,11 @@ export class AzureRMTools {
             measurements.extErrorsCount = errorsWarnings.errors.length;
             measurements.extWarnCount = errorsWarnings.warnings.length;
             measurements.linkedParameterFiles = this._mapping.getParameterFile(document.uri) ? 1 : 0;
+
+            const getChildTemplatesInfo = deploymentTemplate.getChildTemplatesInfo();
+            measurements.linkedTemplatesCount = getChildTemplatesInfo.linkedTemplatesCount;
+            measurements.nestedInnerCount = getChildTemplatesInfo.nestedInnerCount;
+            measurements.nestedOuterCount = getChildTemplatesInfo.nestedOuterCount;
         });
 
         this.logFunctionCounts(deploymentTemplate);
@@ -627,7 +657,7 @@ export class AzureRMTools {
         // tslint:disable-next-line: strict-boolean-expressions
         const schemaUri: string | undefined = deploymentTemplate.schemaUri || undefined;
         const preferredSchemaUri: string | undefined = schemaUri && getPreferredSchema(schemaUri);
-        const checkForLatestSchema = !!vscode.workspace.getConfiguration(configPrefix).get<boolean>(configKeys.checkForLatestSchema);
+        const checkForLatestSchema = !!ext.configuration.get<boolean>(configKeys.checkForLatestSchema);
 
         if (preferredSchemaUri && schemaValue) {
             // tslint:disable-next-line: no-floating-promises // Don't wait
@@ -868,7 +898,7 @@ export class AzureRMTools {
                             statusBarText += " $(error) Not found";
                         }
                     } else {
-                        statusBarText = "Select Parameter File...";
+                        statusBarText = "Select/Create Parameter File...";
                     }
 
                     this._paramsStatusBarItem.command = "azurerm-vscode-tools.selectParameterFile";
@@ -1010,12 +1040,16 @@ export class AzureRMTools {
     }
 
     private async onProvideCodeLenses(textDocument: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.CodeLens[] | undefined> {
+        if (!ext.configuration.get<boolean>(configKeys.enableCodeLens)) {
+            return undefined;
+        }
+
         return await callWithTelemetryAndErrorHandling('ProvideCodeLenses', async (actionContext: IActionContext): Promise<vscode.CodeLens[] | undefined> => {
             actionContext.errorHandling.suppressDisplay = true;
             actionContext.telemetry.suppressIfSuccessful = true;
             const doc = this.getOpenedDeploymentDocument(textDocument.uri);
             if (doc) {
-                const hasAssociatedParameters = !!this._mapping.getParameterFile(doc.documentId);
+                const hasAssociatedParameters = !!this._mapping.getParameterFile(doc.documentUri);
                 return doc.getCodeLenses(hasAssociatedParameters);
             }
 
@@ -1029,18 +1063,20 @@ export class AzureRMTools {
 
             if (codeLens instanceof ResolvableCodeLens) {
                 const cancel = new Cancellation(token);
-                const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(codeLens.deploymentDoc.documentId, cancel);
-                if (doc && codeLens.deploymentDoc === doc) {
-                    if (codeLens.resolve(associatedDoc)) {
-                        assert(codeLens.command?.command && codeLens.command.title, "CodeLens wasn't resolved");
-                        return codeLens;
-                    }
+                const { associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(codeLens.deploymentDoc.documentUri, cancel);
+                if (codeLens.resolve(associatedDoc)) {
+                    assert(codeLens.command?.command && codeLens.command.title, "CodeLens wasn't resolved");
+                    return codeLens;
                 }
             } else {
                 assert.fail('Expected ResolvableCodeLens instance');
             }
 
-            return undefined;
+            codeLens.command = {
+                title: '',
+                command: ''
+            };
+            return codeLens;
         });
     }
 
@@ -1085,7 +1121,7 @@ export class AzureRMTools {
                 const triggerCharacter = context.triggerKind === vscode.CompletionTriggerKind.TriggerCharacter
                     ? context.triggerCharacter
                     : undefined;
-                const items: Completion.Item[] = pc.getCompletionItems(triggerCharacter);
+                const items: Completion.Item[] = await pc.getCompletionItems(triggerCharacter);
                 const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c));
                 ext.completionItemsSpy.postCompletionItemsResult(pc.document, items, vsCodeItems);
 
@@ -1199,7 +1235,7 @@ export class AzureRMTools {
         }
 
         // Nope, have to read it from disk
-        const contents = (await fse.readFile(uri.fsPath, { encoding: 'utf8' })).toString();
+        const contents = await readUtf8FileWithBom(uri.fsPath);
         return new DeploymentTemplate(contents, uri);
     }
 
@@ -1215,7 +1251,7 @@ export class AzureRMTools {
         }
 
         // Nope, have to read it from disk
-        const contents = (await fse.readFile(uri.fsPath, { encoding: 'utf8' })).toString();
+        const contents = await readUtf8FileWithBom(uri.fsPath);
         return new DeploymentParameters(contents, uri);
     }
 
@@ -1259,7 +1295,7 @@ export class AzureRMTools {
                     properties.definitionType = refInfo.definition.definitionKind;
 
                     return new vscode.Location(
-                        refInfo.definitionDocument.documentId,
+                        refInfo.definitionDocument.documentUri,
                         getVSCodeRangeFromSpan(refInfo.definitionDocument, refInfo.definition.nameValue.span)
                     );
                 }
@@ -1280,7 +1316,7 @@ export class AzureRMTools {
                     actionContext.telemetry.properties.referenceType = references.kind;
 
                     for (const ref of references.references) {
-                        const locationUri: vscode.Uri = ref.document.documentId;
+                        const locationUri: vscode.Uri = ref.document.documentUri;
                         const referenceRange: vscode.Range = getVSCodeRangeFromSpan(ref.document, ref.span);
                         results.push(new vscode.Location(locationUri, referenceRange));
                     }
@@ -1436,7 +1472,7 @@ export class AzureRMTools {
 
                     for (const ref of referenceList.references) {
                         const referenceRange: vscode.Range = getVSCodeRangeFromSpan(ref.document, ref.span);
-                        result.replace(ref.document.documentId, referenceRange, newName);
+                        result.replace(ref.document.documentUri, referenceRange, newName);
                     }
                 } else {
                     throw new Error(invalidRenameError);

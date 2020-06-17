@@ -10,6 +10,7 @@ import { LanguageClient } from "vscode-languageclient";
 import { CompletionsSpy } from "./CompletionsSpy";
 import { IConfiguration, VsCodeConfiguration } from "./Configuration";
 import { configPrefix, isWebpack } from "./constants";
+import { ISnippetManager } from './ISnippetManager';
 import { LanguageServerState } from "./languageclient/startArmLanguageServer";
 import { DeploymentFileMapping } from "./parameterFiles/DeploymentFileMapping";
 import { JsonOutlineProvider } from "./Treeview";
@@ -28,31 +29,31 @@ class ExtensionVariables {
     private _ui: InitializeBeforeUse<IAzureUserInput> = new InitializeBeforeUse<IAzureUserInput>();
 
     public set context(context: vscode.ExtensionContext) {
-        this._context.setValue(context);
+        this._context.value = context;
     }
     public get context(): vscode.ExtensionContext {
-        return this._context.getValue();
+        return this._context.value;
     }
 
     public set jsonOutlineProvider(context: JsonOutlineProvider) {
-        this._jsonOutlineProvider.setValue(context);
+        this._jsonOutlineProvider.value = context;
     }
     public get jsonOutlineProvider(): JsonOutlineProvider {
-        return this._jsonOutlineProvider.getValue();
+        return this._jsonOutlineProvider.value;
     }
 
     public set outputChannel(outputChannel: IAzExtOutputChannel) {
-        this._outputChannel.setValue(outputChannel);
+        this._outputChannel.value = outputChannel;
     }
     public get outputChannel(): IAzExtOutputChannel {
-        return this._outputChannel.getValue();
+        return this._outputChannel.value;
     }
 
     public set ui(ui: IAzureUserInput) {
-        this._ui.setValue(ui);
+        this._ui.value = ui;
     }
     public get ui(): IAzureUserInput {
-        return this._ui.getValue();
+        return this._ui.value;
     }
 
     public EOL: string = os.EOL;
@@ -69,6 +70,7 @@ class ExtensionVariables {
 
     public readonly completionItemsSpy: CompletionsSpy = new CompletionsSpy();
     public deploymentFileMapping: InitializeBeforeUse<DeploymentFileMapping> = new InitializeBeforeUse<DeploymentFileMapping>();
+    public snippetManager: InitializeBeforeUse<ISnippetManager> = new InitializeBeforeUse<ISnippetManager>();
 }
 
 // tslint:disable-next-line: no-any

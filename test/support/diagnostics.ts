@@ -20,24 +20,24 @@ import { Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument } f
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { parseParametersWithMarkers } from "./parseTemplate";
+import { resolveInTestFolder } from "./resolveInTestFolder";
 import { stringify } from "./stringify";
 import { TempDocument, TempEditor, TempFile } from "./TempFile";
 
 export const diagnosticsTimeout = 2 * 60 * 1000; // CONSIDER: Use this long timeout only for first test, or for suite setup
-export const testFolder = path.join(__dirname, '..', '..', '..', 'test');
 
-export interface Source {
+export interface DiagnosticSource {
     name: string;
 }
-export const sources = {
+export const diagnosticSources = {
     expressions: { name: expressionsDiagnosticsSource },
     schema: { name: 'arm-template (schema)' },
     syntax: { name: 'arm-template (syntax)' },
     template: { name: 'arm-template (validation)' },
 };
 
-function isSourceFromLanguageServer(source: Source): boolean {
-    return source.name !== sources.expressions.name;
+function isSourceFromLanguageServer(source: DiagnosticSource): boolean {
+    return source.name !== diagnosticSources.expressions.name;
 }
 
 export interface IDeploymentParameterDefinition {
@@ -192,11 +192,11 @@ export interface IPartialDeploymentTemplateResource {
 export interface ITestDiagnosticsOptions extends IGetDiagnosticsOptions {
 }
 
-interface IGetDiagnosticsOptions {
+export interface IGetDiagnosticsOptions {
     parameters?: string | Partial<IDeploymentParametersFile>;
     parametersFile?: string;
-    includeSources?: Source[]; // Error sources to include in the comparison - defaults to all
-    ignoreSources?: Source[];  // Error sources to ignore in the comparison - defaults to ignoring none
+    includeSources?: DiagnosticSource[]; // Error sources to include in the comparison - defaults to all
+    ignoreSources?: DiagnosticSource[];  // Error sources to ignore in the comparison - defaults to ignoring none
     includeRange?: boolean;    // defaults to false - whether to include the error range in the results for comparison (if true, ignored when expected messages don't have ranges)
     search?: RegExp;           // Run a replacement using this regex and replacement on the file/contents before testing for errors
     replace?: string;          // Run a replacement using this regex and replacement on the file/contents before testing for errors
@@ -225,7 +225,7 @@ export async function getDiagnosticsForDocument(
     let timer: NodeJS.Timer | undefined;
 
     // Default to all sources
-    let filterSources: Source[] = Array.from(Object.values(sources));
+    let filterSources: DiagnosticSource[] = Array.from(Object.values(diagnosticSources));
 
     if (options.includeSources) {
         filterSources = filterSources.filter(s => options.includeSources!.find(s2 => s2.name === s.name));
@@ -361,7 +361,7 @@ export async function getDiagnosticsForTemplate(
         if (typeof templateContentsOrFileName === 'string') {
             if (!!templateContentsOrFileName.match(/\.jsonc?$/)) {
                 // It's a filename
-                let sourcePath = path.join(testFolder, templateContentsOrFileName);
+                let sourcePath = resolveInTestFolder(templateContentsOrFileName);
                 templateContents = fs.readFileSync(sourcePath).toString();
                 tempPathSuffix = path.basename(templateContentsOrFileName, path.extname(templateContentsOrFileName));
             } else {
@@ -393,12 +393,12 @@ export async function getDiagnosticsForTemplate(
                 const { unmarkedText: unmarkedParams } = await parseParametersWithMarkers(options.parameters);
                 paramsFile = new TempFile(unmarkedParams);
             } else {
-                const absPath = path.join(testFolder, options.parametersFile!);
-                paramsFile = TempFile.fromExistingFile(absPath);
+                const absPath = resolveInTestFolder(options.parametersFile!);
+                paramsFile = await TempFile.fromExistingFile(absPath);
             }
 
             // Map template to params
-            await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, paramsFile.uri);
+            await ext.deploymentFileMapping.value.mapParameterFile(templateFile.uri, paramsFile.uri);
         }
 
         editor = new TempEditor(document);
@@ -416,7 +416,7 @@ export async function getDiagnosticsForTemplate(
 
         if (templateFile) {
             // Unmap template file
-            await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, undefined);
+            await ext.deploymentFileMapping.value.mapParameterFile(templateFile.uri, undefined);
             templateFile.dispose();
         }
         if (paramsFile) {

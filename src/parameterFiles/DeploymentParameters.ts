@@ -32,10 +32,10 @@ export class DeploymentParameters extends DeploymentDocument {
      * Create a new DeploymentParameters instance
      *
      * @param _documentText The string text of the document.
-     * @param _documentId A unique identifier for this document. Usually this will be a URI to the document.
+     * @param _documentUri A unique identifier for this document. Usually this will be a URI to the document.
      */
-    constructor(documentText: string, documentId: Uri) {
-        super(documentText, documentId);
+    constructor(documentText: string, documentUri: Uri) {
+        super(documentText, documentUri);
     }
 
     public hasParametersUri(): boolean {
@@ -126,7 +126,7 @@ export class DeploymentParameters extends DeploymentDocument {
                         command: 'azurerm-vscode-tools.codeAction.addMissingRequiredParameters',
                         title: action.title,
                         arguments: [
-                            this.documentId
+                            this.documentUri
                         ]
                     };
                     actions.push(action);
@@ -139,7 +139,7 @@ export class DeploymentParameters extends DeploymentDocument {
                         command: 'azurerm-vscode-tools.codeAction.addAllMissingParameters',
                         title: action.title,
                         arguments: [
-                            this.documentId
+                            this.documentUri
                         ]
                     };
                     actions.push(action);
