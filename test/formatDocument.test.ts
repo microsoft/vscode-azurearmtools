@@ -89,7 +89,12 @@ suite("Format document", function (this: ISuiteCallbackContext): void {
         testFormat('templates/format-me.jsonc', 'templates/format-me.jsonc', 'templates/format-me.expected.full.jsonc');
         testFormat('format twice', 'templates/format-me.expected.full.jsonc', 'templates/format-me.expected.full.jsonc');
         testFormat('bad syntax', 'This is a bad json file', 'This is a bad json file');
-        testFormat('{}', '{}', '{\n}');
+
+        suite("Don't force expand or collapse empty objects", () => {
+            testFormat('{}', '{}', '{}');
+            testFormat('{\n}', '{\n}', '{\n}');
+            testFormat('{\r\n}', '{\r\n}', '{\r\n}');
+        });
 
         // tslint:disable-next-line: no-suspicious-comment
         // TODO: Currently fails due to https://dev.azure.com/devdiv/DevDiv/_workitems/edit/892851
