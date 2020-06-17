@@ -42,7 +42,7 @@ suite("Acceptance validation tests (all sources)", () => {
 
             // Unrelated errors:
             `Warning: For full schema validation, consider updating the value to one of the following: \"2016-05-15\". It is possible that the current resource version is valid but that a schema has not been generated. For more information see https://aka.ms/arm-tools-apiversion. (arm-template (schema)) [240,12-240,24]`,
-            `Warning: Value must conform to exactly one of the associated schemas${EOL}|   For full schema validation, consider updating the value to one of the following: \"2016-12-01\". It is possible that the current resource version is valid but that a schema has not been generated. For more information see https://aka.ms/arm-tools-apiversion. at #/resources/6/properties/template/resources/1/apiVersion${EOL}|   or${EOL}|   Value must be one of the following types: string${EOL}|   For full schema validation, consider updating the value to one of the following: \"2016-12-01\". It is possible that the current resource version is valid but that a schema has not been generated. For more information see https://aka.ms/arm-tools-apiversion. at #/resources/6/properties/template/resources/1/apiVersion (arm-template (schema)) [273,12-273,24]`,
+            `Warning: For full schema validation, consider updating the value to one of the following: \"2016-12-01\". It is possible that the current resource version is valid but that a schema has not been generated. For more information see https://aka.ms/arm-tools-apiversion. (arm-template (schema)) [293,28-293,40]`
         ]);
 
     createAcceptanceTest(
