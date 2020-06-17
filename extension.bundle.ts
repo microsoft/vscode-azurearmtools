@@ -49,6 +49,7 @@ export { DefinitionKind, INamedDefinition } from "./src/INamedDefinition";
 export { IncorrectArgumentsCountIssue } from "./src/IncorrectArgumentsCountIssue";
 export { InsertItem } from "./src/insertItem";
 export { IParameterDefinition } from "./src/IParameterDefinition";
+export { ISnippetManager } from './src/ISnippetManager';
 export * from "./src/Language";
 export { LanguageServerState } from "./src/languageclient/startArmLanguageServer";
 export { ParameterDefinition } from "./src/ParameterDefinition";
@@ -61,6 +62,7 @@ export { ParameterValueDefinition } from "./src/parameterFiles/ParameterValueDef
 export { IReferenceSite, PositionContext, ReferenceSiteKind } from "./src/PositionContext";
 export { ReferenceList } from "./src/ReferenceList";
 export { containsArmSchema, getPreferredSchema, isArmSchema } from './src/schemas';
+export { SnippetManager } from './src/SnippetManager';
 export * from "./src/survey";
 export { TemplatePositionContext } from "./src/TemplatePositionContext";
 export { TemplateScope, TemplateScopeKind as ScopeKind } from "./src/TemplateScope";

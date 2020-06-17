@@ -33,9 +33,15 @@ export function getEventPromise<T>(
 
             await delay(timeout);
             if (!completed) {
-                reject(new Error(`Timed out waiting for event "${eventName}"`));
+                reject(new TimeoutError(`Timed out waiting for event "${eventName}"`));
             }
         });
+}
+
+export class TimeoutError extends Error {
+    public constructor(message: string) {
+        super(message);
+    }
 }
 
 export function getDocumentChangedPromise(document: TextDocument, timeout: number = defaultTimeout): Promise<string> {

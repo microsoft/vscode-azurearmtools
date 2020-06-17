@@ -26,7 +26,7 @@ export class UseRealFunctionMetadata implements ITestPreparation {
     public pretest(this: ITestCallbackContext): ITestPreparationResult {
         useRealFunctionMetadata();
         return {
-            postTest: useTestFunctionMetadata
+            postTestActions: useTestFunctionMetadata
         };
     }
 }

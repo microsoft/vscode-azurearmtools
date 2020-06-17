@@ -76,10 +76,6 @@
         ],
         "snippets": [
             {
-                "language": "arm-template",
-                "path": "./assets/armsnippets.jsonc"
-            },
-            {
                 "language": "json",
                 "path": "./assets/jsonsnippets.jsonc"
             },

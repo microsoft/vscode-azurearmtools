@@ -15,7 +15,8 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
 
     const vscodeItem = new vscode.CompletionItem(item.label);
     vscodeItem.range = range;
-    vscodeItem.insertText = new vscode.SnippetString(item.insertText);
+    const insertText = item.insertText;
+    vscodeItem.insertText = new vscode.SnippetString(insertText);
     vscodeItem.detail = item.detail;
     vscodeItem.documentation = item.documention;
     vscodeItem.commitCharacters = item.commitCharacters;
@@ -54,6 +55,10 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
         case Completion.CompletionKind.DtResourceIdResType:
         case Completion.CompletionKind.DtResourceIdResName:
             vscodeItem.kind = vscode.CompletionItemKind.Reference;
+            break;
+
+        case Completion.CompletionKind.Snippet:
+            vscodeItem.kind = vscode.CompletionItemKind.Snippet;
             break;
 
         default:

@@ -42,7 +42,7 @@ suite("Parameter file completions", () => {
             }
 
             const pc = dp.getContextFromDocumentCharacterIndex(cursorIndex, dt);
-            const completions = pc.getCompletionItems("");
+            const completions = await pc.getCompletionItems("");
 
             const completionNames = completions.map(c => c.label).sort();
             const completionInserts = completions.map(c => c.insertText).sort();

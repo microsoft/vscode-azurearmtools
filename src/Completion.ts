@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { MarkdownString } from "vscode";
+import * as vscode from 'vscode';
 import { IFunctionMetadata } from "./IFunctionMetadata";
 import { IParameterDefinition } from "./IParameterDefinition";
 import * as language from "./Language";
@@ -18,7 +18,7 @@ export class Item {
     public readonly span: language.Span;
     public readonly kind: CompletionKind;
     public readonly detail: string | undefined;
-    public readonly documention: string | MarkdownString | undefined;
+    public readonly documention: string | vscode.MarkdownString | undefined;
     public readonly snippetName: string | undefined;
     public readonly additionalEdits: { span: language.Span; insertText: string }[] | undefined;
     public readonly sortText: string | undefined;
@@ -29,6 +29,9 @@ export class Item {
 
     constructor(
         options: {
+            /**
+             * Main text to display in the completion list
+             */
             label: string;
             insertText: string;
             span: language.Span;
@@ -42,7 +45,10 @@ export class Item {
             /**
              * A human-readable string that represents a doc-comment.
              */
-            documentation?: string | MarkdownString;
+            documentation?: string | vscode.MarkdownString;
+            /**
+             * The snippet name if this is a snippet
+             */
             snippetName?: string;
             additionalEdits?: { span: language.Span; insertText: string }[];
             /**
@@ -179,5 +185,8 @@ export enum CompletionKind {
 
     // Parameter file completions
     DpPropertyValue = "DpPropertyValue", // Parameter from the template file
-    DpNewPropertyValue = "DpNewPropertyValue" // New, unnamed parameter
+    DpNewPropertyValue = "DpNewPropertyValue", // New, unnamed parameter
+
+    // Snippet
+    Snippet = "Snippet",
 }

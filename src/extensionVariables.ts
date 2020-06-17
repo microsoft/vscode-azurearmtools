@@ -10,6 +10,7 @@ import { LanguageClient } from "vscode-languageclient";
 import { CompletionsSpy } from "./CompletionsSpy";
 import { IConfiguration, VsCodeConfiguration } from "./Configuration";
 import { configPrefix, isWebpack } from "./constants";
+import { ISnippetManager } from './ISnippetManager';
 import { LanguageServerState } from "./languageclient/startArmLanguageServer";
 import { DeploymentFileMapping } from "./parameterFiles/DeploymentFileMapping";
 import { JsonOutlineProvider } from "./Treeview";
@@ -69,6 +70,7 @@ class ExtensionVariables {
 
     public readonly completionItemsSpy: CompletionsSpy = new CompletionsSpy();
     public deploymentFileMapping: InitializeBeforeUse<DeploymentFileMapping> = new InitializeBeforeUse<DeploymentFileMapping>();
+    public snippetManager: InitializeBeforeUse<ISnippetManager> = new InitializeBeforeUse<ISnippetManager>();
 }
 
 // tslint:disable-next-line: no-any
