@@ -115,7 +115,7 @@ export abstract class DeploymentDocument {
      * Get the maximum column index for the provided line. For the last line in the file,
      * the maximum column index is equal to the line length. For every other line in the file,
      * the maximum column index is less than the line length (because line length includes
-     * the LF/CRLF?).
+     * the CR/LF terminating characters, but the last line doesn't).
      */
     public getMaxColumnIndex(lineIndex: number): number {
         return this._jsonParseResult.getMaxColumnIndex(lineIndex);

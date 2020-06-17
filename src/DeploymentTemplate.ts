@@ -374,7 +374,7 @@ export class DeploymentTemplate extends DeploymentDocument {
         nestedInnerCount: number;
         linkedTemplatesCount: number;
     } {
-        const scopes = this.findAllScopes();
+        const scopes = this.allScopes;
         return {
             nestedOuterCount: scopes.filter(s => s.scopeKind === TemplateScopeKind.NestedDeploymentWithOuterScope).length,
             nestedInnerCount: scopes.filter(s => s.scopeKind === TemplateScopeKind.NestedDeploymentWithInnerScope).length,

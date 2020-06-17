@@ -5,6 +5,7 @@
 
 // tslint:disable:no-unsafe-any no-console prefer-template no-implicit-dependencies export-name
 
+import * as assert from 'assert';
 import * as cp from 'child_process';
 import { File } from 'decompress';
 import * as fse from 'fs-extra';
@@ -18,7 +19,6 @@ import * as shelljs from 'shelljs';
 import { Stream } from 'stream';
 import { gulp_webpack } from 'vscode-azureextensiondev';
 import { langServerDotnetVersion, languageServerFolderName } from './src/constants';
-import { assert } from './src/fixed_assert';
 import { getTempFilePath } from './test/support/getTempFilePath';
 
 // tslint:disable:no-require-imports

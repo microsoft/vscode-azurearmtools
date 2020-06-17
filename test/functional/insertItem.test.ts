@@ -15,6 +15,7 @@ import { window, workspace } from "vscode";
 import { IActionContext, IAzureUserInput, PromptResult } from 'vscode-azureextensionui';
 import { DeploymentTemplate, InsertItem, TemplateSectionType } from '../../extension.bundle';
 import { getTempFilePath } from "../support/getTempFilePath";
+import { testWithRealSnippets } from '../support/TestSnippets';
 
 suite("InsertItem", async (): Promise<void> => {
     function assertTemplate(actual: String, expected: String, textEditor: vscode.TextEditor, ignoreWhiteSpace: boolean = false): void {
@@ -38,22 +39,22 @@ suite("InsertItem", async (): Promise<void> => {
     }
 
     function testInsertItem(template: string, expected: String, action: (insertItem: InsertItem, deploymentTemplate: DeploymentTemplate, textEditor: vscode.TextEditor) => Promise<void>, showInputBox: string[], textToInsert: string = '', ignoreWhiteSpace: boolean = false): void {
-        test("Tabs CRLF", async () => {
+        testWithRealSnippets("Tabs CRLF", async () => {
             await testInsertItemWithSettings(template, expected, false, 4, true, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
-        test("Spaces CRLF", async () => {
+        testWithRealSnippets("Spaces CRLF", async () => {
             await testInsertItemWithSettings(template, expected, true, 4, true, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
-        test("Spaces (2) CRLF", async () => {
+        testWithRealSnippets("Spaces (2) CRLF", async () => {
             await testInsertItemWithSettings(template, expected, true, 2, true, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
-        test("Spaces LF", async () => {
+        testWithRealSnippets("Spaces LF", async () => {
             await testInsertItemWithSettings(template, expected, true, 4, false, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
-        test("Tabs LF", async () => {
+        testWithRealSnippets("Tabs LF", async () => {
             await testInsertItemWithSettings(template, expected, false, 4, false, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
-        test("Spaces (2) LF", async () => {
+        testWithRealSnippets("Spaces (2) LF", async () => {
             await testInsertItemWithSettings(template, expected, true, 2, false, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
     }

@@ -85,7 +85,7 @@ export class ParametersPositionContext extends PositionContext {
         return refInfo ? this.document.findReferencesToDefinition(refInfo.definition) : undefined;
     }
 
-    public getCompletionItems(triggerCharacter: string | undefined): Completion.Item[] {
+    public async getCompletionItems(triggerCharacter: string | undefined): Promise<Completion.Item[]> {
         let completions: Completion.Item[] = [];
 
         if ((!triggerCharacter || triggerCharacter === '"') && this.canAddPropertyHere) {

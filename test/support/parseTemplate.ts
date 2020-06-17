@@ -20,6 +20,7 @@ export async function parseTemplate(
     options?: {
         fromFile?: boolean; // if true, template is a path
         ignoreWarnings?: boolean;
+        ignoreBang?: boolean;
         includeDiagnosticLineNumbers?: boolean;
         replacements?: { [key: string]: string | { [key: string]: unknown } };
     }
