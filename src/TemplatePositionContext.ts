@@ -189,10 +189,17 @@ export class TemplatePositionContext extends PositionContext {
 
                 return [];
             } else {
-                // No string at this location, so we ask the snippet manager
-                // for valid snippet completions
-                let replacementSpan = this.getJsonReplacementSpan() ?? this.emptySpanAtDocumentCharacterIndex;
-                return await ext.snippetManager.value.getSnippetsAsCompletionItems(replacementSpan, triggerCharacter);
+                // No string at this location, so it might be a good place for snippet completions
+
+                // Until we add more context intelligence, just bring up snippets on the space
+                // character or when manually triggered by the user
+                if (triggerCharacter === ' ' || triggerCharacter === undefined) {
+                    // Show snippets
+                    let replacementSpan = this.getJsonReplacementSpan() ?? this.emptySpanAtDocumentCharacterIndex;
+                    return await ext.snippetManager.value.getSnippetsAsCompletionItems(replacementSpan, triggerCharacter);
+                }
+
+                return [];
             }
         }
 
