@@ -50,7 +50,7 @@ export interface IReferenceSite {
 }
 
 /**
- * (Abstract base clss) Represents a position inside the snapshot of a deployment file, plus all related information
+ * (Abstract base class) Represents a position inside the snapshot of a deployment file, plus all related information
  * that can be parsed and analyzed about it from that position.
  */
 export abstract class PositionContext {
