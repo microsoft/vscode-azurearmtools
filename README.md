@@ -24,21 +24,21 @@ Snippets are used to create basic templates and add elements such as parameters,
 
 When in an empty JSON file, typing `arm` produces a list of scaffolding snippets. These snippets can be used to create an empty template for any ARM deployment scope (Tenant, Subscription, Management Group, and Resource Group).
 
-![](./images/json-snippets.png)
+![Image showing the arm template scaffolding snippet](./images/json-snippets.png)
 
 Notice that adding scaffolding for an ARM template changes the Visual Studio Code language mode to *Azure Resource Manager Templates*.
 
-![](./images/arm-template-language.png)
+![Image showing that the language type has changed to Azure Resource Manager Template](./images/arm-template-language.png)
 
 ### Add Azure resource to an ARM template
 
 Once you are working in an ARM template, placing your cursor in the resource and typing `arm` produces a list of 70+ snippets for Azure resources. Selecting a snippet adds an instance of the resource type to the ARM template.
 
-![](./images/arm-snippets.png)
+![Image showing a storage account being added with a snippet](./images/arm-snippets.png)
 
 Each snippet includes tab stops to help navigate through commonly modified configurations. Press the `tab` key to navigate to the next stop, and `shift` + `tab` to navigate to the previous stop. As seen in the following example, some stops are pre-populated with a list of common values for quick selection.
 
-![](./images/tab-stops.png)
+![Image showing snippet tab stops with pre-populated parameter values](./images/tab-stops.png)
 
 ### Snippet Reference
 
@@ -61,19 +61,19 @@ The following table lists the available ARM Tools snippets.
 
 The ARM Tools extension uses Azure schemas to provide resource completion and validation. These schemas help you verify that Azure resources are configured correctly before deployment time.
 
-### Completions
+### Schema Completions
 
 Entering double quotes `""` or selecting `ctrl` + `space` while the cursor is in a resource declaration provides a list of potential properties and property values for each Azure resource.
 
 In the following example, the potential values for an Azure Storage account tier are returned from the Azure Storage schema.
 
-![](./images/completion.png)
+![Image showing a list of storage account tier values returned from the storage Azure schema](./images/completion.png)
 
-### Validation
+### Schema Validation
 
 If an invalid property or property value is specified, a validation warning is thrown. In the following example, an invalid value is provided for the storage account tier (line 19). Notice that the warning message includes a list of valid values.
 
-![](./images/schema-validation.png)
+![Image showing a schema validation error](./images/schema-validation.png)
 
 ## Parameter files
 
@@ -83,79 +83,79 @@ Associating a parameter file with an ARM template enables full validation across
 
 To create a new parameter file from an existing template, click on the code lense text `**Select or create a parameter file to enable full validation..**.
 
-![](./images/create-parameter-file.png)
+![Image showing the code lense for creating a parameter file association](./images/create-parameter-file.png)
 
 Select **New** from the context menu.
 
-![](./images/create-parameter-file-2.png)
+![Image showing the parameter file creation options (none, new, and browse)](./images/create-parameter-file-2.png)
 
 Selecting **All parameters** adds every parameter from the template into the new parameter file. Selecting **Only required parameters** adds only parameters that do not have a default value specified in the template file.
 
-![](./images/create-parameter-file-3.png)
+![Image showing options for adding parameters for parameter file (All parameters, only required parameters)](./images/create-parameter-file-3.png)
 
 Select a name and location for the parameter file.
 
-![](./images/create-parameter-file-4.png)
+![Image showing a file save as dialog box](./images/create-parameter-file-4.png)
 
 Once done, a parameter file has been created. Where needed, remove the comment indicating that a parameter value is needed and add a parameter value.
 
-![](./images/parameter-file.png)
+![Image showing new parameter file](./images/parameter-file.png)
 
 Also, notice that on the template file that the code lense text has been updated to reflect the current parameter file association.
 
-![](./images/code-lense.png)
+![Image showing that the parameter code lens has been updated to reflect associated parameter file](./images/code-lense.png)
 
 ### Associate an existing parameter file
 
 To create an association with an existing parameter file, click on the code lense text `**Select or create a parameter file to enable full validation..**.
 
-![](./images/create-parameter-file.png)
+![Image showing the code lense for creating a parameter file association](./images/create-parameter-file.png)
 
 Select **Browse** from the context menu and then select the parameter file.
 
-![](./images/create-parameter-file-2.png)
+![Image showing the parameter file creation options (none, new, and browse)](./images/create-parameter-file-2.png)
 
 ### Parameter validation
 
 Once a parameter file has been associated with a template, the extension provides parameter validation across both files. In the following example, a parameter is specified with a set of allowed values. In the parameter file, a value is specified that is not part of the allowed values list. Because of this, the extension produces an error.
 
-![](./images/param-file-validation.png)
+![Image showing a parameter validation issue](./images/param-file-validation.png)
 
 ### Add missing parameters
 
 To add missing parameters to an existing parameter file, ensure that an association has been created, select `parameters`, and then click the light bulb icon.
 
-![](./images/missing-params-one.png)
+![Image showing the light bulb helper for adding missing parameters](./images/missing-params-one.png)
 
 Select the option to add only required or all missing parameters.
 
-![](./images/missing-params-two.png)
+![Image showing missing parameter options (Add missing required parameters, Add all missing parameters)](./images/missing-params-two.png)
 
 Enter a value for the added parameters and also remove the 'TODO' comment.
 
-![](./images/missing-params-three.png)
+![Image showing parameter file after missing parameters have been added](./images/missing-params-three.png)
 
 ### Find all parameter references
 
 Right-click on a parameter name and select **Go to References**. Double-clicking on any reference moves your cursor to the reference location.
 
-![](./images/parameter-references.png)
+![Image showing the go to reference user interface](./images/parameter-references.png)
 
 ### Rename a parameter
 
 Right-click on the parameter name and select **Rename Symbol**. This action renames the parameter and all template references to the parameter.
 
-![](./images/rename-parameter.png)
+![Image showing the rename parameter dialoug](./images/rename-parameter.png)
 
 ### Remove or update parameter file association
 
 Click on the code lense option for changing a parameter association.
 
-![](./images/undo-change-mapping.png)
+![Image showing the code lense for creating a parameter file association](./images/undo-change-mapping.png)
 
 Select a new parameter file or create a new parameter file to update the association. Select **None** to remove the parameter file association.
 
-![](./images/undo-change-mapping-two.png)
+![Image showing the parameter file creation options (none, new, and browse)](./images/undo-change-mapping-two.png)
 
 ## Template navigation
 
@@ -165,7 +165,7 @@ The ARM tools extension for VS Code offers several features for navigating aroun
 
 The ARM template outline is used to navigate to and select any element of an ARM template.
 
-![](./images/arm-template-outline.png)
+![Image showing the ARM template outline with a storage account resource selected](./images/arm-template-outline.png)
 
 In addition to navigation, several features such as insert item and template sorting can be engaged using the buttons found on the ARM template outline.
 
@@ -173,7 +173,7 @@ In addition to navigation, several features such as insert item and template sor
 
 Go to definition can be used to navigate to both parameter and variable definitions. To use go to definition, place your cursor on the parameter or variable name and press `F12` or right-click and select **Go to Definition**.
 
-![](./images/go-to-definition.png)
+![Image showing the Go to Definition dialog on a parameter reference](./images/go-to-definition.png)
 
 ## Completions
 
@@ -203,11 +203,11 @@ You can also right-click on any element in the ARM Template Outline view to init
 
 To sort elements of an ARM template alphabetically, right-click on the template and select **Sort Template...**.
 
-![](./images/sort-template.png)
+![Image showing the sort template options (Resource, Function, Output, Parameter, Variable)](./images/sort-template.png)
 
 Select the element that you want to sort.
 
-![](./images/sort-template-two.png)
+![Image showing the insert resource menu](./images/sort-template-two.png)
 
 Template sorting can also be engaged using the ARM template outline.
 
@@ -227,7 +227,7 @@ Template sorting can also be engaged using the ARM template outline.
 
 You may be interested in adjusting the following extension configurations. These can be configured in [VS Code User Settings](https://code.visualstudio.com/docs/getstarted/settings).
 
-### Auto-detect ARM Templates
+### Auto-detect ARM templates
 
 Enables auto-detection of deployment template files with the extension *.json or *.jsonc. If set to true (default), the editor language will automatically be set to Azure Resource Manager Template for any *.json/*.jsonc file which contains an appropriate Azure Resource Manager Template schema.
 
@@ -255,6 +255,20 @@ Parameter file assoications are stored in the `azureResourceManagerTools.paramet
 
 ```
 "azureResourceManagerTools.parameterFiles": {}
+```
+
+### Code lense
+
+Enable or disable all code lens features.
+
+```
+"azureResourceManagerTools.codelens.enable": true,
+```
+
+Enable code lens for parameter definitions and values.
+
+```
+ "azureResourceManagerTools.codelens.parameters": true,
 ```
 
 ## Automatic Detection of deployment template files
