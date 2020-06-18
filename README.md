@@ -13,7 +13,7 @@ The following guides detail how to use the ARM Tools extension features.
 - [Parameter file support](#parameter-files)
 - [Completions](#completions)
 - [Template navigation](#template-navigation)
-- [Other feature](#other-features)
+- [Other features](#other-features)
 - [Extension configuration](#extension-configuration)
 
 ## Snippets
