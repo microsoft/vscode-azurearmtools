@@ -100,17 +100,17 @@
         ],
         "description": "ARM Template output"
     },
-    "Nested Deployment": {
-        "prefix": "arm-nested",
+    "Linked Deployment": {
+        "prefix": "arm-linked-template",
         "body": [
             "{",
-            "\t\"name\": \"${1:nestedDeployment1}\",",
+            "\t\"name\": \"${1:linkedDeployment1}\",",
             "\t\"type\": \"Microsoft.Resources/deployments\",",
             "\t\"apiVersion\": \"2019-10-01\",",
             "\t\"properties\": {",
             "\t\t\"mode\": \"Incremental\",",
             "\t\t\"templateLink\": {",
-            "\t\t\t\"uri\": \"[concat('${2:artifactsLocation}', '/${3:nestedTemplates}/${4:nestedTemplate.json}', '${5:artifactsLocationSasToken}')]\",",
+            "\t\t\t\"uri\": \"[concat('${2:artifactsLocation}', '/${3:linkedTemplates}/${4:linkedTemplate.json}', '${5:artifactsLocationSasToken}')]\",",
             "\t\t\t\"contentVersion\": \"1.0.0.0\"",
             "\t\t},",
             "\t\t\"parameters\": {",
@@ -118,7 +118,32 @@
             "\t}",
             "}"
         ],
-        "description": "Nested Deployment"
+        "description": "Linked Deployment"
+    },
+    "Nested Deployment": {
+        "prefix": "arm-nested-template",
+        "body": [
+            "{",
+            "\t\"name\": \"${1:nestedDeployment1}\",",
+            "\t\"type\": \"Microsoft.Resources/deployments\",",
+            "\t\"apiVersion\": \"2019-10-01\",",
+            "\t\"properties\": {",
+            "\t\t\"expressionEvaluationOptions\": {",
+            "\t\t\t\"scope\": \"${2|outer,inner|}\"",
+            "\t\t},",
+            "\t\t\"mode\": \"Incremental\",",
+            "\t\t\"template\": {",
+            "\t\t\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\",",
+            "\t\t\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\t\t\"parameters\": {},",
+            "\t\t\t\"variables\": {},",
+            "\t\t\t\"resources\": [],",
+            "\t\t\t\"outputs\": {}",
+            "\t\t}",
+            "\t}",
+            "}"
+        ],
+        "description": "Nested (inline) Deployment"
     },
     "App Service Plan (Server Farm)": {
         "prefix": "arm-plan",
