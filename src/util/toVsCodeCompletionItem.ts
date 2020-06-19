@@ -22,8 +22,23 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
     vscodeItem.commitCharacters = item.commitCharacters;
     vscodeItem.preselect = item.preselect;
 
-    // Add priority string to start of sortText;
-    vscodeItem.sortText = `${item.highPriority ? '0' : '1'}-${item.sortText ?? item.label}`;
+    let sortPriorityPrefix: string;
+    switch (item.priority) {
+        case Completion.CompletionPriority.low:
+            sortPriorityPrefix = `${String.fromCharCode(255)}-`;
+            break;
+        case Completion.CompletionPriority.high:
+            sortPriorityPrefix = `${String.fromCharCode(1)}-`;
+            break;
+        case Completion.CompletionPriority.normal:
+            sortPriorityPrefix = '';
+            break;
+        default:
+            assertNever(item.priority);
+    }
+
+    // Add priority string to start of sortText, use label if no sortText
+    vscodeItem.sortText = `${sortPriorityPrefix}${item.sortText ?? item.label}`;
 
     switch (item.kind) {
         case Completion.CompletionKind.Function:

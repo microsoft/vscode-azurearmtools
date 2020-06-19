@@ -86,7 +86,9 @@ export class SnippetManager implements ISnippetManager {
                 detail,
                 insertText: snippet.insertText,
                 span,
-                kind: Completion.CompletionKind.Snippet
+                kind: Completion.CompletionKind.Snippet,
+                // Make sure snippets show up after normal completions
+                priority: Completion.CompletionPriority.low
             }));
 
         }
