@@ -16,7 +16,7 @@ const DEBUG_BREAK_AFTER_DIAGNOSTICS_COMPLETE = false;
 import * as assert from "assert";
 import * as fs from 'fs';
 import * as path from 'path';
-import { Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument } from "vscode";
+import { Diagnostic, DiagnosticSeverity, Disposable, languages, Range, TextDocument } from "vscode";
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { parseParametersWithMarkers } from "./parseTemplate";
@@ -464,26 +464,34 @@ function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOpti
         default: assert.fail(`Expected severity ${diagnostic.severity}`);
     }
 
-    let s = `${severity}: ${diagnostic.message} (${diagnostic.source})`;
-
-    // Do the expected messages include ranges?
-    if (includeRange) {
-        // tslint:disable-next-line: strict-boolean-expressions
-        if (!diagnostic.range) {
-            s += " []";
-        } else {
-            s += ` [${diagnostic.range.start.line},${diagnostic.range.start.character}`
-                + `-${diagnostic.range.end.line},${diagnostic.range.end.character}]`;
-        }
+    let s = `${severity}: ${diagnostic.message} (${diagnostic.source}${rangeAsString(diagnostic.range)})`;
+    if (diagnostic.relatedInformation) {
+        const related = diagnostic.relatedInformation[0];
+        s = `${s} [${related.message}${rangeAsString(related.location.range)}]`;
     }
 
     return s;
+
+    function rangeAsString(range: Range): string {
+        // Do the expected messages include ranges?
+        if (includeRange) {
+            // tslint:disable-next-line: strict-boolean-expressions
+            if (!range) {
+                return "[]";
+            } else {
+                return ` [${range.start.line},${range.start.character}`
+                    + `-${range.end.line},${range.end.character}]`;
+            }
+        }
+
+        return "";
+    }
 }
 
 function compareDiagnostics(actual: Diagnostic[], expected: string[], options: ITestDiagnosticsOptions): void {
     // Do the expected messages include ranges?
     let expectedHasRanges = expected.length === 0 || !!expected[0].match(/[0-9]+,[0-9]+-[0-9]+,[0-9]+/);
-    let includeRanges = !!options.includeRange && expectedHasRanges;
+    let includeRanges = !!options.includeRange || expectedHasRanges;
 
     let actualAsStrings = actual.map(d => diagnosticToString(d, options, includeRanges));
 
