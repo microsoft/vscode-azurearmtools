@@ -252,8 +252,8 @@ export class NestedTemplateInnerScope extends TemplateScopeFromObject {
  */
 export class NestedTemplateOuterScope extends TemplateScope {
     public constructor(
-        public readonly parentScope: TemplateScope,
-        public readonly nestedTemplateObject: Json.ObjectValue | undefined,
+        private readonly parentScope: TemplateScope,
+        private readonly nestedTemplateObject: Json.ObjectValue | undefined,
         // tslint:disable-next-line: variable-name
         __debugDisplay: string
     ) {
@@ -287,8 +287,8 @@ export class NestedTemplateOuterScope extends TemplateScope {
 
 export class LinkedTemplate extends TemplateScope {
     public constructor(
-        public readonly parentScope: TemplateScope,
-        public readonly templateLinkObject: Json.ObjectValue | undefined,
+        private readonly parentScope: TemplateScope,
+        templateLinkObject: Json.ObjectValue | undefined,
         // tslint:disable-next-line: variable-name
         __debugDisplay: string
     ) {
