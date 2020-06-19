@@ -9,6 +9,12 @@ import * as language from "./Language";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
 import { IVariableDefinition } from "./VariableDefinition";
 
+export enum CompletionPriority {
+    normal = "normal",
+    high = "high",
+    low = "low",
+}
+
 /**
  * A completion item in the list of completion suggestions that appear when a user invokes auto-completion (Ctrl + Space).
  */
@@ -23,7 +29,7 @@ export class Item {
     public readonly additionalEdits: { span: language.Span; insertText: string }[] | undefined;
     public readonly sortText: string | undefined;
     public readonly commitCharacters: string[] | undefined;
-    public readonly highPriority: boolean;
+    public readonly priority: CompletionPriority;
     public readonly preselect: boolean;
     public readonly telemetryProperties: { [key: string]: string } | undefined;
 
@@ -61,7 +67,7 @@ export class Item {
             /**
              * Priority for sorting used in addition to sortText.
              */
-            highPriority?: boolean;
+            priority?: CompletionPriority;
             preselect?: boolean;
             /**
              * Optional additional telemetry properties for if the completion is activated
@@ -79,7 +85,7 @@ export class Item {
         this.additionalEdits = options.additionalEdits;
         this.sortText = options.sortText;
         this.commitCharacters = options.commitCharacters;
-        this.highPriority = !!options.highPriority;
+        this.priority = options.priority ?? CompletionPriority.normal;
         this.preselect = !!options.preselect;
         this.telemetryProperties = options.telemetryProperties;
     }
