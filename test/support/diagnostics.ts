@@ -193,23 +193,50 @@ export interface ITestDiagnosticsOptions extends IGetDiagnosticsOptions {
 }
 
 export interface IGetDiagnosticsOptions {
+    /**
+     * Parameters that will be placed into a temp file and associated with the template file
+     */
     parameters?: string | Partial<IDeploymentParametersFile>;
+    /**
+     * A parameter file that will be associated with the template file
+     */
     parametersFile?: string;
-    includeSources?: DiagnosticSource[]; // Error sources to include in the comparison - defaults to all
-    ignoreSources?: DiagnosticSource[];  // Error sources to ignore in the comparison - defaults to ignoring none
-    includeRange?: boolean;    // defaults to false - whether to include the error range in the results for comparison (if true, ignored when expected messages don't have ranges)
-    search?: RegExp;           // Run a replacement using this regex and replacement on the file/contents before testing for errors
-    replace?: string;          // Run a replacement using this regex and replacement on the file/contents before testing for errors
-    doNotAddSchema?: boolean;  // Don't add schema (testDiagnostics only) automatically
-    waitForChange?: boolean;   // Wait until diagnostics change before retrieving themed
+    /**
+     * Error sources to include in the comparison - defaults to all
+     */
+    includeSources?: DiagnosticSource[];
+    /**
+     * Error sources to ignore in the comparison - defaults to ignoring none
+     */
+    ignoreSources?: DiagnosticSource[];
+    /**
+     * defaults to false - whether to include the error range in the results for comparison (if true, ignored when expected messages don't have ranges)
+     */
+    includeRange?: boolean;
+    /**
+     * Run a replacement using this regex and replacement on the file/contents before testing for errors
+     */
+    search?: RegExp;
+    /**
+     * Run a replacement using this regex and replacement on the file/contents before testing for errors
+     */
+    replace?: string;
+    /**
+     * Don't add schema (testDiagnostics only) automatically
+     */
+    doNotAddSchema?: boolean;
+    /**
+     * Wait until diagnostics change before retrieving themed
+     */
+    waitForChange?: boolean;
 }
 
 export async function testDiagnosticsFromFile(filePath: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
     await testDiagnosticsCore(filePath, options, expected);
 }
 
-export async function testDiagnostics(json: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
-    await testDiagnosticsCore(json, options, expected);
+export async function testDiagnostics(templateContentsOrFileName: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
+    await testDiagnosticsCore(templateContentsOrFileName, options, expected);
 }
 
 async function testDiagnosticsCore(templateContentsOrFileName: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {

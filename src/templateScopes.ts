@@ -252,8 +252,8 @@ export class NestedTemplateInnerScope extends TemplateScopeFromObject {
  */
 export class NestedTemplateOuterScope extends TemplateScope {
     public constructor(
-        public readonly parentScope: TemplateScope,
-        public readonly nestedTemplateObject: Json.ObjectValue | undefined,
+        private readonly parentScope: TemplateScope,
+        private readonly nestedTemplateObject: Json.ObjectValue | undefined,
         // tslint:disable-next-line: variable-name
         __debugDisplay: string
     ) {
@@ -287,7 +287,8 @@ export class NestedTemplateOuterScope extends TemplateScope {
 
 export class LinkedTemplate extends TemplateScope {
     public constructor(
-        public readonly templateLinkObject: Json.ObjectValue | undefined,
+        private readonly parentScope: TemplateScope,
+        templateLinkObject: Json.ObjectValue | undefined,
         // tslint:disable-next-line: variable-name
         __debugDisplay: string
     ) {
@@ -299,19 +300,22 @@ export class LinkedTemplate extends TemplateScope {
 
     public readonly scopeKind: TemplateScopeKind = TemplateScopeKind.LinkedDeployment;
 
+    // Shares its members with its parent (i.e., if the expressions inside the
+    // templateLink object reference parameters and variables, those are referring to
+    // the parent's parameters/variables - a linked template does create a new scope, but
+    // only inside the template contents themselves, not the templateLink object)
+    public readonly hasUniqueParamsVarsAndFunctions: boolean = false;
+
     protected getParameterDefinitions(): IParameterDefinition[] | undefined {
-        // Not supported yet
-        return undefined;
+        return this.parentScope.parameterDefinitions;
     }
 
     protected getVariableDefinitions(): IVariableDefinition[] | undefined {
-        // Not supported yet
-        return undefined;
+        return this.parentScope.variableDefinitions;
     }
 
     protected getNamespaceDefinitions(): UserFunctionNamespaceDefinition[] | undefined {
-        // Not supported yet
-        return undefined;
+        return this.parentScope.namespaceDefinitions;
     }
 
     protected getResources(): IResource[] | undefined {
@@ -369,7 +373,7 @@ export function getChildTemplateForResourceObject(
                 propertiesObject
                     ?.getPropertyValue(templateKeys.linkedDeploymentTemplateLink)?.asObjectValue;
             if (templateLinkObject) {
-                return new LinkedTemplate(templateLinkObject, `Linked template "${templateName}"`);
+                return new LinkedTemplate(parentScope, templateLinkObject, `Linked template "${templateName}"`);
             }
         }
 

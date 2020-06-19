@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:no-suspicious-comment
+// tslint:disable:no-suspicious-comment max-func-body-length
 
 import { testDiagnostics } from "../support/diagnostics";
 import { testWithLanguageServerAndRealFunctionMetadata } from "../support/testWithLanguageServer";
@@ -68,6 +68,67 @@ suite("General validation tests (all diagnotic sources)", () => {
                 {
                 },
                 []);
+        });
+
+        testWithLanguageServerAndRealFunctionMetadata("linked template scope", async () => {
+            await testDiagnostics(
+                {
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    contentVersion: "1.0.0.0",
+                    parameters: {
+                        linkedTemplatesLocation: {
+                            type: "string"
+                        }
+                    },
+                    variables: {
+                        firstTemplate: "../linkedTemplate1.json",
+                        secondTemplate: "linkedTemplate2.json"
+                    },
+                    resources: [
+                        {
+                            name: "nestedDeployment2",
+                            type: "Microsoft.Resources/deployments",
+                            apiVersion: "2017-05-10",
+                            properties: {
+                                mode: "Incremental",
+                                templateLink: {
+                                    uri: "[concat(parameters('linkedTemplatesLocation'), '/', variables('secondTemplate'))]",
+                                    contentVersion: "1.0.0.0"
+                                },
+                                parameters: {
+                                    linked2param1: {
+                                        value: "abc"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            name: "nestedDeployment1",
+                            type: "Microsoft.Resources/deployments",
+                            apiVersion: "2017-05-10",
+                            properties: {
+                                mode: "Incremental",
+                                templateLink: {
+                                    uri: "[concat(parameters('linkedTemplatesLocation'), '/', variables('firstTemplate'))]"
+                                },
+                                parameters: {
+                                    linked1param1: {
+                                        value: "my value" // (error)
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    outputs: {
+                    },
+                    functions: [
+                    ]
+                },
+                {
+                },
+                [
+                    // expecting no errors
+                ]);
         });
     });
 });
