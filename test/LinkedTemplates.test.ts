@@ -113,8 +113,9 @@ suite("Linked templates", () => {
                     }
                 },
                 [
-                    "Error: Template validation failed: Template parameter JToken type is not valid. Expected 'String, Uri'. Actual 'Integer'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation) [8,20-8,20]) [The error occurred in a nested template near here [13,39-13,39]]",
-                    "Warning: The parameter 'parameter1' is never used. (arm-template (expressions) [22,12-22,24])"]
+                    "Error: Template validation failed: Template parameter JToken type is not valid. Expected 'String, Uri'. Actual 'Integer'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [8,20-8,20] [The error occurred in a nested template near here] [13,39-13,39]",
+                    "Warning: The parameter 'parameter1' is never used. (arm-template (expressions)) [22,12-22,24]"
+                ]
             );
         });
 
@@ -141,8 +142,8 @@ suite("Linked templates", () => {
                     }
                 },
                 [
-                    `Error: Template validation failed: The deployment must have Properties property set. Please see https://aka.ms/arm-deploy for usage details. (arm-template (validation) [4,4-4,4])`,
-                    `Warning: Missing required property \"properties\" (arm-template (schema) [4,4-4,5])`
+                    "Error: Template validation failed: The deployment must have Properties property set. Please see https://aka.ms/arm-deploy for usage details. (arm-template (validation)) [4,4-4,4]",
+                    "Warning: Missing required property \"properties\" (arm-template (schema)) [4,4-4,5]"
                 ]
             );
         });

@@ -72,7 +72,7 @@ suite("Expressions functional tests", () => {
                 template,
                 {
                     includeSources: [diagnosticSources.expressions],
-                    includeRange: true
+                    includeRange: false
                 },
                 expected);
         });

@@ -452,7 +452,7 @@ export async function getDiagnosticsForTemplate(
     }
 }
 
-function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOptions, includeRange: boolean): string {
+export function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOptions, includeRange: boolean): string {
     assert(diagnostic.code === '', `Expecting empty code for all diagnostics, instead found Code="${String(diagnostic.code)}" for "${diagnostic.message}"`);
 
     let severity: string = "";
@@ -464,10 +464,10 @@ function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOpti
         default: assert.fail(`Expected severity ${diagnostic.severity}`);
     }
 
-    let s = `${severity}: ${diagnostic.message} (${diagnostic.source}${rangeAsString(diagnostic.range)})`;
+    let s = `${severity}: ${diagnostic.message} (${diagnostic.source})${rangeAsString(diagnostic.range)}`;
     if (diagnostic.relatedInformation) {
         const related = diagnostic.relatedInformation[0];
-        s = `${s} [${related.message}${rangeAsString(related.location.range)}]`;
+        s = `${s} [${related.message}]${rangeAsString(related.location.range)}`;
     }
 
     return s;
