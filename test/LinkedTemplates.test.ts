@@ -144,6 +144,7 @@ suite("Linked templates", () => {
                 [
                     "Error: Template validation failed: The deployment must have Properties property set. Please see https://aka.ms/arm-deploy for usage details. (arm-template (validation)) [4,4-4,4]",
                     "Warning: Missing required property \"properties\" (arm-template (schema)) [4,4-4,5]"
+
                 ]
             );
         });
