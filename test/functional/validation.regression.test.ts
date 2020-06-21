@@ -94,10 +94,10 @@ suite("Validation regression tests", () => {
 
                     // tslint:disable-next-line: no-suspicious-comment
                     // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/673
-                    "Error: Expected a comma (','). (arm-template (expressions))",
+                    "Error: Expected a comma (','). (arm-template (expressions)) [187,357-187,359]",
 
                     // Expected schema errors:
-                    `Warning: Value must be one of the following types: boolean (arm-template (schema))`
+                    "Warning: Value must be one of the following types: boolean (arm-template (schema)) [145,16-145,31]"
                 ]
             )
     );

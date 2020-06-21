@@ -160,6 +160,8 @@ suite("DeploymentTemplate code lenses", () => {
                 `${topLevelParamName} with no value in param file` :
                 `${topLevelParamName} with value ${JSON.stringify(valueInParamFile).replace(/\r\n|\n/g, ' ')}`;
             test(testName, async () => {
+                let a = testName;
+                a = a;
                 const dt = await parseTemplate(template);
                 const param = dt.topLevelScope.getParameterDefinition(topLevelParamName);
                 assert(!!param);
@@ -188,7 +190,8 @@ suite("DeploymentTemplate code lenses", () => {
                 const lens = lenses.find(l => l.parameterDefinition === param);
                 assert(!!lens, `Couldn't find a code lens for parameter ${param.nameValue.unquotedValue}`);
 
-                lens.resolve(dp);
+                const result = lens.resolve(dp);
+                assert.equal(result, true);
                 assert.equal(lens.command?.command, "azurerm-vscode-tools.codeLens.gotoParameterValue");
                 assert.deepEqual(lens.command?.arguments, [
                     dp.documentUri,
