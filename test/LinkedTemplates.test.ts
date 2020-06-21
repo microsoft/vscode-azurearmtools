@@ -5,7 +5,7 @@
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length no-unnecessary-class
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name no-constant-condition
 
-import { isWin32 } from "../src/constants";
+import { isWin32 } from "../extension.bundle";
 import { testDiagnostics, testDiagnosticsFromFile } from "./support/diagnostics";
 
 suite("Linked templates", () => {
