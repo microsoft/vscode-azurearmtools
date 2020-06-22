@@ -16,7 +16,7 @@ const DEBUG_BREAK_AFTER_DIAGNOSTICS_COMPLETE = false;
 import * as assert from "assert";
 import * as fs from 'fs';
 import * as path from 'path';
-import { Diagnostic, DiagnosticSeverity, Disposable, languages, Range, TextDocument } from "vscode";
+import { Diagnostic, DiagnosticSeverity, Disposable, languages, Position, Range, TextDocument } from "vscode";
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { parseParametersWithMarkers } from "./parseTemplate";
@@ -25,6 +25,24 @@ import { stringify } from "./stringify";
 import { TempDocument, TempEditor, TempFile } from "./TempFile";
 
 export const diagnosticsTimeout = 2 * 60 * 1000; // CONSIDER: Use this long timeout only for first test, or for suite setup
+
+enum ExpectedDiagnosticSeverity {
+    Warning = 4,
+    Error = 8,
+}
+
+// In the style of the Copy context menu in vscode
+export interface IExpectedDiagnostic {
+    message: string;
+    severity: ExpectedDiagnosticSeverity;
+    source: string;
+    startLineNumber: number;
+    startColumn: number;
+    endLineNumber: number;
+    endColumn: number;
+}
+
+export type ExpectedDiagnostics = string[] | IExpectedDiagnostic[];
 
 export interface DiagnosticSource {
     name: string;
@@ -231,15 +249,15 @@ export interface IGetDiagnosticsOptions {
     waitForChange?: boolean;
 }
 
-export async function testDiagnosticsFromFile(filePath: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
+export async function testDiagnosticsFromFile(filePath: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: ExpectedDiagnostics): Promise<void> {
     await testDiagnosticsCore(filePath, options, expected);
 }
 
-export async function testDiagnostics(templateContentsOrFileName: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
+export async function testDiagnostics(templateContentsOrFileName: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: ExpectedDiagnostics): Promise<void> {
     await testDiagnosticsCore(templateContentsOrFileName, options, expected);
 }
 
-async function testDiagnosticsCore(templateContentsOrFileName: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
+async function testDiagnosticsCore(templateContentsOrFileName: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: ExpectedDiagnostics): Promise<void> {
     let actual: Diagnostic[] = await getDiagnosticsForTemplate(templateContentsOrFileName, options);
     compareDiagnostics(actual, expected, options);
 }
@@ -452,6 +470,24 @@ export async function getDiagnosticsForTemplate(
     }
 }
 
+export function expectedDiagnosticToString(diagnostic: IExpectedDiagnostic): string {
+    return diagnosticToString(
+        {
+            message: diagnostic.message,
+            range: new Range(
+                new Position(diagnostic.startLineNumber, diagnostic.startColumn),
+                new Position(diagnostic.endLineNumber, diagnostic.endColumn)
+            ),
+            severity: diagnostic.severity === ExpectedDiagnosticSeverity.Error ? DiagnosticSeverity.Error
+                : diagnostic.severity === ExpectedDiagnosticSeverity.Warning ? DiagnosticSeverity.Warning
+                    : <DiagnosticSeverity>-1,
+            source: diagnostic.source,
+            code: ""
+        },
+        {},
+        true);
+}
+
 export function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOptions, includeRange: boolean): string {
     assert(diagnostic.code === '', `Expecting empty code for all diagnostics, instead found Code="${String(diagnostic.code)}" for "${diagnostic.message}"`);
 
@@ -488,16 +524,21 @@ export function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnost
     }
 }
 
-function compareDiagnostics(actual: Diagnostic[], expected: string[], options: ITestDiagnosticsOptions): void {
+function compareDiagnostics(actual: Diagnostic[], expected: ExpectedDiagnostics, options: ITestDiagnosticsOptions): void {
     // Do the expected messages include ranges?
-    let expectedHasRanges = expected.length === 0 || !!expected[0].match(/[0-9]+,[0-9]+-[0-9]+,[0-9]+/);
+    let expectedHasRanges = expected.length === 0 ||
+        (typeof expected[0] === 'string' && !!expected[0].match(/[0-9]+,[0-9]+-[0-9]+,[0-9]+/)
+            || (typeof expected[0] !== 'string' && expected[0].startLineNumber !== undefined));
     let includeRanges = !!options.includeRange || expectedHasRanges;
 
+    let expectedAsStrings = expected.length === 0 ? []
+        : typeof expected[0] === 'string' ? expected
+            : (<IExpectedDiagnostic[]>expected).map(d => typeof d === 'string' ? d : expectedDiagnosticToString(d));
     let actualAsStrings = actual.map(d => diagnosticToString(d, options, includeRanges));
 
     // Sort
-    expected = expected.sort();
+    expectedAsStrings = expectedAsStrings.sort();
     actualAsStrings = actualAsStrings.sort();
 
-    assert.deepStrictEqual(actualAsStrings, expected);
+    assert.deepStrictEqual(actualAsStrings, expectedAsStrings);
 }

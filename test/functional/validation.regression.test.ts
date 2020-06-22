@@ -202,6 +202,7 @@ suite("Validation regression tests", () => {
                 },
                 {},
                 []));
+
     testWithLanguageServerAndRealFunctionMetadata(
         "https://github.com/microsoft/vscode-azurearmtools/issues/672 - shouldn't cause hang",
         async () => {
@@ -269,4 +270,147 @@ suite("Validation regression tests", () => {
                 []
             );
         });
+
+    testWithLanguageServer(
+        'Schema validation is not identifying correct location in nested templates https://github.com/microsoft/vscode-azurearmtools/issues/625',
+        async () => {
+            await testDiagnostics(
+                `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+        {
+            "name": "nestedDeployment1",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "name": "storageaccountNested",
+                            "type": "Microsoft.Storage/storageAccounts",
+                            "apiVersion": "2019-06-01",
+                            "location": "[resourceGroup().location]",
+                            "kind": "",
+                            "sku": {
+                                "name": "Premium_LRS",
+                                "tier": "Premium"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "storageaccountRoot",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01",
+            "location": "[resourceGroup().location]",
+            "kind": "",
+            "sku": {
+                "name": "Premium_LRS",
+                "tier": "Premium"
+            }
+        }
+    ]
+}`,
+                {},
+                [
+                    "Warning: Value must be one of the following values: \"Storage\", \"StorageV2\", \"BlobStorage\", \"FileStorage\", \"BlockBlobStorage\" (arm-template (schema)) [19,28-19,34]",
+                    "Warning: Value must be one of the following values: \"Storage\", \"StorageV2\", \"BlobStorage\", \"FileStorage\", \"BlockBlobStorage\" (arm-template (schema)) [34,12-34,18]",
+                ]
+            );
+        }
+    );
+
+    testWithLanguageServer(
+        'Full validation throws null reference exception when nested templates are used #716',
+        async () => {
+            await testDiagnostics(
+                {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "outerParam": {
+                            "type": "string",
+                            "defaultValue": "paramFromOuter"
+                        }
+                    },
+                    "variables": {
+                        "outerVariable": "varFromOuter"
+                    },
+                    "resources": [
+                        {
+                            "name": "nestedTemplate1",
+                            "apiVersion": "2019-10-01",
+                            "type": "Microsoft.Resources/deployments",
+                            "properties": {
+                                "expressionEvaluationOptions": {
+                                    "scope": "inner"
+                                },
+                                "mode": "Incremental",
+                                "template": {
+                                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                                    "contentVersion": "1.0.0.0",
+                                    "parameters": {
+                                        "paramFromOuter": {
+                                            "type": "string"
+                                        },
+                                        "variableFromOuter": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "variables": {
+                                        "innerVariable": "varFromInner"
+                                    },
+                                    "resources": [
+                                    ],
+                                    "outputs": {
+                                        "paramFromOuter": {
+                                            "type": "string",
+                                            "value": "[parameters('paramFromOuter')]"
+                                        },
+                                        "variableFromOuter": {
+                                            "type": "string",
+                                            "value": "[parameters('variableFromOuter')]"
+                                        },
+                                        "variableFromInner": {
+                                            "type": "string",
+                                            "value": "[variables('innerVariable')]"
+                                        }
+                                    }
+                                },
+                                "parameters": {
+                                    "paramFromOuter": {
+                                        "value": "[parameters('outerParam')]"
+                                    },
+                                    "variableFromOuter": {
+                                        "value": "[variables('outerVariable')]"
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "outputs": {
+                    }
+                },
+                {
+                    parameters: {
+                        "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+                        "contentVersion": "1.0.0.0",
+                        "parameters": {
+                            "outerParam": {
+                                "value": "paramFromOuter"
+                            }
+                        }
+                    }
+                },
+                [
+                ]
+            );
+        }
+    );
 });
