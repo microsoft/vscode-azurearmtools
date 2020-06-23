@@ -1063,9 +1063,17 @@ export class AzureRMTools {
 
             if (codeLens instanceof ResolvableCodeLens) {
                 const cancel = new Cancellation(token);
-                const { associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(codeLens.deploymentDoc.documentUri, cancel);
-                if (codeLens.resolve(associatedDoc)) {
-                    assert(codeLens.command?.command && codeLens.command.title, "CodeLens wasn't resolved");
+                try {
+                    const { associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(codeLens.deploymentDoc.documentUri, cancel);
+                    if (codeLens.resolve(associatedDoc)) {
+                        assert(codeLens.command?.command && codeLens.command.title, "CodeLens wasn't resolved");
+                        return codeLens;
+                    }
+                } catch (err) {
+                    codeLens.command = {
+                        title: 'Unable to open parameter file',
+                        command: ''
+                    };
                     return codeLens;
                 }
             } else {
