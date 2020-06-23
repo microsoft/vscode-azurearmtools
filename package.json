@@ -600,7 +600,7 @@
         "@types/recursive-readdir": "^2.2.0",
         "@types/rimraf": "2.0.2",
         "@types/shelljs": "0.8.3",
-        "@types/webpack": "^4.41.12",
+        "@types/webpack": "^4.41.17",
         "decompress": "^4.2.0",
         "glob": "^7.1.6",
         "gulp": "^4.0.2",
@@ -618,11 +618,11 @@
         "vscode": "^1.1.37",
         "vscode-azureextensiondev": "^0.4.0",
         "webpack": "4.28.1",
-        "webpack-cli": "^3.3.11"
+        "webpack-cli": "^3.3.12"
     },
     "dependencies": {
         "fs-extra": "^7.0.1",
-        "moment": "^2.25.3",
+        "moment": "^2.27.0",
         "nuget": "^2.0.2",
         "opn": "^5.5.0",
         "rimraf": "2.6.3",
