@@ -110,6 +110,18 @@ Parameter file mappings are stored in the `azureResourceManagerTools.parameterFi
 "azureResourceManagerTools.parameterFiles": {}
 ```
 
+**Code Lens**
+
+Disable all code lens functionality
+```
+"azureResourceManagerTools.codelens.enable": false
+```
+
+Disable code lens for parameters
+```
+"azureResourceManagerTools.codelens.parameters": false
+```
+
 ## Automatic Detection of deployment template files
 
 By default, the extension recognizes a .json or .jsonc file as a deployment template file based on the \$schema specified in the file (for instance, `https://schema.management.azure.com/schemas/2018-05-01/deploymentTemplate.json#`) and will switch the editor language to "Azure Resource Manager Template" automatically. If you do not want that behavior, you can set the `azureResourceManagerTools.autoDetectJsonTemplates` setting to false and use the below methods to determine which files to treat as deployment templates.
