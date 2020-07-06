@@ -7,7 +7,7 @@ import { CachedValue } from "./CachedValue";
 import { __debugMarkPositionInString, __debugMarkRangeInString } from "./debugMarkStrings";
 import { IJsonDocument } from "./IJsonDocument";
 import { INamedDefinition } from "./INamedDefinition";
-import { IParameterValuesSourceFromFile } from "./IParameterValuesSourceFromFile";
+import { IParameterValuesSourceProvider } from "./IParameterValuesSourceProvider";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { PositionContext } from "./PositionContext";
@@ -168,7 +168,7 @@ export abstract class DeploymentDocument implements IJsonDocument {
      * @return An array of commands, quick fixes, or refactorings or a thenable of such. The lack of a result can be
      * signaled by returning `undefined`, `null`, or an empty array.
      */
-    public abstract async getCodeActions(associatedDocument: DeploymentDocument | undefined, range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]>;
+    public abstract getCodeActions(associatedDocument: DeploymentDocument | undefined, range: Range | Selection, context: CodeActionContext): (Command | CodeAction)[];
 
     // This should be as fast as possible
     // Anything slow should occur during ResolvableCodeLens.resolve()
@@ -176,7 +176,7 @@ export abstract class DeploymentDocument implements IJsonDocument {
         // If a parameter file is associated with this template template, this should
         //   provide its URI and be able to lazily retrieve the parameter value source
         // If there is no associated parameter file, this should be undefined
-        parameterValuesSourceProvider: IParameterValuesSourceFromFile | undefined
+        parameterValuesSourceProvider: IParameterValuesSourceProvider | undefined
     ): ResolvableCodeLens[];
 
     // CONSIDER: Should we cache?  But that cache would depend on associatedTemplate not changing, not sure if that's

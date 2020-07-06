@@ -9,8 +9,7 @@ import { templateKeys } from "../constants";
 import { DeploymentDocument, ResolvableCodeLens } from "../DeploymentDocument";
 import { DeploymentTemplate } from "../DeploymentTemplate";
 import { INamedDefinition } from "../INamedDefinition";
-import { IParameterDefinition } from '../IParameterDefinition';
-import { IParameterValuesSourceFromFile } from '../IParameterValuesSourceFromFile';
+import { IParameterValuesSourceProvider } from '../IParameterValuesSourceProvider';
 import * as Json from "../JSON";
 import * as language from "../Language";
 import { ReferenceList } from "../ReferenceList";
@@ -18,8 +17,8 @@ import { isParametersSchema } from "../schemas";
 import { IParameterValuesSource } from './IParameterValuesSource';
 import { ParametersPositionContext } from "./ParametersPositionContext";
 import { ParameterValueDefinition } from "./ParameterValueDefinition";
-import { getMissingParameters, getParameterValuesCodeActions } from "./ParameterValues";
-import { ParameterValuesSource } from "./ParameterValuesSource";
+import { getMissingParameterErrors, getParameterValuesCodeActions } from "./ParameterValues";
+import { ParameterValuesSourceFromJsonObject } from "./ParameterValuesSourceFromJsonObject";
 
 /**
  * Represents a deployment parameter file
@@ -45,7 +44,7 @@ export class DeploymentParameters extends DeploymentDocument {
 
     public get parameterValuesSource(): IParameterValuesSource {
         return this._parameterValuesSource.getOrCacheValue(() => {
-            return new ParameterValuesSource(this, this.parametersProperty);
+            return new ParameterValuesSourceFromJsonObject(this, this.parametersProperty, this.topLevelValue);
         });
     }
 
@@ -107,16 +106,16 @@ export class DeploymentParameters extends DeploymentDocument {
     }
 
     public getCodeLenses(
-        _parameterValuesSourceProvider: IParameterValuesSourceFromFile | undefined
+        _parameterValuesSourceProvider: IParameterValuesSourceProvider | undefined
     ): ResolvableCodeLens[] {
         return [];
     }
 
-    public async getCodeActions(
+    public getCodeActions(
         associatedDocument: DeploymentDocument | undefined,
         range: Range | Selection,
         context: CodeActionContext
-    ): Promise<(Command | CodeAction)[]> {
+    ): (Command | CodeAction)[] {
         assert(!associatedDocument || associatedDocument instanceof DeploymentTemplate, "Associated document is of the wrong type");
         const template: DeploymentTemplate | undefined = <DeploymentTemplate | undefined>associatedDocument;
 
@@ -133,19 +132,7 @@ export class DeploymentParameters extends DeploymentDocument {
             return [];
         }
 
-        const missingRequiredParams: IParameterDefinition[] = getMissingParameters(
-            associatedTemplate.topLevelScope,
-            this.parameterValuesSource,
-            true // onlyRequiredParameters
-        );
-        if (missingRequiredParams.length === 0) {
-            return [];
-        }
-
-        const missingParamNames = missingRequiredParams.map(param => `"${param.nameValue.unquotedValue}"`);
-        const message = `The following parameters do not have default values and require a value in the parameter file: ${missingParamNames.join(', ')}`;
-        const span = this.parametersProperty?.nameValue.span ?? new language.Span(0, 0);
-        return [new language.Issue(span, message, language.IssueKind.params_missingRequiredParam)];
+        return getMissingParameterErrors(this.parameterValuesSource, associatedTemplate.topLevelScope);
     }
 
     public getWarnings(): language.Issue[] {

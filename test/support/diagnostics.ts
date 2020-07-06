@@ -20,6 +20,7 @@ import { Diagnostic, DiagnosticSeverity, Disposable, languages, Position, Range,
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { parseParametersWithMarkers } from "./parseTemplate";
+import { rangeToString } from "./rangeToString";
 import { resolveInTestFolder } from "./resolveInTestFolder";
 import { stringify } from "./stringify";
 import { TempDocument, TempEditor, TempFile } from "./TempFile";
@@ -500,24 +501,18 @@ export function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnost
         default: assert.fail(`Expected severity ${diagnostic.severity}`);
     }
 
-    let s = `${severity}: ${diagnostic.message} (${diagnostic.source})${rangeAsString(diagnostic.range)}`;
+    let s = `${severity}: ${diagnostic.message} (${diagnostic.source})${maybeRange(diagnostic.range)}`;
     if (diagnostic.relatedInformation) {
         const related = diagnostic.relatedInformation[0];
-        s = `${s} [${related.message}]${rangeAsString(related.location.range)}`;
+        s = `${s} [${related.message}]${maybeRange(related.location.range)}`;
     }
 
     return s;
 
-    function rangeAsString(range: Range): string {
+    function maybeRange(range: Range | undefined): string {
         // Do the expected messages include ranges?
         if (includeRange) {
-            // tslint:disable-next-line: strict-boolean-expressions
-            if (!range) {
-                return "[]";
-            } else {
-                return ` [${range.start.line},${range.start.character}`
-                    + `-${range.end.line},${range.end.character}]`;
-            }
+            return ' ' + rangeToString(range);
         }
 
         return "";

@@ -12,7 +12,7 @@ import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { CachedPromise } from "./CachedPromise";
-import { IGotoParameterValueArgs } from "./commandArguments";
+import { IAddMissingParametersArgs, IGotoParameterValueArgs } from "./commandArguments";
 import * as Completion from "./Completion";
 import { ConsoleOutputChannelWrapper } from "./ConsoleOutputChannelWrapper";
 import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "./constants";
@@ -23,12 +23,13 @@ import { Histogram } from "./Histogram";
 import * as Hover from './Hover';
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 import { getItemTypeQuickPicks, InsertItem } from "./insertItem";
-import { IParameterValuesSourceFromFile } from "./IParameterValuesSourceFromFile";
+import { IParameterValuesSourceProvider } from "./IParameterValuesSourceProvider";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { startArmLanguageServerInBackground } from "./languageclient/startArmLanguageServer";
 import { DeploymentFileMapping } from "./parameterFiles/DeploymentFileMapping";
 import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
+import { IParameterDefinitionsSource } from "./parameterFiles/IParameterDefinitionsSource";
 import { IParameterValuesSource } from "./parameterFiles/IParameterValuesSource";
 import { considerQueryingForParameterFile, getFriendlyPathToFile, openParameterFile, openTemplateFile, selectParameterFile } from "./parameterFiles/parameterFiles";
 import { addMissingParameters } from "./parameterFiles/ParameterValues";
@@ -230,11 +231,11 @@ export class AzureRMTools {
         registerCommand("azurerm-vscode-tools.resetGlobalState", resetGlobalState);
 
         // Code action commands
-        registerCommand("azurerm-vscode-tools.codeAction.addAllMissingParameters", async (actionContext: IActionContext, source?: vscode.Uri) => {
-            await this.addMissingParameters(actionContext, source, false);
+        registerCommand("azurerm-vscode-tools.codeAction.addAllMissingParameters", async (actionContext: IActionContext, source?: vscode.Uri, args?: IAddMissingParametersArgs) => {
+            await this.addMissingParameters(actionContext, source, args, false);
         });
-        registerCommand("azurerm-vscode-tools.codeAction.addMissingRequiredParameters", async (actionContext: IActionContext, source?: vscode.Uri) => {
-            await this.addMissingParameters(actionContext, source, true);
+        registerCommand("azurerm-vscode-tools.codeAction.addMissingRequiredParameters", async (actionContext: IActionContext, source?: vscode.Uri, args?: IAddMissingParametersArgs) => {
+            await this.addMissingParameters(actionContext, source, args, true);
         });
 
         // Code lens commands
@@ -279,19 +280,38 @@ export class AzureRMTools {
 
     private async addMissingParameters(
         actionContext: IActionContext,
+        // URI of the document containing the parameter *values* (if no args, this is the parameter file)
         source: vscode.Uri | undefined,
+        args: IAddMissingParametersArgs | undefined,
         onlyRequiredParameters: boolean
     ): Promise<void> {
         source = source || vscode.window.activeTextEditor?.document.uri;
         const editor = vscode.window.activeTextEditor;
-        const paramsUri = source || editor?.document.uri;
-        if (editor && paramsUri && editor.document.uri.fsPath === paramsUri.fsPath) {
-            let { doc, associatedDoc: template } = await this.getDeploymentDocAndAssociatedDoc(editor.document, Cancellation.cantCancel);
-            if (doc instanceof DeploymentParameters) {
-                assert(template instanceof DeploymentTemplate);
+        const uri = source || editor?.document.uri;
+
+        if (editor && uri && editor.document.uri.fsPath === uri.fsPath) {
+            let parameterValues: IParameterValuesSource | undefined;
+            let parameterDefinitions: IParameterDefinitionsSource | undefined;
+
+            if (!args) {
+                // Called from edit context menu, source is the parameter file, since we don't have a context menu for it
+                //   for parameter value sources in the template file
+                let { doc, associatedDoc: template } = await this.getDeploymentDocAndAssociatedDoc(editor.document, Cancellation.cantCancel);
+                if (doc instanceof DeploymentParameters) {
+                    assert(template instanceof DeploymentTemplate);
+                    parameterValues = doc.parameterValuesSource;
+                    parameterDefinitions = template.topLevelScope;
+                }
+            } else {
+                // Called from a code action, we should already have the parameter values source
+                parameterValues = args.parameterValuesSource;
+                parameterDefinitions = args.parameterDefinitionsSource;
+            }
+
+            if (parameterValues && parameterDefinitions) {
                 await addMissingParameters(
-                    template.topLevelScope,
-                    doc.parameterValuesSource,
+                    parameterDefinitions,
+                    parameterValues,
                     editor,
                     onlyRequiredParameters);
             }
@@ -782,7 +802,7 @@ export class AzureRMTools {
 
             const codeLensProvider = {
                 onDidChangeCodeLenses: this._codeLensChangedEmitter.event,
-                provideCodeLenses: async (document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.CodeLens[] | undefined> => {
+                provideCodeLenses: (document: vscode.TextDocument, token: vscode.CancellationToken): vscode.CodeLens[] | undefined => {
                     return this.onProvideCodeLenses(document, token);
                 },
                 resolveCodeLens: async (codeLens: vscode.CodeLens, token: vscode.CancellationToken): Promise<vscode.CodeLens | undefined> => {
@@ -1050,7 +1070,11 @@ export class AzureRMTools {
             return undefined;
         }
 
-        class ParameterValuesSourceProviderFromParameterFile implements IParameterValuesSourceFromFile {
+        /**
+         * A parameter value source provider using a parameter file. This is here just for convenient access to the
+         * getOrReadTemplateParameters function.
+         */
+        class ParameterValuesSourceProviderFromParameterFile implements IParameterValuesSourceProvider {
             private _parameterValuesSource: CachedPromise<IParameterValuesSource> = new CachedPromise<IParameterValuesSource>();
 
             public constructor(
@@ -1058,7 +1082,8 @@ export class AzureRMTools {
                 public readonly parameterFileUri: vscode.Uri) {
             }
 
-            public async fetchParameterValues(): Promise<IParameterValuesSource> {
+            // Load parameter file asynchronously and expose its parameter values
+            public async getValuesSource(): Promise<IParameterValuesSource> {
                 return this._parameterValuesSource.getOrCachePromise(async () => {
                     const dp = await this.parent.getOrReadTemplateParameters(this.parameterFileUri);
                     return dp?.parameterValuesSource;
@@ -1173,19 +1198,33 @@ export class AzureRMTools {
     }
 
     private async onGotoParameterValue(actionContext: IActionContext, args: IGotoParameterValueArgs): Promise<void> {
-        const uri = args.parameterFileUri;
+        // Open the correct document
+        const uri = args.inParameterFile?.parameterFileUri ?? args.inTemplateFile?.documentUri;
+        assert(uri);
         let textDocument: vscode.TextDocument = await vscode.workspace.openTextDocument(uri);
         const editor = await vscode.window.showTextDocument(textDocument);
 
+        // Navigate to the correct range, if any
         const doc: DeploymentDocument | undefined = this.getOpenedDeploymentDocument(uri);
-        if (doc instanceof DeploymentParameters) {
+        let range: vscode.Range | undefined;
+        if (args.inParameterFile && doc instanceof DeploymentParameters) {
             const parameterValues = doc.parameterValuesSource;
             // If the parameter doesn't have a value to navigate to, then show the
             // properties section or beginning of the param file/nested template.
-            const span = parameterValues.getParameterValue(args.parameterName)?.value?.span
-                ?? parameterValues.parametersProperty?.nameValue.span
+            const parameterName = args.inParameterFile.parameterName;
+            const span =
+                // First choice: Directly to the parameter's value
+                (parameterName ? parameterValues.getParameterValue(parameterName)?.value?.span : undefined)
+                // Second choice: To the "properties" section
+                ?? parameterValues.parameterValuesProperty?.nameValue.span
+                // Third choice: top of the file
                 ?? new language.Span(0, 0);
-            const range = getVSCodeRangeFromSpan(doc, span);
+            range = getVSCodeRangeFromSpan(doc, span);
+        } else if (args.inTemplateFile && doc instanceof DeploymentTemplate) {
+            range = args.inTemplateFile.range;
+        }
+
+        if (range) {
             editor.selection = new vscode.Selection(range.start, range.end);
             editor.revealRange(range);
         }
@@ -1382,7 +1421,7 @@ export class AzureRMTools {
 
             const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(textDocument, cancel);
             if (doc) {
-                return await doc.getCodeActions(associatedDoc, range, context);
+                return doc.getCodeActions(associatedDoc, range, context);
             }
 
             return [];

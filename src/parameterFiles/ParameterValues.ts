@@ -3,10 +3,11 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
-import * as os from "os";
 import { CodeAction, CodeActionContext, CodeActionKind, Range, Selection, TextEditor } from "vscode";
 import { Command } from "vscode-languageclient";
-import { Json } from "../../extension.bundle";
+import { Completion, Json } from "../../extension.bundle";
+import { IAddMissingParametersArgs } from "../commandArguments";
+import { ext } from "../extensionVariables";
 import { IParameterDefinition } from "../IParameterDefinition";
 import * as language from "../Language";
 import { createParameterFromTemplateParameter, defaultTabSize } from "../parameterFileGeneration";
@@ -15,17 +16,18 @@ import { getVSCodePositionFromPosition, getVSCodeRangeFromSpan } from "../util/v
 import { IParameterDefinitionsSource } from "./IParameterDefinitionsSource";
 import { IParameterValuesSource } from "./IParameterValuesSource";
 
-const EOL: string = os.EOL;
+const EOL: string = ext.EOL;
+const newParameterValueSnippetLabel = `new-parameter-value`;
 
-export async function getParameterValuesCodeActions(
+export function getParameterValuesCodeActions(
     parameterValuesSource: IParameterValuesSource,
     parameterDefinitionsSource: IParameterDefinitionsSource | undefined,
     // This is the range currently being inspected
     range: Range | Selection,
     context: CodeActionContext
-): Promise<(Command | CodeAction)[]> {
+): (Command | CodeAction)[] {
     const actions: (Command | CodeAction)[] = [];
-    const parametersProperty = parameterValuesSource.parametersProperty;
+    const parametersProperty = parameterValuesSource.parameterValuesProperty;
 
     if (parametersProperty && parameterDefinitionsSource) {
         // Is the parameters property in the requested range?
@@ -40,7 +42,11 @@ export async function getParameterValuesCodeActions(
                     command: 'azurerm-vscode-tools.codeAction.addMissingRequiredParameters',
                     title: action.title,
                     arguments: [
-                        parameterValuesSource.document.documentUri
+                        parameterValuesSource.document.documentUri,
+                        <IAddMissingParametersArgs>{
+                            parameterValuesSource,
+                            parameterDefinitionsSource
+                        }
                     ]
                 };
                 actions.push(action);
@@ -53,7 +59,11 @@ export async function getParameterValuesCodeActions(
                     command: 'azurerm-vscode-tools.codeAction.addAllMissingParameters',
                     title: action.title,
                     arguments: [
-                        parameterValuesSource.document.documentUri
+                        parameterValuesSource.document.documentUri,
+                        <IAddMissingParametersArgs>{
+                            parameterValuesSource,
+                            parameterDefinitionsSource
+                        }
                     ]
                 };
                 actions.push(action);
@@ -99,11 +109,11 @@ export async function addMissingParameters(
 
     // Find the location to insert new stuff in the parameters section
     const parameterValuesDocument = parameterValuesSource.document;
-    const parametersObjectValue = parameterValuesSource.parametersProperty?.value?.asObjectValue;
-    if (parameterValuesSource.parametersProperty && parametersObjectValue) {
+    const parametersObjectValue = parameterValuesSource.parameterValuesProperty?.value?.asObjectValue;
+    if (parameterValuesSource.parameterValuesProperty && parametersObjectValue) {
         // Where insert?
         // Find last non-whitespace token inside the parameters section
-        const parametersProperty = parameterValuesSource.parametersProperty;
+        const parametersProperty = parameterValuesSource.parameterValuesProperty;
         let lastTokenInParameters: Json.Token | undefined;
         for (let i = parametersProperty.span.endIndex - 1; // Start before the closing "}"
             i >= parametersProperty.span.startIndex;
@@ -208,4 +218,202 @@ export function createEditToAddCommaBeforePosition(
     }
 
     return undefined;
+}
+
+export function getCompletionForNewParameter(
+    parameterValuesSource: IParameterValuesSource,
+    documentIndex: number
+): Completion.Item {
+    const detail = "Insert new parameter";
+    let snippet =
+        // tslint:disable-next-line:prefer-template
+        `"\${1:parameter1}": {` + EOL
+        + `\t"value": "\${2:value}"` + EOL
+        + `}`;
+    const documentation = "documentation";
+    const label = newParameterValueSnippetLabel;
+
+    return createParameterCompletion(
+        parameterValuesSource,
+        documentIndex,
+        label,
+        snippet,
+        Completion.CompletionKind.DpNewPropertyValue,
+        detail,
+        documentation);
+}
+
+/**
+ * Get completion items for our position in the document
+ */
+export function getCompletionsForMissingParameters(
+    parameterDefinitionsSource: IParameterDefinitionsSource,
+    parameterValuesSource: IParameterValuesSource,
+    documentIndex: number
+): Completion.Item[] {
+    const completions: Completion.Item[] = [];
+    const paramsInParameterFile: string[] = parameterValuesSource.parameterValueDefinitions.map(
+        pv => pv.nameValue.unquotedValue.toLowerCase());
+
+    // For each parameter in the template
+    for (let param of parameterDefinitionsSource.parameterDefinitions) {
+        // Is this already in the parameter file?
+        const paramNameLC = param.nameValue.unquotedValue.toLowerCase();
+        if (paramsInParameterFile.includes(paramNameLC)) {
+            continue;
+        }
+
+        const isRequired = !param.defaultValue;
+        const label = param.nameValue.quotedValue;
+        const paramText = createParameterFromTemplateParameter(parameterDefinitionsSource, param);
+        let replacement = paramText;
+        const documentation = `Insert a value for parameter "${param.nameValue.unquotedValue}"`;
+        const detail = (isRequired ? "(required parameter)" : "(optional parameter)")
+            + EOL
+            + EOL
+            + paramText;
+
+        completions.push(
+            createParameterCompletion(
+                parameterValuesSource,
+                documentIndex,
+                label,
+                replacement,
+                Completion.CompletionKind.DtResourceIdResType,
+                detail,
+                documentation));
+    }
+
+    return completions;
+}
+
+function createParameterCompletion(
+    parameterValuesSource: IParameterValuesSource,
+    documentIndex: number,
+    label: string,
+    insertText: string,
+    kind: Completion.CompletionKind,
+    detail: string,
+    documentation: string
+): Completion.Item {
+    // The completion span is the entire token at the cursor
+    const document = parameterValuesSource.document;
+    let token = document.getJSONTokenAtDocumentCharacterIndex(documentIndex);
+
+    if (!token && documentIndex > 0) {
+        // Also pick up the token touching the cursor on the left, if none found right at it
+        token = document.getJSONTokenAtDocumentCharacterIndex(documentIndex - 1);
+    }
+
+    const span = token?.span ?? new language.Span(documentIndex, 0);
+
+    // Comma after?
+    if (needsCommaAfterCompletion(parameterValuesSource, documentIndex)) {
+        insertText += ',';
+    }
+
+    // Comma before?
+    const commaEdit = createEditToAddCommaBeforePosition(
+        parameterValuesSource,
+        documentIndex);
+
+    // Use double quotes around the label if the token is a double-quoted string.
+    // That way, the snippet can be used inside or outside of a string, with correct
+    // filtering and insertion behavior
+    if (token?.type === Json.TokenType.QuotedString) {
+        if (label[0] !== '"') {
+            label = `"${label}"`;
+        }
+    }
+
+    return new Completion.Item({
+        label,
+        insertText,
+        span,
+        kind,
+        detail,
+        documentation,
+        additionalEdits: commaEdit ? [commaEdit] : undefined
+    });
+}
+
+function needsCommaAfterCompletion(
+    parameterValuesSource: IParameterValuesSource,
+    documentCharacterIndex: number
+): boolean {
+    // If there are any parameters after the one being inserted, we need to add a comma after the new one
+    if (parameterValuesSource.parameterValueDefinitions.some(p => p.fullSpan.startIndex >= documentCharacterIndex)) {
+        return true;
+    }
+
+    return false;
+}
+
+export function getPropertyValueCompletionItems(
+    parameterDefinitionsSource: IParameterDefinitionsSource | undefined,
+    parameterValuesSource: IParameterValuesSource,
+    documentIndex: number,
+    triggerCharacter: string | undefined
+): Completion.Item[] {
+    let completions: Completion.Item[] = [];
+
+    if ((!triggerCharacter || triggerCharacter === '"') && canAddPropertyValueHere(parameterValuesSource, documentIndex)) {
+        if (parameterDefinitionsSource) {
+            completions.push(...getCompletionsForMissingParameters(parameterDefinitionsSource, parameterValuesSource, documentIndex));
+        }
+        completions.push(getCompletionForNewParameter(parameterValuesSource, documentIndex));
+    }
+
+    return completions;
+}
+
+// True if inside the "parameters" object, but not inside any properties
+// within it.
+export function canAddPropertyValueHere(
+    parameterValuesSource: IParameterValuesSource,
+    documentIndex: number
+): boolean {
+    const parametersObjectValue = parameterValuesSource.parameterValuesProperty?.value?.asObjectValue;
+    if (!parametersObjectValue) {
+        // No "parameters" section
+        return false;
+    }
+
+    const enclosingJsonValue = parameterValuesSource.document.jsonParseResult.getValueAtCharacterIndex(
+        documentIndex,
+        language.Contains.enclosed);
+
+    if (enclosingJsonValue !== parametersObjectValue) {
+        // Directly-enclosing JSON value/object at the cursor is not the "parameters" object
+        // (either it's outside it, or it's within a subvalue like an existing parameter)
+        return false;
+    }
+
+    // Check if we're inside a comment
+    if (!!parameterValuesSource.document.jsonParseResult.getCommentTokenAtDocumentIndex(
+        documentIndex,
+        language.Contains.enclosed)
+    ) {
+        return false;
+    }
+
+    return true;
+}
+
+export function getMissingParameterErrors(parameterValues: IParameterValuesSource, parameterDefinitions: IParameterDefinitionsSource): language.Issue[] {
+    const missingRequiredParams: IParameterDefinition[] = getMissingParameters(
+        parameterDefinitions,
+        parameterValues,
+        true // onlyRequiredParameters
+    );
+    if (missingRequiredParams.length === 0) {
+        return [];
+    }
+
+    const missingParamNames = missingRequiredParams.map(param => `"${param.nameValue.unquotedValue}"`);
+    const message = `The following parameters do not have values: ${missingParamNames.join(', ')}`;
+    const span = parameterValues.parameterValuesProperty?.nameValue.span
+        ?? (parameterValues.deploymentRootObject ? new language.Span(parameterValues.deploymentRootObject?.startIndex, 0) : undefined)
+        ?? new language.Span(0, 0);
+    return [new language.Issue(span, message, language.IssueKind.params_missingRequiredParam)];
 }

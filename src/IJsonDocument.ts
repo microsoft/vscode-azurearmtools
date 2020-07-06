@@ -18,4 +18,6 @@ export interface IJsonDocument extends IDocument {
      * The JSON node for the top-level JSON object (if the JSON is not empty or malformed)
      */
     topLevelValue: Json.ObjectValue | undefined;
+
+    getJSONTokenAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Token | undefined;
 }

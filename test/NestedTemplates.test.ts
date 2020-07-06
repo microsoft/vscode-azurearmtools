@@ -642,6 +642,7 @@ suite("Nested templates", () => {
                 "8: Warning: The parameter 'p2' is never used.",
                 "12: Warning: The parameter 'p4' is never used.",
                 "17: Warning: The variable 'v1' is never used.",
+                "30: Error: The following parameters do not have values: \"p1\", \"p2\"",
                 "35: Warning: The variable 'v2' is never used.",
                 "53: Error: Undefined parameter reference: 'p4'",
                 "60: Warning: The parameter 'p2' is never used.",
