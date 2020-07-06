@@ -783,7 +783,7 @@ export class AzureRMTools {
             const codeLensProvider = {
                 onDidChangeCodeLenses: this._codeLensChangedEmitter.event,
                 provideCodeLenses: async (document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.CodeLens[] | undefined> => {
-                    return await this.onProvideCodeLenses(document, token);
+                    return this.onProvideCodeLenses(document, token);
                 },
                 resolveCodeLens: async (codeLens: vscode.CodeLens, token: vscode.CancellationToken): Promise<vscode.CodeLens | undefined> => {
                     return await this.onResolveCodeLens(codeLens, token);
