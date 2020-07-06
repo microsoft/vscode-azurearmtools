@@ -13,6 +13,7 @@ import { IReferenceSite, PositionContext, ReferenceSiteKind } from "../PositionC
 import { ReferenceList } from "../ReferenceList";
 import * as TLE from '../TLE';
 import { DeploymentParameters } from "./DeploymentParameters";
+import { createEditToAddCommaBeforePosition } from './ParameterValues';
 
 const EOL = ext.EOL;
 const newParameterValueSnippetLabel = `new-parameter-value`;
@@ -54,7 +55,7 @@ export class ParametersPositionContext extends PositionContext {
             return undefined;
         }
 
-        for (let paramValue of this.document.parameterValues) {
+        for (let paramValue of this.document.parameterValueDefinitions) {
             // Are we inside the name of a parameter?
             if (paramValue.nameValue.span.contains(this.documentCharacterIndex, language.Contains.extended)) {
                 // Does it have an associated parameter definition in the template?
@@ -120,7 +121,7 @@ export class ParametersPositionContext extends PositionContext {
     private getCompletionsForMissingParameters(): Completion.Item[] {
         const completions: Completion.Item[] = [];
         if (this._associatedTemplate) {
-            const paramsInParameterFile: string[] = this.document.parameterValues.map(
+            const paramsInParameterFile: string[] = this.document.parameterValueDefinitions.map(
                 pv => pv.nameValue.unquotedValue.toLowerCase());
 
             // For each parameter in the template
@@ -133,7 +134,7 @@ export class ParametersPositionContext extends PositionContext {
 
                 const isRequired = !param.defaultValue;
                 const label = param.nameValue.quotedValue;
-                const paramText = createParameterFromTemplateParameter(this._associatedTemplate, param);
+                const paramText = createParameterFromTemplateParameter(this._associatedTemplate.topLevelScope, param);
                 let replacement = paramText;
                 const documentation = `Insert a value for parameter "${param.nameValue.unquotedValue}" from template file "${path.basename(this._associatedTemplate.documentUri.fsPath)}"`;
                 const detail = (isRequired ? "(required parameter)" : "(optional parameter)")
@@ -178,7 +179,9 @@ export class ParametersPositionContext extends PositionContext {
         }
 
         // Comma before?
-        const commaEdit = this.document.createEditToAddCommaBeforePosition(this.documentCharacterIndex);
+        const commaEdit = createEditToAddCommaBeforePosition(
+            this.document.parameterValuesSource,
+            this.documentCharacterIndex);
 
         // Use double quotes around the label if the token is a double-quoted string.
         // That way, the snippet can be used inside or outside of a string, with correct
@@ -202,7 +205,7 @@ export class ParametersPositionContext extends PositionContext {
 
     private needsCommaAfterCompletion(): boolean {
         // If there are any parameters after the one being inserted, we need to add a comma after the new one
-        if (this.document.parameterValues.some(p => p.fullSpan.startIndex >= this.documentCharacterIndex)) {
+        if (this.document.parameterValueDefinitions.some(p => p.fullSpan.startIndex >= this.documentCharacterIndex)) {
             return true;
         }
 

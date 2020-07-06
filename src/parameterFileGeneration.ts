@@ -8,18 +8,20 @@ import { QuickPickItem, Uri, window } from "vscode";
 import { IActionContext, UserCancelledError } from 'vscode-azureextensionui';
 import { Json, TLE } from '../extension.bundle';
 import { CaseInsensitiveMap } from './CaseInsensitiveMap';
-import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ExpressionType } from './ExpressionType';
 import { ext } from './extensionVariables';
 import { IParameterDefinition } from './IParameterDefinition';
+import { IParameterDefinitionsSource } from './parameterFiles/IParameterDefinitionsSource';
+import { TemplateScope } from './TemplateScope';
 import { assertNever } from './util/assertNever';
 import { indentMultilineString, unindentMultilineString } from './util/multilineStrings';
 
 export const defaultTabSize: number = 4;
 
-export async function queryCreateParameterFile(actionContext: IActionContext, templateUri: Uri, template: DeploymentTemplate, tabSize: number = defaultTabSize): Promise<Uri> {
+export async function queryCreateParameterFile(actionContext: IActionContext, scope: TemplateScope, tabSize: number = defaultTabSize): Promise<Uri> {
     const all = <QuickPickItem>{ label: "All parameters" };
     const required = <QuickPickItem>{ label: "Only required parameters", description: "Uses only parameters that have no default value in the template file" };
+    const templateUri = scope.document.documentUri;
 
     const whichParams = await ext.ui.showQuickPick([all, required], {
         placeHolder: `Include which parameters from ${path.basename(templateUri.fsPath)}?`
@@ -43,7 +45,7 @@ export async function queryCreateParameterFile(actionContext: IActionContext, te
         throw new UserCancelledError();
     }
 
-    let paramsObj: string = createParameterFileContents(template, tabSize, onlyRequiredParams);
+    let paramsObj: string = createParameterFileContents(scope, tabSize, onlyRequiredParams);
     await fse.writeFile(newUri.fsPath, paramsObj, {
         encoding: 'utf8'
     });
@@ -51,7 +53,7 @@ export async function queryCreateParameterFile(actionContext: IActionContext, te
     return newUri;
 }
 
-export function createParameterFileContents(template: DeploymentTemplate, tabSize: number, onlyRequiredParameters: boolean): string {
+export function createParameterFileContents(scope: TemplateScope, tabSize: number, onlyRequiredParameters: boolean): string {
     /* e.g.
 
     {
@@ -68,7 +70,7 @@ export function createParameterFileContents(template: DeploymentTemplate, tabSiz
 
     const tab = makeIndent(tabSize);
 
-    const params: CaseInsensitiveMap<string, string> = createParameters(template, tabSize, onlyRequiredParameters);
+    const params: CaseInsensitiveMap<string, string> = createParameters(scope, tabSize, onlyRequiredParameters);
     const paramsContent = params.map((key, value) => value).join(`,${ext.EOL}`);
 
     // tslint:disable-next-line: prefer-template
@@ -92,7 +94,7 @@ export function createParameterFileContents(template: DeploymentTemplate, tabSiz
  * Creates text for a property using information for that property in a template file
  * @param tabSize The number of spaces to indent at each level. The parameter text will start flush left
  */
-export function createParameterFromTemplateParameter(template: DeploymentTemplate, parameter: IParameterDefinition, tabSize: number = defaultTabSize): string {
+export function createParameterFromTemplateParameter(parameterDefinitionsSource: IParameterDefinitionsSource, parameter: IParameterDefinition, tabSize: number = defaultTabSize): string {
     /* e.g.
 
     "parameters": {
@@ -111,7 +113,7 @@ export function createParameterFromTemplateParameter(template: DeploymentTemplat
             TLE.isTleExpression(parameter.defaultValue.unquotedValue);
         if (!isExpression) {
             const defValueSpan = parameter.defaultValue.span;
-            const defValue: string = template.documentText.slice(defValueSpan.startIndex, defValueSpan.afterEndIndex);
+            const defValue: string = parameterDefinitionsSource.document.documentText.slice(defValueSpan.startIndex, defValueSpan.afterEndIndex);
             value = unindentMultilineString(defValue, true);
         }
     }
@@ -155,12 +157,12 @@ function getDefaultValueFromType(propType: ExpressionType | undefined, indent: n
     }
 }
 
-function createParameters(template: DeploymentTemplate, tabSize: number, onlyRequiredParameters: boolean): CaseInsensitiveMap<string, string> {
+function createParameters(scope: TemplateScope, tabSize: number, onlyRequiredParameters: boolean): CaseInsensitiveMap<string, string> {
     let params: CaseInsensitiveMap<string, string> = new CaseInsensitiveMap<string, string>();
 
-    for (let paramDef of template.topLevelScope.parameterDefinitions) {
+    for (let paramDef of scope.parameterDefinitions) {
         if (!onlyRequiredParameters || !paramDef.defaultValue) {
-            params.set(paramDef.nameValue.unquotedValue, createParameterFromTemplateParameter(template, paramDef, tabSize));
+            params.set(paramDef.nameValue.unquotedValue, createParameterFromTemplateParameter(scope, paramDef, tabSize));
         }
     }
 

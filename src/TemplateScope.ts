@@ -6,8 +6,11 @@ import * as assert from 'assert';
 import { Json, Utilities } from '../extension.bundle';
 import { CachedValue } from './CachedValue';
 import { templateKeys } from './constants';
+import { IJsonDocument } from "./IJsonDocument";
 import { IParameterDefinition } from "./IParameterDefinition";
 import { IResource } from './IResource';
+import { IParameterDefinitionsSource } from './parameterFiles/IParameterDefinitionsSource';
+import { IParameterValuesSource } from './parameterFiles/IParameterValuesSource';
 import * as TLE from "./TLE";
 import { UserFunctionDefinition } from './UserFunctionDefinition';
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
@@ -22,14 +25,29 @@ export enum TemplateScopeKind {
     LinkedDeployment = "LinkedDeployment",
 }
 
+// CONSIDER:
+// Right now, deployments are scopes (although nested templates give back the parent's
+// params/vars/funcs), but non-deployment scopes exist, too.
+// Probably better to have ITemplateDeployment and IScope separate, with ITemplateDeployment
+// having a scope.
+
 /**
  * Represents the scoped access of parameters/variables/functions at a particular point in the template tree.
  */
-export abstract class TemplateScope {
+export abstract class TemplateScope implements IParameterDefinitionsSource {
     private _parameterDefinitions: CachedValue<IParameterDefinition[] | undefined> = new CachedValue<IParameterDefinition[] | undefined>();
     private _variableDefinitions: CachedValue<IVariableDefinition[] | undefined> = new CachedValue<IVariableDefinition[] | undefined>();
     private _functionDefinitions: CachedValue<UserFunctionNamespaceDefinition[] | undefined> = new CachedValue<UserFunctionNamespaceDefinition[] | undefined>();
     private _resources: CachedValue<IResource[] | undefined> = new CachedValue<IResource[] | undefined>();
+    private _parameterValues: CachedValue<IParameterValuesSource | undefined> = new CachedValue<IParameterValuesSource | undefined>();
+
+    constructor(
+        public readonly document: IJsonDocument, // The document that contains this scope
+        public readonly rootObject: Json.ObjectValue | undefined,
+        // tslint:disable-next-line:variable-name
+        public readonly __debugDisplay: string // Provides context for debugging
+    ) {
+    }
 
     public readonly abstract scopeKind: TemplateScopeKind;
 
@@ -60,11 +78,8 @@ export abstract class TemplateScope {
         return undefined;
     }
 
-    constructor(
-        public readonly rootObject: Json.ObjectValue | undefined,
-        // tslint:disable-next-line:variable-name
-        public readonly __debugDisplay: string // Provides context for debugging
-    ) {
+    protected getParameterValuesSource(): IParameterValuesSource | undefined {
+        return undefined;
     }
 
     public get parameterDefinitions(): IParameterDefinition[] {
@@ -85,6 +100,10 @@ export abstract class TemplateScope {
     public get resources(): IResource[] {
         return this._resources.getOrCacheValue(() => this.getResources())
             ?? [];
+    }
+
+    public get parameterValuesSource(): IParameterValuesSource | undefined {
+        return this._parameterValues.getOrCacheValue(() => this.getParameterValuesSource());
     }
 
     public get childScopes(): TemplateScope[] {

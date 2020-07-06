@@ -194,7 +194,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
     }
 
     public refresh(): void {
-        this.onDidChangeTreeDataEmitter.fire(void 0);
+        this.onDidChangeTreeDataEmitter.fire(null);
     }
 
     public getChildren(element?: string): string[] {

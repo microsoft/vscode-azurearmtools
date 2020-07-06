@@ -15,6 +15,7 @@ import { LinkedTemplateCodeLens, NestedTemplateCodeLen, ParameterDefinitionCodeL
 import { ext } from './extensionVariables';
 import { Histogram } from "./Histogram";
 import { INamedDefinition } from "./INamedDefinition";
+import { IParameterValuesSourceFromFile } from './IParameterValuesSourceFromFile';
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
@@ -57,6 +58,7 @@ export class DeploymentTemplate extends DeploymentDocument {
     public get topLevelScope(): TemplateScope {
         return this._topLevelScope.getOrCacheValue(() =>
             new TopLevelTemplateScope(
+                this,
                 this.topLevelValue,
                 `Top-level template scope for ${this.documentUri}`
             )
@@ -453,12 +455,16 @@ export class DeploymentTemplate extends DeploymentDocument {
         return this.getDocumentText(spanOfValueInsideString, parentStringToken.span.startIndex);
     }
 
-    public getCodeLenses(hasAssociatedParameters: boolean): ResolvableCodeLens[] {
-        return this.getParameterCodeLenses(hasAssociatedParameters)
+    public getCodeLenses(
+        parameterValuesSourceProvider: IParameterValuesSourceFromFile | undefined
+    ): ResolvableCodeLens[] {
+        return this.getParameterCodeLenses(parameterValuesSourceProvider)
             .concat(this.getChildTemplateCodeLenses());
     }
 
-    private getParameterCodeLenses(hasAssociatedParameters: boolean): ResolvableCodeLens[] {
+    private getParameterCodeLenses(
+        parameterValuesSourceProvider: IParameterValuesSourceFromFile | undefined
+    ): ResolvableCodeLens[] {
         if (!ext.configuration.get<boolean>(configKeys.codeLensForParameters)) {
             return [];
         }
@@ -469,14 +475,14 @@ export class DeploymentTemplate extends DeploymentDocument {
         // user to chnage it
         const parametersCodeLensSpan = this.topLevelValue?.getProperty(templateKeys.parameters)?.span
             ?? new language.Span(0, 0);
-        if (hasAssociatedParameters) {
-            lenses.push(new ShowCurrentParameterFileCodeLens(this, parametersCodeLensSpan));
+        if (parameterValuesSourceProvider) {
+            lenses.push(new ShowCurrentParameterFileCodeLens(this.topLevelScope, parametersCodeLensSpan, parameterValuesSourceProvider.parameterFileUri));
         }
-        lenses.push(new SelectParameterFileCodeLens(this, parametersCodeLensSpan));
+        lenses.push(new SelectParameterFileCodeLens(this.topLevelScope, parametersCodeLensSpan, parameterValuesSourceProvider?.parameterFileUri));
 
-        if (hasAssociatedParameters) {
+        if (parameterValuesSourceProvider) {
             // Code lens for each parameter definition
-            lenses.push(...this.topLevelScope.parameterDefinitions.map(pd => new ParameterDefinitionCodeLens(this, pd)));
+            lenses.push(...this.topLevelScope.parameterDefinitions.map(pd => new ParameterDefinitionCodeLens(this.topLevelScope, pd, parameterValuesSourceProvider)));
         }
 
         return lenses;
@@ -489,13 +495,13 @@ export class DeploymentTemplate extends DeploymentDocument {
                 switch (scope.scopeKind) {
                     case ScopeKind.NestedDeploymentWithInnerScope:
                     case ScopeKind.NestedDeploymentWithOuterScope:
-                        const lens = NestedTemplateCodeLen.create(this, scope.rootObject.span, scope.scopeKind);
+                        const lens = NestedTemplateCodeLen.create(scope, scope.rootObject.span);
                         if (lens) {
                             lenses.push(lens);
                         }
                         break;
                     case ScopeKind.LinkedDeployment:
-                        lenses.push(LinkedTemplateCodeLens.create(this, scope.rootObject.span));
+                        lenses.push(LinkedTemplateCodeLens.create(scope, scope.rootObject.span));
                         break;
                     default:
                         break;

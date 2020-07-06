@@ -49,7 +49,6 @@ export function getDocumentChangedPromise(document: TextDocument, timeout: numbe
         "onDidChangeTextDocument",
         (resolve, reject) => {
             const disposable = workspace.onDidChangeTextDocument(e => {
-                console.warn("changed");
                 if (e.document === document) {
                     disposable.dispose();
                     resolve(document.getText());

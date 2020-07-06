@@ -5,18 +5,21 @@
 // tslint:disable:no-unused-expression no-non-null-assertion max-func-body-length
 
 import * as assert from "assert";
-import { Json, Language, UserFunctionNamespaceDefinition } from "../extension.bundle";
+import { Uri } from "vscode";
+import { DeploymentTemplate, Json, Language, UserFunctionNamespaceDefinition } from "../extension.bundle";
 import { createObject, createProperty, createStringProperty } from "./support/jsonCreation";
 
 const fakeSpan = new Language.Span(10, 20);
 
 suite("UserFunctionNamespaceDefinition", () => {
     suite("constructor(Json.Property)", () => {
+        const dt = new DeploymentTemplate("", Uri.file("/doc"));
+
         test("no namespace name (not valid)", () => {
             const namespaceName = createStringProperty("namespaceMisspelled", "Contoso");
             const namespaceObject = new Json.ObjectValue(fakeSpan, [namespaceName]);
 
-            let pd = UserFunctionNamespaceDefinition.createIfValid(namespaceObject);
+            let pd = UserFunctionNamespaceDefinition.createIfValid(dt, namespaceObject);
             assert(!pd, "No namespace name, should be invalid");
         });
 
@@ -24,7 +27,7 @@ suite("UserFunctionNamespaceDefinition", () => {
             const namespaceName = createStringProperty("namespace", "Contoso");
             const namespaceObject = new Json.ObjectValue(fakeSpan, [namespaceName]);
 
-            let pd = UserFunctionNamespaceDefinition.createIfValid(namespaceObject);
+            let pd = UserFunctionNamespaceDefinition.createIfValid(dt, namespaceObject);
             assert(pd);
             pd = pd!;
 
@@ -38,7 +41,7 @@ suite("UserFunctionNamespaceDefinition", () => {
             const namespaceName = createStringProperty("namespacE", "Contoso");
             const namespaceObject = new Json.ObjectValue(fakeSpan, [namespaceName]);
 
-            let pd = UserFunctionNamespaceDefinition.createIfValid(namespaceObject);
+            let pd = UserFunctionNamespaceDefinition.createIfValid(dt, namespaceObject);
             assert(pd);
             pd = pd!;
 
@@ -72,7 +75,7 @@ suite("UserFunctionNamespaceDefinition", () => {
                 );
 
             test("getMemberDefinition", () => {
-                let userNs = UserFunctionNamespaceDefinition.createIfValid(namespace1);
+                let userNs = UserFunctionNamespaceDefinition.createIfValid(dt, namespace1);
                 assert(userNs);
                 userNs = userNs!;
 
@@ -83,7 +86,7 @@ suite("UserFunctionNamespaceDefinition", () => {
             });
 
             test("getMemberDefinition case insensitive", () => {
-                let userNs = UserFunctionNamespaceDefinition.createIfValid(namespace2);
+                let userNs = UserFunctionNamespaceDefinition.createIfValid(dt, namespace2);
                 assert(userNs);
                 userNs = userNs!;
 

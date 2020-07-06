@@ -5,6 +5,7 @@
 import { CachedValue } from "./CachedValue";
 import { templateKeys } from "./constants";
 import { IUsageInfo } from "./Hover";
+import { IJsonDocument } from "./IJsonDocument";
 import { DefinitionKind, INamedDefinition } from "./INamedDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
@@ -30,6 +31,7 @@ export class UserFunctionDefinition implements INamedDefinition {
     public readonly definitionKind: DefinitionKind = DefinitionKind.UserFunction;
 
     constructor(
+        public readonly document: IJsonDocument,
         public readonly namespace: UserFunctionNamespaceDefinition,
         public readonly nameValue: Json.StringValue,
         public readonly objectValue: Json.ObjectValue,
@@ -47,6 +49,7 @@ export class UserFunctionDefinition implements INamedDefinition {
         return this._scope.getOrCacheValue(() => {
             // Each user function has a scope of its own
             return new UserFunctionScope(
+                this.document,
                 this.objectValue,
                 this.parameterDefinitions,
                 `'${this.fullName}' (UDF) scope`);
