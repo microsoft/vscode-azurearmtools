@@ -299,10 +299,6 @@ suite("Language", () => {
                 assert.throws(() => { new Language.Issue(<any>undefined, "error message", IssueKind.tleSyntax); });
             });
 
-            test("With empty span", () => {
-                assert.throws(() => { new Language.Issue(new Language.Span(5, 0), "error message", IssueKind.tleSyntax); });
-            });
-
             test("With null message", () => {
                 // tslint:disable-next-line:no-any
                 assert.throws(() => { new Language.Issue(new Language.Span(4, 1), <any>null, IssueKind.tleSyntax); });
