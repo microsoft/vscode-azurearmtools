@@ -109,7 +109,7 @@ export class ParametersPositionContext extends PositionContext {
         return this.createParameterCompletion(
             label,
             snippet,
-            Completion.CompletionKind.DpNewPropertyValue,
+            Completion.CompletionKind.PropertyValueForNewProperty,
             detail,
             documentation);
     }
@@ -145,7 +145,7 @@ export class ParametersPositionContext extends PositionContext {
                     this.createParameterCompletion(
                         label,
                         replacement,
-                        Completion.CompletionKind.DtResourceIdResType,
+                        Completion.CompletionKind.PropertyValueForExistingProperty,
                         detail,
                         documentation));
             }

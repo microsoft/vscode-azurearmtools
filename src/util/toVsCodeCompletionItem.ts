@@ -59,16 +59,16 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
             vscodeItem.kind = vscode.CompletionItemKind.Unit;
             break;
 
-        case Completion.CompletionKind.DpPropertyValue:
+        case Completion.CompletionKind.PropertyValueForExistingProperty:
             vscodeItem.kind = vscode.CompletionItemKind.Property;
             break;
 
-        case Completion.CompletionKind.DpNewPropertyValue:
+        case Completion.CompletionKind.PropertyValueForNewProperty:
             vscodeItem.kind = vscode.CompletionItemKind.Snippet;
             break;
 
-        case Completion.CompletionKind.DtResourceIdResType:
-        case Completion.CompletionKind.DtResourceIdResName:
+        case Completion.CompletionKind.ResourceIdResTypeParameter:
+        case Completion.CompletionKind.ResourceIdResNameParameter:
             vscodeItem.kind = vscode.CompletionItemKind.Reference;
             break;
 
