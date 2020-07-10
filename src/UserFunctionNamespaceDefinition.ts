@@ -6,6 +6,7 @@ import * as os from 'os';
 import { CachedValue } from './CachedValue';
 import { assert } from './fixed_assert';
 import { IUsageInfo } from './Hover';
+import { IJsonDocument } from "./IJsonDocument";
 import { DefinitionKind, INamedDefinition } from './INamedDefinition';
 import * as Json from "./JSON";
 import * as language from "./Language";
@@ -48,16 +49,17 @@ export class UserFunctionNamespaceDefinition implements INamedDefinition {
     private _members: CachedValue<UserFunctionDefinition[]> = new CachedValue<UserFunctionDefinition[]>();
 
     private constructor(
+        public readonly document: IJsonDocument,
         public readonly nameValue: Json.StringValue,
         private readonly _value: Json.ObjectValue
     ) {
         assert(_value);
     }
 
-    public static createIfValid(functionValue: Json.ObjectValue): UserFunctionNamespaceDefinition | undefined {
+    public static createIfValid(document: IJsonDocument, functionValue: Json.ObjectValue): UserFunctionNamespaceDefinition | undefined {
         let nameValue: Json.StringValue | undefined = Json.asStringValue(functionValue.getPropertyValue("namespace"));
         if (nameValue) {
-            return new UserFunctionNamespaceDefinition(nameValue, functionValue);
+            return new UserFunctionNamespaceDefinition(document, nameValue, functionValue);
         }
 
         return undefined;
@@ -84,7 +86,7 @@ export class UserFunctionNamespaceDefinition implements INamedDefinition {
                     let name: Json.StringValue = member.nameValue;
                     let value = Json.asObjectValue(member.value);
                     if (value) {
-                        let func = new UserFunctionDefinition(this, name, value, member.span);
+                        let func = new UserFunctionDefinition(this.document, this, name, value, member.span);
                         membersResult.push(func);
                     }
                 }

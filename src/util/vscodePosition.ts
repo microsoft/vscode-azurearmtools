@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from 'vscode';
-import { DeploymentDocument } from '../DeploymentDocument';
 import { assert } from "../fixed_assert";
+import { IDocument } from "../IDocument";
 import * as language from "../Language";
 
-export function getVSCodeRangeFromSpan(deploymentDocument: DeploymentDocument, span: language.Span): vscode.Range {
+export function getVSCodeRangeFromSpan(deploymentDocument: IDocument, span: language.Span): vscode.Range {
     assert(span);
     assert(deploymentDocument);
 

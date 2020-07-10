@@ -13,6 +13,7 @@ import { ext } from '../extensionVariables';
 import { queryCreateParameterFile } from '../parameterFileGeneration';
 import { containsParametersSchema } from '../schemas';
 import { normalizePath } from '../util/normalizePath';
+import { pathExists } from '../util/pathExists';
 import { readUtf8FileWithBom } from '../util/readUtf8FileWithBom';
 import { DeploymentFileMapping } from './DeploymentFileMapping';
 
@@ -103,7 +104,7 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
   } else if (result === quickPickList.newFile) {
     // New parameter file
 
-    let newUri: Uri = await queryCreateParameterFile(actionContext, templateUri, template);
+    let newUri: Uri = await queryCreateParameterFile(actionContext, template.topLevelScope);
     await mapping.mapParameterFile(templateUri, newUri);
     await commands.executeCommand('azurerm-vscode-tools.openParameterFile', templateUri, newUri);
   } else if (result === quickPickList.openCurrent) {
@@ -195,12 +196,7 @@ async function createParameterFileQuickPickList(mapping: DeploymentFileMapping, 
   if (currentParamUri && !currentParamFile) {
     // There is a current parameter file, but it wasn't among the list we came up with.  We must add it to the list.
     currentParamFile = { isCloseNameMatch: false, uri: currentParamUri, friendlyPath: getRelativeParameterFilePath(templateUri, currentParamUri) };
-    let exists = false;
-    try {
-      exists = await fse.pathExists(currentParamUri.fsPath);
-    } catch (err) {
-      // Ignore
-    }
+    let exists = await pathExists(currentParamUri);
     currentParamFile.fileNotFound = !exists;
 
     suggestions = suggestions.concat(currentParamFile);

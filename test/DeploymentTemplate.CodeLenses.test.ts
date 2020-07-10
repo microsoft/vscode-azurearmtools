@@ -7,12 +7,24 @@
 
 import * as assert from "assert";
 import { Position, Range, Uri } from "vscode";
-import { ParameterDefinitionCodeLens } from "../extension.bundle";
+import { IGotoParameterValueArgs, IParameterValuesSource, IParameterValuesSourceFromFile, ParameterDefinitionCodeLens, ShowCurrentParameterFileCodeLens } from "../extension.bundle";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseParametersWithMarkers, parseTemplate } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
 
 suite("DeploymentTemplate code lenses", () => {
+    class FakeParameterValuesSourceProvider implements IParameterValuesSourceFromFile {
+        public constructor(
+            public readonly parameterFileUri: Uri,
+            private readonly parameterValuesSource: IParameterValuesSource) {
+        }
+
+        public async fetchParameterValues(): Promise<IParameterValuesSource> {
+            return this.parameterValuesSource;
+        }
+
+    }
+
     const template: IDeploymentTemplate = {
         "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
         "contentVersion": "1.0.0.0",
@@ -110,14 +122,17 @@ suite("DeploymentTemplate code lenses", () => {
         suite("if no parameter file then", () => {
             test("expect only a single parameters section code lens", async () => {
                 const dt = await parseTemplate(template);
-                const lenses = dt.getCodeLenses(false);
+                const lenses = dt.getCodeLenses(undefined);
                 assert.equal(lenses.length, 1, "Expecting only a code lens for the parameters section itself");
             });
 
             test("code lens should show command to select/create one", async () => {
                 const dt = await parseTemplate(template);
-                const lenses = dt.getCodeLenses(false);
-                lenses.forEach(lens => lens.resolve(undefined));
+                const lenses = dt.getCodeLenses(undefined);
+                for (const lens of lenses) {
+                    const result = await lens.resolve();
+                    assert(result);
+                }
                 assert.equal(stringify(lenses[0].range), stringify(new Range(new Position(3, 2), new Position(63, 3))));
                 assert.equal(lenses[0].command?.title, "Select or create a parameter file to enable full validation...");
                 assert.equal(lenses[0].command?.command, "azurerm-vscode-tools.selectParameterFile");
@@ -131,13 +146,16 @@ suite("DeploymentTemplate code lenses", () => {
             test("parameter section code lens should show command to open current parameter file and one to change the selection", async () => {
                 const dt = await parseTemplate(template);
                 const { dp } = await parseParametersWithMarkers({});
-                const lenses = dt.getCodeLenses(true);
+                const lenses = dt.getCodeLenses(new FakeParameterValuesSourceProvider(dp.documentUri, dp.parameterValuesSource));
                 assert.equal(lenses.length, 2 + dt.topLevelScope.parameterDefinitions.length);
-                lenses.forEach(lens => lens.resolve(dp));
+                for (const lens of lenses) {
+                    const result = await lens.resolve();
+                    assert(result);
+                }
 
-                const openLens = lenses[0];
+                const openLens = lenses.filter(l => l instanceof ShowCurrentParameterFileCodeLens)[0];
                 assert.equal(stringify(openLens.range), stringify(new Range(new Position(3, 2), new Position(63, 3))));
-                assert.equal(openLens.command?.title, `Parameter file: "test parameter file.json"`);
+                assert.equal(openLens.command?.title, `Parameter file: "test parameter file.json" $(error) Not found`);
                 assert.equal(openLens.command?.command, "azurerm-vscode-tools.openParameterFile");
                 assert.equal(openLens.command?.arguments?.length, 1);
                 assert(openLens.command?.arguments![0] instanceof Uri);
@@ -181,7 +199,7 @@ suite("DeploymentTemplate code lenses", () => {
                                 }
                             }
                         }`);
-                const lenses = dt.getCodeLenses(true)
+                const lenses = dt.getCodeLenses(new FakeParameterValuesSourceProvider(dp.documentUri, dp.parameterValuesSource))
                     .filter(l => l instanceof ParameterDefinitionCodeLens)
                     .map(l => <ParameterDefinitionCodeLens>l);
                 assert.equal(lenses.length, dt.topLevelScope.parameterDefinitions.length);
@@ -190,12 +208,14 @@ suite("DeploymentTemplate code lenses", () => {
                 const lens = lenses.find(l => l.parameterDefinition === param);
                 assert(!!lens, `Couldn't find a code lens for parameter ${param.nameValue.unquotedValue}`);
 
-                const result = lens.resolve(dp);
+                const result = await lens.resolve();
                 assert.equal(result, true);
                 assert.equal(lens.command?.command, "azurerm-vscode-tools.codeLens.gotoParameterValue");
                 assert.deepEqual(lens.command?.arguments, [
-                    dp.documentUri,
-                    param.nameValue.unquotedValue
+                    <IGotoParameterValueArgs>{
+                        parameterFileUri: dp.documentUri,
+                        parameterName: param.nameValue.unquotedValue
+                    }
                 ]);
                 assert.equal(lens.command?.title, expectedTitle);
             });

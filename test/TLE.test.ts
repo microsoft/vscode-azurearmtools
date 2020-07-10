@@ -17,7 +17,7 @@ const tleSyntax = IssueKind.tleSyntax;
 const fakeId = Uri.file("https://fake-id");
 
 suite("TLE", () => {
-    const emptyScope = new TopLevelTemplateScope(undefined, "empty scope");
+    const emptyScope = new TopLevelTemplateScope(new DeploymentTemplate("", Uri.file("/doc")), undefined, "empty scope");
 
     function parseExpressionWithScope(stringValue: string, scope?: TemplateScope): TLE.ParseResult {
         scope = scope ? scope : emptyScope;
