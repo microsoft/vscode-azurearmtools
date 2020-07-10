@@ -26,7 +26,7 @@ suite("SortTemplate", async (): Promise<void> => {
         return;
     }
 
-    async function testSortTemplate(command: string, template: String, expected: String): Promise<void> {
+    async function testSortTemplate(command: string, template: string, expected: String): Promise<void> {
         const tempPath = getTempFilePath(`sortTemplate`, '.azrm');
 
         fse.writeFileSync(tempPath, template);
