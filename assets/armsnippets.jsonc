@@ -1965,6 +1965,22 @@
         ],
         "description": "Public IP Prefix"
     },
+    "Resource Group": {
+        "prefix": "arm-rg",
+        "body": [
+            "{",
+            "\t\"name\": \"${1:resourceGroup}\",",
+            "\t\"type\": \"Microsoft.Resources/resourceGroups\",",
+            "\t\"apiVersion\": \"2019-10-01\",",
+            "\t\"location\": \"${2:eastus}\",",
+            "\t\"dependsOn\": [",
+            "\t],",
+            "\t\"tags\": {",
+            "\t}",
+            "}"
+        ],
+        "description": "Resource Group"
+    },
     "Recovery Service Vault": {
         "prefix": "arm-recovery-service-vault",
         "body": [
