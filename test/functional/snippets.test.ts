@@ -13,6 +13,7 @@ import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import { ITestCallbackContext } from 'mocha';
 import * as path from 'path';
+import * as stripJsonComments from 'strip-json-comments';
 import { commands, Selection, Uri, window, workspace } from "vscode";
 import { DeploymentTemplate, getVSCodePositionFromPosition } from '../../extension.bundle';
 import { delay } from '../support/delay';
@@ -382,15 +383,17 @@ suite("Snippets functional tests", () => {
     function createSnippetTests(snippetsFile: string): void {
         suite(snippetsFile, () => {
             const snippetsPath = resolveInTestFolder(path.join('..', 'assets', snippetsFile));
-            const snippets = <{ [name: string]: ISnippet }>fse.readJsonSync(snippetsPath);
+            const snippets = <{ [name: string]: ISnippet }>JSON.parse(stripJsonComments(fse.readFileSync(snippetsPath).toString()));
             // tslint:disable-next-line:no-for-in forin
             for (let snippetName in snippets) {
-                testWithPrep(
-                    `snippet: ${snippetName}`,
-                    [RequiresLanguageServer.instance, UseRealSnippets.instance],
-                    async function (this: ITestCallbackContext): Promise<void> {
-                        await testSnippet(this, snippetsPath, snippetName, snippets[snippetName]);
-                    });
+                if (!snippetName.startsWith('$')) {
+                    testWithPrep(
+                        `snippet: ${snippetName}`,
+                        [RequiresLanguageServer.instance, UseRealSnippets.instance],
+                        async function (this: ITestCallbackContext): Promise<void> {
+                            await testSnippet(this, snippetsPath, snippetName, snippets[snippetName]);
+                        });
+                }
             }
         });
     }

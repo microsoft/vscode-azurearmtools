@@ -120,4 +120,33 @@ suite("Backend validation", () => {
             ]
         );
     });
+
+    /* TODO: 831
+    testWithLanguageServer("Validation error with resourceGroup() tags when using parameter file #831", async () => {
+        await testDiagnosticsFromFile(
+            {
+                "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "parameters": {},
+                "functions": [],
+                "variables": {
+                    "someTag": "[resourceGroup().tags['SomeTag']]"
+                },
+                "resources": [],
+                "outputs": {}
+            },
+            {
+                parameters:
+                {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                    }
+                }
+            },
+            [
+            ]
+        );
+    });
+    */
 });

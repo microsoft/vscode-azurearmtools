@@ -282,7 +282,6 @@ suite("DeploymentTemplate code lenses", () => {
 
         suite("parameters for nested inner-scoped template", () => {
             function createCodeLensTest(testName: string, template: IPartialDeploymentTemplate, expected: string[]): void {
-                console.log("hellO");
                 test(testName, async () => {
                     testName = testName;
                     const dt = await parseTemplate(template);

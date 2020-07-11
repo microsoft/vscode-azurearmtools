@@ -9,7 +9,7 @@ import { canAddPropertyValueHere, DeploymentParameters } from '../extension.bund
 import { testStringAtEachIndex } from './support/testStringAtEachIndex';
 
 suite("ParametersPositionContext", () => {
-    suite("canAddPropertyHere", () => {
+    suite("canAddPropertyValueHere", () => {
         /* parameterFileContents = Parameter file with <!true!> and <!false!> markers
             indicating where we expect a true or false return from canAddPropertyHere, e.g.:
 
