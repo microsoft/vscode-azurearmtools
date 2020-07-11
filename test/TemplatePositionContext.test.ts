@@ -158,7 +158,7 @@ suite("TemplatePositionContext", () => {
     suite("getTokenAtOrAfterCursor", () => {
         function getTextAtReplacementSpan(dt: DeploymentTemplate, index: number): string | undefined {
             const span = dt.getContextFromDocumentCharacterIndex(index, undefined)
-                .getJsonReplacementSpan();
+                .getCompletionReplacementSpanInfo().span;
             return span ? dt.getDocumentText(span) : undefined;
         }
 

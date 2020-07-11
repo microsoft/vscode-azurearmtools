@@ -21,6 +21,7 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
     vscodeItem.documentation = item.documention;
     vscodeItem.commitCharacters = item.commitCharacters;
     vscodeItem.preselect = item.preselect;
+    vscodeItem.filterText = item.filterText;
 
     let sortPriorityPrefix: string;
     switch (item.priority) {
@@ -109,6 +110,10 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
     return vscodeItem;
 }
 
+/**
+ * This is called after a snippet or other completion item is executed by vscode.  Gives us a chance to report it in
+ * telemetry and do any clean-up
+ */
 export function onCompletionActivated(actionContext: IActionContext, telemetryProperties: { [key: string]: string }): void {
     Object.assign(actionContext.telemetry.properties, telemetryProperties ?? {});
 }

@@ -885,7 +885,8 @@ export class AzureRMTools {
                     '"',
                     '(',
                     ',',
-                    ' '
+                    ' ',
+                    '{'
                 ));
 
             // tslint:disable-next-line:no-suspicious-comment

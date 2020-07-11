@@ -11,7 +11,8 @@ import { IActionContext, IAzureQuickPickItem, IAzureUserInput } from "vscode-azu
 import { Json, templateKeys } from "../extension.bundle";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
-import { ISnippet } from "./snippets/ISnippetManager";
+import { ISnippet } from "./snippets/ISnippet";
+import { KnownSnippetContexts } from "./snippets/SnippetContext";
 import { TemplateSectionType } from "./TemplateSectionType";
 import { assertNever } from './util/assertNever';
 
@@ -44,14 +45,12 @@ export function getItemType(): QuickPickItem<ItemType>[] {
 
 async function getResourceSnippets(): Promise<IAzureQuickPickItem<ISnippet>[]> {
     let items: IAzureQuickPickItem<ISnippet>[] = [];
-    const snippets = await ext.snippetManager.value.getSnippets();
+    const snippets = await ext.snippetManager.value.getSnippets(KnownSnippetContexts.resources);
     for (const snippet of snippets) {
-        if (snippet.context.isResource) {
-            items.push({
-                label: snippet.name,
-                data: snippet
-            });
-        }
+        items.push({
+            label: snippet.name,
+            data: snippet
+        });
     }
     return items.sort((a, b) => a.label.localeCompare(b.label));
 }

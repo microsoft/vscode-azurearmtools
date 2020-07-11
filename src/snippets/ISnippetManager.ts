@@ -5,34 +5,9 @@
 
 import * as Completion from "../Completion";
 import * as language from "../Language";
-
-export interface ISnippet {
-    /**
-     * Snippet name, used as a key, only shows in UI if there's no description
-     */
-    name: string;
-    /**
-     * defines one or more trigger words that display the snippet in
-     * IntelliSense. Substring matching is performed on prefixes, so
-     * "fc" could match "for-const".
-     */
-    prefix: string;
-    /**
-     * Snippet body
-     */
-    insertText: string;
-    /**
-     * Snippet description
-     */
-    description: string;
-
-    /**
-     * Context in which this snippet can be used
-     */
-    context: {
-        isResource: boolean;
-    };
-}
+import { ISnippet } from "./ISnippet";
+import { SnippetContext } from "./SnippetContext";
+import { SnippetInsertionContext } from "./SnippetInsertionContext";
 
 /**
  * Manages snippets and creates completion items for them.  We do this rather
@@ -44,9 +19,9 @@ export interface ISnippetManager {
     /**
      * Retrieve all snippets
      */
-    getSnippets(): Promise<ISnippet[]>;
+    getSnippets(context: SnippetContext): Promise<ISnippet[]>;
     /**
      * Retrieve completion items for all snippets
      */
-    getSnippetsAsCompletionItems(span: language.Span, _triggerCharacter: string | undefined): Promise<Completion.Item[]>;
+    getSnippetsAsCompletionItems(insertionContext: SnippetInsertionContext, span: language.Span): Promise<Completion.Item[]>;
 }

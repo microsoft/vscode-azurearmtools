@@ -1,5 +1,5 @@
 {
-    "$schema": "./ExpressionMetadata.schema.json",
+    "$schema": "./schemas/ExpressionMetadata.schema.json",
     "functionSignatures": [
         {
             "name": "add",
