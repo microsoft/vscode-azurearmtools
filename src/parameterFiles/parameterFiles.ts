@@ -12,6 +12,7 @@ import { DeploymentTemplate } from '../DeploymentTemplate';
 import { ext } from '../extensionVariables';
 import { queryCreateParameterFile } from '../parameterFileGeneration';
 import { containsParametersSchema } from '../schemas';
+import { documentSchemes } from '../supported';
 import { normalizePath } from '../util/normalizePath';
 import { pathExists } from '../util/pathExists';
 import { readUtf8FileWithBom } from '../util/readUtf8FileWithBom';
@@ -48,11 +49,16 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
 
   let templateUri: Uri = sourceUri;
 
+  if (templateUri.scheme === documentSchemes.untitled) {
+    actionContext.errorHandling.suppressReportIssue = true;
+    throw new Error("Please save the template file before associating it with a parameter file.");
+  }
+
   // Verify it's a template file (have to read in entire file to do full validation)
   const contents = await readUtf8FileWithBom(templateUri.fsPath);
   const template: DeploymentTemplate = new DeploymentTemplate(contents, templateUri);
   if (!template.hasArmSchemaUri()) {
-    throw new Error(`"${templateUri.fsPath}" does not appear to be an Azure Resource Manager deployment template file.`);
+    throw new Error(`"${templateUri.fsPath}" does not appear to be a valid Azure Resource Manager deployment template file.`);
   }
 
   let quickPickList: IQuickPickList = await createParameterFileQuickPickList(mapping, templateUri);
