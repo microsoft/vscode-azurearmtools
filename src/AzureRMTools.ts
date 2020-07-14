@@ -380,7 +380,7 @@ export class AzureRMTools {
     private updateOpenedDocument(textDocument: vscode.TextDocument): void {
         // tslint:disable-next-line:no-suspicious-comment
         // TODO: refactor
-        // tslint:disable-next-line:max-func-body-length cyclomatic-complexity
+        // tslint:disable-next-line: cyclomatic-complexity max-func-body-length
         callWithTelemetryAndErrorHandlingSync('updateDeploymentDocument', (actionContext: IActionContext): void => {
             actionContext.errorHandling.suppressDisplay = true;
             actionContext.telemetry.suppressIfSuccessful = true;
