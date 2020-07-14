@@ -467,22 +467,22 @@ export class AzureRMTools {
                         });
                     }
                 }
-
-                if (!treatAsDeploymentTemplate && !treatAsDeploymentParameters) {
-                    // If the document is not a deployment file, then we need
-                    // to remove it from our deployment file cache. It doesn't
-                    // matter if the document is a JSON file and was never a
-                    // deployment file, or if the document was a deployment
-                    // file and then was modified to no longer be a deployment
-                    // file (the $schema property changed to not be a
-                    // template/params schema). In either case, we should
-                    // remove it from our cache.
-                    this.closeDeploymentFile(textDocument);
-                }
-
-                // tslint:disable-next-line: no-floating-promises
-                this.updateEditorState();
             }
+
+            if (!treatAsDeploymentTemplate && !treatAsDeploymentParameters) {
+                // If the document is not a deployment file, then we need
+                // to remove it from our deployment file cache. It doesn't
+                // matter if the document is a JSON file and was never a
+                // deployment file, or if the document was a deployment
+                // file and then was modified to no longer be a deployment
+                // file (the $schema property changed to not be a
+                // template/params schema). In either case, we should
+                // remove it from our cache.
+                this.closeDeploymentFile(textDocument);
+            }
+
+            // tslint:disable-next-line: no-floating-promises
+            this.updateEditorState();
         });
     }
 
