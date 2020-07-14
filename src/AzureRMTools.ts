@@ -361,6 +361,10 @@ export class AzureRMTools {
     /**
      * Analyzes a text document that has been opened, and handles it appropriately if
      * it's a deployment template or parameter file
+     *
+     * NOTE: This method is called for *every* file opened in vscode, so we
+     * take extra care to avoid slowing down performance, especially if it's not
+     * an ARM template or parameter file.
      */
     private updateOpenedDocument(textDocument: vscode.TextDocument): void {
         // tslint:disable-next-line:no-suspicious-comment
