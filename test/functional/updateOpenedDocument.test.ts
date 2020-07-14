@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+// tslint:disable: max-func-body-length
+
 import * as assert from "assert";
 import { armTemplateLanguageId, ext } from "../../extension.bundle";
 import { TempDocument, TempFile } from "../support/TempFile";
@@ -9,8 +11,11 @@ import { TempDocument, TempFile } from "../support/TempFile";
 suite("updateOpenedDocument", () => {
     function createTest(
         name: string,
-        fileContents: string,
-        fileExtension: string,
+        options: {
+            contents: string;
+            extension: string;
+            uriScheme?: string;
+        },
         expected: {
             openedType: string;
             languageId: string;
@@ -21,7 +26,7 @@ suite("updateOpenedDocument", () => {
 
             try {
                 // Create file
-                tempFile = new TempFile(fileContents, "updateOpenedDocumentTest", fileExtension);
+                tempFile = new TempFile(options.contents, "updateOpenedDocumentTest", options.extension);
 
                 const updatedPromise = ext.testEvents.waitForEvent(`Updated: ${tempFile.uri}`);
 
@@ -44,25 +49,30 @@ suite("updateOpenedDocument", () => {
     }
 
     createTest(
-        'JSON file with template schema - automatically changes to arm-template',
-        `{
-            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-            "contentVersion": "1.0.0.0",
-            "parameters": { "parameter2": {
-            "type": "string"
-            }, "parameter1": {
-            "type": "string"
-            }}
-        }`,
-        '.json',
+        'plain text file with template schema - stays as plain text',
         {
-            openedType: 'template',
-            languageId: armTemplateLanguageId
+            contents:
+                `{
+                    "$schema": "https://schema.WRONG-SCHEMA.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": { "parameter2": {
+                    "type": "string"
+                    }, "parameter1": {
+                    "type": "string"
+                    }}
+                }`,
+            extension: '.txt'
+        },
+        {
+            openedType: 'ignored',
+            languageId: 'plaintext'
         });
 
     createTest(
-        'JSON file without template schema - stays as JSON',
-        `{
+        'plain text file with template schema - stays as JSON',
+        {
+            contents:
+                `{
                 "$schema": "https://schema.WRONG-SCHEMA.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
                 "parameters": { "parameter2": {
@@ -71,9 +81,88 @@ suite("updateOpenedDocument", () => {
                 "type": "string"
                 }}
             }`,
-        '.json',
+            extension: '.json'
+        },
         {
             openedType: 'ignored',
             languageId: 'json'
+        });
+
+    createTest(
+        'JSON file with template schema - automatically changes to arm-template',
+        {
+            contents:
+                `{
+            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": { "parameter2": {
+            "type": "string"
+            }, "parameter1": {
+            "type": "string"
+            }}
+        }`,
+            extension: '.json'
+        },
+        {
+            openedType: 'template',
+            languageId: armTemplateLanguageId
+        });
+
+    createTest(
+        'JSONC file with template schema - automatically changes to arm-template', {
+        contents:
+            `{
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "parameters": { "parameter2": {
+                "type": "string"
+                }, "parameter1": {
+                "type": "string"
+                }}
+            }`,
+        extension: '.jsonc'
+    },
+        {
+            openedType: 'template',
+            languageId: armTemplateLanguageId
+        });
+
+    createTest(//asdf
+        'git file with template schema - automatically changes to arm-template', {
+        contents:
+            `{
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": { "parameter2": {
+                    "type": "string"
+                    }, "parameter1": {
+                    "type": "string"
+                    }}
+                }`,
+        extension: '.jsonc',
+        uriScheme: 'git'
+    },
+        {
+            openedType: 'template',
+            languageId: armTemplateLanguageId
+        });
+
+    createTest(
+        'JSON file with template schema - automatically changes to arm-template', {
+        contents:
+            `{
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "parameters": { "parameter2": {
+                "type": "string"
+                }, "parameter1": {
+                "type": "string"
+                }}
+            }`,
+        extension: '.json'
+    },
+        {
+            openedType: 'template',
+            languageId: armTemplateLanguageId
         });
 });
