@@ -10,7 +10,7 @@ import { CompletionItem, TextDocument, workspace } from 'vscode';
 import { ext, ICompletionsSpyResult } from '../../extension.bundle';
 import { delay } from '../support/delay';
 
-const defaultTimeout: number = 30 * 1000;
+export const defaultTimeout: number = 60 * 1000;
 
 export function getEventPromise<T>(
     eventName: string,

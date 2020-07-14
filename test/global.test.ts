@@ -11,6 +11,7 @@ import * as vscode from 'vscode';
 import { armTemplateLanguageId, configKeys, configPrefix, ext } from "../extension.bundle";
 import { displayCacheStatus, publishCache } from './support/cache';
 import { delay } from "./support/delay";
+import { TestEvents } from './support/TestEvents';
 import { useTestSnippets } from './support/TestSnippets';
 import { logsFolder } from './testConstants';
 import { useTestFunctionMetadata } from "./TestData";
@@ -33,12 +34,12 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     await displayCacheStatus();
     await publishCache(path.join(logsFolder, 'pre-cache'));
 
-    // For tests, set up dotnet install path to something unusual to simulate installing with unusual usernames
-    process.env.ARM_DOTNET_INSTALL_FOLDER = ".dotnet O'Hare O'Donald";
-
     // Use test metadata for all tests by default
     useTestFunctionMetadata();
     useTestSnippets();
+
+    // Set up test event tracking
+    ext.testEvents = new TestEvents();
 
     ext.addCompletedDiagnostic = true;
 

@@ -442,6 +442,8 @@ export class AzureRMTools {
                                 // Is there a possibly-matching params file they might want to associate?
                                 considerQueryingForParameterFile(this._mapping, textDocument);
                             }
+
+                            ext.testEvents.triggerEvent(`Updated: ${textDocument.uri}`, { openedType: 'template' });
                         }
                     });
                 }
@@ -472,6 +474,8 @@ export class AzureRMTools {
 
                                 // Telemetry for parameter file opened
                                 await this.reportParameterFileOpenedTelemetry(textDocument, deploymentParameters, stopwatch, errorsWarnings);
+
+                                ext.testEvents.triggerEvent(`Updated: ${textDocument.uri}`, { openedType: 'parameters' });
                             }
                         });
                     }
@@ -487,6 +491,7 @@ export class AzureRMTools {
                     // template/params schema). In either case, we should
                     // remove it from our cache.
                     this.closeDeploymentFile(textDocument);
+                    ext.testEvents.triggerEvent(`Updated: ${textDocument.uri}`, { openedType: 'ignored' });
                 }
 
                 // tslint:disable-next-line: no-floating-promises
