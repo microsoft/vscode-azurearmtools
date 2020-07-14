@@ -323,14 +323,19 @@ export class AzureRMTools {
         });
     }
 
+    private getNormalizedDocumentKey(documentUri: vscode.Uri): string {
+        // We want a normalized file path to use as key, but also need to differentiate documents with different URI schemes
+        return `${documentUri.scheme}|${normalizePath(documentUri)}`;
+    }
     // Add the deployment doc to our list of opened deployment docs
     private setOpenedDeploymentDocument(documentUri: vscode.Uri, deploymentDocument: DeploymentDocument | undefined): void {
         assert(documentUri);
-        const normalizedPath = normalizePath(documentUri);
+        const documentPathKey = this.getNormalizedDocumentKey(documentUri);
+
         if (deploymentDocument) {
-            this._deploymentDocuments.set(normalizedPath, deploymentDocument);
+            this._deploymentDocuments.set(documentPathKey, deploymentDocument);
         } else {
-            this._deploymentDocuments.delete(normalizedPath);
+            this._deploymentDocuments.delete(documentPathKey);
         }
 
         this._codeLensChangedEmitter.fire();
@@ -339,8 +344,8 @@ export class AzureRMTools {
     private getOpenedDeploymentDocument(documentOrUri: vscode.TextDocument | vscode.Uri): DeploymentDocument | undefined {
         assert(documentOrUri);
         const uri = documentOrUri instanceof vscode.Uri ? documentOrUri : documentOrUri.uri;
-        const normalizedPath = normalizePath(uri);
-        return this._deploymentDocuments.get(normalizedPath);
+        const documentPathKey = this.getNormalizedDocumentKey(uri);
+        return this._deploymentDocuments.get(documentPathKey);
     }
 
     private getOpenedDeploymentTemplate(documentOrUri: vscode.TextDocument | vscode.Uri): DeploymentTemplate | undefined {
