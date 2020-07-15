@@ -17,9 +17,13 @@ export async function triggerCompletion(
     let items = await completionItemsPromise;
     items = items; // (make result easily avaible while debugging)
 
-    // Wait for any resolution to be sure the UI is ready
+    // Wait for any resolution to be sure the UI is ready, or for the timeout (if the first item that comes up is not provided by
+    // us, we won't get any resolution requests)
     const resolutionPromise = getCompletionItemResolutionPromise();
-    await resolutionPromise;
+    await Promise.race([
+        resolutionPromise,
+        delay(5000)
+    ]);
 
     // Type the desired completion prefix
     let diagnosticsPromise1: Promise<Diagnostic[]> = Promise.resolve([]);

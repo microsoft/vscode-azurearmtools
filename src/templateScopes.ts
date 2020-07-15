@@ -10,7 +10,8 @@ import { IParameterDefinition } from "./IParameterDefinition";
 import { IResource } from "./IResource";
 import * as Json from "./JSON";
 import { ParameterDefinition } from "./ParameterDefinition";
-import { ParameterValuesSource } from "./parameterFiles/ParameterValuesSource";
+import { IParameterValuesSource } from "./parameterFiles/IParameterValuesSource";
+import { ParameterValuesSourceFromJsonObject } from "./parameterFiles/ParameterValuesSourceFromJsonObject";
 import { Resource } from "./Resource";
 import { TemplateScope, TemplateScopeKind } from "./TemplateScope";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
@@ -231,12 +232,14 @@ export enum ExpressionScopeKind {
  * See https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/linked-templates#expression-evaluation-scope-in-nested-templates
  */
 export class NestedTemplateInnerScope extends TemplateScopeFromObject {
-    private _parameterValuesSource: ParameterValuesSource;
+    private _parameterValuesSource: ParameterValuesSourceFromJsonObject;
 
     public constructor(
         document: IJsonDocument,
+        // The value of the "template" property containing the nested template itself
         private nestedTemplateObject: Json.ObjectValue | undefined,
-        private parametersProperty: Json.Property | undefined,
+        // parameter values, not the definitions inside the template
+        private parameterValuesProperty: Json.Property | undefined,
         // tslint:disable-next-line: variable-name
         __debugDisplay: string
     ) {
@@ -246,13 +249,14 @@ export class NestedTemplateInnerScope extends TemplateScopeFromObject {
             __debugDisplay
         );
 
-        this._parameterValuesSource = new ParameterValuesSource(
+        this._parameterValuesSource = new ParameterValuesSourceFromJsonObject(
             this.document,
-            this.parametersProperty
+            this.parameterValuesProperty,
+            nestedTemplateObject
         );
     }
 
-    public get parameterValuesSource(): ParameterValuesSource {
+    protected getParameterValuesSource(): IParameterValuesSource | undefined {
         return this._parameterValuesSource;
     }
 
@@ -273,7 +277,10 @@ export class NestedTemplateInnerScope extends TemplateScopeFromObject {
 export class NestedTemplateOuterScope extends TemplateScope {
     public constructor(
         private readonly parentScope: TemplateScope,
+        // The value of the "template" property containing the nested template itself
         private readonly nestedTemplateObject: Json.ObjectValue | undefined,
+        // parameter values, not the definitions inside the template (note: if this exists, it's an error)
+        public parameterValuesProperty: Json.Property | undefined,
         // tslint:disable-next-line: variable-name
         __debugDisplay: string
     ) {
@@ -386,16 +393,21 @@ export function getChildTemplateForResourceObject(
         if (nestedTemplateObject) {
             // It's a nested (embedded) template
             const scopeKind = getExpressionScopeKind(resourceObject);
+            const parameterValuesProperty: Json.Property | undefined = resourceObject?.getPropertyValue(templateKeys.properties)
+                ?.asObjectValue
+                ?.getProperty(templateKeys.parameters);
             switch (scopeKind) {
                 case ExpressionScopeKind.outer:
-                    return new NestedTemplateOuterScope(parentScope, nestedTemplateObject, `Nested template "${templateName}" with outer scope`);
+                    return new NestedTemplateOuterScope(
+                        parentScope,
+                        nestedTemplateObject,
+                        parameterValuesProperty,
+                        `Nested template "${templateName}" with outer scope`);
                 case ExpressionScopeKind.inner:
                     return new NestedTemplateInnerScope(
                         parentScope.document,
                         nestedTemplateObject,
-                        resourceObject?.getPropertyValue(templateKeys.properties)
-                            ?.asObjectValue
-                            ?.getProperty(templateKeys.parameters),
+                        parameterValuesProperty,
                         `Nested template "${templateName}" with inner scope`
                     );
                 default:

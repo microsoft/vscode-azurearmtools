@@ -15,15 +15,17 @@ import { LinkedTemplateCodeLens, NestedTemplateCodeLen, ParameterDefinitionCodeL
 import { ext } from './extensionVariables';
 import { Histogram } from "./Histogram";
 import { INamedDefinition } from "./INamedDefinition";
-import { IParameterValuesSourceFromFile } from './IParameterValuesSourceFromFile';
+import { IParameterValuesSourceProvider } from './IParameterValuesSourceProvider';
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
+import { getMissingParameterErrors, getParameterValuesCodeActions } from './parameterFiles/ParameterValues';
 import { ReferenceList } from "./ReferenceList";
 import { isArmSchema } from "./schemas";
+import { SynchronousParameterValuesSourceProvider } from "./SynchronousParameterValuesSourceProvider";
 import { TemplatePositionContext } from "./TemplatePositionContext";
 import { TemplateScope, TemplateScopeKind } from "./TemplateScope";
-import { TopLevelTemplateScope } from './templateScopes';
+import { NestedTemplateOuterScope, TopLevelTemplateScope } from './templateScopes';
 import * as TLE from "./TLE";
 import { UserFunctionParameterDefinition } from './UserFunctionParameterDefinition';
 import { nonNullValue } from './util/nonNull';
@@ -167,6 +169,8 @@ export class DeploymentTemplate extends DeploymentDocument {
                     }
                 }
 
+                parseErrors.push(...this.getMissingParameterErrors());
+
                 resolve(parseErrors);
             } catch (err) {
                 reject(err);
@@ -257,34 +261,56 @@ export class DeploymentTemplate extends DeploymentDocument {
             'Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. '
             + `If you intended inner scope, set properties.nestedDeploymentExprEvalOptions.scope to 'inner'.`;
 
-        for (const scope of this.allScopes.filter(ts => ts.scopeKind === TemplateScopeKind.NestedDeploymentWithOuterScope)) {
-            const parameters = getPropertyValueOfScope(templateKeys.parameters);
-            // tslint:disable-next-line: strict-boolean-expressions
-            if (!!parameters?.asObjectValue?.properties?.length) {
-                warnings.push(
-                    new language.Issue(parameters.span, warningMessage, language.IssueKind.inaccessibleNestedScopeMembers));
-            }
+        for (const scope of this.allScopes) {
+            if (scope instanceof NestedTemplateOuterScope) {
+                const parameters = getPropertyValueOfScope(templateKeys.parameters);
+                // tslint:disable-next-line: strict-boolean-expressions
+                if (!!parameters?.asObjectValue?.properties?.length) {
+                    warnings.push(
+                        new language.Issue(parameters.span, warningMessage, language.IssueKind.inaccessibleNestedScopeMembers));
+                }
 
-            const variables = getPropertyValueOfScope(templateKeys.variables);
-            // tslint:disable-next-line: strict-boolean-expressions
-            if (!!variables?.asObjectValue?.properties.length) {
-                warnings.push(
-                    new language.Issue(variables.span, warningMessage, language.IssueKind.inaccessibleNestedScopeMembers));
-            }
+                const variables = getPropertyValueOfScope(templateKeys.variables);
+                // tslint:disable-next-line: strict-boolean-expressions
+                if (!!variables?.asObjectValue?.properties.length) {
+                    warnings.push(
+                        new language.Issue(variables.span, warningMessage, language.IssueKind.inaccessibleNestedScopeMembers));
+                }
 
-            const namespaces = getPropertyValueOfScope(templateKeys.functions);
-            // tslint:disable-next-line: strict-boolean-expressions
-            if (!!namespaces?.asArrayValue?.elements.length) {
-                warnings.push(
-                    new language.Issue(namespaces.span, warningMessage, language.IssueKind.inaccessibleNestedScopeMembers));
-            }
+                const namespaces = getPropertyValueOfScope(templateKeys.functions);
+                // tslint:disable-next-line: strict-boolean-expressions
+                if (!!namespaces?.asArrayValue?.elements.length) {
+                    warnings.push(
+                        new language.Issue(namespaces.span, warningMessage, language.IssueKind.inaccessibleNestedScopeMembers));
+                }
 
-            function getPropertyValueOfScope(propertyName: string): Json.Value | undefined {
-                return scope.rootObject?.getProperty(propertyName)?.value;
+                const propertyValues = scope.parameterValuesProperty;
+                // tslint:disable-next-line: strict-boolean-expressions
+                if (!!propertyValues?.asArrayValue?.elements.length) {
+                    warnings.push(
+                        new language.Issue(propertyValues.span, warningMessage, language.IssueKind.inaccessibleNestedScopeMembers));
+                }
+
+                function getPropertyValueOfScope(propertyName: string): Json.Value | undefined {
+                    return scope.rootObject?.getProperty(propertyName)?.value;
+                }
             }
         }
 
         return warnings;
+    }
+
+    private getMissingParameterErrors(): language.Issue[] {
+        const errors: language.Issue[] = [];
+
+        for (const scope of this.uniqueScopes) {
+            if (scope.parameterValuesSource) {
+                const scopeErrors = getMissingParameterErrors(scope.parameterValuesSource, scope);
+                errors.push(...scopeErrors);
+            }
+        }
+
+        return errors;
     }
 
     //#region Telemetry
@@ -440,13 +466,26 @@ export class DeploymentTemplate extends DeploymentDocument {
         }
     }
 
-    public async getCodeActions(
+    public getCodeActions(
         associatedDocument: DeploymentDocument | undefined,
         range: Range | Selection,
         context: CodeActionContext
-    ): Promise<(Command | CodeAction)[]> {
+    ): (Command | CodeAction)[] {
         assert(!associatedDocument || associatedDocument instanceof DeploymentParameters, "Associated document is of the wrong type");
-        return [];
+        const actions: (CodeAction | Command)[] = [];
+
+        for (const scope of this.uniqueScopes) {
+            if (scope.parameterValuesSource) {
+                const scopeActions = getParameterValuesCodeActions(
+                    scope.parameterValuesSource,
+                    scope,
+                    range,
+                    context);
+                actions.push(...scopeActions);
+            }
+        }
+
+        return actions;
     }
 
     public getTextAtTleValue(tleValue: TLE.Value, parentStringToken: Json.Token): string {
@@ -455,15 +494,39 @@ export class DeploymentTemplate extends DeploymentDocument {
         return this.getDocumentText(spanOfValueInsideString, parentStringToken.span.startIndex);
     }
 
+    /**
+     * Retrieves code lenses for the top-level parameters and all child deployments
+     */
     public getCodeLenses(
-        parameterValuesSourceProvider: IParameterValuesSourceFromFile | undefined
+        /**
+         * Represents the associated parameter values for the top level (could be a parameter file), if any
+         */
+        topLevelParameterValuesProvider: IParameterValuesSourceProvider | undefined
     ): ResolvableCodeLens[] {
-        return this.getParameterCodeLenses(parameterValuesSourceProvider)
+        const lenses: ResolvableCodeLens[] = [];
+
+        for (const scope of this.uniqueScopes) {
+            let sourceProvider: IParameterValuesSourceProvider | undefined;
+
+            if (scope instanceof TopLevelTemplateScope) {
+                sourceProvider = topLevelParameterValuesProvider;
+            } else {
+                // For anything other than the top level, we already have the parameter values source, no load to resolve lazily
+                const parameterValuesSource = scope.parameterValuesSource;
+                sourceProvider = parameterValuesSource ? new SynchronousParameterValuesSourceProvider(parameterValuesSource) : undefined;
+            }
+
+            const codelenses = this.getParameterCodeLenses(scope, sourceProvider);
+            lenses.push(...codelenses);
+        }
+
+        return lenses
             .concat(this.getChildTemplateCodeLenses());
     }
 
     private getParameterCodeLenses(
-        parameterValuesSourceProvider: IParameterValuesSourceFromFile | undefined
+        scope: TemplateScope,
+        parameterValuesSourceProvider: IParameterValuesSourceProvider | undefined
     ): ResolvableCodeLens[] {
         if (!ext.configuration.get<boolean>(configKeys.codeLensForParameters)) {
             return [];
@@ -471,18 +534,27 @@ export class DeploymentTemplate extends DeploymentDocument {
 
         const lenses: ResolvableCodeLens[] = [];
 
-        // Code lens for the "parameters" section itself - indicates currently-selected parameter file and allows
-        // user to chnage it
-        const parametersCodeLensSpan = this.topLevelValue?.getProperty(templateKeys.parameters)?.span
-            ?? new language.Span(0, 0);
-        if (parameterValuesSourceProvider) {
-            lenses.push(new ShowCurrentParameterFileCodeLens(this.topLevelScope, parametersCodeLensSpan, parameterValuesSourceProvider.parameterFileUri));
-        }
-        lenses.push(new SelectParameterFileCodeLens(this.topLevelScope, parametersCodeLensSpan, parameterValuesSourceProvider?.parameterFileUri));
+        // Code lens for the "parameters" section itself - indicates where the parameters are coming from
+        if (scope instanceof TopLevelTemplateScope) {
+            // Top level
+            const parametersCodeLensSpan = scope.rootObject?.getProperty(templateKeys.parameters)?.span
+                ?? new language.Span(0, 0);
 
+            // Is there a parameter file?
+            const parameterFileUri = parameterValuesSourceProvider?.parameterFileUri;
+            if (parameterFileUri) {
+                // Yes - indicate currently parameter file
+                assert(scope instanceof TopLevelTemplateScope, "Expecting top-level scope");
+                lenses.push(new ShowCurrentParameterFileCodeLens(scope, parametersCodeLensSpan, parameterFileUri));
+            }
+
+            // Allow user to change or select/create parameter file
+            lenses.push(new SelectParameterFileCodeLens(this.topLevelScope, parametersCodeLensSpan, parameterFileUri));
+        }
+
+        // Code lens for each parameter definition
         if (parameterValuesSourceProvider) {
-            // Code lens for each parameter definition
-            lenses.push(...this.topLevelScope.parameterDefinitions.map(pd => new ParameterDefinitionCodeLens(this.topLevelScope, pd, parameterValuesSourceProvider)));
+            lenses.push(...scope.parameterDefinitions.map(pd => new ParameterDefinitionCodeLens(scope, pd, parameterValuesSourceProvider)));
         }
 
         return lenses;

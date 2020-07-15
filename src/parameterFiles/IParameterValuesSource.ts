@@ -21,7 +21,10 @@ export interface IParameterValuesSource {
      * The "parameters" property within the document which contains the
      * parameter values (keyed by their name, case insensitive)
      */
-    parametersProperty: Json.Property | undefined;
+    parameterValuesProperty: Json.Property | undefined;
+
+    // The root object for the actual template
+    deploymentRootObject: Json.ObjectValue | undefined;
 
     // case-insensitive
     getParameterValue(parameterName: string): ParameterValueDefinition | undefined;

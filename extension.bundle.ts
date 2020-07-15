@@ -50,7 +50,7 @@ export { DefinitionKind, INamedDefinition } from "./src/INamedDefinition";
 export { IncorrectArgumentsCountIssue } from "./src/IncorrectArgumentsCountIssue";
 export { InsertItem } from "./src/insertItem";
 export { IParameterDefinition } from "./src/IParameterDefinition";
-export { IParameterValuesSourceFromFile } from "./src/IParameterValuesSourceFromFile";
+export { IParameterValuesSourceProvider } from "./src/IParameterValuesSourceProvider";
 export * from "./src/Language";
 export { LanguageServerState } from "./src/languageclient/startArmLanguageServer";
 export { ParameterDefinition } from "./src/ParameterDefinition";
@@ -61,6 +61,7 @@ export { IParameterValuesSource } from "./src/parameterFiles/IParameterValuesSou
 export { mayBeMatchingParameterFile } from "./src/parameterFiles/parameterFiles";
 export { ParametersPositionContext } from "./src/parameterFiles/ParametersPositionContext";
 export { ParameterValueDefinition } from "./src/parameterFiles/ParameterValueDefinition";
+export { canAddPropertyValueHere } from "./src/parameterFiles/ParameterValues";
 export { IReferenceSite, PositionContext, ReferenceSiteKind } from "./src/PositionContext";
 export { ReferenceList } from "./src/ReferenceList";
 export { containsArmSchema, getPreferredSchema, isArmSchema } from './src/schemas';

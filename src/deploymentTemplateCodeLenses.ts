@@ -4,24 +4,26 @@
 
 // tslint:disable: max-classes-per-file
 
-import { Uri } from 'vscode';
+import { Range, Uri } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
-import { Language } from '../extension.bundle';
 import { IGotoParameterValueArgs } from './commandArguments';
 import { ResolvableCodeLens } from "./DeploymentDocument";
 import { IParameterDefinition } from './IParameterDefinition';
-import { IParameterValuesSourceFromFile } from './IParameterValuesSourceFromFile';
+import { IParameterValuesSourceProvider } from './IParameterValuesSourceProvider';
+import * as Language from "./Language";
 import { IParameterValuesSource } from './parameterFiles/IParameterValuesSource';
 import { getRelativeParameterFilePath } from './parameterFiles/parameterFiles';
 import { TemplateScope, TemplateScopeKind } from "./TemplateScope";
+import { TopLevelTemplateScope } from './templateScopes';
 import { pathExists } from './util/pathExists';
+import { getVSCodeRangeFromSpan } from './util/vscodePosition';
 
 /**
  * A code lens to indicate the current parameter file and to open it
  */
 export class ShowCurrentParameterFileCodeLens extends ResolvableCodeLens {
     public constructor(
-        scope: TemplateScope,
+        scope: TopLevelTemplateScope,
         span: Language.Span,
         private parameterFileUri: Uri | undefined
     ) {
@@ -76,6 +78,9 @@ export class SelectParameterFileCodeLens extends ResolvableCodeLens {
     }
 }
 
+/**
+ * A code lens that displays the actual value of a parameter at its definition and allows navigating to it
+ */
 export class ParameterDefinitionCodeLens extends ResolvableCodeLens {
     // Max # of characters to show for the value in the code lens
     private readonly _maxCharactersInValue: number = 120;
@@ -83,26 +88,30 @@ export class ParameterDefinitionCodeLens extends ResolvableCodeLens {
     public constructor(
         scope: TemplateScope,
         public readonly parameterDefinition: IParameterDefinition,
-        private parameterValuesSourceProvider: IParameterValuesSourceFromFile
+        private parameterValuesSourceProvider: IParameterValuesSourceProvider
     ) {
         super(scope, parameterDefinition.nameValue.span);
     }
 
     public async resolve(): Promise<boolean> {
         let paramsSource: IParameterValuesSource | undefined;
-        let title: string = "Could not open parameter file";
+        let errorMessage: string | undefined;
         try {
-            paramsSource = await this.parameterValuesSourceProvider.fetchParameterValues();
-            title = '';
+            paramsSource = await this.parameterValuesSourceProvider.getValuesSource();
         } catch (err) {
-            if (!await pathExists(this.parameterValuesSourceProvider.parameterFileUri)) {
-                title = `$(error) Parameter file not found`;
+            if (this.parameterValuesSourceProvider.parameterFileUri) {
+                if (!await pathExists(this.parameterValuesSourceProvider.parameterFileUri)) {
+                    errorMessage = `$(error) Parameter file not found`;
+                } else {
+                    errorMessage = `$(error) Could not open parameter file: ${parseError(err).message}`;
+                }
             } else {
-                title = `$(error) Could not open parameter file: ${parseError(err).message}`;
+                errorMessage = parseError(err).message;
             }
         }
 
-        if (paramsSource) {
+        let title: string | undefined;
+        if (paramsSource && !errorMessage) {
             const param = paramsSource.getParameterValue(this.parameterDefinition.nameValue.unquotedValue);
             const paramValue = param?.value;
             const paramReference = param?.reference;
@@ -120,20 +129,46 @@ export class ParameterDefinitionCodeLens extends ResolvableCodeLens {
             }
         }
 
+        if (!title) {
+            title = errorMessage ?? 'Could not find parameter value';
+        }
+
         if (title.length > this._maxCharactersInValue) {
             // tslint:disable-next-line: prefer-template
             title = title.slice(0, this._maxCharactersInValue) + "...";
         }
 
-        this.command = {
-            title: title,
-            command: "azurerm-vscode-tools.codeLens.gotoParameterValue",
-            arguments: [
-                <IGotoParameterValueArgs>{
+        let args: IGotoParameterValueArgs;
+        if (this.parameterValuesSourceProvider.parameterFileUri) {
+            // We delay resolving the location if navigating to a parameter file because it could change before the user clicks on the code lens
+            args = {
+                inParameterFile: {
                     parameterFileUri: this.parameterValuesSourceProvider.parameterFileUri,
                     parameterName: this.parameterDefinition.nameValue.unquotedValue
                 }
-            ]
+            };
+        } else if (paramsSource) {
+            // If the parameter doesn't have a value to navigate to, then show the
+            // properties section or top of the file
+            let span: Language.Span = paramsSource.getParameterValue(this.parameterDefinition.nameValue.unquotedValue)?.value?.span
+                ?? paramsSource?.parameterValuesProperty?.nameValue.span
+                ?? new Language.Span(0, 0);
+            const range: Range = getVSCodeRangeFromSpan(paramsSource.document, span);
+
+            args = {
+                inTemplateFile: {
+                    documentUri: paramsSource.document.documentUri,
+                    range
+                }
+            };
+        } else {
+            return false;
+        }
+
+        this.command = {
+            title: title,
+            command: "azurerm-vscode-tools.codeLens.gotoParameterValue",
+            arguments: [args]
         };
         return true;
     }

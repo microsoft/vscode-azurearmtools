@@ -18,6 +18,7 @@ import { IParameterDefinition } from "./IParameterDefinition";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
+import { getPropertyValueCompletionItems } from "./parameterFiles/ParameterValues";
 import { IReferenceSite, PositionContext, ReferenceSiteKind } from "./PositionContext";
 import * as Reference from "./ReferenceList";
 import { TemplateScope } from "./TemplateScope";
@@ -180,6 +181,18 @@ export class TemplatePositionContext extends PositionContext {
 
     public async getCompletionItems(triggerCharacter: string | undefined): Promise<Completion.Item[]> {
         const tleInfo = this.tleInfo;
+        const completions: Completion.Item[] = [];
+
+        for (let uniqueScope of this.document.uniqueScopes) {
+            if (uniqueScope.parameterValuesSource) {
+                completions.push(...getPropertyValueCompletionItems(
+                    uniqueScope,
+                    uniqueScope.parameterValuesSource,
+                    this.documentCharacterIndex,
+                    triggerCharacter));
+            }
+        }
+
         if (!tleInfo) {
             const jsonToken = this.jsonToken;
             if (jsonToken && jsonToken.type === Json.TokenType.QuotedString) {
@@ -187,7 +200,7 @@ export class TemplatePositionContext extends PositionContext {
                 // may not yet be valid JSON.  For instance, if typing double quotes for the property
                 // name of a property but there is no property value yet.
 
-                return [];
+                return completions;
             } else {
                 // No string at this location, so it might be a good place for snippet completions
 
@@ -199,7 +212,7 @@ export class TemplatePositionContext extends PositionContext {
                     return await ext.snippetManager.value.getSnippetsAsCompletionItems(replacementSpan, triggerCharacter);
                 }
 
-                return [];
+                return completions;
             }
         }
 
@@ -217,22 +230,20 @@ export class TemplatePositionContext extends PositionContext {
                 const replaceSpan = this.emptySpanAtDocumentCharacterIndex;
                 const functionCompletions = TemplatePositionContext.getMatchingFunctionCompletions(scope, undefined, "", replaceSpan);
                 const namespaceCompletions = TemplatePositionContext.getMatchingNamespaceCompletions(scope, "", replaceSpan);
-                return functionCompletions.concat(namespaceCompletions);
-            } else {
-                return [];
+                completions.push(...functionCompletions);
+                completions.push(...namespaceCompletions);
             }
-
         } else if (tleValue instanceof TLE.FunctionCallValue) {
             assert(this.jsonToken);
             // tslint:disable-next-line:no-non-null-assertion
-            return this.getFunctionCallCompletions(tleValue, this.jsonToken!, tleInfo.tleCharacterIndex, scope);
+            completions.push(... this.getFunctionCallCompletions(tleValue, this.jsonToken!, tleInfo.tleCharacterIndex, scope));
         } else if (tleValue instanceof TLE.StringValue) {
-            return this.getStringLiteralCompletions(tleValue, tleInfo.tleCharacterIndex, scope);
+            completions.push(...this.getStringLiteralCompletions(tleValue, tleInfo.tleCharacterIndex, scope));
         } else if (tleValue instanceof TLE.PropertyAccess) {
-            return this.getPropertyAccessCompletions(tleValue, tleInfo.tleCharacterIndex, scope);
+            completions.push(... this.getPropertyAccessCompletions(tleValue, tleInfo.tleCharacterIndex, scope));
         }
 
-        return [];
+        return completions;
     }
 
     /**
