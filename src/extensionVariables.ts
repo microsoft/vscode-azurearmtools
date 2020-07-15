@@ -10,9 +10,9 @@ import { LanguageClient } from "vscode-languageclient";
 import { CompletionsSpy } from "./CompletionsSpy";
 import { IConfiguration, VsCodeConfiguration } from "./Configuration";
 import { configPrefix, isWebpack } from "./constants";
-import { ISnippetManager } from './ISnippetManager';
 import { LanguageServerState } from "./languageclient/startArmLanguageServer";
 import { DeploymentFileMapping } from "./parameterFiles/DeploymentFileMapping";
+import { ISnippetManager } from './snippets/ISnippetManager';
 import { JsonOutlineProvider } from "./Treeview";
 import { InitializeBeforeUse } from "./util/InitializeBeforeUse";
 

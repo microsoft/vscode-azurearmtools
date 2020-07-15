@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as path from 'path';
-import * as Completion from "./Completion";
-import { assetsPath, extensionName } from './constants';
+import * as Completion from "../Completion";
+import { assetsPath, extensionName } from '../constants';
+import * as language from "../Language";
+import { readUtf8FileWithBom } from '../util/readUtf8FileWithBom';
 import { ISnippet, ISnippetManager } from "./ISnippetManager";
-import * as language from "./Language";
-import { readUtf8FileWithBom } from './util/readUtf8FileWithBom';
 
 interface ISnippetDefinitionFromFile {
     prefix: string; // e.g. "arm!"

@@ -39,7 +39,7 @@ import { RenameCodeActionProvider } from "./RenameCodeActionProvider";
 import { resetGlobalState } from "./resetGlobalState";
 import { getPreferredSchema } from "./schemas";
 import { getFunctionParamUsage } from "./signatureFormatting";
-import { SnippetManager } from "./SnippetManager";
+import { SnippetManager } from "./snippets/SnippetManager";
 import { getQuickPickItems, sortTemplate } from "./sortTemplate";
 import { Stopwatch } from "./Stopwatch";
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, templateDocumentSelector, templateOrParameterDocumentSelector } from "./supported";
