@@ -33,7 +33,7 @@ import { IParameterDefinitionsSource } from "./parameterFiles/IParameterDefiniti
 import { IParameterValuesSource } from "./parameterFiles/IParameterValuesSource";
 import { considerQueryingForParameterFile, getFriendlyPathToFile, openParameterFile, openTemplateFile, selectParameterFile } from "./parameterFiles/parameterFiles";
 import { addMissingParameters } from "./parameterFiles/ParameterValues";
-import { setParameterFileContext } from "./parameterFiles/setParameterFileContext";
+import { setContext } from "./parameterFiles/setContext";
 import { IReferenceSite, PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
 import { RenameCodeActionProvider } from "./RenameCodeActionProvider";
@@ -958,7 +958,7 @@ export class AzureRMTools {
             }
 
             // tslint:disable-next-line: no-floating-promises
-            setParameterFileContext({
+            setContext({
                 isTemplateFile,
                 hasParamFile: templateFileHasParamFile,
                 isParamFile: isParamFile,
