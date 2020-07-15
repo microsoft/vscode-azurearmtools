@@ -16,7 +16,7 @@ const hasTemplateFileContextName = `azurerm-vscode-tools-hasTemplateFile`;
 // Is a template file and has an associated parameter file?
 const hasParameterFileContextName = `azurerm-vscode-tools-hasParamFile`;
 
-export function setParameterFileContext(
+export function setContext(
     value: {
         isTemplateFile: boolean;
         hasParamFile: boolean;
