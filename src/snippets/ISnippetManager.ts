@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as Completion from "./Completion";
-import * as language from "./Language";
+import * as Completion from "../Completion";
+import * as language from "../Language";
 
 export interface ISnippet {
     /**

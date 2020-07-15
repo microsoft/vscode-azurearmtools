@@ -11,7 +11,7 @@ import { IActionContext, IAzureQuickPickItem, IAzureUserInput } from "vscode-azu
 import { Json, templateKeys } from "../extension.bundle";
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ext } from "./extensionVariables";
-import { ISnippet } from "./ISnippetManager";
+import { ISnippet } from "./snippets/ISnippetManager";
 import { TemplateSectionType } from "./TemplateSectionType";
 import { assertNever } from './util/assertNever';
 
