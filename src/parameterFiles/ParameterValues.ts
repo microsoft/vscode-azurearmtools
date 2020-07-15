@@ -238,7 +238,7 @@ export function getCompletionForNewParameter(
         documentIndex,
         label,
         snippet,
-        Completion.CompletionKind.DpNewPropertyValue,
+        Completion.CompletionKind.PropertyValueForNewProperty,
         detail,
         documentation);
 }
@@ -279,7 +279,7 @@ export function getCompletionsForMissingParameters(
                 documentIndex,
                 label,
                 replacement,
-                Completion.CompletionKind.DtResourceIdResType,
+                Completion.CompletionKind.PropertyValueForExistingProperty,
                 detail,
                 documentation));
     }

@@ -186,12 +186,12 @@ export enum CompletionKind {
     UserFunction = "UserFunction",
 
     // Template file completions
-    DtResourceIdResType = "DtResourceIdResType", // First arg of resourceId
-    DtResourceIdResName = "DtResourceIdResName", // Second arg of resourceId
+    ResourceIdResTypeParameter = "ResourceIdResTypeParameter", // First arg of resourceId
+    ResourceIdResNameParameter = "ResourceIdResNameParameter", // Second arg of resourceId
 
     // Parameter file completions
-    DpPropertyValue = "DpPropertyValue", // Parameter from the template file
-    DpNewPropertyValue = "DpNewPropertyValue", // New, unnamed parameter
+    PropertyValueForExistingProperty = "PropertyValueForExistingProperty", // Parameter from the template file
+    PropertyValueForNewProperty = "PropertyValueForNewProperty", // New, unnamed parameter
 
     // Snippet
     Snippet = "Snippet",
