@@ -33,5 +33,6 @@
             "url": "assets/ExpressionMetadata.schema.json"
         }
     ],
-    "typescript.tsdk": "node_modules\\typescript\\lib"
+    "typescript.tsdk": "node_modules\\typescript\\lib",
+    "azureResourceManagerTools.languageServer.traceLevel": "Debug"
 }

@@ -614,6 +614,9 @@ export class AzureRMTools {
         // tslint:disable-next-line: no-floating-promises
         ++this._diagnosticsVersion;
 
+        // tslint:disable-next-line: no-console
+        // console.log(`reportDeploymentDocumentErrors: ${deploymentDocument.documentUri}, ${associatedDocument?.documentUri}`);
+
         let errors: language.Issue[] = await deploymentDocument.getErrors(associatedDocument);
         const diagnostics: vscode.Diagnostic[] = [];
 
@@ -1181,8 +1184,6 @@ export class AzureRMTools {
                 //   it ignores it.  Verify that here.
                 for (let item of vsCodeItems) {
                     assert(item.range, "Completion item doesn't have a range");
-                    assert(item.range?.contains(position), "Completion item range doesn't include cursor");
-                    assert(item.range?.isSingleLine, "Completion item range must be a single line");
                 }
 
                 return new vscode.CompletionList(vsCodeItems, true);
