@@ -4,7 +4,7 @@
 
 // tslint:disable:object-literal-key-quotes no-http-string max-func-body-length
 
-import { isWin32 } from "../../src/constants";
+import { isWin32 } from "../../extension.bundle";
 import { diagnosticSources, testDiagnostics, testDiagnosticsFromFile } from "../support/diagnostics";
 import { testWithLanguageServer, testWithLanguageServerAndRealFunctionMetadata } from "../support/testWithLanguageServer";
 
