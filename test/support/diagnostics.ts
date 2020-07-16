@@ -19,6 +19,7 @@ import * as path from 'path';
 import { Diagnostic, DiagnosticSeverity, Disposable, languages, Position, Range, TextDocument } from "vscode";
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
+import { mapParameterFile } from "./mapParameterFile";
 import { parseParametersWithMarkers } from "./parseTemplate";
 import { resolveInTestFolder } from "./resolveInTestFolder";
 import { stringify } from "./stringify";
@@ -443,7 +444,7 @@ export async function getDiagnosticsForTemplate(
             }
 
             // Map template to params
-            await ext.deploymentFileMapping.value.mapParameterFile(templateFile.uri, paramsFile.uri);
+            await mapParameterFile(templateFile.uri, paramsFile.uri);
         }
 
         editor = new TempEditor(document);
@@ -461,7 +462,7 @@ export async function getDiagnosticsForTemplate(
 
         if (templateFile) {
             // Unmap template file
-            await ext.deploymentFileMapping.value.mapParameterFile(templateFile.uri, undefined);
+            await mapParameterFile(templateFile.uri, undefined, false);
             templateFile.dispose();
         }
         if (paramsFile) {
