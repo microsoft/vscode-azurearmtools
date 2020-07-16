@@ -223,6 +223,7 @@ let paramFilesChangedEventsHookedUp = false;
 let paramFilesChangedEvents = 0;
 
 export async function waitForParameterFilesChanged(action: () => Promise<void>): Promise<void> {
+    console.log("Waiting for parameter files changed notification...");
     await ensureLanguageServerAvailable();
 
     if (!paramFilesChangedEventsHookedUp) {
@@ -241,6 +242,7 @@ export async function waitForParameterFilesChanged(action: () => Promise<void>):
         // tslint:disable-next-line: no-constant-condition
         while (true) {
             if (paramFilesChangedEvents >= expected) {
+                console.log("Received parameter files changed notification...");
                 resolve();
             } else if (Date.now() > timeOutAt) {
                 reject(new Error('Timed out waiting for notification from language server that the parameter files configuration changed'));
