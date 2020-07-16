@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { Uri } from "vscode";
-import { ext } from "../../src/extensionVariables";
+import { ext } from "../../extension.bundle";
 import { delay } from "./delay";
 
 /**
