@@ -4,6 +4,7 @@
 
 // tslint:disable:object-literal-key-quotes no-http-string max-func-body-length
 
+import { isWin32 } from "../../src/constants";
 import { diagnosticSources, testDiagnostics, testDiagnosticsFromFile } from "../support/diagnostics";
 import { testWithLanguageServer, testWithLanguageServerAndRealFunctionMetadata } from "../support/testWithLanguageServer";
 
@@ -490,77 +491,85 @@ suite("Validation regression tests", () => {
             ])
     );
 
-    testWithLanguageServer(`Invalid location given for error when resource name evaluates to empty string #816`, async () =>
-        await testDiagnostics(
-            {
-                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-                "contentVersion": "1.0.0.0",
-                "parameters": {
-                    "virtualNetworkName": {
-                        "type": "string"
-                    }
-                },
-                "resources": [
-                    {
-                        "name": "[parameters('virtualNetworkName')]",
-                        "type": "Microsoft.Network/virtualNetworks",
-                        "apiVersion": "2019-04-01",
-                        "location": "uswest"
-                    }
-                ]
-            },
-            {
-                parameters: {
-                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    // tslint:disable-next-line: no-suspicious-comment
+    // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/859
+    if (!isWin32) {
+        testWithLanguageServer(`Invalid location given for error when resource name evaluates to empty string #816`, async () =>
+            await testDiagnostics(
+                {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
                     "parameters": {
                         "virtualNetworkName": {
-                            "value": ""
+                            "type": "string"
+                        }
+                    },
+                    "resources": [
+                        {
+                            "name": "[parameters('virtualNetworkName')]",
+                            "type": "Microsoft.Network/virtualNetworks",
+                            "apiVersion": "2019-04-01",
+                            "location": "uswest"
+                        }
+                    ]
+                },
+                {
+                    parameters: {
+                        "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+                        "contentVersion": "1.0.0.0",
+                        "parameters": {
+                            "virtualNetworkName": {
+                                "value": ""
+                            }
                         }
                     }
-                }
-            },
-            [
-                "Error: Template validation failed: The template resource '' at line '11' and column '50' is not valid. The name property cannot be null or empty. Please see https://aka.ms/arm-template/#resources for usage details. (arm-template (validation)) [10,49-10,49]",
-                "Warning: Missing required property \"properties\" (arm-template (schema)) [9,4-9,5]"
-            ])
-    );
-
-    suite(`Using 'copy' in nested template variables triggered an template validation error #730`, () => {
-        testWithLanguageServer(`#730 scenario a: Template validation failed: Value cannot be null. (Parameter 'o')`, async () => {
-            await testDiagnostics(
-                'templates/regression/730a.json',
-                {
-                    parametersFile: 'templates/regression/730a.params.json',
                 },
                 [
-                ]);
-        });
+                    "Error: Template validation failed: The template resource '' at line '11' and column '50' is not valid. The name property cannot be null or empty. Please see https://aka.ms/arm-template/#resources for usage details. (arm-template (validation)) [10,49-10,49]",
+                    "Warning: Missing required property \"properties\" (arm-template (schema)) [9,4-9,5]"
+                ])
+        );
+    }
 
-        testWithLanguageServer(`#730 scenario b: Template validation failed: The template resource '' at line '<null>' and column '<null>' is not valid. The name property cannot be null or empty.`, async () => {
-            await testDiagnostics(
-                'templates/regression/730b.json',
-                {
-                    parametersFile: 'templates/regression/730b.parameters.json',
-                },
-                [
-                    "Error: Template validation failed: The template resource '' at line '121' and column '158' is not valid. The name property cannot be null or empty. Please see https://aka.ms/arm-template/#resources for usage details. (arm-template (validation)) [120,157-120,157]"
-                ]);
-        });
-
-        // tslint:disable-next-line: no-suspicious-comment
-        /* TODO: #730
-            testWithLanguageServer(`#730 scenario c: Template function copyIndex not expected at this location`, async () => {
+    // tslint:disable-next-line: no-suspicious-comment
+    // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/859
+    if (!isWin32) {
+        suite(`Using 'copy' in nested template variables triggered an template validation error #730`, () => {
+            testWithLanguageServer(`#730 scenario a: Template validation failed: Value cannot be null. (Parameter 'o')`, async () => {
                 await testDiagnostics(
-                    'templates/regression/730c.json',
+                    'templates/regression/730a.json',
                     {
-                        parametersFile: 'templates/regression/730c.params.json',
+                        parametersFile: 'templates/regression/730a.params.json',
                     },
                     [
                     ]);
             });
-            */
-    });
+
+            testWithLanguageServer(`#730 scenario b: Template validation failed: The template resource '' at line '<null>' and column '<null>' is not valid. The name property cannot be null or empty.`, async () => {
+                await testDiagnostics(
+                    'templates/regression/730b.json',
+                    {
+                        parametersFile: 'templates/regression/730b.parameters.json',
+                    },
+                    [
+                        "Error: Template validation failed: The template resource '' at line '121' and column '158' is not valid. The name property cannot be null or empty. Please see https://aka.ms/arm-template/#resources for usage details. (arm-template (validation)) [120,157-120,157]"
+                    ]);
+            });
+
+            // tslint:disable-next-line: no-suspicious-comment
+            /* TODO: #730
+                testWithLanguageServer(`#730 scenario c: Template function copyIndex not expected at this location`, async () => {
+                    await testDiagnostics(
+                        'templates/regression/730c.json',
+                        {
+                            parametersFile: 'templates/regression/730c.params.json',
+                        },
+                        [
+                        ]);
+                });
+                */
+        });
+    }
 
     // tslint:disable-next-line: no-suspicious-comment
     /* TODO: #708
