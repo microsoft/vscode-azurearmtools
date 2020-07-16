@@ -12,5 +12,5 @@ import { delay } from "./delay";
 export async function mapParameterFile(templateFileUri: Uri, parameterFileUri: Uri | undefined, waitForLanguageServer: boolean = true): Promise<void> {
     await ext.deploymentFileMapping.value.mapParameterFile(templateFileUri, parameterFileUri);
     // tslint:disable-next-line: no-suspicious-comment
-    await delay(2000); // TODO
+    await delay(500); // TODO
 }
