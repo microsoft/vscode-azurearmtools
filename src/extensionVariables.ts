@@ -66,6 +66,9 @@ class ExtensionVariables {
     // Suite support - lets us know when diagnostics have been completely published for a file
     public addCompletedDiagnostic: boolean = false;
 
+    // Note: We can't effectively change the configuration for all actions right now because
+    // the language server reads the vscode configuration directly in order to
+    // receive the parameter file mappings.
     public readonly configuration: IConfiguration = new VsCodeConfiguration(configPrefix);
 
     public readonly completionItemsSpy: CompletionsSpy = new CompletionsSpy();

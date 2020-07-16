@@ -112,8 +112,7 @@ suite("Backend validation", () => {
         );
     });
 
-    /* TODO: blocked by https://github.com/microsoft/vscode-azurearmtools/issues/695
-
+    /* TODO: #695
     // https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/copy-outputs
     testWithLanguageServer("copy loop in outputs 2 - tenant deployment", async () => {
         await testDiagnostics(
@@ -264,7 +263,8 @@ suite("Backend validation", () => {
             [
             ]
         );
-    });*/
+    });
+    */
 
     testWithLanguageServer("param-with-keyvault-reference.json", async () => {
         await testDiagnosticsFromFile(

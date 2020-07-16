@@ -1,0 +1,57 @@
+// https://github.com/microsoft/vscode-azurearmtools/issues/600#issuecomment-616631029
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "rgNamePrefix": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "rgEnvList": {
+            "type": "array",
+            "allowedValues": [
+                "DEV",
+                "TEST",
+                "PROD"
+            ],
+            "defaultValue": [
+                "DEV",
+                "TEST",
+                "PROD"
+            ]
+        },
+        "rgLocation": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "instanceCount": {
+            "type": "int",
+            "defaultValue": 2
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2018-05-01",
+            "location": "[parameters('rgLocation')]",
+            "name": "[concat(parameters('rgNamePrefix'),'-',parameters('rgEnvList')[copyIndex()])]",
+            "copy": {
+                "name": "rgCopy",
+                "count": "[parameters('instanceCount')]"
+            },
+            "properties": {
+            }
+        }
+    ],
+    "outputs": {
+        "resourceGroups": {
+            "type": "array",
+            "copy": {
+                "count": "[parameters('instanceCount')]",
+                "input": "[resourceId('Microsoft.Resources/resourceGroups', concat(parameters('rgNamePrefix'),'-',parameters('rgEnvList')[copyIndex()]))]"
+            }
+        }
+    }
+}

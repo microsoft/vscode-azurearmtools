@@ -8,8 +8,8 @@
 
 import * as assert from 'assert';
 import { commands } from 'vscode';
-import { ext } from '../../extension.bundle';
 import { IDeploymentParametersFile, IDeploymentTemplate } from "../support/diagnostics";
+import { mapParameterFile } from '../support/mapParameterFile';
 import { getDocumentMarkers, removeEOLMarker } from "../support/parseTemplate";
 import { stringify } from '../support/stringify';
 import { TempDocument, TempEditor, TempFile } from '../support/TempFile';
@@ -101,7 +101,7 @@ suite("Add missing parameters - functional", () => {
 
                 // Map template to params
                 if (templateFile) {
-                    await ext.deploymentFileMapping.value.mapParameterFile(templateFile.uri, paramsFile.uri);
+                    await mapParameterFile(templateFile.uri, paramsFile.uri);
                 }
 
                 // Open params in editor
@@ -122,7 +122,7 @@ suite("Add missing parameters - functional", () => {
                     await editor.dispose();
                 }
                 if (templateFile) {
-                    await ext.deploymentFileMapping.value.mapParameterFile(templateFile.uri, undefined);
+                    await mapParameterFile(templateFile.uri, undefined, false);
                 }
             }
         });
