@@ -104,7 +104,7 @@ export class Item {
                 label: metadata.fullName,
                 insertText,
                 span,
-                kind: metadata.unqualifiedName === metadata.fullName ? CompletionKind.Function : CompletionKind.UserFunction,
+                kind: metadata.unqualifiedName === metadata.fullName ? CompletionKind.tleFunction : CompletionKind.tleUserFunction,
                 detail: `(function) ${metadata.usage}`,
                 documentation: metadata.description
             });
@@ -118,7 +118,7 @@ export class Item {
             label,
             insertText,
             span: span,
-            kind: CompletionKind.Parameter,
+            kind: CompletionKind.tleParameter,
             detail: `(namespace) ${label}`,
             documentation: "User-defined namespace"
         });
@@ -129,7 +129,7 @@ export class Item {
             label: propertyName,
             insertText: propertyName,
             span,
-            kind: CompletionKind.Property,
+            kind: CompletionKind.tleProperty,
             detail: "(property)" // CONSIDER: Add type, default value, etc.
         });
     }
@@ -140,7 +140,7 @@ export class Item {
             label,
             insertText: `${label}${includeRightParenthesisInCompletion ? ")" : ""}`,
             span,
-            kind: CompletionKind.Parameter,
+            kind: CompletionKind.tleParameter,
             detail: `(parameter)`, // CONSIDER: Add type, default value, etc. from property definition
             documentation: parameter.description
         });
@@ -152,7 +152,7 @@ export class Item {
             label,
             insertText: `${label}${includeRightParenthesisInCompletion ? ")" : ""}`,
             span,
-            kind: CompletionKind.Variable,
+            kind: CompletionKind.tleVariable,
             detail: `(variable)`
         });
     }
@@ -178,16 +178,14 @@ export class Item {
 
 export enum CompletionKind {
     // TLE completions
-    Function = "Function",
-    Parameter = "Parameter",
-    Variable = "Variable",
-    Property = "Property",
-    Namespace = "Namespace",
-    UserFunction = "UserFunction",
-
-    // Template file completions
-    ResourceIdResTypeParameter = "ResourceIdResTypeParameter", // First arg of resourceId
-    ResourceIdResNameParameter = "ResourceIdResNameParameter", // Second arg of resourceId
+    tleFunction = "tleFunction",
+    tleParameter = "tleParameter",
+    tleVariable = "tleVariable",
+    tleProperty = "tleProperty",
+    tleNamespace = "tleNamespace",
+    tleUserFunction = "tleUserFunction",
+    tleResourceIdResTypeParameter = "tleResourceIdResTypeParameter", // First arg of resourceId
+    tleResourceIdResNameParameter = "tleResourceIdResNameParameter", // Second arg of resourceId
 
     // Parameter file completions
     PropertyValueForExistingProperty = "PropertyValueForExistingProperty", // Parameter from the template file

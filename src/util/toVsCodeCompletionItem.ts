@@ -41,21 +41,21 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
     vscodeItem.sortText = `${sortPriorityPrefix}${item.sortText ?? item.label}`;
 
     switch (item.kind) {
-        case Completion.CompletionKind.Function:
-        case Completion.CompletionKind.UserFunction:
+        case Completion.CompletionKind.tleFunction:
+        case Completion.CompletionKind.tleUserFunction:
             vscodeItem.kind = vscode.CompletionItemKind.Function;
             break;
 
-        case Completion.CompletionKind.Parameter:
-        case Completion.CompletionKind.Variable:
+        case Completion.CompletionKind.tleParameter:
+        case Completion.CompletionKind.tleVariable:
             vscodeItem.kind = vscode.CompletionItemKind.Variable;
             break;
 
-        case Completion.CompletionKind.Property:
+        case Completion.CompletionKind.tleProperty:
             vscodeItem.kind = vscode.CompletionItemKind.Field;
             break;
 
-        case Completion.CompletionKind.Namespace:
+        case Completion.CompletionKind.tleNamespace:
             vscodeItem.kind = vscode.CompletionItemKind.Unit;
             break;
 
@@ -67,8 +67,8 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
             vscodeItem.kind = vscode.CompletionItemKind.Snippet;
             break;
 
-        case Completion.CompletionKind.ResourceIdResTypeParameter:
-        case Completion.CompletionKind.ResourceIdResNameParameter:
+        case Completion.CompletionKind.tleResourceIdResTypeParameter:
+        case Completion.CompletionKind.tleResourceIdResNameParameter:
             vscodeItem.kind = vscode.CompletionItemKind.Reference;
             break;
 
@@ -93,7 +93,7 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
     const telemetryArgs: { [key: string]: string | undefined } = {
         snippet: item.snippetName,
         kind: item.kind,
-        function: item.kind === Completion.CompletionKind.Function ? item.label : undefined
+        function: item.kind === Completion.CompletionKind.tleFunction ? item.label : undefined
     };
     for (let key of Object.getOwnPropertyNames(item.telemetryProperties ?? {})) {
         telemetryArgs[key] = item.telemetryProperties?.[key];
