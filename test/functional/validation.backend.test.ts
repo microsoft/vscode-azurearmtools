@@ -65,206 +65,49 @@ suite("Backend validation", () => {
         );
     });
 
-    // https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/copy-outputs
-    testWithLanguageServer("copy loop in outputs 1 - resource group deployment", async () => {
-        await testDiagnostics(
-            {
-                "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                "contentVersion": "1.0.0.0",
-                "parameters": {
-                    "storageCount": {
-                        "type": "int",
-                        "defaultValue": 2
-                    }
+    suite("#695 https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/copy-outputs", () => {
+        testWithLanguageServer("copy loop in outputs 1 - resource group deployment", async () => {
+            await testDiagnostics(
+                "templates/regression/695a-rg.json",
+                {
+                    parametersFile: "templates/regression/695a-rg.parameters.json"
                 },
-                "variables": {
-                    "baseName": "[concat('storage', uniqueString(resourceGroup().id))]"
-                },
-                "resources": [
-                    {
-                        "type": "Microsoft.Storage/storageAccounts",
-                        "apiVersion": "2019-04-01",
-                        "name": "[concat(copyIndex(), variables('baseName'))]",
-                        "location": "[resourceGroup().location]",
-                        "sku": {
-                            "name": "Standard_LRS"
-                        },
-                        "kind": "Storage",
-                        "properties": {},
-                        "copy": {
-                            "name": "storagecopy",
-                            "count": "[parameters('storageCount')]"
-                        }
-                    }
-                ],
-                "outputs": {
-                    "storageEndpoints": {
-                        "type": "array",
-                        "copy": {
-                            "count": "[parameters('storageCount')]",
-                            "input": "[reference(concat(copyIndex(), variables('baseName'))).primaryEndpoints.blob]"
-                        }
-                    }
-                }
-            },
-            {},
-            []
-        );
-    });
+                []
+            );
+        });
 
-    /* TODO: #695
-    // https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/copy-outputs
-    testWithLanguageServer("copy loop in outputs 2 - tenant deployment", async () => {
-        await testDiagnostics(
-            {
-                "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
-                "contentVersion": "1.0.0.0",
-                "parameters": {
-                    "rgNamePrefix": {
-                        "type": "string",
-                        "defaultValue": ""
-                    },
-                    "rgEnvList": {
-                        "type": "array",
-                        "allowedValues": [
-                            "DEV",
-                            "TEST",
-                            "PROD"
-                        ],
-                        "defaultValue": [
-                        ]
-                    },
-                    "instanceCount": {
-                        "type": "int",
-                        "defaultValue": 2
-                    }
+        /* TODO: #695
+        testWithLanguageServer("copy loop in outputs 2 - tenant deployment", async () => {
+            await testDiagnostics(
+                "templates/regression/695b-tenant.json",
+                {
+                    parametersFile: "templates/regression/695b-tenant.parameters.json"
                 },
-                "variables": {
-                },
-                "resources": [
-                ],
-                "outputs": {
-                    "resourceGroups": {
-                        "type": "array",
-                        "copy": {
-                            "count": "[parameters('instanceCount')]",
-                            "input": "[resourceId('Microsoft.Resources/resourceGroups', concat(parameters('rgNamePrefix'),'-',parameters('rgEnvList')[copyIndex()]))]"
-                        }
-                    }
-                }
-            },
-            {},
-            []
-        );
-    });
+                []
+            );
+        });
 
-    testWithLanguageServer("copy loop in outputs 3 - subscription deployment", async () => {
-        await testDiagnostics(
-            {
-                // https://github.com/microsoft/vscode-azurearmtools/issues/600#issuecomment-616631029
-                "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
-                "contentVersion": "1.0.0.0",
-                "parameters": {
-                    "rgNamePrefix": {
-                        "type": "string",
-                        "defaultValue": ""
-                    },
-                    "rgEnvList": {
-                        "type": "array",
-                        "allowedValues": [
-                            "DEV",
-                            "TEST",
-                            "PROD"
-                        ],
-                        "defaultValue": [
-                        ]
-                    },
-                    "rgLocation": {
-                        "type": "string",
-                        "defaultValue": ""
-                    },
-                    "instanceCount": {
-                        "type": "int",
-                        "defaultValue": 2
-                    }
+        testWithLanguageServer("copy loop in outputs 3 - subscription deployment", async () => {
+            await testDiagnostics(
+                "templates/regression/695c-sub.json",
+                {
+                    parametersFile: "templates/regression/695c-sub.parameters.json"
                 },
-                "variables": {
-                },
-                "resources": [
-                    {
-                        "type": "Microsoft.Resources/resourceGroups",
-                        "apiVersion": "2018-05-01",
-                        "location": "[parameters('rgLocation')]",
-                        "name": "[concat(parameters('rgNamePrefix'),'-',parameters('rgEnvList')[copyIndex()])]",
-                        "copy": {
-                            "name": "rgCopy",
-                            "count": "[parameters('instanceCount')]"
-                        },
-                        "properties": {
-                        }
-                    }
-                ],
-                "outputs": {
-                    "resourceGroups": {
-                        "type": "array",
-                        "copy": {
-                            "count": "[parameters('instanceCount')]",
-                            "input": "[resourceId('Microsoft.Resources/resourceGroups', concat(parameters('rgNamePrefix'),'-',parameters('rgEnvList')[copyIndex()]))]"
-                        }
-                    }
-                }
-            },
-            {},
-            [
-            ]
-        );
-    });
+                []
+            );
+        });
 
-    testWithLanguageServer("copy loop in outputs 4 - management group deployment", async () => {
-        await testDiagnostics(
-            {
-                "$schema": "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#",
-                "contentVersion": "1.0.0.0",
-                "parameters": {
-                    "rgNamePrefix": {
-                        "type": "string",
-                        "defaultValue": ""
-                    },
-                    "rgEnvList": {
-                        "type": "array",
-                        "allowedValues": [
-                            "DEV",
-                            "TEST",
-                            "PROD"
-                        ],
-                        "defaultValue": [
-                        ]
-                    },
-                    "instanceCount": {
-                        "type": "int",
-                        "defaultValue": 2
-                    }
+        testWithLanguageServer("copy loop in outputs 4 - management group deployment", async () => {
+            await testDiagnostics(
+                "templates/regression/695d-mg.json",
+                {
+                    parametersFile: "templates/regression/695d-mg.parameters.json"
                 },
-                "variables": {
-                },
-                "resources": [
-                ],
-                "outputs": {
-                    "resourceGroups": {
-                        "type": "array",
-                        "copy": {
-                            "count": "[parameters('instanceCount')]",
-                            "input": "[resourceId('Microsoft.Resources/resourceGroups', concat(parameters('rgNamePrefix'),'-',parameters('rgEnvList')[copyIndex()]))]"
-                        }
-                    }
-                }
-            },
-            {},
-            [
-            ]
-        );
+                []
+            );
+        });
+        */
     });
-    */
 
     testWithLanguageServer("param-with-keyvault-reference.json", async () => {
         await testDiagnosticsFromFile(

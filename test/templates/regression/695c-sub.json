@@ -1,5 +1,5 @@
-// https://github.com/microsoft/vscode-azurearmtools/issues/600#issuecomment-616631029
 {
+    // https://github.com/microsoft/vscode-azurearmtools/issues/600#issuecomment-616631029
     "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
@@ -14,11 +14,7 @@
                 "TEST",
                 "PROD"
             ],
-            "defaultValue": [
-                "DEV",
-                "TEST",
-                "PROD"
-            ]
+            "defaultValue": []
         },
         "rgLocation": {
             "type": "string",
@@ -29,8 +25,7 @@
             "defaultValue": 2
         }
     },
-    "variables": {
-    },
+    "variables": {},
     "resources": [
         {
             "type": "Microsoft.Resources/resourceGroups",
@@ -41,8 +36,7 @@
                 "name": "rgCopy",
                 "count": "[parameters('instanceCount')]"
             },
-            "properties": {
-            }
+            "properties": {}
         }
     ],
     "outputs": {

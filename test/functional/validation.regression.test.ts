@@ -556,18 +556,18 @@ suite("Validation regression tests", () => {
                     ]);
             });
 
-            // tslint:disable-next-line: no-suspicious-comment
-            /* TODO: #730
-                testWithLanguageServer(`#730 scenario c: Template function copyIndex not expected at this location`, async () => {
-                    await testDiagnostics(
-                        'templates/regression/730c.json',
-                        {
-                            parametersFile: 'templates/regression/730c.params.json',
-                        },
-                        [
-                        ]);
-                });
-                */
+            testWithLanguageServer(`#730 scenario c: Template function copyIndex not expected at this location`, async () => {
+                await testDiagnostics(
+                    'templates/regression/730c.json',
+                    {
+                        parametersFile: 'templates/regression/730c.params.json',
+                    },
+                    [
+                        "Warning: The parameter 'projectName' is never used. (arm-template (expressions)) [791,24-791,37]",
+                        "Warning: The variable 'intlbRef' is never used. (arm-template (expressions)) [927,24-927,34]",
+                        "Warning: Value must be one of the following types: integer (arm-template (schema)) [641,16-641,30]"
+                    ]);
+            });
         });
     }
 
