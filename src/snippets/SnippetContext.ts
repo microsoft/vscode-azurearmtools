@@ -15,6 +15,10 @@ export enum KnownSnippetContexts {
     emptyDocument = 'empty-document',
 
     resources = 'resources',
+
+    // Inside the body of a single resource
+    resourceBody = 'resource-body',
+
     // Parameter definitions, whether top-level or nested deployment
     parameterDefinitions = 'parameter-definitions',
     // Parameter values, whether top-level or nested deployment

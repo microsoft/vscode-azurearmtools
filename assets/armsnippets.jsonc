@@ -6,6 +6,8 @@
         parameter-definitions
         parameter-values
         userfunc-parameter-definitions
+        resource-body
+
 
         If a location in a template document does not match ones of the above, then it will
         be set to the name of the property containing the current array or object (e.g. "resources" or "outputs"),
@@ -129,7 +131,7 @@
             "}"
         ],
         "description": "Tag Section",
-        "context": "asdf"
+        "context": "resource-body"
     },
     "Linked Deployment": {
         "prefix": "arm-linked-template",

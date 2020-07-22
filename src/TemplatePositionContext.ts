@@ -190,7 +190,7 @@ export class TemplatePositionContext extends PositionContext {
         //         << CURSOR HERE
         //     }...
         if (parents[0] instanceof Json.ObjectValue
-            && parents[1].isPropertyWithName(templateKeys.parameters)
+            && parents[1]?.isPropertyWithName(templateKeys.parameters)
             && parents[2] === this.document.topLevelValue
         ) {
             return true;
@@ -206,9 +206,9 @@ export class TemplatePositionContext extends PositionContext {
         //     }...
         // }
         if (parents[0] instanceof Json.ObjectValue
-            && parents[1].isPropertyWithName(templateKeys.parameters)
+            && parents[1]?.isPropertyWithName(templateKeys.parameters)
             && parents[2] instanceof Json.ObjectValue
-            && parents[3].isPropertyWithName(templateKeys.nestedDeploymentTemplateProperty)
+            && parents[3]?.isPropertyWithName(templateKeys.nestedDeploymentTemplateProperty)
         ) {
             return true;
         }
@@ -226,9 +226,9 @@ export class TemplatePositionContext extends PositionContext {
         //             << CURSOR HERE
         //         }...
         if (parents[0] instanceof Json.ObjectValue
-            && parents[1].isPropertyWithName(templateKeys.parameters)
+            && parents[1]?.isPropertyWithName(templateKeys.parameters)
             && parents[2] instanceof Json.ObjectValue
-            && parents[3].isPropertyWithName(templateKeys.properties)
+            && parents[3]?.isPropertyWithName(templateKeys.properties)
             && isDeploymentResource(parents[4])
         ) {
             return true;
@@ -260,11 +260,28 @@ export class TemplatePositionContext extends PositionContext {
         //             "parameters": [
         //                 << CURSOR HERE
         if (parents[0] instanceof Json.ArrayValue
-            && parents[1].isPropertyWithName(templateKeys.parameters)
+            && parents[1]?.isPropertyWithName(templateKeys.parameters)
             && parents[2] instanceof Json.ObjectValue
             && parents[3] instanceof Json.Property // This is the function name, don't care what that name is
             && parents[4] instanceof Json.ObjectValue
-            && parents[5].isPropertyWithName(templateKeys.userFunctionMembers)
+            && parents[5]?.isPropertyWithName(templateKeys.userFunctionMembers)
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private isInsideResourceBody(parents: (Json.ObjectValue | Json.ArrayValue | Json.Property)[]): boolean {
+        //     {
+        //         "name": "virtualNetwork1",
+        //         "type": "Microsoft.Network/virtualNetworks",
+        //         "apiVersion": "2019-11-01",
+        //         << CURSOR
+        if (parents[0] instanceof Json.ObjectValue
+            && parents[0]?.hasProperty(templateKeys.resourceName)
+            && parents[0]?.hasProperty(templateKeys.resourceType)
+            && parents[0]?.hasProperty(templateKeys.resourceApiVersion)
         ) {
             return true;
         }
@@ -274,16 +291,19 @@ export class TemplatePositionContext extends PositionContext {
 
     public getSnippetInsertionContext(triggerCharacter: string | undefined): SnippetInsertionContext {
         const context = super.getSnippetInsertionContext(triggerCharacter);
+        const parents = context.parents;
 
         // We need to make some contexts more specific to the template file.  For instance, a 'parameters' object might be
         //   parameter definitions or parameter values or user function parameters, all of which require different contexts.
-        if (context.parents) {
-            if (this.isInsideParameterDefinitions(context.parents)) {
+        if (parents) {
+            if (this.isInsideParameterDefinitions(parents)) {
                 context.context = KnownSnippetContexts.parameterDefinitions;
-            } else if (this.isInsideParameterValues(context.parents)) {
+            } else if (this.isInsideParameterValues(parents)) {
                 context.context = KnownSnippetContexts.parameterValues;
-            } else if (this.isInsideUserFunctionParameterDefinitions(context.parents)) {
+            } else if (this.isInsideUserFunctionParameterDefinitions(parents)) {
                 context.context = KnownSnippetContexts.userFuncParameterDefinitions;
+            } else if (this.isInsideResourceBody(parents)) {
+                context.context = KnownSnippetContexts.resourceBody;
             }
         }
 

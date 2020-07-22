@@ -360,18 +360,19 @@ suite("Contextualized snippets", () => {
 
         });
 
-        createContextualizedSnippetTest(
-            "top-level resource",
-            "arm-web-app",
-            [undefined, '{'],
-            `{
+        suite("resources", () => {
+            createContextualizedSnippetTest(
+                "top-level resource",
+                "arm-web-app",
+                [undefined, '{'],
+                `{
                 "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
                 "resources": [
                     !
                 ]
             }`,
-            `{
+                `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "resources": [
@@ -394,21 +395,21 @@ suite("Contextualized snippets", () => {
         }
     ]
 }`,
-            []
-        );
+                []
+            );
 
-        createContextualizedSnippetTest(
-            "top-level - multiple resources in one snippet",
-            "arm-vm-ubuntu",
-            [undefined, '{'],
-            `{
+            createContextualizedSnippetTest(
+                "top-level - multiple resources in one snippet",
+                "arm-vm-ubuntu",
+                [undefined, '{'],
+                `{
                 "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
                 "resources": [
                     !
                 ]
             }`,
-            `{
+                `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "resources": [
@@ -573,8 +574,47 @@ suite("Contextualized snippets", () => {
         }
     ]
 }`,
-            []
-        );
+                []
+            );
+
+            createContextualizedSnippetTest(
+                "resource tags",
+                "arm-tags",
+                [undefined, '"'],
+                `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+        {
+            "name": "webApp1",
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2018-11-01",
+            !
+        }
+    ]
+}`,
+                `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+        {
+            "name": "webApp1",
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2018-11-01",
+            "tags": {
+                "tagName": "tagValue"
+            }
+        }
+    ]
+}`,
+                [
+                    "Missing required property \"location\"",
+                    "Missing required property \"properties\""
+                ]
+            );
+
+        });
+
     });
 
     suite('Nested templates', () => {
