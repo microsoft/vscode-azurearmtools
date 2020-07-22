@@ -15,6 +15,11 @@ export enum KnownSnippetContexts {
     emptyDocument = 'empty-document',
 
     resources = 'resources',
+    // Parameter definitions, whether top-level or nested deployment
     parameterDefinitions = 'parameter-definitions',
+    // Parameter values, whether top-level or nested deployment
     parameterValues = 'parameter-values',
+
+    // User function parameter definitions
+    userFuncParameterDefinitions = 'userfunc-parameter-definitions',
 }

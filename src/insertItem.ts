@@ -309,7 +309,8 @@ export class InsertItem {
             templatePart: topLevel,
             textEditor,
             data: functions,
-            name: "functions", indentLevel: 1
+            name: templateKeys.functions,
+            indentLevel: 1
         });
     }
 
@@ -329,7 +330,7 @@ export class InsertItem {
             templatePart: namespace,
             textEditor,
             data: members,
-            name: 'members',
+            name: templateKeys.userFunctionMembers,
             indentLevel: 3
         });
     }
@@ -362,7 +363,7 @@ export class InsertItem {
             context.errorHandling.suppressReportIssue = true;
             throw new Error("The first namespace in functions is not an object!");
         }
-        let members = namespace.getPropertyValue("members");
+        let members = namespace.getPropertyValue(templateKeys.userFunctionMembers);
         if (!members) {
             await this.insertFunctionAsMembers(namespace, textEditor);
             return;

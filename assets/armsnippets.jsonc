@@ -1,11 +1,15 @@
 {
     /*
-        Known contexts:
+        Known contexts (see KnownSnippetContexts.ts)
 
         empty-document
         parameter-definitions
+        parameter-values
+        userfunc-parameter-definitions
 
-        Additionally, the name of the property containing the current array or object (e.g. "resources" or "outputs")
+        If a location in a template document does not match ones of the above, then it will
+        be set to the name of the property containing the current array or object (e.g. "resources" or "outputs"),
+        if any.
     */
     "$schema": "./schemas/snippets.schema.json",
     "Azure Resource Manager (ARM) Template": {
@@ -2477,7 +2481,6 @@
             "}"
         ],
         "description": "User-defined namespace and member function, should be placed inside a \"members\" object inside \"functions\"",
-        "$asdf": "asdf",
         "context": "members"
     },
     "User Function Namespace": {
@@ -2503,6 +2506,17 @@
         ],
         "description": "User-defined namespace and member function",
         "context": "functions"
+    },
+    "User Function Parameter Definition": {
+        "prefix": "new-userfunc-parameter",
+        "body": [
+            "{",
+            "\t\"name\": \"${1:parameter1}\",",
+            "\t\"type\": \"${2|string,securestring,int,bool,object,secureobject,array|}\"",
+            "}"
+        ],
+        "description": "ARM Template Parameter Definition",
+        "context": "userfunc-parameter-definitions"
     },
     "Virtual Network": {
         "prefix": "arm-vnet",
