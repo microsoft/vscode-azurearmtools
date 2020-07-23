@@ -343,14 +343,19 @@ export class AzureRMTools {
         });
     }
 
+    private getNormalizedDocumentKey(documentUri: vscode.Uri): string {
+        // We want a normalized file path to use as key, but also need to differentiate documents with different URI schemes
+        return `${documentUri.scheme}|${normalizePath(documentUri)}`;
+    }
     // Add the deployment doc to our list of opened deployment docs
     private setOpenedDeploymentDocument(documentUri: vscode.Uri, deploymentDocument: DeploymentDocument | undefined): void {
         assert(documentUri);
-        const normalizedPath = normalizePath(documentUri);
+        const documentPathKey = this.getNormalizedDocumentKey(documentUri);
+
         if (deploymentDocument) {
-            this._deploymentDocuments.set(normalizedPath, deploymentDocument);
+            this._deploymentDocuments.set(documentPathKey, deploymentDocument);
         } else {
-            this._deploymentDocuments.delete(normalizedPath);
+            this._deploymentDocuments.delete(documentPathKey);
         }
 
         this._codeLensChangedEmitter.fire();
@@ -359,8 +364,8 @@ export class AzureRMTools {
     private getOpenedDeploymentDocument(documentOrUri: vscode.TextDocument | vscode.Uri): DeploymentDocument | undefined {
         assert(documentOrUri);
         const uri = documentOrUri instanceof vscode.Uri ? documentOrUri : documentOrUri.uri;
-        const normalizedPath = normalizePath(uri);
-        return this._deploymentDocuments.get(normalizedPath);
+        const documentPathKey = this.getNormalizedDocumentKey(uri);
+        return this._deploymentDocuments.get(documentPathKey);
     }
 
     private getOpenedDeploymentTemplate(documentOrUri: vscode.TextDocument | vscode.Uri): DeploymentTemplate | undefined {
@@ -376,6 +381,10 @@ export class AzureRMTools {
     /**
      * Analyzes a text document that has been opened, and handles it appropriately if
      * it's a deployment template or parameter file
+     *
+     * NOTE: This method is called for *every* file opened in vscode, so we
+     * take extra care to avoid slowing down performance, especially if it's not
+     * an ARM template or parameter file.
      */
     private updateOpenedDocument(textDocument: vscode.TextDocument): void {
         // tslint:disable-next-line:no-suspicious-comment

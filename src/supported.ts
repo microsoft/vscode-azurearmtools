@@ -44,6 +44,10 @@ function shouldWatchDocument(textDocument: TextDocument): boolean {
     if (
         textDocument.uri.scheme !== 'file'
         && textDocument.uri.scheme !== 'untitled' // unsaved files
+        // 'git' is the scheme that is used for documents in the left-hand side of the git 'changes'
+        // view.  If we don't switch to arm-template for it, the JSON language server will kick in
+        // and show false positive errors
+        && textDocument.uri.scheme !== 'git'
     ) {
         return false;
     }
