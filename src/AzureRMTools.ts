@@ -50,6 +50,7 @@ import { TemplateSectionType } from "./TemplateSectionType";
 import * as TLE from "./TLE";
 import { JsonOutlineProvider } from "./Treeview";
 import { UnrecognizedBuiltinFunctionIssue } from "./UnrecognizedFunctionIssues";
+import { escapeNonPaths } from "./util/escapeNonPaths";
 import { getRenameError } from "./util/getRenameError";
 import { normalizePath } from "./util/normalizePath";
 import { pathExists } from "./util/pathExists";
@@ -548,10 +549,19 @@ export class AzureRMTools {
             const props = actionContext.telemetry.properties;
             props.docLangId = document.languageId;
             props.docExtension = path.extname(document.fileName);
-            // tslint:disable-next-line: strict-boolean-expressions
-            props.schema = deploymentTemplate.schemaUri || "";
-            // tslint:disable-next-line: strict-boolean-expressions
-            props.apiProfile = deploymentTemplate.apiProfile || "";
+
+            const schemaUri = deploymentTemplate.schemaUri;
+            const schemaVersionAndScope = (schemaUri?.match(/([-0-9a-zA-Z]+\/[a-zA-Z]+\.json)#?$/) ?? [])[1];
+            props.schema = escapeNonPaths(
+                restrictToAllowedListLC(
+                    schemaVersionAndScope,
+                    ['2019-08-01/tenantDeploymentTemplate.json', '2018-05-01/subscriptionDeploymentTemplate.json',
+                        '2014-04-01-preview/deploymentTemplate.json', '2015-01-01/deploymentTemplate.json',
+                        '2019-04-01/deploymentTemplate.json', '2019-08-01/managementGroupDeploymentTemplate',
+                        '2019-08-01/tenantDeploymentTemplate.json']));
+            props.schemaScheme = restrictToAllowedListLC((schemaUri?.match(/^https?/) ?? [])[0], ['http', 'https']);
+
+            props.apiProfile = deploymentTemplate.apiProfile ?? "";
             props.issues = this.histogramToTelemetryString(issuesHistograph);
 
             const measurements = actionContext.telemetry.measurements;
@@ -577,6 +587,15 @@ export class AzureRMTools {
 
         this.logFunctionCounts(deploymentTemplate);
         this.logResourceUsage(deploymentTemplate);
+
+        function restrictToAllowedListLC(s: string | undefined, allowedList: string[]): string {
+            allowedList = allowedList.map(s2 => s2.toLowerCase());
+            if (s && allowedList.includes(s.toLowerCase())) {
+                return s;
+            }
+
+            return !!s ? "other" : '';
+        }
     }
 
     private async reportParameterFileOpenedTelemetry(
@@ -1032,7 +1051,7 @@ export class AzureRMTools {
             } & TelemetryProperties = actionContext.telemetry.properties;
 
             const resourceCounts: Histogram = deploymentTemplate.getResourceUsage();
-            properties.resourceCounts = this.histogramToTelemetryString(resourceCounts);
+            properties.resourceCounts = escapeNonPaths(this.histogramToTelemetryString(resourceCounts));
         });
     }
 
