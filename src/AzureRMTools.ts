@@ -11,9 +11,9 @@ import * as assert from "assert";
 import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
+import { delay } from "../test/support/delay";
 import { CachedPromise } from "./CachedPromise";
 import { IAddMissingParametersArgs, IGotoParameterValueArgs } from "./commandArguments";
-import * as Completion from "./Completion";
 import { ConsoleOutputChannelWrapper } from "./ConsoleOutputChannelWrapper";
 import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "./constants";
 import { DeploymentDocument, ResolvableCodeLens } from "./DeploymentDocument";
@@ -1202,22 +1202,32 @@ export class AzureRMTools {
                 const triggerCharacter = context.triggerKind === vscode.CompletionTriggerKind.TriggerCharacter
                     ? context.triggerCharacter
                     : undefined;
-                const items: Completion.Item[] = await pc.getCompletionItems(triggerCharacter);
-                const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c));
-                ext.completionItemsSpy.postCompletionItemsResult(pc.document, items, vsCodeItems);
+                const { items, triggerSuggest } = await pc.getCompletionItems(triggerCharacter);
+                if (triggerSuggest) {
+                    // The user typed the beginning of a parent object, open up the completions context menu because it's
+                    // likely they want to use a snippet immediately
+                    // tslint:disable-next-line: no-floating-promises
+                    delay(1).then(async () => {
+                        // First, add a newline to open up the {} or []
+                        await vscode.commands.executeCommand('type', { text: '\n' });
+                        vscode.commands.executeCommand('editor.action.triggerSuggest');
+                    });
+                    return undefined;
+                } else {
+                    const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c));
+                    ext.completionItemsSpy.postCompletionItemsResult(pc.document, items, vsCodeItems);
 
-                // vscode requires all spans to include the original position and be on the same line, otherwise
-                //   it ignores it.  Verify that here.
-                for (let item of vsCodeItems) {
-                    assert(item.range, "Completion item doesn't have a range");
-                    assert(item.range?.contains(position), "Completion item range doesn't include cursor");
-                    assert(item.range?.isSingleLine, "Completion item range must be a single line");
+                    // vscode requires all spans to include the original position and be on the same line, otherwise
+                    //   it ignores it.  Verify that here.
+                    for (let item of vsCodeItems) {
+                        assert(item.range, "Completion item doesn't have a range");
+                        assert(item.range?.contains(position), "Completion item range doesn't include cursor");
+                        assert(item.range?.isSingleLine, "Completion item range must be a single line");
+                    }
+
+                    return new vscode.CompletionList(vsCodeItems, true);
                 }
-
-                return new vscode.CompletionList(vsCodeItems, true);
             }
-
-            return undefined;
         });
     }
 

@@ -412,12 +412,12 @@ export class DeploymentTemplate extends DeploymentDocument {
 
     //#endregion
 
-    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentParameters | undefined): TemplatePositionContext {
-        return TemplatePositionContext.fromDocumentLineAndColumnIndexes(this, documentLineIndex, documentColumnIndex, associatedTemplate);
+    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentParameters | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
+        return TemplatePositionContext.fromDocumentLineAndColumnIndexes(this, documentLineIndex, documentColumnIndex, associatedParameters, allowOutOfBounds);
     }
 
-    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedTemplate: DeploymentParameters | undefined): TemplatePositionContext {
-        return TemplatePositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex, associatedTemplate);
+    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedParameters: DeploymentParameters | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
+        return TemplatePositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex, associatedParameters, allowOutOfBounds);
     }
 
     /**
