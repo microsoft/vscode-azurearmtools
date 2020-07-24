@@ -19,6 +19,7 @@ import * as path from 'path';
 import { Diagnostic, DiagnosticSeverity, Disposable, languages, Position, Range, TextDocument } from "vscode";
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
+import { delay } from "./delay";
 import { mapParameterFile } from "./mapParameterFile";
 import { parseParametersWithMarkers } from "./parseTemplate";
 import { rangeToString } from "./rangeToString";
@@ -246,7 +247,8 @@ export interface IGetDiagnosticsOptions {
      */
     doNotAddSchema?: boolean;
     /**
-     * Wait until diagnostics change before retrieving themed
+     * Wait until the diagnostics version of all sources changes before retrieving themed.  Without this, it just waits until all diagnostics indicate they're complete.
+     * NOTE: If previousResults are passed in, waitForChange is assumed true
      */
     waitForChange?: boolean;
 }
@@ -260,14 +262,20 @@ export async function testDiagnostics(templateContentsOrFileName: string | Parti
 }
 
 async function testDiagnosticsCore(templateContentsOrFileName: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: ExpectedDiagnostics): Promise<void> {
-    let actual: Diagnostic[] = await getDiagnosticsForTemplate(templateContentsOrFileName, options);
-    compareDiagnostics(actual, expected, options);
+    let actual: IDiagnosticsResults = await getDiagnosticsForTemplate(templateContentsOrFileName, options);
+    compareDiagnostics(actual.diagnostics, expected, options);
+}
+
+export interface IDiagnosticsResults {
+    diagnostics: Diagnostic[];
+    sourceCompletionVersions: { [source: string]: number };
 }
 
 export async function getDiagnosticsForDocument(
     document: TextDocument,
-    options: IGetDiagnosticsOptions
-): Promise<Diagnostic[]> {
+    options: IGetDiagnosticsOptions,
+    previousResults?: IDiagnosticsResults // If specified, will wait until the versions change and are completed
+): Promise<IDiagnosticsResults> {
     let dispose: Disposable | undefined;
     let timer: NodeJS.Timer | undefined;
 
@@ -287,10 +295,10 @@ export async function getDiagnosticsForDocument(
     }
 
     // tslint:disable-next-line:typedef promise-must-complete // (false positive for promise-must-complete)
-    let diagnosticsPromise = new Promise<Diagnostic[]>((resolve, reject) => {
+    let diagnosticsPromise = new Promise<IDiagnosticsResults>(async (resolve, reject) => {
         let currentDiagnostics: Diagnostic[] | undefined;
 
-        function pollDiagnostics(): { diagnostics: Diagnostic[]; sourceCompletionVersions: { [source: string]: number } } {
+        function getCurrentDiagnostics(): IDiagnosticsResults {
             const sourceCompletionVersions: { [source: string]: number } = {};
 
             currentDiagnostics = languages.getDiagnostics(document.uri);
@@ -336,35 +344,40 @@ export async function getDiagnosticsForDocument(
             return true;
         }
 
-        const initialResults = pollDiagnostics();
-        const requiredSourceCompletionVersions = Object.assign({}, initialResults.sourceCompletionVersions);
-        if (options.waitForChange) {
+        let currentResults: IDiagnosticsResults = previousResults ?? getCurrentDiagnostics();
+        const requiredSourceCompletionVersions = Object.assign({}, currentResults.sourceCompletionVersions);
+        if (options.waitForChange || previousResults) {
             // tslint:disable-next-line:no-for-in forin
             for (let source in requiredSourceCompletionVersions) {
                 requiredSourceCompletionVersions[source] = requiredSourceCompletionVersions[source] + 1;
             }
         }
 
-        if (areAllSourcesComplete(initialResults.sourceCompletionVersions)) {
-            resolve(initialResults.diagnostics);
+        if (areAllSourcesComplete(currentResults.sourceCompletionVersions)) {
+            resolve(currentResults);
             return;
         }
 
         // Now only poll on changed events
         console.log("Waiting for diagnostics to complete...");
+        let done = false;
         timer = setTimeout(
             () => {
                 reject(
                     new Error('Timed out waiting for diagnostics. Last retrieved diagnostics: '
                         + (currentDiagnostics ? currentDiagnostics.map(d => d.message).join('\n') : "None")));
+                done = true;
             },
             diagnosticsTimeout);
-        dispose = languages.onDidChangeDiagnostics(e => {
-            const results = pollDiagnostics();
+
+        while (!done) {
+            const results = getCurrentDiagnostics();
             if (areAllSourcesComplete(results.sourceCompletionVersions)) {
-                resolve(results.diagnostics);
+                resolve(results);
+                done = true;
             }
-        });
+            await delay(100);
+        }
     });
 
     let diagnostics = await diagnosticsPromise;
@@ -393,7 +406,7 @@ export async function getDiagnosticsForDocument(
 export async function getDiagnosticsForTemplate(
     templateContentsOrFileName: string | Partial<IDeploymentTemplate>,
     options?: IGetDiagnosticsOptions
-): Promise<Diagnostic[]> {
+): Promise<IDiagnosticsResults> {
     let templateContents: string | undefined;
     let tempPathSuffix: string = '';
     let templateFile: TempFile | undefined;
@@ -451,7 +464,7 @@ export async function getDiagnosticsForTemplate(
         editor = new TempEditor(document);
         await editor.open();
 
-        let diagnostics: Diagnostic[] = await getDiagnosticsForDocument(document.realDocument, options);
+        let diagnostics: IDiagnosticsResults = await getDiagnosticsForDocument(document.realDocument, options);
         assert(diagnostics);
 
         await editor.dispose();

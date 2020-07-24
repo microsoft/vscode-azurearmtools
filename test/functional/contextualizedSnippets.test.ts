@@ -10,13 +10,14 @@
 const DEBUG_BREAK_AFTER_INSERTING_SNIPPET = false;
 
 import * as assert from 'assert';
-import { commands, Position, Selection } from "vscode";
+import { Position, Selection } from "vscode";
 import { delay } from '../support/delay';
-import { diagnosticSources, getDiagnosticsForDocument } from '../support/diagnostics';
+import { diagnosticSources, getDiagnosticsForDocument, IGetDiagnosticsOptions } from '../support/diagnostics';
+import { formatDocumentAndWait } from '../support/formatDocumentAndWait';
 import { parseTemplateWithMarkers } from '../support/parseTemplate';
 import { TempDocument, TempEditor, TempFile } from '../support/TempFile';
 import { testWithRealSnippets } from '../support/TestSnippets';
-import { triggerCompletion } from '../support/triggerCompletion';
+import { simulateCompletion } from '../support/triggerCompletion';
 
 // This tests snippets in different locations, and also different methods of bringing up the snippet context menu (e.g. CTRL+SPACE, double quote etc)
 suite("Contextualized snippets", () => {
@@ -28,7 +29,7 @@ suite("Contextualized snippets", () => {
         expectedTemplate: string,
         expectedDiagnostics: string[]
     ): void {
-        const testSources = [diagnosticSources.expressions, diagnosticSources.syntax];
+        const testSources = [diagnosticSources.expressions];
         for (let triggerCharacter of triggerCharacters) {
             // tslint:disable-next-line: prefer-template
             const name = `${testName}, triggered by ${triggerCharacter ? ("'" + triggerCharacter + "'") : 'CTRL+SPACE'}`;
@@ -48,26 +49,25 @@ suite("Contextualized snippets", () => {
                     await tempEditor.open();
 
                     // Wait for first set of diagnostics to finish.
-                    await getDiagnosticsForDocument(
-                        tempDoc.realDocument,
-                        {
-                            includeSources: testSources
-                        });
+                    const diagnosticOptions: IGetDiagnosticsOptions = {
+                        includeSources: testSources
+                    };
+                    let diagnosticResults = await getDiagnosticsForDocument(tempDoc.realDocument, diagnosticOptions);
 
                     // Insert snippet (and wait for and verify diagnotics)
                     const docPos = dt.getDocumentPosition(bang.index);
                     const pos = new Position(docPos.line, docPos.line);
                     tempEditor.realEditor.selection = new Selection(pos, pos);
                     await delay(1);
-                    await triggerCompletion(
-                        tempDoc.realDocument,
+                    await simulateCompletion(
+                        tempEditor.realEditor,
                         snippetPrefix,
-                        {
-                            expected: expectedDiagnostics,
-                            waitForChange: true,
-                            ignoreSources: testSources,
-                            triggerCharacter
-                        });
+                        triggerCharacter
+                    );
+
+                    // Wait for final diagnostics but don't compare until we've compared the expected text first
+                    diagnosticResults = await getDiagnosticsForDocument(tempEditor.realEditor.document, diagnosticOptions, diagnosticResults);
+                    let messages = diagnosticResults.diagnostics.map(d => d.message).sort();
 
                     if (DEBUG_BREAK_AFTER_INSERTING_SNIPPET) {
                         // tslint:disable-next-line: no-debugger
@@ -75,10 +75,11 @@ suite("Contextualized snippets", () => {
                     }
 
                     // Format (vscode seems to be inconsistent about this in these scenarios)
-                    await commands.executeCommand('editor.action.formatDocument');
-
-                    const docTextAfterInsertion = tempDoc.realDocument.getText();
+                    const docTextAfterInsertion = await formatDocumentAndWait(tempDoc.realDocument);
                     assert.equal(docTextAfterInsertion, expectedTemplate);
+
+                    // Compare diagnostics
+                    assert.deepEqual(messages, expectedDiagnostics);
                 } finally {
                     await tempEditor?.dispose();
                     await tempDoc?.dispose();
@@ -114,7 +115,9 @@ suite("Contextualized snippets", () => {
     "contentVersion": "1.0.0.0",
     "resources": []
 }`,
-            []
+            [
+                "The parameter 'parameter1' is never used."
+            ]
         );
 
         createContextualizedSnippetTest(
@@ -137,7 +140,9 @@ suite("Contextualized snippets", () => {
     "contentVersion": "1.0.0.0",
     "resources": []
 }`,
-            []
+            [
+                "The variable 'variable1' is never used."
+            ]
         );
 
         createContextualizedSnippetTest(
@@ -206,7 +211,10 @@ suite("Contextualized snippets", () => {
         }
     ]
 }`,
-            []
+            [
+                "The user-defined function 'namespacename.functionname' is never used.",
+                "User-function parameter 'parametername' is never used."
+            ]
         );
 
         createContextualizedSnippetTest(
@@ -276,7 +284,12 @@ suite("Contextualized snippets", () => {
         }
     ]
 }`,
-            []
+            [
+                "The user-defined function 'namespacename.existingfunction' is never used.",
+                "The user-defined function 'namespacename.functionname' is never used.",
+                "User-function parameter 'parametername' is never used.",
+                "User-function parameter 'parametername' is never used."
+            ]
         );
 
         createContextualizedSnippetTest(
@@ -561,7 +574,10 @@ suite("Contextualized snippets", () => {
         }
     ]
 }`,
-            []
+            [
+                'The following parameters do not have values: "parameter1"',
+                "The parameter 'parameter1' is never used."
+            ]
         );
 
         createContextualizedSnippetTest(
@@ -640,7 +656,9 @@ suite("Contextualized snippets", () => {
         }
     ]
 }`,
-            []
+            [
+                "The parameter 'my-existing-parameter-name' is never used."
+            ]
         );
 
         createContextualizedSnippetTest(
@@ -719,7 +737,10 @@ suite("Contextualized snippets", () => {
         }
     ]
 }`,
-            []
+            [
+                'The following parameters do not have values: "my-existing-parameter-name"',
+                "The parameter 'my-existing-parameter-name' is never used."
+            ]
         );
 
     });

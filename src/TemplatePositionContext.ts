@@ -4,8 +4,6 @@
 
 // tslint:disable:max-line-length
 
-import { commands } from "vscode";
-import { delay } from "../test/support/delay";
 import { AzureRMAssets, BuiltinFunctionMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
 import * as Completion from "./Completion";
@@ -21,7 +19,7 @@ import * as Json from "./JSON";
 import * as language from "./Language";
 import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
 import { getPropertyValueCompletionItems } from "./parameterFiles/ParameterValues";
-import { IReferenceSite, PositionContext, ReferenceSiteKind } from "./PositionContext";
+import { ICompletionItemsResult, IReferenceSite, PositionContext, ReferenceSiteKind } from "./PositionContext";
 import * as Reference from "./ReferenceList";
 import { KnownSnippetContexts } from "./snippets/SnippetContext";
 import { SnippetInsertionContext } from "./snippets/SnippetInsertionContext";
@@ -53,15 +51,15 @@ class TleInfo implements ITleInfo {
 export class TemplatePositionContext extends PositionContext {
     private _tleInfo: CachedValue<TleInfo | undefined> = new CachedValue<TleInfo | undefined>();
 
-    public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentParameters | undefined): TemplatePositionContext {
+    public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentParameters | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
         let context = new TemplatePositionContext(deploymentTemplate, associatedParameters);
-        context.initFromDocumentLineAndColumnIndices(documentLineIndex, documentColumnIndex);
+        context.initFromDocumentLineAndColumnIndices(documentLineIndex, documentColumnIndex, allowOutOfBounds);
         return context;
     }
 
-    public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplate, documentCharacterIndex: number, associatedParameters: DeploymentParameters | undefined): TemplatePositionContext {
+    public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplate, documentCharacterIndex: number, associatedParameters: DeploymentParameters | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
         let context = new TemplatePositionContext(deploymentTemplate, associatedParameters);
-        context.initFromDocumentCharacterIndex(documentCharacterIndex);
+        context.initFromDocumentCharacterIndex(documentCharacterIndex, allowOutOfBounds);
         return context;
     }
 
@@ -253,29 +251,21 @@ export class TemplatePositionContext extends PositionContext {
         return context;
     }
 
-    private async getSnippetCompletionItems(triggerCharacter: string | undefined): Promise<Completion.Item[]> {
+    private async getSnippetCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult> {
         const insertionContext = this.getSnippetInsertionContext(triggerCharacter);
         if (insertionContext.triggerSuggest) {
-            // The user typed the beginning of a parent object, open up the completions context menu because it's
-            // likely they want to use a snippet immediately
-            // tslint:disable-next-line: no-floating-promises
-            delay(1).then(async () => {
-                // First, add a newline to open up the {} or []
-                await commands.executeCommand('type', { text: '\n' });
-                commands.executeCommand('editor.action.triggerSuggest');
-            });
-            return [];
+            return { items: [], triggerSuggest: true };
         } else if (insertionContext.context) {
             // Show snippets that match the snippet context at this location
             let replacementInfo = this.getCompletionReplacementSpanInfo();
             const snippets = await ext.snippetManager.value.getSnippetsAsCompletionItems(insertionContext, replacementInfo.span ?? this.emptySpanAtDocumentCharacterIndex);
-            return snippets;
+            return { items: snippets };
         }
 
-        return [];
+        return { items: [] };
     }
 
-    public async getCompletionItems(triggerCharacter: string | undefined): Promise<Completion.Item[]> {
+    public async getCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult> {
         const tleInfo = this.tleInfo;
         const completions: Completion.Item[] = [];
 
@@ -292,7 +282,11 @@ export class TemplatePositionContext extends PositionContext {
         if (!tleInfo) {
             // No TLE string at this location, consider snippet completions
             const snippets = await this.getSnippetCompletionItems(triggerCharacter);
-            completions.push(...snippets);
+            if (snippets.triggerSuggest) {
+                return snippets;
+            } else {
+                completions.push(...snippets.items);
+            }
         } else {
 
             // We're inside a JSON string. It may or may not contain square brackets.
@@ -323,7 +317,7 @@ export class TemplatePositionContext extends PositionContext {
             }
         }
 
-        return completions;
+        return { items: completions };
     }
 
     /**

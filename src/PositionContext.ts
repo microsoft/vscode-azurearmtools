@@ -23,6 +23,11 @@ export enum ReferenceSiteKind {
     reference = "reference"
 }
 
+export interface ICompletionItemsResult {
+    items: Completion.Item[];
+    triggerSuggest?: boolean;
+}
+
 /**
  * Information about a reference site (function call, parameter reference, etc.), or to
  * a definition itself (function definition, parameter definition, etc.)
@@ -65,22 +70,32 @@ export abstract class PositionContext {
         nonNullValue(this._document, "document");
     }
 
-    protected initFromDocumentLineAndColumnIndices(documentLineIndex: number, documentColumnIndex: number): void {
+    protected initFromDocumentLineAndColumnIndices(documentLineIndex: number, documentColumnIndex: number, allowOutOfBounds: boolean = false): void {
         nonNullValue(documentLineIndex, "documentLineIndex");
         assert(documentLineIndex >= 0, "documentLineIndex cannot be negative");
-        assert(documentLineIndex < this._document.lineCount, `documentLineIndex (${documentLineIndex}) cannot be greater than or equal to the deployment template's line count (${this._document.lineCount})`);
         nonNullValue(documentColumnIndex, "documentColumnIndex");
         assert(documentColumnIndex >= 0, "documentColumnIndex cannot be negative");
-        assert(documentColumnIndex <= this._document.getMaxColumnIndex(documentLineIndex), `documentColumnIndex (${documentColumnIndex}) cannot be greater than the line's maximum index (${this._document.getMaxColumnIndex(documentLineIndex)})`);
+
+        if (documentLineIndex >= this._document.lineCount) {
+            assert(allowOutOfBounds, `documentLineIndex cannot be greater than or equal to the deployment template's line count`);
+            documentLineIndex = this._document.lineCount - 1;
+        }
+        if (documentColumnIndex > this._document.getMaxColumnIndex(documentLineIndex)) {
+            assert(allowOutOfBounds, `documentColumnIndex cannot be greater than the line's maximum index`);
+            documentColumnIndex = this._document.getMaxColumnIndex(documentLineIndex);
+        }
 
         this._documentPosition.value = new language.Position(documentLineIndex, documentColumnIndex);
         this._documentCharacterIndex.value = this._document.getDocumentCharacterIndex(documentLineIndex, documentColumnIndex);
     }
 
-    protected initFromDocumentCharacterIndex(documentCharacterIndex: number): void {
+    protected initFromDocumentCharacterIndex(documentCharacterIndex: number, allowOutOfBounds: boolean = false): void {
         nonNullValue(documentCharacterIndex, "documentCharacterIndex");
         assert(documentCharacterIndex >= 0, "documentCharacterIndex cannot be negative");
-        assert(documentCharacterIndex <= this._document.maxCharacterIndex, `documentCharacterIndex (${documentCharacterIndex}) cannot be greater than the maximum character index (${this._document.maxCharacterIndex})`);
+        if (documentCharacterIndex > this._document.maxCharacterIndex) {
+            assert(allowOutOfBounds, `documentCharacterIndex cannot be greater than the maximum character index`);
+            documentCharacterIndex = this._document.maxCharacterIndex;
+        }
 
         this._documentCharacterIndex.value = documentCharacterIndex;
         this._documentPosition.value = this._document.getDocumentPosition(documentCharacterIndex);
@@ -236,7 +251,7 @@ export abstract class PositionContext {
         return undefined;
     }
 
-    public abstract getCompletionItems(triggerCharacter: string | undefined): Promise<Completion.Item[]>;
+    public abstract getCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult>;
 
     public abstract getSignatureHelp(): TLE.FunctionSignatureHelp | undefined;
 

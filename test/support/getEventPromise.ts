@@ -44,6 +44,11 @@ export class TimeoutError extends Error {
     }
 }
 
+export async function actThenWait<T, U>(action: () => Promise<T> | T, promise: Promise<U>): Promise<U> {
+    await action();
+    return await promise;
+}
+
 export function getDocumentChangedPromise(document: TextDocument, timeout: number = defaultTimeout): Promise<string> {
     return getEventPromise<string>(
         "onDidChangeTextDocument",
