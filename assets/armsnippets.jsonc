@@ -22,7 +22,7 @@
             "}"
         ],
         "description": "Resource Group Template",
-        "context": "empty"
+        "context": "empty-document"
     },
     "Azure Resource Manager (ARM) Template Subscription": {
         "prefix": "arm!s",
@@ -38,7 +38,7 @@
             "}"
         ],
         "description": "Subscription Template",
-        "context": "empty"
+        "context": "empty-document"
     },
     "Azure Resource Manager (ARM) Template Management Group": {
         "prefix": "arm!mg",
@@ -54,7 +54,7 @@
             "}"
         ],
         "description": "Management Group Template",
-        "context": "empty"
+        "context": "empty-document"
     },
     "Azure Resource Manager (ARM) Template Tenant": {
         "prefix": "arm!t",
@@ -70,7 +70,7 @@
             "}"
         ],
         "description": "Tenant Template",
-        "context": "empty"
+        "context": "empty-document"
     },
     "Azure Resource Manager (ARM) Parameters Template": {
         "prefix": "armp!",
@@ -83,7 +83,7 @@
             "}"
         ],
         "description": "Parameters Template",
-        "context": "empty"
+        "context": "empty-document"
     },
     "Variable": {
         "prefix": "new-variable",
