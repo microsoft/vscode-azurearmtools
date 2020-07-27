@@ -12,12 +12,12 @@ import { ITestPreparation, ITestPreparationResult, testWithPrep } from './suppor
 export function useTestFunctionMetadata(): void {
     let testMetadata = fs.readFileSync(path.join(__dirname, '..', '..', 'test', 'TestData.ExpressionMetadata.json'));
     AzureRMAssets.setFunctionsMetadata(testMetadata.toString());
-    console.log("Installed test function metadata");
+    //console.log("Installed test function metadata");
 }
 
 export function useRealFunctionMetadata(): void {
     AzureRMAssets.setFunctionsMetadata(undefined);
-    console.log("Re-installing real function metadata");
+    //console.log("Re-installing real function metadata");
 }
 
 export class UseRealFunctionMetadata implements ITestPreparation {

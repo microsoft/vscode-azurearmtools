@@ -52,7 +52,7 @@ suite("Contextualized snippets", () => {
                     const diagnosticOptions: IGetDiagnosticsOptions = {
                         includeSources: testSources
                     };
-                    let diagnosticResults = await getDiagnosticsForDocument(tempDoc.realDocument, diagnosticOptions);
+                    let diagnosticResults = await getDiagnosticsForDocument(tempDoc.realDocument, 1, diagnosticOptions);
 
                     // Insert snippet (and wait for and verify diagnotics)
                     const docPos = dt.getDocumentPosition(bang.index);
@@ -66,7 +66,7 @@ suite("Contextualized snippets", () => {
                     );
 
                     // Wait for final diagnostics but don't compare until we've compared the expected text first
-                    diagnosticResults = await getDiagnosticsForDocument(tempEditor.realEditor.document, diagnosticOptions, diagnosticResults);
+                    diagnosticResults = await getDiagnosticsForDocument(tempEditor.realEditor.document, 2, diagnosticOptions, diagnosticResults);
                     let messages = diagnosticResults.diagnostics.map(d => d.message).sort();
 
                     if (DEBUG_BREAK_AFTER_INSERTING_SNIPPET) {

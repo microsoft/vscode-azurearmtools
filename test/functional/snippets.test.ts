@@ -388,12 +388,14 @@ suite("Snippets functional tests", () => {
             // tslint:disable-next-line:no-for-in forin
             for (let snippetName in snippets) {
                 if (!snippetName.startsWith('$')) {
-                    testWithPrep(
-                        `snippet: ${snippetName}`,
-                        [RequiresLanguageServer.instance, UseRealSnippets.instance],
-                        async function (this: ITestCallbackContext): Promise<void> {
-                            await testSnippet(this, snippetsPath, snippetName, snippets[snippetName]);
-                        });
+                    for (let i = 0; i < 1; ++i) {
+                        testWithPrep(
+                            `snippet: ${snippetName}`,
+                            [RequiresLanguageServer.instance, UseRealSnippets.instance],
+                            async function (this: ITestCallbackContext): Promise<void> {
+                                await testSnippet(this, snippetsPath, snippetName, snippets[snippetName]);
+                            });
+                    }
                 }
             }
         });
@@ -430,13 +432,13 @@ suite("Snippets functional tests", () => {
         const diagnosticOptions: IGetDiagnosticsOptions = {
             ignoreSources: (overrideIgnoreSchemaValidation[snippetName]) ? [diagnosticSources.schema] : []
         };
-        let diagnosticResults = await getDiagnosticsForDocument(doc, diagnosticOptions);
+        let diagnosticResults = await getDiagnosticsForDocument(doc, 1, diagnosticOptions);
 
         // Remove comment at insertion point
         editor.selection = new Selection(snippetInsertEndPos, snippetInsertPos);
         await delay(1);
         await editor.edit(e => e.replace(editor.selection, ' '));
-        diagnosticResults = await getDiagnosticsForDocument(doc, diagnosticOptions);
+        diagnosticResults = await getDiagnosticsForDocument(doc, 2, diagnosticOptions, diagnosticResults);
 
         // Insert snippet
         const docTextBeforeInsertion = doc.getText();
@@ -446,7 +448,7 @@ suite("Snippets functional tests", () => {
             undefined);
 
         // Wait for final diagnostics but don't compare until we've compared the expected text first
-        diagnosticResults = await getDiagnosticsForDocument(editor.document, diagnosticOptions, diagnosticResults);
+        diagnosticResults = await getDiagnosticsForDocument(editor.document, 3, diagnosticOptions, diagnosticResults);
         let messages = diagnosticResults.diagnostics.map(d => d.message).sort();
 
         if (DEBUG_BREAK_AFTER_INSERTING_SNIPPET) {
@@ -459,13 +461,7 @@ suite("Snippets functional tests", () => {
         validateDocumentWithSnippet();
 
         // Compare diagnostics
-        try {
-            assert.deepEqual(messages, expectedDiagnostics);
-        } catch (error) {
-            console.log("FAILED.  Editor text after insertion:");
-            console.log(docTextAfterInsertion);
-            throw error;
-        }
+        assert.deepEqual(messages, expectedDiagnostics);
 
         // // Make sure formatting of the sippet is correct by formatting the document and seeing if it changes
         // await commands.executeCommand('editor.action.formatDocument');

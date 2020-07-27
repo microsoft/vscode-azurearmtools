@@ -34,6 +34,7 @@
 			"import * as os from \"os\";",
 			"import * as TLE from \"./TLE\";",
 			"import * as vscode from \"vscode\";",
+			"import {} from \"../extension.bundle\"";
 		]
 	}
 }
