@@ -70,7 +70,7 @@ export abstract class PositionContext {
         nonNullValue(this._document, "document");
     }
 
-    protected initFromDocumentLineAndColumnIndices(documentLineIndex: number, documentColumnIndex: number, allowOutOfBounds: boolean = false): void {
+    protected initFromDocumentLineAndColumnIndices(documentLineIndex: number, documentColumnIndex: number, allowOutOfBounds: boolean = true): void {
         nonNullValue(documentLineIndex, "documentLineIndex");
         assert(documentLineIndex >= 0, "documentLineIndex cannot be negative");
         nonNullValue(documentColumnIndex, "documentColumnIndex");
@@ -89,7 +89,7 @@ export abstract class PositionContext {
         this._documentCharacterIndex.value = this._document.getDocumentCharacterIndex(documentLineIndex, documentColumnIndex);
     }
 
-    protected initFromDocumentCharacterIndex(documentCharacterIndex: number, allowOutOfBounds: boolean = false): void {
+    protected initFromDocumentCharacterIndex(documentCharacterIndex: number, allowOutOfBounds: boolean = true): void {
         nonNullValue(documentCharacterIndex, "documentCharacterIndex");
         assert(documentCharacterIndex >= 0, "documentCharacterIndex cannot be negative");
         if (documentCharacterIndex > this._document.maxCharacterIndex) {
