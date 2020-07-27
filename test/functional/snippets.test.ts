@@ -432,13 +432,13 @@ suite("Snippets functional tests", () => {
         };
         let diagnosticResults = await getDiagnosticsForDocument(doc, diagnosticOptions);
 
-        // Insert snippet
+        // Remove comment at insertion point
         editor.selection = new Selection(snippetInsertEndPos, snippetInsertPos);
         await delay(1);
-
         await editor.edit(e => e.replace(editor.selection, ' '));
         diagnosticResults = await getDiagnosticsForDocument(doc, diagnosticOptions);
 
+        // Insert snippet
         const docTextBeforeInsertion = doc.getText();
         await simulateCompletion(
             editor,
@@ -459,7 +459,13 @@ suite("Snippets functional tests", () => {
         validateDocumentWithSnippet();
 
         // Compare diagnostics
-        assert.deepEqual(messages, expectedDiagnostics);
+        try {
+            assert.deepEqual(messages, expectedDiagnostics);
+        } catch (error) {
+            console.log("FAILED.  Editor text after insertion:");
+            console.log(docTextAfterInsertion);
+            throw error;
+        }
 
         // // Make sure formatting of the sippet is correct by formatting the document and seeing if it changes
         // await commands.executeCommand('editor.action.formatDocument');
