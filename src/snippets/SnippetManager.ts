@@ -86,8 +86,8 @@ export class SnippetManager implements ISnippetManager {
                     const snippet = convertToSnippet(internalSnippet);
                     const additionalEdits = [];
                     if (insertionContext.curlyBraces) {
-                        // Remove the original curly braces, replacing them with an empty string, since
-                        // the snippet with have the curly braces (maybe even multiple, if multiple resources)
+                        // Remove the original curly braces since the snippet with have the curly braces
+                        // (maybe even multiple resources from a single snippet)
                         additionalEdits.push(
                             {
                                 span: insertionContext.curlyBraces,
@@ -138,14 +138,6 @@ function doesSnippetSupportContext(snippet: ISnippetInternal, context: SnippetCo
 
 function validateSnippet(snippet: ISnippetInternal): ISnippetInternal {
     const context = snippet.context;
-    //
-    // const context: SnippetContext | undefined = snippetFromFile.context === undefined
-    //     ? SnippetContext.unspecified
-    //     : (<{ [key: string]: SnippetContext | undefined }>SnippetContext)[snippetFromFile.context];
-    // if (context === undefined) {
-    //     assert.fail(`Snippet "${snippetName}" has invalid context "${snippetFromFile.context}`);
-    // }
-
     if (context === undefined) {
         window.showWarningMessage(`Snippet "${snippet.name}" has no context specified`);
     }

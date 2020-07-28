@@ -10,8 +10,13 @@ class UninitializedLog implements ITestLog {
     public writeLine(message: string): void {
         assert.fail("createTestLog has not been called.");
     }
+
     public toString(): string {
         assert.fail("createTestLog has not been called.");
+    }
+
+    public writeLineIfLogCreated(message: string): void {
+        // Log not created, don't write
     }
 }
 
