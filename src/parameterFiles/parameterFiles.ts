@@ -275,13 +275,16 @@ function sortQuickPickList(pickItems: IAzureQuickPickItem<IPossibleParameterFile
 
 function createQuickPickItem(paramFile: IPossibleParameterFile, current: IPossibleParameterFile | undefined, templateUri: Uri): IAzureQuickPickItem<IPossibleParameterFile> {
   const isCurrent: boolean = paramFile === current;
+  let description = isCurrent ? currentMessage
+    : paramFile.isCloseNameMatch ? similarFilenameMessage
+      : undefined;
+  if (paramFile.fileNotFound) {
+    description += ` $(error) ${fileNotFoundMessage}`;
+  }
   return {
     label: `${isCurrent ? '$(check) ' : '$(json) '} ${paramFile.friendlyPath}`,
     data: paramFile,
-    description: isCurrent ? currentMessage
-      : paramFile.fileNotFound ? fileNotFoundMessage
-        : paramFile.isCloseNameMatch ? similarFilenameMessage
-          : undefined
+    description
   };
 }
 
