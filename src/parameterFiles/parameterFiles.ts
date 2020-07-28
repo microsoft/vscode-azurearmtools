@@ -21,7 +21,7 @@ const readAtMostBytesToFindParamsSchema = 4 * 1024;
 const currentMessage = "Current";
 const similarFilenameMessage = "Similar filename";
 const fileNotFoundMessage = "File not found";
-const howToMessage = `You can manually select the parameter file for this template at any time by clicking "Select Parameter File..." in the status bar or the editor context menu.`;
+const howToMessage = `You can manually select the parameter file for this template at any time by clicking "Select/Create Parameter File..." in the status bar or the editor context menu.`;
 
 // Not worrying about Win32 case-insensitivity here because
 // it's this vscode instance and local only and thus likely to be the
