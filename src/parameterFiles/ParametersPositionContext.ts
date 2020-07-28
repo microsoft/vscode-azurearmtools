@@ -2,10 +2,9 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import * as Completion from "../Completion";
 import { DeploymentTemplate } from "../DeploymentTemplate";
 import * as language from "../Language";
-import { IReferenceSite, PositionContext, ReferenceSiteKind } from "../PositionContext";
+import { ICompletionItemsResult, IReferenceSite, PositionContext, ReferenceSiteKind } from "../PositionContext";
 import { ReferenceList } from "../ReferenceList";
 import * as TLE from '../TLE';
 import { DeploymentParameters } from "./DeploymentParameters";
@@ -79,13 +78,15 @@ export class ParametersPositionContext extends PositionContext {
         return refInfo ? this.document.findReferencesToDefinition(refInfo.definition) : undefined;
     }
 
-    public async getCompletionItems(triggerCharacter: string | undefined): Promise<Completion.Item[]> {
-        return getPropertyValueCompletionItems(
-            this._associatedTemplate?.topLevelScope,
-            this.document.parameterValuesSource,
-            this.documentCharacterIndex,
-            triggerCharacter
-        );
+    public async getCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult> {
+        return {
+            items: getPropertyValueCompletionItems(
+                this._associatedTemplate?.topLevelScope,
+                this.document.parameterValuesSource,
+                this.documentCharacterIndex,
+                triggerCharacter
+            )
+        };
     }
 
     public getSignatureHelp(): TLE.FunctionSignatureHelp | undefined {

@@ -19,9 +19,12 @@ import * as Json from "./JSON";
 import * as language from "./Language";
 import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
 import { getPropertyValueCompletionItems } from "./parameterFiles/ParameterValues";
-import { IReferenceSite, PositionContext, ReferenceSiteKind } from "./PositionContext";
+import { ICompletionItemsResult, IReferenceSite, PositionContext, ReferenceSiteKind } from "./PositionContext";
 import * as Reference from "./ReferenceList";
+import { KnownSnippetContexts } from "./snippets/SnippetContext";
+import { SnippetInsertionContext } from "./snippets/SnippetInsertionContext";
 import { TemplateScope } from "./TemplateScope";
+import { isDeploymentResource } from "./templateScopes";
 import * as TLE from "./TLE";
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
 import { UserFunctionMetadata } from "./UserFunctionMetadata";
@@ -48,15 +51,15 @@ class TleInfo implements ITleInfo {
 export class TemplatePositionContext extends PositionContext {
     private _tleInfo: CachedValue<TleInfo | undefined> = new CachedValue<TleInfo | undefined>();
 
-    public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentParameters | undefined): TemplatePositionContext {
+    public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentParameters | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
         let context = new TemplatePositionContext(deploymentTemplate, associatedParameters);
-        context.initFromDocumentLineAndColumnIndices(documentLineIndex, documentColumnIndex);
+        context.initFromDocumentLineAndColumnIndices(documentLineIndex, documentColumnIndex, allowOutOfBounds);
         return context;
     }
 
-    public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplate, documentCharacterIndex: number, associatedParameters: DeploymentParameters | undefined): TemplatePositionContext {
+    public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplate, documentCharacterIndex: number, associatedParameters: DeploymentParameters | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
         let context = new TemplatePositionContext(deploymentTemplate, associatedParameters);
-        context.initFromDocumentCharacterIndex(documentCharacterIndex);
+        context.initFromDocumentCharacterIndex(documentCharacterIndex, allowOutOfBounds);
         return context;
     }
 
@@ -179,7 +182,90 @@ export class TemplatePositionContext extends PositionContext {
         return undefined;
     }
 
-    public async getCompletionItems(triggerCharacter: string | undefined): Promise<Completion.Item[]> {
+    private isInsideParameterDefinitions(parents: (Json.ObjectValue | Json.ArrayValue | Json.Property)[]): boolean {
+        // Is it the top-level "parameters"?
+        //
+        // { << top level
+        //     "parameters": {
+        //         << CURSOR HERE
+        //     }...
+        if (parents[0] instanceof Json.ObjectValue
+            && parents[1].isPropertyWithName(templateKeys.parameters)
+            && parents[2] === this.document.topLevelValue
+        ) {
+            return true;
+        }
+
+        // Is it a nested template's parameters section?
+        //
+        // "template": {
+        //     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+        //     "contentVersion": "1.0.0.0",
+        //     "parameters": {
+        //         << CURSOR HERE
+        //     }...
+        // }
+        if (parents[0] instanceof Json.ObjectValue
+            && parents[1].isPropertyWithName(templateKeys.parameters)
+            && parents[2] instanceof Json.ObjectValue
+            && parents[3].isPropertyWithName(templateKeys.nestedDeploymentTemplateProperty)
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private isInsideParameterValues(parents: (Json.ObjectValue | Json.ArrayValue | Json.Property)[]): boolean {
+        // Is it a nested template parameters?
+        //
+        // {
+        //     "type": "Microsoft.Resources/deployments",
+        //     "properties": {
+        //         "parameters": {
+        //             << CURSOR HERE
+        //         }...
+        if (parents[0] instanceof Json.ObjectValue
+            && parents[1].isPropertyWithName(templateKeys.parameters)
+            && parents[2] instanceof Json.ObjectValue
+            && parents[3].isPropertyWithName(templateKeys.properties)
+            && isDeploymentResource(parents[4])
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public getSnippetInsertionContext(triggerCharacter: string | undefined): SnippetInsertionContext {
+        const context = super.getSnippetInsertionContext(triggerCharacter);
+
+        // We need to figure out whether 'parameters' is parameter definitions or parameter values, because
+        // they're quite different in terms of what snippets they support
+        if (context.parents && this.isInsideParameterDefinitions(context.parents)) {
+            context.context = KnownSnippetContexts.parameterDefinitions;
+        } else if (context.parents && this.isInsideParameterValues(context.parents)) {
+            context.context = KnownSnippetContexts.parameterValues;
+        }
+
+        return context;
+    }
+
+    private async getSnippetCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult> {
+        const insertionContext = this.getSnippetInsertionContext(triggerCharacter);
+        if (insertionContext.triggerSuggest) {
+            return { items: [], triggerSuggest: true };
+        } else if (insertionContext.context) {
+            // Show snippets that match the snippet context at this location
+            let replacementInfo = this.getCompletionReplacementSpanInfo();
+            const snippets = await ext.snippetManager.value.getSnippetsAsCompletionItems(insertionContext, replacementInfo.span ?? this.emptySpanAtDocumentCharacterIndex);
+            return { items: snippets };
+        }
+
+        return { items: [] };
+    }
+
+    public async getCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult> {
         const tleInfo = this.tleInfo;
         const completions: Completion.Item[] = [];
 
@@ -194,56 +280,44 @@ export class TemplatePositionContext extends PositionContext {
         }
 
         if (!tleInfo) {
-            const jsonToken = this.jsonToken;
-            if (jsonToken && jsonToken.type === Json.TokenType.QuotedString) {
-                // We're inside a string.  The fact that tleInfo is undefined indicates that the string
-                // may not yet be valid JSON.  For instance, if typing double quotes for the property
-                // name of a property but there is no property value yet.
-
-                return completions;
+            // No TLE string at this location, consider snippet completions
+            const snippets = await this.getSnippetCompletionItems(triggerCharacter);
+            if (snippets.triggerSuggest) {
+                return snippets;
             } else {
-                // No string at this location, so it might be a good place for snippet completions
+                completions.push(...snippets.items);
+            }
+        } else {
 
-                // Until we add more context intelligence, just bring up snippets on the space
-                // character or when manually triggered by the user
-                if (triggerCharacter === ' ' || triggerCharacter === undefined) {
-                    // Show snippets
-                    let replacementSpan = this.getJsonReplacementSpan() ?? this.emptySpanAtDocumentCharacterIndex;
-                    return await ext.snippetManager.value.getSnippetsAsCompletionItems(replacementSpan, triggerCharacter);
+            // We're inside a JSON string. It may or may not contain square brackets.
+
+            // The function/string/number/etc at the current position inside the string expression,
+            // or else the JSON string itself even it's not an expression
+            const tleValue: TLE.Value | undefined = tleInfo.tleValue;
+            const scope: TemplateScope = tleInfo.scope;
+
+            if (!tleValue || !tleValue.contains(tleInfo.tleCharacterIndex)) {
+                // No TLE value here. For instance, expression is empty, or before/after/on the square brackets
+                if (TemplatePositionContext.isInsideSquareBrackets(tleInfo.tleParseResult, tleInfo.tleCharacterIndex)) {
+                    // Inside brackets, so complete with all valid functions and namespaces
+                    const replaceSpan = this.emptySpanAtDocumentCharacterIndex;
+                    const functionCompletions = TemplatePositionContext.getMatchingFunctionCompletions(scope, undefined, "", replaceSpan);
+                    const namespaceCompletions = TemplatePositionContext.getMatchingNamespaceCompletions(scope, "", replaceSpan);
+                    completions.push(...functionCompletions);
+                    completions.push(...namespaceCompletions);
                 }
-
-                return completions;
+            } else if (tleValue instanceof TLE.FunctionCallValue) {
+                assert(this.jsonToken);
+                // tslint:disable-next-line:no-non-null-assertion
+                completions.push(... this.getFunctionCallCompletions(tleValue, this.jsonToken!, tleInfo.tleCharacterIndex, scope));
+            } else if (tleValue instanceof TLE.StringValue) {
+                completions.push(...this.getStringLiteralCompletions(tleValue, tleInfo.tleCharacterIndex, scope));
+            } else if (tleValue instanceof TLE.PropertyAccess) {
+                completions.push(... this.getPropertyAccessCompletions(tleValue, tleInfo.tleCharacterIndex, scope));
             }
         }
 
-        // We're inside a JSON string. It may or may not contain square brackets.
-
-        // The function/string/number/etc at the current position inside the string expression,
-        // or else the JSON string itself even it's not an expression
-        const tleValue: TLE.Value | undefined = tleInfo.tleValue;
-        const scope: TemplateScope = tleInfo.scope;
-
-        if (!tleValue || !tleValue.contains(tleInfo.tleCharacterIndex)) {
-            // No TLE value here. For instance, expression is empty, or before/after/on the square brackets
-            if (TemplatePositionContext.isInsideSquareBrackets(tleInfo.tleParseResult, tleInfo.tleCharacterIndex)) {
-                // Inside brackets, so complete with all valid functions and namespaces
-                const replaceSpan = this.emptySpanAtDocumentCharacterIndex;
-                const functionCompletions = TemplatePositionContext.getMatchingFunctionCompletions(scope, undefined, "", replaceSpan);
-                const namespaceCompletions = TemplatePositionContext.getMatchingNamespaceCompletions(scope, "", replaceSpan);
-                completions.push(...functionCompletions);
-                completions.push(...namespaceCompletions);
-            }
-        } else if (tleValue instanceof TLE.FunctionCallValue) {
-            assert(this.jsonToken);
-            // tslint:disable-next-line:no-non-null-assertion
-            completions.push(... this.getFunctionCallCompletions(tleValue, this.jsonToken!, tleInfo.tleCharacterIndex, scope));
-        } else if (tleValue instanceof TLE.StringValue) {
-            completions.push(...this.getStringLiteralCompletions(tleValue, tleInfo.tleCharacterIndex, scope));
-        } else if (tleValue instanceof TLE.PropertyAccess) {
-            completions.push(... this.getPropertyAccessCompletions(tleValue, tleInfo.tleCharacterIndex, scope));
-        }
-
-        return completions;
+        return { items: completions };
     }
 
     /**
@@ -688,7 +762,7 @@ export class TemplatePositionContext extends PositionContext {
     }
 
     private getMatchingParameterCompletions(prefix: string, tleValue: TLE.StringValue | TLE.FunctionCallValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
-        const replaceSpanInfo: ReplaceSpanInfo = this.getTleReplaceSpanInfo(tleValue, tleCharacterIndex);
+        const replaceSpanInfo: ITleReplaceSpanInfo = this.getTleReplaceSpanInfo(tleValue, tleCharacterIndex);
 
         const parameterCompletions: Completion.Item[] = [];
         const parameterDefinitionMatches: IParameterDefinition[] = scope.findParameterDefinitionsWithPrefix(prefix);
@@ -699,7 +773,7 @@ export class TemplatePositionContext extends PositionContext {
     }
 
     private getMatchingVariableCompletions(prefix: string, tleValue: TLE.StringValue | TLE.FunctionCallValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
-        const replaceSpanInfo: ReplaceSpanInfo = this.getTleReplaceSpanInfo(tleValue, tleCharacterIndex);
+        const replaceSpanInfo: ITleReplaceSpanInfo = this.getTleReplaceSpanInfo(tleValue, tleCharacterIndex);
 
         const variableCompletions: Completion.Item[] = [];
         const variableDefinitionMatches: IVariableDefinition[] = scope.findVariableDefinitionsWithPrefix(prefix);
@@ -709,7 +783,7 @@ export class TemplatePositionContext extends PositionContext {
         return variableCompletions;
     }
 
-    private getTleReplaceSpanInfo(tleValue: TLE.StringValue | TLE.FunctionCallValue, tleCharacterIndex: number): ReplaceSpanInfo {
+    private getTleReplaceSpanInfo(tleValue: TLE.StringValue | TLE.FunctionCallValue, tleCharacterIndex: number): ITleReplaceSpanInfo {
         let includeRightParenthesisInCompletion: boolean = true;
         let replaceSpan: language.Span;
         if (tleValue instanceof TLE.StringValue) {
@@ -746,46 +820,9 @@ export class TemplatePositionContext extends PositionContext {
             replaceSpan: replaceSpan
         };
     }
-
-    /**
-     * Gets the "word" at the cursor or right after the cursor position (i.e.,
-     * the token that the cursor is "touching"), to indicate the span that
-     * an Intellisense completi should replace
-     */
-    public getJsonReplacementSpan(): language.Span | undefined {
-        const index = this.documentCharacterIndex;
-        let tokenAtCursor = this.document.getJSONTokenAtDocumentCharacterIndex(index);
-
-        // If there's no token at the current location, try again right before the cursor
-        if (!tokenAtCursor && index > 0) {
-            const tokenAfterCursor = this.document.getJSONTokenAtDocumentCharacterIndex(index - 1);
-            if (tokenAfterCursor) {
-                const line = this.document.getDocumentPosition(tokenAfterCursor.span.startIndex).line;
-                if (line === this.documentPosition.line) {
-                    tokenAtCursor = tokenAfterCursor;
-                }
-            }
-        }
-
-        if (tokenAtCursor && tokenAtCursor.type !== Json.TokenType.QuotedString) {
-            // We want to include hyphens in our definition of word, so that snippets such as
-            // "arm-keyvault" or "arm!mg" are replaced in whole by the snippet.  But such characters
-            // aren't part of literals in JSON, so look for a match directly in the text.
-            let start = tokenAtCursor.span.startIndex;
-            const documentText = this.document.documentText;
-            while (start > 0 && documentText.charAt(start - 1).match(/^[\w-!\$]/)) {
-                --start;
-            }
-
-            const match = this.document.documentText.slice(start).match(/^[\w-!\$]+/);
-            return match ? new language.Span(start, match[0].length) : undefined;
-        }
-
-        return undefined;
-    }
 }
 
-interface ReplaceSpanInfo {
+interface ITleReplaceSpanInfo {
     includeRightParenthesisInCompletion: boolean;
     replaceSpan: language.Span;
 }

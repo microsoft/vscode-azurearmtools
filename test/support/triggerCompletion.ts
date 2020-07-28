@@ -1,57 +1,63 @@
 import * as assert from 'assert';
-import { commands, Diagnostic, TextDocument } from 'vscode';
+import { Selection, SnippetString, TextEditor } from 'vscode';
+import { DeploymentTemplate, getVSCodeRangeFromSpan } from '../../extension.bundle';
 import { delay } from './delay';
-import { getDiagnosticsForDocument, IGetDiagnosticsOptions } from './diagnostics';
-import { getCompletionItemResolutionPromise, getCompletionItemsPromise } from './getEventPromise';
+import { typeInDocumentAndWait } from './typeInDocumentAndWait';
 
-export async function triggerCompletion(
-    document: TextDocument,
+// tslint:disable-next-line: no-suspicious-comment
+// tslint:disable-next-line: export-name //TODO: rename file
+export async function simulateCompletion(
+    editor: TextEditor,
     completion: string,
-    diagnosticsOptions?: { expected: string[] } & IGetDiagnosticsOptions
+    triggerCharacter: string | undefined
 ): Promise<void> {
-    // Bring up completion UI
-    const completionItemsPromise = getCompletionItemsPromise(document);
-    await commands.executeCommand('editor.action.triggerSuggest');
+    let pos = editor.selection.anchor;
+    let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(editor.document.getText(), editor.document.uri);
+    let pc = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(pos.line, pos.character, undefined, true);
 
-    // Wait for our code to return completion items
-    let items = await completionItemsPromise;
-    items = items; // (make result easily avaible while debugging)
-
-    // Wait for any resolution to be sure the UI is ready, or for the timeout (if the first item that comes up is not provided by
-    // us, we won't get any resolution requests)
-    const resolutionPromise = getCompletionItemResolutionPromise();
-    await Promise.race([
-        resolutionPromise,
-        delay(5000)
-    ]);
-
-    // Type the desired completion prefix
-    let diagnosticsPromise1: Promise<Diagnostic[]> = Promise.resolve([]);
-    if (diagnosticsOptions) {
-        diagnosticsPromise1 = getDiagnosticsForDocument(
-            document, diagnosticsOptions);
+    if (triggerCharacter) {
+        // Type the trigger character
+        const newContents = await typeInDocumentAndWait(editor, triggerCharacter);
+        deploymentTemplate = new DeploymentTemplate(newContents, editor.document.uri);
+        pos = editor.selection.anchor;
+        pc = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(pos.line, pos.character, undefined, true);
     }
-    await commands.executeCommand('type', { text: completion });
-    await diagnosticsPromise1;
 
-    // Start waiting for next set of diagnostics (so it picks up the current completion versions)
-    let diagnosticsPromise2: Promise<Diagnostic[]> = Promise.resolve([]);
-    if (diagnosticsOptions) {
-        diagnosticsPromise2 = getDiagnosticsForDocument(
-            document, diagnosticsOptions);
+    // Get completion items
+    let result = await pc.getCompletionItems(triggerCharacter);
+    if (result.triggerSuggest) {
+        // Trigger again after entering a newline
+        const newContents = await typeInDocumentAndWait(editor, '\n');
+
+        deploymentTemplate = new DeploymentTemplate(newContents, editor.document.uri);
+        pos = editor.selection.anchor;
+        pc = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(pos.line, pos.character, undefined, true);
+
+        result = await pc.getCompletionItems(undefined);
+        assert(!result.triggerSuggest, "Shouldn't triggerSuggest twice");
     }
-    // ... Accept current suggestion
-    await commands.executeCommand('acceptSelectedSuggestion');
-    const diagnostics = await diagnosticsPromise2;
+
+    // Find the desired snippet
+    const snippet = result.items.find(s => s.label === completion || s.label === `"${completion}"`);
+    if (!snippet) {
+        throw new Error(`Couldn't find snippet with label '${completion}'`);
+    }
+
+    const range = getVSCodeRangeFromSpan(deploymentTemplate, snippet.span);
+    editor.selection = new Selection(range.start, range.end);
+
+    // tslint:disable-next-line: strict-boolean-expressions
+    if (snippet.additionalEdits?.length) {
+        assert(snippet.additionalEdits.length === 1, "Not implemented: More than one edit");
+        const edit = snippet.additionalEdits[0];
+        const r = getVSCodeRangeFromSpan(deploymentTemplate, edit.span);
+        await editor.edit(e => e.replace(r, edit.insertText));
+    }
+
+    await editor.insertSnippet(new SnippetString(snippet.insertText));
 
     // Some completions have additional text edits, and vscode doesn't
     // seem to have made all the changes when it fires didDocumentChange,
     // so give a slight delay to allow it to finish
     await delay(1);
-
-    // Wait for final diagnostics and compare
-    if (diagnosticsOptions?.expected) {
-        let messages = diagnostics.map(d => d.message).sort();
-        assert.deepEqual(messages, diagnosticsOptions?.expected);
-    }
 }

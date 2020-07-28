@@ -21,7 +21,8 @@
             "env": {
                 "AZCODE_ARM_IGNORE_BUNDLE": "1",
                 "DEBUGTELEMETRY": "1", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
-                "NODE_DEBUG": ""
+                "NODE_DEBUG": "",
+                "BREAK_ON_ASSERT": "1"
             }
         },
         // Launch tests
@@ -50,7 +51,8 @@
                 "NODE_DEBUG": "",
                 "DISABLE_LANGUAGE_SERVER": "0",
                 "DISABLE_SLOW_TESTS": "0",
-                "ECHO_OUTPUT_CHANNEL_TO_CONSOLE": "1"
+                "ECHO_OUTPUT_CHANNEL_TO_CONSOLE": "1",
+                "BREAK_ON_ASSERT": "0"
             }
         },
         // Launch extension with webpack
@@ -73,6 +75,7 @@
                 "NODE_DEBUG": "",
                 "DEBUG_WEBPACK": "",
                 "AZCODE_ARM_IGNORE_BUNDLE": "0",
+                "BREAK_ON_ASSERT": "1"
             }
         },
         // Launch tests with webpack
@@ -99,7 +102,8 @@
                 "DEBUGTELEMETRY": "1", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
                 "NODE_DEBUG": "",
                 "AZCODE_ARM_IGNORE_BUNDLE": "0",
-                "ECHO_OUTPUT_CHANNEL_TO_CONSOLE": "1"
+                "ECHO_OUTPUT_CHANNEL_TO_CONSOLE": "1",
+                "BREAK_ON_ASSERT": "0"
             }
         }
     ]

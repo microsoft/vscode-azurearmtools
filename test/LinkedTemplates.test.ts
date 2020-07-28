@@ -7,10 +7,11 @@
 
 import { isWin32 } from "../extension.bundle";
 import { testDiagnostics, testDiagnosticsFromFile } from "./support/diagnostics";
+import { testWithLog } from "./support/testWithLog";
 
 suite("Linked templates", () => {
     suite("variables and parameters inside templateLink object refer to the parent's scope", () => {
-        test('Regress #792: Regression from 0.10.0: top-level parameters not recognized in nested template properties', async () => {
+        testWithLog('Regress #792: Regression from 0.10.0: top-level parameters not recognized in nested template properties', async () => {
             await testDiagnosticsFromFile(
                 'templates/linked-templates-scope.json',
                 {},
@@ -21,7 +22,7 @@ suite("Linked templates", () => {
         });
 
         suite('Regress #773: Regression from 0.10.0: top-level parameters not recognized in nested template properties', () => {
-            test("simple", async () => {
+            testWithLog("simple", async () => {
                 await testDiagnosticsFromFile(
                     {
                         "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -51,7 +52,7 @@ suite("Linked templates", () => {
                         // Should be no errors
                     ]);
             });
-            test("linked-templates-scope.json", async () => {
+            testWithLog("linked-templates-scope.json", async () => {
                 await testDiagnosticsFromFile(
                     'templates/linked-templates-scope.json',
                     {
@@ -74,7 +75,7 @@ suite("Linked templates", () => {
         // TODO: For some reason, these two tests are failing consistently in the
         // Windows build pipeline, but not locally or on other platforms.
         if (!isWin32) {
-            test("Nested template wrong param type", async () => {
+            testWithLog("Nested template wrong param type", async () => {
                 await testDiagnostics(
                     {
                         "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -124,7 +125,7 @@ suite("Linked templates", () => {
                 );
             });
 
-            test("Nested template missing properties", async () => {
+            testWithLog("Nested template missing properties", async () => {
                 await testDiagnostics(
                     {
                         "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",

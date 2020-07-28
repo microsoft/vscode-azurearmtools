@@ -1,4 +1,13 @@
 {
+    /*
+        Known contexts:
+
+        empty-document
+        parameter-definitions
+
+        Additionally, the name of the property containing the current array or object (e.g. "resources" or "outputs")
+    */
+    "$schema": "./schemas/snippets.schema.json",
     "Azure Resource Manager (ARM) Template": {
         "prefix": "arm!",
         "body": [
@@ -12,7 +21,8 @@
             "\t\"outputs\": {}",
             "}"
         ],
-        "description": "Resource Group Template"
+        "description": "Resource Group Template",
+        "context": "empty-document"
     },
     "Azure Resource Manager (ARM) Template Subscription": {
         "prefix": "arm!s",
@@ -27,7 +37,8 @@
             "\t\"outputs\": {}",
             "}"
         ],
-        "description": "Subscription Template"
+        "description": "Subscription Template",
+        "context": "empty-document"
     },
     "Azure Resource Manager (ARM) Template Management Group": {
         "prefix": "arm!mg",
@@ -42,7 +53,8 @@
             "\t\"outputs\": {}",
             "}"
         ],
-        "description": "Management Group Template"
+        "description": "Management Group Template",
+        "context": "empty-document"
     },
     "Azure Resource Manager (ARM) Template Tenant": {
         "prefix": "arm!t",
@@ -57,7 +69,8 @@
             "\t\"outputs\": {}",
             "}"
         ],
-        "description": "Tenant Template"
+        "description": "Tenant Template",
+        "context": "empty-document"
     },
     "Azure Resource Manager (ARM) Parameters Template": {
         "prefix": "armp!",
@@ -69,17 +82,19 @@
             "\t}",
             "}"
         ],
-        "description": "Parameters Template"
+        "description": "Parameters Template",
+        "context": "empty-document"
     },
     "Variable": {
-        "prefix": "arm-variable",
+        "prefix": "new-variable",
         "body": [
             "\"${1:variable1}\": \"${2:value}\""
         ],
-        "description": "ARM Template Variable"
+        "description": "ARM Template Variable Definition",
+        "context": "variables"
     },
     "Parameter": {
-        "prefix": "arm-param",
+        "prefix": "new-parameter",
         "body": [
             "\"${1:parameter1}\": {",
             "\t\"type\": \"${2|string,securestring,int,bool,object,secureobject,array|}\",",
@@ -88,17 +103,29 @@
             "\t}",
             "}"
         ],
-        "description": "ARM Template Parameter"
+        "description": "ARM Template Parameter Definition",
+        "context": "parameter-definitions"
     },
     "Output": {
-        "prefix": "arm-output",
+        "prefix": "new-output",
         "body": [
             "\"${1:output1}\": {",
             "\t\"type\": \"${2|string,securestring,int,bool,object,secureobject,array|}\",",
             "\t\"value\": \"${3:value}\"",
             "}"
         ],
-        "description": "ARM Template output"
+        "description": "ARM Template Output",
+        "context": "outputs"
+    },
+    "Tag Section": {
+        "prefix": "arm-tags",
+        "body": [
+            "\"tags\": {",
+            "\t\"${1:tagName}\": \"${2:tagValue}\"",
+            "}"
+        ],
+        "description": "Tag Section",
+        "context": "asdf"
     },
     "Linked Deployment": {
         "prefix": "arm-linked-template",
@@ -118,7 +145,8 @@
             "\t}",
             "}"
         ],
-        "description": "Linked Deployment"
+        "description": "Linked Deployment",
+        "context": "resources"
     },
     "Nested Deployment": {
         "prefix": "arm-nested-template",
@@ -143,7 +171,8 @@
             "\t}",
             "}"
         ],
-        "description": "Nested (inline) Deployment"
+        "description": "Nested (inline) Deployment",
+        "context": "resources"
     },
     "App Service Plan (Server Farm)": {
         "prefix": "arm-plan",
@@ -165,7 +194,8 @@
             "\t}",
             "}"
         ],
-        "description": "Application Service Plan (Server Farm)"
+        "description": "Application Service Plan (Server Farm)",
+        "context": "resources"
     },
     "Application Gateway": {
         "prefix": "arm-app-gateway",
@@ -265,7 +295,8 @@
             "\t}",
             "}"
         ],
-        "description": "Application Gateway"
+        "description": "Application Gateway",
+        "context": "resources"
     },
     "Application Gateway and Firewall": {
         "prefix": "arm-app-gateway-waf",
@@ -394,7 +425,8 @@
             "\t}",
             "}"
         ],
-        "description": "Application Gateway with Web Application Firewall"
+        "description": "Application Gateway with Web Application Firewall",
+        "context": "resources"
     },
     "Application Insights for Web Apps": {
         "prefix": "arm-app-insights",
@@ -622,7 +654,8 @@
             "\t}",
             "}"
         ],
-        "description": "Application Insights for Web Apps"
+        "description": "Application Insights for Web Apps",
+        "context": "resources"
     },
     "Application Security Group": {
         "prefix": "arm-app-security-group",
@@ -638,7 +671,8 @@
             "\t}",
             "}"
         ],
-        "description": "Application Security Group"
+        "description": "Application Security Group",
+        "context": "resources"
     },
     "Automation Account": {
         "prefix": "arm-automation-account",
@@ -657,7 +691,8 @@
             "\t}",
             "}"
         ],
-        "description": "Automation Account"
+        "description": "Automation Account",
+        "context": "resources"
     },
     "Automation Certificate": {
         "prefix": "arm-automation-cert",
@@ -677,7 +712,8 @@
             "\t}",
             "}"
         ],
-        "description": "Automation Certificate"
+        "description": "Automation Certificate",
+        "context": "resources"
     },
     "Automation Credential": {
         "prefix": "arm-automation-cred",
@@ -696,7 +732,8 @@
             "\t}",
             "}"
         ],
-        "description": "Automation Credential"
+        "description": "Automation Credential",
+        "context": "resources"
     },
     "Automation Job Schedule": {
         "prefix": "arm-automation-job-schedule",
@@ -721,7 +758,8 @@
             "\t}",
             "}"
         ],
-        "description": "Automation Job Schedule"
+        "description": "Automation Job Schedule",
+        "context": "resources"
     },
     "Automation Runbook": {
         "prefix": "arm-automation-runbook",
@@ -748,7 +786,8 @@
             "\t}",
             "}"
         ],
-        "description": "Automation Runbook"
+        "description": "Automation Runbook",
+        "context": "resources"
     },
     "Automation Schedule": {
         "prefix": "arm-automation-schedule",
@@ -771,7 +810,8 @@
             "\t}",
             "}"
         ],
-        "description": "Automation Schedule"
+        "description": "Automation Schedule",
+        "context": "resources"
     },
     "Automation Variable": {
         "prefix": "arm-automation-variable",
@@ -790,7 +830,8 @@
             "\t}",
             "}"
         ],
-        "description": "Automation Variable"
+        "description": "Automation Variable",
+        "context": "resources"
     },
     "Automation Module": {
         "prefix": "arm-automation-module",
@@ -809,7 +850,8 @@
             "\t}",
             "}"
         ],
-        "description": "Automation Module"
+        "description": "Automation Module",
+        "context": "resources"
     },
     "Availability Set": {
         "prefix": "arm-availability-set",
@@ -826,7 +868,8 @@
             "\t}",
             "}"
         ],
-        "description": "Availability Set"
+        "description": "Availability Set",
+        "context": "resources"
     },
     "Azure Firewall": {
         "prefix": "arm-firewall",
@@ -967,7 +1010,8 @@
             "\t}",
             "}"
         ],
-        "description": "Azure Firewall"
+        "description": "Azure Firewall",
+        "context": "resources"
     },
     "Container Group": {
         "prefix": "arm-container-group",
@@ -1010,7 +1054,8 @@
             "\t}",
             "}"
         ],
-        "description": "Container Group"
+        "description": "Container Group",
+        "context": "resources"
     },
     "Container Registry": {
         "prefix": "arm-container-registry",
@@ -1028,7 +1073,8 @@
             "\t}",
             "}"
         ],
-        "description": "Container Registry"
+        "description": "Container Registry",
+        "context": "resources"
     },
     "Cosmos DB Database Account": {
         "prefix": "arm-cosmos-account",
@@ -1064,7 +1110,8 @@
             "\t}",
             "}"
         ],
-        "description": "Cosmos DB Database Account"
+        "description": "Cosmos DB Database Account",
+        "context": "resources"
     },
     "Cosmos DB SQL Database": {
         "prefix": "arm-cosmos-sql-database",
@@ -1086,7 +1133,8 @@
             "\t}",
             "}"
         ],
-        "description": "Cosmos DB SQL Database"
+        "description": "Cosmos DB SQL Database",
+        "context": "resources"
     },
     "Cosmos DB Mongo Database": {
         "prefix": "arm-cosmos-mongo-database",
@@ -1108,7 +1156,8 @@
             "\t}",
             "}"
         ],
-        "description": "Cosmos DB Mongo Database"
+        "description": "Cosmos DB Mongo Database",
+        "context": "resources"
     },
     "Cosmos DB Gremlin Database": {
         "prefix": "arm-cosmos-gremlin-database",
@@ -1130,7 +1179,8 @@
             "\t}",
             "}"
         ],
-        "description": "Cosmos DB Gremlin Database"
+        "description": "Cosmos DB Gremlin Database",
+        "context": "resources"
     },
     "Cosmos DB Cassandra Namespace": {
         "prefix": "arm-cosmos-cassandra-namespace",
@@ -1152,7 +1202,8 @@
             "\t}",
             "}"
         ],
-        "description": "Cosmos DB Cassandra Namespace"
+        "description": "Cosmos DB Cassandra Namespace",
+        "context": "resources"
     },
     "Cosmos DB Cassandra Table": {
         "prefix": "arm-cosmos-cassandra-table",
@@ -1179,7 +1230,8 @@
             "\t}",
             "}"
         ],
-        "description": "Cosmos DB Cassandra Table"
+        "description": "Cosmos DB Cassandra Table",
+        "context": "resources"
     },
     "Cosmos DB SQL Container": {
         "prefix": "arm-cosmos-sql-container",
@@ -1226,7 +1278,8 @@
             "\t}",
             "}"
         ],
-        "description": "Cosmos DB SQL Container"
+        "description": "Cosmos DB SQL Container",
+        "context": "resources"
     },
     "Cosmos DB Gremlin Graph": {
         "prefix": "arm-cosmos-gremlin-graph",
@@ -1273,7 +1326,8 @@
             "\t}",
             "}"
         ],
-        "description": ""
+        "description": "",
+        "context": "resources"
     },
     "Cosmos DB Table Storage Table": {
         "prefix": "arm-cosmos-tablestorage-table",
@@ -1295,7 +1349,8 @@
             "\t}",
             "}"
         ],
-        "description": ""
+        "description": "",
+        "context": "resources"
     },
     "Data Lake Store Account": {
         "prefix": "arm-data-lake",
@@ -1311,7 +1366,8 @@
             "\t}",
             "}"
         ],
-        "description": "Data Lake Store Account"
+        "description": "Data Lake Store Account",
+        "context": "resources"
     },
     "DNS Record": {
         "prefix": "arm-dns-record",
@@ -1331,7 +1387,8 @@
             "\t}",
             "}"
         ],
-        "description": "DNS Record"
+        "description": "DNS Record",
+        "context": "resources"
     },
     "DNS Zone": {
         "prefix": "arm-dns-zone",
@@ -1345,7 +1402,8 @@
             "\t}",
             "}"
         ],
-        "description": "DNS Zone"
+        "description": "DNS Zone",
+        "context": "resources"
     },
     "Function": {
         "prefix": "arm-function",
@@ -1397,7 +1455,8 @@
             "\t}",
             "}"
         ],
-        "description": "Azure Functions (v2)"
+        "description": "Azure Functions (v2)",
+        "context": "resources"
     },
     "KeyVault": {
         "prefix": "arm-keyvault",
@@ -1451,7 +1510,8 @@
             "\t]",
             "}"
         ],
-        "description": "KeyVault with a Secret"
+        "description": "KeyVault with a Secret",
+        "context": "resources"
     },
     "KeyVault Secret": {
         "prefix": "arm-keyvault-secret",
@@ -1465,7 +1525,8 @@
             "\t}",
             "}"
         ],
-        "description": "KeyVault Secret"
+        "description": "KeyVault Secret",
+        "context": "resources"
     },
     "Kubernetes Service Cluster": {
         "prefix": "arm-aks-cluster",
@@ -1504,7 +1565,8 @@
             "\t}",
             "}"
         ],
-        "description": "Kubernetes Service Cluster"
+        "description": "Kubernetes Service Cluster",
+        "context": "resources"
     },
     "Linux VM Custom Script": {
         "prefix": "arm-vm-script-linux",
@@ -1536,7 +1598,8 @@
             "\t}",
             "}"
         ],
-        "description": "Custom script extension for Linux Virtual Machine"
+        "description": "Custom script extension for Linux Virtual Machine",
+        "context": "resources"
     },
     "Load Balancer External": {
         "prefix": "arm-loadbalancer-external",
@@ -1614,7 +1677,8 @@
             "\t}",
             "}"
         ],
-        "description": "External Load Balancer"
+        "description": "External Load Balancer",
+        "context": "resources"
     },
     "Load Balancer Internal": {
         "prefix": "arm-loadbalancer-internal",
@@ -1680,7 +1744,8 @@
             "\t}",
             "}"
         ],
-        "description": "Load Balancer Internal"
+        "description": "Load Balancer Internal",
+        "context": "resources"
     },
     "Log Analytics Solution": {
         "prefix": "arm-log-analytics-solution",
@@ -1712,7 +1777,8 @@
             "\t}",
             "}"
         ],
-        "description": "Log Analytics Solution"
+        "description": "Log Analytics Solution",
+        "context": "resources"
     },
     "Log Analytics Workspace": {
         "prefix": "arm-log-analytics-workspace",
@@ -1732,7 +1798,8 @@
             "\t}",
             "}"
         ],
-        "description": "Log Analytics Workspace"
+        "description": "Log Analytics Workspace",
+        "context": "resources"
     },
     "Logic App": {
         "prefix": "arm-logic-app",
@@ -1760,7 +1827,8 @@
             "\t}",
             "}"
         ],
-        "description": "Logic App"
+        "description": "Logic App",
+        "context": "resources"
     },
     "Logic App Connector": {
         "prefix": "arm-logic-app-connector",
@@ -1786,7 +1854,8 @@
             "\t}",
             "}"
         ],
-        "description": "Logic App Connector"
+        "description": "Logic App Connector",
+        "context": "resources"
     },
     "Managed Identity (User Assigned)": {
         "prefix": "arm-managed-identity",
@@ -1798,7 +1867,8 @@
             "\t\"location\": \"[resourceGroup().location]\"",
             "}"
         ],
-        "description": "Managed Identity (User Assigned)"
+        "description": "Managed Identity (User Assigned)",
+        "context": "resources"
     },
     "Media Services": {
         "prefix": "arm-media",
@@ -1821,7 +1891,8 @@
             "\t}",
             "}"
         ],
-        "description": "Media Services account"
+        "description": "Media Services account",
+        "context": "resources"
     },
     "MySQL Database": {
         "prefix": "arm-mysql",
@@ -1838,7 +1909,8 @@
             "\t}",
             "}"
         ],
-        "description": "MySQL Database"
+        "description": "MySQL Database",
+        "context": "resources"
     },
     "Network Interface": {
         "prefix": "arm-nic",
@@ -1869,7 +1941,8 @@
             "\t}",
             "}"
         ],
-        "description": "Network Interface"
+        "description": "Network Interface",
+        "context": "resources"
     },
     "Network Security Group": {
         "prefix": "arm-nsg",
@@ -1899,7 +1972,8 @@
             "\t}",
             "}"
         ],
-        "description": "Network Security Group"
+        "description": "Network Security Group",
+        "context": "resources"
     },
     "Network Security Group Rule": {
         "prefix": "arm-nsgrule",
@@ -1921,7 +1995,8 @@
             "\t}",
             "}"
         ],
-        "description": "Network Security Group Rule"
+        "description": "Network Security Group Rule",
+        "context": "resources"
     },
     "Public IP Address": {
         "prefix": "arm-ip",
@@ -1942,7 +2017,8 @@
             "\t}",
             "}"
         ],
-        "description": "Public IP Address"
+        "description": "Public IP Address",
+        "context": "resources"
     },
     "Public IP Prefix": {
         "prefix": "arm-ip-prefix",
@@ -1963,7 +2039,8 @@
             "\t}",
             "}"
         ],
-        "description": "Public IP Prefix"
+        "description": "Public IP Prefix",
+        "context": "resources"
     },
     "Resource Group": {
         "prefix": "arm-rg",
@@ -1979,7 +2056,8 @@
             "\t}",
             "}"
         ],
-        "description": "Resource Group"
+        "description": "Resource Group",
+        "context": "resources"
     },
     "Recovery Service Vault": {
         "prefix": "arm-recovery-service-vault",
@@ -1997,7 +2075,8 @@
             "\t}",
             "}"
         ],
-        "description": "Recovery Service Vault"
+        "description": "Recovery Service Vault",
+        "context": "resources"
     },
     "Redis Cache": {
         "prefix": "arm-redis",
@@ -2019,7 +2098,8 @@
             "\t}",
             "}"
         ],
-        "description": "Redis Cache"
+        "description": "Redis Cache",
+        "context": "resources"
     },
     "Route Table": {
         "prefix": "arm-route-table",
@@ -2046,7 +2126,8 @@
             "\t}",
             "}"
         ],
-        "description": "Route Table"
+        "description": "Route Table",
+        "context": "resources"
     },
     "Route Table Route": {
         "prefix": "arm-route-table-route",
@@ -2062,7 +2143,8 @@
             "\t}",
             "}"
         ],
-        "description": "Azure Route Table Route"
+        "description": "Azure Route Table Route",
+        "context": "resources"
     },
     "SQL Database": {
         "prefix": "arm-sql-db",
@@ -2086,7 +2168,8 @@
             "\t}",
             "}"
         ],
-        "description": "SQL Database"
+        "description": "SQL Database",
+        "context": "resources"
     },
     "SQL Database Import": {
         "prefix": "arm-sql-db-import",
@@ -2111,7 +2194,8 @@
             "\t}",
             "}"
         ],
-        "description": "SQL Database Import"
+        "description": "SQL Database Import",
+        "context": "resources"
     },
     "SQL Server": {
         "prefix": "arm-sql-server",
@@ -2145,7 +2229,8 @@
             "\t]",
             "}"
         ],
-        "description": "SQL Server"
+        "description": "SQL Server",
+        "context": "resources"
     },
     "Storage Account": {
         "prefix": "arm-storage",
@@ -2165,16 +2250,8 @@
             "\t}",
             "}"
         ],
-        "description": "Storage Account"
-    },
-    "Tag Section": {
-        "prefix": "arm-tags",
-        "body": [
-            "\"tags\": {",
-            "\t\"${1:tagName}\": \"${2:tagValue}\"",
-            "}"
-        ],
-        "description": "Tag Section"
+        "description": "Storage Account",
+        "context": "resources"
     },
     "Traffic Manager Profile": {
         "prefix": "arm-traffic-manager",
@@ -2214,7 +2291,8 @@
             "\t}",
             "}"
         ],
-        "description": "Traffic Manager Profile"
+        "description": "Traffic Manager Profile",
+        "context": "resources"
     },
     "Ubuntu Virtual Machine": {
         "prefix": "arm-vm-ubuntu",
@@ -2379,10 +2457,11 @@
             "\t}",
             "}"
         ],
-        "description": "Ubuntu Virtual Machine"
+        "description": "Ubuntu Virtual Machine",
+        "context": "resources"
     },
     "User Function": {
-        "prefix": "arm-userfunc",
+        "prefix": "new-user-function",
         "body": [
             "\"${1:functionname}\": {",
             "\t\"parameters\": [",
@@ -2397,10 +2476,12 @@
             "\t}",
             "}"
         ],
-        "description": "User-defined namespace and member function, should be placed inside a \"members\" object inside \"functions\""
+        "description": "User-defined namespace and member function, should be placed inside a \"members\" object inside \"functions\"",
+        "$asdf": "asdf",
+        "context": "members"
     },
     "User Function Namespace": {
-        "prefix": "arm-userfunc-namespace",
+        "prefix": "new-userfunc-namespace",
         "body": [
             "{",
             "\t\"namespace\": \"${1:namespacename}\",",
@@ -2420,7 +2501,8 @@
             "\t}",
             "}"
         ],
-        "description": "User-defined namespace and member function, should be placed inside the top-level \"functions\" section"
+        "description": "User-defined namespace and member function",
+        "context": "functions"
     },
     "Virtual Network": {
         "prefix": "arm-vnet",
@@ -2456,7 +2538,8 @@
             "\t}",
             "}"
         ],
-        "description": "Virtual Network"
+        "description": "Virtual Network",
+        "context": "resources"
     },
     "VPN Local Network Gateway": {
         "prefix": "arm-vpn-local-gateway",
@@ -2476,7 +2559,8 @@
             "\t}",
             "}"
         ],
-        "description": "VPN Local Network Gateway"
+        "description": "VPN Local Network Gateway",
+        "context": "resources"
     },
     "VPN Virtual Network Gateway": {
         "prefix": "arm-vpn-vnet-gateway",
@@ -2515,7 +2599,8 @@
             "\t}",
             "}"
         ],
-        "description": "VPN Virtual Network Gateway"
+        "description": "VPN Virtual Network Gateway",
+        "context": "resources"
     },
     "VPN Virtual Network Connection": {
         "prefix": "arm-vpn-vnet-connection",
@@ -2542,7 +2627,8 @@
             "\t}",
             "}"
         ],
-        "description": "VPN Virtual Network Connection"
+        "description": "VPN Virtual Network Connection",
+        "context": "resources"
     },
     "Web App": {
         "prefix": "arm-web-app",
@@ -2565,7 +2651,8 @@
             "\t}",
             "}"
         ],
-        "description": "Web Application"
+        "description": "Web Application",
+        "context": "resources"
     },
     "Web Deploy for Web App": {
         "prefix": "arm-web-app-deploy",
@@ -2591,7 +2678,8 @@
             "\t}",
             "}"
         ],
-        "description": "Web Deploy for a Web Application"
+        "description": "Web Deploy for a Web Application",
+        "context": "resources"
     },
     "Windows Virtual Machine": {
         "prefix": "arm-vm-windows",
@@ -2757,7 +2845,8 @@
             "\t}",
             "}"
         ],
-        "description": "Windows Virtual Machine"
+        "description": "Windows Virtual Machine",
+        "context": "resources"
     },
     "Windows VM Custom Script": {
         "prefix": "arm-vm-script-windows",
@@ -2789,7 +2878,8 @@
             "\t}",
             "}"
         ],
-        "description": "Custom script extension for a Windows Virtual Machine"
+        "description": "Custom script extension for a Windows Virtual Machine",
+        "context": "resources"
     },
     "Windows VM Diagnostics Extension": {
         "prefix": "arm-vm-windows-diagnostics",
@@ -2823,7 +2913,8 @@
             "\t}",
             "}"
         ],
-        "description": "Diagnostics Extension for a Windows Virtual Machine"
+        "description": "Diagnostics Extension for a Windows Virtual Machine",
+        "context": "resources"
     },
     "Windows VM DSC PowerShell Script": {
         "prefix": "arm-vm-dsc",
@@ -2854,6 +2945,7 @@
             "\t}",
             "}"
         ],
-        "description": "Desired State Configuration PowerShell script for a Windows Virtual Machine"
+        "description": "Desired State Configuration PowerShell script for a Windows Virtual Machine",
+        "context": "resources"
     }
 }

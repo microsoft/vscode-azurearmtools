@@ -31,6 +31,7 @@ export class Item {
     public readonly commitCharacters: string[] | undefined;
     public readonly priority: CompletionPriority;
     public readonly preselect: boolean;
+    public readonly filterText?: string;
     public readonly telemetryProperties: { [key: string]: string } | undefined;
 
     constructor(
@@ -63,11 +64,27 @@ export class Item {
              * is used.
              */
             sortText?: string;
+            /**
+             * A string that should be used when filtering a set of
+             * completion items. When `falsy` the [label](#CompletionItem.label)
+             * is used.
+             */
+            filterText?: string;
+            /**
+             * An optional set of characters that when pressed while this completion is active will accept it first and
+             * then type that character. *Note* that all commit characters should have `length=1` and that superfluous
+             * characters will be ignored.
+             */
             commitCharacters?: string[];
             /**
              * Priority for sorting used in addition to sortText.
              */
             priority?: CompletionPriority;
+            /**
+             * Select this item when showing. *Note* that only one completion item can be selected and
+             * that the editor decides which item that is. The rule is that the *first* item of those
+             * that match best is selected.
+             */
             preselect?: boolean;
             /**
              * Optional additional telemetry properties for if the completion is activated
@@ -84,6 +101,7 @@ export class Item {
         this.snippetName = options.snippetName;
         this.additionalEdits = options.additionalEdits;
         this.sortText = options.sortText;
+        this.filterText = options.filterText;
         this.commitCharacters = options.commitCharacters;
         this.priority = options.priority ?? CompletionPriority.normal;
         this.preselect = !!options.preselect;

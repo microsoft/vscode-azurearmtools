@@ -352,6 +352,12 @@ export class LinkedTemplate extends TemplateScope {
     }
 }
 
+export function isDeploymentResource(resourceObject: Json.Value | undefined): boolean {
+    const resourceTypeLC = resourceObject?.asObjectValue?.getPropertyValue(templateKeys.resourceType)?.asStringValue
+        ?.unquotedValue;
+    return resourceTypeLC?.toLowerCase() === deploymentsResourceTypeLC;
+}
+
 // Note: This is here instead of in Resource.ts to avoid a circular dependence
 export function getChildTemplateForResourceObject(
     parentScope: TemplateScope,
@@ -380,9 +386,7 @@ export function getChildTemplateForResourceObject(
     //      }
 
     // Is the resource type a deployment?
-    const resourceTypeLC = resourceObject?.getPropertyValue(templateKeys.resourceType)?.asStringValue
-        ?.unquotedValue;
-    if (resourceTypeLC?.toLowerCase() === deploymentsResourceTypeLC) {
+    if (resourceObject && isDeploymentResource(resourceObject)) {
         // Is it a nested or linked template?
         const propertiesObject = resourceObject?.getPropertyValue(templateKeys.properties)?.asObjectValue;
         const nestedTemplateObject = propertiesObject

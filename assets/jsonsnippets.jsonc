@@ -1,4 +1,5 @@
 {
+    "$schema": "./schemas/snippets.schema.json",
     "Azure Resource Manager (ARM) Template": {
         "prefix": "arm!",
         "body": [
@@ -12,7 +13,8 @@
             "\t\"outputs\": {}",
             "}"
         ],
-        "description": "Resource Group Template"
+        "description": "Resource Group Template",
+        "context": "empty"
     },
     "Azure Resource Manager (ARM) Template Subscription": {
         "prefix": "arm!s",
@@ -27,7 +29,8 @@
             "\t\"outputs\": {}",
             "}"
         ],
-        "description": "Subscription Template"
+        "description": "Subscription Template",
+        "context": "empty"
     },
     "Azure Resource Manager (ARM) Template Management Group": {
         "prefix": "arm!mg",
@@ -42,7 +45,8 @@
             "\t\"outputs\": {}",
             "}"
         ],
-        "description": "Management Group Template"
+        "description": "Management Group Template",
+        "context": "empty"
     },
     "Azure Resource Manager (ARM) Template Tenant": {
         "prefix": "arm!t",
@@ -57,7 +61,8 @@
             "\t\"outputs\": {}",
             "}"
         ],
-        "description": "Tenant Template"
+        "description": "Tenant Template",
+        "context": "empty"
     },
     "Azure Resource Manager (ARM) Parameters Template": {
         "prefix": "armp!",
@@ -69,6 +74,7 @@
             "\t}",
             "}"
         ],
-        "description": "Parameters Template"
+        "description": "Parameters Template",
+        "context": "empty"
     }
 }
