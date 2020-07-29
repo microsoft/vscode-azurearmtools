@@ -27,5 +27,26 @@
 		"scope": "markdown",
 		"prefix": "thanks",
 		"body": "(thanks ${1:user name} @${2:user id}!)"
-	}
+	},
+	"Microsoft Copyright Header": {
+		"prefix": "copyright",
+		"body": [
+			"$LINE_COMMENT ----------------------------------------------------------------------------",
+			"$LINE_COMMENT Licensed under the MIT License. See License.md in the project root for license information.",
+			"$LINE_COMMENT ----------------------------------------------------------------------------",
+			"",
+		]
+	},
+	"Common Imports": {
+		"prefix": "imports",
+		"body": [
+			"import * as assert from \"assert\";",
+			"import * as Json from \"./JSON\";",
+			"import * as language from \"./Language\";",
+			"import * as os from \"os\";",
+			"import * as TLE from \"./TLE\";",
+			"import * as vscode from \"vscode\";",
+			"import {} from \"../extension.bundle\"",
+		]
+	},
 }
