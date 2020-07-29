@@ -352,6 +352,9 @@ suite("Contextualized snippets", () => {
     ]
 }`,
                 [
+                    "The user-defined function 'namespacename.functionname' is never used.",
+                    "User-function parameter 'parameter1' is never used.",
+                    "User-function parameter 'parametername' is never used."
                 ]
             );
 
@@ -812,5 +815,4 @@ suite("Contextualized snippets", () => {
 
     test('TODO: Child resources');
     test('TODO: subnets');
-    test('TODO: User function parameters');
 });
