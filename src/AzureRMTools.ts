@@ -1202,7 +1202,7 @@ export class AzureRMTools {
                 const triggerCharacter = context.triggerKind === vscode.CompletionTriggerKind.TriggerCharacter
                     ? context.triggerCharacter
                     : undefined;
-                const { items, triggerSuggest } = await pc.getCompletionItems(triggerCharacter);
+                const { items, triggerSuggest, triggerImmediately } = await pc.getCompletionItems(triggerCharacter);
                 if (triggerSuggest) {
                     // The user typed the beginning of a parent object, open up the completions context menu because it's
                     // likely they want to use a snippet immediately
@@ -1213,6 +1213,16 @@ export class AzureRMTools {
                         vscode.commands.executeCommand('editor.action.triggerSuggest');
                     });
                     return undefined;
+                    // } else if (triggerImmediately) {
+                    //     await vscode.commands.executeCommand('insertBestCompletion');
+                    //const c = toVsCodeCompletionItem(pc.document, items[0]);
+                    // await vscode.commands.executeCommand('editor.action.insertSnippet', {
+                    //     snippet:
+                    //     {
+                    //         label: "hello",
+                    //         insertText: "helloo"
+                    //     }
+                    // });
                 } else {
                     const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c));
                     ext.completionItemsSpy.postCompletionItemsResult(pc.document, items, vsCodeItems);
@@ -1225,6 +1235,12 @@ export class AzureRMTools {
                         assert(item.range?.isSingleLine, "Completion item range must be a single line");
                     }
 
+                    if (triggerImmediately) {
+                        // tslint:disable-next-line: no-floating-promises
+                        //delay(100).then(() => {
+                        vscode.commands.executeCommand('\t');
+                        //});
+                    }
                     return new vscode.CompletionList(vsCodeItems, true);
                 }
             }

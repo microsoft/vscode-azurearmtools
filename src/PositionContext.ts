@@ -26,6 +26,7 @@ export enum ReferenceSiteKind {
 export interface ICompletionItemsResult {
     items: Completion.Item[];
     triggerSuggest?: boolean;
+    triggerImmediately?: boolean;
 }
 
 /**

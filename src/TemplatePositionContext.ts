@@ -269,6 +269,7 @@ export class TemplatePositionContext extends PositionContext {
         const tleInfo = this.tleInfo;
         const completions: Completion.Item[] = [];
 
+        // Handle property value completions for each scope
         for (let uniqueScope of this.document.uniqueScopes) {
             if (uniqueScope.parameterValuesSource) {
                 completions.push(...getPropertyValueCompletionItems(
@@ -288,13 +289,35 @@ export class TemplatePositionContext extends PositionContext {
                 completions.push(...snippets.items);
             }
         } else {
-
             // We're inside a JSON string. It may or may not contain square brackets.
 
             // The function/string/number/etc at the current position inside the string expression,
             // or else the JSON string itself even it's not an expression
             const tleValue: TLE.Value | undefined = tleInfo.tleValue;
             const scope: TemplateScope = tleInfo.scope;
+
+            if (triggerCharacter === '[') {
+                if (this.jsonToken) { //asdf
+                    const c: Completion.Item = new Completion.Item({
+                        insertText: "",
+                        kind: Completion.CompletionKind.Snippet, //asdf
+                        label: "Convert string to expression",
+                        span: this.emptySpanAtDocumentCharacterIndex,
+                        priority: Completion.CompletionPriority.high,
+                        preselect: true,
+                        additionalEdits: [
+                            {
+                                insertText: "]",
+                                span: new language.Span(this.jsonToken.span.endIndex, 0)
+                            }
+                        ]
+                    });
+                    completions.push(c);
+
+                    //await commands.executeCommand('editor.action.insertSnippet', { snippet: toVsCodeCompletionItem(c) });
+                    return { items: [c], triggerImmediately: true };
+                }
+            }
 
             if (!tleValue || !tleValue.contains(tleInfo.tleCharacterIndex)) {
                 // No TLE value here. For instance, expression is empty, or before/after/on the square brackets
@@ -306,6 +329,7 @@ export class TemplatePositionContext extends PositionContext {
                     completions.push(...functionCompletions);
                     completions.push(...namespaceCompletions);
                 }
+
             } else if (tleValue instanceof TLE.FunctionCallValue) {
                 assert(this.jsonToken);
                 // tslint:disable-next-line:no-non-null-assertion
