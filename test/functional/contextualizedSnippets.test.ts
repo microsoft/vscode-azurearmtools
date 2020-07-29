@@ -173,11 +173,13 @@ suite("Contextualized snippets", () => {
             []
         );
 
-        createContextualizedSnippetTest(
-            "top-level user function namespace",
-            "new-userfunc-namespace",
-            [undefined, '{'],
-            `{
+        suite("User functions", () => {
+
+            createContextualizedSnippetTest(
+                "top-level user function namespace",
+                "new-userfunc-namespace",
+                [undefined, '{'],
+                `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "resources": [
@@ -186,7 +188,7 @@ suite("Contextualized snippets", () => {
         !
     ]
 }`,
-            `{
+                `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "resources": [
@@ -211,17 +213,17 @@ suite("Contextualized snippets", () => {
         }
     ]
 }`,
-            [
-                "The user-defined function 'namespacename.functionname' is never used.",
-                "User-function parameter 'parametername' is never used."
-            ]
-        );
+                [
+                    "The user-defined function 'namespacename.functionname' is never used.",
+                    "User-function parameter 'parametername' is never used."
+                ]
+            );
 
-        createContextualizedSnippetTest(
-            "top-level user function",
-            "new-user-function",
-            [undefined, '"'],
-            `{
+            createContextualizedSnippetTest(
+                "top-level user function",
+                "new-user-function",
+                [undefined, '"'],
+                `{
                 "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
                 "resources": [
@@ -247,7 +249,7 @@ suite("Contextualized snippets", () => {
                     }
                 ]
             }`,
-            `{
+                `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "resources": [
@@ -284,13 +286,79 @@ suite("Contextualized snippets", () => {
         }
     ]
 }`,
-            [
-                "The user-defined function 'namespacename.existingfunction' is never used.",
-                "The user-defined function 'namespacename.functionname' is never used.",
-                "User-function parameter 'parametername' is never used.",
-                "User-function parameter 'parametername' is never used."
-            ]
-        );
+                [
+                    "The user-defined function 'namespacename.existingfunction' is never used.",
+                    "The user-defined function 'namespacename.functionname' is never used.",
+                    "User-function parameter 'parametername' is never used.",
+                    "User-function parameter 'parametername' is never used."
+                ]
+            );
+
+            createContextualizedSnippetTest(
+                "User function parameters",
+                "new-userfunc-parameter",
+                [undefined, '{'],
+                `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [],
+    "functions": [
+        {
+            "namespace": "namespacename",
+            "members": {
+                "functionname": {
+                    "parameters": [
+                        {
+                            "name": "parametername",
+                            "type": "string"
+                        },
+                        !
+                    ],
+                    "output": {
+                        "value": "function-return-value",
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    ]
+}`,
+                `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [],
+    "functions": [
+        {
+            "namespace": "namespacename",
+            "members": {
+                "functionname": {
+                    "parameters": [
+                        {
+                            "name": "parametername",
+                            "type": "string"
+                        },
+                        {
+                            "name": "parameter1",
+                            "type": "string"
+                        }
+                    ],
+                    "output": {
+                        "value": "function-return-value",
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    ]
+}`,
+                [
+                    "The user-defined function 'namespacename.functionname' is never used.",
+                    "User-function parameter 'parameter1' is never used.",
+                    "User-function parameter 'parametername' is never used."
+                ]
+            );
+
+        });
 
         createContextualizedSnippetTest(
             "top-level resource",
@@ -747,5 +815,4 @@ suite("Contextualized snippets", () => {
 
     test('TODO: Child resources');
     test('TODO: subnets');
-    test('TODO: User function parameters');
 });

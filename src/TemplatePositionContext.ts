@@ -237,15 +237,54 @@ export class TemplatePositionContext extends PositionContext {
         return false;
     }
 
+    private isInsideUserFunctionParameterDefinitions(parents: (Json.ObjectValue | Json.ArrayValue | Json.Property)[]): boolean {
+        // "functions": [
+        // {
+        //     "namespace": "namespacename",
+        //     "members": { << We end up to this level
+        //         "functionname": {
+        //             "parameters": [
+        //                 {
+        //                     << CURSOR HERE
+        // (This occurs after the user types "{" inside the "parameters" object)
+        if (parents[0] instanceof Json.ObjectValue) {
+            // Remove the object from the parents stack and compare like the second scenario
+            parents = parents.slice(1);
+        }
+
+        // "functions": [
+        // {
+        //     "namespace": "namespacename",
+        //     "members": { << We end up to this level
+        //         "functionname": {
+        //             "parameters": [
+        //                 << CURSOR HERE
+        if (parents[0] instanceof Json.ArrayValue
+            && parents[1].isPropertyWithName(templateKeys.parameters)
+            && parents[2] instanceof Json.ObjectValue
+            && parents[3] instanceof Json.Property // This is the function name, don't care what that name is
+            && parents[4] instanceof Json.ObjectValue
+            && parents[5].isPropertyWithName(templateKeys.userFunctionMembers)
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
     public getSnippetInsertionContext(triggerCharacter: string | undefined): SnippetInsertionContext {
         const context = super.getSnippetInsertionContext(triggerCharacter);
 
-        // We need to figure out whether 'parameters' is parameter definitions or parameter values, because
-        // they're quite different in terms of what snippets they support
-        if (context.parents && this.isInsideParameterDefinitions(context.parents)) {
-            context.context = KnownSnippetContexts.parameterDefinitions;
-        } else if (context.parents && this.isInsideParameterValues(context.parents)) {
-            context.context = KnownSnippetContexts.parameterValues;
+        // We need to make some contexts more specific to the template file.  For instance, a 'parameters' object might be
+        //   parameter definitions or parameter values or user function parameters, all of which require different contexts.
+        if (context.parents) {
+            if (this.isInsideParameterDefinitions(context.parents)) {
+                context.context = KnownSnippetContexts.parameterDefinitions;
+            } else if (this.isInsideParameterValues(context.parents)) {
+                context.context = KnownSnippetContexts.parameterValues;
+            } else if (this.isInsideUserFunctionParameterDefinitions(context.parents)) {
+                context.context = KnownSnippetContexts.userFuncParameterDefinitions;
+            }
         }
 
         return context;

@@ -60,7 +60,8 @@
         "onCommand:azurerm-vscode-tools.insertOutput",
         "onCommand:azurerm-vscode-tools.insertFunction",
         "onCommand:azurerm-vscode-tools.insertResource",
-        "onCommand:azurerm-vscode-tools.resetGlobalState"
+        "onCommand:azurerm-vscode-tools.developer.resetGlobalState",
+        "onCommand:azurerm-vscode-tools.developer.showSnippetContext"
     ],
     "contributes": {
         "grammars": [
@@ -170,16 +171,22 @@
         ],
         "commands": [
             {
-                "$comment": "============= Global/Treeview =============",
-                "category": "Azure Resource Manager Tools",
-                "title": "Reset Global State",
-                "command": "azurerm-vscode-tools.resetGlobalState"
+                "$comment": "============= Developer commands =============",
+                "category": "Azure Resource Manager Tools (Developer)",
+                "title": "Show Snippet Context at current location (for snippet authors)",
+                "command": "azurerm-vscode-tools.developer.showSnippetContext"
             },
             {
+                "category": "Azure Resource Manager Tools (Developer)",
+                "title": "Reset Global State",
+                "command": "azurerm-vscode-tools.developer.resetGlobalState"
+            },
+            {
+                "$comment": "============= Programmatic =============",
                 "category": "Azure Resource Manager Tools",
                 "title": "Go to parameter value",
                 "command": "azurerm-vscode-tools.codeLens.gotoParameterValue",
-                "$comment": "Code lens on a parameter definition - navigates to parameter value"
+                "$comment2": "Code lens on a parameter definition - navigates to parameter value"
             },
             {
                 "$comment": "============= Insert Item =============",

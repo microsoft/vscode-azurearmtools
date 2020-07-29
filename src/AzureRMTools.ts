@@ -40,6 +40,7 @@ import { RenameCodeActionProvider } from "./RenameCodeActionProvider";
 import { resetGlobalState } from "./resetGlobalState";
 import { getPreferredSchema } from "./schemas";
 import { getFunctionParamUsage } from "./signatureFormatting";
+import { showSnippetContext } from "./snippets/showSnippetContext";
 import { SnippetManager } from "./snippets/SnippetManager";
 import { getQuickPickItems, sortTemplate } from "./sortTemplate";
 import { Stopwatch } from "./Stopwatch";
@@ -229,7 +230,6 @@ export class AzureRMTools {
         registerCommand("azurerm-vscode-tools.insertResource", async (actionContext: IActionContext) => {
             await this.insertItem(TemplateSectionType.Resources, actionContext);
         });
-        registerCommand("azurerm-vscode-tools.resetGlobalState", resetGlobalState);
 
         // Code action commands
         registerCommand("azurerm-vscode-tools.codeAction.addAllMissingParameters", async (actionContext: IActionContext, source?: vscode.Uri, args?: IAddMissingParametersArgs) => {
@@ -244,6 +244,21 @@ export class AzureRMTools {
             "azurerm-vscode-tools.codeLens.gotoParameterValue",
             async (actionContext: IActionContext, args: IGotoParameterValueArgs) => {
                 await this.onGotoParameterValue(actionContext, args);
+            });
+
+        // Developer commands
+        registerCommand("azurerm-vscode-tools.developer.resetGlobalState", resetGlobalState);
+        registerCommand(
+            "azurerm-vscode-tools.developer.showSnippetContext",
+            async (actionContext: IActionContext) => {
+                let editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+                if (editor) {
+                    let position = editor.selection.anchor;
+                    let pc: PositionContext | undefined = await this.getPositionContext(editor.document, position, Cancellation.cantCancel);
+                    if (pc) {
+                        showSnippetContext(pc);
+                    }
+                }
             });
 
         this._paramsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);

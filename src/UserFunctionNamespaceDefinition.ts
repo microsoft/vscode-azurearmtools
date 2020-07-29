@@ -4,6 +4,7 @@
 
 import * as os from 'os';
 import { CachedValue } from './CachedValue';
+import { templateKeys } from './constants';
 import { assert } from './fixed_assert';
 import { IUsageInfo } from './Hover';
 import { IJsonDocument } from "./IJsonDocument";
@@ -80,7 +81,7 @@ export class UserFunctionNamespaceDefinition implements INamedDefinition {
         return this._members.getOrCacheValue(() => {
             const membersResult: UserFunctionDefinition[] = [];
 
-            const members: Json.ObjectValue | undefined = Json.asObjectValue(this._value.getPropertyValue("members"));
+            const members: Json.ObjectValue | undefined = Json.asObjectValue(this._value.getPropertyValue(templateKeys.userFunctionMembers));
             if (members) {
                 for (let member of members.properties) {
                     let name: Json.StringValue = member.nameValue;

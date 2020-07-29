@@ -96,4 +96,8 @@ export namespace templateKeys {
 
     // Linked templates
     export const linkedDeploymentTemplateLink = 'templateLink';
+
+    // User functions
+    export const userFunctionNamespace = 'namespace';
+    export const userFunctionMembers = 'members';
 }

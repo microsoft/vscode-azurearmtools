@@ -98,7 +98,26 @@ const overrideTemplateForSnippet: { [name: string]: string } = {
 \t"resources": [
 \t\t//Insert here: resource
 \t]
-}`
+}`,
+
+    "User Function Parameter Definition": `{
+    "functions": [
+        {
+            "namespace": "udf",
+            "members": {
+                "func1": {
+                    "parameters": [
+                        //Insert here
+                    ],
+                    "output": {
+                        "type": "string",
+                        "value": "myvalue"
+                    }
+                }
+            }
+        }
+    ]
+}`,
 
 };
 
@@ -110,7 +129,8 @@ const overrideInsertPosition: { [name: string]: string } = {
     Parameter: "//Insert here: parameter",
     Output: "//Insert here: output",
     "User Function": "//Insert here: user function",
-    "User Function Namespace": "//Insert here: namespace"
+    "User Function Namespace": "//Insert here: namespace",
+    "User Function Parameter Definition": "//Insert here"
 };
 
 // Override expected errors/warnings for the snippet test - default is none
@@ -142,6 +162,12 @@ const overrideExpectedDiagnostics: { [name: string]: string[] } = {
     "User Function Namespace": [
         "The user-defined function 'namespacename.functionname' is never used.",
         "User-function parameter 'parametername' is never used."
+    ],
+    "User Function Parameter Definition": [
+        'Missing required property "$schema"',
+        "Template validation failed: Required property '$schema' not found in JSON. Path '', line 21, position 1.",
+        "The user-defined function 'udf.func1' is never used.",
+        "User-function parameter 'parameter1' is never used."
     ],
     "Automation Certificate": [
         // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
