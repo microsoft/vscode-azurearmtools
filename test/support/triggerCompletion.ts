@@ -1,7 +1,9 @@
 import * as assert from 'assert';
 import { Selection, SnippetString, TextEditor } from 'vscode';
 import { DeploymentTemplate, getVSCodeRangeFromSpan } from '../../extension.bundle';
+import { testLog } from './createTestLog';
 import { delay } from './delay';
+import { stringify } from './stringify';
 import { typeInDocumentAndWait } from './typeInDocumentAndWait';
 
 // tslint:disable-next-line: no-suspicious-comment
@@ -26,6 +28,7 @@ export async function simulateCompletion(
     // Get completion items
     let result = await pc.getCompletionItems(triggerCharacter);
     if (result.triggerSuggest) {
+        testLog.writeLine("triggering suggestion because result.triggerSuggest=true");
         // Trigger again after entering a newline
         const newContents = await typeInDocumentAndWait(editor, '\n');
 
@@ -39,8 +42,9 @@ export async function simulateCompletion(
 
     // Find the desired snippet
     const snippet = result.items.find(s => s.label === completion || s.label === `"${completion}"`);
+    testLog.writeLine(`Available completions: ${stringify(result)}`);
     if (!snippet) {
-        throw new Error(`Couldn't find snippet with label '${completion}'`);
+        throw new Error(`Couldn't find completion with label '${completion}' that is available at this location`);
     }
 
     const range = getVSCodeRangeFromSpan(deploymentTemplate, snippet.span);
@@ -55,9 +59,5 @@ export async function simulateCompletion(
     }
 
     await editor.insertSnippet(new SnippetString(snippet.insertText));
-
-    // Some completions have additional text edits, and vscode doesn't
-    // seem to have made all the changes when it fires didDocumentChange,
-    // so give a slight delay to allow it to finish
     await delay(1);
 }

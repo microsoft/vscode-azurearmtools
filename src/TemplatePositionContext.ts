@@ -274,12 +274,10 @@ export class TemplatePositionContext extends PositionContext {
 
     private isInsideResourceBody(parents: (Json.ObjectValue | Json.ArrayValue | Json.Property)[]): boolean {
         //     {
-        //         "name": "virtualNetwork1",
         //         "type": "Microsoft.Network/virtualNetworks",
         //         "apiVersion": "2019-11-01",
         //         << CURSOR
         if (parents[0] instanceof Json.ObjectValue
-            && parents[0]?.hasProperty(templateKeys.resourceName)
             && parents[0]?.hasProperty(templateKeys.resourceType)
             && parents[0]?.hasProperty(templateKeys.resourceApiVersion)
         ) {
@@ -290,24 +288,30 @@ export class TemplatePositionContext extends PositionContext {
     }
 
     public getSnippetInsertionContext(triggerCharacter: string | undefined): SnippetInsertionContext {
-        const context = super.getSnippetInsertionContext(triggerCharacter);
-        const parents = context.parents;
+        const insertionContext = super.getSnippetInsertionContext(triggerCharacter);
+        const context = insertionContext.context;
+        const parents = insertionContext.parents;
 
         // We need to make some contexts more specific to the template file.  For instance, a 'parameters' object might be
         //   parameter definitions or parameter values or user function parameters, all of which require different contexts.
         if (parents) {
-            if (this.isInsideParameterDefinitions(parents)) {
-                context.context = KnownSnippetContexts.parameterDefinitions;
-            } else if (this.isInsideParameterValues(parents)) {
-                context.context = KnownSnippetContexts.parameterValues;
-            } else if (this.isInsideUserFunctionParameterDefinitions(parents)) {
-                context.context = KnownSnippetContexts.userFuncParameterDefinitions;
-            } else if (this.isInsideResourceBody(parents)) {
-                context.context = KnownSnippetContexts.resourceBody;
+            if (context === 'parameters') {
+                if (this.isInsideParameterDefinitions(parents)) {
+                    insertionContext.context = KnownSnippetContexts.parameterDefinitions;
+                } else if (this.isInsideParameterValues(parents)) {
+                    insertionContext.context = KnownSnippetContexts.parameterValues;
+                } else if (this.isInsideUserFunctionParameterDefinitions(parents)) {
+                    insertionContext.context = KnownSnippetContexts.userFuncParameterDefinitions;
+                }
+            } else if (
+                (triggerCharacter === undefined || triggerCharacter === '"')
+                && this.isInsideResourceBody(parents)
+            ) {
+                insertionContext.context = KnownSnippetContexts.resourceBody;
             }
         }
 
-        return context;
+        return insertionContext;
     }
 
     private async getSnippetCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult> {

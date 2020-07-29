@@ -55,7 +55,7 @@ export function testWithPrep(expectation: string, preparations?: ITestPreparatio
                         throw error;
                     }
 
-                    throw wrapError(parseError(error).message, ` \n====LOG====\n${testLog.toString()}`);
+                    throw wrapError(parseError(error).message, ` \n=================== TESTLOG ===================\n\n${testLog.toString()}`);
                 } finally {
                     deleteTestLog();
                 }

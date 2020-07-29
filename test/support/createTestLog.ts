@@ -4,7 +4,7 @@
 
 import * as assert from 'assert';
 import { ITestLog } from "./ITestLog";
-import { StringLog } from "./StringLog";
+import { StringTestLog } from "./StringTestLog";
 
 class UninitializedLog implements ITestLog {
     public writeLine(message: string): void {
@@ -23,7 +23,7 @@ class UninitializedLog implements ITestLog {
 export let testLog: ITestLog = new UninitializedLog();
 
 export function createTestLog(): void {
-    testLog = new StringLog();
+    testLog = new StringTestLog();
 }
 
 export function deleteTestLog(): void {
