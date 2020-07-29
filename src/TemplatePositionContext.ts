@@ -274,12 +274,10 @@ export class TemplatePositionContext extends PositionContext {
 
     private isInsideResourceBody(parents: (Json.ObjectValue | Json.ArrayValue | Json.Property)[]): boolean {
         //     {
-        //         "name": "virtualNetwork1",
         //         "type": "Microsoft.Network/virtualNetworks",
         //         "apiVersion": "2019-11-01",
         //         << CURSOR
         if (parents[0] instanceof Json.ObjectValue
-            && parents[0]?.hasProperty(templateKeys.resourceName)
             && parents[0]?.hasProperty(templateKeys.resourceType)
             && parents[0]?.hasProperty(templateKeys.resourceApiVersion)
         ) {
@@ -296,7 +294,7 @@ export class TemplatePositionContext extends PositionContext {
 
         // We need to make some contexts more specific to the template file.  For instance, a 'parameters' object might be
         //   parameter definitions or parameter values or user function parameters, all of which require different contexts.
-        if (parents && context) { // Don't check if there's no context currently, because super also considers triggerCharacter, so don't lose that
+        if (parents) {
             if (context === 'parameters') {
                 if (this.isInsideParameterDefinitions(parents)) {
                     insertionContext.context = KnownSnippetContexts.parameterDefinitions;
@@ -305,7 +303,10 @@ export class TemplatePositionContext extends PositionContext {
                 } else if (this.isInsideUserFunctionParameterDefinitions(parents)) {
                     insertionContext.context = KnownSnippetContexts.userFuncParameterDefinitions;
                 }
-            } else if (this.isInsideResourceBody(parents)) {
+            } else if (
+                (triggerCharacter === undefined || triggerCharacter === '"')
+                && this.isInsideResourceBody(parents)
+            ) {
                 insertionContext.context = KnownSnippetContexts.resourceBody;
             }
         }

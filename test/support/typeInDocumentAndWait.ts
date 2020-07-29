@@ -4,8 +4,10 @@
 
 import * as assert from 'assert';
 import { Position, Selection, TextEditor, window } from "vscode";
+import { testLog } from './createTestLog';
 import { ensureLanguageServerAvailable } from "./ensureLanguageServerAvailable";
 import { actThenWait, getDocumentChangedPromise } from "./getEventPromise";
+import { stringify } from './stringify';
 
 export async function typeInDocumentAndWait(editor: TextEditor, text: string): Promise<string> {
     return await actThenWait(
@@ -17,6 +19,8 @@ export async function typeInDocumentAndWait(editor: TextEditor, text: string): P
 
             const initialPosition = editor.selection.anchor;
             let setPosition = initialPosition.translate(0, text.length);
+
+            testLog.writeLine(`typeInDocumentAndWait: ${stringify(text)}`);
 
             if (text === '"') {
                 // Imitate vscode adding the closing quote
