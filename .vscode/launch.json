@@ -52,7 +52,8 @@
                 "DISABLE_LANGUAGE_SERVER": "0",
                 "DISABLE_SLOW_TESTS": "0",
                 "ECHO_OUTPUT_CHANNEL_TO_CONSOLE": "1",
-                "BREAK_ON_ASSERT": "0"
+                "BREAK_ON_ASSERT": "0",
+                "ALWAYS_ECHO_TEST_LOG": "0" // If 1 or true, always immediately echos test log to console; otherwise test log is only echoed after a failed testcase
             }
         },
         // Launch extension with webpack
@@ -103,7 +104,8 @@
                 "NODE_DEBUG": "",
                 "AZCODE_ARM_IGNORE_BUNDLE": "0",
                 "ECHO_OUTPUT_CHANNEL_TO_CONSOLE": "1",
-                "BREAK_ON_ASSERT": "0"
+                "BREAK_ON_ASSERT": "0",
+                "ALWAYS_ECHO_TEST_LOG": "0" // If 1 or true, always immediately echos test log to console; otherwise test log is only echoed after a failed testcase
             }
         }
     ]
