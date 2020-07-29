@@ -33,5 +33,5 @@ export interface SnippetInsertionContext {
     /**
      * A list of all the JSON parents of the insertion point, going up the tree
      */
-    parents?: (Json.ObjectValue | Json.ArrayValue)[];
+    parents?: (Json.ObjectValue | Json.ArrayValue | Json.Property)[]; // CONSIDER: does this belong here?  It's only information about adding the snippet, not determining if it's supported
 }

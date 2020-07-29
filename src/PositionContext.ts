@@ -259,7 +259,7 @@ export abstract class PositionContext {
      * Determines the snippet insertion context at this location (i.e., the type of snippets which are appropriate to insert here,
      * the span of insertion, etc.)
      */
-    // tslint:disable-next-line: max-func-body-length
+    // tslint:disable-next-line: max-func-body-length cyclomatic-complexity
     public getSnippetInsertionContext(triggerCharacter: string | undefined): SnippetInsertionContext {
         if (!this.document.topLevelValue) {
             // Empty JSON document
@@ -268,13 +268,16 @@ export abstract class PositionContext {
 
         let replacementInfo = this.getCompletionReplacementSpanInfo();
         const insideDoubleQuotes = replacementInfo.token?.type === Json.TokenType.QuotedString;
+        let parents: (Json.ArrayValue | Json.ObjectValue | Json.Property)[] = [];
 
         const insertionParent: Json.ArrayValue | Json.ObjectValue | undefined = this.getInsertionParent();
         if (insertionParent) {
             const lineage: (Json.ArrayValue | Json.ObjectValue | Json.Property)[] | undefined = this.document.topLevelValue.findLineage(insertionParent);
             assert(lineage, `Couldn't find JSON value inside the top-level value: ${insertionParent.toFullFriendlyString()}`);
-            let parents = lineage.reverse() as (Json.ArrayValue | Json.ObjectValue)[];
-            parents = [insertionParent].concat(parents);
+
+            // parents = a list of all ancestors, starting with insertionParent
+            parents = lineage.reverse();
+            parents.unshift(insertionParent);
 
             if (
                 (!triggerCharacter || triggerCharacter === '"')
@@ -366,7 +369,7 @@ export abstract class PositionContext {
             }
         }
 
-        return { context: undefined, parents: [], insideDoubleQuotes };
+        return { context: undefined, parents, insideDoubleQuotes };
     }
 
     // Retrieves the array or object which would be the parent if a JSON item were added

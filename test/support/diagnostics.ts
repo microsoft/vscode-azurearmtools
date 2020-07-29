@@ -402,7 +402,7 @@ export async function getDiagnosticsForDocument(
         clearTimeout(timer);
     }
 
-    testLog.writeLine(`Diagnostics comlete:  ${stringify(diagnostics)}`);
+    testLog.writeLine(`Diagnostics complete:  ${stringify(diagnostics)}`);
 
     // Verify the version of expectedMinimumVersionForEachSource
     for (const source of Object.getOwnPropertyNames(diagnostics.sourceCompletionVersions)) {
