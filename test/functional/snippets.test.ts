@@ -16,6 +16,7 @@ import * as path from 'path';
 import * as stripJsonComments from 'strip-json-comments';
 import { commands, Selection, Uri, window, workspace } from "vscode";
 import { DeploymentTemplate, getVSCodePositionFromPosition } from '../../extension.bundle';
+import { testLog } from '../support/createTestLog';
 import { delay } from '../support/delay';
 import { diagnosticSources, getDiagnosticsForDocument, IGetDiagnosticsOptions } from '../support/diagnostics';
 import { formatDocumentAndWait } from '../support/formatDocumentAndWait';
@@ -468,6 +469,7 @@ suite("Snippets functional tests", () => {
 
         // Insert snippet
         const docTextBeforeInsertion = doc.getText();
+        testLog.writeLine(`Document before inserting snippet:\n${docTextBeforeInsertion}`);
         await simulateCompletion(
             editor,
             snippet.prefix,
@@ -484,6 +486,7 @@ suite("Snippets functional tests", () => {
 
         // Format (vscode seems to be inconsistent about this in these scenarios)
         const docTextAfterInsertion = await formatDocumentAndWait(doc);
+        testLog.writeLine(`Document after inserting snippet:\n${docTextAfterInsertion}`);
         validateDocumentWithSnippet();
 
         // Compare diagnostics

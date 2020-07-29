@@ -11,6 +11,7 @@ const DEBUG_BREAK_AFTER_INSERTING_SNIPPET = false;
 
 import * as assert from 'assert';
 import { Position, Selection } from "vscode";
+import { testLog } from '../support/createTestLog';
 import { delay } from '../support/delay';
 import { diagnosticSources, getDiagnosticsForDocument, IGetDiagnosticsOptions } from '../support/diagnostics';
 import { formatDocumentAndWait } from '../support/formatDocumentAndWait';
@@ -57,6 +58,9 @@ suite("Contextualized snippets", () => {
                     // Insert snippet (and wait for and verify diagnotics)
                     const docPos = dt.getDocumentPosition(bang.index);
                     const pos = new Position(docPos.line, docPos.line);
+
+                    testLog.writeLine(`Document before inserting snippet:\n${tempEditor.document.realDocument.getText()}`);
+
                     tempEditor.realEditor.selection = new Selection(pos, pos);
                     await delay(1);
                     await simulateCompletion(
@@ -76,6 +80,7 @@ suite("Contextualized snippets", () => {
 
                     // Format (vscode seems to be inconsistent about this in these scenarios)
                     const docTextAfterInsertion = await formatDocumentAndWait(tempDoc.realDocument);
+                    testLog.writeLine(`Document after inserting snippet:\n${docTextAfterInsertion}`);
                     assert.equal(docTextAfterInsertion, expectedTemplate);
 
                     // Compare diagnostics
@@ -608,8 +613,6 @@ suite("Contextualized snippets", () => {
     ]
 }`,
                 [
-                    "Missing required property \"location\"",
-                    "Missing required property \"properties\""
                 ]
             );
 
