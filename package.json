@@ -623,7 +623,7 @@
         "typescript": "^3.8.3",
         "vsce": "^1.77.0",
         "vscode": "^1.1.37",
-        "vscode-azureextensiondev": "^0.4.0",
+        "vscode-azureextensiondev": "^0.4.1",
         "webpack": "4.28.1",
         "webpack-cli": "^3.3.12"
     },
@@ -635,7 +635,7 @@
         "rimraf": "2.6.3",
         "shelljs": "^0.8.4",
         "strip-json-comments": "^3.1.1",
-        "vscode-azureextensionui": "^0.33.6",
+        "vscode-azureextensionui": "^0.33.9",
         "vscode-jsonrpc": "^4.0.0",
         "vscode-languageclient": "^4.4.0"
     },
