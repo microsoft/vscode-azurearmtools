@@ -2,6 +2,35 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.12.0
+
+### Added
+
+- Snippet contextualization [#654](https://github.com/microsoft/vscode-azurearmtools/issues/654)
+  - Snippets now appear only in locations where they make sense
+  - Automatically bring up snippets for new parameters, variables, outputs, etc. when the first double quote is typed
+  - Automatically bring up snippets for new resources, user function parameters, etc. when the first curly brace is typed
+- Support code lenses, errors, intellisense and code actions for nested templates, just like for parameter files [#837](https://github.com/microsoft/vscode-azurearmtools/issues/837)
+
+### Fixed
+
+- "filename.json does not appear to be an Azure Resource Manager deployment template file" [#838](https://github.com/microsoft/vscode-azurearmtools/issues/838)
+- The notification information is inconsistent with the status bar "Select/Create Parameter File…" [#873](https://github.com/microsoft/vscode-azurearmtools/issues/873)
+- Show error icon in pick list for current parameter file if not found [#693](https://github.com/microsoft/Sscode-azurearmtools/icon issues/693)
+- Revision comparison shows unexpected problems [#601](https://github.com/microsoft/vscode-azurearmtools/issues/601)
+- The ARM function listchannelwithkeys is not recognized as a valid function. [#846](https://github.com/microsoft/vscode-azurearmtools/issues/846)
+- Error shows when selecting parameter file for an unsaved template file [#841](https://github.com/microsoft/vscode-azurearmtools/issues/841)
+- Status bar doesn't show up when changing a file to arm-template [#839](https://github.com/microsoft/vscode-azurearmtools/issues/839)
+- Assertion failure in parameter file with no "parameters" object if there are missing parameters [#829](https://github.com/microsoft/vscode-azurearmtools/issues/829)
+- Adding in Resource Group snippet (thanks Ryan Yates @kilasuit!) [#726](https://github.com/microsoft/vscode-azurearmtools/issues/726)
+- SetDiagnosticsFromTask for source 'arm-template (validation)' throws an exception during suites [#875](https://github.com/microsoft/vscode-azurearmtools/issues/875)
+- Disable display of "documentColumnIndex (29) cannot be greater than the line's maximum index" assertion [#843](https://github.com/microsoft/vscode-azurearmtools/issues/843)
+- "value cannot be null" when providing keyvault reference to a nested deployment parameter [#827](https://github.com/microsoft/vscode-azurearmtools/issues/827)
+- Error message and !!MISSING: command!! messages in code lenses opening template file when params file missing [#810](https://github.com/microsoft/vscode-azurearmtools/issues/810)
+- Error shows when selecting parameter file for an unsaved template file [#666](https://github.com/microsoft/vscode-azurearmtools/issues/666)
+- Invalid location given for error when resource name evaluates to empty string [#816](https://github.com/microsoft/vscode-azurearmtools/issues/816)
+- Using 'copy' in nested template variables triggered an template validation error [#730](https://github.com/microsoft/vscode-azurearmtools/issues/730)
+
 ## Version 0.11.0
 
 ### Added
