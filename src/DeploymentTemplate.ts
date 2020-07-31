@@ -286,7 +286,7 @@ export class DeploymentTemplate extends DeploymentDocument {
 
                 const propertyValues = scope.parameterValuesProperty;
                 // tslint:disable-next-line: strict-boolean-expressions
-                if (!!propertyValues?.asArrayValue?.elements.length) {
+                if (!!propertyValues?.value?.asObjectValue?.properties.length) {
                     warnings.push(
                         new language.Issue(propertyValues.span, warningMessage, language.IssueKind.inaccessibleNestedScopeMembers));
                 }
