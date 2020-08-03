@@ -38,7 +38,7 @@ Once you are working in an ARM template, placing your cursor in the resource and
 
 Each snippet includes tab stops to help navigate through commonly modified configurations. Press the `tab` key to navigate to the next stop, and `shift` + `tab` to navigate to the previous stop. As seen in the following example, some stops are pre-populated with a list of common values for quick selection.
 
-![Image showing snippet tab stops with pre-populated parameter values](./images/tab-stops.png)
+![Image showing snippet tab stops with pre-populated parameter values](./images/tab-stops.gif)
 
 ### Snippet Reference
 
