@@ -53,7 +53,7 @@ The following table lists the available ARM Tools snippets.
 | `armp!` | Adds the framework for a full deployment template parameters file. |
 | `""` | While in the _parameters_ section adds a parameter to the template. |
 | `""` | While in the _variables_ section adds a variable to the template. |
-| `{}` | While in the _functions_section add a new user-defined function. |
+| `{}` | While in the _functions_ section add a new user-defined function. |
 | `arm-` or the resource name | Displays 70+ snippets for creating Azure resources. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine. |
 | `""` | While in the _outputs_ section adds an output to the template. |
 
@@ -227,11 +227,11 @@ You may be interested in adjusting the following extension configurations. These
 
 | Configuration | Description |
 |---|---|
-| azureResourceManagerTools.autoDetectJsonTemplates | Auto-detects ARM template and sets editor language type to Azure Resource Manager. |
+| azureResourceManagerTools.autoDetectJsonTemplates | Auto-detects ARM template and sets editor language type to Azure Resource Manager Template. |
 | azureResourceManagerTools.checkForLatestSchema | Check if the root schema for deployment templates is using an out-of-date version and suggest updating it to the latest version. |
-| azureResourceManagerTools.checkForMatchingParameterFiles | Check if an opened template file has a matching params file and prompt to create an association. |
-| azureResourceManagerTools.codelens.enable | Disable all code lens functionality. |
-| azureResourceManagerTools.codelens.parameters | Disable code lens for parameters. |
+| azureResourceManagerTools.checkForMatchingParameterFiles | Check if an opened template file has a matching parameter file and prompt to create an association. |
+| azureResourceManagerTools.codelens.enable | Set to false to disable all code lens functionality. |
+| azureResourceManagerTools.codelens.parameters | Set to false to disable code lens for parameters. |
 
 ## Automatic Detection of deployment template files
 
@@ -244,8 +244,6 @@ Besides automatic detection, you can also use the `files.associations` setting t
     "*.azrm.json": "arm-template" // Treat these files as deployment templates
 }
 ```
-
-Auto-detects ARM template and sets editor language type to Azure Resource Manager Template
 
 ## Troubleshooting
 
