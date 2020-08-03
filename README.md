@@ -137,7 +137,7 @@ Enter a value for the added parameters and also remove the 'TODO' comment.
 
 ### Rename a parameter
 
-Right-click on the parameter name and select **Rename Symbol**. This action renames the parameter and all template references to the parameter.
+Right-click on the parameter name and select **Rename Symbol**. This action renames the parameter and all template and parameter file references to the parameter.
 
 ![Image showing the rename parameter dialoug](./images/rename-parameter.png)
 
@@ -165,7 +165,7 @@ In addition to navigation, several features such as insert item and template sor
 
 ### Go to Definition
 
-Go to definition can be used to navigate to both parameter and variable definitions. To use go to definition, place your cursor on the parameter or variable name and press `F12` or right-click and select **Go to Definition**.
+Go to definition can be used to navigate to parameter, variable and user-defined function definitions. To use go to definition, place your cursor on the parameter, variable or function name and press `F12` or right-click and select **Go to Definition**.
 
 ![Image showing the Go to Definition dialog on a parameter reference](./images/go-to-definition.png)
 
@@ -212,12 +212,14 @@ Template sorting can also be engaged using the ARM template outline.
   - [Signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
   - [Peek](https://code.visualstudio.com/docs/editor/editingevolved#_peek) for variable and parameter definitions
   - Find all references (Shift + F12) for variables and parameters
-  - Rename (F2) variables and parameters and their references
+  - Rename (F2) variables and parameters and their references, as well as user-defined functions or namespaces
   - [Hover](https://code.visualstudio.com/docs/editor/editingevolved#_hover) for parameter description
   - [TLE brace matching](https://code.visualstudio.com/docs/editor/editingevolved#_bracket-matching)
   - User-defined template functions, see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#functions)
   - Variable iteration ("copy blocks"), see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration)
   - Sort template and template sections alphabetically
+  - Nested templates (with inner or outer scope)
+  - Quick fix to add missing parameter values in the parameter file or in nested templates
 
 ## Extension configuration
 
@@ -249,8 +251,8 @@ Auto-detects ARM template and sets editor language type to Azure Resource Manage
 
 Use the following wiki article to help troubleshoot these known issues.
 
-- [Could not find/download: ".NET Core Runtime" with version = 2.2.5](https://github.com/microsoft/vscode-azurearmtools/wiki/Troubleshooting-DotNet-Acquisition)
-- [Resource schema warning: "For full schema validation, consider updating the value to one of the following.."](https://github.com/microsoft/vscode-azurearmtools/wiki/Unrecognized-Resource-API-Version)
+- [This extension requires .NET Core for full functionality, but we were unable to download and install a local copy for the extension.](https://github.com/microsoft/vscode-azurearmtools/wiki/Troubleshooting-DotNet-Acquisition)
+- [Resource schema warning: "For full schema validation, consider updating the value to one of the following..."](https://github.com/microsoft/vscode-azurearmtools/wiki/Unrecognized-Resource-API-Version)
 
 ## Related Links
 
