@@ -229,7 +229,7 @@ You may be interested in adjusting the following extension configurations. These
 | azureResourceManagerTools.checkForLatestSchema | Check if the root schema for deployment templates is using an out-of-date version and suggest updating it to the latest version. |
 | azureResourceManagerTools.checkForMatchingParameterFiles | Check if an opened template file has a matching params file and prompt to create an association. |
 | azureResourceManagerTools.codelens.enable | Disable all code lens functionality. |
-| azureResourceManagerTools.codelens.parameters | Disable code lens for parameters. |
+| azureResourceManagerTools.codelens.parameters | Set to false to disable code lens for parameters. |
 
 ## Automatic Detection of deployment template files
 
