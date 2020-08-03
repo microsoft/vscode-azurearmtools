@@ -6,6 +6,7 @@ import { ITest, ITestCallbackContext } from 'mocha';
 import * as path from 'path';
 import { ext, SnippetManager } from "../../extension.bundle";
 import { testLog } from './createTestLog';
+import { RequiresLanguageServer } from './testWithLanguageServer';
 import { ITestPreparation, ITestPreparationResult, testWithPrep } from './testWithPrep';
 
 // By default we use the test snippets for tests
@@ -49,6 +50,6 @@ export class UseNoSnippets implements ITestPreparation {
 export function testWithRealSnippets(expectation: string, callback?: (this: ITestCallbackContext) => Promise<unknown>): ITest {
     return testWithPrep(
         expectation,
-        [UseRealSnippets.instance],
+        [UseRealSnippets.instance, RequiresLanguageServer.instance], // Language server needed for format document
         callback);
 }
