@@ -227,7 +227,7 @@ You may be interested in adjusting the following extension configurations. These
 |---|---|
 | azureResourceManagerTools.autoDetectJsonTemplates | Auto-detects ARM template and sets editor language type to Azure Resource Manager. |
 | azureResourceManagerTools.checkForLatestSchema | Check if the root schema for deployment templates is using an out-of-date version and suggest updating it to the latest version. |
-| azureResourceManagerTools.checkForMatchingParameterFiles | Check if an opened template file has a matching params file and prompt to create an association. |
+| azureResourceManagerTools.checkForMatchingParameterFiles | Check if an opened template file has a matching parameter file and prompt to create an association. |
 | azureResourceManagerTools.codelens.enable | Set to false to disable all code lens functionality. |
 | azureResourceManagerTools.codelens.parameters | Set to false to disable code lens for parameters. |
 
