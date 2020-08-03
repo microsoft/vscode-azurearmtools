@@ -53,7 +53,7 @@ The following table lists the available ARM Tools snippets.
 | `armp!` | Adds the framework for a full deployment template parameters file. |
 | `""` | While in the _parameters_ section adds a parameter to the template. |
 | `""` | While in the _variables_ section adds a variable to the template. |
-| `{}` | While in the _functions_section add a new user-defined function. |
+| `{}` | While in the _functions_ section add a new user-defined function. |
 | `arm-` or the resource name | Displays 70+ snippets for creating Azure resources. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine. |
 | `""` | While in the _outputs_ section adds an output to the template. |
 
