@@ -1,5 +1,5 @@
 {
-    "$schema": "./ExpressionMetadata.schema.json",
+    "$schema": "./schemas/ExpressionMetadata.schema.json",
     "functionSignatures": [
         {
             "name": "add",
@@ -392,6 +392,39 @@
                 },
                 {
                     "name": "relativePathParameters"
+                }
+            ]
+        },
+        {
+            "name": "listChannelWithKeys",
+            "expectedUsage": "listChannelWithKeys(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Lists a Channel registration for a Bot Service including secrets.  The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. Example: [listChannelWithKeys(resourceId('Microsoft.BotService/botServices/channels', parameters('botId'), 'DirectLineChannel'), '2018-07-12').properties.properties.sites[0].key]",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "resource"
+                },
+                {
+                    "name": "setting"
+                },
+                {
+                    "name": "id"
+                },
+                {
+                    "name": "location"
+                },
+                {
+                    "name": "properties"
+                },
+                {
+                    "name": "provisioningState"
+                },
+                {
+                    "name": "entityTag"
+                },
+                {
+                    "name": "changedTime"
                 }
             ]
         },

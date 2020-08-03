@@ -46,6 +46,8 @@ export namespace configKeys {
     export const checkForLatestSchema = 'checkForLatestSchema';
     export const checkForMatchingParameterFiles = 'checkForMatchingParameterFiles';
     export const parameterFiles = 'parameterFiles';
+    export const enableCodeLens = 'codelens.enable';
+    export const codeLensForParameters = 'codelens.parameters';
 }
 
 export namespace globalStateKeys {
@@ -91,4 +93,11 @@ export namespace templateKeys {
     export const nestedDeploymentExprEvalScope = 'scope';
     export const nestedDeploymentExprEvalScopeInner = 'inner';
     export const nestedDeploymentTemplateProperty = 'template';
+
+    // Linked templates
+    export const linkedDeploymentTemplateLink = 'templateLink';
+
+    // User functions
+    export const userFunctionNamespace = 'namespace';
+    export const userFunctionMembers = 'members';
 }

@@ -2,12 +2,18 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { MarkdownString } from "vscode";
+import * as vscode from 'vscode';
 import { IFunctionMetadata } from "./IFunctionMetadata";
 import { IParameterDefinition } from "./IParameterDefinition";
 import * as language from "./Language";
 import { UserFunctionNamespaceDefinition } from "./UserFunctionNamespaceDefinition";
 import { IVariableDefinition } from "./VariableDefinition";
+
+export enum CompletionPriority {
+    normal = "normal",
+    high = "high",
+    low = "low",
+}
 
 /**
  * A completion item in the list of completion suggestions that appear when a user invokes auto-completion (Ctrl + Space).
@@ -18,17 +24,21 @@ export class Item {
     public readonly span: language.Span;
     public readonly kind: CompletionKind;
     public readonly detail: string | undefined;
-    public readonly documention: string | MarkdownString | undefined;
+    public readonly documention: string | vscode.MarkdownString | undefined;
     public readonly snippetName: string | undefined;
     public readonly additionalEdits: { span: language.Span; insertText: string }[] | undefined;
     public readonly sortText: string | undefined;
     public readonly commitCharacters: string[] | undefined;
-    public readonly highPriority: boolean;
+    public readonly priority: CompletionPriority;
     public readonly preselect: boolean;
+    public readonly filterText?: string;
     public readonly telemetryProperties: { [key: string]: string } | undefined;
 
     constructor(
         options: {
+            /**
+             * Main text to display in the completion list
+             */
             label: string;
             insertText: string;
             span: language.Span;
@@ -42,7 +52,10 @@ export class Item {
             /**
              * A human-readable string that represents a doc-comment.
              */
-            documentation?: string | MarkdownString;
+            documentation?: string | vscode.MarkdownString;
+            /**
+             * The snippet name if this is a snippet
+             */
             snippetName?: string;
             additionalEdits?: { span: language.Span; insertText: string }[];
             /**
@@ -51,11 +64,27 @@ export class Item {
              * is used.
              */
             sortText?: string;
+            /**
+             * A string that should be used when filtering a set of
+             * completion items. When `falsy` the [label](#CompletionItem.label)
+             * is used.
+             */
+            filterText?: string;
+            /**
+             * An optional set of characters that when pressed while this completion is active will accept it first and
+             * then type that character. *Note* that all commit characters should have `length=1` and that superfluous
+             * characters will be ignored.
+             */
             commitCharacters?: string[];
             /**
              * Priority for sorting used in addition to sortText.
              */
-            highPriority?: boolean;
+            priority?: CompletionPriority;
+            /**
+             * Select this item when showing. *Note* that only one completion item can be selected and
+             * that the editor decides which item that is. The rule is that the *first* item of those
+             * that match best is selected.
+             */
             preselect?: boolean;
             /**
              * Optional additional telemetry properties for if the completion is activated
@@ -72,8 +101,9 @@ export class Item {
         this.snippetName = options.snippetName;
         this.additionalEdits = options.additionalEdits;
         this.sortText = options.sortText;
+        this.filterText = options.filterText;
         this.commitCharacters = options.commitCharacters;
-        this.highPriority = !!options.highPriority;
+        this.priority = options.priority ?? CompletionPriority.normal;
         this.preselect = !!options.preselect;
         this.telemetryProperties = options.telemetryProperties;
     }
@@ -92,7 +122,7 @@ export class Item {
                 label: metadata.fullName,
                 insertText,
                 span,
-                kind: metadata.unqualifiedName === metadata.fullName ? CompletionKind.Function : CompletionKind.UserFunction,
+                kind: metadata.unqualifiedName === metadata.fullName ? CompletionKind.tleFunction : CompletionKind.tleUserFunction,
                 detail: `(function) ${metadata.usage}`,
                 documentation: metadata.description
             });
@@ -106,7 +136,7 @@ export class Item {
             label,
             insertText,
             span: span,
-            kind: CompletionKind.Parameter,
+            kind: CompletionKind.tleParameter,
             detail: `(namespace) ${label}`,
             documentation: "User-defined namespace"
         });
@@ -117,7 +147,7 @@ export class Item {
             label: propertyName,
             insertText: propertyName,
             span,
-            kind: CompletionKind.Property,
+            kind: CompletionKind.tleProperty,
             detail: "(property)" // CONSIDER: Add type, default value, etc.
         });
     }
@@ -128,7 +158,7 @@ export class Item {
             label,
             insertText: `${label}${includeRightParenthesisInCompletion ? ")" : ""}`,
             span,
-            kind: CompletionKind.Parameter,
+            kind: CompletionKind.tleParameter,
             detail: `(parameter)`, // CONSIDER: Add type, default value, etc. from property definition
             documentation: parameter.description
         });
@@ -140,7 +170,7 @@ export class Item {
             label,
             insertText: `${label}${includeRightParenthesisInCompletion ? ")" : ""}`,
             span,
-            kind: CompletionKind.Variable,
+            kind: CompletionKind.tleVariable,
             detail: `(variable)`
         });
     }
@@ -166,18 +196,19 @@ export class Item {
 
 export enum CompletionKind {
     // TLE completions
-    Function = "Function",
-    Parameter = "Parameter",
-    Variable = "Variable",
-    Property = "Property",
-    Namespace = "Namespace",
-    UserFunction = "UserFunction",
-
-    // Template file completions
-    DtResourceIdResType = "DtResourceIdResType", // First arg of resourceId
-    DtResourceIdResName = "DtResourceIdResName", // Second arg of resourceId
+    tleFunction = "tleFunction",
+    tleParameter = "tleParameter",
+    tleVariable = "tleVariable",
+    tleProperty = "tleProperty",
+    tleNamespace = "tleNamespace",
+    tleUserFunction = "tleUserFunction",
+    tleResourceIdResTypeParameter = "tleResourceIdResTypeParameter", // First arg of resourceId
+    tleResourceIdResNameParameter = "tleResourceIdResNameParameter", // Second arg of resourceId
 
     // Parameter file completions
-    DpPropertyValue = "DpPropertyValue", // Parameter from the template file
-    DpNewPropertyValue = "DpNewPropertyValue" // New, unnamed parameter
+    PropertyValueForExistingProperty = "PropertyValueForExistingProperty", // Parameter from the template file
+    PropertyValueForNewProperty = "PropertyValueForNewProperty", // New, unnamed parameter
+
+    // Snippet
+    Snippet = "Snippet",
 }

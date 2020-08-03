@@ -5,18 +5,21 @@
 import { CodeAction, CodeActionContext, CodeLens, Command, Range, Selection, Uri } from "vscode";
 import { CachedValue } from "./CachedValue";
 import { __debugMarkPositionInString, __debugMarkRangeInString } from "./debugMarkStrings";
+import { IJsonDocument } from "./IJsonDocument";
 import { INamedDefinition } from "./INamedDefinition";
+import { IParameterValuesSourceProvider } from "./IParameterValuesSourceProvider";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
+import { TemplateScope } from "./TemplateScope";
 import { nonNullValue } from "./util/nonNull";
 import { getVSCodeRangeFromSpan } from "./util/vscodePosition";
 
 /**
  * Represents a deployment-related JSON file
  */
-export abstract class DeploymentDocument {
+export abstract class DeploymentDocument implements IJsonDocument {
     // Parse result for the template JSON document as a whole
     private _jsonParseResult: Json.ParseResult;
 
@@ -28,11 +31,11 @@ export abstract class DeploymentDocument {
     /**
      * Constructor
      *
-     * @param _documentText The string text of the document.
-     * @param _documentId A unique identifier for this document. Usually this will be a URI to the document.
+     * @param _documentText The string text of the document
+     * @param _documentUri The location of the document
      */
-    constructor(private _documentText: string, private _documentId: Uri) {
-        nonNullValue(_documentId, "_documentId");
+    constructor(private _documentText: string, private _documentUri: Uri) {
+        nonNullValue(_documentUri, "_documentUri");
 
         this._jsonParseResult = Json.parse(_documentText);
         this._topLevelValue = Json.asObjectValue(this._jsonParseResult.value);
@@ -64,8 +67,8 @@ export abstract class DeploymentDocument {
     /**
      * The unique identifier for this deployment template, which indicates its location
      */
-    public get documentId(): Uri {
-        return this._documentId;
+    public get documentUri(): Uri {
+        return this._documentUri;
     }
 
     // Parse result for the template JSON document as a whole
@@ -115,7 +118,7 @@ export abstract class DeploymentDocument {
      * Get the maximum column index for the provided line. For the last line in the file,
      * the maximum column index is equal to the line length. For every other line in the file,
      * the maximum column index is less than the line length (because line length includes
-     * the LF/CRLF?).
+     * the CR/LF terminating characters, but the last line doesn't).
      */
     public getMaxColumnIndex(lineIndex: number): number {
         return this._jsonParseResult.getMaxColumnIndex(lineIndex);
@@ -165,11 +168,16 @@ export abstract class DeploymentDocument {
      * @return An array of commands, quick fixes, or refactorings or a thenable of such. The lack of a result can be
      * signaled by returning `undefined`, `null`, or an empty array.
      */
-    public abstract async getCodeActions(associatedDocument: DeploymentDocument | undefined, range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]>;
+    public abstract getCodeActions(associatedDocument: DeploymentDocument | undefined, range: Range | Selection, context: CodeActionContext): (Command | CodeAction)[];
 
     // This should be as fast as possible
     // Anything slow should occur during ResolvableCodeLens.resolve()
-    public abstract getCodeLenses(hasAssociatedParameters: boolean): ResolvableCodeLens[];
+    public abstract getCodeLenses(
+        // If a parameter file is associated with this template template, this should
+        //   provide its URI and be able to lazily retrieve the parameter value source
+        // If there is no associated parameter file, this should be undefined
+        parameterValuesSourceProvider: IParameterValuesSourceProvider | undefined
+    ): ResolvableCodeLens[];
 
     // CONSIDER: Should we cache?  But that cache would depend on associatedTemplate not changing, not sure if that's
     // guaranteed.
@@ -185,12 +193,12 @@ export abstract class DeploymentDocument {
 }
 
 export abstract class ResolvableCodeLens extends CodeLens {
-    public constructor(public readonly deploymentDoc: DeploymentDocument, span: language.Span) {
-        super(getVSCodeRangeFromSpan(deploymentDoc, span));
+    public constructor(public readonly scope: TemplateScope, span: language.Span) {
+        super(getVSCodeRangeFromSpan(scope.document, span));
     }
 
     /**
      * Must fill in the code lens title and command, or return false if no longer valid
      */
-    public abstract resolve(associatedDocument: DeploymentDocument | undefined): boolean;
+    public abstract resolve(): Promise<boolean>;
 }

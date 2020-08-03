@@ -13,14 +13,19 @@ import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import { ITestCallbackContext } from 'mocha';
 import * as path from 'path';
-import { commands, Diagnostic, Selection, Uri, window, workspace } from "vscode";
-import { DeploymentTemplate, ext, getVSCodePositionFromPosition } from '../../extension.bundle';
+import * as stripJsonComments from 'strip-json-comments';
+import { commands, Selection, Uri, window, workspace } from "vscode";
+import { DeploymentTemplate, getVSCodePositionFromPosition } from '../../extension.bundle';
+import { testLog } from '../support/createTestLog';
 import { delay } from '../support/delay';
-import { getDiagnosticsForDocument, sources, testFolder } from '../support/diagnostics';
+import { diagnosticSources, getDiagnosticsForDocument, IGetDiagnosticsOptions } from '../support/diagnostics';
+import { formatDocumentAndWait } from '../support/formatDocumentAndWait';
 import { getTempFilePath } from "../support/getTempFilePath";
-import { testWithLanguageServer } from '../support/testWithLanguageServer';
-
-const EOL = ext.EOL;
+import { resolveInTestFolder } from '../support/resolveInTestFolder';
+import { UseRealSnippets } from '../support/TestSnippets';
+import { RequiresLanguageServer } from '../support/testWithLanguageServer';
+import { testWithPrep } from '../support/testWithPrep';
+import { simulateCompletion } from '../support/triggerCompletion';
 
 let resourceTemplate: string = `{
 \t"resources": [
@@ -94,7 +99,26 @@ const overrideTemplateForSnippet: { [name: string]: string } = {
 \t"resources": [
 \t\t//Insert here: resource
 \t]
-}`
+}`,
+
+    "User Function Parameter Definition": `{
+    "functions": [
+        {
+            "namespace": "udf",
+            "members": {
+                "func1": {
+                    "parameters": [
+                        //Insert here
+                    ],
+                    "output": {
+                        "type": "string",
+                        "value": "myvalue"
+                    }
+                }
+            }
+        }
+    ]
+}`,
 
 };
 
@@ -106,18 +130,19 @@ const overrideInsertPosition: { [name: string]: string } = {
     Parameter: "//Insert here: parameter",
     Output: "//Insert here: output",
     "User Function": "//Insert here: user function",
-    "User Function Namespace": "//Insert here: namespace"
+    "User Function Namespace": "//Insert here: namespace",
+    "User Function Parameter Definition": "//Insert here"
 };
 
 // Override expected errors/warnings for the snippet test - default is none
 const overrideExpectedDiagnostics: { [name: string]: string[] } = {
     "Application Gateway": [
         // Expected (by design)
-        `Value must conform to exactly one of the associated schemas${EOL}|   Value must be one of the following types: object${EOL}|   or${EOL}|   Value must be one of the following types: string`
+        `Value must be one of the following types: object`
     ],
     "Application Gateway and Firewall": [
         // Expected (by design)
-        `Value must conform to exactly one of the associated schemas${EOL}|   Value must be one of the following types: object${EOL}|   or${EOL}|   Value must be one of the following types: string`
+        `Value must be one of the following types: object`
     ],
 
     "Azure Resource Manager (ARM) Parameters Template":
@@ -133,11 +158,17 @@ const overrideExpectedDiagnostics: { [name: string]: string[] } = {
     ],
     "User Function": [
         "The user-defined function 'udf.functionname' is never used.",
-        "The parameter 'parametername' of function 'udf.functionname' is never used."
+        "User-function parameter 'parametername' is never used."
     ],
     "User Function Namespace": [
         "The user-defined function 'namespacename.functionname' is never used.",
-        "The parameter 'parametername' of function 'namespacename.functionname' is never used."
+        "User-function parameter 'parametername' is never used."
+    ],
+    "User Function Parameter Definition": [
+        'Missing required property "$schema"',
+        "Template validation failed: Required property '$schema' not found in JSON. Path '', line 21, position 1.",
+        "The user-defined function 'udf.func1' is never used.",
+        "User-function parameter 'parameter1' is never used."
     ],
     "Automation Certificate": [
         // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
@@ -379,13 +410,20 @@ suite("Snippets functional tests", () => {
 
     function createSnippetTests(snippetsFile: string): void {
         suite(snippetsFile, () => {
-            const snippetsPath = path.join(testFolder, '..', 'assets', snippetsFile);
-            const snippets = <{ [name: string]: ISnippet }>fse.readJsonSync(snippetsPath);
+            const snippetsPath = resolveInTestFolder(path.join('..', 'assets', snippetsFile));
+            const snippets = <{ [name: string]: ISnippet }>JSON.parse(stripJsonComments(fse.readFileSync(snippetsPath).toString()));
             // tslint:disable-next-line:no-for-in forin
             for (let snippetName in snippets) {
-                testWithLanguageServer(`snippet: ${snippetName}`, async function (this: ITestCallbackContext): Promise<void> {
-                    await testSnippet(this, snippetsPath, snippetName, snippets[snippetName]);
-                });
+                if (!snippetName.startsWith('$')) {
+                    for (let i = 0; i < 1; ++i) {
+                        testWithPrep(
+                            `snippet: ${snippetName}`,
+                            [RequiresLanguageServer.instance, UseRealSnippets.instance],
+                            async function (this: ITestCallbackContext): Promise<void> {
+                                await testSnippet(this, snippetsPath, snippetName, snippets[snippetName]);
+                            });
+                    }
+                }
             }
         });
     }
@@ -415,53 +453,55 @@ suite("Snippets functional tests", () => {
         fse.writeFileSync(tempPath, template);
 
         let doc = await workspace.openTextDocument(tempPath);
-        await window.showTextDocument(doc);
+        let editor = await window.showTextDocument(doc);
 
         // Wait for first set of diagnostics to finish.
-        await getDiagnosticsForDocument(doc, {});
-        const initialDocText = window.activeTextEditor!.document.getText();
+        const diagnosticOptions: IGetDiagnosticsOptions = {
+            ignoreSources: (overrideIgnoreSchemaValidation[snippetName]) ? [diagnosticSources.schema] : []
+        };
+        let diagnosticResults = await getDiagnosticsForDocument(doc, 1, diagnosticOptions);
 
-        // Start waiting for next set of diagnostics (so it picks up the current completion versions)
-        let diagnosticsPromise: Promise<Diagnostic[]> = getDiagnosticsForDocument(
-            doc,
-            {
-                waitForChange: true,
-                ignoreSources: (overrideIgnoreSchemaValidation[snippetName]) ? [sources.schema] : []
-            });
+        // Remove comment at insertion point
+        editor.selection = new Selection(snippetInsertEndPos, snippetInsertPos);
+        await delay(1);
+        await editor.edit(e => e.replace(editor.selection, ' '));
+        diagnosticResults = await getDiagnosticsForDocument(doc, 2, diagnosticOptions, diagnosticResults);
 
         // Insert snippet
-        window.activeTextEditor!.selection = new Selection(snippetInsertPos, snippetInsertEndPos);
-        await delay(1);
+        const docTextBeforeInsertion = doc.getText();
+        testLog.writeLine(`Document before inserting snippet:\n${docTextBeforeInsertion}`);
+        await simulateCompletion(
+            editor,
+            snippet.prefix,
+            undefined);
 
-        await commands.executeCommand('editor.action.insertSnippet', {
-            name: snippetName
-        });
-
-        // Wait for diagnostics to finish
-        let diagnostics: Diagnostic[] = await diagnosticsPromise;
+        // Wait for final diagnostics but don't compare until we've compared the expected text first
+        diagnosticResults = await getDiagnosticsForDocument(editor.document, 3, diagnosticOptions, diagnosticResults);
+        let messages = diagnosticResults.diagnostics.map(d => d.message).sort();
 
         if (DEBUG_BREAK_AFTER_INSERTING_SNIPPET) {
             // tslint:disable-next-line: no-debugger
             debugger;
         }
 
-        const docTextAfterInsertion = window.activeTextEditor!.document.getText();
+        // Format (vscode seems to be inconsistent about this in these scenarios)
+        const docTextAfterInsertion = await formatDocumentAndWait(doc);
+        testLog.writeLine(`Document after inserting snippet:\n${docTextAfterInsertion}`);
         validateDocumentWithSnippet();
 
-        let messages = diagnostics.map(d => d.message).sort();
-        assert.deepStrictEqual(messages, expectedDiagnostics);
+        // Compare diagnostics
+        assert.deepEqual(messages, expectedDiagnostics);
 
-        // Make sure formatting of the sippet is correct by formatting the document and seeing if it changes
-        await commands.executeCommand('editor.action.formatDocument');
-        const docTextAfterFormatting = window.activeTextEditor!.document.getText();
-        assert.deepStrictEqual(docTextAfterInsertion, docTextAfterFormatting, "Snippet is incorrectly formatted. Make sure to use \\t instead of spaces, and make sure the tabbing/indentations are correctly structured");
+        // // Make sure formatting of the sippet is correct by formatting the document and seeing if it changes
+        // await commands.executeCommand('editor.action.formatDocument');
+        // const docTextAfterFormatting = window.activeTextEditor!.document.getText();
+        // assert.deepStrictEqual(docTextAfterInsertion, docTextAfterFormatting, "Snippet is incorrectly formatted. Make sure to use \\t instead of spaces, and make sure the tabbing/indentations are correctly structured");
 
-        // // NOTE: Even though we request the editor to be closed,
-        // // there's no way to request the document actually be closed,
-        // //   and when you open it via an API, it doesn't close for a while,
-        // //   so the diagnostics won't go away
-        // // See https://github.com/Microsoft/vscode/issues/43056
-        await commands.executeCommand("undo");
+        // NOTE: Even though we request the editor to be closed,
+        // there's no way to request the document actually be closed,
+        //   and when you open it via an API, it doesn't close for a while,
+        //   so the diagnostics won't go away
+        // See https://github.com/Microsoft/vscode/issues/43056
         fse.unlinkSync(tempPath);
         await commands.executeCommand('workbench.action.closeAllEditors');
 
@@ -474,7 +514,7 @@ suite("Snippets functional tests", () => {
         }
 
         function validateDocumentWithSnippet(): void {
-            assert(initialDocText !== docTextAfterInsertion, "No insertion happened?  Document didn't change.");
+            assert(docTextBeforeInsertion !== docTextAfterInsertion, "No insertion happened?  Document didn't change.");
         }
 
         function errorIfTextMatches(text: string, regex: RegExp, errorMessage: string): void {

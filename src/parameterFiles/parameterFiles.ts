@@ -7,19 +7,21 @@ import * as fse from 'fs-extra';
 import * as path from 'path';
 import { commands, MessageItem, TextDocument, Uri, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, DialogResponses, IActionContext, IAzureQuickPickItem, UserCancelledError } from 'vscode-azureextensionui';
-import { configKeys, configPrefix, globalStateKeys } from '../constants';
+import { armTemplateLanguageId, configKeys, configPrefix, globalStateKeys } from '../constants';
 import { DeploymentTemplate } from '../DeploymentTemplate';
 import { ext } from '../extensionVariables';
 import { queryCreateParameterFile } from '../parameterFileGeneration';
 import { containsParametersSchema } from '../schemas';
+import { documentSchemes } from '../supported';
 import { normalizePath } from '../util/normalizePath';
+import { pathExists } from '../util/pathExists';
 import { DeploymentFileMapping } from './DeploymentFileMapping';
 
 const readAtMostBytesToFindParamsSchema = 4 * 1024;
 const currentMessage = "Current";
 const similarFilenameMessage = "Similar filename";
 const fileNotFoundMessage = "File not found";
-const howToMessage = `You can manually select the parameter file for this template at any time by clicking "Select Parameter File..." in the status bar or the editor context menu.`;
+const howToMessage = `You can manually select the parameter file for this template at any time by clicking "Select/Create Parameter File..." in the status bar or the editor context menu.`;
 
 // Not worrying about Win32 case-insensitivity here because
 // it's this vscode instance and local only and thus likely to be the
@@ -36,22 +38,32 @@ interface IPossibleParameterFile {
 
 // tslint:disable-next-line: max-func-body-length
 export async function selectParameterFile(actionContext: IActionContext, mapping: DeploymentFileMapping, sourceUri: Uri | undefined): Promise<void> {
+  const editor = window.activeTextEditor;
   if (!sourceUri) {
     sourceUri = window.activeTextEditor?.document.uri;
   }
-  if (!sourceUri) {
-    await ext.ui.showWarningMessage(`No Azure Resource Manager template file is being edited.`);
+
+  if (!editor || !sourceUri || editor.document.uri.fsPath !== sourceUri.fsPath) {
+    await ext.ui.showWarningMessage(`Please open an Azure Resource Manager template file before trying to associate or create a parameter file.`);
+    return;
+
+  }
+  if (editor.document.languageId !== armTemplateLanguageId) {
+    actionContext.telemetry.properties.languageId = editor.document.languageId;
+    await ext.ui.showWarningMessage(`The current file "${sourceUri.fsPath}" does not appear to be an Azure Resource Manager Template. Please open one or make sure the editor Language Mode in the context menu is set to "Azure Resource Manager Template".`);
     return;
   }
 
   let templateUri: Uri = sourceUri;
 
-  // Verify it's a template file (have to read in entire file to do full validation)
-  const contents = (await fse.readFile(templateUri.fsPath, { encoding: "utf8" })).toString();
-  const template: DeploymentTemplate = new DeploymentTemplate(contents, Uri.file("https://Check file is template"));
-  if (!template.hasArmSchemaUri()) {
-    throw new Error(`"${templateUri.fsPath}" does not appear to be an Azure Resource Manager deployment template file.`);
+  if (templateUri.scheme === documentSchemes.untitled) {
+    actionContext.errorHandling.suppressReportIssue = true;
+    throw new Error("Please save the template file before associating it with a parameter file.");
   }
+
+  // Get the template file contents so we can find the top-level parameters
+  const contents = editor.document.getText(undefined);
+  const template: DeploymentTemplate = new DeploymentTemplate(contents, templateUri);
 
   let quickPickList: IQuickPickList = await createParameterFileQuickPickList(mapping, templateUri);
   // Show the quick pick
@@ -102,7 +114,7 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
   } else if (result === quickPickList.newFile) {
     // New parameter file
 
-    let newUri: Uri = await queryCreateParameterFile(actionContext, templateUri, template);
+    let newUri: Uri = await queryCreateParameterFile(actionContext, template.topLevelScope);
     await mapping.mapParameterFile(templateUri, newUri);
     await commands.executeCommand('azurerm-vscode-tools.openParameterFile', templateUri, newUri);
   } else if (result === quickPickList.openCurrent) {
@@ -194,12 +206,7 @@ async function createParameterFileQuickPickList(mapping: DeploymentFileMapping, 
   if (currentParamUri && !currentParamFile) {
     // There is a current parameter file, but it wasn't among the list we came up with.  We must add it to the list.
     currentParamFile = { isCloseNameMatch: false, uri: currentParamUri, friendlyPath: getRelativeParameterFilePath(templateUri, currentParamUri) };
-    let exists = false;
-    try {
-      exists = await fse.pathExists(currentParamUri.fsPath);
-    } catch (err) {
-      // Ignore
-    }
+    let exists = await pathExists(currentParamUri);
     currentParamFile.fileNotFound = !exists;
 
     suggestions = suggestions.concat(currentParamFile);
@@ -268,13 +275,16 @@ function sortQuickPickList(pickItems: IAzureQuickPickItem<IPossibleParameterFile
 
 function createQuickPickItem(paramFile: IPossibleParameterFile, current: IPossibleParameterFile | undefined, templateUri: Uri): IAzureQuickPickItem<IPossibleParameterFile> {
   const isCurrent: boolean = paramFile === current;
+  let description = isCurrent ? currentMessage
+    : paramFile.isCloseNameMatch ? similarFilenameMessage
+      : undefined;
+  if (paramFile.fileNotFound) {
+    description += ` $(error) ${fileNotFoundMessage}`;
+  }
   return {
     label: `${isCurrent ? '$(check) ' : '$(json) '} ${paramFile.friendlyPath}`,
     data: paramFile,
-    description: isCurrent ? currentMessage
-      : paramFile.fileNotFound ? fileNotFoundMessage
-        : paramFile.isCloseNameMatch ? similarFilenameMessage
-          : undefined
+    description
   };
 }
 

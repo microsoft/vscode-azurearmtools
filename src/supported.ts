@@ -6,25 +6,30 @@ import { Position, Range, TextDocument, workspace } from "vscode";
 import { armTemplateLanguageId, configKeys, configPrefix } from "./constants";
 import { containsArmSchema, containsParametersSchema } from "./schemas";
 
+export namespace documentSchemes {
+    export const file: string = 'file'; // Locally-saved files
+    export const untitled: string = 'untitled';  // unsaved files
+}
+
 export const templateDocumentSelector = [
-    { language: armTemplateLanguageId, scheme: 'file' },
-    { language: armTemplateLanguageId, scheme: 'untitled' } // unsaved files
+    { language: armTemplateLanguageId, scheme: documentSchemes.file },
+    { language: armTemplateLanguageId, scheme: documentSchemes.untitled } // unsaved files
 ];
 
 export const parameterDocumentSelector = [
-    { language: 'json', scheme: 'file' },
-    { language: 'json', scheme: 'untitled' },
-    { language: 'jsonc', scheme: 'file' },
-    { language: 'jsonc', scheme: 'untitled' },
+    { language: 'json', scheme: documentSchemes.file },
+    { language: 'json', scheme: documentSchemes.untitled },
+    { language: 'jsonc', scheme: documentSchemes.file },
+    { language: 'jsonc', scheme: documentSchemes.untitled },
 ];
 
 export const templateOrParameterDocumentSelector = [
-    { language: armTemplateLanguageId, scheme: 'file' },
-    { language: armTemplateLanguageId, scheme: 'untitled' }, // unsaved files
-    { language: 'json', scheme: 'file' },
-    { language: 'json', scheme: 'untitled' },
-    { language: 'jsonc', scheme: 'file' },
-    { language: 'jsonc', scheme: 'untitled' },
+    { language: armTemplateLanguageId, scheme: documentSchemes.file },
+    { language: armTemplateLanguageId, scheme: documentSchemes.untitled },
+    { language: 'json', scheme: documentSchemes.file },
+    { language: 'json', scheme: documentSchemes.untitled },
+    { language: 'jsonc', scheme: documentSchemes.file },
+    { language: 'jsonc', scheme: documentSchemes.untitled },
 ];
 
 const maxLinesToDetectSchemaIn = 500;
@@ -39,6 +44,10 @@ function shouldWatchDocument(textDocument: TextDocument): boolean {
     if (
         textDocument.uri.scheme !== 'file'
         && textDocument.uri.scheme !== 'untitled' // unsaved files
+        // 'git' is the scheme that is used for documents in the left-hand side of the git 'changes'
+        // view.  If we don't switch to arm-template for it, the JSON language server will kick in
+        // and show false positive errors
+        && textDocument.uri.scheme !== 'git'
     ) {
         return false;
     }

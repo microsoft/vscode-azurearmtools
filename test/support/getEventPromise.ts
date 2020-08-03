@@ -33,9 +33,20 @@ export function getEventPromise<T>(
 
             await delay(timeout);
             if (!completed) {
-                reject(new Error(`Timed out waiting for event "${eventName}"`));
+                reject(new TimeoutError(`Timed out waiting for event "${eventName}"`));
             }
         });
+}
+
+export class TimeoutError extends Error {
+    public constructor(message: string) {
+        super(message);
+    }
+}
+
+export async function actThenWait<T, U>(action: () => Promise<T> | T, promise: Promise<U>): Promise<U> {
+    await action();
+    return await promise;
 }
 
 export function getDocumentChangedPromise(document: TextDocument, timeout: number = defaultTimeout): Promise<string> {
@@ -43,7 +54,6 @@ export function getDocumentChangedPromise(document: TextDocument, timeout: numbe
         "onDidChangeTextDocument",
         (resolve, reject) => {
             const disposable = workspace.onDidChangeTextDocument(e => {
-                console.warn("changed");
                 if (e.document === document) {
                     disposable.dispose();
                     resolve(document.getText());
@@ -58,7 +68,7 @@ export function getCompletionItemsPromise(document: TextDocument, timeout: numbe
         "onCompletionItems",
         (resolve, reject) => {
             const disposable = ext.completionItemsSpy.onCompletionItems(e => {
-                if (e.document.documentId.fsPath === document.uri.fsPath) {
+                if (e.document.documentUri.fsPath === document.uri.fsPath) {
                     disposable.dispose();
                     resolve(e);
                 }

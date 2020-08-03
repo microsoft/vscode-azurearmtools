@@ -25,7 +25,7 @@ export function httpGet(url: string): Promise<string> {
                 resolve(httpGet(response.headers.location.toString()));
             } else if (typeof response.statusCode === "number" && 200 <= response.statusCode && response.statusCode < 400) {
                 let responseContent: string = "";
-                let encoding: string;
+                let encoding: BufferEncoding | undefined;
 
                 response.on("data", (dataChunk: string | Buffer) => {
                     const buffer: Buffer = dataChunk instanceof Buffer ? dataChunk : new Buffer(dataChunk);

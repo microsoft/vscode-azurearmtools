@@ -1,0 +1,154 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "p1": {
+            "type": "string"
+        },
+        "p2": { // WARNING: unused
+            "type": "string",
+            "defaultValue": "abc"
+        },
+        "p4": { // WARNING: unused
+            "type": "string"
+        }
+    },
+    "variables": {
+        "v1": "v1 from parent", // WARNING: unused
+        "v2": "v2 from parent"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "inner1",
+            "apiVersion": "2019-07-01",
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "mode": "Complete",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "variables": {
+                        "v1": "v1 from inner1",
+                        "v2": "v2 from inner1" // WARNING: unused
+                    },
+                    "resources": [],
+                    "outputs": {
+                        "out1": {
+                            "type": "string",
+                            "value": "[variables('v1')]"
+                        },
+                        "out2": {
+                            "type": "string",
+                            "value": "[parameters('p1')]"
+                        },
+                        "out3": {
+                            "type": "string",
+                            "value": "[udf.func1(123)]"
+                        },
+                        "out4": {
+                            "type": "string",
+                            "value": "[parameters('p4')]" // ERROR: undefined
+                        }
+                    },
+                    "parameters": {
+                        "p1": {
+                            "type": "string"
+                        },
+                        "p2": { // WARNING: unused
+                            "type": "int"
+                        }
+                    },
+                    "functions": [
+                        {
+                            "namespace": "udf",
+                            "members": {
+                                "func1": {
+                                    "parameters": [
+                                        {
+                                            "name": "p1", // WARNING: unused
+                                            "type": "int"
+                                        }
+                                    ],
+                                    "output": {
+                                        "type": "int",
+                                        "value": 123
+                                    }
+                                },
+                                "func2": { // WARNING: unused
+                                    "parameters": [
+                                        {
+                                            "name": "p1",
+                                            "type": "int"
+                                        }
+                                    ],
+                                    "output": {
+                                        "type": "string",
+                                        "value": "[add(parameters('p1'), 1)]"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "namespace": "udf2",
+                            "members": {
+                                "func3": { // WARNING: unused
+                                    "output": {
+                                        "type": "array",
+                                        "value": []
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "name": "outer1",
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "outer"
+                },
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.2.3.4",
+                    "variables": { // WARNING: inaccessible
+                        "v1": "v1 from outer1",
+                        "v2": "not used"
+                    },
+                    "parameters": { // WARNING: inaccessible
+                        "p1": {
+                            "type": "securestring"
+                        }
+                    },
+                    "functions": [ // WARNING: inaccessible
+                        {
+                            "namespace": "ns1"
+                        }
+                    ],
+                    "resources": [],
+                    "outputs": {
+                        "v1": {
+                            "type": "string",
+                            "value": "[variables('v2')]"
+                        },
+                        "out1": {
+                            "type": "string",
+                            "value": "[parameters('p1')]"
+                        },
+                        "out2": {
+                            "type": "string",
+                            "value": "[parameters('p3')]" // ERROR: undefined
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

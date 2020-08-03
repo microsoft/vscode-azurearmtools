@@ -122,8 +122,8 @@ function getCompletions(
                 label,
                 insertText,
                 span,
-                kind: Completion.CompletionKind.DtResourceIdResName,
-                highPriority: true,
+                kind: Completion.CompletionKind.tleResourceIdResNameParameter,
+                priority: Completion.CompletionPriority.high,
                 // Force the first of the resourceId completions to be preselected, otherwise
                 // vscode tends to preselect one of the regular function completions based
                 // on recently-typed text
@@ -224,8 +224,8 @@ function getResourceTypeCompletions(
             label,
             insertText,
             span,
-            kind: Completion.CompletionKind.DtResourceIdResType,
-            highPriority: true,
+            kind: Completion.CompletionKind.tleResourceIdResTypeParameter,
+            priority: Completion.CompletionPriority.high,
             // Force the first of the resourceId completions to be preselected, otherwise
             // vscode tends to preselect one of the regular function completions based
             // on recently-typed text

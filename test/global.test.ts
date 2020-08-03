@@ -11,7 +11,7 @@ import * as vscode from 'vscode';
 import { armTemplateLanguageId, configKeys, configPrefix, ext } from "../extension.bundle";
 import { displayCacheStatus, publishCache } from './support/cache';
 import { delay } from "./support/delay";
-import { publishVsCodeLogs } from './support/publishVsCodeLogs';
+import { useTestSnippets } from './support/TestSnippets';
 import { logsFolder } from './testConstants';
 import { useTestFunctionMetadata } from "./TestData";
 
@@ -38,6 +38,7 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
 
     // Use test metadata for all tests by default
     useTestFunctionMetadata();
+    useTestSnippets();
 
     ext.addCompletedDiagnostic = true;
 
@@ -67,7 +68,7 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
     await publishCache(path.join(logsFolder, 'post-cache'));
     // await publishVsCodeLogs('ms-dotnettools.vscode-dotnet-runtime');
     // await publishVsCodeLogs(path.basename(ext.context.logPath));
-    await publishVsCodeLogs(undefined);
+    // await publishVsCodeLogs(undefined);
 
     console.log('Restoring settings');
     vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, previousSettings.autoDetectJsonTemplates, vscode.ConfigurationTarget.Global);

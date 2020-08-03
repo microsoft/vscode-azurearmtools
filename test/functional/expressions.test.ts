@@ -5,7 +5,7 @@
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length no-http-string no-suspicious-comment
 // tslint:disable:no-non-null-assertion
 
-import { IDeploymentParameterDefinition, IDeploymentTemplate, sources, testDiagnostics } from "../support/diagnostics";
+import { diagnosticSources, IDeploymentParameterDefinition, IDeploymentTemplate, testDiagnostics } from "../support/diagnostics";
 import { testWithLanguageServer } from "../support/testWithLanguageServer";
 
 // Note: a lot of these come from TLE.test.ts, but this version goes through the vscode diagnostics and thus tests the language server
@@ -71,8 +71,8 @@ suite("Expressions functional tests", () => {
             await testDiagnostics(
                 template,
                 {
-                    includeSources: [sources.expressions],
-                    includeRange: true
+                    includeSources: [diagnosticSources.expressions],
+                    includeRange: false
                 },
                 expected);
         });

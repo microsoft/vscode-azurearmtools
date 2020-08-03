@@ -256,6 +256,7 @@ export enum IssueKind {
     undefinedVar = "undefinedVar",
     varInUdf = "varInUdf",
     undefinedVarProp = "undefinedVarProp",
+    inaccessibleNestedScopeMembers = "inaccessibleNestedScopeMembers",
 
     // Parameter file issues
     params_missingRequiredParam = "params_missingRequiredParam",
@@ -267,7 +268,7 @@ export enum IssueKind {
 export class Issue {
     constructor(private _span: Span, private _message: string, public kind: IssueKind) {
         nonNullValue(_span, "_span");
-        assert(1 <= _span.length, "_span's length must be greater than or equal to 1.");
+        assert(0 <= _span.length, "_span's length must be greater than or equal to 0.");
         nonNullValue(_message, "_message");
         assert(_message !== "", "_message must not be empty.");
     }

@@ -16,28 +16,50 @@ const DEBUG_BREAK_AFTER_DIAGNOSTICS_COMPLETE = false;
 import * as assert from "assert";
 import * as fs from 'fs';
 import * as path from 'path';
-import { Diagnostic, DiagnosticSeverity, Disposable, languages, TextDocument } from "vscode";
+import { Diagnostic, DiagnosticSeverity, Disposable, languages, Position, Range, TextDocument } from "vscode";
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
+import { testLog } from "./createTestLog";
+import { delay } from "./delay";
+import { mapParameterFile } from "./mapParameterFile";
 import { parseParametersWithMarkers } from "./parseTemplate";
+import { rangeToString } from "./rangeToString";
+import { resolveInTestFolder } from "./resolveInTestFolder";
 import { stringify } from "./stringify";
 import { TempDocument, TempEditor, TempFile } from "./TempFile";
 
 export const diagnosticsTimeout = 2 * 60 * 1000; // CONSIDER: Use this long timeout only for first test, or for suite setup
-export const testFolder = path.join(__dirname, '..', '..', '..', 'test');
 
-export interface Source {
+enum ExpectedDiagnosticSeverity {
+    Warning = 4,
+    Error = 8,
+}
+
+// In the style of the Copy context menu in vscode
+export interface IExpectedDiagnostic {
+    message: string;
+    severity: ExpectedDiagnosticSeverity;
+    source: string;
+    startLineNumber: number;
+    startColumn: number;
+    endLineNumber: number;
+    endColumn: number;
+}
+
+export type ExpectedDiagnostics = string[] | IExpectedDiagnostic[];
+
+export interface DiagnosticSource {
     name: string;
 }
-export const sources = {
+export const diagnosticSources = {
     expressions: { name: expressionsDiagnosticsSource },
     schema: { name: 'arm-template (schema)' },
     syntax: { name: 'arm-template (syntax)' },
     template: { name: 'arm-template (validation)' },
 };
 
-function isSourceFromLanguageServer(source: Source): boolean {
-    return source.name !== sources.expressions.name;
+function isSourceFromLanguageServer(source: DiagnosticSource): boolean {
+    return source.name !== diagnosticSources.expressions.name;
 }
 
 export interface IDeploymentParameterDefinition {
@@ -192,40 +214,75 @@ export interface IPartialDeploymentTemplateResource {
 export interface ITestDiagnosticsOptions extends IGetDiagnosticsOptions {
 }
 
-interface IGetDiagnosticsOptions {
+export interface IGetDiagnosticsOptions {
+    /**
+     * Parameters that will be placed into a temp file and associated with the template file
+     */
     parameters?: string | Partial<IDeploymentParametersFile>;
+    /**
+     * A parameter file that will be associated with the template file
+     */
     parametersFile?: string;
-    includeSources?: Source[]; // Error sources to include in the comparison - defaults to all
-    ignoreSources?: Source[];  // Error sources to ignore in the comparison - defaults to ignoring none
-    includeRange?: boolean;    // defaults to false - whether to include the error range in the results for comparison (if true, ignored when expected messages don't have ranges)
-    search?: RegExp;           // Run a replacement using this regex and replacement on the file/contents before testing for errors
-    replace?: string;          // Run a replacement using this regex and replacement on the file/contents before testing for errors
-    doNotAddSchema?: boolean;  // Don't add schema (testDiagnostics only) automatically
-    waitForChange?: boolean;   // Wait until diagnostics change before retrieving themed
+    /**
+     * Error sources to include in the comparison - defaults to all
+     */
+    includeSources?: DiagnosticSource[];
+    /**
+     * Error sources to ignore in the comparison - defaults to ignoring none
+     */
+    ignoreSources?: DiagnosticSource[];
+    /**
+     * defaults to false - whether to include the error range in the results for comparison (if true, ignored when expected messages don't have ranges)
+     */
+    includeRange?: boolean;
+    /**
+     * Run a replacement using this regex and replacement on the file/contents before testing for errors
+     */
+    search?: RegExp;
+    /**
+     * Run a replacement using this regex and replacement on the file/contents before testing for errors
+     */
+    replace?: string;
+    /**
+     * Don't add schema (testDiagnostics only) automatically
+     */
+    doNotAddSchema?: boolean;
+    /**
+     * Wait until the diagnostics version of all sources changes before retrieving themed.  Without this, it just waits until all diagnostics indicate they're complete.
+     * NOTE: If previousResults are passed in, waitForChange is assumed true
+     */
+    waitForChange?: boolean;
 }
 
-export async function testDiagnosticsFromFile(filePath: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
-    await testDiagnosticsCore(filePath, options, expected);
+export async function testDiagnosticsFromFile(filePath: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: ExpectedDiagnostics): Promise<void> {
+    await testDiagnosticsCore(filePath, 1, options, expected);
 }
 
-export async function testDiagnostics(json: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
-    await testDiagnosticsCore(json, options, expected);
+export async function testDiagnostics(templateContentsOrFileName: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: ExpectedDiagnostics): Promise<void> {
+    await testDiagnosticsCore(templateContentsOrFileName, 1, options, expected);
 }
 
-async function testDiagnosticsCore(templateContentsOrFileName: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: string[]): Promise<void> {
-    let actual: Diagnostic[] = await getDiagnosticsForTemplate(templateContentsOrFileName, options);
-    compareDiagnostics(actual, expected, options);
+async function testDiagnosticsCore(templateContentsOrFileName: string | Partial<IDeploymentTemplate>, expectedMinimumVersionForEachSource: number, options: ITestDiagnosticsOptions, expected: ExpectedDiagnostics): Promise<void> {
+    let actual: IDiagnosticsResults = await getDiagnosticsForTemplate(templateContentsOrFileName, expectedMinimumVersionForEachSource, options);
+    compareDiagnostics(actual.diagnostics, expected, options);
+}
+
+export interface IDiagnosticsResults {
+    diagnostics: Diagnostic[];
+    sourceCompletionVersions: { [source: string]: number };
 }
 
 export async function getDiagnosticsForDocument(
     document: TextDocument,
-    options: IGetDiagnosticsOptions
-): Promise<Diagnostic[]> {
+    expectedMinimumVersionForEachSource: number,
+    options: IGetDiagnosticsOptions,
+    previousResults?: IDiagnosticsResults // If specified, will wait until the versions change and are completed
+): Promise<IDiagnosticsResults> {
     let dispose: Disposable | undefined;
     let timer: NodeJS.Timer | undefined;
 
     // Default to all sources
-    let filterSources: Source[] = Array.from(Object.values(sources));
+    let filterSources: DiagnosticSource[] = Array.from(Object.values(diagnosticSources));
 
     if (options.includeSources) {
         filterSources = filterSources.filter(s => options.includeSources!.find(s2 => s2.name === s.name));
@@ -240,10 +297,10 @@ export async function getDiagnosticsForDocument(
     }
 
     // tslint:disable-next-line:typedef promise-must-complete // (false positive for promise-must-complete)
-    let diagnosticsPromise = new Promise<Diagnostic[]>((resolve, reject) => {
+    let diagnosticsPromise = new Promise<IDiagnosticsResults>(async (resolve, reject) => {
         let currentDiagnostics: Diagnostic[] | undefined;
 
-        function pollDiagnostics(): { diagnostics: Diagnostic[]; sourceCompletionVersions: { [source: string]: number } } {
+        function getCurrentDiagnostics(): IDiagnosticsResults {
             const sourceCompletionVersions: { [source: string]: number } = {};
 
             currentDiagnostics = languages.getDiagnostics(document.uri);
@@ -289,35 +346,40 @@ export async function getDiagnosticsForDocument(
             return true;
         }
 
-        const initialResults = pollDiagnostics();
-        const requiredSourceCompletionVersions = Object.assign({}, initialResults.sourceCompletionVersions);
-        if (options.waitForChange) {
+        let currentResults: IDiagnosticsResults = previousResults ?? getCurrentDiagnostics();
+        const requiredSourceCompletionVersions = Object.assign({}, currentResults.sourceCompletionVersions);
+        if (options.waitForChange || previousResults) {
             // tslint:disable-next-line:no-for-in forin
             for (let source in requiredSourceCompletionVersions) {
                 requiredSourceCompletionVersions[source] = requiredSourceCompletionVersions[source] + 1;
             }
         }
 
-        if (areAllSourcesComplete(initialResults.sourceCompletionVersions)) {
-            resolve(initialResults.diagnostics);
+        if (areAllSourcesComplete(currentResults.sourceCompletionVersions)) {
+            resolve(currentResults);
             return;
         }
 
         // Now only poll on changed events
-        console.log("Waiting for diagnostics to complete...");
+        testLog.writeLine("Waiting for diagnostics to complete...");
+        let done = false;
         timer = setTimeout(
             () => {
                 reject(
                     new Error('Timed out waiting for diagnostics. Last retrieved diagnostics: '
                         + (currentDiagnostics ? currentDiagnostics.map(d => d.message).join('\n') : "None")));
+                done = true;
             },
             diagnosticsTimeout);
-        dispose = languages.onDidChangeDiagnostics(e => {
-            const results = pollDiagnostics();
+
+        while (!done) {
+            const results = getCurrentDiagnostics();
             if (areAllSourcesComplete(results.sourceCompletionVersions)) {
-                resolve(results.diagnostics);
+                resolve(results);
+                done = true;
             }
-        });
+            await delay(100);
+        }
     });
 
     let diagnostics = await diagnosticsPromise;
@@ -340,13 +402,23 @@ export async function getDiagnosticsForDocument(
         clearTimeout(timer);
     }
 
+    testLog.writeLine(`Diagnostics complete:  ${stringify(diagnostics)}`);
+
+    // Verify the version of expectedMinimumVersionForEachSource
+    for (const source of Object.getOwnPropertyNames(diagnostics.sourceCompletionVersions)) {
+        if (!(diagnostics.sourceCompletionVersions[source] >= expectedMinimumVersionForEachSource)) {
+            assert.fail(`Expected diagnostics source to be at least 3, but found ${stringify(diagnostics)}`);
+        }
+    }
+
     return diagnostics;
 }
 
 export async function getDiagnosticsForTemplate(
     templateContentsOrFileName: string | Partial<IDeploymentTemplate>,
+    expectedMinimumVersionForEachSource: number,
     options?: IGetDiagnosticsOptions
-): Promise<Diagnostic[]> {
+): Promise<IDiagnosticsResults> {
     let templateContents: string | undefined;
     let tempPathSuffix: string = '';
     let templateFile: TempFile | undefined;
@@ -361,7 +433,7 @@ export async function getDiagnosticsForTemplate(
         if (typeof templateContentsOrFileName === 'string') {
             if (!!templateContentsOrFileName.match(/\.jsonc?$/)) {
                 // It's a filename
-                let sourcePath = path.join(testFolder, templateContentsOrFileName);
+                let sourcePath = resolveInTestFolder(templateContentsOrFileName);
                 templateContents = fs.readFileSync(sourcePath).toString();
                 tempPathSuffix = path.basename(templateContentsOrFileName, path.extname(templateContentsOrFileName));
             } else {
@@ -393,18 +465,18 @@ export async function getDiagnosticsForTemplate(
                 const { unmarkedText: unmarkedParams } = await parseParametersWithMarkers(options.parameters);
                 paramsFile = new TempFile(unmarkedParams);
             } else {
-                const absPath = path.join(testFolder, options.parametersFile!);
-                paramsFile = TempFile.fromExistingFile(absPath);
+                const absPath = resolveInTestFolder(options.parametersFile!);
+                paramsFile = await TempFile.fromExistingFile(absPath);
             }
 
             // Map template to params
-            await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, paramsFile.uri);
+            await mapParameterFile(templateFile.uri, paramsFile.uri);
         }
 
         editor = new TempEditor(document);
         await editor.open();
 
-        let diagnostics: Diagnostic[] = await getDiagnosticsForDocument(document.realDocument, options);
+        let diagnostics: IDiagnosticsResults = await getDiagnosticsForDocument(document.realDocument, expectedMinimumVersionForEachSource, options);
         assert(diagnostics);
 
         await editor.dispose();
@@ -416,7 +488,7 @@ export async function getDiagnosticsForTemplate(
 
         if (templateFile) {
             // Unmap template file
-            await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, undefined);
+            await mapParameterFile(templateFile.uri, undefined, false);
             templateFile.dispose();
         }
         if (paramsFile) {
@@ -425,7 +497,25 @@ export async function getDiagnosticsForTemplate(
     }
 }
 
-function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOptions, includeRange: boolean): string {
+export function expectedDiagnosticToString(diagnostic: IExpectedDiagnostic): string {
+    return diagnosticToString(
+        {
+            message: diagnostic.message,
+            range: new Range(
+                new Position(diagnostic.startLineNumber, diagnostic.startColumn),
+                new Position(diagnostic.endLineNumber, diagnostic.endColumn)
+            ),
+            severity: diagnostic.severity === ExpectedDiagnosticSeverity.Error ? DiagnosticSeverity.Error
+                : diagnostic.severity === ExpectedDiagnosticSeverity.Warning ? DiagnosticSeverity.Warning
+                    : <DiagnosticSeverity>-1,
+            source: diagnostic.source,
+            code: ""
+        },
+        {},
+        true);
+}
+
+export function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOptions, includeRange: boolean): string {
     assert(diagnostic.code === '', `Expecting empty code for all diagnostics, instead found Code="${String(diagnostic.code)}" for "${diagnostic.message}"`);
 
     let severity: string = "";
@@ -437,32 +527,39 @@ function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOpti
         default: assert.fail(`Expected severity ${diagnostic.severity}`);
     }
 
-    let s = `${severity}: ${diagnostic.message} (${diagnostic.source})`;
-
-    // Do the expected messages include ranges?
-    if (includeRange) {
-        // tslint:disable-next-line: strict-boolean-expressions
-        if (!diagnostic.range) {
-            s += " []";
-        } else {
-            s += ` [${diagnostic.range.start.line},${diagnostic.range.start.character}`
-                + `-${diagnostic.range.end.line},${diagnostic.range.end.character}]`;
-        }
+    let s = `${severity}: ${diagnostic.message} (${diagnostic.source})${maybeRange(diagnostic.range)}`;
+    if (diagnostic.relatedInformation) {
+        const related = diagnostic.relatedInformation[0];
+        s = `${s} [${related.message}]${maybeRange(related.location.range)}`;
     }
 
     return s;
+
+    function maybeRange(range: Range | undefined): string {
+        // Do the expected messages include ranges?
+        if (includeRange) {
+            return ' ' + rangeToString(range);
+        }
+
+        return "";
+    }
 }
 
-function compareDiagnostics(actual: Diagnostic[], expected: string[], options: ITestDiagnosticsOptions): void {
+function compareDiagnostics(actual: Diagnostic[], expected: ExpectedDiagnostics, options: ITestDiagnosticsOptions): void {
     // Do the expected messages include ranges?
-    let expectedHasRanges = expected.length === 0 || !!expected[0].match(/[0-9]+,[0-9]+-[0-9]+,[0-9]+/);
-    let includeRanges = !!options.includeRange && expectedHasRanges;
+    let expectedHasRanges = expected.length === 0 ||
+        (typeof expected[0] === 'string' && !!expected[0].match(/[0-9]+,[0-9]+-[0-9]+,[0-9]+/)
+            || (typeof expected[0] !== 'string' && expected[0].startLineNumber !== undefined));
+    let includeRanges = !!options.includeRange || expectedHasRanges;
 
+    let expectedAsStrings = expected.length === 0 ? []
+        : typeof expected[0] === 'string' ? expected
+            : (<IExpectedDiagnostic[]>expected).map(d => typeof d === 'string' ? d : expectedDiagnosticToString(d));
     let actualAsStrings = actual.map(d => diagnosticToString(d, options, includeRanges));
 
     // Sort
-    expected = expected.sort();
+    expectedAsStrings = expectedAsStrings.sort();
     actualAsStrings = actualAsStrings.sort();
 
-    assert.deepStrictEqual(actualAsStrings, expected);
+    assert.deepStrictEqual(actualAsStrings, expectedAsStrings);
 }

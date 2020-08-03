@@ -2,10 +2,10 @@
     "name": "azurerm-vscode-tools",
     "displayName": "Azure Resource Manager (ARM) Tools",
     "description": "Language server, editing tools and snippets for Azure Resource Manager (ARM) template files.",
-    "version": "0.10.1-alpha",
+    "version": "0.12.0",
     "publisher": "msazurermtools",
     "config": {
-        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20272.4"
+        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20377.3"
     },
     "categories": [
         "Azure",
@@ -60,7 +60,8 @@
         "onCommand:azurerm-vscode-tools.insertOutput",
         "onCommand:azurerm-vscode-tools.insertFunction",
         "onCommand:azurerm-vscode-tools.insertResource",
-        "onCommand:azurerm-vscode-tools.resetGlobalState"
+        "onCommand:azurerm-vscode-tools.developer.resetGlobalState",
+        "onCommand:azurerm-vscode-tools.developer.showSnippetContext"
     ],
     "contributes": {
         "grammars": [
@@ -75,10 +76,6 @@
             }
         ],
         "snippets": [
-            {
-                "language": "arm-template",
-                "path": "./assets/armsnippets.jsonc"
-            },
             {
                 "language": "json",
                 "path": "./assets/jsonsnippets.jsonc"
@@ -141,6 +138,16 @@
                     "additionalProperties": {
                         "type": "string"
                     }
+                },
+                "azureResourceManagerTools.codelens.enable": {
+                    "type": "boolean",
+                    "description": "Enables or disables all code lens features",
+                    "default": true
+                },
+                "azureResourceManagerTools.codelens.parameters": {
+                    "type": "boolean",
+                    "description": "Enables code lens for parameter definitions and values",
+                    "default": true
                 }
             }
         },
@@ -164,16 +171,22 @@
         ],
         "commands": [
             {
-                "$comment": "============= Global/Treeview =============",
-                "category": "Azure Resource Manager Tools",
-                "title": "Reset Global State",
-                "command": "azurerm-vscode-tools.resetGlobalState"
+                "$comment": "============= Developer commands =============",
+                "category": "Azure Resource Manager Tools (Developer)",
+                "title": "Show Snippet Context at current location (for snippet authors)",
+                "command": "azurerm-vscode-tools.developer.showSnippetContext"
             },
             {
+                "category": "Azure Resource Manager Tools (Developer)",
+                "title": "Reset Global State",
+                "command": "azurerm-vscode-tools.developer.resetGlobalState"
+            },
+            {
+                "$comment": "============= Programmatic =============",
                 "category": "Azure Resource Manager Tools",
                 "title": "Go to parameter value",
                 "command": "azurerm-vscode-tools.codeLens.gotoParameterValue",
-                "$comment": "Code lens on a parameter definition - navigates to parameter value"
+                "$comment2": "Code lens on a parameter definition - navigates to parameter value"
             },
             {
                 "$comment": "============= Insert Item =============",
@@ -566,8 +579,8 @@
     "main": "main",
     "scripts": {
         "vscode:prepublish": "gulp error-vsce-package",
-        "compile": "gulp build-grammars && npm run get-language-server && gulp verify-test-uses-extension-bundle && tsc -watch -p ./",
         "build": "gulp build-grammars && npm run get-language-server && gulp verify-test-uses-extension-bundle && tsc -p ./",
+        "compile": "gulp build-grammars && npm run get-language-server && gulp verify-test-uses-extension-bundle && tsc -watch -p ./",
         "get-language-server": "gulp get-language-server",
         "lint": "tslint --project tsconfig.json -e src/*.d.ts -t verbose",
         "lint-fix": "tslint --project tsconfig.json -t verbose --fix",
@@ -589,12 +602,12 @@
         "@types/fs-extra": "^5.1.0",
         "@types/gulp": "^4.0.6",
         "@types/mocha": "^2.2.41",
-        "@types/node": "^12.12.38",
+        "@types/node": "^14.0.13",
         "@types/opn": "^5.5.0",
         "@types/recursive-readdir": "^2.2.0",
         "@types/rimraf": "2.0.2",
         "@types/shelljs": "0.8.3",
-        "@types/webpack": "^4.41.12",
+        "@types/webpack": "^4.41.17",
         "decompress": "^4.2.0",
         "glob": "^7.1.6",
         "gulp": "^4.0.2",
@@ -608,20 +621,21 @@
         "tslint": "^5.20.1",
         "tslint-microsoft-contrib": "5.0.3",
         "typescript": "^3.8.3",
-        "vsce": "^1.75.0",
+        "vsce": "^1.77.0",
         "vscode": "^1.1.37",
-        "vscode-azureextensiondev": "^0.3.3",
+        "vscode-azureextensiondev": "^0.4.1",
         "webpack": "4.28.1",
-        "webpack-cli": "^3.3.11"
+        "webpack-cli": "^3.3.12"
     },
     "dependencies": {
         "fs-extra": "^7.0.1",
-        "moment": "^2.25.3",
+        "moment": "^2.27.0",
         "nuget": "^2.0.2",
         "opn": "^5.5.0",
         "rimraf": "2.6.3",
         "shelljs": "^0.8.4",
-        "vscode-azureextensionui": "^0.32.0",
+        "strip-json-comments": "^3.1.1",
+        "vscode-azureextensionui": "^0.33.9",
         "vscode-jsonrpc": "^4.0.0",
         "vscode-languageclient": "^4.4.0"
     },

@@ -13,6 +13,8 @@ import * as jsonTest from "./JSON.test";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseParametersWithMarkers, parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
+import { UseNoSnippets } from "./support/TestSnippets";
+import { testWithPrep } from "./support/testWithPrep";
 import { allTestDataCompletionNames, allTestDataExpectedCompletions, expectedConcatCompletion, expectedCopyIndexCompletion, expectedPadLeftCompletion, expectedParametersCompletion, expectedProvidersCompletion, expectedReferenceCompletion, expectedReplaceCompletion, expectedResourceGroupCompletion, expectedResourceIdCompletion, expectedSkipCompletion, expectedSplitCompletion, expectedStringCompletion, expectedSubCompletion, expectedSubscriptionCompletion, expectedSubscriptionResourceIdCompletion, expectedSubstringCompletion, expectedVariablesCompletion, parameterCompletion, propertyCompletion, variableCompletion } from "./TestData";
 
 const IssueKind = Language.IssueKind;
@@ -20,6 +22,38 @@ const IssueKind = Language.IssueKind;
 const fakeId = Uri.file("https://doc-id");
 
 suite("TemplatePositionContext", () => {
+    suite("allow out of bounds", () => {
+        const template = '"{\n    \"$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\",\n    \"contentVersion\": \"1.0.0.0\",\n    \"resources\": [\n    ],\n    \"functions\": [\n      {\n          \n\n      }  \n    ]\n}"';
+
+        test("documentColumnIndex cannot be greater than the line's maximum index", async () => {
+            const line = 200;
+            const col = 11;
+            const dt = await parseTemplate(template);
+            const pc = dt.getContextFromDocumentLineAndColumnIndexes(line, col, undefined, true);
+            assert(pc);
+            assert.equal(pc.documentLineIndex, 11);
+            assert.equal(pc.documentColumnIndex, 2);
+        });
+
+        test("documentLineIndex cannot be greater than or equal to the deployment template's line count", async () => {
+            const line = 7;
+            const col = 11;
+            const dt = await parseTemplate(template);
+            const pc = dt.getContextFromDocumentLineAndColumnIndexes(line, col, undefined, true);
+            assert(pc);
+            assert.equal(pc.documentLineIndex, 7);
+            assert.equal(pc.documentColumnIndex, 10);
+        });
+
+        test("documentCharacterIndex cannot be greater than the maximum character index", async () => {
+            const dt = await parseTemplate(template);
+            const pc = dt.getContextFromDocumentCharacterIndex(10000, undefined, true);
+            assert(pc);
+            assert.equal(pc.documentLineIndex, 11);
+            assert.equal(pc.documentColumnIndex, 2);
+        });
+    });
+
     suite("fromDocumentLineAndColumnIndexes(DeploymentTemplate,number,number)", () => {
         test("with undefined deploymentTemplate", () => {
             // tslint:disable-next-line:no-any
@@ -150,6 +184,28 @@ suite("TemplatePositionContext", () => {
         test("with PositionContext from characterIndex", () => {
             let pc = TemplatePositionContext.fromDocumentCharacterIndex(new DeploymentTemplate("{\n}", fakeId), 2, undefined);
             assert.deepStrictEqual(2, pc.documentCharacterIndex);
+        });
+    });
+
+    suite("getTokenAtOrAfterCursor", () => {
+        function getTextAtReplacementSpan(dt: DeploymentTemplate, index: number): string | undefined {
+            const span = dt.getContextFromDocumentCharacterIndex(index, undefined)
+                .getCompletionReplacementSpanInfo().span;
+            return span ? dt.getDocumentText(span) : undefined;
+        }
+
+        test("hyphens and exclamation points", async () => {
+            const dt = await parseTemplate("{ arm-keyvault!hello }", undefined, { ignoreBang: true });
+
+            assert.equal(getTextAtReplacementSpan(dt, 0), undefined); // {
+            assert.equal(getTextAtReplacementSpan(dt, 1), undefined);
+            for (let i = 2; i <= 19; ++i) { // a-o
+                assert.equal(getTextAtReplacementSpan(dt, i), 'arm-keyvault!hello');
+            }
+
+            assert.equal(getTextAtReplacementSpan(dt, 20), 'arm-keyvault!hello'); // space after hello
+            assert.equal(getTextAtReplacementSpan(dt, 21), undefined); // }
+            assert.equal(getTextAtReplacementSpan(dt, 22), undefined);
         });
     });
 
@@ -453,19 +509,22 @@ suite("TemplatePositionContext", () => {
 
         function completionItemsTest(documentText: string, index: number, expectedCompletionItems: Completion.Item[]): void {
             const testName = `with ${Utilities.escapeAndQuote(addCursor(documentText, index))} at index ${index}`;
-            test(testName, async () => {
-                let keepInClosureForEasierDebugging = testName;
-                keepInClosureForEasierDebugging = keepInClosureForEasierDebugging;
+            testWithPrep(
+                testName,
+                [UseNoSnippets.instance],
+                async () => {
+                    let keepInClosureForEasierDebugging = testName;
+                    keepInClosureForEasierDebugging = keepInClosureForEasierDebugging;
 
-                const dt = new DeploymentTemplate(documentText, fakeId);
-                const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex(index, undefined);
+                    const dt = new DeploymentTemplate(documentText, fakeId);
+                    const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex(index, undefined);
 
-                let completionItems: Completion.Item[] = pc.getCompletionItems(undefined);
-                const completionItems2: Completion.Item[] = pc.getCompletionItems(undefined);
-                assert.deepStrictEqual(completionItems, completionItems2, "Got different results");
+                    let completionItems: Completion.Item[] = (await pc.getCompletionItems(undefined)).items;
+                    const completionItems2: Completion.Item[] = (await pc.getCompletionItems(undefined)).items;
+                    assert.deepStrictEqual(completionItems, completionItems2, "Got different results");
 
-                compareTestableCompletionItems(completionItems, expectedCompletionItems);
-            });
+                    compareTestableCompletionItems(completionItems, expectedCompletionItems);
+                });
         }
 
         function compareTestableCompletionItems(actualItems: Completion.Item[], expectedItems: Completion.Item[]): void {

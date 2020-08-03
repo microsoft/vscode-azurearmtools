@@ -10,7 +10,8 @@ import { randomBytes } from "crypto";
 import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
 import { Uri } from "vscode";
 import { DefinitionKind, DeploymentTemplate, Histogram, INamedDefinition, IncorrectArgumentsCountIssue, IParameterDefinition, IVariableDefinition, Json, Language, ReferenceInVariableDefinitionsVisitor, ReferenceList, TemplateScope, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "../extension.bundle";
-import { IDeploymentTemplate, sources, testDiagnostics } from "./support/diagnostics";
+import { testLog } from "./support/createTestLog";
+import { diagnosticSources, IDeploymentTemplate, testDiagnostics } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
 import { testWithLanguageServer } from "./support/testWithLanguageServer";
@@ -66,35 +67,35 @@ suite("DeploymentTemplate", () => {
         test("Empty stringValue", () => {
             const dt = new DeploymentTemplate("", fakeId);
             assert.deepStrictEqual("", dt.documentText);
-            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             assert.deepStrictEqual([], dt.topLevelScope.parameterDefinitions);
         });
 
         test("Non-JSON stringValue", () => {
             const dt = new DeploymentTemplate("I'm not a JSON file", fakeId);
             assert.deepStrictEqual("I'm not a JSON file", dt.documentText);
-            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             assert.deepStrictEqual([], dt.topLevelScope.parameterDefinitions);
         });
 
         test("JSON stringValue with number parameters definition", () => {
             const dt = new DeploymentTemplate("{ 'parameters': 21 }", fakeId);
             assert.deepStrictEqual("{ 'parameters': 21 }", dt.documentText);
-            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             assert.deepStrictEqual([], dt.topLevelScope.parameterDefinitions);
         });
 
         test("JSON stringValue with empty object parameters definition", () => {
             const dt = new DeploymentTemplate("{ 'parameters': {} }", fakeId);
             assert.deepStrictEqual("{ 'parameters': {} }", dt.documentText);
-            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             assert.deepStrictEqual([], dt.topLevelScope.parameterDefinitions);
         });
 
         test("JSON stringValue with one parameter definition", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'num': { 'type': 'number' } } }", fakeId);
             assert.deepStrictEqual("{ 'parameters': { 'num': { 'type': 'number' } } }", dt.documentText);
-            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             const parameterDefinitions: IParameterDefinition[] = dt.topLevelScope.parameterDefinitions;
             assert(parameterDefinitions);
             assert.deepStrictEqual(parameterDefinitions.length, 1);
@@ -107,7 +108,7 @@ suite("DeploymentTemplate", () => {
 
         test("JSON stringValue with one parameter definition with undefined description", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'num': { 'type': 'number', 'metadata': { 'description': null } } } }", fakeId);
-            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             const parameterDefinitions: IParameterDefinition[] = dt.topLevelScope.parameterDefinitions;
             assert(parameterDefinitions);
             assert.deepStrictEqual(parameterDefinitions.length, 1);
@@ -120,7 +121,7 @@ suite("DeploymentTemplate", () => {
 
         test("JSON stringValue with one parameter definition with empty description", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'num': { 'type': 'number', 'metadata': { 'description': '' } } } }", fakeId);
-            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             const parameterDefinitions: IParameterDefinition[] = dt.topLevelScope.parameterDefinitions;
             assert(parameterDefinitions);
             assert.deepStrictEqual(parameterDefinitions.length, 1);
@@ -133,7 +134,7 @@ suite("DeploymentTemplate", () => {
 
         test("JSON stringValue with one parameter definition with non-empty description", () => {
             const dt = new DeploymentTemplate("{ 'parameters': { 'num': { 'type': 'number', 'metadata': { 'description': 'num description' } } } }", fakeId);
-            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             const parameterDefinitions: IParameterDefinition[] = dt.topLevelScope.parameterDefinitions;
             assert(parameterDefinitions);
             assert.deepStrictEqual(parameterDefinitions.length, 1);
@@ -146,14 +147,14 @@ suite("DeploymentTemplate", () => {
 
         test("JSON stringValue with number variable definitions", () => {
             const dt = new DeploymentTemplate("{ 'variables': 12 }", fakeId);
-            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             assert.deepStrictEqual("{ 'variables': 12 }", dt.documentText);
             assert.deepStrictEqual([], dt.topLevelScope.variableDefinitions);
         });
 
         test("JSON stringValue with one variable definition", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'variables': { 'a': 'A' } }", fakeId);
-            assert.deepStrictEqual(dt.documentId, fakeId);
+            assert.deepStrictEqual(dt.documentUri, fakeId);
             assert.deepStrictEqual(dt.documentText, "{ 'variables': { 'a': 'A' } }");
             assert.deepStrictEqual(dt.topLevelScope.variableDefinitions.length, 1);
             assert.deepStrictEqual(dt.topLevelScope.variableDefinitions[0].nameValue.toString(), "a");
@@ -166,7 +167,7 @@ suite("DeploymentTemplate", () => {
 
         test("JSON stringValue with two variable definitions", () => {
             const dt = new DeploymentTemplate("{ 'variables': { 'a': 'A', 'b': 2 } }", fakeId);
-            assert.deepStrictEqual(fakeId.fsPath, dt.documentId.fsPath);
+            assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             assert.deepStrictEqual("{ 'variables': { 'a': 'A', 'b': 2 } }", dt.documentText);
             assert.deepStrictEqual(dt.topLevelScope.variableDefinitions.length, 2);
 
@@ -1112,7 +1113,7 @@ suite("DeploymentTemplate", () => {
                         },
                     },
                     {
-                        includeSources: [sources.expressions]
+                        includeSources: [diagnosticSources.expressions]
                     },
                     [
                         "Error: reference() cannot be invoked inside of a variable definition. (arm-template (expressions))",
@@ -1128,7 +1129,7 @@ suite("DeploymentTemplate", () => {
                         },
                     },
                     {
-                        includeSources: [sources.expressions]
+                        includeSources: [diagnosticSources.expressions]
                     },
                     [
                         "Error: reference() cannot be invoked inside of a variable definition. (arm-template (expressions))",
@@ -1205,7 +1206,7 @@ suite("DeploymentTemplate", () => {
                     index = Math.floor(Math.random() * (json.length + 1)); // length+1 so we include past the last character as a position
                 }
 
-                // console.log(`Testing index ${index}`);
+                testLog.writeLineIfLogCreated(`Testing index ${index}`);
                 try {
                     // Just make sure nothing throws
                     let dt = new DeploymentTemplate(json, fakeId);
@@ -1215,7 +1216,7 @@ suite("DeploymentTemplate", () => {
                     pc.tleInfo;
                     pc.getReferenceSiteInfo(true);
                     pc.getHoverInfo();
-                    pc.getCompletionItems(undefined);
+                    await pc.getCompletionItems(undefined);
                 } catch (err) {
                     throw new Error(`exercisePositionContextAtRandomPointsInTheDoc: Threw at index ${i}:\n${json.slice(i)}<***HERE***>${json.slice(i)}`);
                 }
@@ -1546,6 +1547,50 @@ suite("DeploymentTemplate", () => {
             });
 
             assert.equal(dt.apiProfile, "2018–03-01-hybrid");
+        });
+    });
+
+    suite("getDocumentPosition", () => {
+        function createGetDocumentPositionTest(json: string, index: number, expectedPosition: Language.Position): void {
+            test(`${JSON.stringify(json)}, index=${index}`, async () => {
+                const dt = await parseTemplate(json);
+                const pos: Language.Position = dt.getDocumentPosition(index);
+                assert.deepEqual(pos, expectedPosition);
+            });
+        }
+
+        suite('empty', () => {
+            createGetDocumentPositionTest('', 0, new Language.Position(0, 0));
+        });
+
+        suite('two lines', async () => {
+            createGetDocumentPositionTest('a\n', 0, new Language.Position(0, 0));
+            createGetDocumentPositionTest('a\n', 1, new Language.Position(0, 1));
+            createGetDocumentPositionTest('a\n', 2, new Language.Position(1, 0));
+            createGetDocumentPositionTest('a\n', 3, new Language.Position(1, 0));
+
+            createGetDocumentPositionTest('a\r\n', 0, new Language.Position(0, 0));
+            createGetDocumentPositionTest('a\r\n', 1, new Language.Position(0, 1));
+            createGetDocumentPositionTest('a\r\n', 2, new Language.Position(0, 2));
+            createGetDocumentPositionTest('a\r\n', 3, new Language.Position(1, 0));
+            createGetDocumentPositionTest('a\r\n', 4, new Language.Position(1, 0));
+        });
+
+        suite('last line', async () => {
+            createGetDocumentPositionTest('a\nbc', 0, new Language.Position(0, 0));
+            createGetDocumentPositionTest('a\nbc', 1, new Language.Position(0, 1));
+            createGetDocumentPositionTest('a\nbc', 2, new Language.Position(1, 0));
+            createGetDocumentPositionTest('a\nbc', 3, new Language.Position(1, 1));
+            createGetDocumentPositionTest('a\nbc', 4, new Language.Position(1, 2));
+            createGetDocumentPositionTest('a\nbc', 5, new Language.Position(1, 2));
+
+            createGetDocumentPositionTest('a\r\nbc', 0, new Language.Position(0, 0));
+            createGetDocumentPositionTest('a\r\nbc', 1, new Language.Position(0, 1));
+            createGetDocumentPositionTest('a\r\nbc', 2, new Language.Position(0, 2));
+            createGetDocumentPositionTest('a\r\nbc', 3, new Language.Position(1, 0));
+            createGetDocumentPositionTest('a\r\nbc', 4, new Language.Position(1, 1));
+            createGetDocumentPositionTest('a\r\nbc', 5, new Language.Position(1, 2));
+            createGetDocumentPositionTest('a\r\nbc', 5, new Language.Position(1, 2));
         });
     });
 });

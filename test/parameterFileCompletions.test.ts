@@ -42,10 +42,10 @@ suite("Parameter file completions", () => {
             }
 
             const pc = dp.getContextFromDocumentCharacterIndex(cursorIndex, dt);
-            const completions = pc.getCompletionItems("");
+            const completions = await pc.getCompletionItems("");
 
-            const completionNames = completions.map(c => c.label).sort();
-            const completionInserts = completions.map(c => c.insertText).sort();
+            const completionNames = completions.items.map(c => c.label).sort();
+            const completionInserts = completions.items.map(c => c.insertText).sort();
 
             const expectedNames = (<unknown[]>expectedNamesAndInsertTexts).map(e => Array.isArray(e) ? <string>e[0] : <string>e).sort();
             // tslint:disable-next-line: no-any

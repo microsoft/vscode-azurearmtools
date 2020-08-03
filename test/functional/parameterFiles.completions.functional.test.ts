@@ -8,11 +8,11 @@
 
 import * as assert from 'assert';
 import { commands, Selection } from 'vscode';
-import { ext } from '../../extension.bundle';
 import { newParamValueCompletionLabel, newParamValueCompletionLabelWithQuotes } from '../support/constants';
 import { delay } from '../support/delay';
 import { IDeploymentParametersFile, IDeploymentTemplate } from "../support/diagnostics";
 import { getCompletionItemResolutionPromise, getCompletionItemsPromise, getDocumentChangedPromise } from '../support/getEventPromise';
+import { mapParameterFile } from '../support/mapParameterFile';
 import { getDocumentMarkers, removeEOLMarker } from "../support/parseTemplate";
 import { stringify } from '../support/stringify';
 import { TempDocument, TempEditor, TempFile } from '../support/TempFile';
@@ -63,7 +63,7 @@ suite("Functional parameter file completions", () => {
 
                 // Map template to params
                 if (templateFile) {
-                    await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, paramsFile.uri);
+                    await mapParameterFile(templateFile.uri, paramsFile.uri);
                 }
 
                 // Open params in editor
@@ -124,7 +124,7 @@ suite("Functional parameter file completions", () => {
                     await editor.dispose();
                 }
                 if (templateFile) {
-                    await ext.deploymentFileMapping.getValue().mapParameterFile(templateFile.uri, undefined);
+                    await mapParameterFile(templateFile.uri, undefined, false);
                     templateFile.dispose();
                 }
             }

@@ -12,7 +12,7 @@ suite("Completion", () => {
                 label: "a",
                 insertText: "b",
                 span: new Language.Span(1, 2),
-                kind: Completion.CompletionKind.Function,
+                kind: Completion.CompletionKind.tleFunction,
                 detail: "c",
                 documentation: "d"
             });
@@ -21,7 +21,7 @@ suite("Completion", () => {
             assert.deepStrictEqual(item.span, new Language.Span(1, 2));
             assert.deepStrictEqual(item.insertText, "b");
             assert.deepStrictEqual(item.label, "a");
-            assert.deepStrictEqual(item.kind, Completion.CompletionKind.Function);
+            assert.deepStrictEqual(item.kind, Completion.CompletionKind.tleFunction);
         });
     });
 });

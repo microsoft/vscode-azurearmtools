@@ -6,11 +6,12 @@
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name
 
 import * as assert from "assert";
-import { FunctionCountVisitor, Histogram, TemplateScope, TLE, TopLevelTemplateScope } from "../extension.bundle";
+import { Uri } from "vscode";
+import { DeploymentTemplate, FunctionCountVisitor, Histogram, TemplateScope, TLE, TopLevelTemplateScope } from "../extension.bundle";
 
 suite("FunctionCountVisitor", () => {
-
-    const emptyScope: TemplateScope = new TopLevelTemplateScope(undefined, "empty");
+    const dt = new DeploymentTemplate("", Uri.file("/doc"));
+    const emptyScope: TemplateScope = new TopLevelTemplateScope(dt, undefined, "empty");
 
     function testFunctionCountsVisitor(expressionWithoutQuotes: string, expectedFunctionCounts: { [key: string]: number }): void {
         const tleParseResult = TLE.Parser.parse(`"${expressionWithoutQuotes}"`, emptyScope);
