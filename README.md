@@ -53,7 +53,7 @@ The following table lists the available ARM Tools snippets.
 | `armp!` | Adds the framework for a full deployment template parameters file. |
 | `""` | While in the _parameters_ section adds a parameter to the template. |
 | `""` | While in the _variables_ section adds a variable to the template. |
-| '{}' | While in the _functions_section add a new user-defined function. |
+| `{}` | While in the _functions_section add a new user-defined function. |
 | `arm-` or the resource name | Displays 70+ snippets for creating Azure resources. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine. |
 | `""` | While in the _outputs_ section adds an output to the template. |
 
@@ -63,7 +63,7 @@ The ARM Tools extension uses Azure schemas to provide resource completion and va
 
 ### Schema Completions
 
-Entering double quotes `""` or selecting `ctrl` + `space` while the cursor is in a resource declaration provides a list of potential properties and property values for each Azure resource.
+Entering double quotes `""` or selecting `ctrl` + `space` while the cursor is in a resource declaration provides potential properties and property values for each Azure resource.
 
 In the following example, the potential values for an Azure Storage account tier are returned from the Azure Storage schema.
 
@@ -135,12 +135,6 @@ Enter a value for the added parameters and also remove the 'TODO' comment.
 
 ![Image showing parameter file after missing parameters have been added](./images/missing-params-three.png)
 
-### Find all parameter references
-
-Right-click on a parameter name and select **Go to References**. Double-clicking on any reference moves your cursor to the reference location.
-
-![Image showing the go to reference user interface](./images/parameter-references.png)
-
 ### Rename a parameter
 
 Right-click on the parameter name and select **Rename Symbol**. This action renames the parameter and all template references to the parameter.
@@ -175,17 +169,19 @@ Go to definition can be used to navigate to both parameter and variable definiti
 
 ![Image showing the Go to Definition dialog on a parameter reference](./images/go-to-definition.png)
 
+### Find all references
+
+Right-click on a parameter, variable, or user-defined function name and select **Go to References**. Double-clicking on any reference moves your cursor to the reference location.
+
+![Image showing the go to reference user interface](./images/parameter-references.png)
+
 ## Completions
 
 The ARM Tools extension provides code completions for the following:
 
-  - [Built-in functions](https://go.microsoft.com/fwlink/?LinkID=733958)
+  - [Built-in functions such as resourceId and variable](https://go.microsoft.com/fwlink/?LinkID=733958)
   - [Parameter references](https://go.microsoft.com/fwlink/?LinkID=733959)
   - [Variable references](https://go.microsoft.com/fwlink/?LinkID=733960)
-  - [resourceGroup() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#resourcegroup)
-  - [subscription() properties](https://azure.microsoft.com/en-us/documentation/articles/resource-group-template-functions/#subscription)
-  - [resourceId() function](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#resourceid)
-  - Properties of references to variables that are objects
 
 ## Other features
 
@@ -227,47 +223,13 @@ Template sorting can also be engaged using the ARM template outline.
 
 You may be interested in adjusting the following extension configurations. These can be configured in [VS Code User Settings](https://code.visualstudio.com/docs/getstarted/settings).
 
-### Auto-detect ARM templates
-
-Enables auto-detection of deployment template files with the extension *.json or *.jsonc. If set to true (default), the editor language will automatically be set to Azure Resource Manager Template for any *.json/*.jsonc file which contains an appropriate Azure Resource Manager Template schema.
-
-```
-"azureResourceManagerTools.autoDetectJsonTemplates": true,
-```
-
-### Detect latest root schema
-
-Check if the root schema for deployment templates is using an out-of-date version and suggest updating it to the latest version.
-
-```
-"azureResourceManagerTools.checkForLatestSchema": true,
-```
-
-### Parameter files
-
-Check if an opened template file has a matching params file and prompt to create an association.
-
-```
-"azureResourceManagerTools.checkForMatchingParameterFiles": true,
-```
-
-Parameter file assoications are stored in the `azureResourceManagerTools.parameterFiles` user setting.
-
-```
-"azureResourceManagerTools.parameterFiles": {}
-```
-
-**Code Lens**
-
-Disable all code lens functionality
-```
-"azureResourceManagerTools.codelens.enable": false
-```
-
-Disable code lens for parameters
-```
-"azureResourceManagerTools.codelens.parameters": false
-```
+| Configuration | Description |
+|---|---|
+| azureResourceManagerTools.autoDetectJsonTemplates | Auto-detects ARM template and sets editor language type to Azure Resource Manager. |
+| azureResourceManagerTools.checkForLatestSchema | Check if the root schema for deployment templates is using an out-of-date version and suggest updating it to the latest version. |
+| azureResourceManagerTools.checkForMatchingParameterFiles | Check if an opened template file has a matching params file and prompt to create an association. |
+| azureResourceManagerTools.codelens.enable | Disable all code lens functionality. |
+| azureResourceManagerTools.codelens.parameters | Disable code lens for parameters. |
 
 ## Automatic Detection of deployment template files
 
@@ -281,12 +243,14 @@ Besides automatic detection, you can also use the `files.associations` setting t
 }
 ```
 
+Auto-detects ARM template and sets editor language type to Azure Resource Manager Template
+
 ## Troubleshooting
 
 Use the following wiki article to help troubleshoot these known issues.
 
 - [Could not find/download: ".NET Core Runtime" with version = 2.2.5](https://github.com/microsoft/vscode-azurearmtools/wiki/Troubleshooting-DotNet-Acquisition)
-- [Unrecognized Resource API Version](https://github.com/microsoft/vscode-azurearmtools/wiki/Unrecognized-Resource-API-Version)
+- [Resource schema warning: "For full schema validation, consider updating the value to one of the following.."](https://github.com/microsoft/vscode-azurearmtools/wiki/Unrecognized-Resource-API-Version)
 
 ## Related Links
 
