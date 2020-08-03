@@ -244,7 +244,6 @@ Besides automatic detection, you can also use the `files.associations` setting t
 ```
 
 Auto-detects ARM template and sets editor language type to Azure Resource Manager Template
-
 ## Troubleshooting
 
 Use the following wiki article to help troubleshoot these known issues.
