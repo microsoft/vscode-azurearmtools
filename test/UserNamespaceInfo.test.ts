@@ -6,11 +6,11 @@
 
 import * as assert from "assert";
 import * as os from 'os';
-import { HoverInfo, Language } from "../extension.bundle";
+import { HoverInfo, Span } from "../extension.bundle";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 
-const fakeSpan = new Language.Span(0, 0);
+const fakeSpan = new Span(0, 0);
 
 suite("Hover.UserNamespaceInfo", () => {
     suite("getHoverText", () => {

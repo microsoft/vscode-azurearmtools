@@ -3,16 +3,17 @@
 // ----------------------------------------------------------------------------
 
 import { TLE } from '../../extension.bundle';
+import { TemplateScope } from "../documents/templates/scopes/TemplateScope";
 import { assert } from '../fixed_assert';
-import * as language from "../Language";
-import { TemplateScope } from "../TemplateScope";
-import { StringValue, Value } from '../TLE';
+import { StringValue, Value } from '../language/expressions/TLE';
+import { Issue } from '../language/Issue';
+import { IssueKind } from '../language/IssueKind';
 
 /**
  * A TLE visitor that finds references to undefined parameters or variables.
  */
 export class UndefinedParameterAndVariableVisitor extends TLE.Visitor {
-    private _errors: language.Issue[] = [];
+    private _errors: Issue[] = [];
 
     constructor(private _scope: TemplateScope) {
         super();
@@ -20,7 +21,7 @@ export class UndefinedParameterAndVariableVisitor extends TLE.Visitor {
         assert(_scope);
     }
 
-    public get errors(): language.Issue[] {
+    public get errors(): Issue[] {
         return this._errors;
     }
 
@@ -30,25 +31,25 @@ export class UndefinedParameterAndVariableVisitor extends TLE.Visitor {
         const quotedStringValue: string = tleString.token.stringValue;
 
         if (tleString.isParametersArgument() && !this._scope.getParameterDefinition(quotedStringValue)) {
-            this._errors.push(new language.Issue(
+            this._errors.push(new Issue(
                 tleString.token.span,
                 `Undefined parameter reference: ${quotedStringValue}`,
-                language.IssueKind.undefinedParam));
+                IssueKind.undefinedParam));
         }
 
         if (tleString.isVariablesArgument()) {
             if (!this._scope.getVariableDefinition(quotedStringValue)) {
                 if (this._scope.isInUserFunction) {
-                    this._errors.push(new language.Issue(
+                    this._errors.push(new Issue(
                         tleString.token.span,
                         "User functions cannot reference variables",
-                        language.IssueKind.varInUdf
+                        IssueKind.varInUdf
                     ));
                 } else {
-                    this._errors.push(new language.Issue(
+                    this._errors.push(new Issue(
                         tleString.token.span,
                         `Undefined variable reference: ${quotedStringValue}`,
-                        language.IssueKind.undefinedVar));
+                        IssueKind.undefinedVar));
                 }
             }
         }

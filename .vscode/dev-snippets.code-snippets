@@ -31,9 +31,10 @@
 	"Microsoft Copyright Header": {
 		"prefix": "copyright",
 		"body": [
-			"$LINE_COMMENT ----------------------------------------------------------------------------",
+			"$LINE_COMMENT ---------------------------------------------------------------------------------------------",
+			"$LINE_COMMENT Copyright (c) Microsoft Corporation. All rights reserved.",
 			"$LINE_COMMENT Licensed under the MIT License. See License.md in the project root for license information.",
-			"$LINE_COMMENT ----------------------------------------------------------------------------",
+			"$LINE_COMMENT ---------------------------------------------------------------------------------------------",
 			"",
 		]
 	},

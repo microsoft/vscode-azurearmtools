@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as Completion from "../Completion";
-import * as language from "../Language";
+import { Span } from "../language/Span";
+import * as Completion from "../vscodeIntegration/Completion";
 import { ISnippet } from "./ISnippet";
 import { SnippetContext } from "./SnippetContext";
 import { SnippetInsertionContext } from "./SnippetInsertionContext";
@@ -23,5 +23,5 @@ export interface ISnippetManager {
     /**
      * Retrieve completion items for all snippets
      */
-    getSnippetsAsCompletionItems(insertionContext: SnippetInsertionContext, span: language.Span): Promise<Completion.Item[]>;
+    getSnippetsAsCompletionItems(insertionContext: SnippetInsertionContext, span: Span): Promise<Completion.Item[]>;
 }

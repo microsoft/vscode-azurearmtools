@@ -6,10 +6,10 @@
 
 import * as assert from "assert";
 import { Uri } from "vscode";
-import { DeploymentTemplate, Json, Language, UserFunctionNamespaceDefinition } from "../extension.bundle";
+import { DeploymentTemplate, Json, Span, UserFunctionNamespaceDefinition } from "../extension.bundle";
 import { createObject, createProperty, createStringProperty } from "./support/jsonCreation";
 
-const fakeSpan = new Language.Span(10, 20);
+const fakeSpan = new Span(10, 20);
 
 suite("UserFunctionNamespaceDefinition", () => {
     suite("constructor(Json.Property)", () => {

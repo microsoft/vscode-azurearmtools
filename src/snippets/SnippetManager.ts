@@ -7,11 +7,11 @@ import * as path from 'path';
 import * as stripJsonComments from "strip-json-comments";
 import { window } from 'vscode';
 import { callWithTelemetryAndErrorHandling, IActionContext } from 'vscode-azureextensionui';
-import { CachedPromise } from '../CachedPromise';
-import * as Completion from "../Completion";
 import { assetsPath, extensionName } from '../constants';
-import * as language from "../Language";
+import { Span } from '../language/Span';
+import { CachedPromise } from '../util/CachedPromise';
 import { readUtf8FileWithBom } from '../util/readUtf8FileWithBom';
+import * as Completion from "../vscodeIntegration/Completion";
 import { ISnippet } from "./ISnippet";
 import { ISnippetManager } from "./ISnippetManager";
 import { KnownSnippetContexts, SnippetContext } from './SnippetContext';
@@ -73,7 +73,7 @@ export class SnippetManager implements ISnippetManager {
     /**
      * Retrieve completion items for all snippets
      */
-    public async getSnippetsAsCompletionItems(insertionContext: SnippetInsertionContext, span: language.Span): Promise<Completion.Item[]> {
+    public async getSnippetsAsCompletionItems(insertionContext: SnippetInsertionContext, span: Span): Promise<Completion.Item[]> {
         return await callWithTelemetryAndErrorHandling('getSnippetsAsCompletionItems', async (actionContext: IActionContext) => {
             actionContext.telemetry.suppressIfSuccessful = true;
 

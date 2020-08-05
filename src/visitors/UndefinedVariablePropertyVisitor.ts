@@ -2,21 +2,22 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import * as Json from '../JSON';
-import * as language from "../Language";
-import { TemplateScope } from "../TemplateScope";
-import { FunctionCallValue, PropertyAccess, Value, Visitor } from "../TLE";
-import { IVariableDefinition } from '../VariableDefinition';
+import { TemplateScope } from "../documents/templates/scopes/TemplateScope";
+import { IVariableDefinition } from '../documents/templates/VariableDefinition';
+import { FunctionCallValue, PropertyAccess, Value, Visitor } from "../language/expressions/TLE";
+import { Issue } from "../language/Issue";
+import { IssueKind } from "../language/IssueKind";
+import * as Json from '../language/json/JSON';
 
 /**
  * A TLE visitor that finds references to variable properties that aren't defined in the variable's value
  */
 export class UndefinedVariablePropertyVisitor extends Visitor {
-    private _errors: language.Issue[] = [];
+    private _errors: Issue[] = [];
     constructor(private _scope: TemplateScope) {
         super();
     }
-    public get errors(): language.Issue[] {
+    public get errors(): Issue[] {
         return this._errors;
     }
     public visitPropertyAccess(tlePropertyAccess: PropertyAccess): void {
@@ -46,10 +47,10 @@ export class UndefinedVariablePropertyVisitor extends Visitor {
         const propertyName: string = nameToken ? nameToken.stringValue : "(unknown)";
         const sourceString: string = tlePropertyAccess.source.toString();
         const span = nameToken ? nameToken.span : tlePropertyAccess.getSpan();
-        this._errors.push(new language.Issue(
+        this._errors.push(new Issue(
             span,
             `Property "${propertyName}" is not a defined property of "${sourceString}".`,
-            language.IssueKind.undefinedVarProp));
+            IssueKind.undefinedVarProp));
     }
     public static visit(tleValue: Value | undefined, scope: TemplateScope): UndefinedVariablePropertyVisitor {
         const visitor = new UndefinedVariablePropertyVisitor(scope);

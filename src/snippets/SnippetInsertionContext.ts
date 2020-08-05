@@ -1,5 +1,5 @@
 import { Json } from "../../extension.bundle";
-import { Span } from "../Language";
+import { Span } from "../language/Span";
 import { SnippetContext } from "./SnippetContext";
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.

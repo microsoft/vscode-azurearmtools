@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import * as Json from "../JSON";
+import * as Json from "../language/json/JSON";
 
 /**
  * A visitor for Json.StringValue that calls generic code for each JSON string in the given value's subtree (inclusive)

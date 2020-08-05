@@ -5,7 +5,7 @@
 // tslint:disable:max-func-body-length no-http-string max-line-length no-null-keyword
 
 import * as assert from "assert";
-import { __debugMarkPositionInString, __debugMarkSubstring } from "../extension.bundle";
+import { __debugMarkPositionInString, __debugMarkRangeInString } from "../extension.bundle";
 
 suite("__debugMarkPositionInString", () => {
     const text = "this is a short string";
@@ -37,22 +37,22 @@ suite("__debugMarkSubstring", () => {
     const position = "this is a ".length;
 
     test("short string, single char insert", () => {
-        let result1 = __debugMarkSubstring(text, position, 1);
+        let result1 = __debugMarkRangeInString(text, position, 1);
         assert.equal(result1, "this is a <<s>>hort string");
     });
 
     test("short string, longer insert", () => {
-        let result2 = __debugMarkSubstring(text, position, 5);
+        let result2 = __debugMarkRangeInString(text, position, 5);
         assert.equal(result2, "this is a <<short>> string");
     });
 
     test("ellipses at front", () => {
-        let result2 = __debugMarkSubstring(text, position, 5, "<", ">", 2);
+        let result2 = __debugMarkRangeInString(text, position, 5, "<", ">", 2);
         assert.equal(result2, "...a <short> string");
     });
 
     test("ellipses at end", () => {
-        let result2 = __debugMarkSubstring(text, position, 5, "<", ">", 25, 7);
+        let result2 = __debugMarkRangeInString(text, position, 5, "<", ">", 25, 7);
         assert.equal(result2, "this is a <short> string...");
     });
 });
