@@ -184,12 +184,12 @@ export abstract class DeploymentDocument implements IJsonDocument {
     // CONSIDER: Should we cache?  But that cache would depend on associatedTemplate not changing, not sure if that's
     // guaranteed.
     // Consider whether associated document should be a function passed in to constructor so that it's a permanent part of the
-    // template state.
-    public async getErrors(associatedDocument: DeploymentDocument | undefined): Promise<Issue[]> {
+    // template state once it's lazily created
+    public getErrors(associatedDocument: DeploymentDocument | undefined): Issue[] {
         return this.getErrorsCore(associatedDocument);
     }
 
-    public abstract getErrorsCore(associatedDocument: DeploymentDocument | undefined): Promise<Issue[]>;
+    public abstract getErrorsCore(associatedDocument: DeploymentDocument | undefined): Issue[];
 
     public abstract getWarnings(): Issue[];
 }

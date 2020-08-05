@@ -126,12 +126,12 @@ export class DeploymentParameters extends DeploymentDocument {
             context
         );
     }
-
-    public async getErrorsCore(associatedTemplate: DeploymentTemplate | undefined): Promise<Issue[]> {
+    public getErrorsCore(associatedTemplate: DeploymentDocument | undefined): Issue[] {
         if (!associatedTemplate) {
             return [];
         }
 
+        assert(associatedTemplate instanceof DeploymentTemplate);
         return getMissingParameterErrors(this.parameterValuesSource, associatedTemplate.topLevelScope);
     }
 

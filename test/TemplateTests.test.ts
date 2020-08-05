@@ -16,13 +16,13 @@ suite("Template tests", () => {
 
         // Tests to verify given functions do not produce errors - can be used to add quick unit tests for new function metadata
 
-        async function verifyTemplateHasNoErrors(template: string | object): Promise<void> {
+        function verifyTemplateHasNoErrors(template: string | object): void {
             useRealFunctionMetadata();
             try {
                 const dt = new DeploymentTemplate(typeof template === "string" ? template : stringify(template), Uri.file("id"));
                 const expectedErrors: string[] = [
                 ];
-                let errors = await dt.getErrors(undefined);
+                let errors = dt.getErrors(undefined);
                 assert.deepStrictEqual(errors, expectedErrors, "Expected no errors in template");
             } finally {
                 useTestFunctionMetadata();
@@ -30,7 +30,7 @@ suite("Template tests", () => {
         }
 
         test("listCallbackUrl", async () => {
-            await verifyTemplateHasNoErrors(
+            verifyTemplateHasNoErrors(
                 {
                     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
@@ -51,7 +51,7 @@ suite("Template tests", () => {
         });
 
         test("listKeys", async () => {
-            await verifyTemplateHasNoErrors(
+            verifyTemplateHasNoErrors(
                 {
                     // tslint:disable-next-line: no-http-string
                     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
