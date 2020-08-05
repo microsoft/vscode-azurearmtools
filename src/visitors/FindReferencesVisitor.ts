@@ -2,16 +2,16 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { Language } from "../../extension.bundle";
-import { BuiltinFunctionMetadata, FunctionsMetadata } from "../AzureRMAssets";
 import { templateKeys } from "../constants";
-import { DeploymentDocument } from "../DeploymentDocument";
+import { DeploymentDocument } from "../documents/DeploymentDocument";
+import { UserFunctionDefinition } from "../documents/templates/UserFunctionDefinition";
+import { UserFunctionNamespaceDefinition } from "../documents/templates/UserFunctionNamespaceDefinition";
 import { assert } from '../fixed_assert';
-import { DefinitionKind, INamedDefinition } from "../INamedDefinition";
-import * as Reference from "../ReferenceList";
-import { FunctionCallValue, StringValue, Value, Visitor } from "../TLE";
-import { UserFunctionDefinition } from "../UserFunctionDefinition";
-import { UserFunctionNamespaceDefinition } from "../UserFunctionNamespaceDefinition";
+import { BuiltinFunctionMetadata, FunctionsMetadata } from "../language/expressions/AzureRMAssets";
+import { FunctionCallValue, StringValue, Value, Visitor } from "../language/expressions/TLE";
+import { DefinitionKind, INamedDefinition } from "../language/INamedDefinition";
+import * as Reference from "../language/ReferenceList";
+import { Span } from "../language/Span";
 import { assertNever } from "../util/assertNever";
 
 /**
@@ -42,7 +42,7 @@ export class FindReferencesVisitor extends Visitor {
         return this._references;
     }
 
-    private addReference(span: Language.Span): void {
+    private addReference(span: Span): void {
         this._references.add({
             document: this._document,
             span: span

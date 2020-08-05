@@ -3,8 +3,8 @@
 // ----------------------------------------------------------------------------
 
 import { assert } from "../fixed_assert";
-import { Histogram } from "../Histogram";
-import { FunctionCallValue, Value, Visitor } from "../TLE";
+import { FunctionCallValue, Value, Visitor } from "../language/expressions/TLE";
+import { Histogram } from "../util/Histogram";
 
 /**
  * A TLE visitor that counts the function usages in a TLE value.

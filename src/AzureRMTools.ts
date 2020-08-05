@@ -12,57 +12,58 @@ import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { delay } from "../test/support/delay";
-import { CachedPromise } from "./CachedPromise";
-import { IAddMissingParametersArgs, IGotoParameterValueArgs } from "./commandArguments";
-import { ConsoleOutputChannelWrapper } from "./ConsoleOutputChannelWrapper";
 import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "./constants";
-import { DeploymentDocument, ResolvableCodeLens } from "./DeploymentDocument";
-import { DeploymentTemplate } from "./DeploymentTemplate";
+import { DeploymentDocument, ResolvableCodeLens } from "./documents/DeploymentDocument";
+import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
+import { DeploymentParameters } from "./documents/parameters/DeploymentParameters";
+import { IParameterDefinitionsSource } from "./documents/parameters/IParameterDefinitionsSource";
+import { IParameterValuesSource } from "./documents/parameters/IParameterValuesSource";
+import { IParameterValuesSourceProvider } from "./documents/parameters/IParameterValuesSourceProvider";
+import { considerQueryingForParameterFile, getFriendlyPathToFile, openParameterFile, openTemplateFile, selectParameterFile } from "./documents/parameters/parameterFiles";
+import { addMissingParameters } from "./documents/parameters/ParameterValues";
+import { IReferenceSite, PositionContext } from "./documents/positionContexts/PositionContext";
+import { TemplatePositionContext } from "./documents/positionContexts/TemplatePositionContext";
+import { DeploymentTemplate } from "./documents/templates/DeploymentTemplate";
+import { getItemTypeQuickPicks, InsertItem } from "./documents/templates/insertItem";
+import { getQuickPickItems, sortTemplate } from "./documents/templates/sortTemplate";
+import { mightBeDeploymentParameters, mightBeDeploymentTemplate, templateDocumentSelector, templateOrParameterDocumentSelector } from "./documents/templates/supported";
+import { TemplateSectionType } from "./documents/templates/TemplateSectionType";
 import { ext } from "./extensionVariables";
-import { Histogram } from "./Histogram";
-import * as Hover from './Hover';
-import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
-import { getItemTypeQuickPicks, InsertItem } from "./insertItem";
-import { IParameterValuesSourceProvider } from "./IParameterValuesSourceProvider";
-import * as Json from "./JSON";
-import * as language from "./Language";
+import * as TLE from "./language/expressions/TLE";
+import { Issue } from "./language/Issue";
+import * as Json from "./language/json/JSON";
+import { ReferenceList } from "./language/ReferenceList";
+import * as Span from "./language/Span";
 import { startArmLanguageServerInBackground } from "./languageclient/startArmLanguageServer";
-import { DeploymentFileMapping } from "./parameterFiles/DeploymentFileMapping";
-import { DeploymentParameters } from "./parameterFiles/DeploymentParameters";
-import { IParameterDefinitionsSource } from "./parameterFiles/IParameterDefinitionsSource";
-import { IParameterValuesSource } from "./parameterFiles/IParameterValuesSource";
-import { considerQueryingForParameterFile, getFriendlyPathToFile, openParameterFile, openTemplateFile, selectParameterFile } from "./parameterFiles/parameterFiles";
-import { addMissingParameters } from "./parameterFiles/ParameterValues";
-import { setContext } from "./parameterFiles/setContext";
-import { IReferenceSite, PositionContext } from "./PositionContext";
-import { ReferenceList } from "./ReferenceList";
-import { RenameCodeActionProvider } from "./RenameCodeActionProvider";
-import { resetGlobalState } from "./resetGlobalState";
 import { getPreferredSchema } from "./schemas";
-import { getFunctionParamUsage } from "./signatureFormatting";
 import { showSnippetContext } from "./snippets/showSnippetContext";
 import { SnippetManager } from "./snippets/SnippetManager";
-import { getQuickPickItems, sortTemplate } from "./sortTemplate";
-import { Stopwatch } from "./Stopwatch";
-import { mightBeDeploymentParameters, mightBeDeploymentTemplate, templateDocumentSelector, templateOrParameterDocumentSelector } from "./supported";
 import { survey } from "./survey";
-import { TemplatePositionContext } from "./TemplatePositionContext";
-import { TemplateSectionType } from "./TemplateSectionType";
-import * as TLE from "./TLE";
-import { JsonOutlineProvider } from "./Treeview";
-import { UnrecognizedBuiltinFunctionIssue } from "./UnrecognizedFunctionIssues";
+import { CachedPromise } from "./util/CachedPromise";
 import { escapeNonPaths } from "./util/escapeNonPaths";
 import { getRenameError } from "./util/getRenameError";
+import { Histogram } from "./util/Histogram";
 import { normalizePath } from "./util/normalizePath";
 import { pathExists } from "./util/pathExists";
 import { readUtf8FileWithBom } from "./util/readUtf8FileWithBom";
+import { Stopwatch } from "./util/Stopwatch";
 import { Cancellation } from "./util/throwOnCancel";
-import { onCompletionActivated, toVsCodeCompletionItem } from "./util/toVsCodeCompletionItem";
-import { getVSCodeRangeFromSpan } from "./util/vscodePosition";
+import { IncorrectArgumentsCountIssue } from "./visitors/IncorrectArgumentsCountIssue";
+import { UnrecognizedBuiltinFunctionIssue } from "./visitors/UnrecognizedFunctionIssues";
+import { IAddMissingParametersArgs, IGotoParameterValueArgs } from "./vscodeIntegration/commandArguments";
+import { ConsoleOutputChannelWrapper } from "./vscodeIntegration/ConsoleOutputChannelWrapper";
+import * as Hover from './vscodeIntegration/Hover';
+import { RenameCodeActionProvider } from "./vscodeIntegration/RenameCodeActionProvider";
+import { resetGlobalState } from "./vscodeIntegration/resetGlobalState";
+import { setContext } from "./vscodeIntegration/setContext";
+import { getFunctionParamUsage } from "./vscodeIntegration/signatureFormatting";
+import { onCompletionActivated, toVsCodeCompletionItem } from "./vscodeIntegration/toVsCodeCompletionItem";
+import { JsonOutlineProvider } from "./vscodeIntegration/Treeview";
+import { getVSCodeRangeFromSpan } from "./vscodeIntegration/vscodePosition";
 
 interface IErrorsAndWarnings {
-    errors: language.Issue[];
-    warnings: language.Issue[];
+    errors: Issue[];
+    warnings: Issue[];
 }
 
 const invalidRenameError = "Only parameters, variables, user namespaces and user functions can be renamed.";
@@ -657,7 +658,7 @@ export class AzureRMTools {
         // tslint:disable-next-line: no-floating-promises
         ++this._diagnosticsVersion;
 
-        let errors: language.Issue[] = await deploymentDocument.getErrors(associatedDocument);
+        let errors: Issue[] = await deploymentDocument.getErrors(associatedDocument);
         const diagnostics: vscode.Diagnostic[] = [];
 
         for (const error of errors) {
@@ -1026,7 +1027,7 @@ export class AzureRMTools {
                 incorrectArgs?: string;
             } & TelemetryProperties = actionContext.telemetry.properties;
 
-            let issues: language.Issue[] = await deploymentTemplate.getErrors(undefined);
+            let issues: Issue[] = await deploymentTemplate.getErrors(undefined);
 
             // Full function counts
             const functionCounts: Histogram = deploymentTemplate.getFunctionCounts();
@@ -1091,7 +1092,7 @@ export class AzureRMTools {
         return JSON.stringify(array);
     }
 
-    private getVSCodeDiagnosticFromIssue(deploymentDocument: DeploymentDocument, issue: language.Issue, severity: vscode.DiagnosticSeverity): vscode.Diagnostic {
+    private getVSCodeDiagnosticFromIssue(deploymentDocument: DeploymentDocument, issue: Issue, severity: vscode.DiagnosticSeverity): vscode.Diagnostic {
         const range: vscode.Range = getVSCodeRangeFromSpan(deploymentDocument, issue.span);
         const message: string = issue.message;
         let diagnostic = new vscode.Diagnostic(range, message, severity);
@@ -1272,7 +1273,7 @@ export class AzureRMTools {
                 // Second choice: To the "properties" section
                 ?? parameterValues.parameterValuesProperty?.nameValue.span
                 // Third choice: top of the file
-                ?? new language.Span(0, 0);
+                ?? new Span.Span(0, 0);
             range = getVSCodeRangeFromSpan(doc, span);
         } else if (args.inTemplateFile && doc instanceof DeploymentTemplate) {
             range = args.inTemplateFile.range;
@@ -1641,7 +1642,7 @@ export class AzureRMTools {
 
                     let braceHighlightRanges: vscode.Range[] = [];
                     for (let tleHighlightIndex of tleBraceHighlightIndexes) {
-                        const highlightSpan = new language.Span(tleHighlightIndex + pc.jsonTokenStartIndex, 1);
+                        const highlightSpan = new Span.Span(tleHighlightIndex + pc.jsonTokenStartIndex, 1);
                         braceHighlightRanges.push(getVSCodeRangeFromSpan(pc.document, highlightSpan));
                     }
 

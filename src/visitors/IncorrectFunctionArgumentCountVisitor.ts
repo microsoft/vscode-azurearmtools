@@ -3,11 +3,11 @@
 // ----------------------------------------------------------------------------
 
 import { isNullOrUndefined } from "util";
-import * as assets from "../AzureRMAssets";
+import { UserFunctionNamespaceDefinition } from "../documents/templates/UserFunctionNamespaceDefinition";
 import { assert } from "../fixed_assert";
-import { IncorrectArgumentsCountIssue } from "../IncorrectArgumentsCountIssue";
-import { FunctionCallValue, Value, Visitor } from "../TLE";
-import { UserFunctionNamespaceDefinition } from "../UserFunctionNamespaceDefinition";
+import * as assets from "../language/expressions/AzureRMAssets";
+import { FunctionCallValue, Value, Visitor } from "../language/expressions/TLE";
+import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 
 /**
  * A TLE visitor that creates errors if an incorrect number of arguments are used when calling a

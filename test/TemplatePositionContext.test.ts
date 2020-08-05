@@ -8,7 +8,7 @@
 import * as assert from "assert";
 import * as os from 'os';
 import { Uri } from "vscode";
-import { Completion, DeploymentTemplate, FunctionSignatureHelp, HoverInfo, IParameterDefinition, IReferenceSite, isVariableDefinition, IVariableDefinition, Json, Language, nonNullValue, ParametersPositionContext, ReferenceSiteKind, TemplatePositionContext, TLE, UserFunctionMetadata, Utilities } from "../extension.bundle";
+import { Completion, DeploymentTemplate, FunctionSignatureHelp, HoverInfo, IParameterDefinition, IReferenceSite, Issue, IssueKind, isVariableDefinition, IVariableDefinition, Json, LineColPos, nonNullValue, ParametersPositionContext, ReferenceSiteKind, Span, strings, TemplatePositionContext, TLE, UserFunctionMetadata } from "../extension.bundle";
 import * as jsonTest from "./JSON.test";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseParametersWithMarkers, parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
@@ -16,8 +16,6 @@ import { stringify } from "./support/stringify";
 import { UseNoSnippets } from "./support/TestSnippets";
 import { testWithPrep } from "./support/testWithPrep";
 import { allTestDataCompletionNames, allTestDataExpectedCompletions, expectedConcatCompletion, expectedCopyIndexCompletion, expectedPadLeftCompletion, expectedParametersCompletion, expectedProvidersCompletion, expectedReferenceCompletion, expectedReplaceCompletion, expectedResourceGroupCompletion, expectedResourceIdCompletion, expectedSkipCompletion, expectedSplitCompletion, expectedStringCompletion, expectedSubCompletion, expectedSubscriptionCompletion, expectedSubscriptionResourceIdCompletion, expectedSubstringCompletion, expectedVariablesCompletion, parameterCompletion, propertyCompletion, variableCompletion } from "./TestData";
-
-const IssueKind = Language.IssueKind;
 
 const fakeId = Uri.file("https://doc-id");
 
@@ -115,7 +113,7 @@ suite("TemplatePositionContext", () => {
             let documentLineIndex = 0;
             let documentColumnIndex = 2;
             let pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, documentLineIndex, documentColumnIndex, undefined);
-            assert.deepStrictEqual(new Language.Position(0, 2), pc.documentPosition);
+            assert.deepStrictEqual(new LineColPos(0, 2), pc.documentPosition);
             assert.deepStrictEqual(0, pc.documentLineIndex);
             assert.deepStrictEqual(2, pc.documentColumnIndex);
         });
@@ -166,12 +164,12 @@ suite("TemplatePositionContext", () => {
         test("with PositionContext from line and column indexes", () => {
             const dt = new DeploymentTemplate("{\n}", fakeId);
             let pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 1, 0, undefined);
-            assert.deepStrictEqual(new Language.Position(1, 0), pc.documentPosition);
+            assert.deepStrictEqual(new LineColPos(1, 0), pc.documentPosition);
         });
 
         test("with PositionContext from characterIndex", () => {
             let pc = TemplatePositionContext.fromDocumentCharacterIndex(new DeploymentTemplate("{\n}", fakeId), 2, undefined);
-            assert.deepStrictEqual(new Language.Position(1, 0), pc.documentPosition);
+            assert.deepStrictEqual(new LineColPos(1, 0), pc.documentPosition);
         });
     });
 
@@ -276,7 +274,7 @@ suite("TemplatePositionContext", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
             const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex(17, undefined);
 
-            const tleParseResult: TLE.ParseResult = pc.tleInfo!.tleParseResult;
+            const tleParseResult: TLE.TleParseResult = pc.tleInfo!.tleParseResult;
             assert.deepStrictEqual(tleParseResult.errors, []);
             assert.deepStrictEqual(tleParseResult.leftSquareBracketToken, TLE.Token.createLeftSquareBracket(1));
             assert.deepStrictEqual(tleParseResult.rightSquareBracketToken, TLE.Token.createRightSquareBracket(13));
@@ -297,11 +295,11 @@ suite("TemplatePositionContext", () => {
             const dt: DeploymentTemplate = new DeploymentTemplate("{ 'a': 'A', 'b': \"[concat('B'", fakeId);
             const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex(17, undefined);
 
-            const tleParseResult: TLE.ParseResult = pc.tleInfo!.tleParseResult;
+            const tleParseResult: TLE.TleParseResult = pc.tleInfo!.tleParseResult;
             assert.deepStrictEqual(
                 tleParseResult.errors,
                 [
-                    new Language.Issue(new Language.Span(11, 1), "Expected a right square bracket (']').", IssueKind.tleSyntax)
+                    new Issue(new Span(11, 1), "Expected a right square bracket (']').", IssueKind.tleSyntax)
                 ]);
             assert.deepStrictEqual(tleParseResult.leftSquareBracketToken, TLE.Token.createLeftSquareBracket(1));
             assert.deepStrictEqual(tleParseResult.rightSquareBracketToken, undefined);
@@ -453,7 +451,7 @@ suite("TemplatePositionContext", () => {
         const hi: HoverInfo = pc.getHoverInfo()!;
         assert(hi);
         assert.deepStrictEqual(hi.usage, "concat(arg1, arg2, arg3, ...)");
-        assert.deepStrictEqual(hi.span, new Language.Span("{ 'a': 'A', 'b': \"[".length, 6));
+        assert.deepStrictEqual(hi.span, new Span("{ 'a': 'A', 'b': \"[".length, 6));
     });
 
     test("in unrecognized parameter reference", () => {
@@ -469,7 +467,7 @@ suite("TemplatePositionContext", () => {
         const hi: HoverInfo = pc.getHoverInfo()!;
         assert(hi);
         assert.deepStrictEqual(`**pName**${os.EOL}*(parameter)*`, hi.getHoverText());
-        assert.deepStrictEqual(new Language.Span("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters('".length, 'pName'.length), hi.span);
+        assert.deepStrictEqual(new Span("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters('".length, 'pName'.length), hi.span);
     });
 
     test("in parameter reference function with empty string parameter", () => {
@@ -499,7 +497,7 @@ suite("TemplatePositionContext", () => {
         const hi: HoverInfo | undefined = pc.getHoverInfo()!;
         assert(hi);
         assert.deepStrictEqual(`**vName**${os.EOL}*(variable)*`, hi.getHoverText());
-        assert.deepStrictEqual(new Language.Span("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables('".length, 'vName'.length), hi.span);
+        assert.deepStrictEqual(new Span("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables('".length, 'vName'.length), hi.span);
     });
 
     suite("completionItems", async () => {
@@ -508,7 +506,7 @@ suite("TemplatePositionContext", () => {
         }
 
         function completionItemsTest(documentText: string, index: number, expectedCompletionItems: Completion.Item[]): void {
-            const testName = `with ${Utilities.escapeAndQuote(addCursor(documentText, index))} at index ${index}`;
+            const testName = `with ${strings.escapeAndQuote(addCursor(documentText, index))} at index ${index}`;
             testWithPrep(
                 testName,
                 [UseNoSnippets.instance],
@@ -1539,7 +1537,7 @@ suite("TemplatePositionContext", () => {
             const parameterDefinition: IParameterDefinition = nonNullValue(await getParameterDefinitionIfAtReference(context));
             assert.deepStrictEqual(parameterDefinition.nameValue.toString(), "pName");
             assert.deepStrictEqual(parameterDefinition.description, undefined);
-            assert.deepStrictEqual(parameterDefinition.fullSpan, new Language.Span(18, 11));
+            assert.deepStrictEqual(parameterDefinition.fullSpan, new Span(18, 11));
         });
 
         test("with cursor before parameter name start quote with matching parameter definition", async () => {
@@ -1548,7 +1546,7 @@ suite("TemplatePositionContext", () => {
             const parameterDefinition: IParameterDefinition = nonNullValue(await getParameterDefinitionIfAtReference(context));
             assert.deepStrictEqual(parameterDefinition.nameValue.toString(), "pName");
             assert.deepStrictEqual(parameterDefinition.description, undefined);
-            assert.deepStrictEqual(parameterDefinition.fullSpan, new Language.Span(18, 11));
+            assert.deepStrictEqual(parameterDefinition.fullSpan, new Span(18, 11));
         });
 
         test("with cursor after parameter name end quote with matching parameter definition", async () => {
@@ -1557,7 +1555,7 @@ suite("TemplatePositionContext", () => {
             const parameterDefinition: IParameterDefinition = nonNullValue(await getParameterDefinitionIfAtReference(context));
             assert.deepStrictEqual(parameterDefinition.nameValue.toString(), "pName");
             assert.deepStrictEqual(parameterDefinition.description, undefined);
-            assert.deepStrictEqual(parameterDefinition.fullSpan, new Language.Span(18, 11));
+            assert.deepStrictEqual(parameterDefinition.fullSpan, new Span(18, 11));
         });
     });
 
@@ -1588,7 +1586,7 @@ suite("TemplatePositionContext", () => {
             const context: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vNa".length, undefined);
             const vDef: IVariableDefinition = nonNullValue(getVariableDefinitionIfAtReference(context));
             assert.deepStrictEqual(vDef.nameValue.toString(), "vName");
-            assert.deepStrictEqual(vDef.span, new Language.Span(17, 11));
+            assert.deepStrictEqual(vDef.span, new Span(17, 11));
         });
 
         test("with cursor before variable name start quote with matching variable definition", () => {
@@ -1596,7 +1594,7 @@ suite("TemplatePositionContext", () => {
             const context: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(".length, undefined);
             const vDef: IVariableDefinition = nonNullValue(getVariableDefinitionIfAtReference(context));
             assert.deepStrictEqual(vDef.nameValue.toString(), "vName");
-            assert.deepStrictEqual(vDef.span, new Language.Span(17, 11));
+            assert.deepStrictEqual(vDef.span, new Span(17, 11));
         });
 
         test("with cursor after parameter name end quote with matching parameter definition", () => {
@@ -1604,7 +1602,7 @@ suite("TemplatePositionContext", () => {
             const context: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\"".length, undefined);
             const vDef: IVariableDefinition = nonNullValue(getVariableDefinitionIfAtReference(context));
             assert.deepStrictEqual(vDef.nameValue.toString(), "vName");
-            assert.deepStrictEqual(vDef.span, new Language.Span(17, 11));
+            assert.deepStrictEqual(vDef.span, new Span(17, 11));
         });
     });
 

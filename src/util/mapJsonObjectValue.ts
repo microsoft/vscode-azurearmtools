@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import * as Json from "../JSON";
+import * as Json from "../language/json/JSON";
 
 /**
  * Calls a function on each property of a Json.ObjectValue and replaces that property

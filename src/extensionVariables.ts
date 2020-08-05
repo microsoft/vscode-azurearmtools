@@ -7,14 +7,14 @@ import * as os from 'os';
 import * as vscode from "vscode";
 import { IAzExtOutputChannel, IAzureUserInput } from "vscode-azureextensionui";
 import { LanguageClient } from "vscode-languageclient";
-import { CompletionsSpy } from "./CompletionsSpy";
-import { IConfiguration, VsCodeConfiguration } from "./Configuration";
 import { configPrefix, isWebpack } from "./constants";
+import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
 import { LanguageServerState } from "./languageclient/startArmLanguageServer";
-import { DeploymentFileMapping } from "./parameterFiles/DeploymentFileMapping";
 import { ISnippetManager } from './snippets/ISnippetManager';
-import { JsonOutlineProvider } from "./Treeview";
+import { CompletionsSpy } from "./util/CompletionsSpy";
 import { InitializeBeforeUse } from "./util/InitializeBeforeUse";
+import { IConfiguration, VsCodeConfiguration } from './vscodeIntegration/Configuration';
+import { JsonOutlineProvider } from "./vscodeIntegration/Treeview";
 
 /**
  * Namespace for common variables used throughout the extension. They must be initialized in the activate() method of extension.ts

@@ -7,7 +7,7 @@ import { callWithTelemetryAndErrorHandling, IActionContext } from "vscode-azuree
 import { configPrefix, globalStateKeys } from './constants';
 import { ext } from "./extensionVariables";
 import { assert } from './fixed_assert';
-import { httpGet } from "./httpGet";
+import { httpGet } from "./util/httpGet";
 import { hoursToMs, minutesToMs, weeksToMs } from "./util/time";
 
 // Add the following to your settings file to put the survey into debug mode (using debugSurveyConstants):

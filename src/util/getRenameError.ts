@@ -3,8 +3,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { DefinitionKind } from "../INamedDefinition";
-import { IReferenceSite } from "../PositionContext";
+import { IReferenceSite } from "../documents/positionContexts/PositionContext";
+import { DefinitionKind } from "../language/INamedDefinition";
 
 /**
  * Checks if an IReferenceSite can be renamed.

@@ -5,10 +5,10 @@
 // tslint:disable:no-unused-expression no-non-null-assertion
 
 import * as assert from "assert";
-import { Json, Language, UserFunctionParameterDefinition } from "../extension.bundle";
+import { Json, Span, UserFunctionParameterDefinition } from "../extension.bundle";
 import { createStringProperty } from "./support/jsonCreation";
 
-const fakeSpan = new Language.Span(10, 20);
+const fakeSpan = new Span(10, 20);
 
 suite("UserFunctionParameterDefinition", () => {
     suite("constructor(Json.Property)", () => {
@@ -23,7 +23,7 @@ suite("UserFunctionParameterDefinition", () => {
         });
 
         test("with no fields (invalid without name)", () => {
-            const parameterDefinition = new Json.ObjectValue(new Language.Span(16, 2), []);
+            const parameterDefinition = new Json.ObjectValue(new Span(16, 2), []);
 
             const pd = UserFunctionParameterDefinition.createIfValid(parameterDefinition);
 

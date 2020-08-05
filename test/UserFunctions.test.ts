@@ -7,7 +7,7 @@
 
 import * as assert from "assert";
 import * as os from 'os';
-import { DefinitionKind, DeploymentTemplate, HoverInfo, IReferenceSite, Language } from "../extension.bundle";
+import { DefinitionKind, DeploymentTemplate, HoverInfo, IReferenceSite, Span } from "../extension.bundle";
 import { createExpressionCompletionsTestEx } from "./support/createCompletionsTest";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
@@ -1303,7 +1303,7 @@ suite("User functions", () => {
             dt: DeploymentTemplate,
             cursorIndex: number,
             expectedHoverText: string,
-            expectedSpan?: Language.Span
+            expectedSpan?: Span
         ): Promise<void> {
             const pc = dt.getContextFromDocumentCharacterIndex(cursorIndex, undefined);
             let hoverInfo: HoverInfo = pc.getHoverInfo()!;
@@ -1311,7 +1311,7 @@ suite("User functions", () => {
             hoverInfo = hoverInfo!;
 
             const text: string = hoverInfo.getHoverText();
-            const span: Language.Span = hoverInfo.span;
+            const span: Span = hoverInfo.span;
 
             assert.equal(text, expectedHoverText);
             if (expectedSpan) {
