@@ -3,7 +3,6 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 // ---------------------------------------------------------------------------------------------
 
-// CONSIDER: move to multiple files asdf
 // TLE = Template Language Expression
 
 // tslint:disable:no-unnecessary-class // Grandfathered in
@@ -24,8 +23,6 @@ import { IssueKind } from "../IssueKind";
 import * as Json from "../json/JSON";
 import * as basic from "../json/Tokenizer";
 import { ContainsBehavior, Span } from "../Span";
-
-//asdf rename classes, add TLE?
 
 export function isTleExpression(unquotedStringValue: string): boolean {
     // An expression must start with '[' (no whitespace before),

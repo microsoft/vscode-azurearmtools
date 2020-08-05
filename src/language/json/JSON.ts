@@ -563,7 +563,7 @@ export class Tokenizer {
  * The Value class is the generic JSON value base class that all other JSON value types inherit
  * from.
  */
-export abstract class Value { //asdf rename to JsonValue
+export abstract class Value {
     constructor(private _span: Span) {
     }
 
