@@ -7,6 +7,7 @@ import { IParameterDefinition } from '../documents/parameters/IParameterDefiniti
 import { IFunctionMetadata } from '../documents/templates/IFunctionMetadata';
 import { UserFunctionNamespaceDefinition } from '../documents/templates/UserFunctionNamespaceDefinition';
 import { IVariableDefinition } from "../documents/templates/VariableDefinition";
+import { assert } from '../fixed_assert';
 import { Span } from '../language/Span';
 
 export enum CompletionPriority {
@@ -152,11 +153,19 @@ export class Item {
         });
     }
 
-    public static fromParameterDefinition(parameter: IParameterDefinition, span: Span, includeRightParenthesisInCompletion: boolean): Item {
-        const label: string = `'${parameter.nameValue.unquotedValue}'`;
+    public static fromParameterDefinition(parameter: IParameterDefinition, span: Span, includeRightParenthesisInCompletion: boolean, includeSingleQuotesInCompletion: boolean): Item {
+        const parameterName = parameter.nameValue.unquotedValue;
+        const label: string = includeSingleQuotesInCompletion ? `'${parameterName}'` : parameterName;
+        let insertText: string = label;
+
+        if (includeRightParenthesisInCompletion) {
+            assert(includeSingleQuotesInCompletion, "includeSingleQuotesInCompletion required if includeRightParenthesisInCompletion");
+            insertText = `${insertText})`;
+        }
+
         return new Item({
             label,
-            insertText: `${label}${includeRightParenthesisInCompletion ? ")" : ""}`,
+            insertText,
             span,
             kind: CompletionKind.tleParameter,
             detail: `(parameter)`, // CONSIDER: Add type, default value, etc. from property definition
@@ -164,11 +173,19 @@ export class Item {
         });
     }
 
-    public static fromVariableDefinition(variable: IVariableDefinition, span: Span, includeRightParenthesisInCompletion: boolean): Item {
-        const label: string = `'${variable.nameValue.unquotedValue}'`;
+    public static fromVariableDefinition(variable: IVariableDefinition, span: Span, includeRightParenthesisInCompletion: boolean, includeSingleQuotesInCompletion: boolean): Item {
+        const variableName = variable.nameValue.unquotedValue;
+        const label: string = includeSingleQuotesInCompletion ? `'${variableName}'` : variableName;
+        let insertText: string = label;
+
+        if (includeRightParenthesisInCompletion) {
+            assert(includeSingleQuotesInCompletion, "includeSingleQuotesInCompletion required if includeRightParenthesisInCompletion");
+            insertText = `${insertText})`;
+        }
+
         return new Item({
             label,
-            insertText: `${label}${includeRightParenthesisInCompletion ? ")" : ""}`,
+            insertText,
             span,
             kind: CompletionKind.tleVariable,
             detail: `(variable)`
