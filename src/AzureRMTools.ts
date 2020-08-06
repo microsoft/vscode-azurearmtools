@@ -649,16 +649,16 @@ export class AzureRMTools {
         });
     }
 
-    private async reportDeploymentDocumentErrors(
+    private reportDeploymentDocumentErrors(
         textDocument: vscode.TextDocument,
         deploymentDocument: DeploymentDocument,
         associatedDocument: DeploymentDocument | undefined
-    ): Promise<IErrorsAndWarnings> {
+    ): IErrorsAndWarnings {
         // Don't wait
         // tslint:disable-next-line: no-floating-promises
         ++this._diagnosticsVersion;
 
-        let errors: Issue[] = await deploymentDocument.getErrors(associatedDocument);
+        let errors: Issue[] = deploymentDocument.getErrors(associatedDocument);
         const diagnostics: vscode.Diagnostic[] = [];
 
         for (const error of errors) {
@@ -687,10 +687,9 @@ export class AzureRMTools {
         return await callWithTelemetryAndErrorHandling('reportDeploymentTemplateErrors', async (actionContext: IActionContext): Promise<IErrorsAndWarnings> => {
             actionContext.telemetry.suppressIfSuccessful = true;
 
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO: Associated parameters
+            // Note: Associated parameters? Not currently used by getErrors
             const associatedParameters: DeploymentParameters | undefined = undefined;
-            return await this.reportDeploymentDocumentErrors(textDocument, deploymentTemplate, associatedParameters);
+            return this.reportDeploymentDocumentErrors(textDocument, deploymentTemplate, associatedParameters);
         });
     }
 
@@ -702,7 +701,7 @@ export class AzureRMTools {
             actionContext.telemetry.suppressIfSuccessful = true;
 
             const template = await this.getOrReadAssociatedTemplate(textDocument.uri, Cancellation.cantCancel);
-            return await this.reportDeploymentDocumentErrors(textDocument, deploymentParameters, template);
+            return this.reportDeploymentDocumentErrors(textDocument, deploymentParameters, template);
         });
     }
 
@@ -1027,7 +1026,7 @@ export class AzureRMTools {
                 incorrectArgs?: string;
             } & TelemetryProperties = actionContext.telemetry.properties;
 
-            let issues: Issue[] = await deploymentTemplate.getErrors(undefined);
+            let issues: Issue[] = deploymentTemplate.getErrors(undefined);
 
             // Full function counts
             const functionCounts: Histogram = deploymentTemplate.getFunctionCounts();

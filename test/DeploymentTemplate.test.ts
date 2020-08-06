@@ -184,23 +184,20 @@ suite("DeploymentTemplate", () => {
     suite("errors", () => {
         test("with empty deployment template", () => {
             const dt = new DeploymentTemplate("", fakeId);
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(errors, []);
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(errors, []);
         });
 
         test("with empty object deployment template", () => {
             const dt = new DeploymentTemplate("{}", fakeId);
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(errors, []);
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(errors, []);
         });
 
         test("with one property deployment template", () => {
             const dt = new DeploymentTemplate("{ 'name': 'value' }", fakeId);
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(errors, []);
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(errors, []);
         });
 
         test("with one TLE parse error deployment template", () => {
@@ -208,9 +205,8 @@ suite("DeploymentTemplate", () => {
             const expectedErrors = [
                 new Issue(new Span(20, 1), "Expected a right square bracket (']').", IssueKind.tleSyntax)
             ];
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(errors, expectedErrors);
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(errors, expectedErrors);
         });
 
         test("with one undefined parameter error deployment template", () => {
@@ -218,9 +214,8 @@ suite("DeploymentTemplate", () => {
             const expectedErrors = [
                 new Issue(new Span(23, 6), "Undefined parameter reference: \"test\"", IssueKind.undefinedParam)
             ];
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(errors, expectedErrors);
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(errors, expectedErrors);
         });
 
         test("with one undefined variable error deployment template", () => {
@@ -228,9 +223,8 @@ suite("DeploymentTemplate", () => {
             const expectedErrors = [
                 new Issue(new Span(22, 6), "Undefined variable reference: \"test\"", IssueKind.undefinedVar)
             ];
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(errors, expectedErrors);
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(errors, expectedErrors);
         });
 
         test("with one unrecognized user namespace error deployment template", () => {
@@ -238,9 +232,8 @@ suite("DeploymentTemplate", () => {
             const expectedErrors = [
                 new UnrecognizedUserNamespaceIssue(new Span(12, 9), "namespace")
             ];
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(errors, expectedErrors);
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(errors, expectedErrors);
         });
 
         test("with one unrecognized user function error deployment template", () => {
@@ -271,9 +264,8 @@ suite("DeploymentTemplate", () => {
             const expectedErrors = [
                 new UnrecognizedUserFunctionIssue(new Span(22, 4), "contoso", "blah")
             ];
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(errors, expectedErrors);
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(errors, expectedErrors);
         });
 
         test("with one user function referenced in deployment template", () => {
@@ -299,9 +291,8 @@ suite("DeploymentTemplate", () => {
                 fakeId);
             const expectedErrors: string[] = [
             ];
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(errors, expectedErrors);
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(errors, expectedErrors);
         });
 
         test("with one user function where function name matches a built-in function name", async () => {
@@ -346,9 +337,8 @@ suite("DeploymentTemplate", () => {
             const expectedErrors = [
                 new UnrecognizedUserFunctionIssue(new Span(22, 9), "contoso", "reference")
             ];
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(errors, expectedErrors);
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(errors, expectedErrors);
         });
 
         test("can't reference variables from within user function", async () => {
@@ -377,18 +367,17 @@ suite("DeploymentTemplate", () => {
             const expectedErrors = [
                 new Issue(new Span(243, 6), "User functions cannot reference variables", IssueKind.varInUdf)
             ];
-            const errors: Issue[] = await dt.getErrors(undefined);
+            const errors: Issue[] = dt.getErrors(undefined);
             assert.deepStrictEqual(errors, expectedErrors);
         });
 
         test("with reference() call in variable definition", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "[reference('test')]" } }`, fakeId);
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(
-                    errors,
-                    [new Issue(new Span(24, 9), "reference() cannot be invoked inside of a variable definition.", IssueKind.referenceInVar)]
-                );
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(
+                errors,
+                [new Issue(new Span(24, 9), "reference() cannot be invoked inside of a variable definition.", IssueKind.referenceInVar)]
+            );
         });
 
         test("Calling user function with name 'reference' okay in variables", async () => {
@@ -428,65 +417,58 @@ suite("DeploymentTemplate", () => {
 
         test("with reference() call inside a different expression in a variable definition", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "[concat(reference('test'))]" } }`, fakeId);
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(
-                    errors,
-                    [new Issue(new Span(31, 9), "reference() cannot be invoked inside of a variable definition.", IssueKind.referenceInVar)]);
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(
+                errors,
+                [new Issue(new Span(31, 9), "reference() cannot be invoked inside of a variable definition.", IssueKind.referenceInVar)]);
         });
 
         test("with unnamed property access on variable reference", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": {} }, "z": "[variables('a').]" }`, fakeId);
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(
-                    errors,
-                    [new Issue(new Span(50, 1), "Expected a literal value.", IssueKind.tleSyntax)]);
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(
+                errors,
+                [new Issue(new Span(50, 1), "Expected a literal value.", IssueKind.tleSyntax)]);
         });
 
         test("with property access on variable reference without variable name", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": {} }, "z": "[variables().b]" }`, fakeId);
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(
-                    errors,
-                    [new IncorrectArgumentsCountIssue(new Span(35, 11), "The function 'variables' takes 1 argument.", "variables", 0, 1, 1)]);
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(
+                errors,
+                [new IncorrectArgumentsCountIssue(new Span(35, 11), "The function 'variables' takes 1 argument.", "variables", 0, 1, 1)]);
         });
 
         test("with property access on string variable reference", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "A" }, "z": "[variables('a').b]" }`, fakeId);
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(
-                    errors,
-                    [new Issue(new Span(51, 1), `Property "b" is not a defined property of "variables('a')".`, IssueKind.undefinedVarProp)]);
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(
+                errors,
+                [new Issue(new Span(51, 1), `Property "b" is not a defined property of "variables('a')".`, IssueKind.undefinedVarProp)]);
         });
 
         test("with undefined variable reference child property", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": {} }, "z": "[variables('a').b]" }`, fakeId);
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(
-                    errors,
-                    [new Issue(new Span(50, 1), `Property "b" is not a defined property of "variables('a')".`, IssueKind.undefinedVarProp)]);
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(
+                errors,
+                [new Issue(new Span(50, 1), `Property "b" is not a defined property of "variables('a')".`, IssueKind.undefinedVarProp)]);
         });
 
         test("with undefined variable reference grandchild property", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": { "b": {} } }, "z": "[variables('a').b.c]" }`, fakeId);
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(
-                    errors,
-                    [new Issue(new Span(61, 1), `Property "c" is not a defined property of "variables('a').b".`, IssueKind.undefinedVarProp)]);
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(
+                errors,
+                [new Issue(new Span(61, 1), `Property "c" is not a defined property of "variables('a').b".`, IssueKind.undefinedVarProp)]);
         });
 
         test("with undefined variable reference child and grandchild properties", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": { "d": {} } }, "z": "[variables('a').b.c]" }`, fakeId);
-            return dt.getErrors(undefined).then((errors: Issue[]) => {
-                assert.deepStrictEqual(
-                    errors,
-                    [new Issue(new Span(59, 1), `Property "b" is not a defined property of "variables('a')".`, IssueKind.undefinedVarProp)]);
-            });
+            const errors = dt.getErrors(undefined);
+            assert.deepStrictEqual(
+                errors,
+                [new Issue(new Span(59, 1), `Property "b" is not a defined property of "variables('a')".`, IssueKind.undefinedVarProp)]);
         });
     });
 

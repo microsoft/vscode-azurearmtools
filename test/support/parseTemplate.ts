@@ -43,6 +43,8 @@ interface Markers {
  * Pass in a template with positions marked using the notation <!tagname!>
  * Returns the parsed document without the tags, plus a dictionary of the tags and their positions
  */
+// tslint:disable-next-line: no-suspicious-comment
+// TODO: Make synchronous
 export async function parseTemplateWithMarkers(
     template: string | IPartialDeploymentTemplate,
     expectedDiagnosticMessages?: string[],
@@ -71,7 +73,7 @@ export async function parseTemplateWithMarkers(
     };
 
     // Always run these even if not checking against expected, to verify nothing throws
-    const errors: Issue[] = await dt.getErrors(undefined);
+    const errors: Issue[] = dt.getErrors(undefined);
     const warnings: Issue[] = dt.getWarnings();
     const errorMessages = errors.map(e => <DiagIssue>{ line: e.span.startIndex, msg: getMessage(e, true), kind: 'Error' });
     const warningMessages = warnings.map(e => <DiagIssue>{ line: e.span.startIndex, msg: getMessage(e, false), kind: 'Warning' });
