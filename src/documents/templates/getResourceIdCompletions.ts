@@ -11,7 +11,7 @@ import { Span } from "../../language/Span";
 import * as Completion from "../../vscodeIntegration/Completion";
 import { PositionContext } from "../positionContexts/PositionContext";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
-import { DeploymentTemplate } from "./DeploymentTemplate";
+import { DeploymentTemplateDoc } from "./DeploymentTemplateDoc";
 import { FunctionBehaviors } from "./IFunctionMetadata";
 
 // Handle completions for resourceId and similar functions with the usesResourceIdCompletions behavior
@@ -251,7 +251,7 @@ function getReplacementSpan(pc: PositionContext, argument: TLE.Value | undefined
 /**
  * Get useful info about each resource in the template
  */
-function getResourcesInfo(template: DeploymentTemplate): IResourceInfo[] {
+function getResourcesInfo(template: DeploymentTemplateDoc): IResourceInfo[] {
     if (template.resourceObjects) {
         return getInfoFromResourcesArray(template.resourceObjects, undefined, template);
     }
@@ -259,7 +259,7 @@ function getResourcesInfo(template: DeploymentTemplate): IResourceInfo[] {
     return [];
 }
 
-function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IResourceInfo | undefined, dt: DeploymentTemplate): IResourceInfo[] {
+function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IResourceInfo | undefined, dt: DeploymentTemplateDoc): IResourceInfo[] {
     const results: IResourceInfo[] = [];
     for (let resourceValue of resourcesArray.elements ?? []) {
         const resourceObject = Json.asObjectValue(resourceValue);
@@ -405,7 +405,7 @@ function getFullTypeName(info: IResourceInfo): string {
 //   "[concat(variables('sqlServer'), '/' , variables('firewallRuleName'))]"
 //     ->
 //   [ "concat(variables('sqlServer')", "variables('firewallRuleName')" ]
-export function splitResourceNameIntoSegments(nameUnquotedValue: string, dt: DeploymentTemplate): string[] {
+export function splitResourceNameIntoSegments(nameUnquotedValue: string, dt: DeploymentTemplateDoc): string[] {
     if (isExpression(nameUnquotedValue)) {
         // It's an expression.  Try to break it into segments by handling certain common patterns
 

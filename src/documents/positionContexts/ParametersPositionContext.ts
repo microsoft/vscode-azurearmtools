@@ -5,9 +5,9 @@
 import * as TLE from '../../language/expressions/TLE';
 import { ReferenceList } from "../../language/ReferenceList";
 import { ContainsBehavior } from '../../language/Span';
-import { DeploymentParameters } from "../parameters/DeploymentParameters";
+import { DeploymentParametersDoc } from "../parameters/DeploymentParametersDoc";
 import { getPropertyValueCompletionItems } from "../parameters/ParameterValues";
-import { DeploymentTemplate } from "../templates/DeploymentTemplate";
+import { DeploymentTemplateDoc } from "../templates/DeploymentTemplateDoc";
 import { ICompletionItemsResult, IReferenceSite, PositionContext, ReferenceSiteKind } from "./PositionContext";
 
 /**
@@ -16,26 +16,26 @@ import { ICompletionItemsResult, IReferenceSite, PositionContext, ReferenceSiteK
  */
 export class ParametersPositionContext extends PositionContext {
     // CONSIDER: pass in function to *get* the deployment template, not the template itself?
-    private _associatedTemplate: DeploymentTemplate | undefined;
+    private _associatedTemplate: DeploymentTemplateDoc | undefined;
 
-    private constructor(deploymentParameters: DeploymentParameters, associatedTemplate: DeploymentTemplate | undefined) {
+    private constructor(deploymentParameters: DeploymentParametersDoc, associatedTemplate: DeploymentTemplateDoc | undefined) {
         super(deploymentParameters, associatedTemplate);
         this._associatedTemplate = associatedTemplate;
     }
 
-    public static fromDocumentLineAndColumnIndices(deploymentParameters: DeploymentParameters, documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentTemplate | undefined): ParametersPositionContext {
+    public static fromDocumentLineAndColumnIndices(deploymentParameters: DeploymentParametersDoc, documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentTemplateDoc | undefined): ParametersPositionContext {
         let context = new ParametersPositionContext(deploymentParameters, associatedTemplate);
         context.initFromDocumentLineAndColumnIndices(documentLineIndex, documentColumnIndex);
         return context;
     }
-    public static fromDocumentCharacterIndex(deploymentParameters: DeploymentParameters, documentCharacterIndex: number, deploymentTemplate: DeploymentTemplate | undefined): ParametersPositionContext {
+    public static fromDocumentCharacterIndex(deploymentParameters: DeploymentParametersDoc, documentCharacterIndex: number, deploymentTemplate: DeploymentTemplateDoc | undefined): ParametersPositionContext {
         let context = new ParametersPositionContext(deploymentParameters, deploymentTemplate);
         context.initFromDocumentCharacterIndex(documentCharacterIndex);
         return context;
     }
 
-    public get document(): DeploymentParameters {
-        return <DeploymentParameters>super.document;
+    public get document(): DeploymentParametersDoc {
+        return <DeploymentParametersDoc>super.document;
     }
 
     /**

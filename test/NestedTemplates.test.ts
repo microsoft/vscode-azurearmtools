@@ -6,7 +6,7 @@
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name no-constant-condition
 
 import * as assert from "assert";
-import { ExpressionScopeKind, ReferenceList, ScopeKind } from "../extension.bundle";
+import { ExpressionScopeKind, ReferenceList, TemplateScopeKind } from "../extension.bundle";
 import { IPartialDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
 import { testWithRealFunctionMetadata } from "./TestData";
@@ -50,9 +50,9 @@ suite("Nested templates", () => {
                 const dt = await parseTemplate(template);
                 const child = dt.topLevelScope.resources[0].childDeployment;
                 const actualScopeKind =
-                    child?.scopeKind === ScopeKind.NestedDeploymentWithInnerScope
+                    child?.scopeKind === TemplateScopeKind.NestedDeploymentWithInnerScope
                         ? ExpressionScopeKind.inner
-                        : child?.scopeKind === ScopeKind.NestedDeploymentWithOuterScope
+                        : child?.scopeKind === TemplateScopeKind.NestedDeploymentWithOuterScope
                             ? ExpressionScopeKind.outer
                             : undefined;
                 assert.equal(actualScopeKind, expectedScopeKind);

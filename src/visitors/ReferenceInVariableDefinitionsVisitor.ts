@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { DeploymentTemplate } from "../documents/templates/DeploymentTemplate";
+import { DeploymentTemplateDoc } from "../documents/templates/DeploymentTemplateDoc";
 import { assert } from '../fixed_assert';
 import * as TLE from "../language/expressions/TLE";
 import * as Json from "../language/json/JSON";
@@ -15,7 +15,7 @@ import { Span } from "../language/Span";
 export class ReferenceInVariableDefinitionsVisitor extends Json.Visitor {
     private _referenceSpans: Span[] = [];
 
-    constructor(private _deploymentTemplate: DeploymentTemplate) {
+    constructor(private _deploymentTemplate: DeploymentTemplateDoc) {
         super();
 
         assert(_deploymentTemplate);

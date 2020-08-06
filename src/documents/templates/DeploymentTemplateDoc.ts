@@ -6,7 +6,7 @@
 
 import * as assert from 'assert';
 import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
-import { ScopeKind } from '../../../extension.bundle';
+import { TemplateScopeKind } from '../../../extension.bundle';
 import { configKeys, templateKeys } from "../../constants";
 import { ext } from '../../extensionVariables';
 import { AzureRMAssets, FunctionsMetadata } from "../../language/expressions/AzureRMAssets";
@@ -30,17 +30,20 @@ import { UndefinedParameterAndVariableVisitor } from "../../visitors/UndefinedPa
 import * as UndefinedVariablePropertyVisitor from "../../visitors/UndefinedVariablePropertyVisitor";
 import * as UnrecognizedFunctionVisitor from "../../visitors/UnrecognizedFunctionVisitor";
 import { DeploymentDocument, ResolvableCodeLens } from "../DeploymentDocument";
-import { DeploymentParameters } from "../parameters/DeploymentParameters";
+import { DeploymentParametersDoc } from "../parameters/DeploymentParametersDoc";
 import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSourceProvider';
 import { getMissingParameterErrors, getParameterValuesCodeActions } from '../parameters/ParameterValues';
 import { SynchronousParameterValuesSourceProvider } from "../parameters/SynchronousParameterValuesSourceProvider";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
 import { LinkedTemplateCodeLens, NestedTemplateCodeLen, ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
-import { TemplateScope, TemplateScopeKind } from "./scopes/TemplateScope";
+import { TemplateScope } from "./scopes/TemplateScope";
 import { NestedTemplateOuterScope, TopLevelTemplateScope } from './scopes/templateScopes';
 import { UserFunctionParameterDefinition } from './UserFunctionParameterDefinition';
 
-export class DeploymentTemplate extends DeploymentDocument {
+/**
+ * Represents a deployment template file
+ */
+export class DeploymentTemplateDoc extends DeploymentDocument {
     // The top-level parameters and variables (as opposed to those in user functions and deployment resources)
     private _topLevelScope: CachedValue<TemplateScope> = new CachedValue<TemplateScope>();
 
@@ -406,11 +409,11 @@ export class DeploymentTemplate extends DeploymentDocument {
 
     //#endregion
 
-    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentParameters | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
+    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentParametersDoc | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
         return TemplatePositionContext.fromDocumentLineAndColumnIndexes(this, documentLineIndex, documentColumnIndex, associatedParameters, allowOutOfBounds);
     }
 
-    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedParameters: DeploymentParameters | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
+    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedParameters: DeploymentParametersDoc | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
         return TemplatePositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex, associatedParameters, allowOutOfBounds);
     }
 
@@ -465,7 +468,7 @@ export class DeploymentTemplate extends DeploymentDocument {
         range: Range | Selection,
         context: CodeActionContext
     ): (Command | CodeAction)[] {
-        assert(!associatedDocument || associatedDocument instanceof DeploymentParameters, "Associated document is of the wrong type");
+        assert(!associatedDocument || associatedDocument instanceof DeploymentParametersDoc, "Associated document is of the wrong type");
         const actions: (CodeAction | Command)[] = [];
 
         for (const scope of this.uniqueScopes) {
@@ -559,14 +562,14 @@ export class DeploymentTemplate extends DeploymentDocument {
         for (let scope of this.allScopes) {
             if (scope.rootObject) {
                 switch (scope.scopeKind) {
-                    case ScopeKind.NestedDeploymentWithInnerScope:
-                    case ScopeKind.NestedDeploymentWithOuterScope:
+                    case TemplateScopeKind.NestedDeploymentWithInnerScope:
+                    case TemplateScopeKind.NestedDeploymentWithOuterScope:
                         const lens = NestedTemplateCodeLen.create(scope, scope.rootObject.span);
                         if (lens) {
                             lenses.push(lens);
                         }
                         break;
-                    case ScopeKind.LinkedDeployment:
+                    case TemplateScopeKind.LinkedDeployment:
                         lenses.push(LinkedTemplateCodeLens.create(scope, scope.rootObject.span));
                         break;
                     default:
@@ -613,13 +616,13 @@ class StringParseAndScopeAssignmentVisitor extends Json.Visitor {
     private _currentScope: TemplateScope;
     private readonly _uniqueTemplateScopes: TemplateScope[] = [];
 
-    public constructor(private readonly _dt: DeploymentTemplate) {
+    public constructor(private readonly _dt: DeploymentTemplateDoc) {
         super();
         this._currentScope = _dt.topLevelScope;
         this._uniqueTemplateScopes = _dt.uniqueScopes;
     }
 
-    public static createParsedStringMap(dt: DeploymentTemplate): Map<Json.StringValue, TLE.TleParseResult> {
+    public static createParsedStringMap(dt: DeploymentTemplateDoc): Map<Json.StringValue, TLE.TleParseResult> {
         const visitor = new StringParseAndScopeAssignmentVisitor(dt);
         return visitor.createMap();
     }

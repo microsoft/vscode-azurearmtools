@@ -7,7 +7,7 @@
 
 import * as assert from 'assert';
 import { isNullOrUndefined } from 'util';
-import { DeploymentTemplate } from "../extension.bundle";
+import { DeploymentTemplateDoc } from "../extension.bundle";
 import { newParamValueCompletionLabel } from './support/constants';
 import { IDeploymentParametersFile, IDeploymentTemplate } from "./support/diagnostics";
 import { parseParametersWithMarkers, parseTemplate } from "./support/parseTemplate";
@@ -33,7 +33,7 @@ suite("Parameter file completions", () => {
     ): void {
         const fullName = isNullOrUndefined(options.cursorIndex) ? testName : `${testName}, index=${options.cursorIndex}`;
         test(fullName, async () => {
-            let dt: DeploymentTemplate | undefined = template ? await parseTemplate(template) : undefined;
+            let dt: DeploymentTemplateDoc | undefined = template ? await parseTemplate(template) : undefined;
 
             const { dp, markers: { bang } } = await parseParametersWithMarkers(params);
             const cursorIndex = !isNullOrUndefined(options.cursorIndex) ? options.cursorIndex : bang.index;

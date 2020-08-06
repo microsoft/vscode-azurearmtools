@@ -6,7 +6,7 @@
 
 import * as assert from "assert";
 import { Uri } from "vscode";
-import { DeploymentTemplate } from "../extension.bundle";
+import { DeploymentTemplateDoc } from "../extension.bundle";
 import { stringify } from "./support/stringify";
 import { useRealFunctionMetadata, useTestFunctionMetadata } from "./TestData";
 
@@ -19,7 +19,7 @@ suite("Template tests", () => {
         function verifyTemplateHasNoErrors(template: string | object): void {
             useRealFunctionMetadata();
             try {
-                const dt = new DeploymentTemplate(typeof template === "string" ? template : stringify(template), Uri.file("id"));
+                const dt = new DeploymentTemplateDoc(typeof template === "string" ? template : stringify(template), Uri.file("id"));
                 const expectedErrors: string[] = [
                 ];
                 let errors = dt.getErrors(undefined);

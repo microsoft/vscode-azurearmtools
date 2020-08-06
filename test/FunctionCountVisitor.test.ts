@@ -7,10 +7,10 @@
 
 import * as assert from "assert";
 import { Uri } from "vscode";
-import { DeploymentTemplate, FunctionCountVisitor, Histogram, TemplateScope, TLE, TopLevelTemplateScope } from "../extension.bundle";
+import { DeploymentTemplateDoc, FunctionCountVisitor, Histogram, TemplateScope, TLE, TopLevelTemplateScope } from "../extension.bundle";
 
 suite("FunctionCountVisitor", () => {
-    const dt = new DeploymentTemplate("", Uri.file("/doc"));
+    const dt = new DeploymentTemplateDoc("", Uri.file("/doc"));
     const emptyScope: TemplateScope = new TopLevelTemplateScope(dt, undefined, "empty");
 
     function testFunctionCountsVisitor(expressionWithoutQuotes: string, expectedFunctionCounts: { [key: string]: number }): void {

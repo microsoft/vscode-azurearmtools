@@ -6,7 +6,7 @@ import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import { Uri } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
-import { DeploymentParameters, DeploymentTemplate, Issue } from "../../extension.bundle";
+import { DeploymentParametersDoc, DeploymentTemplateDoc, Issue } from "../../extension.bundle";
 import { IDeploymentParametersFile, IPartialDeploymentTemplate } from './diagnostics';
 import { resolveInTestFolder } from './resolveInTestFolder';
 import { stringify } from "./stringify";
@@ -24,7 +24,7 @@ export async function parseTemplate(
         includeDiagnosticLineNumbers?: boolean;
         replacements?: { [key: string]: string | { [key: string]: unknown } };
     }
-): Promise<DeploymentTemplate> {
+): Promise<DeploymentTemplateDoc> {
     // Go ahead and allow markers in the document to be removed, we just won't mark them (makes it easier to share the same template in multiple places)
     const { dt } = await parseTemplateWithMarkers(template, expectedDiagnosticMessages, options);
     return dt;
@@ -55,7 +55,7 @@ export async function parseTemplateWithMarkers(
         ignoreBang?: boolean;
         replacements?: { [key: string]: string | { [key: string]: unknown } };
     }
-): Promise<{ dt: DeploymentTemplate; markers: Markers }> {
+): Promise<{ dt: DeploymentTemplateDoc; markers: Markers }> {
     if (options?.fromFile) {
         const absPath = resolveInTestFolder(<string>template);
         const contents: string = fse.readFileSync(absPath).toString();
@@ -64,7 +64,7 @@ export async function parseTemplateWithMarkers(
 
     const withReplacements = options?.replacements ? replaceInTemplate(template, options.replacements) : template;
     const { unmarkedText, markers } = getDocumentMarkers(withReplacements, options);
-    const dt: DeploymentTemplate = new DeploymentTemplate(unmarkedText, Uri.file("/parseTemplate template.json"));
+    const dt: DeploymentTemplateDoc = new DeploymentTemplateDoc(unmarkedText, Uri.file("/parseTemplate template.json"));
 
     type DiagIssue = {
         line: number;
@@ -112,9 +112,9 @@ export async function parseTemplateWithMarkers(
  */
 export async function parseParametersWithMarkers(
     json: string | Partial<IDeploymentParametersFile>
-): Promise<{ dp: DeploymentParameters; unmarkedText: string; markers: Markers }> {
+): Promise<{ dp: DeploymentParametersDoc; unmarkedText: string; markers: Markers }> {
     const { unmarkedText, markers } = getDocumentMarkers(json);
-    const dp: DeploymentParameters = new DeploymentParameters(unmarkedText, Uri.file("/test parameter file.json"));
+    const dp: DeploymentParametersDoc = new DeploymentParametersDoc(unmarkedText, Uri.file("/test parameter file.json"));
 
     // Always run these even if not checking against expected, to verify nothing throws
     // tslint:disable-next-line:no-unused-expression

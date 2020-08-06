@@ -15,7 +15,7 @@ import { ITestCallbackContext } from 'mocha';
 import * as path from 'path';
 import * as stripJsonComments from 'strip-json-comments';
 import { commands, Selection, Uri, window, workspace } from "vscode";
-import { DeploymentTemplate, getVSCodePositionFromPosition } from '../../extension.bundle';
+import { DeploymentTemplateDoc, getVSCodePositionFromPosition } from '../../extension.bundle';
 import { testLog } from '../support/createTestLog';
 import { delay } from '../support/delay';
 import { diagnosticSources, getDiagnosticsForDocument, IGetDiagnosticsOptions } from '../support/diagnostics';
@@ -444,7 +444,7 @@ suite("Snippets functional tests", () => {
         const snippetInsertIndex: number = template.indexOf(snippetInsertComment);
         const snippetInsertLength: number = snippetInsertComment.length;
         assert(snippetInsertIndex >= 0, `Couldn't find location to insert snippet (looking for "${snippetInsertComment}")`);
-        const fakeDt = new DeploymentTemplate(template, Uri.file("fake template"));
+        const fakeDt = new DeploymentTemplateDoc(template, Uri.file("fake template"));
         const snippetInsertPos = getVSCodePositionFromPosition(fakeDt.getContextFromDocumentCharacterIndex(snippetInsertIndex, undefined).documentPosition);
         const snippetInsertEndPos = getVSCodePositionFromPosition(fakeDt.getContextFromDocumentCharacterIndex(snippetInsertIndex + snippetInsertLength, undefined).documentPosition);
 

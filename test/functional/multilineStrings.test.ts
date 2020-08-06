@@ -7,7 +7,7 @@
 
 import * as assert from 'assert';
 import * as os from 'os';
-import { ext, indentMultilineString, removeIndentation } from "../../extension.bundle";
+import { ext, indentMultilineString, unindentMultilineString } from "../../extension.bundle";
 
 for (let eolIndex of [0, 1]) {
     const eolLabel = ['win32', 'Mac/Linux'][eolIndex];
@@ -77,7 +77,7 @@ for (let eolIndex of [0, 1]) {
                     try {
                         ext.EOL = EOL;
 
-                        const indented = removeIndentation(input, ignoreFirstLine);
+                        const indented = unindentMultilineString(input, ignoreFirstLine);
 
                         const indentedEscaped = escape(indented);
                         const expectedEscaped = escape(expected);

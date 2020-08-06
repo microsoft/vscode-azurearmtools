@@ -12,7 +12,7 @@ import { ext } from '../../extensionVariables';
 import { containsParametersSchema } from '../../schemas';
 import { normalizePath } from '../../util/normalizePath';
 import { pathExists } from '../../util/pathExists';
-import { DeploymentTemplate } from '../templates/DeploymentTemplate';
+import { DeploymentTemplateDoc } from '../templates/DeploymentTemplateDoc';
 import { documentSchemes } from '../templates/supported';
 import { DeploymentFileMapping } from './DeploymentFileMapping';
 import { queryCreateParameterFile } from './parameterFileGeneration';
@@ -63,7 +63,7 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
 
   // Get the template file contents so we can find the top-level parameters
   const contents = editor.document.getText(undefined);
-  const template: DeploymentTemplate = new DeploymentTemplate(contents, templateUri);
+  const template: DeploymentTemplateDoc = new DeploymentTemplateDoc(contents, templateUri);
 
   let quickPickList: IQuickPickList = await createParameterFileQuickPickList(mapping, templateUri);
   // Show the quick pick

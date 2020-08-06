@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import { Selection, SnippetString, TextEditor } from 'vscode';
-import { DeploymentTemplate, getVSCodeRangeFromSpan } from '../../extension.bundle';
+import { DeploymentTemplateDoc, getVSCodeRangeFromSpan } from '../../extension.bundle';
 import { testLog } from './createTestLog';
 import { delay } from './delay';
 import { stringify } from './stringify';
@@ -14,13 +14,13 @@ export async function simulateCompletion(
     triggerCharacter: string | undefined
 ): Promise<void> {
     let pos = editor.selection.anchor;
-    let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(editor.document.getText(), editor.document.uri);
+    let deploymentTemplate: DeploymentTemplateDoc = new DeploymentTemplateDoc(editor.document.getText(), editor.document.uri);
     let pc = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(pos.line, pos.character, undefined, true);
 
     if (triggerCharacter) {
         // Type the trigger character
         const newContents = await typeInDocumentAndWait(editor, triggerCharacter);
-        deploymentTemplate = new DeploymentTemplate(newContents, editor.document.uri);
+        deploymentTemplate = new DeploymentTemplateDoc(newContents, editor.document.uri);
         pos = editor.selection.anchor;
         pc = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(pos.line, pos.character, undefined, true);
     }
@@ -32,7 +32,7 @@ export async function simulateCompletion(
         // Trigger again after entering a newline
         const newContents = await typeInDocumentAndWait(editor, '\n');
 
-        deploymentTemplate = new DeploymentTemplate(newContents, editor.document.uri);
+        deploymentTemplate = new DeploymentTemplateDoc(newContents, editor.document.uri);
         pos = editor.selection.anchor;
         pc = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(pos.line, pos.character, undefined, true);
 

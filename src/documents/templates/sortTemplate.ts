@@ -9,7 +9,7 @@ import * as Json from "../../language/json/JSON";
 import { Span } from "../../language/Span";
 import { assertNever } from "../../util/assertNever";
 import { IParameterDefinition } from "../parameters/IParameterDefinition";
-import { DeploymentTemplate } from "./DeploymentTemplate";
+import { DeploymentTemplateDoc } from "./DeploymentTemplateDoc";
 import { TemplateSectionType } from "./TemplateSectionType";
 import { UserFunctionDefinition } from './UserFunctionDefinition';
 import { UserFunctionNamespaceDefinition } from './UserFunctionNamespaceDefinition';
@@ -41,7 +41,7 @@ export function getQuickPickItems(): SortQuickPickItem[] {
     return items;
 }
 
-export async function sortTemplate(template: DeploymentTemplate | undefined, sectionType: TemplateSectionType, textEditor: vscode.TextEditor): Promise<void> {
+export async function sortTemplate(template: DeploymentTemplateDoc | undefined, sectionType: TemplateSectionType, textEditor: vscode.TextEditor): Promise<void> {
     if (!template) {
         return;
     }
@@ -88,7 +88,7 @@ async function showSortingResultMessage(sortAction: () => Promise<boolean>, part
  * @param textEditor The current text editor
  * @returns True if order was changed when sorting, otherwise false
  */
-async function sortOutputs(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
+async function sortOutputs(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor): Promise<boolean> {
     let rootValue = template.topLevelValue;
     if (!rootValue) {
         return false;
@@ -106,7 +106,7 @@ async function sortOutputs(template: DeploymentTemplate, textEditor: vscode.Text
  * @param textEditor The current text editor
  * @returns True if the order was changed when sorting, otherwise false
  */
-async function sortResources(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
+async function sortResources(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor): Promise<boolean> {
     let rootValue = template.topLevelValue;
     if (!rootValue) {
         return false;
@@ -127,7 +127,7 @@ async function sortResources(template: DeploymentTemplate, textEditor: vscode.Te
  * @param textEditor The current text editor
  * @returns True if order was changed after sorting, otherwise false
  */
-async function sortTopLevel(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
+async function sortTopLevel(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor): Promise<boolean> {
     let rootValue = template.topLevelValue;
     if (!rootValue) {
         return false;
@@ -141,7 +141,7 @@ async function sortTopLevel(template: DeploymentTemplate, textEditor: vscode.Tex
  * @param textEditor The current text editor
  * @returns True if order was changed after sorting, otherwise false
  */
-async function sortVariables(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
+async function sortVariables(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor): Promise<boolean> {
     return await sortGeneric<IVariableDefinition>(
         template.topLevelScope.variableDefinitions,
         x => x.nameValue.quotedValue, x => x.span, template, textEditor);
@@ -153,7 +153,7 @@ async function sortVariables(template: DeploymentTemplate, textEditor: vscode.Te
  * @param textEditor The current text editor
  * @returns True if order was changed after sorting, otherwise false
  */
-async function sortParameters(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
+async function sortParameters(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor): Promise<boolean> {
     return await sortGeneric<IParameterDefinition>(
         template.topLevelScope.parameterDefinitions,
         x => x.nameValue.quotedValue, x => x.fullSpan, template, textEditor);
@@ -165,7 +165,7 @@ async function sortParameters(template: DeploymentTemplate, textEditor: vscode.T
  * @param textEditor The current text editor
  * @returns True if order was changed after sorting, otherwise false
  */
-async function sortFunctions(template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
+async function sortFunctions(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor): Promise<boolean> {
     let didSort1 = await sortGenericDeep<UserFunctionNamespaceDefinition, UserFunctionDefinition>(
         template.topLevelScope.namespaceDefinitions,
         x => x.members, x => x.nameValue.quotedValue, x => x.span, template, textEditor);
@@ -233,7 +233,7 @@ function getTopLevelOrder(key: string): string {
     }
 }
 
-async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spanSelector: (value: T) => Span, template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
+async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spanSelector: (value: T) => Span, template: DeploymentTemplateDoc, textEditor: vscode.TextEditor): Promise<boolean> {
     if (list.length < 2) {
         return false;
     }
@@ -254,7 +254,7 @@ async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spa
     return true;
 }
 
-async function sortGenericDeep<T, TChild>(list: T[], childSelector: (value: T) => TChild[] | undefined, sortSelector: (value: TChild) => string, spanSelector: (value: TChild) => Span, template: DeploymentTemplate, textEditor: vscode.TextEditor): Promise<boolean> {
+async function sortGenericDeep<T, TChild>(list: T[], childSelector: (value: T) => TChild[] | undefined, sortSelector: (value: TChild) => string, spanSelector: (value: TChild) => Span, template: DeploymentTemplateDoc, textEditor: vscode.TextEditor): Promise<boolean> {
     let didSorting = false;
     for (let item of list) {
         let children = childSelector(item);
