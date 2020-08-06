@@ -17,10 +17,10 @@ import { KnownSnippetContexts } from "../../snippets/SnippetContext";
 import { SnippetInsertionContext } from "../../snippets/SnippetInsertionContext";
 import { CachedValue } from "../../util/CachedValue";
 import * as Completion from "../../vscodeIntegration/Completion";
-import { DeploymentParameters } from "../parameters/DeploymentParameters";
+import { DeploymentParametersDoc } from "../parameters/DeploymentParametersDoc";
 import { IParameterDefinition } from "../parameters/IParameterDefinition";
 import { getPropertyValueCompletionItems } from "../parameters/ParameterValues";
-import { DeploymentTemplate } from "../templates/DeploymentTemplate";
+import { DeploymentTemplateDoc } from "../templates/DeploymentTemplateDoc";
 import { getResourceIdCompletions } from "../templates/getResourceIdCompletions";
 import { IFunctionMetadata, IFunctionParameterMetadata } from "../templates/IFunctionMetadata";
 import { TemplateScope } from "../templates/scopes/TemplateScope";
@@ -51,24 +51,24 @@ class TleInfo implements ITleInfo {
 export class TemplatePositionContext extends PositionContext {
     private _tleInfo: CachedValue<TleInfo | undefined> = new CachedValue<TleInfo | undefined>();
 
-    public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplate, documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentParameters | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
+    public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplateDoc, documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentParametersDoc | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
         let context = new TemplatePositionContext(deploymentTemplate, associatedParameters);
         context.initFromDocumentLineAndColumnIndices(documentLineIndex, documentColumnIndex, allowOutOfBounds);
         return context;
     }
 
-    public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplate, documentCharacterIndex: number, associatedParameters: DeploymentParameters | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
+    public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplateDoc, documentCharacterIndex: number, associatedParameters: DeploymentParametersDoc | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
         let context = new TemplatePositionContext(deploymentTemplate, associatedParameters);
         context.initFromDocumentCharacterIndex(documentCharacterIndex, allowOutOfBounds);
         return context;
     }
 
-    private constructor(deploymentTemplate: DeploymentTemplate, associatedParameters: DeploymentParameters | undefined) {
+    private constructor(deploymentTemplate: DeploymentTemplateDoc, associatedParameters: DeploymentParametersDoc | undefined) {
         super(deploymentTemplate, associatedParameters);
     }
 
-    public get document(): DeploymentTemplate {
-        return <DeploymentTemplate>super.document;
+    public get document(): DeploymentTemplateDoc {
+        return <DeploymentTemplateDoc>super.document;
     }
 
     /**

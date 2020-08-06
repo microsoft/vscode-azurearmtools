@@ -27,7 +27,7 @@ import * as Completion from './src/vscodeIntegration/Completion';
 export { activateInternal, deactivateInternal } from './src/AzureRMTools'; // Export activate/deactivate for main.js
 export { armTemplateLanguageId, basePath, configKeys, configPrefix, diagnosticsCompletePrefix, expressionsDiagnosticsSource, isWin32, languageServerStateSource, templateKeys } from "./src/constants";
 export { DeploymentFileMapping } from "./src/documents/parameters/DeploymentFileMapping";
-export { DeploymentParameters } from "./src/documents/parameters/DeploymentParameters";
+export { DeploymentParametersDoc as DeploymentParameters } from "./src/documents/parameters/DeploymentParametersDoc";
 export { IParameterDefinition } from "./src/documents/parameters/IParameterDefinition";
 export { IParameterValuesSource } from "./src/documents/parameters/IParameterValuesSource";
 export { IParameterValuesSourceProvider } from "./src/documents/parameters/IParameterValuesSourceProvider";
@@ -39,8 +39,8 @@ export { canAddPropertyValueHere } from "./src/documents/parameters/ParameterVal
 export { ParametersPositionContext } from "./src/documents/positionContexts/ParametersPositionContext";
 export { IReferenceSite, PositionContext, ReferenceSiteKind } from "./src/documents/positionContexts/PositionContext";
 export { TemplatePositionContext } from "./src/documents/positionContexts/TemplatePositionContext";
-export { DeploymentTemplate } from "./src/documents/templates/DeploymentTemplate";
 export { ParameterDefinitionCodeLens, ShowCurrentParameterFileCodeLens } from "./src/documents/templates/deploymentTemplateCodeLenses";
+export { DeploymentTemplateDoc as DeploymentTemplate } from "./src/documents/templates/DeploymentTemplateDoc";
 export { ExpressionType } from "./src/documents/templates/ExpressionType";
 export { looksLikeResourceTypeStringLiteral, splitResourceNameIntoSegments } from "./src/documents/templates/getResourceIdCompletions";
 export { InsertItem } from "./src/documents/templates/insertItem";

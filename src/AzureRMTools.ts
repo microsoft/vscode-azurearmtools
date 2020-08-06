@@ -15,7 +15,7 @@ import { delay } from "../test/support/delay";
 import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "./constants";
 import { DeploymentDocument, ResolvableCodeLens } from "./documents/DeploymentDocument";
 import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
-import { DeploymentParameters } from "./documents/parameters/DeploymentParameters";
+import { DeploymentParametersDoc } from "./documents/parameters/DeploymentParametersDoc";
 import { IParameterDefinitionsSource } from "./documents/parameters/IParameterDefinitionsSource";
 import { IParameterValuesSource } from "./documents/parameters/IParameterValuesSource";
 import { IParameterValuesSourceProvider } from "./documents/parameters/IParameterValuesSourceProvider";
@@ -23,7 +23,7 @@ import { considerQueryingForParameterFile, getFriendlyPathToFile, openParameterF
 import { addMissingParameters } from "./documents/parameters/ParameterValues";
 import { IReferenceSite, PositionContext } from "./documents/positionContexts/PositionContext";
 import { TemplatePositionContext } from "./documents/positionContexts/TemplatePositionContext";
-import { DeploymentTemplate } from "./documents/templates/DeploymentTemplate";
+import { DeploymentTemplateDoc } from "./documents/templates/DeploymentTemplateDoc";
 import { getItemTypeQuickPicks, InsertItem } from "./documents/templates/insertItem";
 import { getQuickPickItems, sortTemplate } from "./documents/templates/sortTemplate";
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, templateDocumentSelector, templateOrParameterDocumentSelector } from "./documents/templates/supported";
@@ -314,8 +314,8 @@ export class AzureRMTools {
                 // Called from edit context menu, source is the parameter file, since we don't have a context menu for it
                 //   for parameter value sources in the template file
                 let { doc, associatedDoc: template } = await this.getDeploymentDocAndAssociatedDoc(editor.document, Cancellation.cantCancel);
-                if (doc instanceof DeploymentParameters) {
-                    assert(template instanceof DeploymentTemplate);
+                if (doc instanceof DeploymentParametersDoc) {
+                    assert(template instanceof DeploymentTemplateDoc);
                     parameterValues = doc.parameterValuesSource;
                     parameterDefinitions = template.topLevelScope;
                 }
@@ -385,14 +385,14 @@ export class AzureRMTools {
         return this._deploymentDocuments.get(documentPathKey);
     }
 
-    private getOpenedDeploymentTemplate(documentOrUri: vscode.TextDocument | vscode.Uri): DeploymentTemplate | undefined {
+    private getOpenedDeploymentTemplate(documentOrUri: vscode.TextDocument | vscode.Uri): DeploymentTemplateDoc | undefined {
         const file = this.getOpenedDeploymentDocument(documentOrUri);
-        return file instanceof DeploymentTemplate ? file : undefined;
+        return file instanceof DeploymentTemplateDoc ? file : undefined;
     }
 
-    private getOpenedDeploymentParameters(documentOrUri: vscode.TextDocument | vscode.Uri): DeploymentParameters | undefined {
+    private getOpenedDeploymentParameters(documentOrUri: vscode.TextDocument | vscode.Uri): DeploymentParametersDoc | undefined {
         const file = this.getOpenedDeploymentDocument(documentOrUri);
-        return file instanceof DeploymentParameters ? file : undefined;
+        return file instanceof DeploymentParametersDoc ? file : undefined;
     }
 
     /**
@@ -438,7 +438,7 @@ export class AzureRMTools {
             let shouldParseFile = treatAsDeploymentTemplate || mightBeDeploymentTemplate(textDocument);
             if (shouldParseFile) {
                 // Do a full parse
-                let deploymentTemplate: DeploymentTemplate = new DeploymentTemplate(textDocument.getText(), documentUri);
+                let deploymentTemplate: DeploymentTemplateDoc = new DeploymentTemplateDoc(textDocument.getText(), documentUri);
                 if (deploymentTemplate.hasArmSchemaUri()) {
                     treatAsDeploymentTemplate = true;
                 }
@@ -489,7 +489,7 @@ export class AzureRMTools {
                 let shouldParseParameterFile = treatAsDeploymentTemplate || mightBeDeploymentParameters(textDocument);
                 if (shouldParseParameterFile) {
                     // Do a full parse
-                    let deploymentParameters: DeploymentParameters = new DeploymentParameters(textDocument.getText(), textDocument.uri);
+                    let deploymentParameters: DeploymentParametersDoc = new DeploymentParametersDoc(textDocument.getText(), textDocument.uri);
                     if (deploymentParameters.hasParametersSchema()) {
                         treatAsDeploymentParameters = true;
                     }
@@ -543,7 +543,7 @@ export class AzureRMTools {
 
     private reportTemplateOpenedTelemetry(
         document: vscode.TextDocument,
-        deploymentTemplate: DeploymentTemplate,
+        deploymentTemplate: DeploymentTemplateDoc,
         stopwatch: Stopwatch,
         errorsWarnings: IErrorsAndWarnings
     ): void {
@@ -616,7 +616,7 @@ export class AzureRMTools {
 
     private async reportParameterFileOpenedTelemetry(
         document: vscode.TextDocument,
-        parameters: DeploymentParameters,
+        parameters: DeploymentParametersDoc,
         stopwatch: Stopwatch,
         errorsWarnings: IErrorsAndWarnings
     ): Promise<void> {
@@ -682,20 +682,20 @@ export class AzureRMTools {
 
     private async reportDeploymentTemplateErrors(
         textDocument: vscode.TextDocument,
-        deploymentTemplate: DeploymentTemplate
+        deploymentTemplate: DeploymentTemplateDoc
     ): Promise<IErrorsAndWarnings | undefined> {
         return await callWithTelemetryAndErrorHandling('reportDeploymentTemplateErrors', async (actionContext: IActionContext): Promise<IErrorsAndWarnings> => {
             actionContext.telemetry.suppressIfSuccessful = true;
 
             // Note: Associated parameters? Not currently used by getErrors
-            const associatedParameters: DeploymentParameters | undefined = undefined;
+            const associatedParameters: DeploymentParametersDoc | undefined = undefined;
             return this.reportDeploymentDocumentErrors(textDocument, deploymentTemplate, associatedParameters);
         });
     }
 
     private async reportDeploymentParametersErrors(
         textDocument: vscode.TextDocument,
-        deploymentParameters: DeploymentParameters
+        deploymentParameters: DeploymentParametersDoc
     ): Promise<IErrorsAndWarnings | undefined> {
         return await callWithTelemetryAndErrorHandling('reportDeploymentParametersErrors', async (actionContext: IActionContext): Promise<IErrorsAndWarnings> => {
             actionContext.telemetry.suppressIfSuccessful = true;
@@ -705,7 +705,7 @@ export class AzureRMTools {
         });
     }
 
-    private considerQueryingForNewerSchema(editor: vscode.TextEditor, deploymentTemplate: DeploymentTemplate): void {
+    private considerQueryingForNewerSchema(editor: vscode.TextEditor, deploymentTemplate: DeploymentTemplateDoc): void {
         // Only deal with saved files, because we don't have an accurate
         //   URI that we can track for unsaved files, and it's a better user experience.
         if (editor.document.uri.scheme !== 'file') {
@@ -780,12 +780,12 @@ export class AzureRMTools {
         }
     }
 
-    private async replaceSchema(uri: vscode.Uri, deploymentTemplate: DeploymentTemplate, previousSchema: string, newSchema: string): Promise<void> {
+    private async replaceSchema(uri: vscode.Uri, deploymentTemplate: DeploymentTemplateDoc, previousSchema: string, newSchema: string): Promise<void> {
         // Editor might have been closed or tabbed away from, so make sure it's visible
         const editor = await vscode.window.showTextDocument(uri);
 
         // The document might have changed since we asked, so find the $schema again
-        const currentTemplate = new DeploymentTemplate(editor.document.getText(), editor.document.uri);
+        const currentTemplate = new DeploymentTemplateDoc(editor.document.getText(), editor.document.uri);
         const currentSchemaValue: Json.StringValue | undefined = currentTemplate.schemaValue;
         if (currentSchemaValue && currentSchemaValue.unquotedValue === previousSchema) {
             const range = getVSCodeRangeFromSpan(currentTemplate, currentSchemaValue.unquotedSpan);
@@ -954,7 +954,7 @@ export class AzureRMTools {
             const activeDocument = vscode.window.activeTextEditor?.document;
             if (activeDocument) {
                 const deploymentTemplate = this.getOpenedDeploymentDocument(activeDocument);
-                if (deploymentTemplate instanceof DeploymentTemplate) {
+                if (deploymentTemplate instanceof DeploymentTemplateDoc) {
                     show = true;
                     isTemplateFile = true;
                     let statusBarText: string;
@@ -973,7 +973,7 @@ export class AzureRMTools {
 
                     this._paramsStatusBarItem.command = "azurerm-vscode-tools.selectParameterFile";
                     this._paramsStatusBarItem.text = statusBarText;
-                } else if (deploymentTemplate instanceof DeploymentParameters) {
+                } else if (deploymentTemplate instanceof DeploymentParametersDoc) {
                     show = true;
                     isParamFile = true;
                     let statusBarText: string;
@@ -1015,7 +1015,7 @@ export class AzureRMTools {
      * Logs telemetry with information about the functions used in a template. Only meaningful if called
      * in a relatively stable state, such as after first opening
      */
-    private logFunctionCounts(deploymentTemplate: DeploymentTemplate): void {
+    private logFunctionCounts(deploymentTemplate: DeploymentTemplateDoc): void {
         // Don't wait for promise
         // tslint:disable-next-line: no-floating-promises
         callWithTelemetryAndErrorHandling("tle.stats", async (actionContext: IActionContext): Promise<void> => {
@@ -1057,7 +1057,7 @@ export class AzureRMTools {
     /**
      * Log information about which resource types and apiVersions are being used
      */
-    private logResourceUsage(deploymentTemplate: DeploymentTemplate): void {
+    private logResourceUsage(deploymentTemplate: DeploymentTemplateDoc): void {
         // Don't wait for promise
         // tslint:disable-next-line: no-floating-promises
         callWithTelemetryAndErrorHandling("schema.stats", async (actionContext: IActionContext): Promise<void> => {
@@ -1261,7 +1261,7 @@ export class AzureRMTools {
         // Navigate to the correct range, if any
         const doc: DeploymentDocument | undefined = this.getOpenedDeploymentDocument(uri);
         let range: vscode.Range | undefined;
-        if (args.inParameterFile && doc instanceof DeploymentParameters) {
+        if (args.inParameterFile && doc instanceof DeploymentParametersDoc) {
             const parameterValues = doc.parameterValuesSource;
             // If the parameter doesn't have a value to navigate to, then show the
             // properties section or beginning of the param file/nested template.
@@ -1274,7 +1274,7 @@ export class AzureRMTools {
                 // Third choice: top of the file
                 ?? new Span.Span(0, 0);
             range = getVSCodeRangeFromSpan(doc, span);
-        } else if (args.inTemplateFile && doc instanceof DeploymentTemplate) {
+        } else if (args.inTemplateFile && doc instanceof DeploymentTemplateDoc) {
             range = args.inTemplateFile.range;
         }
 
@@ -1304,10 +1304,10 @@ export class AzureRMTools {
             return {};
         }
 
-        if (doc instanceof DeploymentTemplate) {
-            const template: DeploymentTemplate = doc;
+        if (doc instanceof DeploymentTemplateDoc) {
+            const template: DeploymentTemplateDoc = doc;
             // It's a template file - find the associated parameter file, if any
-            let params: DeploymentParameters | undefined;
+            let params: DeploymentParametersDoc | undefined;
             const paramsUri: vscode.Uri | undefined = this._mapping.getParameterFile(docUri);
             if (paramsUri) {
                 params = await this.getOrReadTemplateParameters(paramsUri);
@@ -1315,10 +1315,10 @@ export class AzureRMTools {
             }
 
             return { doc: template, associatedDoc: params };
-        } else if (doc instanceof DeploymentParameters) {
-            const params: DeploymentParameters = doc;
+        } else if (doc instanceof DeploymentParametersDoc) {
+            const params: DeploymentParametersDoc = doc;
             // It's a parameter file - find the associated template file, if any
-            let template: DeploymentTemplate | undefined;
+            let template: DeploymentTemplateDoc | undefined;
             const templateUri: vscode.Uri | undefined = this._mapping.getTemplateFile(docUri);
             if (templateUri) {
                 template = await this.getOrReadDeploymentTemplate(templateUri);
@@ -1351,7 +1351,7 @@ export class AzureRMTools {
      * Given a deployment template URI, return the corresponding opened DeploymentTemplate for it.
      * If none, create a new one by reading the location from disk
      */
-    private async getOrReadDeploymentTemplate(uri: vscode.Uri): Promise<DeploymentTemplate> {
+    private async getOrReadDeploymentTemplate(uri: vscode.Uri): Promise<DeploymentTemplateDoc> {
         // Is it already opened?
         const doc = this.getOpenedDeploymentTemplate(uri);
         if (doc) {
@@ -1360,14 +1360,14 @@ export class AzureRMTools {
 
         // Nope, have to read it from disk
         const contents = await readUtf8FileWithBom(uri.fsPath);
-        return new DeploymentTemplate(contents, uri);
+        return new DeploymentTemplateDoc(contents, uri);
     }
 
     /**
      * Given a parameter file URI, return the corresponding opened DeploymentParameters for it.
      * If none, create a new one by reading the location from disk
      */
-    private async getOrReadTemplateParameters(uri: vscode.Uri): Promise<DeploymentParameters> {
+    private async getOrReadTemplateParameters(uri: vscode.Uri): Promise<DeploymentParametersDoc> {
         // Is it already opened?
         const doc = this.getOpenedDeploymentParameters(uri);
         if (doc) {
@@ -1376,10 +1376,10 @@ export class AzureRMTools {
 
         // Nope, have to read it from disk
         const contents = await readUtf8FileWithBom(uri.fsPath);
-        return new DeploymentParameters(contents, uri);
+        return new DeploymentParametersDoc(contents, uri);
     }
 
-    private async getOrReadAssociatedTemplate(parameterFileUri: vscode.Uri, cancel: Cancellation): Promise<DeploymentTemplate | undefined> {
+    private async getOrReadAssociatedTemplate(parameterFileUri: vscode.Uri, cancel: Cancellation): Promise<DeploymentTemplateDoc | undefined> {
         const templateUri: vscode.Uri | undefined = this._mapping.getTemplateFile(parameterFileUri);
         if (templateUri) {
             const template = await this.getOrReadDeploymentTemplate(templateUri);
@@ -1391,9 +1391,9 @@ export class AzureRMTools {
     }
 
     private getDocTypeForTelemetry(doc: DeploymentDocument): string {
-        if (doc instanceof DeploymentTemplate) {
+        if (doc instanceof DeploymentTemplateDoc) {
             return "template";
-        } else if (doc instanceof DeploymentParameters) {
+        } else if (doc instanceof DeploymentParametersDoc) {
             return "parameters";
         } else {
             assert.fail("Unexpected doc type");

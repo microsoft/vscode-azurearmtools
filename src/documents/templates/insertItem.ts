@@ -13,7 +13,7 @@ import { ext } from "../../extensionVariables";
 import { ISnippet } from "../../snippets/ISnippet";
 import { KnownSnippetContexts } from "../../snippets/SnippetContext";
 import { assertNever } from '../../util/assertNever';
-import { DeploymentTemplate } from "./DeploymentTemplate";
+import { DeploymentTemplateDoc } from "./DeploymentTemplateDoc";
 import { TemplateSectionType } from "./TemplateSectionType";
 
 const insertCursorText = '[]';
@@ -76,7 +76,7 @@ export class InsertItem {
         this.ui = ui;
     }
 
-    public async insertItem(template: DeploymentTemplate | undefined, sectionType: TemplateSectionType, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
+    public async insertItem(template: DeploymentTemplateDoc | undefined, sectionType: TemplateSectionType, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         if (!template) {
             return;
         }
@@ -108,19 +108,19 @@ export class InsertItem {
         }
     }
 
-    private getTemplateObjectPart(template: DeploymentTemplate, templatePart: string): Json.ObjectValue | undefined {
+    private getTemplateObjectPart(template: DeploymentTemplateDoc, templatePart: string): Json.ObjectValue | undefined {
         return this.getTemplatePart(template, templatePart)?.asObjectValue;
     }
 
-    private getTemplateArrayPart(template: DeploymentTemplate, templatePart: string): Json.ArrayValue | undefined {
+    private getTemplateArrayPart(template: DeploymentTemplateDoc, templatePart: string): Json.ArrayValue | undefined {
         return this.getTemplatePart(template, templatePart)?.asArrayValue;
     }
 
-    private getTemplatePart(template: DeploymentTemplate, templatePart: string): Json.Value | undefined {
+    private getTemplatePart(template: DeploymentTemplateDoc, templatePart: string): Json.Value | undefined {
         return template.topLevelValue?.getPropertyValue(templatePart);
     }
 
-    private async insertParameter(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
+    private async insertParameter(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         let name = await this.ui.showInputBox({ prompt: "Name of parameter?" });
         const parameterType = await this.ui.showQuickPick(getItemType(), { placeHolder: 'Type of parameter?' });
         let parameter: Parameter = {
@@ -202,7 +202,7 @@ export class InsertItem {
             context,
             setCursor = true
         }: {
-            template: DeploymentTemplate;
+            template: DeploymentTemplateDoc;
             textEditor: vscode.TextEditor;
             part: string;
             data: Data | unknown;
@@ -271,7 +271,7 @@ export class InsertItem {
         return await this.insertText(textEditor, index, `${startText}${indentedText}${endText}`, setCursor);
     }
 
-    private async insertVariable(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
+    private async insertVariable(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         let name = await this.ui.showInputBox({ prompt: "Name of variable?" });
         await this.insertInObject({
             template,
@@ -283,7 +283,7 @@ export class InsertItem {
         });
     }
 
-    private async insertOutput(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
+    private async insertOutput(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         let name = await this.ui.showInputBox({ prompt: "Name of output?" });
         const outputType = await this.ui.showQuickPick(getItemType(), { placeHolder: 'Type of output?' });
         let output: Output = {
@@ -347,7 +347,7 @@ export class InsertItem {
         });
     }
 
-    private async insertFunction(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
+    private async insertFunction(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         let functions = this.getTemplateArrayPart(template, templateKeys.functions);
         if (!functions) {
             // tslint:disable-next-line:no-unsafe-any
@@ -377,7 +377,7 @@ export class InsertItem {
         return;
     }
 
-    private async insertResource(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
+    private async insertResource(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         let resources = this.getTemplateArrayPart(template, templateKeys.resources);
         let index: number;
         let prepend = "\r\n\t\t\r\n\t";

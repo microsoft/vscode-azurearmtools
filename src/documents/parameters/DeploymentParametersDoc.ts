@@ -13,7 +13,7 @@ import { isParametersSchema } from "../../schemas";
 import { CachedValue } from '../../util/CachedValue';
 import { DeploymentDocument, ResolvableCodeLens } from "../DeploymentDocument";
 import { ParametersPositionContext } from "../positionContexts/ParametersPositionContext";
-import { DeploymentTemplate } from "../templates/DeploymentTemplate";
+import { DeploymentTemplateDoc } from "../templates/DeploymentTemplateDoc";
 import { IParameterValuesSource } from './IParameterValuesSource';
 import { IParameterValuesSourceProvider } from './IParameterValuesSourceProvider';
 import { ParameterValueDefinition } from "./ParameterValueDefinition";
@@ -23,7 +23,7 @@ import { ParameterValuesSourceFromJsonObject } from "./ParameterValuesSourceFrom
 /**
  * Represents a deployment parameter file
  */
-export class DeploymentParameters extends DeploymentDocument {
+export class DeploymentParametersDoc extends DeploymentDocument {
     private _parameterValueDefinitions: CachedValue<ParameterValueDefinition[]> = new CachedValue<ParameterValueDefinition[]>();
     private _parametersProperty: CachedValue<Json.Property | undefined> = new CachedValue<Json.Property | undefined>();
     private _parameterValuesSource: CachedValue<IParameterValuesSource> = new CachedValue<IParameterValuesSource>();
@@ -84,11 +84,11 @@ export class DeploymentParameters extends DeploymentDocument {
         return Json.asObjectValue(this.parametersProperty?.value);
     }
 
-    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentTemplate | undefined): ParametersPositionContext {
+    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentTemplateDoc | undefined): ParametersPositionContext {
         return ParametersPositionContext.fromDocumentLineAndColumnIndices(this, documentLineIndex, documentColumnIndex, associatedTemplate);
     }
 
-    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedDocument: DeploymentTemplate | undefined): ParametersPositionContext {
+    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedDocument: DeploymentTemplateDoc | undefined): ParametersPositionContext {
         return ParametersPositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex, associatedDocument);
     }
 
@@ -116,8 +116,8 @@ export class DeploymentParameters extends DeploymentDocument {
         range: Range | Selection,
         context: CodeActionContext
     ): (Command | CodeAction)[] {
-        assert(!associatedDocument || associatedDocument instanceof DeploymentTemplate, "Associated document is of the wrong type");
-        const template: DeploymentTemplate | undefined = <DeploymentTemplate | undefined>associatedDocument;
+        assert(!associatedDocument || associatedDocument instanceof DeploymentTemplateDoc, "Associated document is of the wrong type");
+        const template: DeploymentTemplateDoc | undefined = <DeploymentTemplateDoc | undefined>associatedDocument;
 
         return getParameterValuesCodeActions(
             this.parameterValuesSource,
@@ -131,7 +131,7 @@ export class DeploymentParameters extends DeploymentDocument {
             return [];
         }
 
-        assert(associatedTemplate instanceof DeploymentTemplate);
+        assert(associatedTemplate instanceof DeploymentTemplateDoc);
         return getMissingParameterErrors(this.parameterValuesSource, associatedTemplate.topLevelScope);
     }
 
