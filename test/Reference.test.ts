@@ -6,11 +6,11 @@
 
 import * as assert from "assert";
 import { Uri } from "vscode";
-import { DefinitionKind, DeploymentTemplate, ReferenceList, Span } from "../extension.bundle";
+import { DefinitionKind, DeploymentTemplateDoc, ReferenceList, Span } from "../extension.bundle";
 
 suite("Reference", () => {
     suite("List", () => {
-        const document = new DeploymentTemplate("", Uri.parse("fake"));
+        const document = new DeploymentTemplateDoc("", Uri.parse("fake"));
 
         suite("constructor(Reference.Type, Span[])", () => {
             test("with null type", () => {

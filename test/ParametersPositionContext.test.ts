@@ -5,7 +5,7 @@
 // tslint:disable: max-func-body-length s
 
 import { Uri } from 'vscode';
-import { canAddPropertyValueHere, DeploymentParameters } from '../extension.bundle';
+import { canAddPropertyValueHere, DeploymentParametersDoc } from '../extension.bundle';
 import { testStringAtEachIndex } from './support/testStringAtEachIndex';
 
 suite("ParametersPositionContext", () => {
@@ -37,7 +37,7 @@ suite("ParametersPositionContext", () => {
                         false: false
                     },
                     (text: string, index: number) => {
-                        const dp = new DeploymentParameters(text, Uri.file("test parameter file"));
+                        const dp = new DeploymentParametersDoc(text, Uri.file("test parameter file"));
                         const pc = dp.getContextFromDocumentCharacterIndex(index, undefined);
                         const canAddHere = canAddPropertyValueHere(pc.document.parameterValuesSource, pc.documentCharacterIndex);
                         return canAddHere;

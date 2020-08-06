@@ -13,7 +13,7 @@ import * as vscode from "vscode";
 // tslint:disable-next-line:no-duplicate-imports
 import { window, workspace } from "vscode";
 import { IActionContext, IAzureUserInput, PromptResult } from 'vscode-azureextensionui';
-import { DeploymentTemplate, InsertItem, TemplateSectionType } from '../../extension.bundle';
+import { DeploymentTemplateDoc, InsertItem, TemplateSectionType } from '../../extension.bundle';
 import { getTempFilePath } from "../support/getTempFilePath";
 import { testWithRealSnippets } from '../support/TestSnippets';
 
@@ -38,7 +38,7 @@ suite("InsertItem", async (): Promise<void> => {
         assert.equal(actual, expected);
     }
 
-    function testInsertItem(template: string, expected: String, action: (insertItem: InsertItem, deploymentTemplate: DeploymentTemplate, textEditor: vscode.TextEditor) => Promise<void>, showInputBox: string[], textToInsert: string = '', ignoreWhiteSpace: boolean = false): void {
+    function testInsertItem(template: string, expected: String, action: (insertItem: InsertItem, deploymentTemplate: DeploymentTemplateDoc, textEditor: vscode.TextEditor) => Promise<void>, showInputBox: string[], textToInsert: string = '', ignoreWhiteSpace: boolean = false): void {
         testWithRealSnippets("Tabs CRLF", async () => {
             await testInsertItemWithSettings(template, expected, false, 4, true, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
@@ -59,7 +59,7 @@ suite("InsertItem", async (): Promise<void> => {
         });
     }
 
-    async function testInsertItemWithSettings(template: string, expected: String, insertSpaces: boolean, tabSize: number, eolAsCRLF: boolean, action: (insertItem: InsertItem, deploymentTemplate: DeploymentTemplate, textEditor: vscode.TextEditor) => Promise<void>, showInputBox: string[], textToInsert: string = '', ignoreWhiteSpace: boolean = false): Promise<void> {
+    async function testInsertItemWithSettings(template: string, expected: String, insertSpaces: boolean, tabSize: number, eolAsCRLF: boolean, action: (insertItem: InsertItem, deploymentTemplate: DeploymentTemplateDoc, textEditor: vscode.TextEditor) => Promise<void>, showInputBox: string[], textToInsert: string = '', ignoreWhiteSpace: boolean = false): Promise<void> {
         if (eolAsCRLF) {
             template = template.replace(/\n/g, '\r\n');
         }
@@ -75,7 +75,7 @@ suite("InsertItem", async (): Promise<void> => {
         let textEditor = await window.showTextDocument(document);
         let ui = new MockUserInput(showInputBox);
         let insertItem = new InsertItem(ui);
-        let deploymentTemplate = new DeploymentTemplate(document.getText(), document.uri);
+        let deploymentTemplate = new DeploymentTemplateDoc(document.getText(), document.uri);
         await action(insertItem, deploymentTemplate, textEditor);
         await textEditor.edit(builder => builder.insert(textEditor.selection.active, textToInsert));
         const docTextAfterInsertion = document.getText();

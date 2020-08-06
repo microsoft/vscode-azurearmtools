@@ -6,7 +6,7 @@
 
 import * as assert from 'assert';
 import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
-import { ScopeKind } from '../../../extension.bundle';
+import { TemplateScopeKind } from '../../../extension.bundle';
 import { configKeys, templateKeys } from "../../constants";
 import { ext } from '../../extensionVariables';
 import { AzureRMAssets, FunctionsMetadata } from "../../language/expressions/AzureRMAssets";
@@ -36,7 +36,7 @@ import { getMissingParameterErrors, getParameterValuesCodeActions } from '../par
 import { SynchronousParameterValuesSourceProvider } from "../parameters/SynchronousParameterValuesSourceProvider";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
 import { LinkedTemplateCodeLens, NestedTemplateCodeLen, ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
-import { TemplateScope, TemplateScopeKind } from "./scopes/TemplateScope";
+import { TemplateScope } from "./scopes/TemplateScope";
 import { NestedTemplateOuterScope, TopLevelTemplateScope } from './scopes/templateScopes';
 import { UserFunctionParameterDefinition } from './UserFunctionParameterDefinition';
 
@@ -562,14 +562,14 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         for (let scope of this.allScopes) {
             if (scope.rootObject) {
                 switch (scope.scopeKind) {
-                    case ScopeKind.NestedDeploymentWithInnerScope:
-                    case ScopeKind.NestedDeploymentWithOuterScope:
+                    case TemplateScopeKind.NestedDeploymentWithInnerScope:
+                    case TemplateScopeKind.NestedDeploymentWithOuterScope:
                         const lens = NestedTemplateCodeLen.create(scope, scope.rootObject.span);
                         if (lens) {
                             lenses.push(lens);
                         }
                         break;
-                    case ScopeKind.LinkedDeployment:
+                    case TemplateScopeKind.LinkedDeployment:
                         lenses.push(LinkedTemplateCodeLens.create(scope, scope.rootObject.span));
                         break;
                     default:

@@ -7,7 +7,7 @@
 
 import * as assert from "assert";
 import * as os from 'os';
-import { DefinitionKind, DeploymentTemplate, HoverInfo, IReferenceSite, Span } from "../extension.bundle";
+import { DefinitionKind, DeploymentTemplateDoc, HoverInfo, IReferenceSite, Span } from "../extension.bundle";
 import { createExpressionCompletionsTestEx } from "./support/createCompletionsTest";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
@@ -1300,7 +1300,7 @@ suite("User functions", () => {
 
     suite("UDF Hover Info", () => {
         async function testHover(
-            dt: DeploymentTemplate,
+            dt: DeploymentTemplateDoc,
             cursorIndex: number,
             expectedHoverText: string,
             expectedSpan?: Span
@@ -1355,7 +1355,7 @@ suite("User functions", () => {
 
     suite("UDF Go To Definition", async () => {
         async function testGoToDefinition(
-            dt: DeploymentTemplate,
+            dt: DeploymentTemplateDoc,
             cursorIndex: number,
             expectedReferenceKind: DefinitionKind,
             expectedDefinitionStart: number

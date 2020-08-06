@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from 'assert';
-import { DeploymentTemplate, ReferenceList } from '../../extension.bundle';
+import { DeploymentTemplateDoc, ReferenceList } from '../../extension.bundle';
 
 /**
  * Given a deployment template and a character index into it, verify that getReferences on the template
@@ -16,7 +16,7 @@ import { DeploymentTemplate, ReferenceList } from '../../extension.bundle';
  *      // Cursor at reference to "apiVersion" inside resources
  *      await testFindReferences(dt, apiVersionReference.index, [apiVersionReference.index, apiVersionDef.index]);
  */
-export async function testGetReferences(dt: DeploymentTemplate, cursorIndex: number, expectedReferenceIndices: number[]): Promise<void> {
+export async function testGetReferences(dt: DeploymentTemplateDoc, cursorIndex: number, expectedReferenceIndices: number[]): Promise<void> {
     const pc = dt.getContextFromDocumentCharacterIndex(cursorIndex, undefined);
     // tslint:disable-next-line: no-non-null-assertion
     const references: ReferenceList = pc.getReferences()!;
