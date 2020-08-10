@@ -617,14 +617,14 @@
         "mocha-junit-reporter": "^1.23.3",
         "mocha-multi-reporters": "^1.1.7",
         "recursive-readdir": "^2.2.2",
-        "ts-node": "^7.0.1",
+        "ts-node": "^8.10.2",
         "tslint": "^5.20.1",
         "tslint-microsoft-contrib": "5.0.3",
         "typescript": "^3.9.7",
         "vsce": "^1.77.0",
         "vscode": "^1.1.37",
         "vscode-azureextensiondev": "^0.5.0",
-        "webpack": "4.28.1",
+        "webpack": "^4.44.1",
         "webpack-cli": "^3.3.12"
     },
     "dependencies": {
