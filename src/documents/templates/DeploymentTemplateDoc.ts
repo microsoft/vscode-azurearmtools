@@ -19,6 +19,7 @@ import { ReferenceList } from "../../language/ReferenceList";
 import * as Span from "../../language/Span";
 import { isArmSchema } from "../../schemas";
 import { CachedValue } from '../../util/CachedValue';
+import { expectParameterDocumentOrUndefined } from '../../util/expectDocument';
 import { Histogram } from '../../util/Histogram';
 import { nonNullValue } from '../../util/nonNull';
 import { FindReferencesVisitor } from "../../visitors/FindReferencesVisitor";
@@ -30,7 +31,6 @@ import { UndefinedParameterAndVariableVisitor } from "../../visitors/UndefinedPa
 import * as UndefinedVariablePropertyVisitor from "../../visitors/UndefinedVariablePropertyVisitor";
 import * as UnrecognizedFunctionVisitor from "../../visitors/UnrecognizedFunctionVisitor";
 import { DeploymentDocument, ResolvableCodeLens } from "../DeploymentDocument";
-import { DeploymentParametersDoc } from "../parameters/DeploymentParametersDoc";
 import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSourceProvider';
 import { getMissingParameterErrors, getParameterValuesCodeActions } from '../parameters/ParameterValues';
 import { SynchronousParameterValuesSourceProvider } from "../parameters/SynchronousParameterValuesSourceProvider";
@@ -409,12 +409,12 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
     //#endregion
 
-    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentParametersDoc | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
-        return TemplatePositionContext.fromDocumentLineAndColumnIndexes(this, documentLineIndex, documentColumnIndex, associatedParameters, allowOutOfBounds);
+    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentDocument | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
+        return TemplatePositionContext.fromDocumentLineAndColumnIndexes(this, documentLineIndex, documentColumnIndex, expectParameterDocumentOrUndefined(associatedParameters), allowOutOfBounds);
     }
 
-    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedParameters: DeploymentParametersDoc | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
-        return TemplatePositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex, associatedParameters, allowOutOfBounds);
+    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedParameters: DeploymentDocument | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
+        return TemplatePositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex, expectParameterDocumentOrUndefined(associatedParameters), allowOutOfBounds);
     }
 
     /**
@@ -464,11 +464,10 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     }
 
     public getCodeActions(
-        associatedDocument: DeploymentDocument | undefined,
+        _associatedDocument: DeploymentDocument | undefined,
         range: Range | Selection,
         context: CodeActionContext
     ): (Command | CodeAction)[] {
-        assert(!associatedDocument || associatedDocument instanceof DeploymentParametersDoc, "Associated document is of the wrong type");
         const actions: (CodeAction | Command)[] = [];
 
         for (const scope of this.uniqueScopes) {

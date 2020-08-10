@@ -305,7 +305,7 @@ export async function findSuggestedParameterFiles(templateUri: Uri): Promise<IPo
       for (let paramFileName of fileNames) {
         const fullPath: string = path.join(folder, paramFileName);
         const uri: Uri = Uri.file(fullPath);
-        if (await isParameterFile(fullPath)) {
+        if (await isParameterFile(fullPath) && templateUri.fsPath !== fullPath) {
           paths.push({
             uri,
             friendlyPath: getRelativeParameterFilePath(templateUri, uri),
