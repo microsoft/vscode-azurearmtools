@@ -314,20 +314,6 @@ export class TemplatePositionContext extends PositionContext {
         return insertionContext;
     }
 
-    private async getSnippetCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult> {
-        const insertionContext = this.getSnippetInsertionContext(triggerCharacter);
-        if (insertionContext.triggerSuggest) {
-            return { items: [], triggerSuggest: true };
-        } else if (insertionContext.context) {
-            // Show snippets that match the snippet context at this location
-            let replacementInfo = this.getCompletionReplacementSpanInfo();
-            const snippets = await ext.snippetManager.value.getSnippetsAsCompletionItems(insertionContext, replacementInfo.span ?? this.emptySpanAtDocumentCharacterIndex);
-            return { items: snippets };
-        }
-
-        return { items: [] };
-    }
-
     public async getCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult> {
         const tleInfo = this.tleInfo;
         const completions: Completion.Item[] = [];
@@ -381,6 +367,20 @@ export class TemplatePositionContext extends PositionContext {
         }
 
         return { items: completions };
+    }
+
+    private async getSnippetCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult> {
+        const insertionContext = this.getSnippetInsertionContext(triggerCharacter);
+        if (insertionContext.triggerSuggest) {
+            return { items: [], triggerSuggest: true };
+        } else if (insertionContext.context) {
+            // Show snippets that match the snippet context at this location
+            let replacementInfo = this.getCompletionReplacementSpanInfo();
+            const snippets = await ext.snippetManager.value.getSnippetsAsCompletionItems(insertionContext, replacementInfo.span ?? this.emptySpanAtDocumentCharacterIndex);
+            return { items: snippets };
+        }
+
+        return { items: [] };
     }
 
     /**
