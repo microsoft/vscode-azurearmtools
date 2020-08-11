@@ -611,7 +611,7 @@
         "decompress": "^4.2.0",
         "glob": "^7.1.6",
         "gulp": "^4.0.2",
-        "gulp-decompress": "^2.0.2",
+        "gulp-decompress": "^3.0.0",
         "gulp-download": "^0.0.1",
         "mocha": "^5.2.0",
         "mocha-junit-reporter": "^1.23.3",
