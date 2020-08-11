@@ -24,7 +24,7 @@ export interface InsertionContext {
     /**
      * Is it inside a double-quoted string?
      */
-    insideDoubleQuotes?: boolean;
+    insideJsonString?: boolean;
 
     /**
      * True if the caller should trigger a completion dropdown

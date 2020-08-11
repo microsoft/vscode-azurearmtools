@@ -2,9 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
 // tslint:disable: no-consecutive-blank-lines // Format-on-save tends to add an extra line to the end of this file
-
 /**
  * This is the external face of extension.bundle.js, the main webpack bundle for the extension.
  * Anything needing to be exposed outside of the extension sources must be exported from here, because
@@ -17,11 +15,9 @@
  * The tests should import '../extension.bundle.ts'. At design-time they live in tests/ and so will pick up this file (extension.bundle.ts).
  * At runtime the tests live in dist/tests and will therefore pick up the main webpack bundle at dist/extension.bundle.js.
  */
-
 import * as TLE from "./src/language/expressions/TLE";
 import * as Json from "./src/language/json/JSON";
 import * as basic from "./src/language/json/Tokenizer";
-import * as Language from "./src/language/LineColPos";
 import * as Completion from './src/vscodeIntegration/Completion';
 
 export { activateInternal, deactivateInternal } from './src/AzureRMTools'; // Export activate/deactivate for main.js
@@ -43,7 +39,7 @@ export { ParameterDefinitionCodeLens, ShowCurrentParameterFileCodeLens } from ".
 export { DeploymentTemplateDoc } from "./src/documents/templates/DeploymentTemplateDoc";
 export { ExpressionType } from "./src/documents/templates/ExpressionType";
 export { looksLikeResourceTypeStringLiteral } from "./src/documents/templates/getResourceIdCompletions";
-export { splitResourceNameIntoSegments } from "./src/documents/templates/getResourcesInfo";
+export { getResourcesInfo, IResourceInfo, ResourceInfo, splitResourceNameIntoSegments } from "./src/documents/templates/getResourcesInfo";
 export { InsertItem } from "./src/documents/templates/insertItem";
 export { TemplateScope, TemplateScopeKind } from "./src/documents/templates/scopes/TemplateScope";
 export * from "./src/documents/templates/scopes/templateScopes";
@@ -58,7 +54,7 @@ export { FunctionSignatureHelp, TleParseResult } from "./src/language/expression
 export { DefinitionKind, INamedDefinition } from "./src/language/INamedDefinition";
 export { Issue } from "./src/language/Issue";
 export { IssueKind } from "./src/language/IssueKind";
-export * from "./src/language/LineColPos";
+export { LineColPos } from "./src/language/LineColPos";
 export { ReferenceList } from "./src/language/ReferenceList";
 export { ContainsBehavior, Span } from "./src/language/Span";
 export { LanguageServerState } from "./src/languageclient/startArmLanguageServer";
@@ -93,14 +89,12 @@ export { UndefinedVariablePropertyVisitor } from "./src/visitors/UndefinedVariab
 export { UnrecognizedBuiltinFunctionIssue, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "./src/visitors/UnrecognizedFunctionIssues";
 export { UnrecognizedFunctionVisitor } from "./src/visitors/UnrecognizedFunctionVisitor";
 export { IGotoParameterValueArgs } from "./src/vscodeIntegration/commandArguments";
-export * from "./src/vscodeIntegration/Completion";
 export { IConfiguration } from "./src/vscodeIntegration/Configuration";
 export { HoverInfo } from "./src/vscodeIntegration/Hover";
 export { JsonOutlineProvider, shortenTreeLabel } from "./src/vscodeIntegration/Treeview";
 export { getVSCodePositionFromPosition, getVSCodeRangeFromSpan } from "./src/vscodeIntegration/vscodePosition";
 export { Completion };
 export { Json };
-export { Language };
 export { basic };
 export { TLE };
 

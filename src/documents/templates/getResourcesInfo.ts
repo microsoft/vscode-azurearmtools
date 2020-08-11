@@ -6,13 +6,14 @@
 import { templateKeys } from "../../constants";
 import * as TLE from "../../language/expressions/TLE";
 import * as Json from "../../language/json/JSON";
+import { isSingleQuoted, removeSingleQuotes } from "../../util/strings";
 import { TemplateScope } from "./scopes/TemplateScope";
 
 /**
  * Get useful info about each resource in the template in a flat list, including the ability to understand full resource names and types in the
  * presence of parent/child resources
  */
-export function getResourcesInfo(scope: TemplateScope): IResourceInfo[] {
+export function getResourcesInfo(scope: TemplateScope): IJsonResourceInfo[] {
     const resourcesArray = scope.rootObject?.getPropertyValue(templateKeys.resources)?.asArrayValue;
     if (resourcesArray) {
         return getInfoFromResourcesArray(resourcesArray, undefined, scope);
@@ -21,28 +22,139 @@ export function getResourcesInfo(scope: TemplateScope): IResourceInfo[] {
     return [];
 }
 
+// tslint:disable-next-line: no-suspicious-comment
+// TODO: Consider combining with or hanging off of IResource. IResource currently only used for sorting templates and finding nested deployments? Nested subnets are not currently IResources but are IResourceInfos
 export interface IResourceInfo {
-    nameExpressions: string[];
-    typeExpressions: string[];
+    parent?: IResourceInfo;
+    children: IResourceInfo[];
 
-    fullTypeName: string;
+    nameSegmentExpressions: string[];
+    typeSegmentExpressions: string[];
+
+    /**
+     * Provides just the last segment in the name
+     */
+    shortNameExpression: string | undefined;
+
+    /**
+     * Gets the full name of the resource as a TLE expression
+     */
+    getFullNameExpression(): string | undefined;
+
+    /**
+     * Gets the type name of the resource as a TLE expression
+     */
+    getFullTypeExpression(): string | undefined;
+
+    /**
+     * Creates a resourceId expression to reference this resource
+     */
+    getResourceIdExpression(): string | undefined;
 }
 
-class ResourceInfo implements IResourceInfo {
-    public constructor(public nameExpressions: string[], public typeExpressions: string[]) {
-    }
+export interface IJsonResourceInfo extends IResourceInfo {
+    /**
+     * The JSON object that represents this resource
+     */
+    resourceObject: Json.ObjectValue;
+}
 
-    public get fullTypeName(): string {
-        if (this.typeExpressions.length > 1) {
-            return `'${this.typeExpressions.map(removeSingleQuotes).join('/')}'`;
-        } else {
-            return this.typeExpressions[0];
+export class ResourceInfo implements IResourceInfo {
+    public readonly children: IResourceInfo[] = [];
+    public constructor(public readonly nameSegmentExpressions: string[], public readonly typeSegmentExpressions: string[], public readonly parent?: IResourceInfo) {
+        if (parent) {
+            parent.children.push(this);
         }
     }
+
+    public get shortNameExpression(): string {
+        return this.nameSegmentExpressions[this.nameSegmentExpressions.length - 1];
+    }
+
+    public getFullTypeExpression(): string | undefined {
+        return concatExpressionWithSeparator(this.typeSegmentExpressions, '/');
+    }
+
+    public getFullNameExpression(): string | undefined {
+        return concatExpressionWithSeparator(this.nameSegmentExpressions, '/');
+    }
+
+    public getResourceIdExpression(): string | undefined {
+        if (this.nameSegmentExpressions.length > 0 && this.typeSegmentExpressions.length > 0) {
+            const typeExpression = this.getFullTypeExpression();
+            const nameExpressions = this.nameSegmentExpressions.join(', ');
+            return `resourceId(${typeExpression}, ${nameExpressions})`;
+        }
+
+        return undefined;
+    }
 }
 
-function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IResourceInfo | undefined, scope: TemplateScope): IResourceInfo[] {
-    const results: IResourceInfo[] = [];
+export class JsonResourceInfo extends ResourceInfo implements JsonResourceInfo {
+    public constructor(nameSegmentExpressions: string[], typeSegmentExpressions: string[], public readonly resourceObject: Json.ObjectValue, parent: IJsonResourceInfo | undefined) {
+        super(nameSegmentExpressions, typeSegmentExpressions, parent);
+    }
+}
+
+/**
+ * Concatenates a list of TLE expressions into a single expression, using 'concat' if necessary, and combining string literals when possible.
+ * @param expressions TLE expressions to concat
+ * @param unquotedLiteralSeparator An optional separator string literal (without the quotes) to place between every expresion
+ *
+ * @example
+ *  concatExpressionsWithSeparator(
+ *    [ `parameters('a')`, `'b'`,`'c'`, `'d'`, `123`, `456`, `parameters('e')`, `parameters('f')`, `'g'`, `'h'` ],
+ *    `/`
+ *  )
+ *
+ *    returns
+ *
+ * `concat(parameters('a'), '/b/c/d/', 123, '/', 456, '/', parameters('e'), '/', parameters('f'), '/g/h')`
+ */
+function concatExpressionWithSeparator(expressions: string[], unquotedLiteralSeparator?: string): string | undefined {
+    if (expressions.length < 2) {
+        return expressions[0];
+    }
+
+    // Coalesce adjacent string literals
+    const coalescedExpressions: string[] = [];
+    const expressionsLength = expressions.length;
+    for (let i = 0; i < expressionsLength; ++i) {
+        let expression = expressions[i];
+        const isLastSegment = i === expressionsLength - 1;
+
+        if (isSingleQuoted(expression)) {
+            if (unquotedLiteralSeparator && !isLastSegment) {
+                // Add separator
+                expression = `'${removeSingleQuotes(expression)}${unquotedLiteralSeparator}'`;
+            }
+
+            // Merge with last expression if it's also a string literal
+            const lastCoalescedExpression = coalescedExpressions[coalescedExpressions.length - 1];
+            if (lastCoalescedExpression && isSingleQuoted(lastCoalescedExpression)) {
+                coalescedExpressions[coalescedExpressions.length - 1] =
+                    `'${removeSingleQuotes(lastCoalescedExpression)}${removeSingleQuotes(expression)}'`;
+            } else {
+                coalescedExpressions.push(expression);
+            }
+        } else {
+            coalescedExpressions.push(expression);
+            if (unquotedLiteralSeparator && !isLastSegment) {
+                // Add separator
+                coalescedExpressions.push(`'${unquotedLiteralSeparator}'`);
+            }
+        }
+    }
+
+    if (coalescedExpressions.length < 2) {
+        return coalescedExpressions[0];
+    }
+
+    return `concat(${coalescedExpressions.join(', ')})`;
+}
+
+function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IJsonResourceInfo | undefined, scope: TemplateScope): IJsonResourceInfo[] {
+    const results: IJsonResourceInfo[] = [];
     for (let resourceValue of resourcesArray.elements ?? []) {
         const resourceObject = Json.asObjectValue(resourceValue);
         if (resourceObject) {
@@ -59,7 +171,7 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
                 const typeSegments = splitResourceTypeIntoSegments(resType.unquotedValue);
                 if (parent && typeSegments.length <= 1) {
                     // Add to end of parent type segments
-                    typeExpressions = [...parent.typeExpressions, ...typeSegments];
+                    typeExpressions = [...parent.typeSegmentExpressions, ...typeSegments];
                 } else {
                     typeExpressions = typeSegments;
                 }
@@ -67,12 +179,12 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
                 const nameSegments = splitResourceNameIntoSegments(resName.unquotedValue, scope);
                 if (parent && nameSegments.length <= 1) {
                     // Add to end of parent name segments
-                    nameExpressions = [...parent.nameExpressions, ...nameSegments];
+                    nameExpressions = [...parent.nameSegmentExpressions, ...nameSegments];
                 } else {
                     nameExpressions = nameSegments;
                 }
 
-                const info: IResourceInfo = new ResourceInfo(nameExpressions, typeExpressions);
+                const info: IJsonResourceInfo = new JsonResourceInfo(nameExpressions, typeExpressions, resourceObject, parent);
                 results.push(info);
 
                 // Check child resources
@@ -101,17 +213,22 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
                 //         }
                 //     }
                 // ]
-                if (resType.unquotedValue.toLowerCase() === 'Microsoft.Network/virtualNetworks'.toLowerCase()) {
+                if (resType.unquotedValue.toLowerCase() === 'microsoft.network/virtualnetworks') {
                     const subnets = resourceObject.getPropertyValue(templateKeys.properties)?.asObjectValue
                         ?.getPropertyValue('subnets')?.asArrayValue;
                     for (let subnet of subnets?.elements ?? []) {
-                        const subnetObject = Json.asObjectValue(subnet);
+                        const subnetObject = subnet.asObjectValue;
                         const subnetName = subnetObject?.getPropertyValue(templateKeys.resourceName)?.asStringValue;
-                        if (subnetName) {
+                        if (subnetObject && subnetName) {
                             const subnetTypes = [`'Microsoft.Network/virtualNetworks'`, `'subnets'`];
-                            const subnetInfo = new ResourceInfo(
-                                [jsonStringToTleExpression(resName.unquotedValue), jsonStringToTleExpression(subnetName.unquotedValue)],
-                                subnetTypes
+                            const subnetInfo = new JsonResourceInfo(
+                                [
+                                    jsonStringToTleExpression(resName.unquotedValue),
+                                    jsonStringToTleExpression(subnetName.unquotedValue)
+                                ],
+                                subnetTypes,
+                                subnetObject,
+                                info
                             );
                             results.push(subnetInfo);
                         }
@@ -124,9 +241,9 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
     return results;
 }
 
-function isExpression(text: string): boolean {
+function isJsonStringAnExpression(text: string): boolean {
     // Not perfect, but good enough for our purposes here (doesn't handle string starting with "[[", for instance)
-    return text.length >= 2 && text.startsWith('[') && text.endsWith(']');
+    return text.length >= 2 && text[0] === '[' && text[text.length - 1] === ']';
 }
 
 /**
@@ -139,31 +256,24 @@ function isExpression(text: string): boolean {
  *   "[variables('abc')]" => "variables('abc')"
  */
 export function jsonStringToTleExpression(stringUnquotedValue: string): string {
-    if (isExpression(stringUnquotedValue)) {
+    if (isJsonStringAnExpression(stringUnquotedValue)) {
         return stringUnquotedValue.slice(1, stringUnquotedValue.length - 1);
     } else {
         return `'${stringUnquotedValue}'`;
     }
 }
 
-function removeSingleQuotes(expression: string): string {
-    if (expression.length >= 2 && expression[0] === `'` && expression.slice(-1) === `'`) {
-        return expression.slice(1, expression.length - 1);
-    }
-
-    return expression;
-}
-
-// e.g.
+// example1:
 //   "networkSecurityGroup2/networkSecurityGroupRule2"
 //     ->
 //   [ "'networkSecurityGroup2'", "'networkSecurityGroupRule2'" ]
 //
+// example2:
 //   "[concat(variables('sqlServer'), '/' , variables('firewallRuleName'))]"
 //     ->
 //   [ "concat(variables('sqlServer')", "variables('firewallRuleName')" ]
 export function splitResourceNameIntoSegments(nameUnquotedValue: string, scope: TemplateScope): string[] {
-    if (isExpression(nameUnquotedValue)) {
+    if (isJsonStringAnExpression(nameUnquotedValue)) {
         // It's an expression.  Try to break it into segments by handling certain common patterns
 
         // No sense taking time for parsing if '/' is nowhere in the expression
@@ -255,7 +365,7 @@ function splitStringWithSeparator(s: string, separator: string): string[] {
 //   ->
 // [ "'Microsoft.Network/networkSecurityGroups'", "'securityRules'" ]
 function splitResourceTypeIntoSegments(typeNameUnquotedValue: string): string[] {
-    if (isExpression(typeNameUnquotedValue)) {
+    if (isJsonStringAnExpression(typeNameUnquotedValue)) {
         // If it's an expression, we can't know how to split it into segments in a generic
         // way, so just return the entire expression
         return [jsonStringToTleExpression(typeNameUnquotedValue)];

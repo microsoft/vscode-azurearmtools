@@ -122,3 +122,15 @@ export function getCombinedText(values: { toString(): string }[]): string {
     }
     return result;
 }
+
+export function isSingleQuoted(s: string): boolean {
+    return s.length >= 2 && s[0] === `'` && s[s.length - 1] === `'`;
+}
+
+export function removeSingleQuotes(expression: string): string {
+    if (isSingleQuoted(expression)) {
+        return expression.slice(1, expression.length - 1);
+    }
+
+    return expression;
+}

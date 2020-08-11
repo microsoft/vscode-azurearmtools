@@ -226,6 +226,9 @@ export enum CompletionKind {
     PropertyValueForExistingProperty = "PropertyValueForExistingProperty", // Parameter from the template file
     PropertyValueForNewProperty = "PropertyValueForNewProperty", // New, unnamed parameter
 
+    // ARM template structure completions
+    dependsOnResourceId = "dependsOnResourceId", // Completion inside dependsOn of a resourceId reference to a resource
+
     // Snippet
     Snippet = "Snippet",
 }
