@@ -93,6 +93,9 @@ export class DeploymentFileMapping {
         return entry?.resolvedParams;
     }
 
+    /**
+     * Given a parameter file, find the template file, if any, that the user currently has associated with it.
+     */
     public getTemplateFile(parameterFileUri: Uri): Uri | undefined {
         this.ensureMapsCreated();
         const normalizedParamPath = normalizePath(parameterFileUri);

@@ -2,7 +2,6 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import * as assert from 'assert';
 import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
 import { templateKeys } from "../../constants";
 import { INamedDefinition } from '../../language/INamedDefinition';
@@ -11,9 +10,9 @@ import * as Json from "../../language/json/JSON";
 import { ReferenceList } from "../../language/ReferenceList";
 import { isParametersSchema } from "../../schemas";
 import { CachedValue } from '../../util/CachedValue';
+import { expectTemplateDocument, expectTemplateDocumentOrUndefined } from '../../util/expectDocument';
 import { DeploymentDocument, ResolvableCodeLens } from "../DeploymentDocument";
 import { ParametersPositionContext } from "../positionContexts/ParametersPositionContext";
-import { DeploymentTemplateDoc } from "../templates/DeploymentTemplateDoc";
 import { IParameterValuesSource } from './IParameterValuesSource';
 import { IParameterValuesSourceProvider } from './IParameterValuesSourceProvider';
 import { ParameterValueDefinition } from "./ParameterValueDefinition";
@@ -84,12 +83,12 @@ export class DeploymentParametersDoc extends DeploymentDocument {
         return Json.asObjectValue(this.parametersProperty?.value);
     }
 
-    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentTemplateDoc | undefined): ParametersPositionContext {
-        return ParametersPositionContext.fromDocumentLineAndColumnIndices(this, documentLineIndex, documentColumnIndex, associatedTemplate);
+    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentDocument | undefined): ParametersPositionContext {
+        return ParametersPositionContext.fromDocumentLineAndColumnIndices(this, documentLineIndex, documentColumnIndex, expectTemplateDocumentOrUndefined(associatedTemplate));
     }
 
-    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedDocument: DeploymentTemplateDoc | undefined): ParametersPositionContext {
-        return ParametersPositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex, associatedDocument);
+    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedDocument: DeploymentDocument | undefined): ParametersPositionContext {
+        return ParametersPositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex, expectTemplateDocumentOrUndefined(associatedDocument));
     }
 
     public findReferencesToDefinition(definition: INamedDefinition): ReferenceList {
@@ -116,9 +115,7 @@ export class DeploymentParametersDoc extends DeploymentDocument {
         range: Range | Selection,
         context: CodeActionContext
     ): (Command | CodeAction)[] {
-        assert(!associatedDocument || associatedDocument instanceof DeploymentTemplateDoc, "Associated document is of the wrong type");
-        const template: DeploymentTemplateDoc | undefined = <DeploymentTemplateDoc | undefined>associatedDocument;
-
+        const template = expectTemplateDocumentOrUndefined(associatedDocument);
         return getParameterValuesCodeActions(
             this.parameterValuesSource,
             template?.topLevelScope,
@@ -126,13 +123,13 @@ export class DeploymentParametersDoc extends DeploymentDocument {
             context
         );
     }
-    public getErrorsCore(associatedTemplate: DeploymentDocument | undefined): Issue[] {
-        if (!associatedTemplate) {
+    public getErrorsCore(associatedDocument: DeploymentDocument | undefined): Issue[] {
+        if (!associatedDocument) {
             return [];
         }
 
-        assert(associatedTemplate instanceof DeploymentTemplateDoc);
-        return getMissingParameterErrors(this.parameterValuesSource, associatedTemplate.topLevelScope);
+        const template = expectTemplateDocument(associatedDocument);
+        return getMissingParameterErrors(this.parameterValuesSource, template.topLevelScope);
     }
 
     public getWarnings(): Issue[] {

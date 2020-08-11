@@ -41,6 +41,7 @@ import { SnippetManager } from "./snippets/SnippetManager";
 import { survey } from "./survey";
 import { CachedPromise } from "./util/CachedPromise";
 import { escapeNonPaths } from "./util/escapeNonPaths";
+import { expectTemplateDocument } from "./util/expectDocument";
 import { getRenameError } from "./util/getRenameError";
 import { Histogram } from "./util/Histogram";
 import { normalizePath } from "./util/normalizePath";
@@ -315,9 +316,8 @@ export class AzureRMTools {
                 //   for parameter value sources in the template file
                 let { doc, associatedDoc: template } = await this.getDeploymentDocAndAssociatedDoc(editor.document, Cancellation.cantCancel);
                 if (doc instanceof DeploymentParametersDoc) {
-                    assert(template instanceof DeploymentTemplateDoc);
                     parameterValues = doc.parameterValuesSource;
-                    parameterDefinitions = template.topLevelScope;
+                    parameterDefinitions = expectTemplateDocument(template).topLevelScope;
                 }
             } else {
                 // Called from a code action, we should already have the parameter values source
@@ -1129,7 +1129,7 @@ export class AzureRMTools {
             // Load parameter file asynchronously and expose its parameter values
             public async getValuesSource(): Promise<IParameterValuesSource> {
                 return this._parameterValuesSource.getOrCachePromise(async () => {
-                    const dp = await this.parent.getOrReadTemplateParameters(this.parameterFileUri);
+                    const dp = await this.parent.getOrReadParametersFile(this.parameterFileUri);
                     return dp?.parameterValuesSource;
                 });
             }
@@ -1293,7 +1293,7 @@ export class AzureRMTools {
     private async getDeploymentDocAndAssociatedDoc(
         documentOrUri: vscode.TextDocument | vscode.Uri,
         cancel: Cancellation
-    ): Promise<{ doc?: DeploymentDocument; associatedDoc?: DeploymentDocument }> {
+    ): Promise<{ doc?: DeploymentTemplateDoc; associatedDoc?: DeploymentParametersDoc } | { doc?: DeploymentParametersDoc; associatedDoc?: DeploymentTemplateDoc }> {
         cancel.throwIfCancelled();
 
         const docUri = documentOrUri instanceof vscode.Uri ? documentOrUri : documentOrUri.uri;
@@ -1310,10 +1310,12 @@ export class AzureRMTools {
             let params: DeploymentParametersDoc | undefined;
             const paramsUri: vscode.Uri | undefined = this._mapping.getParameterFile(docUri);
             if (paramsUri) {
-                params = await this.getOrReadTemplateParameters(paramsUri);
+                params = await this.getOrReadParametersFile(paramsUri);
                 cancel.throwIfCancelled();
             }
 
+            assert(doc instanceof DeploymentTemplateDoc);
+            assert(!params || params instanceof DeploymentParametersDoc);
             return { doc: template, associatedDoc: params };
         } else if (doc instanceof DeploymentParametersDoc) {
             const params: DeploymentParametersDoc = doc;
@@ -1355,6 +1357,7 @@ export class AzureRMTools {
         // Is it already opened?
         const doc = this.getOpenedDeploymentTemplate(uri);
         if (doc) {
+            assert(doc instanceof DeploymentTemplateDoc, "Expected DeploymentTemplateDoc");
             return doc;
         }
 
@@ -1367,10 +1370,11 @@ export class AzureRMTools {
      * Given a parameter file URI, return the corresponding opened DeploymentParameters for it.
      * If none, create a new one by reading the location from disk
      */
-    private async getOrReadTemplateParameters(uri: vscode.Uri): Promise<DeploymentParametersDoc> {
+    private async getOrReadParametersFile(uri: vscode.Uri): Promise<DeploymentParametersDoc> {
         // Is it already opened?
         const doc = this.getOpenedDeploymentParameters(uri);
         if (doc) {
+            assert(doc instanceof DeploymentParametersDoc, "Expected DeploymentParametersDoc");
             return doc;
         }
 
