@@ -686,7 +686,6 @@ suite("TemplatePositionContext", () => {
                     // 119: 'adminUsername'
                     completionItemsTest(`{ "parameters": { "adminUsername": {} }, "a": "[resourceId(parameters('Microsoft.Networks/virtualNetworks', parameters('adminUsername'))]" }`, i,
                         (48 <= i && i <= 58) ? allTestDataExpectedCompletions(48, i - 48) :
-                            //(i === 48 || i === 59 || (107 <= i && i <= 108) || (135 <= i && i <= 136)) ? allTestDataExpectedCompletions(i, 0) :
                             (59 <= i && i <= 69) ? allTestDataExpectedCompletions(59, i - 59) :
                                 (i === 70) ? [parameterCompletion("adminUsername", 70, 0, false)] :
                                     (71 <= i && i <= 105) ? [parameterCompletion("adminUsername", 70, 36, false)] :
@@ -1345,7 +1344,7 @@ suite("TemplatePositionContext", () => {
 
             suite("Parameters/variables argument replacements", () => {
 
-                // Include closing parenthesis and single quote in the replacement spand and insertion text,
+                // Include closing parenthesis and single quote in the replacement span and insertion text,
                 // so that the cursor ends up after them once the replacement happens.
                 // This way the user can immediately start typing the rest of the expression after the parameters call.
 
