@@ -13,34 +13,6 @@
                 "reveal": "never"
             },
             "problemMatcher": "$tsc-watch"
-        },
-        {
-            "type": "npm",
-            "script": "lint",
-            "problemMatcher": "$tslint5"
-        },
-        {
-            "type": "npm",
-            "script": "all",
-            "problemMatcher": [
-                "$eslint-compact"
-            ]
-        },
-        {
-            "type": "npm",
-            "script": "build-grammars",
-            "problemMatcher": []
-        },
-        {
-            "type": "npm",
-            "script": "watch-grammars",
-            "problemMatcher": [],
-            "isBackground": true
-        },
-        {
-            "type": "npm",
-            "script": "verify-test-uses-extension-bundle",
-            "problemMatcher": []
         }
     ]
 }
