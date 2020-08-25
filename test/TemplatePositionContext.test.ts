@@ -1348,7 +1348,7 @@ suite("TemplatePositionContext", () => {
                 // so that the cursor ends up after them once the replacement happens.
                 // This way the user can immediately start typing the rest of the expression after the parameters call.
 
-                // Also, note that we replace the entire string argument (unlike for function name replacements.
+                // Also, note that we replace the entire string argument (unlike for function name replacements)
 
                 suite("empty parentheses", () => {
                     testCompletionItemsWithRange(
