@@ -148,7 +148,7 @@ export class StringValue extends Value {
     }
 
     /**
-     * Checks whether the current position is at the argument of a call to the
+     * Checks whether the current position is at the (first) argument of a call to the
      * built-in function with the given name
      */
     private isBuiltinFunctionArgument(functionName: string): boolean {

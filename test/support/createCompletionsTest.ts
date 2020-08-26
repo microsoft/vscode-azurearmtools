@@ -93,7 +93,7 @@ export function createExpressionCompletionsTestEx(
             // tslint:disable-next-line: no-any
             const expectedInsertTexts = expectedCompletions.every((e: any) => Array.isArray(e)) ? (<[string, string][]>expectedCompletions).map(e => e[1]).sort() : undefined;
 
-            assert.deepStrictEqual(completionNames, expectedNames, "Completion names didn't match");
+            assert.deepStrictEqual(completionNames, expectedNames);
             if (expectedInsertTexts !== undefined) {
                 assert.deepStrictEqual(completionInserts, expectedInsertTexts, "Completion insert texts didn't match");
             }

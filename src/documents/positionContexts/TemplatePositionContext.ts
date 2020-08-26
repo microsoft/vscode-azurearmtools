@@ -350,8 +350,8 @@ export class TemplatePositionContext extends PositionContext {
                 if (TemplatePositionContext.isInsideSquareBrackets(tleInfo.tleParseResult, tleInfo.tleCharacterIndex)) {
                     // Inside brackets, so complete with all valid functions and namespaces
                     const replaceSpan = this.emptySpanAtDocumentCharacterIndex;
-                    const functionCompletions = TemplatePositionContext.getMatchingFunctionCompletions(scope, undefined, "", replaceSpan);
-                    const namespaceCompletions = TemplatePositionContext.getMatchingNamespaceCompletions(scope, "", replaceSpan);
+                    const functionCompletions = TemplatePositionContext.getFunctionCompletions(scope, undefined, replaceSpan);
+                    const namespaceCompletions = TemplatePositionContext.getNamespaceCompletions(scope, replaceSpan);
                     completions.push(...functionCompletions);
                     completions.push(...namespaceCompletions);
                 }
@@ -403,15 +403,12 @@ export class TemplatePositionContext extends PositionContext {
      * Get completions when we're anywhere inside a string literal
      */
     private getStringLiteralCompletions(tleStringValue: TLE.StringValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
-        // Start at index 1 to skip past the opening single-quote.
-        const prefix: string = tleStringValue.toString().substring(1, tleCharacterIndex - tleStringValue.getSpan().startIndex);
-
         if (tleStringValue.isParametersArgument()) {
             // The string is a parameter name inside a parameters('xxx') function
-            return this.getMatchingParameterCompletions(prefix, tleStringValue, tleCharacterIndex, scope);
+            return this.getParameterCompletions(tleStringValue, tleCharacterIndex, scope);
         } else if (tleStringValue.isVariablesArgument()) {
             // The string is a variable name inside a variables('xxx') function
-            return this.getMatchingVariableCompletions(prefix, tleStringValue, tleCharacterIndex, scope);
+            return this.getVariableCompletions(tleStringValue, tleCharacterIndex, scope);
         }
 
         const funcCall = tleStringValue.getFunctionCallParentOfArgument();
@@ -574,11 +571,11 @@ export class TemplatePositionContext extends PositionContext {
         } else if (tleValue.isCallToBuiltinWithName(templateKeys.parameters) && tleValue.argumentExpressions.length === 0) {
             // "parameters<CURSOR>" or "parameters(<CURSOR>)" or similar
             // Don't bother bringing up any other completions
-            return this.getMatchingParameterCompletions("", tleValue, tleCharacterIndex, scope);
+            return this.getParameterCompletions(tleValue, tleCharacterIndex, scope);
         } else if (tleValue.isCallToBuiltinWithName(templateKeys.variables) && tleValue.argumentExpressions.length === 0) {
             // "variables<CURSOR>" or "variables(<CURSOR>)" or similar
             // Don't bother bringing up any other completions
-            return this.getMatchingVariableCompletions("", tleValue, tleCharacterIndex, scope);
+            return this.getVariableCompletions(tleValue, tleCharacterIndex, scope);
         } else {
             // Anywhere else (e.g. whitespace after function name, or inside the arguments list).
             //
@@ -594,43 +591,38 @@ export class TemplatePositionContext extends PositionContext {
             completeUserFunctions = false;
         }
 
-        // If the completion is for 'resourceId' or related function, then in addition
-        // to the regular completions, also add special completions for resourceId
-        completions.push(...getResourceIdCompletions(this, tleValue, parentStringToken));
-
         let replaceSpan: Span;
-        let completionPrefix: string;
 
         // Figure out the span which will be replaced by the completion
         if (tleTokenToComplete) {
             const tokenToCompleteStartIndex: number = tleTokenToComplete.span.startIndex;
-            completionPrefix = tleTokenToComplete.stringValue.substring(0, tleCharacterIndex - tokenToCompleteStartIndex);
-            if (completionPrefix.length === 0) {
-                replaceSpan = this.emptySpanAtDocumentCharacterIndex;
-            } else {
-                replaceSpan = tleTokenToComplete.span.translate(this.jsonTokenStartIndex);
-            }
+            const completionLength = tleCharacterIndex - tokenToCompleteStartIndex;
+            assert(completionLength >= 0);
+            replaceSpan = new Span(this.jsonTokenStartIndex, completionLength).translate(tleTokenToComplete.span.startIndex);
         } else {
             // Nothing getting completed, completion selection will be inserted at current location
             replaceSpan = this.emptySpanAtDocumentCharacterIndex;
-            completionPrefix = "";
         }
 
         assert(completeBuiltinFunctions || completeUserFunctions || completeNamespaces, "Should be completing something");
         if (completeBuiltinFunctions || completeUserFunctions) {
             if (completeUserFunctions && namespace) {
-                const userFunctionCompletions = TemplatePositionContext.getMatchingFunctionCompletions(scope, namespace, completionPrefix, replaceSpan);
+                const userFunctionCompletions = TemplatePositionContext.getFunctionCompletions(scope, namespace, replaceSpan);
                 completions.push(...userFunctionCompletions);
             }
             if (completeBuiltinFunctions) {
-                const builtinCompletions = TemplatePositionContext.getMatchingFunctionCompletions(scope, undefined, completionPrefix, replaceSpan);
+                const builtinCompletions = TemplatePositionContext.getFunctionCompletions(scope, undefined, replaceSpan);
                 completions.push(...builtinCompletions);
             }
         }
         if (completeNamespaces) {
-            const namespaceCompletions = TemplatePositionContext.getMatchingNamespaceCompletions(scope, completionPrefix, replaceSpan);
+            const namespaceCompletions = TemplatePositionContext.getNamespaceCompletions(scope, replaceSpan);
             completions.push(...namespaceCompletions);
         }
+
+        // If the completion is for 'resourceId' or related function, then in addition
+        // to the regular completions, also add special completions for resourceId
+        completions.push(...getResourceIdCompletions(this, tleValue, parentStringToken));
 
         return completions;
     }
@@ -796,97 +788,181 @@ export class TemplatePositionContext extends PositionContext {
     }
 
     /**
-     * Given a possible namespace name plus a function name prefix and replacement span, return a list
-     * of completions for functions or namespaces starting with that prefix
+     * Return a list of completions for all functions for a given namespace (return built-in function completions if namespace
+     * is undefined).
      */
-    private static getMatchingFunctionCompletions(scope: TemplateScope, namespace: UserFunctionNamespaceDefinition | undefined, functionNamePrefix: string, replaceSpan: Span): Completion.Item[] {
+    private static getFunctionCompletions(scope: TemplateScope, namespace: UserFunctionNamespaceDefinition | undefined, replaceSpan: Span): Completion.Item[] {
         let matches: IFunctionMetadata[];
-
         if (namespace) {
-            // User-defined function
-            matches = scope.findFunctionDefinitionsWithPrefix(namespace, functionNamePrefix).map(fd => UserFunctionMetadata.fromDefinition(fd));
+            // User-defined functions
+            matches = namespace.members.map(fd => UserFunctionMetadata.fromDefinition(fd));
         } else {
-            // Built-in function
-            matches = functionNamePrefix === "" ?
-                AzureRMAssets.getFunctionsMetadata().functionMetadata :
-                AzureRMAssets.getFunctionMetadataFromPrefix(functionNamePrefix);
+            // Built-in functions
+            matches = AzureRMAssets.getFunctionsMetadata().functionMetadata;
         }
 
         return matches.map(m => Completion.Item.fromFunctionMetadata(m, replaceSpan));
     }
 
     /**
-     * Given a possible namespace name plus a function name prefix and replacement span, return a list
-     * of completions for functions or namespaces starting with that prefix
+     * Return a list of completions for all user-defined namespaces
      */
-    private static getMatchingNamespaceCompletions(scope: TemplateScope, namespacePrefix: string, replaceSpan: Span): Completion.Item[] {
-        const matches: UserFunctionNamespaceDefinition[] = scope.findNamespaceDefinitionsWithPrefix(namespacePrefix);
-        return matches.map(m => Completion.Item.fromNamespaceDefinition(m, replaceSpan));
+    private static getNamespaceCompletions(scope: TemplateScope, replaceSpan: Span): Completion.Item[] {
+        return scope.namespaceDefinitions.map(m => Completion.Item.fromNamespaceDefinition(m, replaceSpan));
     }
 
-    private getMatchingParameterCompletions(prefix: string, tleValue: TLE.StringValue | TLE.FunctionCallValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
-        const replaceSpanInfo: ITleReplaceSpanInfo = this.getTleReplaceSpanInfo(tleValue, tleCharacterIndex);
+    // Gets "parameters" argument completions for all parameters available for the given scope
+    //
+    // tleValue is StringValue:        parameters('xx<CURSOR>yy')  - tleValue is the string literal
+    // tleValue is FunctionCallValue:  parameters(<CURSOR>)        - tleValue is the parameters call
+    //
+    private getParameterCompletions(tleValue: TLE.StringValue | TLE.FunctionCallValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
+        const replaceSpanInfo: ITleReplaceSpanInfo | undefined = this.getParameterOrVariableNameReplaceInfo(tleValue, tleCharacterIndex);
 
         const parameterCompletions: Completion.Item[] = [];
-        const parameterDefinitionMatches: IParameterDefinition[] = scope.findParameterDefinitionsWithPrefix(prefix);
-        for (const parameterDefinition of parameterDefinitionMatches) {
-            parameterCompletions.push(Completion.Item.fromParameterDefinition(parameterDefinition, replaceSpanInfo.replaceSpan, replaceSpanInfo.includeRightParenthesisInCompletion));
+        if (replaceSpanInfo) {
+            for (const parameterDefinition of scope.parameterDefinitions) {
+                parameterCompletions.push(Completion.Item.fromParameterDefinition(parameterDefinition, replaceSpanInfo.replaceSpan, replaceSpanInfo.includeRightParenthesisInCompletion, replaceSpanInfo.includeSingleQuotesInCompletion));
+            }
         }
+
         return parameterCompletions;
     }
 
-    private getMatchingVariableCompletions(prefix: string, tleValue: TLE.StringValue | TLE.FunctionCallValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
-        const replaceSpanInfo: ITleReplaceSpanInfo = this.getTleReplaceSpanInfo(tleValue, tleCharacterIndex);
+    // Gets "variables" argument completions for all variables available for the given scope
+    //
+    // tleValue is StringValue:        variables('xx<CURSOR>yy')  - tleValue is the string literal
+    // tleValue is FunctionCallValue:  variables(<CURSOR>)        - tleValue is the variables call
+    //
+    private getVariableCompletions(tleValue: TLE.StringValue | TLE.FunctionCallValue, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
+        const replaceSpanInfo: ITleReplaceSpanInfo | undefined = this.getParameterOrVariableNameReplaceInfo(tleValue, tleCharacterIndex);
 
         const variableCompletions: Completion.Item[] = [];
-        const variableDefinitionMatches: IVariableDefinition[] = scope.findVariableDefinitionsWithPrefix(prefix);
-        for (const variableDefinition of variableDefinitionMatches) {
-            variableCompletions.push(Completion.Item.fromVariableDefinition(variableDefinition, replaceSpanInfo.replaceSpan, replaceSpanInfo.includeRightParenthesisInCompletion));
+        if (replaceSpanInfo) {
+            for (const variableDefinition of scope.variableDefinitions) {
+                variableCompletions.push(Completion.Item.fromVariableDefinition(variableDefinition, replaceSpanInfo.replaceSpan, replaceSpanInfo.includeRightParenthesisInCompletion, replaceSpanInfo.includeSingleQuotesInCompletion));
+            }
         }
+
         return variableCompletions;
     }
 
-    private getTleReplaceSpanInfo(tleValue: TLE.StringValue | TLE.FunctionCallValue, tleCharacterIndex: number): ITleReplaceSpanInfo {
-        let includeRightParenthesisInCompletion: boolean = true;
-        let replaceSpan: Span;
-        if (tleValue instanceof TLE.StringValue) {
-            const stringSpan: Span = tleValue.getSpan();
-            const stringStartIndex: number = stringSpan.startIndex;
-            const functionValue: TLE.FunctionCallValue | undefined = TLE.asFunctionCallValue(tleValue.parent);
+    private getParameterOrVariableNameReplaceInfo(tleValue: TLE.StringValue | TLE.FunctionCallValue, tleCharacterIndex: number): ITleReplaceSpanInfo | undefined {
+        // Note: We icnclude closing parenthesis and single quote in the replacement span and the insertion text,
+        // so that the cursor ends up after them once the replacement happens. This way the user can immediately start
+        // typing the rest of the expression after the parameters call.
 
-            const rightParenthesisIndex: number = tleValue.toString().indexOf(")");
-            const rightSquareBracketIndex: number = tleValue.toString().indexOf("]");
-            if (rightParenthesisIndex >= 0) {
-                replaceSpan = new Span(stringStartIndex, rightParenthesisIndex + 1);
-            } else if (rightSquareBracketIndex >= 0) {
-                replaceSpan = new Span(stringStartIndex, rightSquareBracketIndex);
-            } else if (functionValue && functionValue.rightParenthesisToken && functionValue.argumentExpressions.length === 1) {
-                replaceSpan = new Span(stringStartIndex, functionValue.rightParenthesisToken.span.afterEndIndex - stringStartIndex);
+        // Also note that, unlike with function name replacements, we replace the entire string argument if the cursor is anywhere inside
+        // the existing string, not just the part of it before the cursor.
+
+        let includeSingleQuotesInCompletion: boolean;
+        let includeRightParenthesisInCompletion: boolean;
+        let replaceSpan: Span;
+
+        if (tleValue instanceof TLE.StringValue) {
+            // parameters(<CURSOR> 'xxyy') or parameters('xx<CURSOR>yy')  - tleValue is the string literal
+
+            const stringSpan: Span = tleValue.getSpan();
+            const functionValue: TLE.FunctionCallValue | undefined = TLE.asFunctionCallValue(tleValue.parent);
+            const stringStartIndex = stringSpan.startIndex;
+            let tleReplaceSpan: Span;
+
+            if (tleCharacterIndex <= tleValue.getSpan().startIndex) {
+                // The cursor is before the beginning of the string (or right at the open quote, which means it's not yet
+                //   inside the string) - just insert the completion text, don't replace anything existing (the user may be
+                //   trying to add to the expression before the cursor if this is an existing expression or string)
+                //
+                // Example:  "['Microsoft.web/sites']" -> "[concat(parameters(<CURSOR>'Microsoft.web/sites']"
+                // Desired replacement should *not* be to replace 'Microsoft.web/sites' with the parameter name, but rather to
+                //   insert it: "[concat(parameters('parameter1''Microsoft.web/sites']"
+                ///  ... because the user intends to keep typing to finish the expression
+                //   this way: "[concat(parameters('parameter1'), 'Microsoft.web/sites')]"
+
+                tleReplaceSpan = new Span(tleCharacterIndex, 0);
+                includeSingleQuotesInCompletion = true;
+                includeRightParenthesisInCompletion = false;
+            } else if (tleCharacterIndex > tleValue.getSpan().endIndex) {
+                // Cursor is after the string - no replacements
+                return undefined;
             } else {
-                includeRightParenthesisInCompletion = !!functionValue && functionValue.argumentExpressions.length <= 1;
-                replaceSpan = stringSpan;
+                // The cursor is inside the string - replace the entire parameter, including the closing single
+                //   quote and parenthesis, so that the cursor will end up after the parameters call
+
+                includeSingleQuotesInCompletion = true;
+
+                // If the string is not properly closed with an ending single quote, the parser may pick up the
+                // closing parenthesis and bracket in the string.  It's very unlikely these were meant to be part of
+                // a parameter/variable name, so cut off our replacement at this point, in order to prevent data in
+                // the string that the user probably wants to keep around after making the completion.
+                // This can happen for instance if they're turning an existing string into an expression or adding
+                // to the front of an existing expression.
+                //
+                // Example:   "[concat(parameters('p1<CURSOR>)Microsoft.web/sites']"
+                const rightParenthesisIndex: number = tleValue.toString().indexOf(")");
+                const rightSquareBracketIndex: number = tleValue.toString().indexOf("]");
+                if (rightParenthesisIndex >= 0) {
+                    // Cut off before the ending parenthesis
+                    tleReplaceSpan = new Span(stringStartIndex, rightParenthesisIndex + 1);
+                    includeRightParenthesisInCompletion = true;
+                } else if (rightSquareBracketIndex >= 0) {
+                    // Cut off before the ending square bracket
+                    tleReplaceSpan = new Span(stringStartIndex, rightSquareBracketIndex);
+                    includeRightParenthesisInCompletion = true;
+                } else if (functionValue && functionValue.rightParenthesisToken && functionValue.argumentExpressions.length === 1) {
+                    // The parameters or variables function includes a right parenthesis already
+
+                    tleReplaceSpan = new Span(stringStartIndex, functionValue.rightParenthesisToken.span.afterEndIndex - stringStartIndex);
+                    includeRightParenthesisInCompletion = true;
+                } else {
+                    // The parameters or variables function call does not yet include a right parenthesis, just replace the string
+
+                    includeRightParenthesisInCompletion = !!functionValue && functionValue.argumentExpressions.length <= 1;
+                    tleReplaceSpan = stringSpan;
+                }
             }
 
-            replaceSpan = replaceSpan.translate(this.jsonTokenStartIndex);
+            replaceSpan = tleReplaceSpan.translate(this.jsonTokenStartIndex);
         } else {
+            // parameters(<CURSOR>)        - tleValue is the parameters/variables call
+
+            includeSingleQuotesInCompletion = true;
+
             if (tleValue.rightParenthesisToken) {
                 replaceSpan = new Span(
                     this.documentCharacterIndex,
                     tleValue.rightParenthesisToken.span.startIndex - tleCharacterIndex + 1);
+                includeRightParenthesisInCompletion = true;
             } else {
                 replaceSpan = this.emptySpanAtDocumentCharacterIndex;
+                includeRightParenthesisInCompletion = true;
             }
         }
 
+        if (includeRightParenthesisInCompletion) {
+            assert(includeSingleQuotesInCompletion, "includeSingleQuotesInCompletion required if includeRightParenthesisInCompletion");
+        }
+
         return {
-            includeRightParenthesisInCompletion: includeRightParenthesisInCompletion,
-            replaceSpan: replaceSpan
+            includeRightParenthesisInCompletion,
+            replaceSpan: replaceSpan,
+            includeSingleQuotesInCompletion
         };
     }
 }
 
 interface ITleReplaceSpanInfo {
+    /** If true, the completion should add single quotes around the completion (for a parameter or variable name). If single
+     * quotes already exist, they should be included in the replace span.
+     */
+    includeSingleQuotesInCompletion: boolean;
+    /** If true, the completion should add a closing parenthesis to the completion (if an existing closing
+     * parenthesis exists, it should be included in the replacement span, which will have the effect of moving the
+     * cursor to after the closing parenthesis upon completion)
+     */
     includeRightParenthesisInCompletion: boolean;
+    /**
+     * Replacement span to use for completions
+     */
     replaceSpan: Span;
 }
 
