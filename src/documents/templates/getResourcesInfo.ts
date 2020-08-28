@@ -6,36 +6,42 @@
 import { templateKeys } from "../../constants";
 import * as TLE from "../../language/expressions/TLE";
 import * as Json from "../../language/json/JSON";
-import { DeploymentTemplateDoc } from "./DeploymentTemplateDoc";
+import { TemplateScope } from "./scopes/TemplateScope";
 
 /**
- * Get useful info about each resource in the template.  Knows how to construct a full resource name for a child resource,
- * for example.
+ * Get useful info about each resource in the template in a flat list, including the ability to understand full resource names and types in the
+ * presence of parent/child resources
  */
-export function getResourcesInfo(template: DeploymentTemplateDoc): IResourceInfo[] {
-    if (template.resourceObjects) {
-        return getInfoFromResourcesArray(template.resourceObjects, undefined, template);
+export function getResourcesInfo(scope: TemplateScope): IResourceInfo[] {
+    const resourcesArray = scope.rootObject?.getPropertyValue(templateKeys.resources)?.asArrayValue;
+    if (resourcesArray) {
+        return getInfoFromResourcesArray(resourcesArray, undefined, scope);
     }
 
     return [];
 }
 
-// tslint:disable-next-line: no-suspicious-comment
-// TODO: Convert to class //asdf
 export interface IResourceInfo {
     nameExpressions: string[];
     typeExpressions: string[];
+
+    fullTypeName: string;
 }
 
-export function getFullResourceTypeName(info: IResourceInfo): string {
-    if (info.typeExpressions.length > 1) {
-        return `'${info.typeExpressions.map(removeSingleQuotes).join('/')}'`;
-    } else {
-        return info.typeExpressions[0];
+class ResourceInfo implements IResourceInfo {
+    public constructor(public nameExpressions: string[], public typeExpressions: string[]) {
+    }
+
+    public get fullTypeName(): string {
+        if (this.typeExpressions.length > 1) {
+            return `'${this.typeExpressions.map(removeSingleQuotes).join('/')}'`;
+        } else {
+            return this.typeExpressions[0];
+        }
     }
 }
 
-function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IResourceInfo | undefined, dt: DeploymentTemplateDoc): IResourceInfo[] {
+function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IResourceInfo | undefined, scope: TemplateScope): IResourceInfo[] {
     const results: IResourceInfo[] = [];
     for (let resourceValue of resourcesArray.elements ?? []) {
         const resourceObject = Json.asObjectValue(resourceValue);
@@ -58,7 +64,7 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
                     typeExpressions = typeSegments;
                 }
 
-                const nameSegments = splitResourceNameIntoSegments(resName.unquotedValue, dt);
+                const nameSegments = splitResourceNameIntoSegments(resName.unquotedValue, scope);
                 if (parent && nameSegments.length <= 1) {
                     // Add to end of parent name segments
                     nameExpressions = [...parent.nameExpressions, ...nameSegments];
@@ -66,13 +72,13 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
                     nameExpressions = nameSegments;
                 }
 
-                const info: IResourceInfo = { nameExpressions, typeExpressions };
+                const info: IResourceInfo = new ResourceInfo(nameExpressions, typeExpressions);
                 results.push(info);
 
                 // Check child resources
                 const childResources = resourceObject.getPropertyValue(templateKeys.resources)?.asArrayValue;
                 if (childResources) {
-                    const childrenInfo = getInfoFromResourcesArray(childResources, info, dt);
+                    const childrenInfo = getInfoFromResourcesArray(childResources, info, scope);
                     results.push(...childrenInfo);
                 }
 
@@ -103,10 +109,10 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
                         const subnetName = subnetObject?.getPropertyValue(templateKeys.resourceName)?.asStringValue;
                         if (subnetName) {
                             const subnetTypes = [`'Microsoft.Network/virtualNetworks'`, `'subnets'`];
-                            const subnetInfo: IResourceInfo = {
-                                nameExpressions: [jsonStringToTleExpression(resName.unquotedValue), jsonStringToTleExpression(subnetName.unquotedValue)],
-                                typeExpressions: subnetTypes
-                            };
+                            const subnetInfo = new ResourceInfo(
+                                [jsonStringToTleExpression(resName.unquotedValue), jsonStringToTleExpression(subnetName.unquotedValue)],
+                                subnetTypes
+                            );
                             results.push(subnetInfo);
                         }
                     }
@@ -119,7 +125,7 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
 }
 
 function isExpression(text: string): boolean {
-    // Not perfect, but good enough for our purposes here
+    // Not perfect, but good enough for our purposes here (doesn't handle string starting with "[[", for instance)
     return text.length >= 2 && text.startsWith('[') && text.endsWith(']');
 }
 
@@ -156,14 +162,14 @@ function removeSingleQuotes(expression: string): string {
 //   "[concat(variables('sqlServer'), '/' , variables('firewallRuleName'))]"
 //     ->
 //   [ "concat(variables('sqlServer')", "variables('firewallRuleName')" ]
-export function splitResourceNameIntoSegments(nameUnquotedValue: string, dt: DeploymentTemplateDoc): string[] {
+export function splitResourceNameIntoSegments(nameUnquotedValue: string, scope: TemplateScope): string[] {
     if (isExpression(nameUnquotedValue)) {
         // It's an expression.  Try to break it into segments by handling certain common patterns
 
         // No sense taking time for parsing if '/' is nowhere in the expression
         if (nameUnquotedValue.includes('/')) {
             const quotedValue = `"${nameUnquotedValue}"`;
-            const parseResult = TLE.Parser.parse(quotedValue, dt.topLevelScope);
+            const parseResult = TLE.Parser.parse(quotedValue, scope);
             const expression = parseResult.expression;
             if (parseResult.errors.length === 0 && expression) {
                 // Handle this pattern:

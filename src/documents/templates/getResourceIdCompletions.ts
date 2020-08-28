@@ -10,8 +10,9 @@ import { Span } from "../../language/Span";
 import * as Completion from "../../vscodeIntegration/Completion";
 import { PositionContext } from "../positionContexts/PositionContext";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
-import { getFullResourceTypeName, getResourcesInfo, IResourceInfo } from "./getResourcesInfo";
+import { getResourcesInfo, IResourceInfo } from "./getResourcesInfo";
 import { FunctionBehaviors } from "./IFunctionMetadata";
+import { TemplateScope } from "./scopes/TemplateScope";
 
 // Handle completions for resourceId and similar functions with the usesResourceIdCompletions behavior
 
@@ -21,6 +22,10 @@ export function getResourceIdCompletions(
     parentStringToken: Json.Token
 ): Completion.Item[] {
     assert(parentStringToken.type === Json.TokenType.QuotedString, "parentStringToken should be a string token");
+
+    // tslint:disable-next-line: no-suspicious-comment
+    // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/775: Use scope at current position
+    const scope = pc.document.topLevelScope;
 
     if (!funcCall.isUserDefinedFunction && funcCall.name) {
         const functionMetadata = AzureRMAssets.getFunctionMetadataFromName(funcCall.name);
@@ -32,7 +37,7 @@ export function getResourceIdCompletions(
             const argumentIndex = pc.getFunctionCallArgumentIndex(funcCall);
             if (typeof argumentIndex === 'number') {
                 const segmentIndex = argumentIndex;
-                return getCompletions(pc, funcCall, parentStringToken, segmentIndex, { maxOptionalParameters: 2 });
+                return getCompletions(pc, scope, funcCall, parentStringToken, segmentIndex, { maxOptionalParameters: 2 });
             }
         }
     }
@@ -42,6 +47,7 @@ export function getResourceIdCompletions(
 
 function getCompletions(
     pc: TemplatePositionContext,
+    scope: TemplateScope,
     funcCall: TLE.FunctionCallValue,
     parentStringToken: Json.Token,
     argIndexAtCursor: number,
@@ -50,10 +56,10 @@ function getCompletions(
     if (argIndexAtCursor === 0) {
         // For the first argument, we always provide completions for the list of resource types,
         // since we don't know if the user is adding optional args to the call
-        return getResourceTypeCompletions(funcCall, pc, resourceIdCompletions, argIndexAtCursor, parentStringToken);
+        return getResourceTypeCompletions(funcCall, pc, scope, resourceIdCompletions, argIndexAtCursor, parentStringToken);
     }
 
-    const allResources = getResourcesInfo(pc.document);
+    const allResources = getResourcesInfo(scope);
 
     // Check previous arguments in the call to see if any of them matches a known resource type
     let argWithResourceType = findFunctionCallArgumentWithResourceType(
@@ -66,7 +72,7 @@ function getCompletions(
     if (!argWithResourceType) {
         // None of the previous arguments matched a known resource type, so the current argument might
         // be intended to be a resource type.
-        return getResourceTypeCompletions(funcCall, pc, resourceIdCompletions, argIndexAtCursor, parentStringToken);
+        return getResourceTypeCompletions(funcCall, pc, scope, resourceIdCompletions, argIndexAtCursor, parentStringToken);
     }
 
     // Only look at resources with that type
@@ -159,7 +165,7 @@ function findFunctionCallArgumentWithResourceType(
 
             let argTextLC = argText?.toLowerCase();
             for (let info of resources) {
-                const resFullType = getFullResourceTypeName(info);
+                const resFullType = info.fullTypeName;
                 if (resFullType.toLowerCase() === argTextLC) {
                     return { argIndex, typeExpression: argText };
                 }
@@ -175,7 +181,7 @@ function filterResourceInfosByType(infos: IResourceInfo[], typeExpression: strin
         return [];
     }
     const typeExpressionLC = typeExpression.toLowerCase();
-    return infos.filter(info => getFullResourceTypeName(info).toLowerCase() === typeExpressionLC);
+    return infos.filter(info => info.fullTypeName.toLowerCase() === typeExpressionLC);
 }
 
 function filterResourceInfosByNameSegment(infos: IResourceInfo[], segmentExpression: string, segmentIndex: number): IResourceInfo[] {
@@ -197,6 +203,7 @@ function lowerCaseAndNoWhitespace(s: string | undefined): string | undefined {
 function getResourceTypeCompletions(
     funcCall: TLE.FunctionCallValue,
     pc: TemplatePositionContext,
+    scope: TemplateScope,
     resourceIdCompletions: { maxOptionalParameters: number },
     argumentIndex: number,
     parentStringToken: Json.Token
@@ -208,8 +215,8 @@ function getResourceTypeCompletions(
     }
 
     const results: Completion.Item[] = [];
-    for (let info of getResourcesInfo(pc.document)) {
-        const insertText = getFullResourceTypeName(info);
+    for (let info of getResourcesInfo(scope)) {
+        const insertText = info.fullTypeName;
         const label = insertText;
         let typeArgument = funcCall.argumentExpressions[argumentIndex];
         let span = getReplacementSpan(pc, typeArgument, parentStringToken);
