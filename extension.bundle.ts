@@ -42,7 +42,8 @@ export { TemplatePositionContext } from "./src/documents/positionContexts/Templa
 export { ParameterDefinitionCodeLens, ShowCurrentParameterFileCodeLens } from "./src/documents/templates/deploymentTemplateCodeLenses";
 export { DeploymentTemplateDoc } from "./src/documents/templates/DeploymentTemplateDoc";
 export { ExpressionType } from "./src/documents/templates/ExpressionType";
-export { looksLikeResourceTypeStringLiteral, splitResourceNameIntoSegments } from "./src/documents/templates/getResourceIdCompletions";
+export { looksLikeResourceTypeStringLiteral } from "./src/documents/templates/getResourceIdCompletions";
+export { splitResourceNameIntoSegments } from "./src/documents/templates/getResourcesInfo";
 export { InsertItem } from "./src/documents/templates/insertItem";
 export { TemplateScope, TemplateScopeKind } from "./src/documents/templates/scopes/TemplateScope";
 export * from "./src/documents/templates/scopes/templateScopes";
