@@ -748,7 +748,7 @@ suite("ResourceId completions", () => {
                                 }]
                             };
                             const dt = await parseTemplate(fakeTemplate);
-                            const actual = splitResourceNameIntoSegments(resourceName, dt);
+                            const actual = splitResourceNameIntoSegments(resourceName, dt.topLevelScope);
                             assert.deepStrictEqual(actual, expected);
                         });
                     }

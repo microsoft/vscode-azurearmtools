@@ -87,15 +87,6 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         return undefined;
     }
 
-    // CONSIDER: Should we be using scope.resources instead?
-    public get resourceObjects(): Json.ArrayValue | undefined {
-        if (this.topLevelValue) {
-            return this.topLevelValue?.getPropertyValue(templateKeys.resources)?.asArrayValue;
-        }
-
-        return undefined;
-    }
-
     /**
      * Parses all JSON strings in the template, assigns them a scope, and caches the results.
      * Returns a map that maps from the Json.StringValue object to the parse result (we can't cache
