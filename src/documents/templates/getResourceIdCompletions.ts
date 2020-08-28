@@ -10,7 +10,7 @@ import { Span } from "../../language/Span";
 import * as Completion from "../../vscodeIntegration/Completion";
 import { PositionContext } from "../positionContexts/PositionContext";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
-import { getFullResourceTypeName, getResourcesInfo, IResourceInfo } from "./getResourcesInfo";
+import { getResourcesInfo, IResourceInfo } from "./getResourcesInfo";
 import { FunctionBehaviors } from "./IFunctionMetadata";
 
 // Handle completions for resourceId and similar functions with the usesResourceIdCompletions behavior
@@ -159,7 +159,7 @@ function findFunctionCallArgumentWithResourceType(
 
             let argTextLC = argText?.toLowerCase();
             for (let info of resources) {
-                const resFullType = getFullResourceTypeName(info);
+                const resFullType = info.fullTypeName;
                 if (resFullType.toLowerCase() === argTextLC) {
                     return { argIndex, typeExpression: argText };
                 }
@@ -175,7 +175,7 @@ function filterResourceInfosByType(infos: IResourceInfo[], typeExpression: strin
         return [];
     }
     const typeExpressionLC = typeExpression.toLowerCase();
-    return infos.filter(info => getFullResourceTypeName(info).toLowerCase() === typeExpressionLC);
+    return infos.filter(info => info.fullTypeName.toLowerCase() === typeExpressionLC);
 }
 
 function filterResourceInfosByNameSegment(infos: IResourceInfo[], segmentExpression: string, segmentIndex: number): IResourceInfo[] {
@@ -209,7 +209,7 @@ function getResourceTypeCompletions(
 
     const results: Completion.Item[] = [];
     for (let info of getResourcesInfo(pc.document)) {
-        const insertText = getFullResourceTypeName(info);
+        const insertText = info.fullTypeName;
         const label = insertText;
         let typeArgument = funcCall.argumentExpressions[argumentIndex];
         let span = getReplacementSpan(pc, typeArgument, parentStringToken);

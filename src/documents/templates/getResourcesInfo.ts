@@ -20,18 +20,23 @@ export function getResourcesInfo(template: DeploymentTemplateDoc): IResourceInfo
     return [];
 }
 
-// tslint:disable-next-line: no-suspicious-comment
-// TODO: Convert to class //asdf
 export interface IResourceInfo {
     nameExpressions: string[];
     typeExpressions: string[];
+
+    fullTypeName: string;
 }
 
-export function getFullResourceTypeName(info: IResourceInfo): string {
-    if (info.typeExpressions.length > 1) {
-        return `'${info.typeExpressions.map(removeSingleQuotes).join('/')}'`;
-    } else {
-        return info.typeExpressions[0];
+class ResourceInfo implements IResourceInfo {
+    public constructor(public nameExpressions: string[], public typeExpressions: string[]) {
+    }
+
+    public get fullTypeName(): string {
+        if (this.typeExpressions.length > 1) {
+            return `'${this.typeExpressions.map(removeSingleQuotes).join('/')}'`;
+        } else {
+            return this.typeExpressions[0];
+        }
     }
 }
 
@@ -66,7 +71,7 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
                     nameExpressions = nameSegments;
                 }
 
-                const info: IResourceInfo = { nameExpressions, typeExpressions };
+                const info: IResourceInfo = new ResourceInfo(nameExpressions, typeExpressions);
                 results.push(info);
 
                 // Check child resources
@@ -103,10 +108,10 @@ function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IRes
                         const subnetName = subnetObject?.getPropertyValue(templateKeys.resourceName)?.asStringValue;
                         if (subnetName) {
                             const subnetTypes = [`'Microsoft.Network/virtualNetworks'`, `'subnets'`];
-                            const subnetInfo: IResourceInfo = {
-                                nameExpressions: [jsonStringToTleExpression(resName.unquotedValue), jsonStringToTleExpression(subnetName.unquotedValue)],
-                                typeExpressions: subnetTypes
-                            };
+                            const subnetInfo = new ResourceInfo(
+                                [jsonStringToTleExpression(resName.unquotedValue), jsonStringToTleExpression(subnetName.unquotedValue)],
+                                subnetTypes
+                            );
                             results.push(subnetInfo);
                         }
                     }
