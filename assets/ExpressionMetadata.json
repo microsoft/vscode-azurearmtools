@@ -118,6 +118,9 @@
                 },
                 {
                     "name": "properties"
+                },
+                {
+                    "name": "location"
                 }
             ]
         },
