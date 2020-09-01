@@ -61,7 +61,7 @@
         "onCommand:azurerm-vscode-tools.insertFunction",
         "onCommand:azurerm-vscode-tools.insertResource",
         "onCommand:azurerm-vscode-tools.developer.resetGlobalState",
-        "onCommand:azurerm-vscode-tools.developer.showSnippetContext"
+        "onCommand:azurerm-vscode-tools.developer.showInsertionContext"
     ],
     "contributes": {
         "grammars": [
@@ -173,8 +173,8 @@
             {
                 "$comment": "============= Developer commands =============",
                 "category": "Azure Resource Manager Tools (Developer)",
-                "title": "Show Snippet Context at current location (for snippet authors)",
-                "command": "azurerm-vscode-tools.developer.showSnippetContext"
+                "title": "Show Insertion Context at current location (for snippet authors)",
+                "command": "azurerm-vscode-tools.developer.showInsertionContext"
             },
             {
                 "category": "Azure Resource Manager Tools (Developer)",

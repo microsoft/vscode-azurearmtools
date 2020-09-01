@@ -1,19 +1,20 @@
-import { Json } from "../../extension.bundle";
-import { Span } from "../language/Span";
-import { SnippetContext } from "./SnippetContext";
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { Json } from "../../extension.bundle";
+import { Span } from "../language/Span";
+import { Context } from "./KnownContexts";
+
 /**
- * Describes information about snippets that could be inserted at this location (i.e., the type of snippets which are appropriate to insert here,
+ * Describes information about what could be inserted at this location (i.e., the type of snippets which are appropriate to insert here,
  * the span of insertion, the existing JSON structure, etc.)
  */
-export interface SnippetInsertionContext {
+export interface InsertionContext {
     /**
      * The type of snippet that can be supported here
      */
-    context: SnippetContext | undefined;
+    context: Context | undefined;
 
     /**
      * If immediately inside curly braces (representing an object), gives the span between the curly braces, inclusive

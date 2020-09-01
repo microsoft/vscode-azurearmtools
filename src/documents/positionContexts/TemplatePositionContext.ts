@@ -13,8 +13,8 @@ import { INamedDefinition } from "../../language/INamedDefinition";
 import * as Json from "../../language/json/JSON";
 import { ReferenceList } from "../../language/ReferenceList";
 import { ContainsBehavior, Span } from "../../language/Span";
-import { KnownSnippetContexts } from "../../snippets/SnippetContext";
-import { SnippetInsertionContext } from "../../snippets/SnippetInsertionContext";
+import { InsertionContext } from "../../snippets/InsertionContext";
+import { KnownContexts } from "../../snippets/KnownContexts";
 import { CachedValue } from "../../util/CachedValue";
 import * as Completion from "../../vscodeIntegration/Completion";
 import { DeploymentParametersDoc } from "../parameters/DeploymentParametersDoc";
@@ -287,7 +287,7 @@ export class TemplatePositionContext extends PositionContext {
         return false;
     }
 
-    public getSnippetInsertionContext(triggerCharacter: string | undefined): SnippetInsertionContext {
+    public getSnippetInsertionContext(triggerCharacter: string | undefined): InsertionContext {
         const insertionContext = super.getSnippetInsertionContext(triggerCharacter);
         const context = insertionContext.context;
         const parents = insertionContext.parents;
@@ -297,17 +297,17 @@ export class TemplatePositionContext extends PositionContext {
         if (parents) {
             if (context === 'parameters') {
                 if (this.isInsideParameterDefinitions(parents)) {
-                    insertionContext.context = KnownSnippetContexts.parameterDefinitions;
+                    insertionContext.context = KnownContexts.parameterDefinitions;
                 } else if (this.isInsideParameterValues(parents)) {
-                    insertionContext.context = KnownSnippetContexts.parameterValues;
+                    insertionContext.context = KnownContexts.parameterValues;
                 } else if (this.isInsideUserFunctionParameterDefinitions(parents)) {
-                    insertionContext.context = KnownSnippetContexts.userFuncParameterDefinitions;
+                    insertionContext.context = KnownContexts.userFuncParameterDefinitions;
                 }
             } else if (
                 (triggerCharacter === undefined || triggerCharacter === '"')
                 && this.isInsideResourceBody(parents)
             ) {
-                insertionContext.context = KnownSnippetContexts.resourceBody;
+                insertionContext.context = KnownContexts.resourceBody;
             }
         }
 

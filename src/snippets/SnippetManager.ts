@@ -12,10 +12,10 @@ import { Span } from '../language/Span';
 import { CachedPromise } from '../util/CachedPromise';
 import { readUtf8FileWithBom } from '../util/readUtf8FileWithBom';
 import * as Completion from "../vscodeIntegration/Completion";
+import { InsertionContext } from "./InsertionContext";
 import { ISnippet } from "./ISnippet";
 import { ISnippetManager } from "./ISnippetManager";
-import { KnownSnippetContexts, SnippetContext } from './SnippetContext';
-import { SnippetInsertionContext } from "./SnippetInsertionContext";
+import { Context, KnownContexts } from './KnownContexts';
 
 interface ISnippetDefinitionFromFile {
     prefix: string; // e.g. "arm!"
@@ -63,7 +63,7 @@ export class SnippetManager implements ISnippetManager {
     /**
      * Retrieve all snippets
      */
-    public async getSnippets(context: SnippetContext): Promise<ISnippet[]> {
+    public async getSnippets(context: Context): Promise<ISnippet[]> {
         const map = await this.getMap();
         return Array.from(map.values())
             .filter(s => doesSnippetSupportContext(s, context))
@@ -73,7 +73,7 @@ export class SnippetManager implements ISnippetManager {
     /**
      * Retrieve completion items for all snippets
      */
-    public async getSnippetsAsCompletionItems(insertionContext: SnippetInsertionContext, span: Span): Promise<Completion.Item[]> {
+    public async getSnippetsAsCompletionItems(insertionContext: InsertionContext, span: Span): Promise<Completion.Item[]> {
         return await callWithTelemetryAndErrorHandling('getSnippetsAsCompletionItems', async (actionContext: IActionContext) => {
             actionContext.telemetry.suppressIfSuccessful = true;
 
@@ -128,7 +128,7 @@ export class SnippetManager implements ISnippetManager {
 /**
  * Is this snippet supported in the given context?
  */
-function doesSnippetSupportContext(snippet: ISnippetInternal, context: SnippetContext | undefined): boolean {
+function doesSnippetSupportContext(snippet: ISnippetInternal, context: Context | undefined): boolean {
     if (!context || snippet.context !== context) {
         return false;
     }
@@ -145,7 +145,7 @@ function validateSnippet(snippet: ISnippetInternal): ISnippetInternal {
     const looksLikeResource = snippet.body.some(
         line => !!line.match(/"apiVersion"\s*:/)
     );
-    const isResource = doesSnippetSupportContext(snippet, KnownSnippetContexts.resources);
+    const isResource = doesSnippetSupportContext(snippet, KnownContexts.resources);
     if (isResource) {
         if (!looksLikeResource) {
             window.showWarningMessage(`Snippet "${snippet.name}" is marked with the resources context but doesn't looke like a resource`);
