@@ -261,7 +261,7 @@ export abstract class PositionContext {
      * the span of insertion, etc.)
      */
     // tslint:disable-next-line: max-func-body-length cyclomatic-complexity
-    public getSnippetInsertionContext(triggerCharacter: string | undefined): InsertionContext {
+    public getInsertionContext(triggerCharacter: string | undefined): InsertionContext {
         if (!this.document.topLevelValue) {
             // Empty JSON document
             return { context: KnownContexts.emptyDocument, parents: [] };
