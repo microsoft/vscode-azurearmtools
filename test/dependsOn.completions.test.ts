@@ -67,14 +67,21 @@ suite("dependsOn completions", () => {
                         },
                         {
                             type: "microsoft.abc/def",
-                            name: "name1a"
+                            name: "name1",
+                            copy: {
+                                name: "copy"
+                            }
                         }
                     ]
                 },
                 expected: [
                     {
-                        "label": "'name1a'",
+                        "label": "'name1'",
                         "kind": Completion.CompletionKind.dependsOnResourceId
+                    },
+                    {
+                        "label": "LOOP 'copy'",
+                        "kind": Completion.CompletionKind.dependsOnResourceCopyLoop
                     }
                 ]
             }
@@ -124,6 +131,36 @@ suite("dependsOn completions", () => {
                     }
                 ]
             });
+
+        createDependsOnCompletionsTest(
+            "detail for copy loop is short type name",
+            {
+                template: {
+                    resources: [
+                        {
+                            dependsOn: [
+                                "<!replaceStart!><!cursor!>"
+                            ]
+                        },
+                        {
+                            type: "Microsoft.abc/def",
+                            name: "name1",
+                            copy: {
+                                name: "copyname"
+                            }
+                        }
+                    ]
+                },
+                expected: [
+                    {
+                        "label": "'name1'"
+                    },
+                    {
+                        "label": "LOOP 'copyname'",
+                        "detail": "def"
+                    }
+                ]
+            });
     });
 
     suite("documentation", () => {
@@ -139,7 +176,10 @@ suite("dependsOn completions", () => {
                         },
                         {
                             type: "microsoft.abc/def",
-                            name: "name1a"
+                            name: "name1a",
+                            copy: {
+                                name: "copyname"
+                            }
                         }
                     ]
                 },
@@ -153,6 +193,17 @@ suite("dependsOn completions", () => {
                                 "```arm-template\n" +
                                 "\"[resourceId('microsoft.abc/def', 'name1a')]\"\n" +
                                 "```\n<br/>"
+                        }
+                    },
+                    {
+                        // tslint:disable-next-line: no-any
+                        "documention": <any>{
+                            value:
+                                `Inserts this COPY element reference:
+\`\`\`arm-template
+"copyname"
+\`\`\`
+from resource \`'name1a'\` of type \`def\``
                         }
                     }
                 ]
@@ -214,6 +265,49 @@ suite("dependsOn completions", () => {
                 expected: [
                     {
                         "label": `'name1b'`
+                    }
+                ]
+            }
+        );
+
+        createDependsOnCompletionsTest(
+            "label for copy loop",
+            {
+                template: {
+                    resources: [
+                        {
+                            dependsOn: [
+                                "<!replaceStart!><!cursor!>"
+                            ]
+                        },
+                        {
+                            type: "microsoft.abc/def",
+                            name: "name1",
+                            copy: {
+                                name: "copynameliteral"
+                            }
+                        },
+                        {
+                            type: "microsoft.abc/def",
+                            name: "name2",
+                            copy: {
+                                name: "[concat('copy', 'name1')]"
+                            }
+                        }
+                    ]
+                },
+                expected: [
+                    {
+                        "label": `'name1'`
+                    },
+                    {
+                        "label": `LOOP 'copynameliteral'`
+                    },
+                    {
+                        "label": `'name2'`
+                    },
+                    {
+                        "label": `LOOP concat('copy', 'name1')`
                     }
                 ]
             }
@@ -317,6 +411,49 @@ suite("dependsOn completions", () => {
                 {
                     "label": "'foo'",
                     "insertText": `"[resourceId('microsoft.abc/def', parameters('name1a'), 'foo')]"`
+                }
+            ]
+        }
+    );
+
+    createDependsOnCompletionsTest(
+        "insertionText for copy loop",
+        {
+            template: {
+                resources: [
+                    {
+                        dependsOn: [
+                            "<!replaceStart!><!cursor!>"
+                        ]
+                    },
+                    {
+                        type: "microsoft.abc/def",
+                        name: "name1",
+                        copy: {
+                            name: "copynameliteral"
+                        }
+                    },
+                    {
+                        type: "microsoft.abc/def",
+                        name: "name2",
+                        copy: {
+                            name: "[concat('copy', 'name1')]"
+                        }
+                    }
+                ]
+            },
+            expected: [
+                {
+                    "label": `'name1'`
+                },
+                {
+                    "insertText": `"copynameliteral"`
+                },
+                {
+                    "label": `'name2'`
+                },
+                {
+                    "insertText": `"[concat('copy', 'name1')]"`
                 }
             ]
         }
