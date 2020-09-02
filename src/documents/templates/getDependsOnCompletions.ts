@@ -65,11 +65,6 @@ function getDependsOnCompletion(resource: IResourceInfo, span: Span): Completion
         }
         const insertText = `"[${resourceIdExpression}]"`;
         const detail = typeExpression;
-
-        //const resourceResTypeMarkdown = `- **Name**: *${resource.getFullNameExpression()}*\n- **Type**: *${resource.getFullTypeExpression()}*`;
-        // const resourceDocumentation = `#### Inserts a resourceId() reference to the following resource:\n${resourceResTypeMarkdown}`;
-        // const documentation = `\`\`\`csharp\n[${resourceIdExpression}]\n\`\`\`\n${resourceDocumentation}`;
-
         const documentation = `Inserts this resourceId reference:\n\`\`\`arm-template\n"[${resourceIdExpression}]"\n\`\`\`\n<br/>`;
 
         const item = new Completion.Item({
