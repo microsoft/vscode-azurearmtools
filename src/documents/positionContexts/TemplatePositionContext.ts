@@ -286,7 +286,7 @@ export class TemplatePositionContext extends PositionContext {
         return false;
     }
 
-    public getSnippetInsertionContext(options: { triggerCharacter?: string; allowInsideJsonString?: boolean }): InsertionContext {
+    public getInsertionContext(options: { triggerCharacter?: string; allowInsideJsonString?: boolean }): InsertionContext {
         const insertionContext = super.getInsertionContext(options);
         const context = insertionContext.context;
         const parents = insertionContext.parents;
@@ -408,7 +408,7 @@ export class TemplatePositionContext extends PositionContext {
     }
 
     private getDependsOnCompletionItems(triggerCharacter: string | undefined): Completion.Item[] {
-        const insertionContext = this.getSnippetInsertionContext({ triggerCharacter, allowInsideJsonString: true });
+        const insertionContext = this.getInsertionContext({ triggerCharacter, allowInsideJsonString: true });
         if (insertionContext.context === 'dependson') {
             return getDependsOnCompletions(this);
         }
@@ -417,7 +417,7 @@ export class TemplatePositionContext extends PositionContext {
     }
 
     private async getSnippetCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult> {
-        const insertionContext = this.getSnippetInsertionContext({ triggerCharacter });
+        const insertionContext = this.getInsertionContext({ triggerCharacter });
         if (insertionContext.triggerSuggest) {
             return { items: [], triggerSuggest: true };
         } else if (insertionContext.context) {
