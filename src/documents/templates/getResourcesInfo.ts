@@ -99,7 +99,7 @@ export class JsonResourceInfo extends ResourceInfo implements JsonResourceInfo {
 /**
  * Concatenates a list of TLE expressions into a single expression, using 'concat' if necessary, and combining string literals when possible.
  * @param expressions TLE expressions to concat
- * @param unquotedLiteralSeparator An optional separator string literal (without the quotes) to place between every expresion
+ * @param unquotedLiteralSeparator An optional separator string literal (without the quotes) to place between every expression
  *
  * @example
  *  concatExpressionsWithSeparator(

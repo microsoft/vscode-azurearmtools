@@ -95,8 +95,6 @@ export function toVsCodeCompletionItemKind(kind: Completion.CompletionKind): vsc
 
         case Completion.CompletionKind.tleResourceIdResTypeParameter:
         case Completion.CompletionKind.tleResourceIdResNameParameter:
-            return vscode.CompletionItemKind.Reference;
-
         case Completion.CompletionKind.dependsOnResourceId:
             return vscode.CompletionItemKind.Reference;
 

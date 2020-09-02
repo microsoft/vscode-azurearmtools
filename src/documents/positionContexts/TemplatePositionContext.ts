@@ -387,26 +387,6 @@ export class TemplatePositionContext extends PositionContext {
         return this.document.topLevelScope;
     }
 
-    /**
-     * Gets the nearest resource object that contains the current position
-     */
-    public getEnclosingResource(): TemplateScope {
-        if (this.jsonValue && this.document.topLevelValue) {
-            const objectLineage = <(Json.ObjectValue | Json.ArrayValue)[]>this.document.topLevelValue
-                ?.findLineage(this.jsonValue)
-                ?.filter(v => v instanceof Json.ObjectValue);
-            const scopes = this.document.allScopes; // Note: Use all scopes because resources are unique even when scope is not (see CONSIDER in TemplateScope.ts)
-            for (const parent of objectLineage.reverse()) {
-                const innermostMachingScope = scopes.find(s => s.rootObject === parent);
-                if (innermostMachingScope) {
-                    return innermostMachingScope;
-                }
-            }
-        }
-
-        return this.document.topLevelScope;
-    }
-
     private getDependsOnCompletionItems(triggerCharacter: string | undefined): Completion.Item[] {
         const insertionContext = this.getInsertionContext({ triggerCharacter, allowInsideJsonString: true });
         if (insertionContext.context === 'dependson') {
