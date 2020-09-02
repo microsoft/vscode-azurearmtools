@@ -76,10 +76,10 @@ export namespace templateKeys {
     export const apiProfile = 'apiProfile';
 
     // Copy blocks
-    export const loopVarCopy = "copy";
-    export const loopVarName = 'name';
-    export const loopVarInput = 'input';
-    export const loopVarCount = 'count';
+    export const copyLoop = "copy";
+    export const copyName = 'name';
+    export const copyInput = 'input';
+    export const copyCount = 'count';
 
     // Resources
     export const properties = 'properties';

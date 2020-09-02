@@ -99,7 +99,7 @@ export class TopLevelVariableDefinition extends VariableDefinition {
 
         return mapJsonObjectValue(valueAsObject, prop => {
             const arrayValue = Json.asArrayValue(prop.value);
-            if (!!arrayValue && prop.nameValue.unquotedValue.toLowerCase() === templateKeys.loopVarCopy) {
+            if (!!arrayValue && prop.nameValue.unquotedValue.toLowerCase() === templateKeys.copyLoop) {
                 // The property is an array with the name "copy" - process it as a copy block
 
                 // CONSIDER: Azure actually leaves the COPY property's value alone if all of its elements doesn't
@@ -113,9 +113,9 @@ export class TopLevelVariableDefinition extends VariableDefinition {
                     // Element has to be an object
                     const loopVarObject = Json.asObjectValue(copyElement);
                     if (loopVarObject) {
-                        const name = Json.asStringValue(loopVarObject.getPropertyValue(templateKeys.loopVarName));
-                        const input = loopVarObject.getPropertyValue(templateKeys.loopVarInput);
-                        const count = loopVarObject.getPropertyValue(templateKeys.loopVarCount);
+                        const name = Json.asStringValue(loopVarObject.getPropertyValue(templateKeys.copyName));
+                        const input = loopVarObject.getPropertyValue(templateKeys.copyInput);
+                        const count = loopVarObject.getPropertyValue(templateKeys.copyCount);
 
                         // If both name and count are there, ARM processes this as a copy block, otherwise it considers
                         //   it to simply be a member with the name "copy".
@@ -207,9 +207,9 @@ export class TopLevelCopyBlockVariableDefinition extends VariableDefinition {
 
         const asObject = Json.asObjectValue(copyVariableObject);
         if (asObject) {
-            const nameValue = Json.asStringValue(asObject.getPropertyValue(templateKeys.loopVarName));
+            const nameValue = Json.asStringValue(asObject.getPropertyValue(templateKeys.copyName));
             if (nameValue) {
-                const value = asObject.getPropertyValue(templateKeys.loopVarInput);
+                const value = asObject.getPropertyValue(templateKeys.copyInput);
                 return new TopLevelCopyBlockVariableDefinition(asObject, nameValue, value);
             }
         }
