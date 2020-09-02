@@ -287,8 +287,8 @@ export class TemplatePositionContext extends PositionContext {
         return false;
     }
 
-    public getSnippetInsertionContext(triggerCharacter: string | undefined): InsertionContext {
-        const insertionContext = super.getSnippetInsertionContext(triggerCharacter);
+    public getInsertionContext(triggerCharacter: string | undefined): InsertionContext {
+        const insertionContext = super.getInsertionContext(triggerCharacter);
         const context = insertionContext.context;
         const parents = insertionContext.parents;
 
@@ -370,7 +370,7 @@ export class TemplatePositionContext extends PositionContext {
     }
 
     private async getSnippetCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult> {
-        const insertionContext = this.getSnippetInsertionContext(triggerCharacter);
+        const insertionContext = this.getInsertionContext(triggerCharacter);
         if (insertionContext.triggerSuggest) {
             return { items: [], triggerSuggest: true };
         } else if (insertionContext.context) {
