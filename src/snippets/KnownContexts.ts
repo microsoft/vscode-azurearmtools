@@ -8,9 +8,9 @@
  * It may be a known context or the name of the property owning the object or array where the snippet can
  * be added (e.g. "variables" or "outputs")
  */
-export type SnippetContext = KnownSnippetContexts | string;
+export type Context = KnownContexts | string;
 
-export enum KnownSnippetContexts {
+export enum KnownContexts {
     // No top-level JSON in the file
     emptyDocument = 'empty-document',
 

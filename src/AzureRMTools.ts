@@ -36,7 +36,7 @@ import { ReferenceList } from "./language/ReferenceList";
 import * as Span from "./language/Span";
 import { startArmLanguageServerInBackground } from "./languageclient/startArmLanguageServer";
 import { getPreferredSchema } from "./schemas";
-import { showSnippetContext } from "./snippets/showSnippetContext";
+import { showInsertionContext } from "./snippets/showInsertionContext";
 import { SnippetManager } from "./snippets/SnippetManager";
 import { survey } from "./survey";
 import { CachedPromise } from "./util/CachedPromise";
@@ -251,14 +251,14 @@ export class AzureRMTools {
         // Developer commands
         registerCommand("azurerm-vscode-tools.developer.resetGlobalState", resetGlobalState);
         registerCommand(
-            "azurerm-vscode-tools.developer.showSnippetContext",
+            "azurerm-vscode-tools.developer.showInsertionContext",
             async (actionContext: IActionContext) => {
                 let editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
                 if (editor) {
                     let position = editor.selection.anchor;
                     let pc: PositionContext | undefined = await this.getPositionContext(editor.document, position, Cancellation.cantCancel);
                     if (pc) {
-                        showSnippetContext(pc);
+                        showInsertionContext(pc);
                     }
                 }
             });

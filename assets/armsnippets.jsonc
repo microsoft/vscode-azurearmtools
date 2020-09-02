@@ -1,6 +1,6 @@
 {
     /*
-        Known contexts (see KnownSnippetContexts.ts)
+        Known contexts (see KnownContexts.ts)
 
         empty-document
         parameter-definitions

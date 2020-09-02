@@ -5,9 +5,9 @@
 
 import { Span } from "../language/Span";
 import * as Completion from "../vscodeIntegration/Completion";
+import { InsertionContext } from "./InsertionContext";
 import { ISnippet } from "./ISnippet";
-import { SnippetContext } from "./SnippetContext";
-import { SnippetInsertionContext } from "./SnippetInsertionContext";
+import { Context } from "./KnownContexts";
 
 /**
  * Manages snippets and creates completion items for them.  We do this rather
@@ -19,9 +19,9 @@ export interface ISnippetManager {
     /**
      * Retrieve all snippets
      */
-    getSnippets(context: SnippetContext): Promise<ISnippet[]>;
+    getSnippets(context: Context): Promise<ISnippet[]>;
     /**
      * Retrieve completion items for all snippets
      */
-    getSnippetsAsCompletionItems(insertionContext: SnippetInsertionContext, span: Span): Promise<Completion.Item[]>;
+    getSnippetsAsCompletionItems(insertionContext: InsertionContext, span: Span): Promise<Completion.Item[]>;
 }

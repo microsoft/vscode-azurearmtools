@@ -9,8 +9,8 @@ import * as Json from "../../language/json/JSON";
 import { LineColPos } from '../../language/LineColPos';
 import { ReferenceList } from "../../language/ReferenceList";
 import { ContainsBehavior, Span } from '../../language/Span';
-import { KnownSnippetContexts } from "../../snippets/SnippetContext";
-import { SnippetInsertionContext } from "../../snippets/SnippetInsertionContext";
+import { InsertionContext } from "../../snippets/InsertionContext";
+import { KnownContexts } from "../../snippets/KnownContexts";
 import { CachedValue } from '../../util/CachedValue';
 import { __debugMarkPositionInString } from "../../util/debugMarkStrings";
 import { InitializeBeforeUse } from "../../util/InitializeBeforeUse";
@@ -261,10 +261,10 @@ export abstract class PositionContext {
      * the span of insertion, etc.)
      */
     // tslint:disable-next-line: max-func-body-length cyclomatic-complexity
-    public getSnippetInsertionContext(triggerCharacter: string | undefined): SnippetInsertionContext {
+    public getInsertionContext(triggerCharacter: string | undefined): InsertionContext {
         if (!this.document.topLevelValue) {
             // Empty JSON document
-            return { context: KnownSnippetContexts.emptyDocument, parents: [] };
+            return { context: KnownContexts.emptyDocument, parents: [] };
         }
 
         let replacementInfo = this.getCompletionReplacementSpanInfo();
