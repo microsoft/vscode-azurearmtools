@@ -113,7 +113,7 @@ function getVariableDefinitionsFromObject(objectValue: Json.ObjectValue | undefi
         if (variables) {
             const varDefs: IVariableDefinition[] = [];
             for (let prop of variables.properties) {
-                if (prop.nameValue.unquotedValue.toLowerCase() === templateKeys.loopVarCopy) {
+                if (prop.nameValue.unquotedValue.toLowerCase() === templateKeys.copyLoop) {
                     // We have a top-level copy block, e.g.:
                     //
                     // "copy": [
