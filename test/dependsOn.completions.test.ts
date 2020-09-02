@@ -83,7 +83,7 @@ suite("dependsOn completions", () => {
 
     suite("detail", () => {
         createDependsOnCompletionsTest(
-            "detailMatchesFullTypeName",
+            "detailMatchesTypeNameMinusSegment",
             {
                 template: {
                     resources: [
@@ -93,16 +93,34 @@ suite("dependsOn completions", () => {
                             ]
                         },
                         {
-                            type: "microsoft.abc/def",
+                            type: "Microsoft.abc/def",
                             name: "name1a"
+                        },
+                        {
+                            type: "microsoft.123/456/789",
+                            name: "name1b"
+                        },
+                        {
+                            type: "singlesegment",
+                            name: "name1c"
                         }
                     ]
                 },
                 expected: [
                     {
                         "label": "'name1a'",
-                        "insertText": `"[resourceId('microsoft.abc/def', 'name1a')]"`,
-                        "detail": "microsoft.abc/def"
+                        "insertText": `"[resourceId('Microsoft.abc/def', 'name1a')]"`,
+                        "detail": "def"
+                    },
+                    {
+                        "label": "'name1b'",
+                        "insertText": `"[resourceId('microsoft.123/456/789', 'name1b')]"`,
+                        "detail": "456/789"
+                    },
+                    {
+                        "label": "'name1c'",
+                        "insertText": `"[resourceId('singlesegment', 'name1c')]"`,
+                        "detail": "singlesegment"
                     }
                 ]
             });
@@ -131,11 +149,10 @@ suite("dependsOn completions", () => {
                         "documention": <any>{
                             value:
                                 // tslint:disable-next-line: prefer-template
-                                `"[resourceId('microsoft.abc/def', 'name1a')]"\n` +
-                                '\n' +
-                                'Reference to resource\n' +
-                                "- **Name**: *'name1a'*\n" +
-                                "- **Type**: *'microsoft.abc/def'*"
+                                "Inserts this resourceId reference:\n" +
+                                "```arm-template\n" +
+                                "\"[resourceId('microsoft.abc/def', 'name1a')]\"\n" +
+                                "```\n<br/>"
                         }
                     }
                 ]
@@ -168,11 +185,10 @@ suite("dependsOn completions", () => {
                         "documention": <any>{
                             value:
                                 // tslint:disable-next-line: prefer-template
+                                `Inserts this resourceId reference:\n` +
+                                "```arm-template\n" +
                                 `"[resourceId('microsoft.abc/def', 'name1a')]"\n` +
-                                '\n' +
-                                'Reference to resource\n' +
-                                "- **Name**: *'name1a'*\n" +
-                                "- **Type**: *'microsoft.abc/def'*"
+                                "```\n<br/>"
                         }
                     }
                 ]
@@ -668,7 +684,7 @@ suite("dependsOn completions", () => {
                     expected: [
                         {
                             label: "variables('sqlServer')",
-                            detail: "Microsoft.Sql/servers",
+                            detail: "servers",
                             insertText: `"[resourceId('Microsoft.Sql/servers', variables('sqlServer'))]"`
                         }
                     ]
