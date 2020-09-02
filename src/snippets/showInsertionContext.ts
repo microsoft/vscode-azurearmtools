@@ -6,7 +6,7 @@ import { PositionContext } from "../documents/positionContexts/PositionContext";
 import { ext } from "../extensionVariables";
 
 export function showInsertionContext(pc: PositionContext): void {
-    const insertionContext = pc.getSnippetInsertionContext(undefined);
+    const insertionContext = pc.getInsertionContext(undefined);
     ext.outputChannel.show();
     const context = insertionContext.context ?? '(none)';
     ext.outputChannel.appendLine(`Insertion context at ${pc.documentPosition.line + 1},${pc.documentPosition.column + 1}: ${context}`);
