@@ -2,7 +2,7 @@ import { MarkdownString } from "vscode";
 import { assert } from "../../fixed_assert";
 import * as Json from "../../language/json/JSON";
 import { ContainsBehavior, Span } from "../../language/Span";
-import { removeSingleQuotes } from "../../util/strings";
+import { isSingleQuoted, removeSingleQuotes } from "../../util/strings";
 import * as Completion from "../../vscodeIntegration/Completion";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
 import { getResourcesInfo, IJsonResourceInfo, IResourceInfo } from "./getResourcesInfo";
@@ -57,16 +57,26 @@ function getDependsOnCompletion(resource: IResourceInfo, span: Span): Completion
 
     if (shortNameExpression && resourceIdExpression) {
         const label = shortNameExpression;
+        let typeExpression = resource.getFullTypeExpression();
+        if (typeExpression && isSingleQuoted(typeExpression)) {
+            // Simplify the type expression to remove quotes and the first prefix (e.g. 'Microsoft.Compute/')
+            typeExpression = removeSingleQuotes(typeExpression);
+            typeExpression = typeExpression.replace(/^[^/]+\//, '');
+        }
         const insertText = `"[${resourceIdExpression}]"`;
-        const detail = removeSingleQuotes(resource.getFullTypeExpression() ?? '');
-        const resourceResTypeMarkdown = `- **Name**: *${resource.getFullNameExpression()}*\n- **Type**: *${resource.getFullTypeExpression()}*`;
-        const longDocumentation = `Reference to resource\n${resourceResTypeMarkdown}`;
+        const detail = typeExpression;
+
+        //const resourceResTypeMarkdown = `- **Name**: *${resource.getFullNameExpression()}*\n- **Type**: *${resource.getFullTypeExpression()}*`;
+        // const resourceDocumentation = `#### Inserts a resourceId() reference to the following resource:\n${resourceResTypeMarkdown}`;
+        // const documentation = `\`\`\`csharp\n[${resourceIdExpression}]\n\`\`\`\n${resourceDocumentation}`;
+
+        const documentation = `Inserts this resourceId reference:\n\`\`\`arm-template\n"[${resourceIdExpression}]"\n\`\`\`\n<br/>`;
 
         const item = new Completion.Item({
             label,
             insertText: insertText,
             detail,
-            documentation: new MarkdownString(`${insertText}\n\n${longDocumentation}`),
+            documentation: new MarkdownString(documentation),
             span,
             kind: Completion.CompletionKind.dependsOnResourceId,
             // Normally vscode uses label if this isn't specified, but it doesn't seem to like the "[" in the label,
