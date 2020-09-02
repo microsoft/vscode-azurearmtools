@@ -50,13 +50,13 @@ class TleInfo implements ITleInfo {
 export class TemplatePositionContext extends PositionContext {
     private _tleInfo: CachedValue<TleInfo | undefined> = new CachedValue<TleInfo | undefined>();
 
-    public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplateDoc, documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentParametersDoc | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
+    public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplateDoc, documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentParametersDoc | undefined, allowOutOfBounds: boolean = true): TemplatePositionContext {
         let context = new TemplatePositionContext(deploymentTemplate, associatedParameters);
         context.initFromDocumentLineAndColumnIndices(documentLineIndex, documentColumnIndex, allowOutOfBounds);
         return context;
     }
 
-    public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplateDoc, documentCharacterIndex: number, associatedParameters: DeploymentParametersDoc | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
+    public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplateDoc, documentCharacterIndex: number, associatedParameters: DeploymentParametersDoc | undefined, allowOutOfBounds: boolean = true): TemplatePositionContext {
         let context = new TemplatePositionContext(deploymentTemplate, associatedParameters);
         context.initFromDocumentCharacterIndex(documentCharacterIndex, allowOutOfBounds);
         return context;
@@ -314,7 +314,7 @@ export class TemplatePositionContext extends PositionContext {
     }
 
     public async getCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult> {
-        const tleInfo = this.tleInfo; // << BREAKPOINT HERE (TWO)
+        const tleInfo = this.tleInfo;
         const completions: Completion.Item[] = [];
 
         for (let uniqueScope of this.document.uniqueScopes) {
