@@ -7,7 +7,7 @@
 
 import * as assert from "assert";
 import { Position, Range, Uri } from "vscode";
-import { IGotoParameterValueArgs, IParameterValuesSource, IParameterValuesSourceProvider, ParameterDefinitionCodeLens, ShowCurrentParameterFileCodeLens } from "../extension.bundle";
+import { IGotoParameterValueArgs, IParameterValuesSource, IParameterValuesSourceProvider, ParameterDefinitionCodeLens, ParentOrChildCodeLens, ShowCurrentParameterFileCodeLens } from "../extension.bundle";
 import { IDeploymentTemplate, IPartialDeploymentTemplate } from "./support/diagnostics";
 import { parseParametersWithMarkers, parseTemplate } from "./support/parseTemplate";
 import { rangeToString } from "./support/rangeToString";
@@ -286,7 +286,7 @@ suite("DeploymentTemplate code lenses", () => {
                     testName = testName;
                     const dt = await parseTemplate(template);
 
-                    let lenses = dt.getCodeLenses(undefined);
+                    let lenses = dt.getCodeLenses(undefined).filter(cl => !(cl instanceof ParentOrChildCodeLens));
                     for (const lens of lenses) {
                         const result = await lens.resolve();
                         assert(result);

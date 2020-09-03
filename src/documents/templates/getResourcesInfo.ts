@@ -9,16 +9,28 @@ import { getFriendlyExpressionFromTleExpression } from "../../language/expressio
 import * as TLE from "../../language/expressions/TLE";
 import * as Json from "../../language/json/JSON";
 import { isSingleQuoted, removeSingleQuotes } from "../../util/strings";
+import { areDecoupledChildAndParent } from "./areDecoupledChildAndParent";
 import { TemplateScope } from "./scopes/TemplateScope";
 
 /**
  * Get useful info about each resource in the template in a flat list, including the ability to understand full resource names and types in the
  * presence of parent/child resources
  */
-export function getResourcesInfo(scope: TemplateScope): IJsonResourceInfo[] {
+export function getResourcesInfo(
+    { scope, recognizeDecoupledChildren }:
+        {
+            scope: TemplateScope;
+            recognizeDecoupledChildren: boolean;
+        }
+): IJsonResourceInfo[] {
     const resourcesArray = scope.rootObject?.getPropertyValue(templateKeys.resources)?.asArrayValue;
     if (resourcesArray) {
-        return getInfoFromResourcesArray(resourcesArray, undefined);
+        const infos = getInfoFromResourcesArray(resourcesArray, undefined);
+        if (recognizeDecoupledChildren) {
+            findAndSetDecoupledChildren(infos);
+        }
+
+        return infos;
     }
 
     return [];
@@ -38,7 +50,16 @@ export function getResourceInfo(
 // tslint:disable-next-line: no-suspicious-comment
 // TODO: Consider combining with or hanging off of IResource. IResource currently only used for sorting templates and finding nested deployments? Nested subnets are not currently IResources but are IResourceInfos
 export interface IResourceInfo {
+    /**
+     * The parent resource, if any (might be a decoupled parent)
+     */
     parent?: IResourceInfo;
+
+    /**
+     * True if this is a child that was defined at top level instead of nested inside the parent
+     */
+    isDecoupledChild: boolean;
+
     children: IResourceInfo[];
 
     /**
@@ -123,6 +144,7 @@ export class ResourceInfo implements IResourceInfo {
             parent.children.push(this);
         }
     }
+    public isDecoupledChild: boolean = false;
 
     public get shortNameExpression(): string {
         return this.nameSegmentExpressions[this.nameSegmentExpressions.length - 1];
@@ -544,4 +566,34 @@ function getFriendlyResourceLabel(
     let typeLabel = getFriendlyTypeExpression({ resource, fullType });
 
     return `${nameLabel} (${typeLabel})`;
+}
+
+function findAndSetDecoupledChildren(infos: IJsonResourceInfo[]): void {
+    const topLevel = infos.filter(info => !info.parent);
+    const possibleParents = topLevel;
+    const possibleChildren = topLevel.filter(info => !info.parent && info.nameSegmentExpressions.length > 1);
+
+    for (const parent of possibleParents) { // Note: a resource could be a parent of multiple children (some nested, some decoupled)
+        const removeIndices: number[] = [];
+        possibleChildren.slice().forEach((child, index) => { // slice() makes a copy of the array so we can modify it while looping
+            assert(!child.parent, "Should have been removed from the array already");
+            if (areDecoupledChildAndParent(child, parent)) {
+                parent.children.push(child);
+                child.parent = parent;
+                child.isDecoupledChild = true;
+
+                // A resource can't have two parents (whether nested or decoupled), so remove from possibilities
+                //asdf   possibleChildren.splice(index, 1);
+                removeIndices.push(index);
+            }
+        });
+
+        for (let i = removeIndices.length - 1; i >= 0; --i) {
+            possibleChildren.splice(removeIndices[i], 1);
+        }
+
+        if (possibleChildren.length === 0) {
+            break;
+        }
+    }
 }

@@ -16,7 +16,7 @@ import { Issue } from '../../language/Issue';
 import { IssueKind } from '../../language/IssueKind';
 import * as Json from "../../language/json/JSON";
 import { ReferenceList } from "../../language/ReferenceList";
-import * as Span from "../../language/Span";
+import { Span } from "../../language/Span";
 import { isArmSchema } from "../../schemas";
 import { CachedValue } from '../../util/CachedValue';
 import { expectParameterDocumentOrUndefined } from '../../util/expectDocument';
@@ -36,6 +36,7 @@ import { getMissingParameterErrors, getParameterValuesCodeActions } from '../par
 import { SynchronousParameterValuesSourceProvider } from "../parameters/SynchronousParameterValuesSourceProvider";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
 import { LinkedTemplateCodeLens, NestedTemplateCodeLen, ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
+import { getParentAndChildCodeLenses } from './ParentAndChildCodeLenses';
 import { TemplateScope } from "./scopes/TemplateScope";
 import { NestedTemplateOuterScope, TopLevelTemplateScope } from './scopes/templateScopes';
 import { UserFunctionParameterDefinition } from './UserFunctionParameterDefinition';
@@ -498,27 +499,33 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     ): ResolvableCodeLens[] {
         const lenses: ResolvableCodeLens[] = [];
 
-        for (const scope of this.uniqueScopes) {
-            let sourceProvider: IParameterValuesSourceProvider | undefined;
+        for (const scope of this.allScopes) {
+            if (scope.hasUniqueParamsVarsAndFunctions) {
+                let sourceProvider: IParameterValuesSourceProvider | undefined;
 
-            if (scope instanceof TopLevelTemplateScope) {
-                sourceProvider = topLevelParameterValuesProvider;
-            } else {
-                // For anything other than the top level, we already have the parameter values source, no load to resolve lazily
-                const parameterValuesSource = scope.parameterValuesSource;
-                sourceProvider = parameterValuesSource ? new SynchronousParameterValuesSourceProvider(parameterValuesSource) : undefined;
+                if (scope instanceof TopLevelTemplateScope) {
+                    sourceProvider = topLevelParameterValuesProvider;
+                } else {
+                    // For anything other than the top level, we already have the parameter values source, no load to resolve lazily
+                    const parameterValuesSource = scope.parameterValuesSource;
+                    sourceProvider = parameterValuesSource ? new SynchronousParameterValuesSourceProvider(parameterValuesSource) : undefined;
+                }
+
+                const codelenses = this.getParameterCodeLenses(scope, sourceProvider);
+                lenses.push(...codelenses);
             }
 
-            const codelenses = this.getParameterCodeLenses(scope, sourceProvider);
-            lenses.push(...codelenses);
+            //asdf 730a doesn't work
+            lenses.push(...getParentAndChildCodeLenses(scope));
         }
 
-        return lenses
-            .concat(this.getChildTemplateCodeLenses());
+        lenses.push(...this.getChildTemplateCodeLenses());
+
+        return lenses;
     }
 
     private getParameterCodeLenses(
-        scope: TemplateScope,
+        uniqueScop: TemplateScope,
         parameterValuesSourceProvider: IParameterValuesSourceProvider | undefined
     ): ResolvableCodeLens[] {
         if (!ext.configuration.get<boolean>(configKeys.codeLensForParameters)) {
@@ -528,17 +535,17 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         const lenses: ResolvableCodeLens[] = [];
 
         // Code lens for the "parameters" section itself - indicates where the parameters are coming from
-        if (scope instanceof TopLevelTemplateScope) {
+        if (uniqueScop instanceof TopLevelTemplateScope) {
             // Top level
-            const parametersCodeLensSpan = scope.rootObject?.getProperty(templateKeys.parameters)?.span
-                ?? new Span.Span(0, 0);
+            const parametersCodeLensSpan = uniqueScop.rootObject?.getProperty(templateKeys.parameters)?.span
+                ?? new Span(0, 0);
 
             // Is there a parameter file?
             const parameterFileUri = parameterValuesSourceProvider?.parameterFileUri;
             if (parameterFileUri) {
                 // Yes - indicate currently parameter file
-                assert(scope instanceof TopLevelTemplateScope, "Expecting top-level scope");
-                lenses.push(new ShowCurrentParameterFileCodeLens(scope, parametersCodeLensSpan, parameterFileUri));
+                assert(uniqueScop instanceof TopLevelTemplateScope, "Expecting top-level scope");
+                lenses.push(new ShowCurrentParameterFileCodeLens(uniqueScop, parametersCodeLensSpan, parameterFileUri));
             }
 
             // Allow user to change or select/create parameter file
@@ -547,7 +554,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
         // Code lens for each parameter definition
         if (parameterValuesSourceProvider) {
-            lenses.push(...scope.parameterDefinitions.map(pd => new ParameterDefinitionCodeLens(scope, pd, parameterValuesSourceProvider)));
+            lenses.push(...uniqueScop.parameterDefinitions.map(pd => new ParameterDefinitionCodeLens(uniqueScop, pd, parameterValuesSourceProvider)));
         }
 
         return lenses;
