@@ -62,6 +62,7 @@ suite("ResourceInfo", () => {
         }
 
         suite("invalid types", () => {
+            createSplitTypeTest("", ["''"]);
             createSplitTypeTest("simple string", ["'simple string'"]);
             createSplitTypeTest("simple string/separated", ["'simple string/separated'"]);
             createSplitTypeTest("[]", ['']);
@@ -69,11 +70,41 @@ suite("ResourceInfo", () => {
             createSplitTypeTest("[concat(variables('a'), variables('b'))]", ["concat(variables('a'), variables('b'))"]);
         });
 
-        createSplitTypeTest("simple string/separated/again", ["'simple string/separated'", "'again'"]);
+        suite("simple strings", () => {
+            createSplitTypeTest("Microsoft.Sql/servers", ["'Microsoft.Sql/servers'"]);
+            createSplitTypeTest("Microsoft.Sql/servers/firewallRules", ["'Microsoft.Sql/servers'", "'firewallRules'"]);
+            createSplitTypeTest("Microsoft.Sql/servers/firewallRules/another", ["'Microsoft.Sql/servers'", "'firewallRules'", "'another'"]);
+        });
 
-        createSplitTypeTest("ms.abc/def", ["'ms.abc/def'"]);
-        createSplitTypeTest("ms.abc/def/child", ["'ms.abc/def'", "'child'"]);
-        createSplitTypeTest("ms.abc/def/child/grandchild", ["'ms.abc/def'", "'child'", "'grandchild'"]);
+        suite('expressions', () => {
+            createSplitTypeTest("[variables('sqlservers')]", ["variables('sqlservers')"]);
+            createSplitTypeTest("[concat('Microsoft.Sql/servers')]", ["'Microsoft.Sql/servers'"]);
+            createSplitTypeTest("[concat('Microsoft.Sql', '/servers')]", ["'Microsoft.Sql/servers'"]);
+            createSplitTypeTest("[concat('Microsoft.Sql/', 'servers')]", ["'Microsoft.Sql/servers'"]);
+            createSplitTypeTest("[concat('Microsoft.Sql', '/', 'servers')]", ["'Microsoft.Sql/servers'"]);
+
+            createSplitTypeTest("[concat('Microsoft.Sql', '/', variables('servers'))]", ["concat('Microsoft.Sql/', variables('servers'))"]);
+
+            // This one is ambiguous - we don't know if variables('a') or variables('b') contains a '/'.  If they do, they're separate segments, otherwise a single segment.
+            // Like with names, we always assume that variables/variables do *not* contain slashes.  But this is just one way to interpret this.
+            createSplitTypeTest("[concat('Microsoft.Sql', '/', variables('a'), variables('b'))]", ["concat('Microsoft.Sql/', concat(variables('a'), variables('b')))"]);
+
+            createSplitTypeTest("[concat('Microsoft.Sql', '/', variables('servers'),'/', variables('grandchild'))]", ["concat('Microsoft.Sql/', variables('servers'))", "variables('grandchild')"]);
+            createSplitTypeTest("[concat('Microsoft.Sql', '/', variables('servers'),'/', 'grandchild')]", ["concat('Microsoft.Sql/', variables('servers'))", "'grandchild'"]);
+
+            // Again, assuming "/servers" and variables('other') must go together because there's no '/' in between.
+            // Not currently optimizing the expression as well as we could
+            createSplitTypeTest("[concat('Microsoft.Sql', '/servers', variables('other'),'/', 'grandchild')]", ["concat('Microsoft.Sql/', concat('servers', variables('other')))", "'grandchild'"]);
+
+            createSplitTypeTest("[concat('Microsoft.Sql', variables('slashservers'),'/', 'grandchild')]", ["concat('Microsoft.Sql', variables('slashservers'))", "'grandchild'"]);
+            createSplitTypeTest("[concat('Microsoft.Sql/servers/', variables('servers'))]", ["'Microsoft.Sql/servers'", "variables('servers')"]);
+            createSplitTypeTest("[concat('Microsoft.Sql/servers/other2', variables('servers'))]", ["'Microsoft.Sql/servers'", "concat('other2', variables('servers'))"]);
+            createSplitTypeTest("[concat('Microsoft.Sql/servers/other2/', variables('servers'))]", ["'Microsoft.Sql/servers'", "'other2'", "variables('servers')"]);
+
+            createSplitTypeTest("Microsoft.Sql/servers", ["'Microsoft.Sql/servers'"]);
+            createSplitTypeTest("Microsoft.Sql/servers/firewallRules", ["'Microsoft.Sql/servers'", "'firewallRules'"]);
+            createSplitTypeTest("Microsoft.Sql/servers/firewallRules/another", ["'Microsoft.Sql/servers'", "'firewallRules'", "'another'"]);
+        });
 
         createSplitTypeTest("[variables('a')]", ["variables('a')"]);
         createSplitTypeTest("[concat(variables('a'), variables('b'))]", ["concat(variables('a'), variables('b'))"]);
@@ -82,8 +113,9 @@ suite("ResourceInfo", () => {
         createSplitTypeTest("[concat(variables('a'), '/b', '/', variables('c'))]", ["variables('a')", "'b'", "variables('c')"]);
         createSplitTypeTest("[concat(variables('a'), '/b')]", ["variables('a')", "'b'"]);
 
-        createSplitTypeTest("[concat('ms.abc', '/', parameters('b'))]", ["'ms.abc'", "parameters('b')"]);
-        createSplitTypeTest("[concat('ms.abc/', parameters('b'))]", ["'ms.abc'", "parameters('b')"]);
+        createSplitTypeTest("[concat('ms.abc', '/', parameters('b'))]", ["concat('ms.abc/', parameters('b'))"]);
+        createSplitTypeTest("[concat('ms.abc', '/', parameters('b'))]", ["concat('ms.abc/', parameters('b'))"]);
+        createSplitTypeTest("[concat('ms.abc/', parameters('b'))]", ["concat('ms.abc/', parameters('b'))"]);
         createSplitTypeTest("[concat(parameters('a'), '/def/', parameters('b'))]", ["parameters('a')", "'def'", "parameters('b')"]);
     });
 
@@ -517,7 +549,7 @@ suite("ResourceInfo", () => {
             };
 
             const dt = await parseTemplate(template);
-            const infos = getResourcesInfo(dt.topLevelScope);
+            const infos = getResourcesInfo({ scope: dt.topLevelScope, recognizeDecoupledChildren: false });
 
             const actual = infos.map(info => ({
                 name: info.shortNameExpression,

@@ -195,7 +195,10 @@ export abstract class DeploymentDocument implements IJsonDocument {
 }
 
 export abstract class ResolvableCodeLens extends CodeLens {
-    public constructor(public readonly scope: TemplateScope, span: Span) {
+    public constructor(
+        public readonly scope: TemplateScope,
+        public readonly span: Span
+    ) {
         super(getVSCodeRangeFromSpan(scope.document, span));
     }
 
