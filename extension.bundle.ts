@@ -35,6 +35,7 @@ export { canAddPropertyValueHere } from "./src/documents/parameters/ParameterVal
 export { ParametersPositionContext } from "./src/documents/positionContexts/ParametersPositionContext";
 export { IReferenceSite, PositionContext, ReferenceSiteKind } from "./src/documents/positionContexts/PositionContext";
 export { TemplatePositionContext } from "./src/documents/positionContexts/TemplatePositionContext";
+export * from "./src/documents/templates/areDecoupledChildAndParent";
 export { ParameterDefinitionCodeLens, ShowCurrentParameterFileCodeLens } from "./src/documents/templates/deploymentTemplateCodeLenses";
 export { DeploymentTemplateDoc } from "./src/documents/templates/DeploymentTemplateDoc";
 export { ExpressionType } from "./src/documents/templates/ExpressionType";

@@ -26,3 +26,10 @@ export interface IAddMissingParametersArgs {
     parameterDefinitionsSource: IParameterDefinitionsSource;
     parameterValuesSource: IParameterValuesSource;
 }
+
+export interface IGotoResourceArgs { //asdf
+    documentUri: Uri;
+    range: Range;
+
+    telemetryProperties?: { [key: string]: string };
+}

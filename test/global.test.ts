@@ -11,6 +11,7 @@ import * as vscode from 'vscode';
 import { armTemplateLanguageId, configKeys, configPrefix, ext } from "../extension.bundle";
 import { displayCacheStatus, publishCache } from './support/cache';
 import { delay } from "./support/delay";
+import { createTestLog, deleteTestLog, testLog } from './support/testLog';
 import { useTestSnippets } from './support/TestSnippets';
 import { logsFolder } from './testConstants';
 import { useTestFunctionMetadata } from "./TestData";
@@ -60,7 +61,7 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     console.log('Done: global.test.ts: suiteSetup');
 });
 
-// Runs after all tests
+// Runs after all tests are done
 suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
     console.log('Done: global.test.ts: suiteTeardown');
 
@@ -75,4 +76,17 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
     previousSettings.fileAssociations = vscode.workspace.getConfiguration('file').get<{}>('associations');
     vscode.workspace.getConfiguration('file').update('assocations', previousSettings.fileAssociations, vscode.ConfigurationTarget.Global);
     await delay(1000);
+});
+
+// Runs before each test
+setup(function (this: Mocha.IBeforeAndAfterContext): void {
+    createTestLog();
+});
+
+// Runs after each test
+teardown(function (this: Mocha.IBeforeAndAfterContext): void {
+    if (!this.currentTest.state || this.currentTest.state === 'failed') {
+        console.log(`\n========= TESTLOG =========:\n${testLog.toString()}\n`);
+        deleteTestLog();
+    }
 });

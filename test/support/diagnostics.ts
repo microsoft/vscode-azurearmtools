@@ -19,7 +19,6 @@ import * as path from 'path';
 import { Diagnostic, DiagnosticSeverity, Disposable, languages, Position, Range, TextDocument } from "vscode";
 import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
-import { testLog } from "./createTestLog";
 import { delay } from "./delay";
 import { mapParameterFile } from "./mapParameterFile";
 import { parseParametersWithMarkers } from "./parseTemplate";
@@ -27,6 +26,7 @@ import { rangeToString } from "./rangeToString";
 import { resolveInTestFolder } from "./resolveInTestFolder";
 import { stringify } from "./stringify";
 import { TempDocument, TempEditor, TempFile } from "./TempFile";
+import { testLog } from "./testLog";
 
 export const diagnosticsTimeout = 2 * 60 * 1000; // CONSIDER: Use this long timeout only for first test, or for suite setup
 

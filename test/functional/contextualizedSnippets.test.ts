@@ -11,12 +11,12 @@ const DEBUG_BREAK_AFTER_INSERTING_SNIPPET = false;
 
 import * as assert from 'assert';
 import { Position, Selection } from "vscode";
-import { testLog } from '../support/createTestLog';
 import { delay } from '../support/delay';
 import { diagnosticSources, getDiagnosticsForDocument, IGetDiagnosticsOptions } from '../support/diagnostics';
 import { formatDocumentAndWait } from '../support/formatDocumentAndWait';
 import { parseTemplateWithMarkers } from '../support/parseTemplate';
 import { TempDocument, TempEditor, TempFile } from '../support/TempFile';
+import { testLog } from '../support/testLog';
 import { testWithRealSnippets } from '../support/TestSnippets';
 import { simulateCompletion } from '../support/triggerCompletion';
 
