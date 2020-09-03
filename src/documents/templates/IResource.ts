@@ -2,7 +2,6 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import * as Json from "../../language/json/JSON";
 import { Span } from "../../language/Span";
 import { TemplateScope } from "./scopes/TemplateScope";
 
@@ -20,10 +19,10 @@ export interface IResource {
     /**
      * The nameValue of the resource object in the JSON
      */
-    nameValue: Json.StringValue | undefined;
+    //nameValue: Json.StringValue | undefined; asdf
 
     /**
      * The typeValue of the resource object in the JSON
      */
-    resourceTypeValue: Json.StringValue | undefined;
+    //resourceTypeValue2: Json.StringValue | undefined; asdf
 }

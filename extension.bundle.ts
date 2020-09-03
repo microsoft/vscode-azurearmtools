@@ -35,12 +35,14 @@ export { canAddPropertyValueHere } from "./src/documents/parameters/ParameterVal
 export { ParametersPositionContext } from "./src/documents/positionContexts/ParametersPositionContext";
 export { IReferenceSite, PositionContext, ReferenceSiteKind } from "./src/documents/positionContexts/PositionContext";
 export { TemplatePositionContext } from "./src/documents/positionContexts/TemplatePositionContext";
+export * from "./src/documents/templates/areDecoupledChildAndParent";
 export { ParameterDefinitionCodeLens, ShowCurrentParameterFileCodeLens } from "./src/documents/templates/deploymentTemplateCodeLenses";
 export { DeploymentTemplateDoc } from "./src/documents/templates/DeploymentTemplateDoc";
 export { ExpressionType } from "./src/documents/templates/ExpressionType";
 export { looksLikeResourceTypeStringLiteral } from "./src/documents/templates/getResourceIdCompletions";
 export * from "./src/documents/templates/getResourcesInfo";
 export { InsertItem } from "./src/documents/templates/insertItem";
+export * from "./src/documents/templates/ParentAndChildCodeLenses";
 export { TemplateScope, TemplateScopeKind } from "./src/documents/templates/scopes/TemplateScope";
 export * from "./src/documents/templates/scopes/templateScopes";
 export { TemplateSectionType } from "./src/documents/templates/TemplateSectionType";
@@ -78,6 +80,7 @@ export { indentMultilineString, unindentMultilineString } from "./src/util/multi
 export * from "./src/util/nonNull";
 export { normalizePath } from "./src/util/normalizePath";
 export * from "./src/util/readUtf8FileWithBom";
+export * from "./src/util/sortArrayByProperty";
 export * as strings from "./src/util/strings";
 export * from './src/util/time';
 export { wrapError } from "./src/util/wrapError";
@@ -90,7 +93,7 @@ export { UndefinedParameterAndVariableVisitor } from "./src/visitors/UndefinedPa
 export { UndefinedVariablePropertyVisitor } from "./src/visitors/UndefinedVariablePropertyVisitor";
 export { UnrecognizedBuiltinFunctionIssue, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "./src/visitors/UnrecognizedFunctionIssues";
 export { UnrecognizedFunctionVisitor } from "./src/visitors/UnrecognizedFunctionVisitor";
-export { IGotoParameterValueArgs } from "./src/vscodeIntegration/commandArguments";
+export * from "./src/vscodeIntegration/commandArguments";
 export { IConfiguration } from "./src/vscodeIntegration/Configuration";
 export { HoverInfo } from "./src/vscodeIntegration/Hover";
 export { JsonOutlineProvider, shortenTreeLabel } from "./src/vscodeIntegration/Treeview";

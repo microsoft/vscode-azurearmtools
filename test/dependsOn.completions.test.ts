@@ -835,7 +835,7 @@ from resource \`name1a\` of type \`def\``
                     },
                     expected: [
                         {
-                            label: "${sqlServer}",
+                            label: "parent (${sqlServer})",
                             detail: "servers",
                             insertText: `"[resourceId('Microsoft.Sql/servers', variables('sqlServer'))]"`
                         }
@@ -898,7 +898,55 @@ from resource \`name1a\` of type \`def\``
         suite("nested parent/child", () => {
 
             createDependsOnCompletionsTest(
-                "Reference parent from nested child",
+                "Two ways to name nested children",
+                {
+                    template: {
+                        "resources": [
+                            {
+                                // sibling
+                                name: "sibling",
+                                type: "a.b/c",
+                                "dependsOn": [
+                                    "<!cursor!>"
+                                ]
+                            },
+                            {
+                                // Parent
+                                "name": "[variables('sqlServer')]",
+                                "type": "Microsoft.Sql/servers",
+                                "resources": [
+                                    {
+                                        // Child (nested) - Name/type don't include parent name/type (this is the normal and documented case)
+                                        "name": "[variables('firewallRuleName')]",
+                                        "type": "firewallRules"
+                                    },
+                                    {
+                                        // Child (nested) - But name/type *can* include parent name/type (as long as both name and type do)
+                                        "name": "[concat(variables('sqlServer'), '/', variables('firewallRuleName2'))]",
+                                        "type": "Microsoft.Sql/servers/firewallRules"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    expected: [
+                        {
+                            label: "${sqlServer}"
+                        },
+                        {
+                            label: "${firewallRuleName}",
+                            insertText: `"[resourceId('Microsoft.Sql/servers/firewallRules', variables('sqlServer'), variables('firewallRuleName'))]"`
+                        },
+                        {
+                            label: "${firewallRuleName2}",
+                            insertText: `"[resourceId('Microsoft.Sql/servers/firewallRules', variables('sqlServer'), variables('firewallRuleName2'))]"`
+                        }
+                    ]
+                }
+            );
+
+            createDependsOnCompletionsTest(
+                "Reference parent and siblings from nested child",
                 {
                     template: {
                         "resources": [
@@ -913,12 +961,17 @@ from resource \`name1a\` of type \`def\``
                                 "type": "Microsoft.Sql/servers",
                                 "resources": [
                                     {
-                                        // Child (nested) - Name must not include parent name
+                                        // Child (nested) - Name/type don't include parent name/type (this is the normal and documented case)
                                         "name": "[variables('firewallRuleName')]",
                                         "type": "firewallRules",
                                         "dependsOn": [
                                             "<!cursor!>"
                                         ]
+                                    },
+                                    {
+                                        // Child (nested) - But name/type *can* include parent name/type (as long as both name and type do)
+                                        "name": "[concat(variables('sqlServer'), '/', variables('firewallRuleName2'))]",
+                                        "type": "Microsoft.Sql/servers/firewallRules"
                                     }
                                 ]
                             }
@@ -926,10 +979,16 @@ from resource \`name1a\` of type \`def\``
                     },
                     expected: [
                         {
+                            // another top-level resource
                             label: "sibling"
                         },
                         {
-                            label: "${sqlServer}"
+                            // parent
+                            label: "parent (${sqlServer})"
+                        },
+                        {
+                            // sibling child
+                            label: "${firewallRuleName2}"
                         }
                     ]
                 }
@@ -1103,7 +1162,7 @@ from resource \`name1a\` of type \`def\``
                 },
                 expected: [
                     {
-                        label: "${parent1}"
+                        label: "parent (${parent1})"
                     },
                     {
                         label: "child1b"

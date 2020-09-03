@@ -1,8 +1,10 @@
-import { Uri } from "vscode";
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
+
 // tslint:disable: max-classes-per-file
+
+import { Uri } from "vscode";
 import { templateKeys } from "../../../constants";
 import * as Json from "../../../language/json/JSON";
 import { assertNever } from "../../../util/assertNever";
