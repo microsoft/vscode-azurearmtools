@@ -261,17 +261,24 @@ export abstract class PositionContext {
      * the span of insertion, etc.)
      */
     // tslint:disable-next-line: max-func-body-length cyclomatic-complexity
-    public getInsertionContext(triggerCharacter: string | undefined): InsertionContext {
+    public getInsertionContext(options: { triggerCharacter?: string; allowInsideJsonString?: boolean }): InsertionContext {
+        const triggerCharacter = options.triggerCharacter;
+        const allowInsideJsonString = !!options.allowInsideJsonString;
+
         if (!this.document.topLevelValue) {
             // Empty JSON document
             return { context: KnownContexts.emptyDocument, parents: [] };
         }
 
-        let replacementInfo = this.getCompletionReplacementSpanInfo();
-        const insideDoubleQuotes = replacementInfo.token?.type === Json.TokenType.QuotedString;
+        const insideJsonString = this.jsonToken?.type === Json.TokenType.QuotedString;
         let parents: (Json.ArrayValue | Json.ObjectValue | Json.Property)[] = [];
 
-        const insertionParent: Json.ArrayValue | Json.ObjectValue | undefined = this.getInsertionParent();
+        let insertionParent: Json.ArrayValue | Json.ObjectValue | undefined = this.getInsertionParent();
+        if (insideJsonString && !insertionParent && allowInsideJsonString) {
+            const pcAtStartOfString = this.document.getContextFromDocumentCharacterIndex(this.jsonTokenStartIndex, this._associatedDocument);
+            insertionParent = pcAtStartOfString.getInsertionParent();
+        }
+
         if (insertionParent) {
             const lineage: (Json.ArrayValue | Json.ObjectValue | Json.Property)[] | undefined = this.document.topLevelValue.findLineage(insertionParent);
             assert(lineage, `Couldn't find JSON value inside the top-level value: ${insertionParent.toFullFriendlyString()}`);
@@ -296,13 +303,16 @@ export abstract class PositionContext {
                 //   - context is "parameters"
                 // }
                 //
-                const parentPropertyName = parents[1].propertyName;
-                return { context: parentPropertyName, parents, insideDoubleQuotes };
+                const parentPropertyName = parents[1].propertyName?.toLowerCase();
+                return { context: parentPropertyName, parents, insideJsonString };
             }
 
             if (
-                !insideDoubleQuotes
-                && !triggerCharacter
+                (
+                    (insideJsonString && allowInsideJsonString)
+                    || !insideJsonString
+                )
+                && (!triggerCharacter || triggerCharacter === '"')
                 && parents[0] instanceof Json.ArrayValue
                 && parents[1] instanceof Json.Property
             ) {
@@ -315,12 +325,12 @@ export abstract class PositionContext {
                 //               - context is "resources"
                 // ]
                 //
-                const parentPropertyName = parents[1].propertyName;
-                return { context: parentPropertyName, parents };
+                const parentPropertyName = parents[1].propertyName?.toLowerCase();
+                return { context: parentPropertyName, parents, insideJsonString };
             }
 
             if (
-                !insideDoubleQuotes
+                !insideJsonString // Don't currently need the insideJsonString=true case here
                 && parents[0] instanceof Json.ObjectValue
                 && parents[1] instanceof Json.ArrayValue
                 && parents[2] instanceof Json.Property
@@ -345,7 +355,8 @@ export abstract class PositionContext {
                     return {
                         context: undefined,
                         triggerSuggest: true,
-                        parents
+                        parents,
+                        insideJsonString
                     };
                 } else if (!triggerCharacter) {
                     // Inside an empty object inside an array (likely because of the above case but could be manually triggered
@@ -360,21 +371,29 @@ export abstract class PositionContext {
                     //   }
                     // ]
                     //
-                    const parentPropertyName = parents[2].propertyName;
+                    const parentPropertyName = parents[2].propertyName?.toLowerCase();
                     return {
                         context: parentPropertyName,
                         curlyBraces: insertionParent.span,
-                        parents
+                        parents,
+                        insideJsonString
                     };
                 }
             }
         }
 
-        return { context: undefined, parents, insideDoubleQuotes };
+        return { context: undefined, parents, insideJsonString };
+    }
+
+    public get isInsideComment(): boolean {
+        return !!this.document.jsonParseResult.getCommentTokenAtDocumentIndex(
+            this.documentCharacterIndex,
+            ContainsBehavior.enclosed);
     }
 
     // Retrieves the array or object which would be the parent if a JSON item were added
-    //   at the current location
+    //   at the current location. If the cursor is inside any other kind of value, or  inside a comment,
+    //   returns undefined.
     public getInsertionParent(): Json.ObjectValue | Json.ArrayValue | undefined {
         const enclosingJsonValue = this.document.jsonParseResult.getValueAtCharacterIndex(
             this.documentCharacterIndex,
@@ -385,14 +404,27 @@ export abstract class PositionContext {
 
         // We're immediately inside an object or array, not any other kind of value.  But we could still be inside
         // a comment
-        if (!!this.document.jsonParseResult.getCommentTokenAtDocumentIndex(
-            this.documentCharacterIndex,
-            ContainsBehavior.enclosed)
-        ) {
+        if (this.isInsideComment) {
             // Inside a comment, can't insert here!
             return undefined;
         }
 
         return enclosingJsonValue;
+    }
+
+    /**
+     * Gets the nearest enclosing parent (array or object) at the current position
+     */
+    public getEnclosingParent(): Json.ArrayValue | Json.ObjectValue | undefined {
+        const enclosingJsonValue = this.document.jsonParseResult.getValueAtCharacterIndex(
+            this.documentCharacterIndex,
+            ContainsBehavior.enclosed);
+        if (enclosingJsonValue) {
+            const lineage: (Json.ArrayValue | Json.ObjectValue | Json.Property)[] | undefined = this.document.topLevelValue?.findLineage(enclosingJsonValue) ?? [];
+            const lineageWithoutProperties = <(Json.ArrayValue | Json.ObjectValue)[]>lineage.filter(l => !(l instanceof Json.Property));
+            return lineageWithoutProperties[lineage.length - 1];
+        }
+
+        return undefined;
     }
 }

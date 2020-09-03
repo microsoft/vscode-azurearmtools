@@ -22,6 +22,7 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
     vscodeItem.commitCharacters = item.commitCharacters;
     vscodeItem.preselect = item.preselect;
     vscodeItem.filterText = item.filterText;
+    vscodeItem.kind = toVsCodeCompletionItemKind(item.kind);
 
     let sortPriorityPrefix: string;
     switch (item.priority) {
@@ -40,46 +41,6 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
 
     // Add priority string to start of sortText, use label if no sortText
     vscodeItem.sortText = `${sortPriorityPrefix}${item.sortText ?? item.label}`;
-
-    switch (item.kind) {
-        case Completion.CompletionKind.tleFunction:
-        case Completion.CompletionKind.tleUserFunction:
-            vscodeItem.kind = vscode.CompletionItemKind.Function;
-            break;
-
-        case Completion.CompletionKind.tleParameter:
-        case Completion.CompletionKind.tleVariable:
-            vscodeItem.kind = vscode.CompletionItemKind.Variable;
-            break;
-
-        case Completion.CompletionKind.tleProperty:
-            vscodeItem.kind = vscode.CompletionItemKind.Field;
-            break;
-
-        case Completion.CompletionKind.tleNamespace:
-            vscodeItem.kind = vscode.CompletionItemKind.Unit;
-            break;
-
-        case Completion.CompletionKind.PropertyValueForExistingProperty:
-            vscodeItem.kind = vscode.CompletionItemKind.Property;
-            break;
-
-        case Completion.CompletionKind.PropertyValueForNewProperty:
-            vscodeItem.kind = vscode.CompletionItemKind.Snippet;
-            break;
-
-        case Completion.CompletionKind.tleResourceIdResTypeParameter:
-        case Completion.CompletionKind.tleResourceIdResNameParameter:
-            vscodeItem.kind = vscode.CompletionItemKind.Reference;
-            break;
-
-        case Completion.CompletionKind.Snippet:
-            vscodeItem.kind = vscode.CompletionItemKind.Snippet;
-            break;
-
-        default:
-            assertNever(item.kind);
-    }
 
     if (item.additionalEdits) {
         vscodeItem.additionalTextEdits = item.additionalEdits.map(
@@ -108,6 +69,41 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
     };
 
     return vscodeItem;
+}
+
+export function toVsCodeCompletionItemKind(kind: Completion.CompletionKind): vscode.CompletionItemKind {
+    switch (kind) {
+        case Completion.CompletionKind.tleFunction:
+        case Completion.CompletionKind.tleUserFunction:
+            return vscode.CompletionItemKind.Function;
+
+        case Completion.CompletionKind.tleParameter:
+        case Completion.CompletionKind.tleVariable:
+            return vscode.CompletionItemKind.Variable;
+
+        case Completion.CompletionKind.tleProperty:
+            return vscode.CompletionItemKind.Field;
+
+        case Completion.CompletionKind.tleNamespace:
+            return vscode.CompletionItemKind.Unit;
+
+        case Completion.CompletionKind.PropertyValueForExistingProperty:
+            return vscode.CompletionItemKind.Property;
+
+        case Completion.CompletionKind.PropertyValueForNewProperty:
+            return vscode.CompletionItemKind.Snippet;
+
+        case Completion.CompletionKind.tleResourceIdResTypeParameter:
+        case Completion.CompletionKind.tleResourceIdResNameParameter:
+        case Completion.CompletionKind.dependsOnResourceId:
+            return vscode.CompletionItemKind.Reference;
+
+        case Completion.CompletionKind.Snippet:
+            return vscode.CompletionItemKind.Snippet;
+
+        default:
+            assertNever(kind);
+    }
 }
 
 /**

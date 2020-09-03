@@ -111,7 +111,7 @@ function getCompletions(
     // Add completions for all remaining resources, at the given name segment index
     const results: Completion.Item[] = [];
     for (let info of filteredResources) {
-        const insertText = info.nameExpressions[nameSegmentIndex];
+        const insertText = info.nameSegmentExpressions[nameSegmentIndex];
         if (insertText) {
             const label = insertText;
 
@@ -164,10 +164,11 @@ function findFunctionCallArgumentWithResourceType(
             }
 
             let argTextLC = argText?.toLowerCase();
-            for (let info of resources) {
-                const resFullType = info.fullTypeName;
-                if (resFullType.toLowerCase() === argTextLC) {
-                    return { argIndex, typeExpression: argText };
+            if (argTextLC) {
+                for (let info of resources) {
+                    if (info.getFullTypeExpression()?.toLowerCase() === argTextLC) {
+                        return { argIndex, typeExpression: argText };
+                    }
                 }
             }
         }
@@ -181,7 +182,7 @@ function filterResourceInfosByType(infos: IResourceInfo[], typeExpression: strin
         return [];
     }
     const typeExpressionLC = typeExpression.toLowerCase();
-    return infos.filter(info => info.fullTypeName.toLowerCase() === typeExpressionLC);
+    return infos.filter(info => info.getFullTypeExpression()?.toLowerCase() === typeExpressionLC);
 }
 
 function filterResourceInfosByNameSegment(infos: IResourceInfo[], segmentExpression: string, segmentIndex: number): IResourceInfo[] {
@@ -189,7 +190,7 @@ function filterResourceInfosByNameSegment(infos: IResourceInfo[], segmentExpress
         return [];
     }
     const segmentExpressionLC = lowerCaseAndNoWhitespace(segmentExpression);
-    return infos.filter(info => lowerCaseAndNoWhitespace(info.nameExpressions[segmentIndex]) === segmentExpressionLC);
+    return infos.filter(info => lowerCaseAndNoWhitespace(info.nameSegmentExpressions[segmentIndex]) === segmentExpressionLC);
 }
 
 function lowerCaseAndNoWhitespace(s: string | undefined): string | undefined {
@@ -216,28 +217,30 @@ function getResourceTypeCompletions(
 
     const results: Completion.Item[] = [];
     for (let info of getResourcesInfo(scope)) {
-        const insertText = info.fullTypeName;
-        const label = insertText;
-        let typeArgument = funcCall.argumentExpressions[argumentIndex];
-        let span = getReplacementSpan(pc, typeArgument, parentStringToken);
+        const insertText = info.getFullTypeExpression();
+        if (insertText) {
+            const label = insertText;
+            let typeArgument = funcCall.argumentExpressions[argumentIndex];
+            let span = getReplacementSpan(pc, typeArgument, parentStringToken);
 
-        results.push(new Completion.Item({
-            label,
-            insertText,
-            span,
-            kind: Completion.CompletionKind.tleResourceIdResTypeParameter,
-            priority: Completion.CompletionPriority.high,
-            // Force the first of the resourceId completions to be preselected, otherwise
-            // vscode tends to preselect one of the regular function completions based
-            // on recently-typed text
-            preselect: true,
-            commitCharacters: [','],
-            telemetryProperties: {
-                segment: String(0),
-                arg: String(argumentIndex),
-                function: funcCall.fullName
-            }
-        }));
+            results.push(new Completion.Item({
+                label,
+                insertText,
+                span,
+                kind: Completion.CompletionKind.tleResourceIdResTypeParameter,
+                priority: Completion.CompletionPriority.high,
+                // Force the first of the resourceId completions to be preselected, otherwise
+                // vscode tends to preselect one of the regular function completions based
+                // on recently-typed text
+                preselect: true,
+                commitCharacters: [','],
+                telemetryProperties: {
+                    segment: String(0),
+                    arg: String(argumentIndex),
+                    function: funcCall.fullName
+                }
+            }));
+        }
     }
 
     return Completion.Item.dedupeByLabel(results);

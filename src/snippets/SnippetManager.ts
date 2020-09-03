@@ -98,7 +98,7 @@ export class SnippetManager implements ISnippetManager {
                     const name = entry[0];
                     const detail = `${internalSnippet.description} (${extensionName})`;
                     let label = internalSnippet.prefix;
-                    if (insertionContext.insideDoubleQuotes && !label.startsWith('"')) {
+                    if (insertionContext.insideJsonString && !label.startsWith('"')) {
                         label = `"${label}"`;
                     }
 

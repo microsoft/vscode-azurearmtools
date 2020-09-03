@@ -400,11 +400,11 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
     //#endregion
 
-    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentDocument | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
+    public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentDocument | undefined, allowOutOfBounds: boolean = true): TemplatePositionContext {
         return TemplatePositionContext.fromDocumentLineAndColumnIndexes(this, documentLineIndex, documentColumnIndex, expectParameterDocumentOrUndefined(associatedParameters), allowOutOfBounds);
     }
 
-    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedParameters: DeploymentDocument | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
+    public getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedParameters: DeploymentDocument | undefined, allowOutOfBounds: boolean = true): TemplatePositionContext {
         return TemplatePositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex, expectParameterDocumentOrUndefined(associatedParameters), allowOutOfBounds);
     }
 

@@ -640,6 +640,9 @@ export abstract class Value {
         return this instanceof Property ? this : undefined;
     }
 
+    /**
+     * Retrieves the enlosing objects, arrays and properties of the given descendent, in order of top-most to deepest
+     */
     public findLineage(descendent: Value): (Json.ArrayValue | Json.ObjectValue | Json.Property)[] | undefined {
         return FindLineageVisitor.visit(this, descendent);
     }

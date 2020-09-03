@@ -83,7 +83,10 @@ suite("TemplatePositionContext", () => {
         test("with documentLineIndex equal to document line count", () => {
             let dt = new DeploymentTemplateDoc("{}", fakeId);
             assert.deepStrictEqual(1, dt.lineCount);
-            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 1, 0, undefined); });
+            let pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 1, 0, undefined);
+            assert.strictEqual(0, pc.documentLineIndex);
+            assert.strictEqual(0, pc.documentColumnIndex);
+            assert.strictEqual(0, pc.documentCharacterIndex);
         });
 
         test("with undefined documentColumnIndex", () => {
@@ -105,7 +108,10 @@ suite("TemplatePositionContext", () => {
 
         test("with documentColumnIndex greater than line length", () => {
             let dt = new DeploymentTemplateDoc("{}", fakeId);
-            assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 0, 3, undefined); });
+            let pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 0, 3, undefined);
+            assert.strictEqual(0, pc.documentLineIndex);
+            assert.strictEqual(2, pc.documentColumnIndex);
+            assert.strictEqual(2, pc.documentCharacterIndex);
         });
 
         test("with valid arguments", () => {
@@ -149,7 +155,10 @@ suite("TemplatePositionContext", () => {
 
         test("with documentCharacterIndex greater than the maximum character index", () => {
             let dt = new DeploymentTemplateDoc("{}", fakeId);
-            assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(dt, 3, undefined); });
+            let pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, 3, undefined);
+            assert.strictEqual(0, pc.documentLineIndex);
+            assert.strictEqual(2, pc.documentColumnIndex);
+            assert.strictEqual(2, pc.documentCharacterIndex);
         });
 
         test("with valid arguments", () => {

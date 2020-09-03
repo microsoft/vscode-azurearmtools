@@ -1,9 +1,7 @@
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
-
 // tslint:disable:max-line-length
-
 import { templateKeys } from "../../constants";
 import { ext } from "../../extensionVariables";
 import { assert } from '../../fixed_assert';
@@ -21,6 +19,7 @@ import { DeploymentParametersDoc } from "../parameters/DeploymentParametersDoc";
 import { IParameterDefinition } from "../parameters/IParameterDefinition";
 import { getPropertyValueCompletionItems } from "../parameters/ParameterValues";
 import { DeploymentTemplateDoc } from "../templates/DeploymentTemplateDoc";
+import { getDependsOnCompletions } from "../templates/getDependsOnCompletions";
 import { getResourceIdCompletions } from "../templates/getResourceIdCompletions";
 import { IFunctionMetadata, IFunctionParameterMetadata } from "../templates/IFunctionMetadata";
 import { TemplateScope } from "../templates/scopes/TemplateScope";
@@ -51,13 +50,13 @@ class TleInfo implements ITleInfo {
 export class TemplatePositionContext extends PositionContext {
     private _tleInfo: CachedValue<TleInfo | undefined> = new CachedValue<TleInfo | undefined>();
 
-    public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplateDoc, documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentParametersDoc | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
+    public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplateDoc, documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentParametersDoc | undefined, allowOutOfBounds: boolean = true): TemplatePositionContext {
         let context = new TemplatePositionContext(deploymentTemplate, associatedParameters);
         context.initFromDocumentLineAndColumnIndices(documentLineIndex, documentColumnIndex, allowOutOfBounds);
         return context;
     }
 
-    public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplateDoc, documentCharacterIndex: number, associatedParameters: DeploymentParametersDoc | undefined, allowOutOfBounds: boolean = false): TemplatePositionContext {
+    public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplateDoc, documentCharacterIndex: number, associatedParameters: DeploymentParametersDoc | undefined, allowOutOfBounds: boolean = true): TemplatePositionContext {
         let context = new TemplatePositionContext(deploymentTemplate, associatedParameters);
         context.initFromDocumentCharacterIndex(documentCharacterIndex, allowOutOfBounds);
         return context;
@@ -287,8 +286,8 @@ export class TemplatePositionContext extends PositionContext {
         return false;
     }
 
-    public getInsertionContext(triggerCharacter: string | undefined): InsertionContext {
-        const insertionContext = super.getInsertionContext(triggerCharacter);
+    public getInsertionContext(options: { triggerCharacter?: string; allowInsideJsonString?: boolean }): InsertionContext {
+        const insertionContext = super.getInsertionContext(options);
         const context = insertionContext.context;
         const parents = insertionContext.parents;
 
@@ -304,7 +303,7 @@ export class TemplatePositionContext extends PositionContext {
                     insertionContext.context = KnownContexts.userFuncParameterDefinitions;
                 }
             } else if (
-                (triggerCharacter === undefined || triggerCharacter === '"')
+                (options.triggerCharacter === undefined || options.triggerCharacter === '"')
                 && this.isInsideResourceBody(parents)
             ) {
                 insertionContext.context = KnownContexts.resourceBody;
@@ -329,7 +328,7 @@ export class TemplatePositionContext extends PositionContext {
         }
 
         if (!tleInfo) {
-            // No TLE string at this location, consider snippet completions
+            // No JSON string at this location, consider snippet completions
             const snippets = await this.getSnippetCompletionItems(triggerCharacter);
             if (snippets.triggerSuggest) {
                 return snippets;
@@ -337,9 +336,6 @@ export class TemplatePositionContext extends PositionContext {
                 completions.push(...snippets.items);
             }
         } else {
-
-            // We're inside a JSON string. It may or may not contain square brackets.
-
             // The function/string/number/etc at the current position inside the string expression,
             // or else the JSON string itself even it's not an expression
             const tleValue: TLE.Value | undefined = tleInfo.tleValue;
@@ -366,11 +362,42 @@ export class TemplatePositionContext extends PositionContext {
             }
         }
 
+        completions.push(...this.getDependsOnCompletionItems(triggerCharacter));
+
         return { items: completions };
     }
 
+    /**
+     * Gets the scope at the current position
+     */
+    public getScope(): TemplateScope {
+        if (this.jsonValue && this.document.topLevelValue) {
+            const objectLineage = <(Json.ObjectValue | Json.ArrayValue)[]>this.document.topLevelValue
+                ?.findLineage(this.jsonValue)
+                ?.filter(v => v instanceof Json.ObjectValue);
+            const scopes = this.document.allScopes; // Note: not unique because resources are unique even when scope is not (see CONSIDER in TemplateScope.ts)
+            for (const parent of objectLineage.reverse()) {
+                const innermostMachingScope = scopes.find(s => s.rootObject === parent);
+                if (innermostMachingScope) {
+                    return innermostMachingScope;
+                }
+            }
+        }
+
+        return this.document.topLevelScope;
+    }
+
+    private getDependsOnCompletionItems(triggerCharacter: string | undefined): Completion.Item[] {
+        const insertionContext = this.getInsertionContext({ triggerCharacter, allowInsideJsonString: true });
+        if (insertionContext.context === 'dependson') {
+            return getDependsOnCompletions(this);
+        }
+
+        return [];
+    }
+
     private async getSnippetCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult> {
-        const insertionContext = this.getInsertionContext(triggerCharacter);
+        const insertionContext = this.getInsertionContext({ triggerCharacter });
         if (insertionContext.triggerSuggest) {
             return { items: [], triggerSuggest: true };
         } else if (insertionContext.context) {

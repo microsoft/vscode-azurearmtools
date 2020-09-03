@@ -11,8 +11,8 @@ export function __debugMarkPositionInString(
     text: string,
     position: number,
     insertTextAtPosition: string = '<CURSOR>',
-    charactersBeforePosition: number = 45,
-    charactersAfterPosition: number = 50
+    charactersBeforePosition: number = 70,
+    charactersAfterPosition: number = 70
 ): string {
     if (position >= text.length) {
         const textAtEnd = `${text.slice(text.length - charactersAfterPosition)}<END(${text.length})>`;

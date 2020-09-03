@@ -493,7 +493,7 @@ export class FunctionCallValue extends ParentValue {
  * A TLE value representing a property access (source.property).
  */
 export class PropertyAccess extends ParentValue {
-    // We need to allow creating a property access expresion whether the property name
+    // We need to allow creating a property access expression whether the property name
     //   was correctly given or not, so we can have proper intellisense/etc.
     // I.e., we require the period, but after that might be empty or an error.
     constructor(private _source: Value, private _periodToken: Token, private _nameToken: Token | undefined) {
@@ -861,7 +861,7 @@ export class Parser {
                     errors.push(new Issue(errorSpan!, "Expected a literal value.", IssueKind.tleSyntax));
                 }
 
-                // We go ahead and create a property access expresion whether the property name
+                // We go ahead and create a property access expression whether the property name
                 //   was correctly given or not, so we can have proper intellisense/etc.
                 expression = new PropertyAccess(expression, periodToken, propertyNameToken);
             } else if (tokenizer.current.getType() === TokenType.LeftSquareBracket) {
