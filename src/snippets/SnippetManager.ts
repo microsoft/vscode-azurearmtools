@@ -111,10 +111,10 @@ export class SnippetManager implements ISnippetManager {
                         kind: Completion.CompletionKind.Snippet,
                         // Make sure snippets show up after normal completions
                         priority: Completion.CompletionPriority.low,
-                        // Putting the label and name into filterText allows users to search
+                        // Putting the label/description and name into filterText allows users to search
                         //   for snippets by either the label (prefix) or the non-abbreviated words
-                        //   in the name, e.g. users can type "virtual" and find the "arm-vnet" snippet
-                        filterText: `${label} ${name}`,
+                        //   in the name or description, e.g. users can type "virtual" and find the "arm-vnet" snippet
+                        filterText: `${label} ${name} ${snippet.description}`,
                         additionalEdits: additionalEdits
                     }));
                 }
