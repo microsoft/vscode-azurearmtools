@@ -33,7 +33,7 @@ import * as TLE from "./language/expressions/TLE";
 import { Issue } from "./language/Issue";
 import * as Json from "./language/json/JSON";
 import { ReferenceList } from "./language/ReferenceList";
-import * as Span from "./language/Span";
+import { Span } from "./language/Span";
 import { startArmLanguageServerInBackground } from "./languageclient/startArmLanguageServer";
 import { getPreferredSchema } from "./schemas";
 import { showInsertionContext } from "./snippets/showInsertionContext";
@@ -51,7 +51,7 @@ import { Stopwatch } from "./util/Stopwatch";
 import { Cancellation } from "./util/throwOnCancel";
 import { IncorrectArgumentsCountIssue } from "./visitors/IncorrectArgumentsCountIssue";
 import { UnrecognizedBuiltinFunctionIssue } from "./visitors/UnrecognizedFunctionIssues";
-import { IAddMissingParametersArgs, IGotoParameterValueArgs } from "./vscodeIntegration/commandArguments";
+import { IAddMissingParametersArgs, IGotoParameterValueArgs, IPeekResourcesArgs } from "./vscodeIntegration/commandArguments";
 import { ConsoleOutputChannelWrapper } from "./vscodeIntegration/ConsoleOutputChannelWrapper";
 import * as Hover from './vscodeIntegration/Hover';
 import { RenameCodeActionProvider } from "./vscodeIntegration/RenameCodeActionProvider";
@@ -245,9 +245,16 @@ export class AzureRMTools {
 
         // Code lens commands
         registerCommand(
+            // Executed when the user clicks on a code lens for a parameter value
             "azurerm-vscode-tools.codeLens.gotoParameterValue",
             async (actionContext: IActionContext, args: IGotoParameterValueArgs) => {
                 await this.onGotoParameterValue(actionContext, args);
+            });
+        registerCommand(
+            // Executed when the user clicks on a code lens that shows the children or parent of a resource
+            "azurerm-vscode-tools.codeLens.peekResources",
+            async (actionContext: IActionContext, args: IPeekResourcesArgs) => {
+                await this.onPeekResources(actionContext, args);
             });
 
         // Developer commands
@@ -1149,7 +1156,6 @@ export class AzureRMTools {
                     // the code lens because onProvideCodeLenses is supposed to be fast.
                     parametersProvider = new ParameterValuesSourceProviderFromParameterFile(this, dpUri);
                 }
-
                 return doc.getCodeLenses(parametersProvider);
             }
 
@@ -1274,7 +1280,7 @@ export class AzureRMTools {
                 // Second choice: To the "properties" section
                 ?? parameterValues.parameterValuesProperty?.nameValue.span
                 // Third choice: top of the file
-                ?? new Span.Span(0, 0);
+                ?? new Span(0, 0);
             range = getVSCodeRangeFromSpan(doc, span);
         } else if (args.inTemplateFile && doc instanceof DeploymentTemplateDoc) {
             range = args.inTemplateFile.range;
@@ -1284,6 +1290,19 @@ export class AzureRMTools {
             editor.selection = new vscode.Selection(range.start, range.end);
             editor.revealRange(range);
         }
+    }
+
+    private async onPeekResources(actionContext: IActionContext, args: IPeekResourcesArgs): Promise<void> {
+        // Set telemetry properties
+        Object.assign(actionContext.telemetry.properties, args.telemetryProperties ?? {});
+
+        // Show the references
+        await vscode.commands.executeCommand(
+            'editor.action.showReferences',
+            args.source.uri,
+            args.source.range.start,
+            args.targets
+        );
     }
 
     // CONSIDER: Cache when we have to read from disk, or better, load into text
@@ -1647,7 +1666,7 @@ export class AzureRMTools {
 
                     let braceHighlightRanges: vscode.Range[] = [];
                     for (let tleHighlightIndex of tleBraceHighlightIndexes) {
-                        const highlightSpan = new Span.Span(tleHighlightIndex + pc.jsonTokenStartIndex, 1);
+                        const highlightSpan = new Span(tleHighlightIndex + pc.jsonTokenStartIndex, 1);
                         braceHighlightRanges.push(getVSCodeRangeFromSpan(pc.document, highlightSpan));
                     }
 
