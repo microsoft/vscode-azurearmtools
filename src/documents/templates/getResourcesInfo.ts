@@ -57,6 +57,11 @@ export interface IJsonResourceInfo extends IResourceInfo {
      * The JSON object that represents this resource
      */
     resourceObject: Json.ObjectValue;
+
+    /**
+     * The COPY element for this resource, if any
+     */
+    copyElement: Json.ObjectValue | undefined;
 }
 
 export class ResourceInfo implements IResourceInfo {
@@ -93,6 +98,10 @@ export class ResourceInfo implements IResourceInfo {
 export class JsonResourceInfo extends ResourceInfo implements JsonResourceInfo {
     public constructor(nameSegmentExpressions: string[], typeSegmentExpressions: string[], public readonly resourceObject: Json.ObjectValue, parent: IJsonResourceInfo | undefined) {
         super(nameSegmentExpressions, typeSegmentExpressions, parent);
+    }
+
+    public get copyElement(): Json.ObjectValue | undefined {
+        return this.resourceObject.getPropertyValue(templateKeys.copyLoop)?.asObjectValue;
     }
 }
 

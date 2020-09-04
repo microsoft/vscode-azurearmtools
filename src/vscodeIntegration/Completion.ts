@@ -228,6 +228,7 @@ export enum CompletionKind {
 
     // ARM template structure completions
     dependsOnResourceId = "dependsOnResourceId", // Completion inside dependsOn of a resourceId reference to a resource
+    dependsOnResourceCopyLoop = "dependsOnResourceCopyLoop", // Completion inside dependsOn of a COPY loop inside a resource
 
     // Snippet
     Snippet = "Snippet",

@@ -1,11 +1,18 @@
+// ---------------------------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See License.md in the project root for license information.
+// ---------------------------------------------------------------------------------------------
+
 import { MarkdownString } from "vscode";
+import { templateKeys } from "../../constants";
 import { assert } from "../../fixed_assert";
+import { isTleExpression } from "../../language/expressions/TLE";
 import * as Json from "../../language/json/JSON";
 import { ContainsBehavior, Span } from "../../language/Span";
 import { isSingleQuoted, removeSingleQuotes } from "../../util/strings";
 import * as Completion from "../../vscodeIntegration/Completion";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
-import { getResourcesInfo, IJsonResourceInfo, IResourceInfo } from "./getResourcesInfo";
+import { getResourcesInfo, IJsonResourceInfo, IResourceInfo, jsonStringToTleExpression } from "./getResourcesInfo";
 
 // Handle completions for dependsOn array entries
 export function getDependsOnCompletions(
@@ -39,10 +46,8 @@ export function getDependsOnCompletions(
             continue;
         }
 
-        const item = getDependsOnCompletion(resource, span);
-        if (item) {
-            completions.push(item);
-        }
+        const items = getDependsOnCompletionsForResource(resource, span);
+        completions.push(...items);
     }
 
     return completions;
@@ -51,20 +56,23 @@ export function getDependsOnCompletions(
 /**
  * Get possible completions for entries inside a resource's "dependsOn" array
  */
-function getDependsOnCompletion(resource: IResourceInfo, span: Span): Completion.Item | undefined {
+function getDependsOnCompletionsForResource(resource: IJsonResourceInfo, span: Span): Completion.Item[] {
+    const completions: Completion.Item[] = [];
+
     const resourceIdExpression = resource.getResourceIdExpression();
     const shortNameExpression = resource.shortNameExpression;
 
     if (shortNameExpression && resourceIdExpression) {
         const label = shortNameExpression;
-        let typeExpression = resource.getFullTypeExpression();
-        if (typeExpression && isSingleQuoted(typeExpression)) {
+        const fullTypeExpression = resource.getFullTypeExpression();
+        let shortTypeExpression = fullTypeExpression;
+        if (shortTypeExpression && isSingleQuoted(shortTypeExpression)) {
             // Simplify the type expression to remove quotes and the first prefix (e.g. 'Microsoft.Compute/')
-            typeExpression = removeSingleQuotes(typeExpression);
-            typeExpression = typeExpression.replace(/^[^/]+\//, '');
+            shortTypeExpression = removeSingleQuotes(shortTypeExpression);
+            shortTypeExpression = shortTypeExpression.replace(/^[^/]+\//, '');
         }
         const insertText = `"[${resourceIdExpression}]"`;
-        const detail = typeExpression;
+        const detail = shortTypeExpression;
         const documentation = `Inserts this resourceId reference:\n\`\`\`arm-template\n"[${resourceIdExpression}]"\n\`\`\`\n<br/>`;
 
         const item = new Completion.Item({
@@ -79,10 +87,38 @@ function getDependsOnCompletion(resource: IResourceInfo, span: Span): Completion
             filterText: insertText
         });
 
-        return item;
+        completions.push(item);
+
+        const copyName = resource.copyElement?.getPropertyValue(templateKeys.copyName)?.asStringValue?.unquotedValue;
+        if (copyName) {
+            const copyNameExpression = jsonStringToTleExpression(copyName);
+            const copyLabel = `LOOP ${copyNameExpression}`;
+            const copyInsertText = isTleExpression(copyName) ? `"[${copyNameExpression}]"` : `"${copyName}"`;
+            const copyDetail = detail;
+            // tslint:disable-next-line: prefer-template
+            const copyDocumentation = `Inserts this COPY element reference:
+\`\`\`arm-template
+${copyInsertText}
+\`\`\`
+from resource \`${shortNameExpression}\` of type \`${shortTypeExpression}\``;
+
+            const copyItem = new Completion.Item({
+                label: copyLabel,
+                insertText: copyInsertText,
+                detail: copyDetail,
+                documentation: new MarkdownString(copyDocumentation),
+                span,
+                kind: Completion.CompletionKind.dependsOnResourceCopyLoop,
+                // Normally vscode uses label if this isn't specified, but it doesn't seem to like the "[" in the label,
+                // so specify filter text explicitly
+                filterText: copyInsertText
+            });
+
+            completions.push(copyItem);
+        }
     }
 
-    return undefined;
+    return completions;
 }
 
 function findClosestEnclosingResource(documentIndex: number, infos: IJsonResourceInfo[]): IJsonResourceInfo | undefined {
