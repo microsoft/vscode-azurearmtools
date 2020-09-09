@@ -12,7 +12,7 @@
         be set to the name of the property containing the current array or object (e.g. "resources" or "outputs"),
         if any.
     */
-    "$schema": "./schemas/snippets.schema.json",
+    "$schema": "./snippets.schema.json",
     "Azure Resource Manager (ARM) Template": {
         "prefix": "arm!",
         "body": [
