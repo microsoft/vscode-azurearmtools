@@ -3,17 +3,17 @@
 // ----------------------------------------------------------------------------
 
 import { commands, TextDocument } from "vscode";
-import { testLog } from "./createTestLog";
 import { ensureLanguageServerAvailable } from "./ensureLanguageServerAvailable";
 import { actThenWait, getDocumentChangedPromise } from "./getEventPromise";
+import { testLog } from "./testLog";
 
 export async function formatDocumentAndWait(document: TextDocument): Promise<string> {
     return await actThenWait(
         async () => {
             await ensureLanguageServerAvailable();
-            testLog.writeLineIfLogCreated("Formatting document...");
+            testLog.writeLine("Formatting document...");
             await commands.executeCommand('editor.action.formatDocument');
-            testLog.writeLineIfLogCreated("Format completed.");
+            testLog.writeLine("Format completed.");
         },
         getDocumentChangedPromise(document));
 }

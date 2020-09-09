@@ -1,9 +1,9 @@
 import * as assert from 'assert';
 import { Selection, SnippetString, TextEditor } from 'vscode';
 import { DeploymentTemplateDoc, getVSCodeRangeFromSpan } from '../../extension.bundle';
-import { testLog } from './createTestLog';
 import { delay } from './delay';
 import { stringify } from './stringify';
+import { testLog } from './testLog';
 import { typeInDocumentAndWait } from './typeInDocumentAndWait';
 
 // tslint:disable-next-line: no-suspicious-comment

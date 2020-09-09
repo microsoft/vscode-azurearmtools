@@ -3,9 +3,6 @@
 // ----------------------------------------------------------------------------
 
 import { ITest, ITestCallbackContext } from "mocha";
-import { parseError } from "vscode-azureextensionui";
-import { wrapError } from "../../extension.bundle";
-import { createTestLog, deleteTestLog, testLog } from "./createTestLog";
 
 export interface ITestPreparation {
     // Perform pretest preparations, and return a Disposable which will revert those changes
@@ -33,7 +30,6 @@ export function testWithPrep(expectation: string, preparations?: ITestPreparatio
                 }
 
                 // Perform pre-test preparations
-                createTestLog();
                 for (let prep of preparations ?? []) {
                     const prepResult = prep.pretest.call(this);
                     if (prepResult.skipTest) {
@@ -54,10 +50,6 @@ export function testWithPrep(expectation: string, preparations?: ITestPreparatio
                     if ((<{ message?: string }>error).message === 'sync skip') { // test skipped
                         throw error;
                     }
-
-                    throw wrapError(parseError(error).message, `\nTESTLOG:\n${testLog.toString()}`);
-                } finally {
-                    deleteTestLog();
                 }
             }
             finally {

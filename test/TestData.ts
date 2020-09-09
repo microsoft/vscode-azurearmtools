@@ -6,19 +6,19 @@ import * as fs from 'fs';
 import { ITest, ITestCallbackContext } from 'mocha';
 import * as path from 'path';
 import { AzureRMAssets, Completion, Span } from "../extension.bundle";
-import { testLog } from './support/createTestLog';
+import { testLog } from './support/testLog';
 import { ITestPreparation, ITestPreparationResult, testWithPrep } from './support/testWithPrep';
 
 // By default we use the test metadata for tests
 export function useTestFunctionMetadata(): void {
     let testMetadata = fs.readFileSync(path.join(__dirname, '..', '..', 'test', 'TestData.ExpressionMetadata.json'));
     AzureRMAssets.setFunctionsMetadata(testMetadata.toString());
-    testLog.writeLineIfLogCreated("Installed test function metadata");
+    testLog.writeLine("Installed test function metadata");
 }
 
 export function useRealFunctionMetadata(): void {
     AzureRMAssets.setFunctionsMetadata(undefined);
-    testLog.writeLineIfLogCreated("Re-installing real function metadata");
+    testLog.writeLine("Re-installing real function metadata");
 }
 
 export class UseRealFunctionMetadata implements ITestPreparation {

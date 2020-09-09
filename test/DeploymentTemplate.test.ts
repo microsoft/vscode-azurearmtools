@@ -10,10 +10,10 @@ import { randomBytes } from "crypto";
 import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
 import { Uri } from "vscode";
 import { DefinitionKind, DeploymentTemplateDoc, Histogram, INamedDefinition, IncorrectArgumentsCountIssue, IParameterDefinition, Issue, IssueKind, IVariableDefinition, Json, LineColPos, ReferenceInVariableDefinitionsVisitor, ReferenceList, Span, TemplateScope, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "../extension.bundle";
-import { testLog } from "./support/createTestLog";
 import { diagnosticSources, IDeploymentTemplate, testDiagnostics } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
+import { testLog } from "./support/testLog";
 import { testWithLanguageServer } from "./support/testWithLanguageServer";
 import { DISABLE_SLOW_TESTS } from "./testConstants";
 
@@ -1046,7 +1046,7 @@ suite("DeploymentTemplate", () => {
                     index = Math.floor(Math.random() * (json.length + 1)); // length+1 so we include past the last character as a position
                 }
 
-                testLog.writeLineIfLogCreated(`Testing index ${index}`);
+                testLog.writeLine(`Testing index ${index}`);
                 try {
                     // Just make sure nothing throws
                     let dt = new DeploymentTemplateDoc(json, fakeId);
