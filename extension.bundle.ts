@@ -39,7 +39,7 @@ export { ParameterDefinitionCodeLens, ShowCurrentParameterFileCodeLens } from ".
 export { DeploymentTemplateDoc } from "./src/documents/templates/DeploymentTemplateDoc";
 export { ExpressionType } from "./src/documents/templates/ExpressionType";
 export { looksLikeResourceTypeStringLiteral } from "./src/documents/templates/getResourceIdCompletions";
-export { getResourcesInfo, IResourceInfo, ResourceInfo, splitResourceNameIntoSegments } from "./src/documents/templates/getResourcesInfo";
+export * from "./src/documents/templates/getResourcesInfo";
 export { InsertItem } from "./src/documents/templates/insertItem";
 export { TemplateScope, TemplateScopeKind } from "./src/documents/templates/scopes/TemplateScope";
 export * from "./src/documents/templates/scopes/templateScopes";
@@ -50,6 +50,7 @@ export { UserFunctionParameterDefinition } from "./src/documents/templates/UserF
 export { isVariableDefinition, IVariableDefinition } from "./src/documents/templates/VariableDefinition";
 export { ext } from './src/extensionVariables';
 export * from './src/language/expressions/AzureRMAssets';
+export * from "./src/language/expressions/friendlyExpressions";
 export * from "./src/language/expressions/isTleExpression";
 export { FunctionSignatureHelp, TleParseResult } from "./src/language/expressions/TLE";
 export { DefinitionKind, INamedDefinition } from "./src/language/INamedDefinition";

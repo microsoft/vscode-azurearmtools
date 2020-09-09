@@ -11,7 +11,9 @@
 import * as path from 'path';
 import * as vscode from "vscode";
 import { armTemplateLanguageId, iconsPath, templateKeys } from "../constants";
+import { getResourceInfo } from '../documents/templates/getResourcesInfo';
 import { assert } from '../fixed_assert';
+import { getFriendlyExpressionFromJsonString } from '../language/expressions/friendlyExpressions';
 import * as Json from "../language/json/JSON";
 import { ContainsBehavior } from '../language/Span';
 
@@ -313,17 +315,11 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
             if (keyNode.properties.length === 0) {
                 return "{}";
             } else {
-                // Object contains elements, look for displayName tag first
-                // tslint:disable-next-line: strict-boolean-expressions
-                let tags = keyNode.properties.find(p => p.nameValue && p.nameValue.toString().toLowerCase() === 'tags');
-                if (tags && tags.value instanceof Json.ObjectValue) {
-                    // tslint:disable-next-line: strict-boolean-expressions
-                    let displayNameProp = tags.value.properties.find(p => p.nameValue && p.nameValue.toString().toLowerCase() === 'displayname');
-                    if (displayNameProp) {
-                        let displayName = displayNameProp.value && displayNameProp.value.toString();
-                        if (displayName) {
-                            return displayName;
-                        }
+                if (keyNode.hasProperty(templateKeys.resourceApiVersion)) {
+                    // It's a resource
+                    const info = getResourceInfo(keyNode);
+                    if (info) {
+                        return info.getFriendlyName({ fullResourceName: true });
                     }
                 }
 
@@ -332,7 +328,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     return label;
                 }
 
-                label = this.getLabelFromProperties("namespace", keyNode);
+                label = this.getLabelFromProperties("namespace", keyNode); // For user-function namespaces
                 if (label !== undefined) {
                     return label;
                 }
@@ -598,33 +594,11 @@ export interface IElementInfo {
  * and shorter (so you can read more in the limited horizontal space)
  */
 export function shortenTreeLabel(label: string): string {
-    let originalLabel = label;
-
-    // If it's an expression - starts and ends with [], but doesn't start with [[, and at least one character inside the []
-    if (label && label.match(/^\[[^\[].*]$/)) {
-
-        //  variables/parameters('a') -> [a]
-        label = label.replace(/(variables|parameters)\('([^']+)'\)/g, '<$2>');
-
-        // concat(x,'y') => x,'y'
-        // Repeat multiple times for recursive cases
-        // tslint:disable-next-line:no-constant-condition
-        while (true) {
-            let newLabel = label.replace(/concat\((.*)\)/g, '$1');
-            if (label !== newLabel) {
-                label = newLabel;
-            } else {
-                break;
-            }
-        }
-
-        if (label !== originalLabel) {
-            // If we actually made changes, remove the brackets so users don't think this is the exact expression
-            return label.substr(1, label.length - 2);
-        }
+    if (typeof label !== 'string') {
+        return label;
     }
 
-    return originalLabel;
+    return getFriendlyExpressionFromJsonString(label);
 }
 
 function toFriendlyString(value: Json.Value | null | undefined): string {

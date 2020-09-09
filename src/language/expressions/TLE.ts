@@ -65,6 +65,10 @@ export abstract class Value {
 
     public abstract toString(): string;
 
+    public toFriendlyString(): string {
+        return this.toString();
+    }
+
     public abstract accept(visitor: Visitor): void;
 
     /**
@@ -91,7 +95,7 @@ export class StringValue extends Value {
         super();
 
         assert(_token);
-        assert.equal(TokenType.QuotedString, _token.getType());
+        assert.strictEqual(TokenType.QuotedString, _token.getType());
     }
 
     public get token(): Token {
@@ -168,6 +172,10 @@ export class StringValue extends Value {
     }
 
     public toString(): string {
+        return this.quotedValue;
+    }
+
+    public toFriendlyString(): string {
         return this.quotedValue;
     }
 }
@@ -281,6 +289,17 @@ export class ArrayAccessValue extends ParentValue {
         let result: string = `${this._source.toString()}[`;
         if (!!this._indexValue) {
             result += this._indexValue.toString();
+        }
+        if (!!this._rightSquareBracketToken) {
+            result += "]";
+        }
+        return result;
+    }
+
+    public toFriendlyString(): string {
+        let result: string = `${this._source.toFriendlyString()}[`;
+        if (!!this._indexValue) {
+            result += this._indexValue.toFriendlyString();
         }
         if (!!this._rightSquareBracketToken) {
             result += "]";
@@ -458,26 +477,104 @@ export class FunctionCallValue extends ParentValue {
     }
 
     public toString(): string {
+        return this.getStringFromArguments(this.argumentExpressions.map(arg => arg?.toString() ?? ''));
+    }
+
+    public toFriendlyString(): string {
+        const fullNameLC = this.fullName.toLowerCase();
+        switch (fullNameLC) {
+            case 'concat':
+                return FunctionCallValue.coalesceConcatArguments(this.argumentExpressions);
+
+            case 'variables':
+            case 'parameters':
+                if (this.argumentExpressions.length === 1) {
+                    const arg1 = this.argumentExpressions[0];
+                    if (arg1 instanceof StringValue) {
+                        // tslint:disable-next-line: prefer-template
+                        return "${" + arg1.unquotedValue + "}";
+                    }
+                }
+        }
+
+        return this.getStringFromArguments(this.argumentExpressions.map(arg => arg?.toFriendlyString() ?? ''));
+    }
+
+    private getStringFromArguments(expressionStrings: string[]): string {
         let result = this.fullName;
 
         if (!!this._leftParenthesisToken) {
             result += "(";
         }
 
-        for (let i = 0; i < this._argumentExpressions.length; ++i) {
-            const argExpr = this._argumentExpressions[i];
-
-            if (i > 0) {
-                result += ", ";
-            }
-            result += argExpr ? argExpr.toString() : "";
-        }
+        result += expressionStrings.join(', ');
 
         if (!!this._rightParenthesisToken) {
             result += ")";
         }
 
         return result;
+    }
+
+    /**
+     * Coalesces any adjacent string expressions and returns the simplified concat
+     * expression
+     */
+    private static coalesceConcatArguments(expressions: (Value | undefined)[]): string {
+        if (expressions.length < 2) {
+            return expressions[0]?.toFriendlyString() ?? '';
+        }
+
+        // Coalesce adjacent string literals
+        const coalescedExpressions: string[] = [];
+        const expressionsLength = expressions.length;
+        for (let i = 0; i < expressionsLength; ++i) {
+            let currentExpression = expressions[i]?.toFriendlyString() ?? '';
+
+            const prevCoalescedExpression = coalescedExpressions[coalescedExpressions.length - 1];
+            if (prevCoalescedExpression) {
+                // Merge with last coalesced expression if it and the current one are both strings
+                if (isString(prevCoalescedExpression) && isString(currentExpression)) {
+                    // If both sides are strings, we'll make the concatenation a string by adding single quotes
+
+                    // Don't coalesce if the left-hand string contains a property index, because the property name would
+                    //   get the rhs string appended to it
+                    // Example: "'${vmProperties}.property'"
+                    const previousContainsPropertyIndex = prevCoalescedExpression.match(/[\]})]\.[a-zA-Z0-9]/);
+                    if (!previousContainsPropertyIndex) {
+                        // Merge previous and current expressions into a single-quoted string
+                        coalescedExpressions[coalescedExpressions.length - 1] =
+                            `'${Utilities.removeSingleQuotes(prevCoalescedExpression)}${Utilities.removeSingleQuotes(currentExpression)}'`;
+                        continue;
+                    }
+                }
+            }
+
+            // Push the current expression unchanged
+            coalescedExpressions.push(currentExpression);
+        }
+
+        if (coalescedExpressions.length < 2) {
+            // Just a single expression left, return it without a concat
+            return coalescedExpressions[0];
+        }
+
+        // Merge all coalesced expressions using concat
+        return `concat(${coalescedExpressions.join(', ')})`;
+
+        function isString(expression: string): boolean {
+            if (Utilities.isSingleQuoted(expression)) {
+                return true;
+            }
+
+            // We assume for this algorithm's sake that ${varOrParam} is a string (although it may not be, it usually is).  We're not after
+            //   exactness, just ease of reading for the user.
+            if (expression.startsWith('${')) {
+                return true;
+            }
+
+            return false;
+        }
     }
 }
 
@@ -563,6 +660,14 @@ export class PropertyAccess extends ParentValue {
 
     public toString(): string {
         let result = `${this._source.toString()}.`;
+        if (!!this._nameToken) {
+            result += this._nameToken.stringValue;
+        }
+        return result;
+    }
+
+    public toFriendlyString(): string {
+        let result = `${this._source.toFriendlyString()}.`;
         if (!!this._nameToken) {
             result += this._nameToken.stringValue;
         }

@@ -89,7 +89,7 @@ function getDependsOnCompletionsForResource(resource: IJsonResourceInfo, span: S
 
         completions.push(item);
 
-        const copyName = resource.copyElement?.getPropertyValue(templateKeys.copyName)?.asStringValue?.unquotedValue;
+        const copyName = resource.copyBlockElement?.getPropertyValue(templateKeys.copyName)?.asStringValue?.unquotedValue;
         if (copyName) {
             const copyNameExpression = jsonStringToTleExpression(copyName);
             const copyLabel = `LOOP ${copyNameExpression}`;
