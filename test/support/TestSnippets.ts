@@ -5,24 +5,24 @@
 import { ITest, ITestCallbackContext } from 'mocha';
 import * as path from 'path';
 import { ext, SnippetManager } from "../../extension.bundle";
-import { testLog } from './createTestLog';
+import { testLog } from './testLog';
 import { RequiresLanguageServer } from './testWithLanguageServer';
 import { ITestPreparation, ITestPreparationResult, testWithPrep } from './testWithPrep';
 
 // By default we use the test snippets for tests
 export function useTestSnippets(): void {
     ext.snippetManager.value = new SnippetManager(path.join(__dirname, '..', '..', '..', 'test', 'support', 'EmptySnippets.jsonc'));
-    testLog.writeLineIfLogCreated("Installed test snippets");
+    testLog.writeLine("Installed test snippets");
 }
 
 export function useRealSnippets(): void {
     ext.snippetManager.value = SnippetManager.createDefault();
-    testLog.writeLineIfLogCreated("Installed real snippets");
+    testLog.writeLine("Installed real snippets");
 }
 
 export function useNoSnippets(): void {
     ext.snippetManager.value = new SnippetManager(path.join(__dirname, '..', '..', '..', 'test', 'support', 'EmptySnippets.jsonc'));
-    testLog.writeLineIfLogCreated("Installed empty snippet manager");
+    testLog.writeLine("Installed empty snippet manager");
 }
 
 export class UseRealSnippets implements ITestPreparation {

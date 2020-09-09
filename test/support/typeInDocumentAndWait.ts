@@ -4,10 +4,10 @@
 
 import * as assert from 'assert';
 import { Position, Selection, TextEditor, window } from "vscode";
-import { testLog } from './createTestLog';
 import { ensureLanguageServerAvailable } from "./ensureLanguageServerAvailable";
 import { actThenWait, getDocumentChangedPromise } from "./getEventPromise";
 import { stringify } from './stringify';
+import { testLog } from './testLog';
 
 export async function typeInDocumentAndWait(editor: TextEditor, text: string): Promise<string> {
     return await actThenWait(
