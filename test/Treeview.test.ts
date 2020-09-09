@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 // tslint:disable:max-func-body-length align max-line-length
-// tslint:disable:no-non-null-assertion
+// tslint:disable:no-non-null-assertion no-invalid-template-strings
 
 import * as assert from "assert";
 import * as fse from 'fs-extra';
@@ -15,32 +15,34 @@ import { getTempFilePath } from "./support/getTempFilePath";
 
 suite("TreeView", async (): Promise<void> => {
     suite("shortenTreeLabel", async (): Promise<void> => {
-        test("shortenTreeLabel", () => {
-            function testShorten(label: string | undefined, expected: string | undefined): void {
-                let shortenedLabel = shortenTreeLabel(label!);
-                assert.equal(shortenedLabel, expected);
+        suite("shortenTreeLabel", () => {
+            function createShortenTest(label: string | undefined, expected: string | undefined): void {
+                test(String(label), () => {
+                    let shortenedLabel = shortenTreeLabel(label!);
+                    assert.strictEqual(shortenedLabel, expected);
+                });
             }
 
-            testShorten(undefined, undefined);
+            createShortenTest(undefined, undefined);
             // tslint:disable-next-line:no-any
-            testShorten(<any>null, <any>null);
-            testShorten("", "");
-            testShorten("a", "a");
-            testShorten("[]", "[]");
-            testShorten("[parameter('a')]", "[parameter('a')]");
-            testShorten("[parameterss('a')]", "[parameterss('a')]");
-
-            // params/vars
-            testShorten("[parameters('a')]", "<a>");
-            testShorten("[variables('a')]", "<a>");
-            testShorten("[(variables('a')+variables('abc'))]", "(<a>+<abc>)");
-
-            // concat
-            testShorten("[concat(a)]", "a");
-            testShorten("[concat(variables('a'),'b',variables('abc'))]", "<a>,'b',<abc>");
-
-            // nested concat
-            testShorten("[concat(concat(a))]", "a");
+            createShortenTest(<any>null, <any>null);
+            createShortenTest("", "");
+            createShortenTest("a", "a");
+            createShortenTest("[]", "[]");
+            createShortenTest("[(variables('a')+variables('abc'))]", "[(${a}+${abc})]");
+            createShortenTest("[parameters('a')]", "${a}");
+            createShortenTest("[variables('a')]", "${a}");
+            createShortenTest("[add(1, 2)]", "[add(1, 2)]");
+            createShortenTest("[add(1, concat(a))]", "[add(1, concat(a))]");
+            createShortenTest("[concat('a', 'b')]", "ab");
+            createShortenTest("[concat(variables('sqlServer'), 'a')]", "${sqlServer}a");
+            createShortenTest("[concat(variables('a'),'b',variables('abc'))]", "${a}b${abc}");
+            createShortenTest("[concat(variables('sqlServer'), '/', variables('firewallRuleName2'))]", "${sqlServer}/${firewallRuleName2}");
+            createShortenTest("[concat(1, 2)]", "[concat(1, 2)]");
+            createShortenTest("[concat('a', concat('b'), concat('c'))]", "abc");
+            createShortenTest("[format('{0}/default/logs', variables('storageAccountName'))]", "[format('{0}/default/logs', ${storageAccountName})]");
+            createShortenTest("[{format('{0}/default/logs', ${storageAccountName}}]", "[{format('{0}/default/logs', ${storageAccountName}}]");
+            createShortenTest("[uniqueString(resourceGroup().id)]", "[uniqueString(resourceGroup().id)]");
         });
     });
 
@@ -845,7 +847,7 @@ suite("TreeView", async (): Promise<void> => {
                         label: "resources",
                         children: [
                             {
-                                label: "Swarm Display Name",
+                                label: "Swarm Display Name (networkSecurityGroups)",
                                 children: [
                                     {
                                         label: "apiVersion: 2017-03-01",
@@ -1266,7 +1268,7 @@ suite("TreeView", async (): Promise<void> => {
                         icon: "resources.svg",
                         children: [
                             {
-                                label: "<virtualNetworkName>",
+                                label: "${virtualNetworkName} (virtualNetworks)",
                                 collapsibleState: 1,
                                 icon: "virtualnetworks.svg",
                                 children: [
@@ -1305,7 +1307,7 @@ suite("TreeView", async (): Promise<void> => {
                                                 collapsibleState: 1,
                                                 children: [
                                                     {
-                                                        label: "<subnetName>",
+                                                        label: "${subnetName}",
                                                         collapsibleState: 1,
                                                         children: [
                                                             {
@@ -1335,7 +1337,7 @@ suite("TreeView", async (): Promise<void> => {
                                                         ]
                                                     },
                                                     {
-                                                        label: "<appGwSubnetName>",
+                                                        label: "${appGwSubnetName}",
                                                         collapsibleState: 1,
                                                         children: [
                                                             {
@@ -1361,7 +1363,7 @@ suite("TreeView", async (): Promise<void> => {
                                 ]
                             },
                             {
-                                label: "Swarm Display Name",
+                                label: "Swarm Display Name (networkSecurityGroups)",
                                 collapsibleState: 1,
                                 icon: "nsg.svg",
                                 children: [
@@ -1600,7 +1602,7 @@ suite("TreeView", async (): Promise<void> => {
                         icon: "resources.svg",
                         children: [
                             {
-                                label: "<name>",
+                                label: "${name} (virtualNetworkGateways)",
                                 collapsibleState: 1,
                                 icon: "virtualnetworkgateways.svg",
                                 children: [
@@ -1701,7 +1703,7 @@ suite("TreeView", async (): Promise<void> => {
                                 ]
                             },
                             {
-                                label: "<existingVirtualNetworkName>, '/', <newSubnetName>",
+                                label: "${existingVirtualNetworkName}/${newSubnetName} (subnets)",
                                 collapsibleState: 1,
                                 icon: "resources.svg",
                                 children: [
@@ -1734,7 +1736,7 @@ suite("TreeView", async (): Promise<void> => {
                                 ]
                             },
                             {
-                                label: "<newPublicIpAddressName>",
+                                label: "${newPublicIpAddressName} (publicIPAddresses)",
                                 collapsibleState: 1,
                                 icon: "publicip.svg",
                                 children: [
@@ -2655,7 +2657,7 @@ suite("TreeView", async (): Promise<void> => {
                         icon: "resources.svg",
                         children: [
                             {
-                                label: "<virtualMachineName>",
+                                label: "${virtualMachineName} (virtualMachines)",
                                 collapsibleState: 1,
                                 icon: "virtualmachines.svg",
                                 children: [
@@ -2820,7 +2822,7 @@ suite("TreeView", async (): Promise<void> => {
                                 ]
                             },
                             {
-                                label: "<virtualMachineName>,'/', <diagnosticsExtensionName>",
+                                label: "${virtualMachineName}/${diagnosticsExtensionName} (extensions)",
                                 collapsibleState: 1,
                                 icon: "extensions.svg",
                                 children: [
@@ -2901,7 +2903,7 @@ suite("TreeView", async (): Promise<void> => {
                                 ]
                             },
                             {
-                                label: "Acronis.acronis-backup-lin-20180305162104",
+                                label: "Acronis.acronis-backup-lin-20180305162104 (deployments)",
                                 collapsibleState: 1,
                                 icon: "resources.svg",
                                 children: [
@@ -3000,7 +3002,7 @@ suite("TreeView", async (): Promise<void> => {
                                 ]
                             },
                             {
-                                label: "<availabilitySetName>",
+                                label: "${availabilitySetName} (availabilitySets)",
                                 collapsibleState: 1,
                                 icon: "resources.svg",
                                 children: [
@@ -3041,7 +3043,7 @@ suite("TreeView", async (): Promise<void> => {
                                 ]
                             },
                             {
-                                label: "'shutdown-computevm-', <virtualMachineName>",
+                                label: "shutdown-computevm-${virtualMachineName} (schedules)",
                                 collapsibleState: 1,
                                 icon: "resources.svg",
                                 children: [
@@ -3114,7 +3116,7 @@ suite("TreeView", async (): Promise<void> => {
                                 ]
                             },
                             {
-                                label: "<diagnosticsStorageAccountName>",
+                                label: "${diagnosticsStorageAccountName} (storageAccounts)",
                                 collapsibleState: 1,
                                 icon: "storageaccounts.svg",
                                 children: [
@@ -3147,7 +3149,7 @@ suite("TreeView", async (): Promise<void> => {
                                 ]
                             },
                             {
-                                label: "'BackupVaultPolicy', '-', <backupVaultName>, '-', <backupPolicyName>",
+                                label: "BackupVaultPolicy-${backupVaultName}-${backupPolicyName} (deployments)",
                                 collapsibleState: 1,
                                 icon: "resources.svg",
                                 children: [
@@ -3192,7 +3194,7 @@ suite("TreeView", async (): Promise<void> => {
                                                         collapsibleState: 1,
                                                         children: [
                                                             {
-                                                                label: "<backupVaultName>",
+                                                                label: "${backupVaultName} (vaults)",
                                                                 collapsibleState: 1,
                                                                 icon: "resources.svg",
                                                                 children: [
@@ -3237,7 +3239,7 @@ suite("TreeView", async (): Promise<void> => {
                                                                 ]
                                                             },
                                                             {
-                                                                label: "<backupVaultName>, '/', <backupPolicyName>",
+                                                                label: "${backupVaultName}/${backupPolicyName} (backupPolicies)",
                                                                 collapsibleState: 1,
                                                                 icon: "resources.svg",
                                                                 children: [
@@ -3290,7 +3292,7 @@ suite("TreeView", async (): Promise<void> => {
                                 ]
                             },
                             {
-                                label: "<virtualMachineName>, '-' , 'BackupIntent'",
+                                label: "${virtualMachineName}-BackupIntent (deployments)",
                                 collapsibleState: 1,
                                 icon: "resources.svg",
                                 children: [
@@ -3335,7 +3337,7 @@ suite("TreeView", async (): Promise<void> => {
                                                         collapsibleState: 1,
                                                         children: [
                                                             {
-                                                                label: "<backupVaultName>, '/', <backupFabricName>, '/', <backupItemName>",
+                                                                label: "${backupVaultName}/${backupFabricName}/${backupItemName} (backupProtectionIntent)",
                                                                 collapsibleState: 1,
                                                                 icon: "resources.svg",
                                                                 children: [
@@ -3388,7 +3390,7 @@ suite("TreeView", async (): Promise<void> => {
                                 ]
                             },
                             {
-                                label: "<virtualNetworkName>",
+                                label: "${virtualNetworkName} (virtualNetworks)",
                                 collapsibleState: 1,
                                 icon: "virtualnetworks.svg",
                                 children: [
@@ -3427,7 +3429,7 @@ suite("TreeView", async (): Promise<void> => {
                                                 collapsibleState: 1,
                                                 children: [
                                                     {
-                                                        label: "<subnetName>",
+                                                        label: "${subnetName}",
                                                         collapsibleState: 1,
                                                         children: [
                                                             {
@@ -3453,7 +3455,7 @@ suite("TreeView", async (): Promise<void> => {
                                 ]
                             },
                             {
-                                label: "<networkInterfaceName>",
+                                label: "${networkInterfaceName} (networkInterfaces)",
                                 collapsibleState: 1,
                                 icon: "nic.svg",
                                 children: [
@@ -3542,7 +3544,7 @@ suite("TreeView", async (): Promise<void> => {
                                 ]
                             },
                             {
-                                label: "<publicIpAddressName>",
+                                label: "${publicIpAddressName} (publicIpAddresses)",
                                 collapsibleState: 1,
                                 icon: "publicip.svg",
                                 children: [
@@ -3585,7 +3587,7 @@ suite("TreeView", async (): Promise<void> => {
                                 ]
                             },
                             {
-                                label: "<networkSecurityGroupName>",
+                                label: "${networkSecurityGroupName} (networkSecurityGroups)",
                                 collapsibleState: 1,
                                 icon: "nsg.svg",
                                 children: [

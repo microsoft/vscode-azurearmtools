@@ -4,6 +4,8 @@
 // ---------------------------------------------------------------------------------------------
 
 import { templateKeys } from "../../constants";
+import { assert } from "../../fixed_assert";
+import { getFriendlyExpressionFromTleExpression } from "../../language/expressions/friendlyExpressions";
 import * as TLE from "../../language/expressions/TLE";
 import * as Json from "../../language/json/JSON";
 import { isSingleQuoted, removeSingleQuotes } from "../../util/strings";
@@ -16,10 +18,21 @@ import { TemplateScope } from "./scopes/TemplateScope";
 export function getResourcesInfo(scope: TemplateScope): IJsonResourceInfo[] {
     const resourcesArray = scope.rootObject?.getPropertyValue(templateKeys.resources)?.asArrayValue;
     if (resourcesArray) {
-        return getInfoFromResourcesArray(resourcesArray, undefined, scope);
+        return getInfoFromResourcesArray(resourcesArray, undefined);
     }
 
     return [];
+}
+
+/**
+ * Get useful info about a single resource in a template, ignoring children and parents
+ */
+export function getResourceInfo(
+    resourceObject: Json.ObjectValue
+): IJsonResourceInfo | undefined {
+    const results: IJsonResourceInfo[] = [];
+    getInfoFromResourceObject(resourceObject, undefined, results, false);
+    return results[0];
 }
 
 // tslint:disable-next-line: no-suspicious-comment
@@ -28,21 +41,41 @@ export interface IResourceInfo {
     parent?: IResourceInfo;
     children: IResourceInfo[];
 
+    /**
+     * The full reource name, split into segments (e.g. "'sqlServer/firewallRule1'" => ["'sqlServer'", "'firewallRule1'"]).
+     * For nested child resources, the name of the parent will automatically be added if not specified in the child
+     */
     nameSegmentExpressions: string[];
+
+    /**
+     * The full reource type as a TLE expression, split into segments (e.g. "'Microsoft.sql/servers/firewallRules'" => ["'Microsoft.sql/servers'", "'firewallRules'"]).
+     * For nested child resources, the type of the parent will automatically be added if not specified in the child
+     */
     typeSegmentExpressions: string[];
 
     /**
-     * Provides just the last segment in the name
+     * Provides just the last segment in the name as a TLE expression
+     * @example "'firewallRule1'" (where the full name is "'Microsoft.sql/servers/firewallRules'")
+     * @example "[parameters('name')]" (where the full name is "[concat(parameters('parent'), '/', parameters('name'))]")
      */
     shortNameExpression: string | undefined;
 
     /**
+     * Retrieves the last component of the type name as a TLE expression (does not including the RP name)
+     * @example "'firewallRules'" (where the full type name is "'Microsoft.sql/servers/firewallRules'")
+     * @example "[parameters('type')]" (where the full name is "[concat(parameters('RP'), '/', parameters('type'))]")
+     */
+    shortTypeExpression: string | undefined;
+
+    /**
      * Gets the full name of the resource as a TLE expression
+     * @example "'Microsoft.sql/servers/firewallRules'"
      */
     getFullNameExpression(): string | undefined;
 
     /**
      * Gets the type name of the resource as a TLE expression
+     * @example "'Microsoft.sql/servers/firewallRules'"
      */
     getFullTypeExpression(): string | undefined;
 
@@ -50,6 +83,14 @@ export interface IResourceInfo {
      * Creates a resourceId expression to reference this resource
      */
     getResourceIdExpression(): string | undefined;
+
+    /**
+     * Retrieves a shortened, user-friendly label for the resource that can be used in treeviews,
+     * code lens references, etc.  It consists of a version of the name (short or full) and type, using
+     * a format similar to the new string interpolation (e.g. concat's are coalesced and var/param references
+     * use ${x} notation).
+     */
+    getFriendlyName({ fullResourceName }: { fullResourceName: boolean }): string;
 }
 
 export interface IJsonResourceInfo extends IResourceInfo {
@@ -61,11 +102,12 @@ export interface IJsonResourceInfo extends IResourceInfo {
     /**
      * The COPY element for this resource, if any
      */
-    copyElement: Json.ObjectValue | undefined;
+    copyBlockElement: Json.ObjectValue | undefined;
 }
 
 export class ResourceInfo implements IResourceInfo {
     public readonly children: IResourceInfo[] = [];
+
     public constructor(public readonly nameSegmentExpressions: string[], public readonly typeSegmentExpressions: string[], public readonly parent?: IResourceInfo) {
         if (parent) {
             parent.children.push(this);
@@ -74,6 +116,25 @@ export class ResourceInfo implements IResourceInfo {
 
     public get shortNameExpression(): string {
         return this.nameSegmentExpressions[this.nameSegmentExpressions.length - 1];
+    }
+
+    public get shortTypeExpression(): string | undefined {
+        if (this.typeSegmentExpressions.length > 1) {
+            // Example: ["'Microsoft.sql/servers'", "'firewallRules'"]
+            // Short name is simply the last segment
+            return this.typeSegmentExpressions[this.typeSegmentExpressions.length - 1];
+        } else {
+            const firstSegment = this.typeSegmentExpressions[0];
+
+            if (firstSegment && isSingleQuoted(firstSegment)) {
+                // It's a string, remove the RP portion
+                // Example: "'Microsoft.sql/servers'" -> "'servers'"
+                return firstSegment.replace(/'.+\//g, "'");
+            } else {
+                // It's an expression
+                return firstSegment;
+            }
+        }
     }
 
     public getFullTypeExpression(): string | undefined {
@@ -93,14 +154,18 @@ export class ResourceInfo implements IResourceInfo {
 
         return undefined;
     }
+
+    public getFriendlyName({ fullResourceName }: { fullResourceName: boolean }): string {
+        return getFriendlyNameForResource({ resource: this, fullResourceName });
+    }
 }
 
-export class JsonResourceInfo extends ResourceInfo implements JsonResourceInfo {
+export class JsonResourceInfo extends ResourceInfo implements IJsonResourceInfo {
     public constructor(nameSegmentExpressions: string[], typeSegmentExpressions: string[], public readonly resourceObject: Json.ObjectValue, parent: IJsonResourceInfo | undefined) {
         super(nameSegmentExpressions, typeSegmentExpressions, parent);
     }
 
-    public get copyElement(): Json.ObjectValue | undefined {
+    public get copyBlockElement(): Json.ObjectValue | undefined {
         return this.resourceObject.getPropertyValue(templateKeys.copyLoop)?.asObjectValue;
     }
 }
@@ -162,92 +227,98 @@ function concatExpressionWithSeparator(expressions: string[], unquotedLiteralSep
     return `concat(${coalescedExpressions.join(', ')})`;
 }
 
-function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IJsonResourceInfo | undefined, scope: TemplateScope): IJsonResourceInfo[] {
+function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IJsonResourceInfo | undefined): IJsonResourceInfo[] {
     const results: IJsonResourceInfo[] = [];
     for (let resourceValue of resourcesArray.elements ?? []) {
         const resourceObject = Json.asObjectValue(resourceValue);
         if (resourceObject) {
-            const resName = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceName));
-            const resType = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceType));
+            getInfoFromResourceObject(resourceObject, parent, results, true);
+        }
+    }
 
-            if (resName && resType) {
-                let nameExpressions: string[];
-                let typeExpressions: string[];
+    return results;
+}
 
-                // If there's a parent, generally the type specified in the template
-                // is just the last segment, but it is allowed to put the full
-                // type there instead
-                const typeSegments = splitResourceTypeIntoSegments(resType.unquotedValue);
-                if (parent && typeSegments.length <= 1) {
-                    // Add to end of parent type segments
-                    typeExpressions = [...parent.typeSegmentExpressions, ...typeSegments];
-                } else {
-                    typeExpressions = typeSegments;
-                }
+function getInfoFromResourceObject(resourceObject: Json.ObjectValue, parent: IJsonResourceInfo | undefined, results: IJsonResourceInfo[], processChildren: boolean): void {
+    const resName = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceName));
+    const resType = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceType));
 
-                const nameSegments = splitResourceNameIntoSegments(resName.unquotedValue, scope);
-                if (parent && nameSegments.length <= 1) {
-                    // Add to end of parent name segments
-                    nameExpressions = [...parent.nameSegmentExpressions, ...nameSegments];
-                } else {
-                    nameExpressions = nameSegments;
-                }
+    if (resName && resType) {
+        let nameExpressions: string[];
+        let typeExpressions: string[];
 
-                const info: IJsonResourceInfo = new JsonResourceInfo(nameExpressions, typeExpressions, resourceObject, parent);
-                results.push(info);
+        // If there's a parent, generally the type specified in the template
+        // is just the last segment, but it is allowed to put the full
+        // type there instead
+        const typeSegments = splitResourceTypeIntoSegments(resType.unquotedValue);
+        if (parent && typeSegments.length <= 1) {
+            // Add to end of parent type segments
+            typeExpressions = [...parent.typeSegmentExpressions, ...typeSegments];
+        } else {
+            typeExpressions = typeSegments;
+        }
 
-                // Check child resources
-                const childResources = resourceObject.getPropertyValue(templateKeys.resources)?.asArrayValue;
-                if (childResources) {
-                    const childrenInfo = getInfoFromResourcesArray(childResources, info, scope);
-                    results.push(...childrenInfo);
-                }
+        const nameSegments = splitResourceNameIntoSegments(resName.unquotedValue);
+        if (parent && nameSegments.length <= 1) {
+            // Add to end of parent name segments
+            nameExpressions = [...parent.nameSegmentExpressions, ...nameSegments];
+        } else {
+            nameExpressions = nameSegments;
+        }
 
-                // Special-case subnets - they were designed before nested resources were a thing.
-                // Subnets are considered children but are defined under properties/subnets instead of
-                //   a nested "resources"
-                // Example:
-                //
-                // "resources": [
-                //     {
-                //         "type": "Microsoft.Network/virtualNetworks",
-                //         "name": "vnet1",
-                //         "properties": {
-                //             "subnets": [
-                //                 // These are considered children, with type Microsoft.Network/virtualNetworks/subnets
-                //                 {
-                //                     "name": "subnet1",
-                //                 }
-                //             ]
-                //         }
-                //     }
-                // ]
-                if (resType.unquotedValue.toLowerCase() === 'microsoft.network/virtualnetworks') {
-                    const subnets = resourceObject.getPropertyValue(templateKeys.properties)?.asObjectValue
-                        ?.getPropertyValue('subnets')?.asArrayValue;
-                    for (let subnet of subnets?.elements ?? []) {
-                        const subnetObject = subnet.asObjectValue;
-                        const subnetName = subnetObject?.getPropertyValue(templateKeys.resourceName)?.asStringValue;
-                        if (subnetObject && subnetName) {
-                            const subnetTypes = [`'Microsoft.Network/virtualNetworks'`, `'subnets'`];
-                            const subnetInfo = new JsonResourceInfo(
-                                [
-                                    jsonStringToTleExpression(resName.unquotedValue),
-                                    jsonStringToTleExpression(subnetName.unquotedValue)
-                                ],
-                                subnetTypes,
-                                subnetObject,
-                                info
-                            );
-                            results.push(subnetInfo);
-                        }
+        const info: IJsonResourceInfo = new JsonResourceInfo(nameExpressions, typeExpressions, resourceObject, parent);
+        results.push(info);
+
+        if (processChildren) {
+            // Check child resources
+            const childResources = resourceObject.getPropertyValue(templateKeys.resources)?.asArrayValue;
+            if (childResources) {
+                const childrenInfo = getInfoFromResourcesArray(childResources, info);
+                results.push(...childrenInfo);
+            }
+
+            // Special-case subnets - they were designed before nested resources were a thing.
+            // Subnets are considered children but are defined under properties/subnets instead of
+            //   a nested "resources"
+            // Example:
+            //
+            // "resources": [
+            //     {
+            //         "type": "Microsoft.Network/virtualNetworks",
+            //         "name": "vnet1",
+            //         "properties": {
+            //             "subnets": [
+            //                 // These are considered children, with type Microsoft.Network/virtualNetworks/subnets
+            //                 {
+            //                     "name": "subnet1",
+            //                 }
+            //             ]
+            //         }
+            //     }
+            // ]
+            if (resType.unquotedValue.toLowerCase() === 'microsoft.network/virtualnetworks') {
+                const subnets = resourceObject.getPropertyValue(templateKeys.properties)?.asObjectValue
+                    ?.getPropertyValue('subnets')?.asArrayValue;
+                for (let subnet of subnets?.elements ?? []) {
+                    const subnetObject = subnet.asObjectValue;
+                    const subnetName = subnetObject?.getPropertyValue(templateKeys.resourceName)?.asStringValue;
+                    if (subnetObject && subnetName) {
+                        const subnetTypes = [`'Microsoft.Network/virtualNetworks'`, `'subnets'`];
+                        const subnetInfo = new JsonResourceInfo(
+                            [
+                                jsonStringToTleExpression(resName.unquotedValue),
+                                jsonStringToTleExpression(subnetName.unquotedValue)
+                            ],
+                            subnetTypes,
+                            subnetObject,
+                            info
+                        );
+                        results.push(subnetInfo);
                     }
                 }
             }
         }
     }
-
-    return results;
 }
 
 function isJsonStringAnExpression(text: string): boolean {
@@ -281,71 +352,102 @@ export function jsonStringToTleExpression(stringUnquotedValue: string): string {
 //   "[concat(variables('sqlServer'), '/' , variables('firewallRuleName'))]"
 //     ->
 //   [ "concat(variables('sqlServer')", "variables('firewallRuleName')" ]
-export function splitResourceNameIntoSegments(nameUnquotedValue: string, scope: TemplateScope): string[] {
+export function splitResourceNameIntoSegments(nameUnquotedValue: string): string[] {
     if (isJsonStringAnExpression(nameUnquotedValue)) {
         // It's an expression.  Try to break it into segments by handling certain common patterns
+        return splitExpressionIntoSegments(nameUnquotedValue);
+    }
 
-        // No sense taking time for parsing if '/' is nowhere in the expression
-        if (nameUnquotedValue.includes('/')) {
-            const quotedValue = `"${nameUnquotedValue}"`;
-            const parseResult = TLE.Parser.parse(quotedValue);
-            const expression = parseResult.expression;
-            if (parseResult.errors.length === 0 && expression) {
-                // Handle this pattern:
-                // "[concat(expression1, '/' , expression2)]" => [expression1, expression2]
-                if (expression instanceof TLE.FunctionCallValue && expression.isCallToBuiltinWithName('concat')) {
-                    const argumentExpressions = expression.argumentExpressions;
-                    if (argumentExpressions.every(v => !!v)) {
-                        // First, rewrite any string literals that contain a forward slash
-                        // into separate string literals, e.g.
-                        //   concat('a/', parameters('p1')) -> [ 'a', parameters('p1') ]
-                        let rewrittenArgs: (TLE.Value | string)[] = []; // string instances are string literals
-                        for (let arg of argumentExpressions) {
-                            if (arg instanceof TLE.StringValue && arg.unquotedValue.includes('/')) {
-                                const refactoredArg: string[] = splitStringWithSeparator(arg.unquotedValue, '/')
-                                    .map(s => `'${s}'`);
-                                rewrittenArgs.push(...refactoredArg);
-                            } else {
-                                // tslint:disable-next-line: no-non-null-assertion // checked with .every() above
-                                rewrittenArgs.push(arg!);
-                            }
+    return nameUnquotedValue.split('/').map(segment => `'${segment}'`);
+}
+
+// e.g.
+// "Microsoft.Network/networkSecurityGroups/securityRules"
+//   ->
+// [ "'Microsoft.Network/networkSecurityGroups'", "'securityRules'" ]
+function splitResourceTypeIntoSegments(typeNameUnquotedValue: string): string[] {
+    let segments: string[];
+
+    if (isJsonStringAnExpression(typeNameUnquotedValue)) {
+        // It's an expression.  Try to break it into segments by handling certain common patterns
+        // Example: "[concat(variables('a'), '/', variables('c'))]"
+        return splitExpressionIntoSegments(typeNameUnquotedValue);
+    } else {
+        segments = typeNameUnquotedValue.split('/');
+
+        if (segments.length >= 2) {
+            // The first segment consists of a namespace and an initial name (e.g. 'Microsoft.sql/servers'), so combine our first two entries
+            segments = [`${segments[0]}/${segments[1]}`].concat(segments.slice(2));
+        }
+
+        return segments.map(segment => `'${segment}'`);
+    }
+}
+
+/**
+ * Try to break up a expression (surrounded by square brackets) by handling certain common patterns
+ */
+function splitExpressionIntoSegments(jsonString: string): string[] {
+    assert(jsonString[0] === '[');
+
+    // No sense taking time for parsing the expression if '/' is nowhere in the expression
+    if (jsonString.includes('/')) {
+        const quotedValue = `"${jsonString}"`;
+        const parseResult = TLE.Parser.parse(quotedValue);
+        const expression = parseResult.expression;
+        if (parseResult.errors.length === 0 && expression) {
+            // Handle this pattern:
+            // "[concat(expression1, '/' , expression2)]" => [expression1, expression2]
+            if (expression instanceof TLE.FunctionCallValue && expression.isCallToBuiltinWithName('concat')) {
+                const argumentExpressions = expression.argumentExpressions;
+                if (argumentExpressions.every(v => !!v)) {
+                    // First, rewrite any string literals that contain a forward slash
+                    // into separate string literals, e.g.
+                    //   concat('a/', parameters('p1')) -> [ 'a', parameters('p1') ]
+                    let rewrittenArgs: (TLE.Value | string)[] = []; // string instances are string literals
+                    for (let arg of argumentExpressions) {
+                        if (arg instanceof TLE.StringValue && arg.unquotedValue.includes('/')) {
+                            const refactoredArg: string[] = splitStringWithSeparator(arg.unquotedValue, '/')
+                                .map(s => `'${s}'`);
+                            rewrittenArgs.push(...refactoredArg);
+                        } else {
+                            // tslint:disable-next-line: no-non-null-assertion // checked with .every() above
+                            rewrittenArgs.push(arg!);
                         }
+                    }
 
-                        // Separate it into groups of arguments that are separated by '/'
-                        // string literals, e.g.
-                        //   [a, '/', b, c, '/', d] -> [ [a], [b, c], [d]]
-                        let segmentGroups: string[][] = [];
-                        let newGroup: string[] = [];
+                    // Separate it into groups of arguments that are separated by '/'
+                    // string literals, e.g.
+                    //   [a, '/', b, c, '/', d] -> [ [a], [b, c], [d]]
+                    let segmentGroups: string[][] = [];
+                    let newGroup: string[] = [];
 
-                        let separatorFound = false;
-                        for (let arg of rewrittenArgs) {
-                            const argAsString = typeof arg === 'string' ? arg : arg.getSpan().getText(quotedValue);
-                            if (arg === `'/'`) {
-                                separatorFound = true;
-                                segmentGroups.push(newGroup);
-                                newGroup = [];
-                            } else {
-                                newGroup.push(argAsString);
-                            }
+                    let separatorFound = false;
+                    for (let arg of rewrittenArgs) {
+                        const argAsString = typeof arg === 'string' ? arg : arg.getSpan().getText(quotedValue);
+                        if (arg === `'/'`) {
+                            separatorFound = true;
+                            segmentGroups.push(newGroup);
+                            newGroup = [];
+                        } else {
+                            newGroup.push(argAsString);
                         }
-                        segmentGroups.push(newGroup);
+                    }
+                    segmentGroups.push(newGroup);
 
-                        if (separatorFound && !segmentGroups.some(g => g.length === 0)) {
-                            // Create segments out of the groups - groups with more than one element must be recombined
-                            // using 'concat'
-                            return segmentGroups.map(g => g.length > 1 ? `concat(${g.join(', ')})` : g[0]);
-                        }
+                    if (separatorFound && !segmentGroups.some(g => g.length === 0)) {
+                        // Create segments out of the groups - groups with more than one element must be recombined
+                        // using 'concat'
+                        return segmentGroups.map(g => g.length > 1 ? `concat(${g.join(', ')})` : g[0]);
                     }
                 }
             }
         }
-
-        // We don't know how to split this expression into segments in a generic
-        // way, so just return the entire expression
-        return [jsonStringToTleExpression(nameUnquotedValue)];
     }
 
-    return nameUnquotedValue.split('/').map(segment => `'${segment}'`);
+    // We don't know how to split this expression into segments in a generic
+    // way, so just return the entire expression
+    return [jsonStringToTleExpression(jsonString)];
 }
 
 /**
@@ -369,22 +471,35 @@ function splitStringWithSeparator(s: string, separator: string): string[] {
     return result.filter(s2 => s2.length > 0);
 }
 
-// e.g.
-// "Microsoft.Network/networkSecurityGroups/securityRules"
-//   ->
-// [ "'Microsoft.Network/networkSecurityGroups'", "'securityRules'" ]
-function splitResourceTypeIntoSegments(typeNameUnquotedValue: string): string[] {
-    if (isJsonStringAnExpression(typeNameUnquotedValue)) {
-        // If it's an expression, we can't know how to split it into segments in a generic
-        // way, so just return the entire expression
-        return [jsonStringToTleExpression(typeNameUnquotedValue)];
+function getFriendlyNameForResource(
+    { resource, fullResourceName }:
+        {
+            resource: IResourceInfo | IJsonResourceInfo;
+            fullResourceName: boolean;
+        }
+): string {
+    const resourceObject = ("resourceObject" in resource) ? resource.resourceObject : undefined;
+
+    let nameLabel: string;
+
+    // Look for displayName tag first
+    let tags = resourceObject?.getPropertyValue(templateKeys.tags)?.asObjectValue;
+    let displayName = tags?.getPropertyValue(templateKeys.displayNameTag)?.asStringValue?.unquotedValue;
+    if (displayName) {
+        nameLabel = displayName;
+    } else {
+        // No displayName tag, use name
+        const name = fullResourceName ? resource.getFullNameExpression() : resource.shortNameExpression;
+        if (name) {
+            nameLabel = getFriendlyExpressionFromTleExpression(name);
+        } else {
+            nameLabel = "(unnamed resource)";
+        }
     }
 
-    let segments = typeNameUnquotedValue.split('/');
-    if (segments.length >= 2) {
-        // Combine first two segments
-        segments = [`${segments[0]}/${segments[1]}`].concat(segments.slice(2));
-    }
+    // Add short type as well
+    let typeLabel = resource.shortTypeExpression;
+    typeLabel = typeLabel ? getFriendlyExpressionFromTleExpression(typeLabel) : '(no type)';
 
-    return segments.map(segment => `'${segment}'`);
+    return `${nameLabel} (${typeLabel})`;
 }
