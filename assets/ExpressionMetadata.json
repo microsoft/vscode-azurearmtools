@@ -332,7 +332,7 @@
         {
             "name": "list",
             "expectedUsage": "list(resourceName\/resourceIdentifier, apiVersion)",
-            "description": "Performs a GET call to a REST API on the given resource. The returned data depends on the resource type. See https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#valid-uses.",
+            "description": "Performs a GET call to a REST API on the given resource. The function arguments and the returned data depend on the resource type. See https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#valid-uses.",
             "minimumArguments": 2
         },
         {
