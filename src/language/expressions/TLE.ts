@@ -12,7 +12,6 @@
 import { templateKeys } from "../../constants";
 import { TemplatePositionContext } from "../../documents/positionContexts/TemplatePositionContext";
 import { IFunctionMetadata } from "../../documents/templates/IFunctionMetadata";
-import { TemplateScope } from "../../documents/templates/scopes/TemplateScope";
 import { assert } from "../../fixed_assert";
 import { __debugMarkRangeInString } from "../../util/debugMarkStrings";
 import { Iterator } from "../../util/Iterator";
@@ -23,12 +22,6 @@ import { IssueKind } from "../IssueKind";
 import * as Json from "../json/JSON";
 import * as basic from "../json/Tokenizer";
 import { ContainsBehavior, Span } from "../Span";
-
-export function isTleExpression(unquotedStringValue: string): boolean {
-    // An expression must start with '[' (no whitespace before),
-    //   not start with '[[', and end with ']' (no whitespace after)
-    return !!unquotedStringValue.match(/^\[(?!\[).*\]$/);
-}
 
 export function asStringValue(value: Value | undefined): StringValue | undefined {
     return value instanceof StringValue ? value : undefined;
@@ -307,8 +300,7 @@ export class FunctionCallValue extends ParentValue {
         private readonly _leftParenthesisToken: Token | undefined,
         private readonly _commaTokens: Token[],
         private readonly _argumentExpressions: (Value | undefined)[], // Missing args are undefined
-        private readonly _rightParenthesisToken: Token | undefined,
-        public readonly scope: TemplateScope
+        private readonly _rightParenthesisToken: Token | undefined
     ) {
         super();
 
@@ -726,8 +718,8 @@ export class FunctionSignatureHelp {
  *   the top-level expression returned will only be a StringValue if there is in fact no expression.
  */
 export class Parser {
-    // Handles any JSON string, not just those that are actually TLE expressions beginning with bracket
-    public static parse(quotedStringValue: string, scope: TemplateScope): TleParseResult {
+    public static parse(quotedStringValue: string): TleParseResult {
+        // Handles any JSON string, not just those that are actually TLE expressions beginning with bracket
         assert(quotedStringValue, "TLE strings cannot be undefined.");
         assert(1 <= quotedStringValue.length, "TLE strings must be at least 1 character.");
         assert(Utilities.isQuoteCharacter(quotedStringValue[0]), "The first character in the TLE string to parse must be a quote character.");
@@ -760,7 +752,7 @@ export class Parser {
                     tokenizer.next();
                 }
 
-                expression = Parser.parseExpression(tokenizer, scope, errors);
+                expression = Parser.parseExpression(tokenizer, errors);
 
                 while (<Token | undefined>tokenizer.current) {
                     if (tokenizer.current.getType() === TokenType.RightSquareBracket) {
@@ -792,10 +784,10 @@ export class Parser {
             }
         }
 
-        return new TleParseResult(leftSquareBracketToken, expression, rightSquareBracketToken, errors, scope);
+        return new TleParseResult(leftSquareBracketToken, expression, rightSquareBracketToken, errors);
     }
 
-    private static parseExpression(tokenizer: Tokenizer, scope: TemplateScope, errors: Issue[]): Value | undefined {
+    private static parseExpression(tokenizer: Tokenizer, errors: Issue[]): Value | undefined {
         let expression: Value;
         if (tokenizer.current) {
             let rootExpression: Value | undefined; // Initial expression
@@ -803,7 +795,7 @@ export class Parser {
             let token = tokenizer.current;
             let tokenType = token.getType();
             if (tokenType === TokenType.Literal) {
-                rootExpression = Parser.parseFunctionCall(tokenizer, scope, errors);
+                rootExpression = Parser.parseFunctionCall(tokenizer, errors);
             } else if (tokenType === TokenType.QuotedString) {
                 if (!token.stringValue.endsWith(token.stringValue[0])) {
                     errors.push(new Issue(token.span, "A constant string is missing an end quote.", IssueKind.tleSyntax));
@@ -868,7 +860,7 @@ export class Parser {
                 let leftSquareBracketToken: Token = tokenizer.current;
                 tokenizer.next();
 
-                let indexValue: Value | undefined = Parser.parseExpression(tokenizer, scope, errors);
+                let indexValue: Value | undefined = Parser.parseExpression(tokenizer, errors);
 
                 let rightSquareBracketToken: Token | undefined;
                 if (<Token | undefined>tokenizer.current && tokenizer.current.getType() === TokenType.RightSquareBracket) {
@@ -886,7 +878,7 @@ export class Parser {
     }
 
     // tslint:disable-next-line:cyclomatic-complexity max-func-body-length // CONSIDER: refactor
-    private static parseFunctionCall(tokenizer: Tokenizer, scope: TemplateScope, errors: Issue[]): FunctionCallValue {
+    private static parseFunctionCall(tokenizer: Tokenizer, errors: Issue[]): FunctionCallValue {
         assert(tokenizer);
         assert(tokenizer.current, "tokenizer must have a current token.");
         // tslint:disable-next-line:no-non-null-assertion // Asserted
@@ -954,7 +946,7 @@ export class Parser {
                 if (tokenizer.current.getType() === TokenType.RightParenthesis || tokenizer.current.getType() === TokenType.RightSquareBracket) {
                     break;
                 } else if (expectingArgument) {
-                    let expression = Parser.parseExpression(tokenizer, scope, errors);
+                    let expression = Parser.parseExpression(tokenizer, errors);
                     if (!expression && tokenizer.hasCurrent() && tokenizer.current.getType() === TokenType.Comma) {
                         errors.push(new Issue(tokenizer.current.span, "Expected a constant string, function, or property expression.", IssueKind.tleSyntax));
                     }
@@ -1004,7 +996,7 @@ export class Parser {
         }
 
         assert(namespaceToken || nameToken, "Should have had a namespace or a name");
-        return new FunctionCallValue(namespaceToken, periodToken, nameToken, leftParenthesisToken, commaTokens, argumentExpressions, rightParenthesisToken, scope);
+        return new FunctionCallValue(namespaceToken, periodToken, nameToken, leftParenthesisToken, commaTokens, argumentExpressions, rightParenthesisToken);
 
         function getFullNameSpan(): Span {
             if (!nameToken) {
@@ -1047,8 +1039,7 @@ export class TleParseResult {
         private _leftSquareBracketToken: Token | undefined,
         private _expression: Value | undefined,
         private _rightSquareBracketToken: Token | undefined,
-        private _errors: Issue[],
-        public readonly scope: TemplateScope
+        private _errors: Issue[]
     ) {
         assert(_errors);
     }

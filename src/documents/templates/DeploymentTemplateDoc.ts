@@ -40,6 +40,11 @@ import { TemplateScope } from "./scopes/TemplateScope";
 import { NestedTemplateOuterScope, TopLevelTemplateScope } from './scopes/templateScopes';
 import { UserFunctionParameterDefinition } from './UserFunctionParameterDefinition';
 
+export interface IScopedParseResult {
+    parseResult: TLE.TleParseResult;
+    scope: TemplateScope;
+}
+
 /**
  * Represents a deployment template file
  */
@@ -48,7 +53,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     private _topLevelScope: CachedValue<TemplateScope> = new CachedValue<TemplateScope>();
 
     // A map from all JSON string value nodes to their cached TLE parse results
-    private _jsonStringValueToTleParseResultMap: CachedValue<Map<Json.StringValue, TLE.TleParseResult>> = new CachedValue<Map<Json.StringValue, TLE.TleParseResult>>();
+    private _jsonStringValueToTleParseResultMap: CachedValue<Map<Json.StringValue, IScopedParseResult>> = new CachedValue<Map<Json.StringValue, IScopedParseResult>>();
 
     private _allScopes: CachedValue<TemplateScope[]> = new CachedValue<TemplateScope[]>();
 
@@ -94,7 +99,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
      * think the save in parsing of identical strings makes keying by scope and string value worth
      * the associated cost).
      */
-    private get quotedStringToTleParseResultMap(): Map<Json.StringValue, TLE.TleParseResult> {
+    private get quotedStringToTleParseResultMap(): Map<Json.StringValue, IScopedParseResult> {
         return this._jsonStringValueToTleParseResultMap.getOrCacheValue(() => {
             return StringParseAndScopeAssignmentVisitor.createParsedStringMap(this);
         });
@@ -109,20 +114,19 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
             //const jsonTokenStartIndex: number = jsonQuotedStringToken.span.startIndex;
             const jsonTokenStartIndex = jsonStringValue.span.startIndex;
 
-            const tleParseResult: TLE.TleParseResult | undefined = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
+            const tleParseResult: IScopedParseResult = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
             const expressionScope: TemplateScope = tleParseResult.scope;
+            const tleExpression: TLE.Value | undefined = tleParseResult.parseResult.expression;
 
-            for (const error of tleParseResult.errors) {
+            for (const error of tleParseResult.parseResult.errors) {
                 parseErrors.push(error.translate(jsonTokenStartIndex));
             }
-
-            const tleExpression: TLE.Value | undefined = tleParseResult.expression;
 
             // Undefined parameter/variable references
             const tleUndefinedParameterAndVariableVisitor =
                 UndefinedParameterAndVariableVisitor.visit(
                     tleExpression,
-                    tleParseResult.scope);
+                    expressionScope);
             for (const error of tleUndefinedParameterAndVariableVisitor.errors) {
                 parseErrors.push(error.translate(jsonTokenStartIndex));
             }
@@ -134,7 +138,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
             }
 
             // Incorrect number of function arguments
-            const tleIncorrectArgumentCountVisitor = IncorrectFunctionArgumentCountVisitor.IncorrectFunctionArgumentCountVisitor.visit(tleExpression, functions);
+            const tleIncorrectArgumentCountVisitor = IncorrectFunctionArgumentCountVisitor.IncorrectFunctionArgumentCountVisitor.visit(expressionScope, tleExpression, functions);
             for (const error of tleIncorrectArgumentCountVisitor.errors) {
                 parseErrors.push(error.translate(jsonTokenStartIndex));
             }
@@ -314,7 +318,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                 this.jsonParseResult.value,
                 (stringValue: Json.StringValue): void => {
                     const tleParseResult = this.getTLEParseResultFromJsonStringValue(stringValue);
-                    let tleFunctionCountVisitor = FunctionCountVisitor.visit(tleParseResult.expression);
+                    let tleFunctionCountVisitor = FunctionCountVisitor.visit(tleParseResult.parseResult.expression);
                     functionCounts.add(tleFunctionCountVisitor.functionCounts);
                 });
         }
@@ -411,7 +415,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     /**
      * Get the TLE parse results from this JSON string.
      */
-    public getTLEParseResultFromJsonStringValue(jsonStringValue: Json.StringValue): TLE.TleParseResult {
+    public getTLEParseResultFromJsonStringValue(jsonStringValue: Json.StringValue): IScopedParseResult {
         const result = this.quotedStringToTleParseResultMap.get(jsonStringValue);
         if (result) {
             return result;
@@ -420,9 +424,10 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         // This string must not be in the reachable Json.Value tree due to syntax or other issues which
         //   the language server should show in our diagnostics.
         // Go ahead and parse it now, pretending it has top-level scope
-        const tleParseResult = TLE.Parser.parse(jsonStringValue.quotedValue, this.topLevelScope);
-        this.quotedStringToTleParseResultMap.set(jsonStringValue, tleParseResult);
-        return tleParseResult;
+        const tleParseResult = TLE.Parser.parse(jsonStringValue.quotedValue);
+        const scopedResult: IScopedParseResult = { parseResult: tleParseResult, scope: this.topLevelScope };
+        this.quotedStringToTleParseResultMap.set(jsonStringValue, scopedResult);
+        return scopedResult;
     }
 
     public findReferencesToDefinition(definition: INamedDefinition): ReferenceList {
@@ -436,10 +441,11 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
         // Find and add references that match the definition we're looking for
         this.visitAllReachableStringValues(jsonStringValue => {
-            const tleParseResult: TLE.TleParseResult | undefined = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
-            if (tleParseResult.expression) {
+            const tleParseResult: IScopedParseResult | undefined = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
+            if (tleParseResult.parseResult.expression) {
                 // tslint:disable-next-line:no-non-null-assertion // Guaranteed by if
-                const visitor = FindReferencesVisitor.visit(this, tleParseResult.expression, definition, functions);
+                const scope = tleParseResult.scope;
+                const visitor = FindReferencesVisitor.visit(this, scope, tleParseResult.parseResult.expression, definition, functions);
                 result.addAll(visitor.references.translate(jsonStringValue.span.startIndex));
             }
         });
@@ -601,7 +607,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 //#region StringParseAndScopeAssignmentVisitor
 
 class StringParseAndScopeAssignmentVisitor extends Json.Visitor {
-    private readonly _jsonStringValueToTleParseResultMap: Map<Json.StringValue, TLE.TleParseResult> = new Map<Json.StringValue, TLE.TleParseResult>();
+    private readonly _jsonStringValueToTleParseResultMap: Map<Json.StringValue, IScopedParseResult> = new Map<Json.StringValue, IScopedParseResult>();
     private readonly _scopeStack: TemplateScope[] = [];
     private _currentScope: TemplateScope;
     private readonly _uniqueTemplateScopes: TemplateScope[] = [];
@@ -612,12 +618,12 @@ class StringParseAndScopeAssignmentVisitor extends Json.Visitor {
         this._uniqueTemplateScopes = _dt.uniqueScopes;
     }
 
-    public static createParsedStringMap(dt: DeploymentTemplateDoc): Map<Json.StringValue, TLE.TleParseResult> {
+    public static createParsedStringMap(dt: DeploymentTemplateDoc): Map<Json.StringValue, IScopedParseResult> {
         const visitor = new StringParseAndScopeAssignmentVisitor(dt);
         return visitor.createMap();
     }
 
-    private createMap(): Map<Json.StringValue, TLE.TleParseResult> {
+    private createMap(): Map<Json.StringValue, IScopedParseResult> {
         this._dt.topLevelValue?.accept(this);
         return this._jsonStringValueToTleParseResultMap;
     }
@@ -625,8 +631,11 @@ class StringParseAndScopeAssignmentVisitor extends Json.Visitor {
     public visitStringValue(jsonStringValue: Json.StringValue): void {
         assert(!this._jsonStringValueToTleParseResultMap.has(jsonStringValue), "Already parsed this string");
         // Parse the string as a possible TLE expression and cache
-        let tleParseResult: TLE.TleParseResult = TLE.Parser.parse(jsonStringValue.quotedValue, this._currentScope);
-        this._jsonStringValueToTleParseResultMap.set(jsonStringValue, tleParseResult);
+        let tleParseResult: TLE.TleParseResult = TLE.Parser.parse(jsonStringValue.quotedValue);
+        this._jsonStringValueToTleParseResultMap.set(jsonStringValue, {
+            parseResult: tleParseResult,
+            scope: this._currentScope
+        });
     }
 
     public visitObjectValue(jsonObjectValue: Json.ObjectValue): void {

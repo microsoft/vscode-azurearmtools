@@ -85,8 +85,8 @@ export class TemplatePositionContext extends PositionContext {
             ) {
                 const tleParseResult = this.document.getTLEParseResultFromJsonStringValue(this.jsonValue);
                 const tleCharacterIndex = this.documentCharacterIndex - this.jsonTokenStartIndex;
-                const tleValue = tleParseResult.getValueAtCharacterIndex(tleCharacterIndex);
-                return new TleInfo(tleParseResult, tleCharacterIndex, tleValue, tleParseResult.scope);
+                const tleValue = tleParseResult.parseResult.getValueAtCharacterIndex(tleCharacterIndex);
+                return new TleInfo(tleParseResult.parseResult, tleCharacterIndex, tleValue, tleParseResult.scope);
             }
             return undefined;
         });

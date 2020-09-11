@@ -6,7 +6,7 @@
 // tslint:disable: max-func-body-length object-literal-key-quotes
 
 import * as assert from "assert";
-import { getResourcesInfo, IResourceInfo, ResourceInfo } from "../../extension.bundle";
+import { getResourcesInfo, ResourceInfo } from "../../extension.bundle";
 import { IPartialDeploymentTemplate } from "../support/diagnostics";
 import { parseTemplate } from "../support/parseTemplate";
 
@@ -94,7 +94,7 @@ suite("ResourceInfo", () => {
     suite("getResourceIdExpression", () => {
         function createResourceIdTest(
             testName: string,
-            resource: IResourceInfo,
+            resource: ResourceInfo,
             expected: string | undefined
         ): void {
             testName = testName + JSON.stringify(`${resource.getFullTypeExpression()}: ${resource.getFullNameExpression()}`);

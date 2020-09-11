@@ -288,7 +288,7 @@ export function splitResourceNameIntoSegments(nameUnquotedValue: string, scope: 
         // No sense taking time for parsing if '/' is nowhere in the expression
         if (nameUnquotedValue.includes('/')) {
             const quotedValue = `"${nameUnquotedValue}"`;
-            const parseResult = TLE.Parser.parse(quotedValue, scope);
+            const parseResult = TLE.Parser.parse(quotedValue);
             const expression = parseResult.expression;
             if (parseResult.errors.length === 0 && expression) {
                 // Handle this pattern:

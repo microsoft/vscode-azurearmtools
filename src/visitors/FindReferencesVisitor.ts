@@ -4,6 +4,7 @@
 
 import { templateKeys } from "../constants";
 import { DeploymentDocument } from "../documents/DeploymentDocument";
+import { TemplateScope } from "../documents/templates/scopes/TemplateScope";
 import { UserFunctionDefinition } from "../documents/templates/UserFunctionDefinition";
 import { UserFunctionNamespaceDefinition } from "../documents/templates/UserFunctionNamespaceDefinition";
 import { assert } from '../fixed_assert';
@@ -23,6 +24,7 @@ export class FindReferencesVisitor extends Visitor {
 
     constructor(
         private readonly _document: DeploymentDocument,
+        private readonly _scope: TemplateScope,
         private readonly _definition: INamedDefinition,
         private readonly _functionsMetadata: FunctionsMetadata
     ) {
@@ -54,7 +56,7 @@ export class FindReferencesVisitor extends Visitor {
         switch (this._definition.definitionKind) {
             case DefinitionKind.UserFunction:
                 if (tleFunction.nameToken && tleFunction.name && tleFunction.namespace) {
-                    const userFunctionDefinition: UserFunctionDefinition | undefined = tleFunction.scope.getUserFunctionDefinition(tleFunction.namespace, tleFunction.name);
+                    const userFunctionDefinition: UserFunctionDefinition | undefined = this._scope.getUserFunctionDefinition(tleFunction.namespace, tleFunction.name);
                     if (userFunctionDefinition === this._definition) {
                         this.addReference(tleFunction.nameToken.span);
                     }
@@ -63,7 +65,7 @@ export class FindReferencesVisitor extends Visitor {
 
             case DefinitionKind.Namespace:
                 if (tleFunction.namespaceToken && tleFunction.namespace) {
-                    const userNamespaceDefinition: UserFunctionNamespaceDefinition | undefined = tleFunction.scope.getFunctionNamespaceDefinition(tleFunction.namespace);
+                    const userNamespaceDefinition: UserFunctionNamespaceDefinition | undefined = this._scope.getFunctionNamespaceDefinition(tleFunction.namespace);
                     if (userNamespaceDefinition === this._definition) {
                         this.addReference(tleFunction.namespaceToken.span);
                     }
@@ -90,7 +92,7 @@ export class FindReferencesVisitor extends Visitor {
                         const arg = tleFunction.argumentExpressions[0];
                         if (arg instanceof StringValue) {
                             const argName = arg.toString();
-                            const paramDefinition = tleFunction.scope.getParameterDefinition(argName);
+                            const paramDefinition = this._scope.getParameterDefinition(argName);
                             if (paramDefinition === this._definition) {
                                 this.addReference(arg.unquotedSpan);
                             }
@@ -105,7 +107,7 @@ export class FindReferencesVisitor extends Visitor {
                         const arg = tleFunction.argumentExpressions[0];
                         if (arg instanceof StringValue) {
                             const argName = arg.toString();
-                            const varDefinition = tleFunction.scope.getVariableDefinition(argName);
+                            const varDefinition = this._scope.getVariableDefinition(argName);
                             if (varDefinition === this._definition) {
                                 this.addReference(arg.unquotedSpan);
                             }
@@ -126,8 +128,8 @@ export class FindReferencesVisitor extends Visitor {
         super.visitFunctionCall(tleFunction);
     }
 
-    public static visit(document: DeploymentDocument, tleValue: Value | undefined, definition: INamedDefinition, metadata: FunctionsMetadata): FindReferencesVisitor {
-        const visitor = new FindReferencesVisitor(document, definition, metadata);
+    public static visit(document: DeploymentDocument, scope: TemplateScope, tleValue: Value | undefined, definition: INamedDefinition, metadata: FunctionsMetadata): FindReferencesVisitor {
+        const visitor = new FindReferencesVisitor(document, scope, definition, metadata);
         if (tleValue) {
             tleValue.accept(visitor);
         }

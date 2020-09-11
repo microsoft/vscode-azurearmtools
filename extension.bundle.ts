@@ -21,7 +21,7 @@ import * as basic from "./src/language/json/Tokenizer";
 import * as Completion from './src/vscodeIntegration/Completion';
 
 export { activateInternal, deactivateInternal } from './src/AzureRMTools'; // Export activate/deactivate for main.js
-export { armTemplateLanguageId, basePath, configKeys, configPrefix, diagnosticsCompletePrefix, expressionsDiagnosticsSource, isWin32, languageServerStateSource, templateKeys } from "./src/constants";
+export * from "./src/constants";
 export { DeploymentFileMapping } from "./src/documents/parameters/DeploymentFileMapping";
 export { DeploymentParametersDoc } from "./src/documents/parameters/DeploymentParametersDoc";
 export { IParameterDefinition } from "./src/documents/parameters/IParameterDefinition";
@@ -50,6 +50,7 @@ export { UserFunctionParameterDefinition } from "./src/documents/templates/UserF
 export { isVariableDefinition, IVariableDefinition } from "./src/documents/templates/VariableDefinition";
 export { ext } from './src/extensionVariables';
 export * from './src/language/expressions/AzureRMAssets';
+export * from "./src/language/expressions/isTleExpression";
 export { FunctionSignatureHelp, TleParseResult } from "./src/language/expressions/TLE";
 export { DefinitionKind, INamedDefinition } from "./src/language/INamedDefinition";
 export { Issue } from "./src/language/Issue";
