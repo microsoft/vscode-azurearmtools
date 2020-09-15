@@ -319,7 +319,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<string> {
                     // It's a resource
                     const info = getResourceInfo(keyNode);
                     if (info) {
-                        return info.getFriendlyName({ fullResourceName: true });
+                        return info.getFriendlyResourceLabel({ fullName: true });
                     }
                 }
 
