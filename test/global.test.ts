@@ -3,7 +3,11 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+// tslint:disable: no-console
+
+console.warn("global.test.ts");
 import * as fse from 'fs-extra';
+// tslint:disable-next-line: no-implicit-dependencies
 import * as mocha from 'mocha';
 import * as path from 'path';
 import * as rimraf from 'rimraf';
@@ -25,6 +29,7 @@ let previousSettings = {
 
 // Runs before all tests
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
+    console.warn(4);
     // Create logs folder
     if (await fse.pathExists(logsFolder)) {
         rimraf.sync(logsFolder);
@@ -47,7 +52,7 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     vscode.commands.executeCommand('workbench.actions.view.problems');
 
     // Set some configuration settings that are required for the tests to run properly
-    console.log("Updating user settings");
+    console.warn("Updating user settings");
     // ... autoDetectJsonTemplates (so editor loads with .json/json with our language server)
     previousSettings.autoDetectJsonTemplates = vscode.workspace.getConfiguration(configPrefix).get<boolean>(configKeys.autoDetectJsonTemplates);
     vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, true, vscode.ConfigurationTarget.Global);
@@ -63,7 +68,8 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
 
 // Runs after all tests are done
 suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
-    console.log('Done: global.test.ts: suiteTeardown');
+    console.warn("3");
+    console.warn('Done: global.test.ts: suiteTeardown');
 
     await displayCacheStatus();
     await publishCache(path.join(logsFolder, 'post-cache'));
@@ -80,11 +86,16 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
 
 // Runs before each test
 setup(function (this: Mocha.IBeforeAndAfterContext): void {
+    console.warn(2);
     createTestLog();
 });
 
 // Runs after each test
 teardown(function (this: Mocha.IBeforeAndAfterContext): void {
+    console.log(123);
+    console.warn("warn 1");
+    console.log("log 1");
+    console.log("erro 1");
     if (!this.currentTest.state || this.currentTest.state === 'failed') {
         console.log(`\n========= TESTLOG =========:\n${testLog.toString()}\n`);
         deleteTestLog();

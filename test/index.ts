@@ -3,6 +3,9 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+// tslint:disable: no-console
+
+console.warn("index.ts");
 import * as path from 'path';
 
 //
