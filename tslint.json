@@ -22,6 +22,7 @@
         ],
         "member-ordering": false,
         "missing-jsdoc": false,
+        "no-console": false,
         "newline-before-return": false,
         "newline-per-chained-call": false,
         "no-backbone-get-set-outside-model": false,
