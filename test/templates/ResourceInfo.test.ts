@@ -255,11 +255,11 @@ suite("ResourceInfo", () => {
         ): void {
             const testName = JSON.stringify(`${resource.getFullTypeExpression()}: ${resource.getFullNameExpression()}`);
             test(`${testName} (short name)`, () => {
-                const actualShort = resource.getFriendlyName({ fullResourceName: false });
+                const actualShort = resource.getFriendlyResourceLabel({});
                 assert.deepStrictEqual(actualShort, expectedWithShortResourceName);
             });
             test(`${testName} (full name)`, () => {
-                const actualFull = resource.getFriendlyName({ fullResourceName: true });
+                const actualFull = resource.getFriendlyResourceLabel({ fullName: true });
                 assert.deepStrictEqual(actualFull, expectedWithFullResourceName);
             });
         }

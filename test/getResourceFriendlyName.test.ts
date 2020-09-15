@@ -25,7 +25,7 @@ suite("getFriendlyNameForResource", () => {
             });
             // tslint:disable-next-line: no-non-null-assertion
             const info = getResourceInfo(dt.topLevelScope.rootObject!.getPropertyValue('resources')!.asArrayValue!.elements[0]!.asObjectValue!)!;
-            const actual = info.getFriendlyName({ fullResourceName: false });
+            const actual = info.getFriendlyResourceLabel({});
             assert.strictEqual(actual, expectedWithShortName);
         });
         test(`${testName} (long name)`, async () => {
@@ -39,7 +39,7 @@ suite("getFriendlyNameForResource", () => {
             });
             // tslint:disable-next-line: no-non-null-assertion
             const info = getResourceInfo(dt.topLevelScope.rootObject!.getPropertyValue('resources')!.asArrayValue!.elements[0]!.asObjectValue!)!;
-            const actual = info.getFriendlyName({ fullResourceName: true });
+            const actual = info.getFriendlyResourceLabel({ fullName: true });
             assert.strictEqual(actual, expectedWithLongName);
         });
     }

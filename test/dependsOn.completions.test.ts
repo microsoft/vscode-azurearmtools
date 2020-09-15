@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:max-func-body-length object-literal-key-quotes
+// tslint:disable:max-func-body-length object-literal-key-quotes no-invalid-template-strings
 
 import * as assert from "assert";
 import { Completion } from '../extension.bundle';
@@ -71,16 +71,31 @@ suite("dependsOn completions", () => {
                             copy: {
                                 name: "copy"
                             }
+                        },
+                        {
+                            type: "microsoft.ghi/jkl",
+                            name: "name2",
+                            copy: {
+                                name: "[concat(parameters('p1'), '/', variables('v1'))]"
+                            }
                         }
                     ]
                 },
                 expected: [
                     {
-                        "label": "'name1'",
+                        "label": "name1",
                         "kind": Completion.CompletionKind.dependsOnResourceId
                     },
                     {
-                        "label": "LOOP 'copy'",
+                        "label": "LOOP copy",
+                        "kind": Completion.CompletionKind.dependsOnResourceCopyLoop
+                    },
+                    {
+                        "label": "name2",
+                        "kind": Completion.CompletionKind.dependsOnResourceId
+                    },
+                    {
+                        "label": "LOOP ${p1}/${v1}",
                         "kind": Completion.CompletionKind.dependsOnResourceCopyLoop
                     }
                 ]
@@ -90,7 +105,7 @@ suite("dependsOn completions", () => {
 
     suite("detail", () => {
         createDependsOnCompletionsTest(
-            "detailMatchesTypeNameMinusSegment",
+            "detail matches friendy type name",
             {
                 template: {
                     resources: [
@@ -115,17 +130,17 @@ suite("dependsOn completions", () => {
                 },
                 expected: [
                     {
-                        "label": "'name1a'",
+                        "label": "name1a",
                         "insertText": `"[resourceId('Microsoft.abc/def', 'name1a')]"`,
                         "detail": "def"
                     },
                     {
-                        "label": "'name1b'",
+                        "label": "name1b",
                         "insertText": `"[resourceId('microsoft.123/456/789', 'name1b')]"`,
-                        "detail": "456/789"
+                        "detail": "789"
                     },
                     {
-                        "label": "'name1c'",
+                        "label": "name1c",
                         "insertText": `"[resourceId('singlesegment', 'name1c')]"`,
                         "detail": "singlesegment"
                     }
@@ -133,7 +148,7 @@ suite("dependsOn completions", () => {
             });
 
         createDependsOnCompletionsTest(
-            "detail for copy loop is short type name",
+            "detail for copy loop is friendly type name",
             {
                 template: {
                     resources: [
@@ -153,10 +168,10 @@ suite("dependsOn completions", () => {
                 },
                 expected: [
                     {
-                        "label": "'name1'"
+                        "label": "name1"
                     },
                     {
-                        "label": "LOOP 'copyname'",
+                        "label": "LOOP copyname",
                         "detail": "def"
                     }
                 ]
@@ -203,7 +218,7 @@ suite("dependsOn completions", () => {
 \`\`\`arm-template
 "copyname"
 \`\`\`
-from resource \`'name1a'\` of type \`def\``
+from resource \`name1a\` of type \`def\``
                         }
                     }
                 ]
@@ -230,7 +245,7 @@ from resource \`'name1a'\` of type \`def\``
                 },
                 expected: [
                     {
-                        "label": `'name1a'`,
+                        "label": `name1a`,
                         "insertText": `"[resourceId('microsoft.abc/def', 'name1a')]"`,
                         // tslint:disable-next-line: no-any
                         "documention": <any>{
@@ -264,7 +279,7 @@ from resource \`'name1a'\` of type \`def\``
                 },
                 expected: [
                     {
-                        "label": `'name1b'`
+                        "label": `name1b`
                     }
                 ]
             }
@@ -298,16 +313,16 @@ from resource \`'name1a'\` of type \`def\``
                 },
                 expected: [
                     {
-                        "label": `'name1'`
+                        "label": `name1`
                     },
                     {
-                        "label": `LOOP 'copynameliteral'`
+                        "label": `LOOP copynameliteral`
                     },
                     {
-                        "label": `'name2'`
+                        "label": `name2`
                     },
                     {
-                        "label": `LOOP concat('copy', 'name1')`
+                        "label": `LOOP copyname1`
                     }
                 ]
             }
@@ -333,7 +348,7 @@ from resource \`'name1a'\` of type \`def\``
                 },
                 expected: [
                     {
-                        "label": "'name1a'",
+                        "label": "name1a",
                         "insertText": `"[resourceId(variables('microsoft.abc/def'), 'name1a')]"`
                     }
                 ]
@@ -352,14 +367,14 @@ from resource \`'name1a'\` of type \`def\``
                         },
                         {
                             type: "microsoft.abc/def",
-                            name: "[concat(parameters('name1a'), 'foo')]"
+                            name: "[add(parameters('name1a'), 'foo')]"
                         }
                     ]
                 },
                 expected: [
                     {
-                        "label": "concat(parameters('name1a'), 'foo')",
-                        "insertText": `"[resourceId('microsoft.abc/def', concat(parameters('name1a'), 'foo'))]"`
+                        "label": "[add(${name1a}, 'foo')]",
+                        "insertText": `"[resourceId('microsoft.abc/def', add(parameters('name1a'), 'foo'))]"`
                     }
                 ]
             }
@@ -384,7 +399,7 @@ from resource \`'name1a'\` of type \`def\``
             },
             expected: [
                 {
-                    "label": "'foo'",
+                    "label": "foo",
                     "insertText": `"[resourceId('microsoft.abc/def', parameters('name1a'), 'foo')]"`
                 }
             ]
@@ -409,7 +424,7 @@ from resource \`'name1a'\` of type \`def\``
             },
             expected: [
                 {
-                    "label": "'foo'",
+                    "label": "foo",
                     "insertText": `"[resourceId('microsoft.abc/def', parameters('name1a'), 'foo')]"`
                 }
             ]
@@ -444,13 +459,13 @@ from resource \`'name1a'\` of type \`def\``
             },
             expected: [
                 {
-                    "label": `'name1'`
+                    "label": `name1`
                 },
                 {
                     "insertText": `"copynameliteral"`
                 },
                 {
-                    "label": `'name2'`
+                    "label": `name2`
                 },
                 {
                     "insertText": `"[concat('copy', 'name1')]"`
@@ -477,7 +492,7 @@ from resource \`'name1a'\` of type \`def\``
             },
             expected: [
                 {
-                    "label": "sum(parameters('name1a'), 1)",
+                    "label": "[sum(${name1a}, 1)]",
                     "insertText": `"[resourceId('microsoft.abc/def', sum(parameters('name1a'), 1))]"`
                 }
             ]
@@ -592,7 +607,7 @@ from resource \`'name1a'\` of type \`def\``
                 }`,
                 expected: [
                     {
-                        "label": "'name1a'",
+                        "label": "name1a",
                         "insertText": `"[resourceId('microsoft.abc/def', 'name1a')]"`,
                         replaceSpanText: ``
                     }
@@ -618,7 +633,7 @@ from resource \`'name1a'\` of type \`def\``
                 },
                 expected: [
                     {
-                        "label": "'name1a'",
+                        "label": "name1a",
                         "insertText": `"[resourceId('microsoft.abc/def', 'name1a')]"`,
                         replaceSpanText: `""`
                     }
@@ -644,7 +659,7 @@ from resource \`'name1a'\` of type \`def\``
                 },
                 expected: [
                     {
-                        "label": "'name1a'",
+                        "label": "name1a",
                         "insertText": `"[resourceId('microsoft.abc/def', 'name1a')]"`,
                         replaceSpanText: `""`
                     }
@@ -671,7 +686,7 @@ from resource \`'name1a'\` of type \`def\``
                 },
                 expected: [
                     {
-                        "label": "'name1a'",
+                        "label": "name1a",
                         "insertText": `"[resourceId('microsoft.abc/def', 'name1a')]"`,
                         replaceSpanText: `"name2a"`
                     }
@@ -699,7 +714,7 @@ from resource \`'name1a'\` of type \`def\``
             },
             expected: [
                 {
-                    "label": "'name1a'",
+                    "label": "name1a",
                     "insertText": `"[resourceId('microsoft.abc/def', 'name1a')]"`,
                     replaceSpanText: `"name2a"`
                 }
@@ -733,17 +748,17 @@ from resource \`'name1a'\` of type \`def\``
             },
             expected: [
                 {
-                    "label": "'name1a'",
+                    "label": "name1a",
                     "insertText": `"[resourceId('microsoft.abc/def', 'name1a')]"`,
                     replaceSpanText: `""`
                 },
                 {
-                    "label": "'name1b'",
+                    "label": "name1b",
                     "insertText": `"[resourceId('microsoft.abc/def', 'name1b')]"`,
                     replaceSpanText: `""`
                 },
                 {
-                    "label": "'name2'",
+                    "label": "name2",
                     "insertText": `"[resourceId('type2', 'name2')]"`,
                     replaceSpanText: `""`
                 }
@@ -820,7 +835,7 @@ from resource \`'name1a'\` of type \`def\``
                     },
                     expected: [
                         {
-                            label: "variables('sqlServer')",
+                            label: "${sqlServer}",
                             detail: "servers",
                             insertText: `"[resourceId('Microsoft.Sql/servers', variables('sqlServer'))]"`
                         }
@@ -911,10 +926,10 @@ from resource \`'name1a'\` of type \`def\``
                     },
                     expected: [
                         {
-                            label: "'sibling'"
+                            label: "sibling"
                         },
                         {
-                            label: "variables('sqlServer')"
+                            label: "${sqlServer}"
                         }
                     ]
                 }
@@ -1088,22 +1103,22 @@ from resource \`'name1a'\` of type \`def\``
                 },
                 expected: [
                     {
-                        label: "variables('parent1')"
+                        label: "${parent1}"
                     },
                     {
-                        label: "'child1b'"
+                        label: "child1b"
                     },
                     {
-                        label: "'sibling1'"
+                        label: "sibling1"
                     },
                     {
-                        label: "'child2a'"
+                        label: "child2a"
                     },
                     {
-                        label: "'grandchild2'"
+                        label: "grandchild2"
                     },
                     {
-                        label: "variables('child2b')"
+                        label: "${child2b}"
                     }
                 ]
             }

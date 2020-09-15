@@ -90,7 +90,17 @@ export interface IResourceInfo {
      * a format similar to the new string interpolation (e.g. concat's are coalesced and var/param references
      * use ${x} notation).
      */
-    getFriendlyName({ fullResourceName }: { fullResourceName: boolean }): string;
+    getFriendlyResourceLabel({ fullName }: { fullName?: boolean }): string;
+
+    /**
+     * Retrieves a friendly name expression (might be the display name) for just the resource name
+     */
+    getFriendlyNameExpression({ fullName }: { fullName?: boolean }): string;
+
+    /**
+     * Retrieves a friendly name expression for just the resource type
+     */
+    getFriendlyTypeExpression({ fullType }: { fullType?: boolean }): string;
 }
 
 export interface IJsonResourceInfo extends IResourceInfo {
@@ -155,8 +165,16 @@ export class ResourceInfo implements IResourceInfo {
         return undefined;
     }
 
-    public getFriendlyName({ fullResourceName }: { fullResourceName: boolean }): string {
-        return getFriendlyNameForResource({ resource: this, fullResourceName });
+    public getFriendlyNameExpression({ fullName }: { fullName?: boolean }): string {
+        return getFriendlyNameExpression({ resource: this, fullName });
+    }
+
+    public getFriendlyTypeExpression({ fullType }: { fullType?: boolean }): string {
+        return getFriendlyTypeExpression({ resource: this, fullType });
+    }
+
+    public getFriendlyResourceLabel({ fullName, fullType }: { fullName?: boolean; fullType?: boolean }): string {
+        return getFriendlyResourceLabel({ resource: this, fullName, fullType });
     }
 }
 
@@ -471,35 +489,59 @@ function splitStringWithSeparator(s: string, separator: string): string[] {
     return result.filter(s2 => s2.length > 0);
 }
 
-function getFriendlyNameForResource(
-    { resource, fullResourceName }:
+function getFriendlyNameExpression(
+    { resource, fullName }:
         {
             resource: IResourceInfo | IJsonResourceInfo;
-            fullResourceName: boolean;
+            fullName?: boolean;
         }
 ): string {
     const resourceObject = ("resourceObject" in resource) ? resource.resourceObject : undefined;
 
-    let nameLabel: string;
+    let friendlyName: string;
 
     // Look for displayName tag first
     let tags = resourceObject?.getPropertyValue(templateKeys.tags)?.asObjectValue;
     let displayName = tags?.getPropertyValue(templateKeys.displayNameTag)?.asStringValue?.unquotedValue;
     if (displayName) {
-        nameLabel = displayName;
+        friendlyName = displayName;
     } else {
         // No displayName tag, use name
-        const name = fullResourceName ? resource.getFullNameExpression() : resource.shortNameExpression;
+        const name = fullName ? resource.getFullNameExpression() : resource.shortNameExpression;
         if (name) {
-            nameLabel = getFriendlyExpressionFromTleExpression(name);
+            friendlyName = getFriendlyExpressionFromTleExpression(name);
         } else {
-            nameLabel = "(unnamed resource)";
+            friendlyName = "(unnamed resource)";
         }
     }
 
+    return friendlyName;
+}
+
+function getFriendlyTypeExpression(
+    { resource, fullType }:
+        {
+            resource: IResourceInfo;
+            fullType?: boolean;
+        }
+): string {
+    let friendlyType = fullType ? resource.getFullTypeExpression() : resource.shortTypeExpression;
+    friendlyType = friendlyType ? getFriendlyExpressionFromTleExpression(friendlyType) : '(no type)';
+    return friendlyType;
+}
+
+function getFriendlyResourceLabel(
+    { resource, fullName, fullType }:
+        {
+            resource: IResourceInfo;
+            fullName?: boolean;
+            fullType?: boolean;
+        }
+): string {
+    let nameLabel: string = getFriendlyNameExpression({ resource, fullName });
+
     // Add short type as well
-    let typeLabel = resource.shortTypeExpression;
-    typeLabel = typeLabel ? getFriendlyExpressionFromTleExpression(typeLabel) : '(no type)';
+    let typeLabel = getFriendlyTypeExpression({ resource, fullType });
 
     return `${nameLabel} (${typeLabel})`;
 }
