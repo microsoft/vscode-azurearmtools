@@ -7,7 +7,7 @@ import * as path from 'path';
 import { basePath } from "../extension.bundle";
 
 // tslint:disable-next-line: strict-boolean-expressions
-export const DISABLE_SLOW_TESTS = !!/^(true|1)$/i.test(process.env.DISABLE_SLOW_TESTS || '');
+export const DISABLE_SLOW_TESTS = 1; //!!/^(true|1)$/i.test(process.env.DISABLE_SLOW_TESTS || '');
 console.log(`DISABLE_SLOW_TESTS = ${DISABLE_SLOW_TESTS}`);
 
 // tslint:disable-next-line: strict-boolean-expressions
