@@ -57,7 +57,7 @@ export { IssueKind } from "./src/language/IssueKind";
 export { LineColPos } from "./src/language/LineColPos";
 export { ReferenceList } from "./src/language/ReferenceList";
 export { ContainsBehavior, Span } from "./src/language/Span";
-export { LanguageServerState } from "./src/languageclient/startArmLanguageServer";
+export * from "./src/languageclient/startArmLanguageServer";
 export { containsArmSchema, getPreferredSchema, isArmSchema } from './src/schemas';
 export { ISnippetManager } from './src/snippets/ISnippetManager';
 export { SnippetManager } from './src/snippets/SnippetManager';
