@@ -8,7 +8,7 @@ import * as mocha from 'mocha';
 import * as path from 'path';
 import * as rimraf from 'rimraf';
 import * as vscode from 'vscode';
-import { armTemplateLanguageId, configKeys, configPrefix, ext } from "../extension.bundle";
+import { armTemplateLanguageId, configKeys, configPrefix, ext, stopArmLanguageServer } from "../extension.bundle";
 import { displayCacheStatus, publishCache } from './support/cache';
 import { delay } from "./support/delay";
 import { createTestLog, deleteTestLog, testLog } from './support/testLog';
@@ -20,7 +20,7 @@ import { useTestFunctionMetadata } from "./TestData";
 
 let previousSettings = {
     autoDetectJsonTemplates: <boolean | undefined>undefined,
-    fileAssociations: <{} | undefined>undefined
+    fileAssociations: <{ [key: string]: string }>{}
 };
 
 // Runs before all tests
@@ -50,13 +50,16 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     console.log("Updating user settings");
     // ... autoDetectJsonTemplates (so editor loads with .json/json with our language server)
     previousSettings.autoDetectJsonTemplates = vscode.workspace.getConfiguration(configPrefix).get<boolean>(configKeys.autoDetectJsonTemplates);
-    vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, true, vscode.ConfigurationTarget.Global);
+    await vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, true, vscode.ConfigurationTarget.Global);
     // ... Add {'*.azrm':'arm-template'} to file.assocations (so colorization tests use the correct grammar, since _workbench.captureSyntaxTokens doesn't actually load anything into an editor)
-    let fileAssociations = previousSettings.fileAssociations = vscode.workspace.getConfiguration('files').get<{}>('associations');
+    let fileAssociations = previousSettings.fileAssociations = Object.assign({}, vscode.workspace.getConfiguration('files').get<{}>('associations'));
+    console.warn("Old file associations:", fileAssociations);
     let newAssociations = Object.assign({}, fileAssociations, { '*.azrm': armTemplateLanguageId });
     vscode.workspace.getConfiguration('files', null).update('associations', newAssociations, vscode.ConfigurationTarget.Global);
 
     await delay(1000); // Give vscode time to update the setting
+    const confirmedNewAssociations = Object.assign({}, vscode.workspace.getConfiguration('files').get<{}>('associations'));
+    console.warn("Confirmed new file associations:", confirmedNewAssociations);
 
     console.log('Done: global.test.ts: suiteSetup');
 });
@@ -67,23 +70,31 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
 
     await displayCacheStatus();
     await publishCache(path.join(logsFolder, 'post-cache'));
+
     // await publishVsCodeLogs('ms-dotnettools.vscode-dotnet-runtime');
     // await publishVsCodeLogs(path.basename(ext.context.logPath));
     // await publishVsCodeLogs(undefined);
 
+    /* Restoring settings doesn't seem to work at this point
     console.log('Restoring settings');
     vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, previousSettings.autoDetectJsonTemplates, vscode.ConfigurationTarget.Global);
-    previousSettings.fileAssociations = vscode.workspace.getConfiguration('file').get<{}>('associations');
-    vscode.workspace.getConfiguration('file').update('assocations', previousSettings.fileAssociations, vscode.ConfigurationTarget.Global);
+    delete previousSettings.fileAssociations["*.azrm"];
+    await vscode.workspace.getConfiguration('file').update('assocations', previousSettings.fileAssociations, vscode.ConfigurationTarget.Global);
     await delay(1000);
+    const confirmedNewAssociations = Object.assign({}, vscode.workspace.getConfiguration('files').get<{}>('associations'));
+    console.warn("Confirmed new file associations:", confirmedNewAssociations);
+    */
+
+    await stopArmLanguageServer();
+    console.log("Tests complete.");
 });
 
-// Runs before each test
+// Runs before each individual test
 setup(function (this: Mocha.IBeforeAndAfterContext): void {
     createTestLog();
 });
 
-// Runs after each test
+// Runs after each individual test
 teardown(function (this: Mocha.IBeforeAndAfterContext): void {
     if (!this.currentTest.state || this.currentTest.state === 'failed') {
         console.log(`\n========= TESTLOG =========:\n${testLog.toString()}\n`);

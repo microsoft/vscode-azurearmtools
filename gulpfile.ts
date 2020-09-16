@@ -79,7 +79,9 @@ interface IExpressionMetadata {
 function test(): cp.ChildProcess {
     env.DEBUGTELEMETRY = 'verbose';
     env.CODE_TESTS_PATH = path.join(__dirname, 'dist/test');
-    env.MOCHA_timeout = "60000";
+    env.MOCHA_timeout = "120000";
+    env.MOCHA_enableTimeouts = "1";
+    env.MOCHA_grep = "validation acceptance.*new-schema";
     return cp.spawn('node', ['./node_modules/vscode/bin/test'], { stdio: 'inherit', env });
 }
 
