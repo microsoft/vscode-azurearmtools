@@ -447,7 +447,7 @@ function splitExpressionIntoSegments(jsonString: string): string[] {
                     let rewrittenArgs: (TLE.Value | string)[] = []; // string instances are string literals
                     for (let arg of argumentExpressions) {
                         if (arg instanceof TLE.StringValue && arg.unquotedValue.includes('/')) {
-                            const refactoredArg: string[] = splitStringWithSeparator(arg.unquotedValue, '/')
+                            const refactoredArg: string[] = splitStringAndKeepSeparators(arg.unquotedValue, '/')
                                 .map(s => `'${s}'`);
                             rewrittenArgs.push(...refactoredArg);
                         } else {
@@ -494,7 +494,7 @@ function splitExpressionIntoSegments(jsonString: string): string[] {
  * Splits a string using a separator, but unlike string.split, the separators
  * are keep in the array returned.
  */
-function splitStringWithSeparator(s: string, separator: string): string[] {
+function splitStringAndKeepSeparators(s: string, separator: string): string[] {
     let result: string[] = [];
     let substrings: string[] = s.split(separator);
 

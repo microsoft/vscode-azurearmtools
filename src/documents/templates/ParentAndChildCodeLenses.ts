@@ -13,8 +13,6 @@ import { TemplateScope } from "./scopes/TemplateScope";
 export function getParentAndChildCodeLenses(scope: TemplateScope, infos: IJsonResourceInfo[]): ResolvableCodeLens[] {
     const lenses: ResolvableCodeLens[] = [];
 
-    //asdf nested scopes
-    //asdf 730a doesn't work
     for (const resource of infos) {
         lenses.push(new ParentCodeLens(scope, resource));
         lenses.push(new ChildrenCodeLens(scope, resource));
