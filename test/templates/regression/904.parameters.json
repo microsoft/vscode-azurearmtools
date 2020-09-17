@@ -1,0 +1,82 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "PrimaryrgName": {
+            "value": "RG-123-ABC-NET-01"
+        },
+        "SecondaryrgName": {
+            "value": "RG-456-ABC-NET-01"
+        },
+        "PrimaryLocation": {
+            "value": "UKSouth"
+        },
+        "SecondaryLocation": {
+            "value": "UKWest"
+        },
+        "PrimaryTags": {
+            "value": {
+                "Environment": "Inf",
+                "Owner": "TechServices",
+                "CreationDate": "18-06-20",
+                "CostCentre": "TechServices",
+                "DR": "No"
+            }
+        },
+        "SecondaryTags": {
+            "value": {
+                "Environment": "Inf",
+                "Owner": "TechServices",
+                "CreationDate": "18-06-20",
+                "CostCentre": "TechServices",
+                "DR": "Yes"
+            }
+        },
+        "PrimaryVNetSettings": {
+            "value": {
+                "Name": "VNET-123-ABC",
+                "addressPrefixes": [
+                    {
+                        "name": "Range01",
+                        "addressPrefix": "10.250.0.0/21"
+                    }
+                ]
+            }
+        },
+        "PrimarySubnets": {
+            "value": [
+                {
+                    "name": "GatewaySubnet",
+                    "addressPrefix": "10.250.0.0/25"
+                },
+                {
+                    "name": "SN-123-ABC-ABC",
+                    "addressPrefix": "10.250.0.128/25"
+                }
+            ]
+        },
+        "SecondaryVNetSettings": {
+            "value": {
+                "Name": "VNET-456-ABC",
+                "addressPrefixes": [
+                    {
+                        "name": "Range01",
+                        "addressPrefix": "10.250.64.0/21"
+                    }
+                ]
+            }
+        },
+        "SecondarySubnets": {
+            "value": [
+                {
+                    "name": "GatewaySubnet",
+                    "addressPrefix": "10.250.64.0/25"
+                },
+                {
+                    "name": "SN-456-ABC-ABC",
+                    "addressPrefix": "10.250.65.128/25"
+                }
+            ]
+        }
+    }
+}

@@ -568,6 +568,17 @@ suite("Validation regression tests", () => {
                         "Warning: Value must be one of the following types: integer (arm-template (schema)) [641,16-641,30]"
                     ]);
             });
+
+            // https://github.com/microsoft/vscode-azurearmtools/issues/904
+            testWithLanguageServer(`#904 Validation giving false positives for top-level params used in outer-scoped nested template`, async () => {
+                await testDiagnostics(
+                    'templates/regression/904.json',
+                    {
+                        parametersFile: 'templates/regression/904.parameters.json',
+                    },
+                    [
+                    ]);
+            });
         });
     }
 
