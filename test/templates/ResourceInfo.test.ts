@@ -69,6 +69,10 @@ suite("ResourceInfo", () => {
             createSplitTypeTest("[concat(variables('a'), variables('b'))]", ["concat(variables('a'), variables('b'))"]);
         });
 
+        createSplitTypeTest("Microsoft.Sql/servers", ["'Microsoft.Sql/servers'"]);
+        createSplitTypeTest("Microsoft.Sql/servers/firewallRules", ["'Microsoft.Sql/servers'", "'firewallRules'"]);
+        createSplitTypeTest("Microsoft.Sql/servers/firewallRules/another", ["'Microsoft.Sql/servers'", "'firewallRules'", "'another'"]);
+
         createSplitTypeTest("simple string/separated/again", ["'simple string/separated'", "'again'"]);
 
         createSplitTypeTest("ms.abc/def", ["'ms.abc/def'"]);
@@ -82,6 +86,7 @@ suite("ResourceInfo", () => {
         createSplitTypeTest("[concat(variables('a'), '/b', '/', variables('c'))]", ["variables('a')", "'b'", "variables('c')"]);
         createSplitTypeTest("[concat(variables('a'), '/b')]", ["variables('a')", "'b'"]);
 
+        createSplitTypeTest("[concat('ms.abc', '/', parameters('b'))]", ["'ms.abc'", "parameters('b')"]);
         createSplitTypeTest("[concat('ms.abc', '/', parameters('b'))]", ["'ms.abc'", "parameters('b')"]);
         createSplitTypeTest("[concat('ms.abc/', parameters('b'))]", ["'ms.abc'", "parameters('b')"]);
         createSplitTypeTest("[concat(parameters('a'), '/def/', parameters('b'))]", ["parameters('a')", "'def'", "parameters('b')"]);

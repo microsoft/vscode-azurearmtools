@@ -52,7 +52,7 @@ suite("areDecoupledChildAndParent", () => {
                     ]
                 };
                 const dt = await parseTemplate(template);
-                const infos = getResourcesInfo({ scope: dt.topLevelScope, recognizeDecoupledChildren: false });
+                const infos = getResourcesInfo({ scope: dt.topLevelScope, recognizeDecoupledChildren: true });
                 testLog.writeLine(`Resource Infos found:\n` + infos.map(i => `${i.getFullNameExpression()} (${i.getFullTypeExpression()})`).join('\n'));
 
                 testAreDecoupledChildAndParent(infos[0], infos[1], expected, expectedReverse);
@@ -239,7 +239,7 @@ suite("areDecoupledChildAndParent", () => {
                 false);
         });
 
-        suite("expressions, one level", () => {
+        suite("expressions", () => {
 
             suite("name expressions", () => {
                 createChildParentTest(
@@ -360,8 +360,87 @@ suite("areDecoupledChildAndParent", () => {
                     false);
             });
 
+            suite("type expressions", () => {
+                createChildParentTest(
+                    "type expr 1",
+                    {
+                        type: "microsoft.abc/DEF",
+                        name: "resource1"
+                    },
+                    {
+                        type: "[concat('MICROSOFT.abc/def', '/ghi')]",
+                        name: "resource1/resource2"
+                    },
+                    true,
+                    false);
+
+                createChildParentTest(
+                    "type expr 2",
+                    {
+                        type: "variables('parent')",
+                        name: "resource1"
+                    },
+                    {
+                        type: "[concat(variables('parent'), '/', 'type2')]",
+                        name: "resource1/resource2"
+                    },
+                    true,
+                    false);
+
+                createChildParentTest(
+                    "type expr 3",
+                    {
+                        type: "[variables('parent')]",
+                        name: "name1"
+                    },
+                    {
+                        type: "[concat(variables('parent'), '/', add(1, 2))]",
+                        name: "name1/ghi"
+                    },
+                    true,
+                    false);
+
+                createChildParentTest(
+                    "match whitespace differs",
+                    {
+                        type: "[variables('parent')]",
+                        name: "name1"
+                    },
+                    {
+                        type: "[  concat(variables( 'parent'),'/',add(   1,  2) ) ]",
+                        name: "name1/name2"
+                    },
+                    true,
+                    false);
+
+                createChildParentTest(
+                    "match case insensitive",
+                    {
+                        type: "[variables('PARENT')]",
+                        name: "name1"
+                    },
+                    {
+                        type: "[CONCAT(variables('parent'), '/',    ADD(1, 2))]",
+                        name: "NAME1/name2"
+                    },
+                    true,
+                    false);
+
+                createChildParentTest(
+                    "type exprs don't match",
+                    {
+                        type: "[variables('PARENT')]",
+                        name: "name1"
+                    },
+                    {
+                        type: "[CONCAT(variables('parent2'), '/', mul(1, 2))]",
+                        name: "name2"
+                    },
+                    false,
+                    false);
+            });
+
         });
-        //asdf repeat above with type expressions
 
         //asdf
         // createChildParentTest(
