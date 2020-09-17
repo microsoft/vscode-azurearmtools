@@ -248,7 +248,7 @@ export class AzureRMTools {
                 await this.onGotoParameterValue(actionContext, args);
             });
         registerCommand(
-            "azurerm-vscode-tools.codeLens.peekResources", //asdf
+            "azurerm-vscode-tools.codeLens.peekResources",
             async (actionContext: IActionContext, args: IPeekResourcesArgs) => {
                 await this.onPeekResources(actionContext, args);
             });

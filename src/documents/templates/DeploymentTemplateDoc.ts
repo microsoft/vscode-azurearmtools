@@ -516,7 +516,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                 lenses.push(...codelenses);
             }
 
-            const infos = getResourcesInfo({ scope, recognizeDecoupledChildren: true }); //asdf all scopes
+            const infos = getResourcesInfo({ scope, recognizeDecoupledChildren: true });
             //asdf 730a doesn't work
             lenses.push(...getParentAndChildCodeLenses(scope, infos));
         }

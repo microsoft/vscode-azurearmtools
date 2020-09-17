@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { Span } from "../../language/Span";
+import * as Json from "./../../language/json/JSON";
 import { TemplateScope } from "./scopes/TemplateScope";
 
 export interface IResource {
@@ -19,10 +20,10 @@ export interface IResource {
     /**
      * The nameValue of the resource object in the JSON
      */
-    //nameValue: Json.StringValue | undefined; asdf
+    nameValue: Json.StringValue | undefined;
 
     /**
      * The typeValue of the resource object in the JSON
      */
-    //resourceTypeValue2: Json.StringValue | undefined; asdf
+    resourceTypeValue2: Json.StringValue | undefined;
 }

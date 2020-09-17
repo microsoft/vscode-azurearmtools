@@ -583,7 +583,7 @@ function findAndSetDecoupledChildren(infos: IJsonResourceInfo[]): void {
                 child.isDecoupledChild = true;
 
                 // A resource can't have two parents (whether nested or decoupled), so remove from possibilities
-                //asdf   possibleChildren.splice(index, 1);
+                // Can't actually remove until we're done with the loop
                 removeIndices.push(index);
             }
         });
