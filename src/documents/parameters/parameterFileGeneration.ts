@@ -7,7 +7,7 @@ import * as path from 'path';
 import { QuickPickItem, Uri, window } from "vscode";
 import { IActionContext, UserCancelledError } from 'vscode-azureextensionui';
 import { ext } from '../../extensionVariables';
-import { isTleExpression } from '../../language/expressions/TLE';
+import { isTleExpression } from "../../language/expressions/isTleExpression";
 import * as Json from "../../language/json/JSON";
 import { assertNever } from '../../util/assertNever';
 import { CaseInsensitiveMap } from '../../util/CaseInsensitiveMap';

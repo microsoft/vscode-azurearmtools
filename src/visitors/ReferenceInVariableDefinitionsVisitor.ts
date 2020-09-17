@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { DeploymentTemplateDoc } from "../documents/templates/DeploymentTemplateDoc";
+import { DeploymentTemplateDoc, IScopedParseResult } from "../documents/templates/DeploymentTemplateDoc";
 import { assert } from '../fixed_assert';
 import * as TLE from "../language/expressions/TLE";
 import * as Json from "../language/json/JSON";
@@ -28,10 +28,10 @@ export class ReferenceInVariableDefinitionsVisitor extends Json.Visitor {
     public visitStringValue(value: Json.StringValue): void {
         assert(value, "Cannot visit a null or undefined Json.StringValue.");
 
-        const tleParseResult: TLE.TleParseResult = this._deploymentTemplate.getTLEParseResultFromJsonStringValue(value);
-        if (tleParseResult.expression) {
+        const tleParseResult: IScopedParseResult = this._deploymentTemplate.getTLEParseResultFromJsonStringValue(value);
+        if (tleParseResult.parseResult.expression) {
             const tleVisitor = new ReferenceInVariableDefinitionTLEVisitor();
-            tleParseResult.expression.accept(tleVisitor);
+            tleParseResult.parseResult.expression.accept(tleVisitor);
 
             const jsonValueStartIndex: number = value.startIndex;
             for (const tleReferenceSpan of tleVisitor.referenceSpans) {

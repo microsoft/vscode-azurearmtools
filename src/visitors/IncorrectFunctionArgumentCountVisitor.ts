@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { isNullOrUndefined } from "util";
+import { TemplateScope } from "../documents/templates/scopes/TemplateScope";
 import { UserFunctionNamespaceDefinition } from "../documents/templates/UserFunctionNamespaceDefinition";
 import { assert } from "../fixed_assert";
 import * as assets from "../language/expressions/AzureRMAssets";
@@ -16,7 +17,7 @@ import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 export class IncorrectFunctionArgumentCountVisitor extends Visitor {
     private _errors: IncorrectArgumentsCountIssue[] = [];
 
-    constructor(private _tleFunctions: assets.FunctionsMetadata) {
+    constructor(private readonly _scope: TemplateScope, private readonly _tleFunctions: assets.FunctionsMetadata) {
         super();
     }
 
@@ -36,7 +37,7 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
 
         if (tleFunction.namespaceToken) {
             const namespaceName: string = tleFunction.namespaceToken.stringValue.toString();
-            const nsDefinition: UserFunctionNamespaceDefinition | undefined = tleFunction.scope.getFunctionNamespaceDefinition(namespaceName);
+            const nsDefinition: UserFunctionNamespaceDefinition | undefined = this._scope.getFunctionNamespaceDefinition(namespaceName);
 
             // If not found, will be handled by the UnrecognizedFunctionVisitor visitor
             if (!nsDefinition) {
@@ -97,8 +98,8 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
         return `argument${argumentCount === 1 ? "" : "s"}`;
     }
 
-    public static visit(tleValue: Value | undefined, tleFunctions: assets.FunctionsMetadata): IncorrectFunctionArgumentCountVisitor {
-        const visitor = new IncorrectFunctionArgumentCountVisitor(tleFunctions);
+    public static visit(scope: TemplateScope, tleValue: Value | undefined, tleFunctions: assets.FunctionsMetadata): IncorrectFunctionArgumentCountVisitor {
+        const visitor = new IncorrectFunctionArgumentCountVisitor(scope, tleFunctions);
         if (tleValue) {
             tleValue.accept(visitor);
         }

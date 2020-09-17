@@ -14,7 +14,7 @@ import { ResolvableCodeLens } from '../DeploymentDocument';
 import { IParameterDefinition } from '../parameters/IParameterDefinition';
 import { IParameterValuesSource } from '../parameters/IParameterValuesSource';
 import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSourceProvider';
-import { getRelativeParameterFilePath } from '../parameters/parameterFiles';
+import { getRelativeParameterFilePath } from "../parameters/parameterFilePaths";
 import { TemplateScope, TemplateScopeKind } from './scopes/TemplateScope';
 import { TopLevelTemplateScope } from './scopes/templateScopes';
 

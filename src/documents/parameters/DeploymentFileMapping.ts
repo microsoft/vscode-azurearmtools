@@ -8,7 +8,7 @@ import { ConfigurationTarget, Uri } from 'vscode';
 import { configKeys } from '../../constants';
 import { normalizePath } from '../../util/normalizePath';
 import { IConfiguration } from '../../vscodeIntegration/Configuration';
-import { getRelativeParameterFilePath, resolveParameterFilePath } from './parameterFiles';
+import { getRelativeParameterFilePath, resolveParameterFilePath } from './parameterFilePaths';
 
 interface IMapping {
     // Path using same casing as specified (but /.. and double slashes normalized).

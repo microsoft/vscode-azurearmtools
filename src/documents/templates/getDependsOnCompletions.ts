@@ -6,7 +6,7 @@
 import { MarkdownString } from "vscode";
 import { templateKeys } from "../../constants";
 import { assert } from "../../fixed_assert";
-import { isTleExpression } from "../../language/expressions/TLE";
+import { isTleExpression } from "../../language/expressions/isTleExpression";
 import * as Json from "../../language/json/JSON";
 import { ContainsBehavior, Span } from "../../language/Span";
 import { isSingleQuoted, removeSingleQuotes } from "../../util/strings";

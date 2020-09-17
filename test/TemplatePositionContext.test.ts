@@ -276,7 +276,8 @@ suite("TemplatePositionContext", () => {
         test("with characterIndex at the start of a non-TLE QuotedString", () => {
             let dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId);
             let pc = dt.getContextFromDocumentCharacterIndex(2, undefined);
-            assert.deepStrictEqual(TLE.Parser.parse("'a'", dt.topLevelScope), pc.tleInfo!.tleParseResult);
+            const parseResult = TLE.Parser.parse("'a'");
+            assert.deepStrictEqual(parseResult, pc.tleInfo!.tleParseResult);
         });
 
         test("with characterIndex at the start of a closed TLE QuotedString", () => {
