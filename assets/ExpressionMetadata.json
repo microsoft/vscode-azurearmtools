@@ -330,6 +330,12 @@
             "maximumArguments": 2
         },
         {
+            "name": "list",
+            "expectedUsage": "list(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Performs a GET call to a REST API on the given resource. The function arguments and the returned data depend on the resource type. See https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#valid-uses.",
+            "minimumArguments": 2
+        },
+        {
             "name": "listAccountSas",
             "expectedUsage": "listAccountSas(resourceName\/resourceIdentifier, apiVersion, requestContent)",
             "description": "Creates and returns a SAS token with the specified permissions and expiry from the requestContent. The requestContent object must contain the signedServices, signedResourceTypes, signedPermission and signedExpiry properties.",
