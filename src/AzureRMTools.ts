@@ -1294,9 +1294,10 @@ export class AzureRMTools {
     }
 
     private async onPeekResources(actionContext: IActionContext, args: IPeekResourcesArgs): Promise<void> {
-        // Show the references
+        // Set telemetry properties
+        Object.assign(actionContext.telemetry.properties, args.telemetryProperties ?? {});
 
-        //asdf telemetry
+        // Show the references
         await vscode.commands.executeCommand(
             'editor.action.showReferences',
             args.source.uri,

@@ -31,7 +31,7 @@ export abstract class ParentOrChildCodeLens extends ResolvableCodeLens {
         super(scope, sourceResource.resourceObject.span);
     }
 
-    protected resolveCore(title: string, targets: IJsonResourceInfo[]): boolean {
+    protected resolveCore(title: string, targets: IJsonResourceInfo[], kind: 'parent' | 'children'): boolean {
         if (targets.length > 0) {
             const targetLocations = targets.map(resInfo =>
                 new Location(
@@ -45,7 +45,11 @@ export abstract class ParentOrChildCodeLens extends ResolvableCodeLens {
                     [
                         <IPeekResourcesArgs>{
                             source: { uri: this.scope.document.documentUri, range: this.range },
-                            targets: targetLocations
+                            targets: targetLocations,
+                            telemetryProperties: {
+                                kind,
+                                targetCount: String(targets.length)
+                            }
                         }
                     ]
             };
@@ -81,7 +85,7 @@ export class ChildrenCodeLens extends ParentOrChildCodeLens {
             title = "No children";
         }
 
-        return super.resolveCore(title, children);
+        return super.resolveCore(title, children, 'children');
     }
 }
 
@@ -103,6 +107,6 @@ export class ParentCodeLens extends ParentOrChildCodeLens {
             title = "No parent";
         }
 
-        return super.resolveCore(title, parent ? [parent] : []);
+        return super.resolveCore(title, parent ? [parent] : [], 'parent');
     }
 }
