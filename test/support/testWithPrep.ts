@@ -47,7 +47,9 @@ export function testWithPrep(expectation: string, preparations?: ITestPreparatio
                 try {
                     return await callback.call(this);
                 } catch (error) {
-                    if ((<{ message?: string }>error).message === 'sync skip') { // test skipped
+                    if ((<{ message?: string }>error).message === 'sync skip') {
+                        // test skipped
+                    } else {
                         throw error;
                     }
                 }
