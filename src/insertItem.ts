@@ -143,7 +143,7 @@ export class InsertItem {
         return template.topLevelValue?.getPropertyValue(templatePart);
     }
 
-    public async insertParameterWithDefaultValue(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext, name: string, value: string, description: string): Promise<string> {
+    public async insertParameterWithDefaultValue(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext, name: string, value: string, description: string, options?: { undoStopBefore: boolean; undoStopAfter: boolean }): Promise<string> {
         let parameter: Parameter = {
             type: "string",
             defaultValue: value
@@ -161,7 +161,8 @@ export class InsertItem {
             name,
             context,
             setCursor: false,
-            reveal: false
+            reveal: false,
+            options: options
         });
         return name;
     }
@@ -247,7 +248,8 @@ export class InsertItem {
             name,
             context,
             setCursor = true,
-            reveal = true
+            reveal = true,
+            options = { undoStopBefore: true, undoStopAfter: true }
         }: {
             template: DeploymentTemplate;
             textEditor: vscode.TextEditor;
@@ -257,6 +259,7 @@ export class InsertItem {
             context: IActionContext;
             setCursor?: boolean;
             reveal?: boolean;
+            options?: { undoStopBefore: boolean; undoStopAfter: boolean };
         }): Promise<void> {
         let templatePart = this.getTemplateObjectPart(template, part);
         if (!templatePart) {
@@ -274,7 +277,8 @@ export class InsertItem {
                 name: part,
                 indentLevel: 1,
                 setCursor,
-                reveal
+                reveal,
+                options
             });
         } else {
             await this.insertInObjectHelper({
@@ -284,7 +288,8 @@ export class InsertItem {
                 name,
                 indentLevel: undefined,
                 setCursor,
-                reveal
+                reveal,
+                options
             });
         }
     }
@@ -301,7 +306,8 @@ export class InsertItem {
             name,
             indentLevel = 2,
             setCursor = true,
-            reveal = true
+            reveal = true,
+            options = { undoStopBefore: true, undoStopAfter: true }
         }: {
             templatePart: Json.ObjectValue;
             textEditor: vscode.TextEditor;
@@ -311,6 +317,7 @@ export class InsertItem {
             indentLevel?: number;
             setCursor?: boolean;
             reveal?: boolean;
+            options?: { undoStopBefore: boolean; undoStopAfter: boolean };
         }): Promise<number> {
         let isFirstItem = templatePart.properties.length === 0;
         let startText = isFirstItem ? '' : ',';
@@ -320,7 +327,7 @@ export class InsertItem {
         let endText = isFirstItem ? `\r\n${tabs}` : ``;
         let text = typeof (data) === 'object' ? JSON.stringify(data, null, '\t') : `"${data}"`;
         let indentedText = this.indent(`\r\n"${name}": ${text}`, indentLevel);
-        return await this.insertText(textEditor, index, `${startText}${indentedText}${endText}`, setCursor, reveal);
+        return await this.insertText(textEditor, index, `${startText}${indentedText}${endText}`, setCursor, reveal, options);
     }
 
     private async insertVariable(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
@@ -335,7 +342,7 @@ export class InsertItem {
         });
     }
 
-    public async insertVariableWithValue(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext, name: string, value: string): Promise<void> {
+    public async insertVariableWithValue(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext, name: string, value: string, options?: { undoStopBefore: boolean; undoStopAfter: boolean }): Promise<void> {
         await this.insertInObject({
             template,
             textEditor,
@@ -344,7 +351,8 @@ export class InsertItem {
             name,
             context,
             setCursor: false,
-            reveal: false
+            reveal: false,
+            options: options
         });
     }
 
@@ -546,12 +554,14 @@ export class InsertItem {
      * @param textEditor The text editor to insert the text into.
      * @param index The document index where to insert the text.
      * @param text The text to be inserted.
+     * @param setCursor If the cursor should be set
+     * @param options If undostops should be created before and after the edit
      * @returns The document index of the cursor after the text has been inserted.
      */
-    private async insertText(textEditor: vscode.TextEditor, index: number, text: string, setCursor: boolean = true, reveal: boolean = true): Promise<number> {
+    private async insertText(textEditor: vscode.TextEditor, index: number, text: string, setCursor: boolean = true, reveal: boolean = true, options?: { undoStopBefore: boolean; undoStopAfter: boolean }): Promise<number> {
         text = this.formatText(text, textEditor);
         let pos = textEditor.document.positionAt(index);
-        await textEditor.edit(builder => builder.insert(pos, text));
+        await textEditor.edit(builder => builder.insert(pos, text), options);
         if (reveal) {
             let endPos = textEditor.document.positionAt(index + text.length);
             textEditor.revealRange(new vscode.Range(pos, endPos), vscode.TextEditorRevealType.Default);
