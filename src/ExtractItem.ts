@@ -18,8 +18,8 @@ export class ExtractItem {
         let name = await this.ui.showInputBox({ prompt: "Name of parameter?" });
         const leaveEmpty = "Press 'Enter' if you do not want to add a description.";
         let description = await this.ui.showInputBox({ prompt: "Description?", placeHolder: leaveEmpty });
-        await editor.edit(builder => builder.replace(selection, `[parameters('${name}')]`));
-        await new InsertItem(this.ui).insertParameterWithDefaultValue(template, editor, context, name, selectedText, description);
+        await editor.edit(builder => builder.replace(selection, `[parameters('${name}')]`), { undoStopBefore: true, undoStopAfter: false });
+        await new InsertItem(this.ui).insertParameterWithDefaultValue(template, editor, context, name, selectedText, description, { undoStopBefore: false, undoStopAfter: true });
         editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.end), vscode.TextEditorRevealType.Default);
     }
 
@@ -27,8 +27,8 @@ export class ExtractItem {
         let selection = this.expandSelectionToSquareBrackets(editor.selection, editor.document);
         let selectedText = editor.document.getText(selection);
         let name = await this.ui.showInputBox({ prompt: "Name of variable?" });
-        await editor.edit(builder => builder.replace(selection, `[variables('${name}')]`));
-        await new InsertItem(this.ui).insertVariableWithValue(template, editor, context, name, selectedText);
+        await editor.edit(builder => builder.replace(selection, `[variables('${name}')]`), { undoStopBefore: true, undoStopAfter: false });
+        await new InsertItem(this.ui).insertVariableWithValue(template, editor, context, name, selectedText, { undoStopBefore: false, undoStopAfter: true });
         editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.end), vscode.TextEditorRevealType.Default);
     }
 
