@@ -48,6 +48,7 @@ export namespace configKeys {
     export const parameterFiles = 'parameterFiles';
     export const enableCodeLens = 'codelens.enable';
     export const codeLensForParameters = 'codelens.parameters';
+    export const codeLensForResourceParentsAndChildren = 'codelens.resourceChildren';
 }
 
 export namespace globalStateKeys {

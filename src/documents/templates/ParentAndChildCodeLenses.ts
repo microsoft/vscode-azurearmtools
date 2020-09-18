@@ -1,8 +1,11 @@
-import { Location } from "vscode";
 // ---------------------------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See License.md in the project root for license information.
 // ---------------------------------------------------------------------------------------------
+
+import { Location } from "vscode";
+import { configKeys } from "../../constants";
+import { ext } from "../../extensionVariables";
 import { sortArrayByProperty } from "../../util/sortArrayByProperty";
 import { IPeekResourcesArgs } from "../../vscodeIntegration/commandArguments";
 import { getVSCodeRangeFromSpan } from "../../vscodeIntegration/vscodePosition";
@@ -11,6 +14,10 @@ import { IJsonResourceInfo } from "./getResourcesInfo";
 import { TemplateScope } from "./scopes/TemplateScope";
 
 export function getParentAndChildCodeLenses(scope: TemplateScope, infos: IJsonResourceInfo[]): ResolvableCodeLens[] {
+    if (!ext.configuration.get<boolean>(configKeys.codeLensForResourceParentsAndChildren)) {
+        return [];
+    }
+
     const lenses: ResolvableCodeLens[] = [];
 
     for (const resource of infos) {

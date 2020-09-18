@@ -141,12 +141,17 @@
                 },
                 "azureResourceManagerTools.codelens.enable": {
                     "type": "boolean",
-                    "description": "Enables or disables all code lens features",
+                    "description": "Enables or disables all Code Lens features",
                     "default": true
                 },
                 "azureResourceManagerTools.codelens.parameters": {
                     "type": "boolean",
-                    "description": "Enables code lens for parameter definitions and values",
+                    "description": "Enables Code Lens for parameter definitions and values",
+                    "default": true
+                },
+                "azureResourceManagerTools.codelens.resourceChildren": {
+                    "type": "boolean",
+                    "description": "Enables Code Lens that displays the parent and children each resource",
                     "default": true
                 }
             }

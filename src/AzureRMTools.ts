@@ -7,7 +7,6 @@
 
 // CONSIDER: Refactor this file
 
-import * as assert from "assert";
 import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
@@ -29,6 +28,7 @@ import { getQuickPickItems, sortTemplate } from "./documents/templates/sortTempl
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, templateDocumentSelector, templateOrParameterDocumentSelector } from "./documents/templates/supported";
 import { TemplateSectionType } from "./documents/templates/TemplateSectionType";
 import { ext } from "./extensionVariables";
+import { assert } from './fixed_assert';
 import * as TLE from "./language/expressions/TLE";
 import { Issue } from "./language/Issue";
 import * as Json from "./language/json/JSON";
@@ -1169,7 +1169,7 @@ export class AzureRMTools {
 
             if (codeLens instanceof ResolvableCodeLens) {
                 if (await codeLens.resolve()) {
-                    assert(codeLens.command?.command && codeLens.command.title, "CodeLens wasn't resolved");
+                    assert(codeLens.command?.title, "CodeLens wasn't resolved");
                     return codeLens;
                 }
             } else {
