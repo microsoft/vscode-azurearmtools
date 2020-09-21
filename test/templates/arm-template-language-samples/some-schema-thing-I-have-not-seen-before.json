@@ -1,0 +1,38 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "locationAzureSearch": {
+            "type": "string",
+            "defaultValue": "westeurope"
+        },
+        "skuAzureSearch": {
+            "type": "string",
+            "defaultValue": "basic"
+        },
+        "searchHostingMode": {
+            "type": "string",
+            "defaultValue": "Default"
+        }
+    },
+    "variables": {
+        "azureSearchName": "test"
+    },
+    "resources": [
+        {
+            "name": "[variables('azureSearchName')]",
+            "type": "Microsoft.Search/searchServices",
+            "apiVersion": "2015-08-19",
+            "location": "[parameters('locationAzureSearch')]",
+            "tags": {},
+            "properties": {
+                "replicaCount": 1,
+                "partitionCount": 1,
+                "hostingMode": "[parameters('searchHostingMode')]"
+            },
+            "sku": {
+                "name": "[parameters('skuAzureSearch')]"
+            }
+        }
+    ]
+}

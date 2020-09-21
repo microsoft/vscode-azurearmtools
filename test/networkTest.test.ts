@@ -15,7 +15,7 @@ function hasInternetConnection(): Promise<boolean> {
     if (internetConnected === undefined) {
         // tslint:disable-next-line:typedef
         internetConnected = new Promise<boolean>((resolve, reject) => {
-            dns.lookup("www.microsoft.com", (error: Error, address: string, family: number) => {
+            dns.lookup("www.microsoft.com", (error: Error | null, address: string, family: number) => {
                 resolve(!error);
             });
         });

@@ -1,0 +1,44 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "location": {
+        "value": "southcentralus"
+      },
+      "vaultName": {
+        "value": "vaultName"
+      },
+      "secretName": {
+        "value": "secretName"
+      },
+      "virtualNetworksName": {
+        "value": "vnetName"
+      },
+      "subnetName": {
+        "value": "subnetName"
+      },
+  
+      "storageAccountsName": {
+        "value": "storageAccountsName"
+      },
+      
+      "galleriesExternalId": {
+        "value": "galleriesExternalId"
+      },
+      "GalleryImageDefinitionName": {
+        "value": "GalleryImageDefinitionName"
+      },
+      "adminUsername": {
+        "value": "adminUsername"
+      },
+      "virtualMachinesName": {
+        "value": "virtualMachinesName"
+      },
+      "virtualMachinesSize": {
+        "value": "virtualMachinesSize"
+      },
+      "vmCount": {
+        "value": 1
+      }
+    }
+  }

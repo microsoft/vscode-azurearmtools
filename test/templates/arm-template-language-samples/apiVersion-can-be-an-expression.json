@@ -1,0 +1,555 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Deployment location"
+      }
+    },
+    "clusterVmSize": {
+      "type": "string",
+      "metadata": {
+        "description": "Type of the VM Size"
+      }
+    },
+    "firstName": {
+      "type": "string",
+      "metadata": {
+        "description": "First Name"
+      }
+    },
+    "lastName": {
+      "type": "string",
+      "metadata": {
+        "description": "Last Name"
+      }
+    },
+    "email": {
+      "type": "string",
+      "metadata": {
+        "description": "Email"
+      }
+    },
+    "password": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password"
+      }
+    },
+    "jobTitle": {
+      "type": "string",
+      "metadata": {
+        "description": "jobTitle"
+      }
+    },
+    "phone": {
+      "type": "string",
+      "metadata": {
+        "description": "Phone"
+      }
+    },
+    "numberOfEmployees": {
+      "type": "string",
+      "metadata": {
+        "description": "Number of Employees"
+      }
+    },
+    "country": {
+      "type": "string",
+      "metadata": {
+        "description": "Country"
+      }
+    },
+    "state": {
+      "type": "string",
+      "metadata": {
+        "description": "State/Province"
+      }
+    },
+    "company": {
+      "type": "string",
+      "metadata": {
+        "description": "Company"
+      }
+    },
+    "industry": {
+      "type": "string",
+      "metadata": {
+        "description": "Industry"
+      }
+    },
+    "primaryNeed": {
+      "type": "string",
+      "metadata": {
+        "description": "Primary Need"
+      }
+    },
+    "timeFrame": {
+      "type": "string",
+      "metadata": {
+        "description": "Time frame for usage"
+      }
+    },
+    "diagStorageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of diagonistics storage account"
+      }
+    },
+    "diagStorageAccountNewOrExisting": {
+      "type": "string",
+      "metadata": {
+        "description": "Indicates whether the Diagonistics storage account is new or existing"
+      }
+    },
+    "diagStorageAccountType": {
+      "type": "string",
+      "metadata": {
+        "description": "Type of the Diagonistics storage account created"
+      },
+      "defaultValue": "Standard_LRS"
+    },
+    "diagExistingStorageAccountRG": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource Group of the Existing Storage Account for Diagonistics"
+      },
+      "defaultValue": ""
+    },
+    "existingIPRGName": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource Group of the Existing Public IP."
+      },
+      "defaultValue": ""
+    },
+    "publicIPAddressName": {
+      "type": "string",
+      "metadata": {
+        "description": "Virtual network name for the cluster"
+      },
+      "defaultValue": "kwpublicIP"
+    },
+    "publicIPNewOrExisting": {
+      "type": "string",
+      "defaultValue": "new",
+      "allowedValues": [
+        "new",
+        "existing"
+      ],
+      "metadata": {
+        "description": "Indicates whether the public IP is new or existing"
+      }
+    },
+    "virtualNetworkName": {
+      "type": "string",
+      "metadata": {
+        "description": "Virtual network name for the cluster"
+      },
+      "defaultValue": "kiteworksvnet"
+    },
+    "vnetNewOrExisting": {
+      "type": "string",
+      "defaultValue": "new",
+      "allowedValues": [
+        "new",
+        "existing"
+      ],
+      "metadata": {
+        "description": "Identifies whether to use new or existing Virtual Network"
+      }
+    },
+    "virtualNetworkExistingRGName": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "If using existing VNet, specifies the resource group for the existing VNet"
+      }
+    },
+    "vnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/23",
+      "metadata": {
+        "description": "IP address in CIDR for virtual network"
+      }
+    },
+    "subnetName": {
+      "type": "string",
+      "defaultValue": "kwsubnet",
+      "metadata": {
+        "description": "subnet name for the MySQL nodes"
+      }
+    },
+    "subnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/24",
+      "metadata": {
+        "description": "IP address in CIDR for subnet"
+      }
+    },
+    "baseUrl": {
+      "type": "string",
+      "metadata": {
+        "description": "The base URL for dependent assets",
+        "artifactsBaseUrl": ""
+      },
+      "defaultValue": "https://gallery.azure.com/artifact/20151001/accellion.kiteworks-by-accellion-enterprise-evaluationoneboxeval.1.0.2/Artifacts"
+    }
+  },
+  "variables": {
+    // "comment": "admin account below is hardcoded on-purpose. During the bootup of the instance, a script removes this user from the system",
+    "adminUserName": "accadmin",
+    "adminPassword": "[concat('!1', toLower(substring(uniqueString(resourceGroup().id), 1, 1)), toUpper(substring(uniqueString(resourceGroup().id), 2, 1)), parameters('password'))]",
+    "templateApiVersion": "2016-02-01",
+    "nicName": "[concat(variables('uniqueId'),'networkInterface1')]",
+    "publicIPAddressType": "Static",
+    "uniqueId": "[uniqueString(resourceGroup().id)]",
+    "vmName": "[concat(variables('uniqueId'),'-h0')]",
+    // "vmStorageAccountContainerName": "vhds",
+    "secret": "\\xfd\\xc0\\x84\\x9aEug\\x1b\\xc1\\xc5\\xc1.\\x8a\\xc4\\x0ck\\xb7\\x06\\x00r\\x80\\xae\\xc9p\\xdc\\x06\\xb1\\x91\\xe0\\x8d\\xcd\\x921\\xdem\\x81\\x8cW\\xce\\x9a\\xf0\\x8a1\\x86\\x05\\xf0I\\x91\\xe7L\\xff\\xf3\\x0e=7\"\\x97?\\xa5\\x12\\xab%\\xdf\\xa0",
+    "trustedProxyUrl": "B\\xbc\\xbb\\xfcm\\xdeU\\xb5\"\\x19\\xa9\\xf8\\x0f\\xcd\\xa4f\\x85n]iP\\xfc\\xe8<\\xd7O\\xf7\\xbc\\xba\\xbfS\\x1f\\xc1\\x98\\x9bM\\xc7;\\xa8\\xe5\\x88\\xd4\\xfe\\xc9\\x9c\\xde\\x86\\x87\\xcf\\xdcH +\\xb3\\xa5\\x88\\x08LzY\\xf4\\xaf\\x01\\xbe",
+    "azureForm": "azure_enterprise_eval",
+    "publicIPAdressSetupURL": "[concat(parameters('baseUrl'),'/publicIPeval-',parameters('publicIPNewOrExisting'),'.json')]",
+    "virtualNetworkTemplateUrl": "[concat(parameters('baseUrl'), '/vnet-', parameters('vNetNewOrExisting'), '.json')]",
+    "scriptLocation": "[concat(parameters('baseUrl'), '/writeCustomData.py')]",
+    "networkSettings": {
+      "virtualNetworkName": "[parameters('virtualNetworkName')]",
+      "virtualNetworkExistingRGName": "[parameters('virtualNetworkExistingRGName')]",
+      "virtualNetworkAddressPrefix": "[parameters('vnetAddressPrefix')]",
+      "subnet": {
+        "name": "[parameters('subnetName')]",
+        "prefix": "[parameters('subnetAddressPrefix')]",
+        "vnet": "[parameters('virtualNetworkName')]"
+      }
+    },
+    "nsgName": "securityGroup",
+    "nsgId": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]",
+    "diagStorageAccountSetupURL": "[concat(parameters('baseUrl'),'/storageAccount-',parameters('diagStorageAccountNewOrExisting'), '.json')]",
+    "varclusterNodeCount": "[base64('1')]",
+    "varclusterVmSize": "[base64(parameters('clusterVmSize'))]",
+    "varlocation": "[base64(parameters('location'))]",
+    "varfirstName": "[base64(parameters('firstName'))]",
+    "varlastName": "[base64(parameters('lastName'))]",
+    "varemail": "[base64(parameters('email'))]",
+    "varpassword": "[base64(parameters('password'))]",
+    "varphone": "[base64(parameters('phone'))]",
+    "varjobTitle": "[base64(parameters('jobTitle'))]",
+    "varnumberOfEmployees": "[base64(parameters('numberOfEmployees'))]",
+    "varcountry": "[base64(parameters('country'))]",
+    "varstate": "[base64(parameters('state'))]",
+    "varcompany": "[base64(parameters('company'))]",
+    "varindustry": "[base64(parameters('industry'))]",
+    "varprimaryNeed": "[base64(parameters('primaryNeed'))]",
+    "vartimeFrame": "[base64(parameters('timeFrame'))]",
+    "varvmName": "[base64(variables('vmName'))]",
+    "varsecret": "[base64(variables('secret'))]",
+    "vartrustedProxyUrl": "[base64(variables('trustedProxyUrl'))]",
+    "varazureForm": "[base64(variables('azureForm'))]",
+    "varcustomData": "[base64(concat('mycomputername=',variables('varvmName'),',company=',variables('varcompany'),',clusterNodeCount=',variables('varclusterNodeCount'),',clusterVMSize=',variables('varclusterVMSize'), ',clusterVMSize=',variables('varclusterVMSize'),',location=',variables('varlocation'), ',firstName=',variables('varfirstName'),',lastName=',variables('varlastName'),',email=',variables('varemail'),',password=',variables('varpassword'),',phone=',variables('varphone'),',jobTitle=',variables('varjobTitle'),',numberOfEmployees=',variables('varnumberOfEmployees'),',country=',variables('varcountry'),',industry=',variables('varindustry'),',primaryNeed=',variables('varprimaryNeed'),',timeFrame=',variables('vartimeFrame'),',secret=',variables('varsecret'),',trustedProxyUrl=',variables('vartrustedProxyUrl'), ',azure_form=', variables('varazureForm'), ',state=', variables('varstate') ))]"
+  },
+  "resources": [
+    {
+      "name": "diagStorageAccountSetup",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "[variables('templateApiVersion')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('diagStorageAccountSetupURL')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "storageAccountType": {
+            "value": "[parameters('diagStorageAccountType')]"
+          },
+          "storageAccountName": {
+            "value": "[parameters('diagStorageAccountName')]"
+          },
+          "storageAccountExistingRG": {
+            "value": "[parameters('diagExistingStorageAccountRG')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "publicIPSetup",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "[variables('templateApiVersion')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('publicIPAdressSetupURL')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "publicIPAddressName": {
+            "value": "[parameters('publicIPAddressName')]"
+          },
+          "publicIPAddressType": {
+            "value": "[variables('publicIPAddressType')]"
+          },
+          "publicIpRGName": {
+            "value": "[parameters('existingIPRGName')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "vNetSetup",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "[variables('templateAPIVersion')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('virtualNetworkTemplateUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "networkSettings": {
+            "value": "[variables('networkSettings')]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "[variables('nicName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2016-07-01",
+      "dependsOn": [
+        "Microsoft.Resources/deployments/vNetSetup",
+        "Microsoft.Resources/deployments/publicIPSetup",
+        "[variables('nsgId')]"
+      ],
+      "location": "[parameters('location')]",
+      "properties": {
+        "networkSecurityGroup": {
+          "id": "[variables('nsgId')]"
+        },
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[reference('Microsoft.Resources/deployments/publicIPSetup').outputs.resourceId.value]"
+              },
+              "subnet": {
+                "id": "[reference('Microsoft.Resources/deployments/vNetSetup', variables('templateApiVersion')).outputs.subnetRef.value]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2016-07-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('nsgName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "http",
+            "properties": {
+              "description": "Allow HTTP",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "80",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 106,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "https",
+            "properties": {
+              "description": "Allow HTTPS",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "ssh",
+            "properties": {
+              "description": "Allow SSH",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 107,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "MySQL",
+            "properties": {
+              "description": "Allow Mysql",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3306",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 104,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "MariaDB-Galera-SST",
+            "properties": {
+              "description": "Allow SST traffic",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "4444",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 103,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "MariaDB-Galera-IST",
+            "properties": {
+              "description": "Allow IST traffic",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "4568",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 102,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "MariaDB-Galera-Cluster",
+            "properties": {
+              "description": "Allow Galera Cluster communication",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "4567",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 101,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "kiteworks-EC-port",
+            "properties": {
+              "description": "Enterprise connect",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "8082",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 105,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[variables('vmName')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2016-04-30-preview",
+      "dependsOn": [
+        "Microsoft.Resources/deployments/diagStorageAccountSetup",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+      ],
+      "location": "[parameters('location')]",
+      "plan": {
+        "name": "kiteworks_vm_byol",
+        "publisher": "accellion",
+        "product": "kiteworks-by-accellion"
+      },
+      "properties": {
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true, // Changed from "true"
+            "storageUri": "[concat('http://', parameters('diagStorageAccountName'),'.blob.core.windows.net')]"
+          }
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('clusterVmSize')]"
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('nicName'))]"
+            }
+          ]
+        },
+        "osProfile": {
+          "adminPassword": "[variables('adminPassword')]",
+          "adminUsername": "[variables('adminUsername')]",
+          "computerName": "[variables('vmName')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "accellion",
+            "offer": "kiteworks-by-accellion",
+            "sku": "kiteworks_vm_byol",
+            "version": "latest"
+          },
+          "osDisk": {
+            "caching": "ReadWrite",
+            "createOption": "FromImage",
+            "name": "[concat(variables('vmName'),'-osDisk')]",
+            "managedDisk": {
+              "storageAccountType": "Premium_LRS"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "[concat(variables('vmName'), '/printCustomData')]",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "apiVersion": "2016-03-30",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
+      ],
+      "location": "[parameters('location')]",
+      "properties": {
+        "publisher": "Microsoft.OSTCExtensions",
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "1.5",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "[variables('scriptLocation')]"
+          ]
+        },
+        "protectedSettings": {
+          "commandToExecute": "[concat('/opt/bin/python', ' ', 'writeCustomData.py', ' ', variables('varcustomData'))]"
+        }
+      }
+    }
+  ]
+}

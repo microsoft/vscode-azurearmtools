@@ -46,14 +46,6 @@ suite("Duration", () => {
     });
 
     suite("plus(Duration)", () => {
-        test("With null", () => {
-            assert.throws(() => { Duration.milliseconds(1).plus(null); });
-        });
-
-        test("With undefined", () => {
-            assert.throws(() => { Duration.milliseconds(1).plus(undefined); });
-        });
-
         test("With zero", () => {
             assert.deepEqual(Duration.milliseconds(1), Duration.milliseconds(1).plus(Duration.zero));
         });
@@ -64,14 +56,6 @@ suite("Duration", () => {
     });
 
     suite("dividedBy(number)", () => {
-        test("With null", () => {
-            assert.throws(() => { Duration.milliseconds(20).dividedBy(null); });
-        });
-
-        test("With undefined", () => {
-            assert.throws(() => { Duration.milliseconds(20).dividedBy(undefined); });
-        });
-
         test("With zero", () => {
             assert.throws(() => { Duration.milliseconds(20).dividedBy(0); });
         });
@@ -86,14 +70,6 @@ suite("Duration", () => {
     });
 
     suite("lessThanOrEqualTo(Duration)", () => {
-        test("With null", () => {
-            assert.deepEqual(false, Duration.milliseconds(20).lessThanOrEqualTo(null));
-        });
-
-        test("With undefined", () => {
-            assert.deepEqual(false, Duration.milliseconds(20).lessThanOrEqualTo(undefined));
-        });
-
         test("With less than duration", () => {
             assert.deepEqual(false, Duration.milliseconds(20).lessThanOrEqualTo(Duration.milliseconds(19)));
         });

@@ -100,6 +100,13 @@
             "maximumArguments": 1
         },
         {
+            "name": "dateTimeAdd",
+            "expectedUsage": "dateTimeAdd(base, duration, [format])",
+            "description": "Adds a time duration to a base value. ISO 8601 format is expected.",
+            "minimumArguments": 2,
+            "maximumArguments": 3
+        },
+        {
             "name": "utcNow",
             "expectedUsage": "utcNow([format])",
             "description": "Returns the current (UTC) datetime value in the format provided. If no format is provided the ISO 8601 (yyyyMMddTHH:mm:ssZ) format will be used. This function may only be used as a defaultValue on a parameter.",
@@ -146,11 +153,69 @@
             "maximumArguments": 2
         },
         {
+            "name": "environment",
+            "expectedUsage": "environment()",
+            "description": "Returns information about the current cloud environment. The function returns an object that contains endpoints and other information specific to the cloud used for the deployment.  The properties in the returned object may differ based on the capabilities of the cloud.",
+            "minimumArguments": 0,
+            "maximumArguments": 0,
+            "returnValueMembers": [
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "gallery"
+                },
+                {
+                    "name": "graph"
+                },
+                {
+                    "name": "portal"
+                },
+                {
+                    "name": "graphAudience"
+                },
+                {
+                    "name": "activeDirectoryDataLake"
+                },
+                {
+                    "name": "batch"
+                },
+                {
+                    "name": "media"
+                },
+                {
+                    "name": "sqlManagement"
+                },
+                {
+                    "name": "vmImageAliasDoc"
+                },
+                {
+                    "name": "resourceManager"
+                },
+                {
+                    "name": "authentication"
+                },
+                {
+                    "name": "suffixes"
+                }
+            ]
+        },
+        {
             "name": "equals",
             "expectedUsage": "equals(arg1, arg2)",
             "description": "Checks whether two values equal each other.",
             "minimumArguments": 2,
             "maximumArguments": 2
+        },
+        {
+            "name": "extensionResourceId",
+            "expectedUsage": "extensionResourceId(resourceId, resourceType, resourceName1, [resourceName2]...)",
+            "description": "Returns the unique resource identifier of an extension resource. The resourceId parameter may be a resourceId of any scope or resourceId function. You use this function to create a resourceId for a given resource as required by a property value.",
+            "minimumArguments": 3,
+            "maximumArguments": null,
+            "behaviors": [
+                "usesResourceIdCompletions"
+            ]
         },
         {
             "name": "first",
@@ -265,6 +330,12 @@
             "maximumArguments": 2
         },
         {
+            "name": "list",
+            "expectedUsage": "list(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Performs a GET call to a REST API on the given resource. The function arguments and the returned data depend on the resource type. See https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#valid-uses.",
+            "minimumArguments": 2
+        },
+        {
             "name": "listAccountSas",
             "expectedUsage": "listAccountSas(resourceName\/resourceIdentifier, apiVersion, requestContent)",
             "description": "Creates and returns a SAS token with the specified permissions and expiry from the requestContent. The requestContent object must contain the signedServices, signedResourceTypes, signedPermission and signedExpiry properties.",
@@ -292,48 +363,17 @@
             ]
         },
         {
-            "name": "listKeys",
-            "expectedUsage": "listKeys(resourceName\/resourceIdentifier, apiVersion)",
-            "description": "Returns the keys of a storage account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primary (key[0]) and secondary key (key[1]).",
+            "name": "listAuthKeys",
+            "expectedUsage": "listAuthKeys(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Retrieves the authentication keys for a DataFactory Integration Runtime. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the available authkeys.",
             "minimumArguments": 2,
             "maximumArguments": 2,
             "returnValueMembers": [
                 {
-                    "name": "keys"
-                }
-            ]
-        },
-        {
-            "name": "listPackage",
-            "expectedUsage": "listPackage(resourceName\/resourceIdentifier, apiVersion)",
-            "description": "Lists the virtual network gateway package. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
-            "minimumArguments": 2,
-            "maximumArguments": 2
-        },
-        {
-            "name": "listConnectionStrings",
-            "expectedUsage": "listConnectionStrings(resourceName\/resourceIdentifier, apiVersion)",
-            "description": "Lists the connection strings for the specified Azure Cosmos DB database account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
-            "minimumArguments": 2,
-            "maximumArguments": 2,
-            "returnValueMembers": [
-                {
-                    "name": "connectionStrings"
-                }
-            ]
-        },
-        {
-            "name": "listCredentials",
-            "expectedUsage": "listCredentials(resourceName\/resourceIdentifier, apiVersion)",
-            "description": "Lists the login credentials for the specified container registry. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
-            "minimumArguments": 2,
-            "maximumArguments": 2,
-            "returnValueMembers": [
-                {
-                    "name": "username"
+                    "name": "authKey1"
                 },
                 {
-                    "name": "passwords"
+                    "name": "authKey2"
                 }
             ]
         },
@@ -365,6 +405,133 @@
             ]
         },
         {
+            "name": "listChannelWithKeys",
+            "expectedUsage": "listChannelWithKeys(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Lists a Channel registration for a Bot Service including secrets.  The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. Example: [listChannelWithKeys(resourceId('Microsoft.BotService/botServices/channels', parameters('botId'), 'DirectLineChannel'), '2018-07-12').properties.properties.sites[0].key]",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "resource"
+                },
+                {
+                    "name": "setting"
+                },
+                {
+                    "name": "id"
+                },
+                {
+                    "name": "location"
+                },
+                {
+                    "name": "properties"
+                },
+                {
+                    "name": "provisioningState"
+                },
+                {
+                    "name": "entityTag"
+                },
+                {
+                    "name": "changedTime"
+                }
+            ]
+        },
+        {
+            "name": "listClusterAdminCredential",
+            "expectedUsage": "listClusterAdminCredential(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Gets cluster admin credential of a managed cluster. Returns an array of objects with a 'name' and 'value' property. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "kubeconfigs"
+                }
+            ]
+        },
+        {
+            "name": "listConnectionStrings",
+            "expectedUsage": "listConnectionStrings(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Lists the connection strings for the specified Azure Cosmos DB database account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "connectionStrings"
+                }
+            ]
+        },
+        {
+            "name": "listCredentials",
+            "expectedUsage": "listCredentials(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Lists the login credentials for the specified container registry. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "username"
+                },
+                {
+                    "name": "passwords"
+                }
+            ]
+        },
+        {
+            "name": "listCredential",
+            "expectedUsage": "listCredential(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Gets the accessProfile for the specified role for a managed cluster. The properties object contains a 'kubeConfig' property. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "properties"
+                }
+            ]
+        },
+        {
+            "name": "listKeys",
+            "expectedUsage": "listKeys(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Returns the keys of a storage account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primary (key[0]) and secondary key (key[1]).",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "keys"
+                }
+            ]
+        },
+        {
+            "name": "listKeyValue",
+            "expectedUsage": "listKeyValue(resourceName\/resourceIdentifier, apiVersion, KeyLabelObject)",
+            "description": "Returns a value from the App Config store with Key/Label specified in the request. The KeyLabelObject parameter is a JSON object with the two properties: \"key\" and \"label\" as required by the values in the store.",
+            "minimumArguments": 3,
+            "maximumArguments": 3,
+            "returnValueMembers": [
+                {
+                    "name": "value"
+                }
+            ]
+        },
+        {
+            "name": "listPackage",
+            "expectedUsage": "listPackage(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Lists the virtual network gateway package. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2
+        },
+        {
+            "name": "listQueryKeys",
+            "expectedUsage": "listQueryKeys(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Returns the list of query API keys for the given Azure Search service. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. The function returns an object array with a 'name' and 'key' property for each member.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "value"
+                }
+            ]
+        },
+        {
             "name": "listSecrets",
             "expectedUsage": "listSecrets(resourceName\/resourceIdentifier, apiVersion)",
             "description": "List the secrets of a key vault. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
@@ -380,6 +547,18 @@
             "returnValueMembers": [
                 {
                     "name": "serviceSasToken"
+                }
+            ]
+        },
+        {
+            "name": "listSyncFunctionTriggerStatus",
+            "expectedUsage": "listSyncFunctionTriggerStatus(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Returns the status of a function trigger. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "status"
                 }
             ]
         },
@@ -501,9 +680,12 @@
         {
             "name": "resourceId",
             "expectedUsage": "resourceId([subscriptionId], [resourceGroupName], resourceType, resourceName1, [resourceName2]...)",
-            "description": "Returns the unique identifier of a resource. You use this function when the resource name is ambiguous or not provisioned within the same template.",
+            "description": "Returns the unique resource identifier of a resource group scoped resource. You use this function to create a resourceId for a given resource as required by a property value.",
             "minimumArguments": 2,
-            "maximumArguments": null
+            "maximumArguments": null,
+            "behaviors": [
+                "usesResourceIdCompletions"
+            ]
         },
         {
             "name": "skip",
@@ -562,6 +744,16 @@
             ]
         },
         {
+            "name": "subscriptionResourceId",
+            "expectedUsage": "subscriptionResourceId([subscriptionId], resourceType, resourceName1, [resourceName2]...)",
+            "description": "Returns the unique resource identifier of a subscription scoped resource. You use this function to create a resourceId for a given resource as required by a property value.",
+            "minimumArguments": 2,
+            "maximumArguments": null,
+            "behaviors": [
+                "usesResourceIdCompletions"
+            ]
+        },
+        {
             "name": "substring",
             "expectedUsage": "substring(stringToParse, startIndex, length)",
             "description": "Returns a substring that starts at the specified character position and contains the specified number of characters.",
@@ -574,6 +766,16 @@
             "description": "Returns an array or string with the specified number of elements or characters from the start of the array or string.",
             "minimumArguments": 2,
             "maximumArguments": 2
+        },
+        {
+            "name": "tenantResourceId",
+            "expectedUsage": "tenantResourceId(resourceType, resourceName1, [resourceName2]...)",
+            "description": "Returns the unique resource identifier of a tenant scoped resource. You use this function to create a resourceId for a given resource as required by a property value.",
+            "minimumArguments": 2,
+            "maximumArguments": null,
+            "behaviors": [
+                "usesResourceIdCompletions"
+            ]
         },
         {
             "name": "toLower",
@@ -605,8 +807,8 @@
         },
         {
             "name": "uniqueString",
-            "expectedUsage": "uniqueString(stringForCreatingUniqueString, ...)",
-            "description": "Performs a 64-bit hash of the provided strings to create a unique string. This function is helpful when you need to create a unique name for a resource. You provide parameter values that represent the level of uniqueness for the result. You can specify whether the name is unique for your subscription, resource group, or deployment.",
+            "expectedUsage": "uniqueString(baseString, ...)",
+            "description": "Creates a deterministic hash string based on the values provided as parameters.\n### Remarks\nThis function is helpful when you need to create a unique name for a resource. You provide parameter values that represent the level of uniqueness for the result. You can specify whether the name is unique for your subscription, resource group, or deployment.\nThe returned value isn't a random string, but rather the result of a hash function. The returned value is 13 characters long. It isn't globally unique. You may want to combine the value with a prefix from your naming convention to create a name that is meaningful.\n### Example\n`[concat('storage', uniqueString(resourceGroup().id))]`",
             "minimumArguments": 1,
             "maximumArguments": null
         },

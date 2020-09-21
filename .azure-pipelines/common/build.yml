@@ -1,14 +1,24 @@
 steps:
-- task: NodeTool@0
-  displayName: 'Use Node 8.x'
-  inputs:
-    versionSpec: 8.x
+  # Install nuget for use by 'npm run package'
+  - task: NuGetToolInstaller@0
+    inputs:
+      versionSpec: "5.2.0"
 
-- task: Npm@1
-  displayName: 'npm install'
+  - task: NodeTool@0
+    displayName: "Use Node 8.x"
+    inputs:
+      versionSpec: 8.x
 
-- task: Npm@1
-  displayName: 'Build'
-  inputs:
-    command: custom
-    customCommand: run build
+  - task: Npm@1
+    displayName: "npm install"
+
+  # First package without language server bits (as a test, and if LANGSERVER_NUGET_USERNAME/PASSWORD are not available)
+  - script: npm run package
+    displayName: Package without language server (as a test)
+
+  - script: npm run package
+    displayName: Package
+    condition: ne(variables['System.PullRequest.IsFork'], 'True') # Don't try to package if run from a fork (won't have the secrets)
+    env:
+      LANGSERVER_NUGET_USERNAME: $(LANGSERVER_NUGET_USERNAME)
+      LANGSERVER_NUGET_PASSWORD: $(LANGSERVER_NUGET_PASSWORD)

@@ -1,0 +1,80 @@
+{
+    "$schema": "./schemas/snippets.schema.json",
+    "Azure Resource Manager (ARM) Template": {
+        "prefix": "arm!",
+        "body": [
+            "{",
+            "\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\",",
+            "\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\"parameters\": {},",
+            "\t\"functions\": [],",
+            "\t\"variables\": {},",
+            "\t\"resources\": [],",
+            "\t\"outputs\": {}",
+            "}"
+        ],
+        "description": "Resource Group Template",
+        "context": "empty"
+    },
+    "Azure Resource Manager (ARM) Template Subscription": {
+        "prefix": "arm!s",
+        "body": [
+            "{",
+            "\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#\",",
+            "\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\"parameters\": {},",
+            "\t\"functions\": [],",
+            "\t\"variables\": {},",
+            "\t\"resources\": [],",
+            "\t\"outputs\": {}",
+            "}"
+        ],
+        "description": "Subscription Template",
+        "context": "empty"
+    },
+    "Azure Resource Manager (ARM) Template Management Group": {
+        "prefix": "arm!mg",
+        "body": [
+            "{",
+            "\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#\",",
+            "\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\"parameters\": {},",
+            "\t\"functions\": [],",
+            "\t\"variables\": {},",
+            "\t\"resources\": [],",
+            "\t\"outputs\": {}",
+            "}"
+        ],
+        "description": "Management Group Template",
+        "context": "empty"
+    },
+    "Azure Resource Manager (ARM) Template Tenant": {
+        "prefix": "arm!t",
+        "body": [
+            "{",
+            "\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#\",",
+            "\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\"parameters\": {},",
+            "\t\"functions\": [],",
+            "\t\"variables\": {},",
+            "\t\"resources\": [],",
+            "\t\"outputs\": {}",
+            "}"
+        ],
+        "description": "Tenant Template",
+        "context": "empty"
+    },
+    "Azure Resource Manager (ARM) Parameters Template": {
+        "prefix": "armp!",
+        "body": [
+            "{",
+            "\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#\",",
+            "\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\"parameters\": {",
+            "\t}",
+            "}"
+        ],
+        "description": "Parameters Template",
+        "context": "empty"
+    }
+}

@@ -1,0 +1,338 @@
+{
+    "$schema": "../assets/schemas/ExpressionMetadata.schema.json",
+    "functionSignatures": [
+        {
+            "name": "add",
+            "expectedUsage": "add(operand1, operand2)",
+            "description": "Returns the sum of the two provided integers.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "$testData": true
+        },
+        {
+            "name": "base64",
+            "expectedUsage": "base64(inputString)",
+            "description": "Returns the base64 representation of the input string.",
+            "minimumArguments": 1,
+            "maximumArguments": 1,
+            "$testData": true
+        },
+        {
+            "name": "concat",
+            "expectedUsage": "concat(arg1, arg2, arg3, ...)",
+            "description": "Combines multiple values and returns the concatenated result. This function can take any number of arguments, and can accept either strings or arrays for the parameters.",
+            "minimumArguments": 0,
+            "maximumArguments": null,
+            "$testData": true
+        },
+        {
+            "name": "copyIndex",
+            "expectedUsage": "copyIndex([offset]) or copyIndex(loopName, [offset])",
+            "description": "Returns the current index of an iteration loop.\nThis function is always used with a copy object.",
+            "minimumArguments": 0,
+            "maximumArguments": 2,
+            "$testData": true
+        },
+        {
+            "name": "deployment",
+            "expectedUsage": "deployment()",
+            "description": "Returns information about the current deployment operation. This function returns the object that is passed during deployment. The properties in the returned object will differ based on whether the deployment object is passed as a link or as an in-line object.",
+            "minimumArguments": 0,
+            "maximumArguments": 0,
+            "returnValueMembers": [
+                {
+                    "name": "name",
+                    "$testData": true
+                },
+                {
+                    "name": "properties",
+                    "$testData": true
+                }
+            ],
+            "$testData": true
+        },
+        {
+            "name": "div",
+            "expectedUsage": "div(operand1, operand2)",
+            "description": "Returns the integer division of the two provided integers.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "$testData": true
+        },
+        {
+            "name": "equals",
+            "expectedUsage": "equals(arg1, arg2)",
+            "description": "Checks whether two values equal each other.",
+            "minimumArguments": 2,
+            "maximumArguments": 2
+        },
+        {
+            "name": "int",
+            "expectedUsage": "int(valueToConvert)",
+            "description": "Converts the specified value to Integer.",
+            "minimumArguments": 1,
+            "maximumArguments": 1,
+            "$testData": true
+        },
+        {
+            "name": "length",
+            "expectedUsage": "length(array\/string)",
+            "description": "Returns the number of elements in an array or the number of characters in a string. You can use this function with an array to specify the number of iterations when creating resources.",
+            "minimumArguments": 1,
+            "maximumArguments": 1,
+            "$testData": true
+        },
+        {
+            "name": "listKeys",
+            "expectedUsage": "listKeys(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Returns the keys of a storage account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primary (key[0]) and secondary key (key[1]).",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "keys"
+                }
+            ],
+            "$testData": true
+        },
+        {
+            "name": "listPackage",
+            "expectedUsage": "listPackage(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Lists the virtual network gateway package. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "$testData": true
+        },
+        {
+            "name": "mod",
+            "expectedUsage": "mod(operand1, operand2)",
+            "description": "Returns the remainder of the integer division using the two provided integers.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "$testData": true
+        },
+        {
+            "name": "mul",
+            "expectedUsage": "mul(operand1, operand2)",
+            "description": "Returns the multiplication of the two provided integers.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "$testData": true
+        },
+        {
+            "name": "padLeft",
+            "expectedUsage": "padLeft(stringToPad, totalLength, paddingCharacter)",
+            "description": "Returns a right-aligned string by adding characters to the left until reaching the total specified length.",
+            "minimumArguments": 3,
+            "maximumArguments": 3,
+            "$testData": true
+        },
+        {
+            "name": "parameters",
+            "expectedUsage": "parameters(parameterName)",
+            "description": "Returns a parameter value. The specified parameter name must be defined in the parameters section of the template.",
+            "minimumArguments": 1,
+            "maximumArguments": 1,
+            "$testData": true
+        },
+        {
+            "name": "providers",
+            "expectedUsage": "providers(providerNamespace, [resourceType])",
+            "description": "Return information about a resource provider and its supported resource types. If not type is provided, all of the supported types are returned.",
+            "minimumArguments": 1,
+            "maximumArguments": 2,
+            "$testData": true
+        },
+        {
+            "name": "reference",
+            "expectedUsage": "reference(resourceName\/resourceIdentifier, [apiVersion], ['Full'])",
+            "description": "Enables an expression to derive its value from another resource's runtime state.",
+            "minimumArguments": 1,
+            "maximumArguments": 3,
+            "$testData": true
+        },
+        {
+            "name": "replace",
+            "expectedUsage": "replace(originalString, oldCharacter, newCharacter)",
+            "description": "Returns a new string with all instances of one character in the specified string replaced by another character.",
+            "minimumArguments": 3,
+            "maximumArguments": 3,
+            "$testData": true
+        },
+        {
+            "name": "resourceGroup",
+            "expectedUsage": "resourceGroup()",
+            "description": "Returns a structured object that represents the current resource group.",
+            "minimumArguments": 0,
+            "maximumArguments": 0,
+            "returnValueMembers": [
+                {
+                    "name": "id",
+                    "$testData": true
+                },
+                {
+                    "name": "name",
+                    "$testData": true
+                },
+                {
+                    "name": "location",
+                    "$testData": true
+                },
+                {
+                    "name": "tags",
+                    "$testData": true
+                },
+                {
+                    "name": "properties",
+                    "$testData": true
+                }
+            ],
+            "$testData": true
+        },
+        {
+            "name": "resourceId",
+            "expectedUsage": "resourceId([subscriptionId], [resourceGroupName], resourceType, resourceName1, [resourceName2]...)",
+            "description": "Returns the unique identifier of a resource. You use this function when the resource name is ambiguous or not provisioned within the same template.",
+            "minimumArguments": 2,
+            "maximumArguments": null,
+            "behaviors": [
+                "usesResourceIdCompletions"
+            ],
+            "$testData": true
+        },
+        {
+            "name": "skip",
+            "expectedUsage": "skip(originalValue, numberToSkip)",
+            "description": "Returns an array or string with all of the elements or characters after the specified number in the array or string.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "$testData": true
+        },
+        {
+            "name": "split",
+            "expectedUsage": "split(inputString, delimiter)",
+            "description": "Returns an array of strings that contains the substrings of the input string that are delimited by the sent delimiters.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "$testData": true
+        },
+        {
+            "name": "string",
+            "expectedUsage": "string(valueToConvert)",
+            "description": "Converts the specified value to String.",
+            "minimumArguments": 1,
+            "maximumArguments": 1,
+            "$testData": true
+        },
+        {
+            "name": "sub",
+            "expectedUsage": "sub(operand1, operand2)",
+            "description": "Returns the subtraction of the two provided integers.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "$testData": true
+        },
+        {
+            "name": "subscription",
+            "expectedUsage": "subscription()",
+            "description": "Returns details about the subscription.",
+            "minimumArguments": 0,
+            "maximumArguments": 0,
+            "returnValueMembers": [
+                {
+                    "name": "displayName",
+                    "$testData": true
+                },
+                {
+                    "name": "id",
+                    "$testData": true
+                },
+                {
+                    "name": "subscriptionId",
+                    "$testData": true
+                },
+                {
+                    "name": "tenantId",
+                    "$testData": true
+                }
+            ],
+            "$testData": true
+        },
+        {
+            "$comment": "This is important to include because it starts with 'subscription' which is also a function name and that has caused bugs before",
+            "name": "subscriptionResourceId",
+            "expectedUsage": "subscriptionResourceId([subscriptionId], resourceType, resourceName1, [resourceName2]...)",
+            "description": "Returns the unique resource identifier of a subscription scoped resource. You use this function to create a resourceId for a given resource as required by a property value.",
+            "minimumArguments": 2,
+            "behaviors": [
+                "usesResourceIdCompletions"
+            ],
+            "maximumArguments": null
+        },
+        {
+            "name": "substring",
+            "expectedUsage": "substring(stringToParse, startIndex, length)",
+            "description": "Returns a substring that starts at the specified character position and contains the specified number of characters.",
+            "minimumArguments": 1,
+            "maximumArguments": 3,
+            "$testData": true
+        },
+        {
+            "name": "take",
+            "expectedUsage": "take(originalValue, numberToTake)",
+            "description": "Returns an array or string with the specified number of elements or characters from the start of the array or string.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "$testData": true
+        },
+        {
+            "name": "toLower",
+            "expectedUsage": "toLower(string)",
+            "description": "Converts the specified string to lower case.",
+            "minimumArguments": 1,
+            "maximumArguments": 1,
+            "$testData": true
+        },
+        {
+            "name": "toUpper",
+            "expectedUsage": "toUpper(string)",
+            "description": "Converts the specified string to upper case.",
+            "minimumArguments": 1,
+            "maximumArguments": 1,
+            "$testData": true
+        },
+        {
+            "name": "trim",
+            "expectedUsage": "trim(stringToTrim)",
+            "description": "Removes all leading and trailing white-space characters from the specified string.",
+            "minimumArguments": 1,
+            "maximumArguments": 1,
+            "$testData": true
+        },
+        {
+            "name": "uniqueString",
+            "expectedUsage": "uniqueString(stringForCreatingUniqueString, ...)",
+            "description": "Performs a 64-bit hash of the provided strings to create a unique string. This function is helpful when you need to create a unique name for a resource. You provide parameter values that represent the level of uniqueness for the result. You can specify whether the name is unique for your subscription, resource group, or deployment.",
+            "minimumArguments": 1,
+            "maximumArguments": null,
+            "$testData": true
+        },
+        {
+            "name": "uri",
+            "expectedUsage": "uri(baseUri, relativeUri)",
+            "description": "Creates an absolute URI by combining the baseUri and the relativeUri string.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "$testData": true
+        },
+        {
+            "name": "variables",
+            "expectedUsage": "variables(variableName)",
+            "description": "Returns the value of variable. The specified variable name must be defined in the variables section of the template.",
+            "minimumArguments": 1,
+            "maximumArguments": 1,
+            "$testData": true
+        }
+    ],
+    "$testData": true
+}

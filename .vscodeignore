@@ -27,3 +27,8 @@ tsd.json
 tslint.json
 typings/**
 webpack.config*
+*.vsix
+*.zip
+pkgs
+tools
+logs

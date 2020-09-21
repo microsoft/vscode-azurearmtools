@@ -1,0 +1,141 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "functions": [
+    {
+      "namespace": "udf",
+      "members": {
+        "storageUri": {
+          "parameters": [
+            {
+              "name": "storageAccountName",
+              "type": "string"
+            }
+          ],
+          "output": {
+            "type": "string",
+            "value": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName')), '2018-02-01').primaryEndpoints.blob]"
+          }
+        },
+        "date": {
+          "parameters": [
+            {
+              "name": "year",
+              "type": "Int"
+            },
+            {
+              "name": "month",
+              "type": "Int"
+            },
+            {
+              "name": "day",
+              "type": "Int"
+            }
+          ],
+          "output": {
+            "type": "string",
+            "value": "[concat(string(parameters('year')), '-', string(parameters('month')), '-', string(parameters('day')))]"
+          }
+        },
+        "odd": {
+          "parameters": [
+            {
+              "name": "number",
+              "type": "Int"
+            }
+          ],
+          "output": {
+            "type": "Bool",
+            "value": "[equals(mod(parameters('number'), 2), 1)]"
+          }
+        },
+        "even": {
+          "parameters": [
+            {
+              "name": "number",
+              "type": "Int"
+            }
+          ],
+          "output": {
+            "type": "Bool",
+            "value": "[equals(mod(parameters('number'), 2), 0)]"
+          }
+        },
+        "getSubscriptionId": {
+          "parameters": [
+          ],
+          "output": {
+            "type": "string",
+            "value": "[subscription().subscriptionId]"
+          }
+        }
+      }
+    }
+  ],
+  "parameters": {
+    /*"p1": {
+      "type": "string",
+      "defaultValue": "[udf.storageUri('p1')]"
+    },
+    "p2": {
+      "type": "string",
+      "defaultValue": "[udf.date(2017, 11, 2)]"
+    },
+    "p3": {
+      "type": "bool",
+      "defaultValue": "[udf.odd(3)]"
+    },
+    "p4": {
+      "type": "bool",
+      "defaultValue": "[udf.even(3)]"
+    },
+    "p5": {
+      "type": "string",
+      "defaultValue": "[udf.getSubscriptionId()]"
+    },*/
+    "storageAccountName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    /*/"uri": "[udf.storageUri('uri')]",
+    "time": "[udf.date(2017, 11, 2)]",
+    "condition1": "[udf.odd(3)]",
+    "condition2": "[udf.even(3)]",
+    "subscriptionId": "[udf.getSubscriptionId()]"*/
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[parameters('storageAccountName')]",
+      "apiVersion": "2015-06-15",
+      "location": "East US",
+      "condition": "[udf.odd(3)]",
+      "properties": {
+        "accountType": "Standard_LRS"
+      }
+    }
+  ],
+  "outputs": {
+    "o1": {
+      "type": "string",
+      "value": "[udf.storageUri('o1')]"
+    },
+    "o2": {
+      "type": "string",
+      "value": "[udf.date(2017, 11, 2)]"
+    },
+    "o3": {
+      "type": "bool",
+      "value": "[udf.odd(3)]"
+    },
+    "o4": {
+      "type": "bool",
+      "value": "[udf.even(3)]"
+    },
+    "o5": {
+      "type": "string",
+      "value": "[udf.getSubscriptionId()]"
+    }
+  }
+}
