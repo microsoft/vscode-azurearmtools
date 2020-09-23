@@ -86,6 +86,13 @@
             "maximumArguments": null
         },
         {
+            "name": "createObject",
+            "expectedUsage": "createObject(key1, value1, key2, value2, ...)",
+            "description": "Creates an object from the keys and values provided in the arguments.\nAn even number of arguments must be provided.",
+            "minimumArguments": 2,
+            "maximumArguments": null
+        },
+        {
             "name": "dataUri",
             "expectedUsage": "dataUri(stringToConvert)",
             "description": "Converts a value to a data URI.",
@@ -105,13 +112,6 @@
             "description": "Adds a time duration to a base value. ISO 8601 format is expected.",
             "minimumArguments": 2,
             "maximumArguments": 3
-        },
-        {
-            "name": "utcNow",
-            "expectedUsage": "utcNow([format])",
-            "description": "Returns the current (UTC) datetime value in the format provided. If no format is provided the ISO 8601 (yyyyMMddTHH:mm:ssZ) format will be used. This function may only be used as a defaultValue on a parameter.",
-            "minimumArguments": 0,
-            "maximumArguments": 1
         },
         {
             "name": "deployment",
@@ -216,6 +216,13 @@
             "behaviors": [
                 "usesResourceIdCompletions"
             ]
+        },
+        {
+            "name": "false",
+            "expectedUsage": "false()",
+            "description": "Returns a boolean value that is always false.",
+            "minimumArguments": 0,
+            "maximumArguments": 0
         },
         {
             "name": "first",
@@ -605,6 +612,13 @@
             "maximumArguments": 1
         },
         {
+            "name": "null",
+            "expectedUsage": "null()",
+            "description": "Returns a value that is always null, equivalent to json('null').",
+            "minimumArguments": 0,
+            "maximumArguments": 0
+        },
+        {
             "name": "or",
             "expectedUsage": "or(arg1, arg2, ...)",
             "description": "Checks whether any parameter value is true.",
@@ -799,6 +813,13 @@
             "maximumArguments": 1
         },
         {
+            "name": "true",
+            "expectedUsage": "true()",
+            "description": "Returns a boolean value that is always true.",
+            "minimumArguments": 0,
+            "maximumArguments": 0
+        },
+        {
             "name": "union",
             "expectedUsage": "union(arg1, arg2, arg3, ...)",
             "description": "Returns a single array or object with all elements from the parameters. Duplicate values or keys are only included once.",
@@ -831,6 +852,13 @@
             "expectedUsage": "uriComponentToString(uriEncodedString)",
             "description": "Returns a string of a URI encoded value.",
             "minimumArguments": 1,
+            "maximumArguments": 1
+        },
+        {
+            "name": "utcNow",
+            "expectedUsage": "utcNow([format])",
+            "description": "Returns the current (UTC) datetime value in the format provided. If no format is provided the ISO 8601 (yyyyMMddTHH:mm:ssZ) format will be used. This function may only be used as a defaultValue on a parameter.",
+            "minimumArguments": 0,
             "maximumArguments": 1
         },
         {
