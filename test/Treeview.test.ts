@@ -10,8 +10,7 @@ import * as fse from 'fs-extra';
 import * as path from "path";
 import * as vscode from "vscode";
 import { parseError } from "vscode-azureextensionui";
-import { ext, JsonOutlineProvider, shortenTreeLabel } from "../extension.bundle";
-import { IElementInfo } from "../src/vscodeIntegration/Treeview";
+import { ext, IElementInfo, JsonOutlineProvider, shortenTreeLabel } from "../extension.bundle";
 import { getTempFilePath } from "./support/getTempFilePath";
 
 suite("TreeView", async (): Promise<void> => {
