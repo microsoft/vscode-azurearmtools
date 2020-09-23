@@ -160,7 +160,9 @@ export class AzureRMTools {
         registerCommand("azurerm-vscode-tools.completion-activated", (actionContext: IActionContext, args: object) => {
             onCompletionActivated(actionContext, <{ [key: string]: string }>args);
         });
-        registerCommand("azurerm-vscode-tools.treeview.goto", (_actionContext: IActionContext, range: vscode.Range) => jsonOutline.goToDefinition(range));
+        registerCommand("azurerm-vscode-tools.treeview.goto", (_actionContext: IActionContext, range: vscode.Range) => {
+            jsonOutline.revealRangeInEditor(range);
+        });
         registerCommand("azurerm-vscode-tools.sortTemplate", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
             editor = editor || vscode.window.activeTextEditor;
             uri = uri || vscode.window.activeTextEditor?.document.uri;

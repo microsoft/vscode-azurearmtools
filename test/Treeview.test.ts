@@ -11,6 +11,7 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { parseError } from "vscode-azureextensionui";
 import { ext, JsonOutlineProvider, shortenTreeLabel } from "../extension.bundle";
+import { IElementInfo } from "../src/vscodeIntegration/Treeview";
 import { getTempFilePath } from "./support/getTempFilePath";
 
 suite("TreeView", async (): Promise<void> => {
@@ -125,7 +126,7 @@ suite("TreeView", async (): Promise<void> => {
             await testTree(template, expected, ["icon"]);
         }
 
-        function getTree(element?: string): ITestTreeItem[] {
+        function getTree(element?: IElementInfo): ITestTreeItem[] {
             let children = provider.getChildren(element);
             let tree = children.map(child => {
                 let treeItem = provider.getTreeItem(child);
