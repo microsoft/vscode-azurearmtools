@@ -92,8 +92,8 @@ export { UnrecognizedFunctionVisitor } from "./src/visitors/UnrecognizedFunction
 export { IGotoParameterValueArgs } from "./src/vscodeIntegration/commandArguments";
 export { IConfiguration } from "./src/vscodeIntegration/Configuration";
 export { HoverInfo } from "./src/vscodeIntegration/Hover";
-export { JsonOutlineProvider, shortenTreeLabel } from "./src/vscodeIntegration/Treeview";
-export { getVSCodePositionFromPosition, getVSCodeRangeFromSpan } from "./src/vscodeIntegration/vscodePosition";
+export { IElementInfo, JsonOutlineProvider, shortenTreeLabel } from "./src/vscodeIntegration/Treeview";
+export * from "./src/vscodeIntegration/vscodePosition";
 export { Completion };
 export { Json };
 export { basic };
