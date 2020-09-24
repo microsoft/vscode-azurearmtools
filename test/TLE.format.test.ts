@@ -23,7 +23,7 @@ suite("TLE format", () => {
             const quotedValue = `"[${unquotedValue}]"`;
             test(`${testName} (${unquotedValue})`, () => {
                 const parseResult = parseExpression(quotedValue).expression;
-                const result = parseResult?.toString2(indent, max);
+                const result = parseResult?.format({ multiline: { tabSize: 4 } }); //asdf
                 assert.strictEqual(result, expected);
             });
         }

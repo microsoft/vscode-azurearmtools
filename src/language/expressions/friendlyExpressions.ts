@@ -46,7 +46,7 @@ export function getFriendlyExpressionFromTleExpression(tleExpression: string): s
 function getFriendlyExpressionFromTleExpressionCore(doubleQuotedBracketedJsonString: string): string {
     const pr = Parser.parse(doubleQuotedBracketedJsonString);
     if (pr.expression && pr.errors.length === 0) {
-        const friendlyExpression = pr.expression.toFriendlyString();
+        const friendlyExpression = pr.expression.format({ friendly: true });
         if (isSingleQuoted(friendlyExpression)) {
             // Example:
             //   "'${virtualMachineName}/${diagnosticsExtensionName}'"

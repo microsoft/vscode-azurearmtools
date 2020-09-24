@@ -1233,17 +1233,10 @@ export class AzureRMTools {
                 if (context instanceof TemplatePositionContext) {
                     const expr = context.tleInfo?.tleParseResult.expression;
                     if (expr) {
-                        const exprString = expr.toString2(0, 20); //asdf
-                        //asdf const hoverRange: vscode.Range = getVSCodeRangeFromSpan(doc, expr.getSpan());
-                        const s = new vscode.MarkdownString();
-                        s.isTrusted = true;
-
-                        // Only trusted markdown supports links that execute commands, e.g. `[Run it](command:myCommandId)`.
-
-                        //s.appendMarkdown("### Full expression");
-                        //s.appendMarkdown("**Full expression**");
-                        s.appendCodeblock(`"[${exprString}\n]"`, 'arm-template');
-                        return new vscode.Hover(s); //asdf , hoverRange);
+                        const formattedExpression = expr.format({ multiline: { tabSize: 4 } });
+                        const markdown = new vscode.MarkdownString();
+                        markdown.appendCodeblock(`"[${formattedExpression}\n]"`, 'arm-template');
+                        return new vscode.Hover(markdown); //asdf , hoverRange);
                     }
                 }
             }
