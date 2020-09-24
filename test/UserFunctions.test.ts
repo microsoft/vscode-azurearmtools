@@ -7,7 +7,7 @@
 
 import * as assert from "assert";
 import * as os from 'os';
-import { DefinitionKind, DeploymentTemplateDoc, HoverInfo, IReferenceSite, Span } from "../extension.bundle";
+import { DefinitionKind, DeploymentTemplateDoc, IHoverInfo, IReferenceSite, Span } from "../extension.bundle";
 import { createExpressionCompletionsTestEx } from "./support/createCompletionsTest";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
@@ -1304,12 +1304,12 @@ suite("User functions", () => {
             expectedSpan?: Span
         ): Promise<void> {
             const pc = dt.getContextFromDocumentCharacterIndex(cursorIndex, undefined);
-            let hoverInfo: HoverInfo = pc.getHoverInfo()!;
-            assert(hoverInfo, "Expected non-empty hover info");
-            hoverInfo = hoverInfo!;
+            let hoverInfos: IHoverInfo[] = pc.getHoverInfo()!;
+            assert(hoverInfos, "Expected non-empty hover info");
+            hoverInfos = hoverInfos!;
 
-            const text: string = hoverInfo.getHoverText();
-            const span: Span = hoverInfo.span;
+            const text: string = hoverInfos[0].getHoverText().value;
+            const span: Span = hoverInfos[0].span;
 
             assert.equal(text, expectedHoverText);
             if (expectedSpan) {

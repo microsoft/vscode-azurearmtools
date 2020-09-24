@@ -2,13 +2,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See License.md in the project root for license information.
 // ---------------------------------------------------------------------------------------------
-
 // TLE = Template Language Expression
-
 // tslint:disable:no-unnecessary-class // Grandfathered in
 // tslint:disable:switch-default // Grandfathered in
 // tslint:disable:max-classes-per-file // Grandfathered in
-
 import { templateKeys } from "../../constants";
 import { TemplatePositionContext } from "../../documents/positionContexts/TemplatePositionContext";
 import { IFunctionMetadata } from "../../documents/templates/IFunctionMetadata";
@@ -22,6 +19,19 @@ import { IssueKind } from "../IssueKind";
 import * as Json from "../json/JSON";
 import * as basic from "../json/Tokenizer";
 import { ContainsBehavior, Span } from "../Span";
+
+type ITleFormatOptions = {
+    /**
+     * Use a pseudo string interpolation ${var} and ${param} notation similar to Bicep string interpolation
+     */
+    friendly?: boolean;
+    /**
+     * Use multi-line formatting if specified
+     */
+    multiline?: {
+        tabSize: number;
+    };
+};
 
 export function asStringValue(value: Value | undefined): StringValue | undefined {
     return value instanceof StringValue ? value : undefined;
@@ -63,9 +73,15 @@ export abstract class Value {
     //   Contains.extended).
     public abstract contains(characterIndex: number): boolean;
 
+    // Simple string representation, no formatting
+    // CONSIDER: Can we get rid of this?  Or at least define its exact behavior?
     public abstract toString(): string;
 
-    public toFriendlyString(): string {
+    public format(options: ITleFormatOptions): string {
+        return this.formatCore(options, 0);
+    }
+
+    public formatCore(_options: ITleFormatOptions, _currentIndent: number): string {
         return this.toString();
     }
 
@@ -75,7 +91,7 @@ export abstract class Value {
      * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
      */
     public get __debugDisplay(): string {
-        return this.toString();
+        return this.format({ friendly: true });
     }
 
     public get asStringValue(): StringValue | undefined {
@@ -195,7 +211,7 @@ export class StringValue extends Value {
         return this.quotedValue;
     }
 
-    public toFriendlyString(): string {
+    public formatCore(): string {
         return this.quotedValue;
     }
 }
@@ -241,7 +257,7 @@ export class ArrayAccessValue extends ParentValue {
 
         assert(_source);
         assert(_leftSquareBracketToken);
-        assert.deepEqual(TokenType.LeftSquareBracket, _leftSquareBracketToken.getType());
+        assert.deepStrictEqual(TokenType.LeftSquareBracket, _leftSquareBracketToken.getType());
         assert(!_rightSquareBracketToken || _rightSquareBracketToken.getType() === TokenType.RightSquareBracket);
 
         this._source.parent = this;
@@ -316,14 +332,34 @@ export class ArrayAccessValue extends ParentValue {
         return result;
     }
 
-    public toFriendlyString(): string {
-        let result: string = `${this._source.toFriendlyString()}[`;
-        if (!!this._indexValue) {
-            result += this._indexValue.toFriendlyString();
+    public formatCore(options: ITleFormatOptions, currentIndent: number): string {
+        // Source expression and opening "["
+        let result: string = `${this._source.formatCore(options, currentIndent)}[`;
+
+        // Format the index expression
+        let indexExpression: string;
+        if (!this._indexValue
+            || this._indexValue instanceof StringValue
+            || this._indexValue instanceof NumberValue
+        ) {
+            // Array index is a simple value (or none)
+            indexExpression = this._indexValue?.toString() ?? '';
+        } else if (options.multiline) {
+            // Multi-line formatting
+            const preTab = ' '.repeat(currentIndent + options.multiline.tabSize);
+            const indexExpressionRaw = this._indexValue.formatCore(options, currentIndent + options.multiline.tabSize);
+            indexExpression = `\n${preTab}${indexExpressionRaw}`;
+        } else {
+            // Single-line formatting
+            indexExpression = this._indexValue.formatCore(options, currentIndent);
         }
+        result += indexExpression;
+
+        // Closing "]"
         if (!!this._rightSquareBracketToken) {
             result += "]";
         }
+
         return result;
     }
 }
@@ -500,24 +536,68 @@ export class FunctionCallValue extends ParentValue {
         return this.getStringFromArguments(this.argumentExpressions.map(arg => arg?.toString() ?? ''));
     }
 
-    public toFriendlyString(): string {
-        const fullNameLC = this.fullName.toLowerCase();
-        switch (fullNameLC) {
-            case 'concat':
-                return FunctionCallValue.coalesceConcatArguments(this.argumentExpressions);
+    public formatCore(options: ITleFormatOptions, currentIndent: number): string {
+        // Format a function call expression
 
-            case 'variables':
-            case 'parameters':
-                if (this.argumentExpressions.length === 1) {
-                    const arg1 = this.argumentExpressions[0];
-                    if (arg1 instanceof StringValue) {
-                        // tslint:disable-next-line: prefer-template
-                        return "${" + arg1.unquotedValue + "}";
+        if (options.friendly) {
+            const fullNameLC = this.fullName.toLowerCase();
+            switch (fullNameLC) {
+                case 'concat':
+                    // Coalesce adjacent string arguments
+                    return FunctionCallValue.coalesceConcatArguments(this.argumentExpressions, options, currentIndent);
+
+                case 'variables':
+                case 'parameters':
+                    // Use ${name} format for variables/parameters call
+                    if (this.argumentExpressions.length === 1) {
+                        const arg1 = this.argumentExpressions[0];
+                        if (arg1 instanceof StringValue) {
+                            return `\${${arg1.unquotedValue}}`;
+                        }
                     }
-                }
+                    break;
+            }
         }
 
-        return this.getStringFromArguments(this.argumentExpressions.map(arg => arg?.toFriendlyString() ?? ''));
+        let multiline = !!options.multiline;
+        const tabSize = options.multiline?.tabSize ?? 0;
+        // If there are no arguments or a single simple-valued argument, always put expression on single line
+        if (this.argumentExpressions.length === 0
+            || (this.argumentExpressions.length === 1 &&
+                (
+                    this.argumentExpressions[0] instanceof StringValue
+                    || this.argumentExpressions[0] instanceof NumberValue
+                )
+            )
+        ) {
+            multiline = false;
+        }
+
+        // Start with the function name
+        let result = this.fullName;
+
+        // Left paren
+        if (!!this._leftParenthesisToken) {
+            result += multiline ? `(\n${' '.repeat(currentIndent + tabSize)}` : '(';
+        }
+
+        // Arguments
+        for (let i = 0; i < this._argumentExpressions.length; ++i) {
+            const argExpr = this._argumentExpressions[i];
+
+            if (i > 0) {
+                // tslint:disable-next-line: no-non-null-assertion
+                result += multiline ? `,\n${' '.repeat(currentIndent + tabSize)}` : ', ';
+            }
+            result += argExpr ? argExpr.formatCore(options, currentIndent + tabSize) : ' ';
+        }
+
+        // Right paren
+        if (!!this._rightParenthesisToken) {
+            result += `)`;
+        }
+
+        return result;
     }
 
     private getStringFromArguments(expressionStrings: string[]): string {
@@ -540,16 +620,16 @@ export class FunctionCallValue extends ParentValue {
      * Coalesces any adjacent string expressions and returns the simplified concat
      * expression
      */
-    private static coalesceConcatArguments(expressions: (Value | undefined)[]): string {
+    private static coalesceConcatArguments(expressions: (Value | undefined)[], options: ITleFormatOptions, currentIndent: number): string {
         if (expressions.length < 2) {
-            return expressions[0]?.toFriendlyString() ?? '';
+            return expressions[0]?.formatCore(options, currentIndent) ?? '';
         }
 
         // Coalesce adjacent string literals
         const coalescedExpressions: string[] = [];
         const expressionsLength = expressions.length;
         for (let i = 0; i < expressionsLength; ++i) {
-            let currentExpression = expressions[i]?.toFriendlyString() ?? '';
+            let currentExpression = expressions[i]?.formatCore(options, currentIndent) ?? '';
 
             const prevCoalescedExpression = coalescedExpressions[coalescedExpressions.length - 1];
             if (prevCoalescedExpression) {
@@ -686,8 +766,8 @@ export class PropertyAccess extends ParentValue {
         return result;
     }
 
-    public toFriendlyString(): string {
-        let result = `${this._source.toFriendlyString()}.`;
+    public formatCore(options: ITleFormatOptions, currentIndent: number): string {
+        let result = `${this._source.formatCore(options, currentIndent)}.`;
         if (!!this._nameToken) {
             result += this._nameToken.stringValue;
         }

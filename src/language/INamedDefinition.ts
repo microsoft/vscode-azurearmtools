@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { IUsageInfo } from "../vscodeIntegration/Hover";
+import { IUsageInfo } from "../vscodeIntegration/UsageInfoHoverInfo";
 import * as Json from "./json/JSON";
 
 export enum DefinitionKind {

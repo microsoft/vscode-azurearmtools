@@ -8,7 +8,7 @@
 import * as assert from "assert";
 import * as os from 'os';
 import { Uri } from "vscode";
-import { DeploymentTemplateDoc, FunctionSignatureHelp, HoverInfo, IParameterDefinition, IReferenceSite, Issue, IssueKind, isVariableDefinition, IVariableDefinition, Json, LineColPos, nonNullValue, ParametersPositionContext, ReferenceSiteKind, Span, TemplatePositionContext, TLE, UserFunctionMetadata } from "../extension.bundle";
+import { DeploymentTemplateDoc, FormattedExpressionHoverInfo, FunctionSignatureHelp, IHoverInfo, IParameterDefinition, IReferenceSite, Issue, IssueKind, isVariableDefinition, IVariableDefinition, Json, LineColPos, nonNullValue, ParametersPositionContext, ReferenceSiteKind, Span, TemplatePositionContext, TLE, UsageInfoHoverInfo, UserFunctionMetadata } from "../extension.bundle";
 import * as jsonTest from "./JSON.test";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseParametersWithMarkers, parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
@@ -435,76 +435,76 @@ suite("TemplatePositionContext", () => {
     suite("hoverInfo", () => {
         test("in non-string json token", () => {
             const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B'", fakeId);
-            const hoverInfo: HoverInfo | undefined = dt.getContextFromDocumentCharacterIndex(0, undefined).getHoverInfo();
-            assert.deepStrictEqual(hoverInfo, undefined);
+            const hoverInfo: IHoverInfo[] = dt.getContextFromDocumentCharacterIndex(0, undefined).getHoverInfo();
+            assert.deepStrictEqual(hoverInfo, []);
         });
 
         test("in property name json token", () => {
             const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B'", fakeId);
-            const hoverInfo: HoverInfo | undefined = dt.getContextFromDocumentCharacterIndex(3, undefined).getHoverInfo();
-            assert.deepStrictEqual(hoverInfo, undefined);
+            const hoverInfo: IHoverInfo[] = dt.getContextFromDocumentCharacterIndex(3, undefined).getHoverInfo();
+            assert.deepStrictEqual(hoverInfo, []);
         });
     });
 
     test("in unrecognized function name", () => {
         const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[toads('B'", fakeId);
-        const hoverInfo: HoverInfo | undefined = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[to".length, undefined).getHoverInfo();
-        assert.deepStrictEqual(hoverInfo, undefined);
+        const hoverInfo: IHoverInfo[] = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[to".length, undefined).getHoverInfo().filter(hi => !(hi instanceof FormattedExpressionHoverInfo));
+        assert.deepStrictEqual(hoverInfo, []);
     });
 
     test("in recognized function name", () => {
         const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B'", fakeId);
         const pc = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[c".length, undefined);
-        const hi: HoverInfo = pc.getHoverInfo()!;
-        assert(hi);
-        assert.deepStrictEqual(hi.usage, "concat(arg1, arg2, arg3, ...)");
-        assert.deepStrictEqual(hi.span, new Span("{ 'a': 'A', 'b': \"[".length, 6));
+        const infos: IHoverInfo[] = pc.getHoverInfo()!.filter(hi => !(hi instanceof FormattedExpressionHoverInfo));
+        assert(infos.length === 1);
+        assert.deepStrictEqual((<UsageInfoHoverInfo>infos[0]).usage, "concat(arg1, arg2, arg3, ...)");
+        assert.deepStrictEqual(infos[0].span, new Span("{ 'a': 'A', 'b': \"[".length, 6));
     });
 
     test("in unrecognized parameter reference", () => {
         const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[parameters('B')]\" }", fakeId);
         const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[parameters('".length, undefined);
-        const hi: HoverInfo | undefined = pc.getHoverInfo();
-        assert.deepStrictEqual(hi, undefined);
+        const infos: IHoverInfo[] = pc.getHoverInfo().filter(hi => !(hi instanceof FormattedExpressionHoverInfo));
+        assert.deepStrictEqual(infos, []);
     });
 
     test("in recognized parameter reference name", () => {
         const dt = new DeploymentTemplateDoc("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters('pName')\" }", fakeId);
         const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters('pN".length, undefined);
-        const hi: HoverInfo = pc.getHoverInfo()!;
-        assert(hi);
-        assert.deepStrictEqual(`**pName**${os.EOL}*(parameter)*`, hi.getHoverText());
-        assert.deepStrictEqual(new Span("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters('".length, 'pName'.length), hi.span);
+        const infos: IHoverInfo[] = pc.getHoverInfo()!.filter(hi => !(hi instanceof FormattedExpressionHoverInfo));
+        assert(infos.length === 1);
+        assert.deepStrictEqual(`**pName**${os.EOL}*(parameter)*`, infos[0].getHoverText().value);
+        assert.deepStrictEqual(new Span("{ 'parameters': { 'pName': { 'type': 'integer' } }, 'a': 'A', 'b': \"[parameters('".length, 'pName'.length), infos[0].span);
     });
 
     test("in parameter reference function with empty string parameter", () => {
         const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[parameters('')]\" }", fakeId);
         const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[parameters('".length, undefined);
-        const hi: HoverInfo | undefined = pc.getHoverInfo();
-        assert.deepStrictEqual(hi, undefined);
+        const infos: IHoverInfo[] = pc.getHoverInfo().filter(hi => !(hi instanceof FormattedExpressionHoverInfo));
+        assert.deepStrictEqual(infos, []);
     });
 
     test("in parameter reference function with no arguments", () => {
         const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[parameters()]\" }", fakeId);
         const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[parameters(".length, undefined);
-        const hi: HoverInfo | undefined = pc.getHoverInfo();
-        assert.deepStrictEqual(hi, undefined);
+        const infos: IHoverInfo[] = pc.getHoverInfo().filter(hi => !(hi instanceof FormattedExpressionHoverInfo));
+        assert.deepStrictEqual(infos, []);
     });
 
     test("in unrecognized variable reference", () => {
         const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[variables('B')]\" }", fakeId);
         const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex("{ 'a': 'A', 'b': \"[variables('".length, undefined);
-        const hi: HoverInfo | undefined = pc.getHoverInfo();
-        assert.deepStrictEqual(hi, undefined);
+        const infos: IHoverInfo[] = pc.getHoverInfo().filter(hi => !(hi instanceof FormattedExpressionHoverInfo));
+        assert.deepStrictEqual(infos, []);
     });
 
     test("in recognized variable reference name", () => {
         const dt = new DeploymentTemplateDoc("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables('vName')\" }", fakeId);
         const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables('vNam".length, undefined);
-        const hi: HoverInfo | undefined = pc.getHoverInfo()!;
-        assert(hi);
-        assert.deepStrictEqual(`**vName**${os.EOL}*(variable)*`, hi.getHoverText());
-        assert.deepStrictEqual(new Span("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables('".length, 'vName'.length), hi.span);
+        const infos: IHoverInfo[] = pc.getHoverInfo()!.filter(hi => !(hi instanceof FormattedExpressionHoverInfo));
+        assert(infos.length === 1);
+        assert.deepStrictEqual(`**vName**${os.EOL}*(variable)*`, infos[0].getHoverText().value);
+        assert.deepStrictEqual(new Span("{ 'variables': { 'vName': 3 }, 'a': 'A', 'b': \"[variables('".length, 'vName'.length), infos[0].span);
     });
 
     suite("signatureHelp", () => {

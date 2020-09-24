@@ -8,7 +8,7 @@ import { assetsPath } from '../../constants';
 import { ExpressionType } from '../../documents/templates/ExpressionType';
 import { FunctionBehaviors, IFunctionMetadata, IFunctionParameterMetadata } from '../../documents/templates/IFunctionMetadata';
 import { assert } from '../../fixed_assert';
-import { IUsageInfo } from '../../vscodeIntegration/Hover';
+import { IUsageInfo } from '../../vscodeIntegration/UsageInfoHoverInfo';
 import { DefinitionKind, INamedDefinition } from '../INamedDefinition';
 import { StringValue } from '../json/JSON';
 
