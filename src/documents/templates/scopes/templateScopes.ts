@@ -1,9 +1,8 @@
+import { Uri } from "vscode";
 // ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
-
 // tslint:disable: max-classes-per-file
-
 import { templateKeys } from "../../../constants";
 import * as Json from "../../../language/json/JSON";
 import { assertNever } from "../../../util/assertNever";
@@ -11,12 +10,22 @@ import { IParameterDefinition } from "../../parameters/IParameterDefinition";
 import { IParameterValuesSource } from "../../parameters/IParameterValuesSource";
 import { ParameterDefinition } from "../../parameters/ParameterDefinition";
 import { ParameterValuesSourceFromJsonObject } from "../../parameters/ParameterValuesSourceFromJsonObject";
+import { DeploymentTemplateDoc } from "../DeploymentTemplateDoc";
 import { IJsonDocument } from "../IJsonDocument";
 import { IResource } from "../IResource";
 import { Resource } from "../Resource";
 import { UserFunctionNamespaceDefinition } from "../UserFunctionNamespaceDefinition";
 import { IVariableDefinition, TopLevelCopyBlockVariableDefinition, TopLevelVariableDefinition } from "../VariableDefinition";
 import { TemplateScope, TemplateScopeKind } from "./TemplateScope";
+
+export class EmptyScope extends TemplateScope {
+    public scopeKind: TemplateScopeKind = TemplateScopeKind.Empty;
+
+    constructor(
+    ) {
+        super(new DeploymentTemplateDoc('', Uri.parse('https://emptydoc')), undefined, "Empty Scope");
+    }
+}
 
 export class UserFunctionScope extends TemplateScope {
     constructor(

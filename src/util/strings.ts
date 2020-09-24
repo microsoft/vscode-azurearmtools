@@ -134,3 +134,15 @@ export function removeSingleQuotes(expression: string): string {
 
     return expression;
 }
+
+export function isDoubleQuoted(s: string): boolean {
+    return s.length >= 2 && s[0] === `"` && s[s.length - 1] === `"`;
+}
+
+export function removeDoubleQuotes(expression: string): string {
+    if (isDoubleQuoted(expression)) {
+        return expression.slice(1, expression.length - 1);
+    }
+
+    return expression;
+}

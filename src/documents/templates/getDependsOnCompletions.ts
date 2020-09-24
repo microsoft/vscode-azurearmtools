@@ -6,10 +6,10 @@
 import { MarkdownString } from "vscode";
 import { templateKeys } from "../../constants";
 import { assert } from "../../fixed_assert";
+import { getFriendlyExpressionFromTleExpression } from "../../language/expressions/friendlyExpressions";
 import { isTleExpression } from "../../language/expressions/isTleExpression";
 import * as Json from "../../language/json/JSON";
 import { ContainsBehavior, Span } from "../../language/Span";
-import { isSingleQuoted, removeSingleQuotes } from "../../util/strings";
 import * as Completion from "../../vscodeIntegration/Completion";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
 import { getResourcesInfo, IJsonResourceInfo, IResourceInfo, jsonStringToTleExpression } from "./getResourcesInfo";
@@ -60,24 +60,19 @@ function getDependsOnCompletionsForResource(resource: IJsonResourceInfo, span: S
     const completions: Completion.Item[] = [];
 
     const resourceIdExpression = resource.getResourceIdExpression();
-    const shortNameExpression = resource.shortNameExpression;
 
-    if (shortNameExpression && resourceIdExpression) {
-        const label = shortNameExpression;
-        const fullTypeExpression = resource.getFullTypeExpression();
-        let shortTypeExpression = fullTypeExpression;
-        if (shortTypeExpression && isSingleQuoted(shortTypeExpression)) {
-            // Simplify the type expression to remove quotes and the first prefix (e.g. 'Microsoft.Compute/')
-            shortTypeExpression = removeSingleQuotes(shortTypeExpression);
-            shortTypeExpression = shortTypeExpression.replace(/^[^/]+\//, '');
-        }
+    if (resourceIdExpression) {
+        const friendlyNameExpression = resource.getFriendlyNameExpression({ fullName: false });
+        let friendlyTypeExpression = resource.getFriendlyTypeExpression({ fullType: false });
+
+        const label = friendlyNameExpression;
         const insertText = `"[${resourceIdExpression}]"`;
-        const detail = shortTypeExpression;
+        const detail = friendlyTypeExpression;
         const documentation = `Inserts this resourceId reference:\n\`\`\`arm-template\n"[${resourceIdExpression}]"\n\`\`\`\n<br/>`;
 
         const item = new Completion.Item({
             label,
-            insertText: insertText,
+            insertText,
             detail,
             documentation: new MarkdownString(documentation),
             span,
@@ -89,10 +84,10 @@ function getDependsOnCompletionsForResource(resource: IJsonResourceInfo, span: S
 
         completions.push(item);
 
-        const copyName = resource.copyElement?.getPropertyValue(templateKeys.copyName)?.asStringValue?.unquotedValue;
+        const copyName = resource.copyBlockElement?.getPropertyValue(templateKeys.copyName)?.asStringValue?.unquotedValue;
         if (copyName) {
             const copyNameExpression = jsonStringToTleExpression(copyName);
-            const copyLabel = `LOOP ${copyNameExpression}`;
+            const copyLabel = `LOOP ${getFriendlyExpressionFromTleExpression(copyNameExpression)}`;
             const copyInsertText = isTleExpression(copyName) ? `"[${copyNameExpression}]"` : `"${copyName}"`;
             const copyDetail = detail;
             // tslint:disable-next-line: prefer-template
@@ -100,7 +95,7 @@ function getDependsOnCompletionsForResource(resource: IJsonResourceInfo, span: S
 \`\`\`arm-template
 ${copyInsertText}
 \`\`\`
-from resource \`${shortNameExpression}\` of type \`${shortTypeExpression}\``;
+from resource \`${friendlyNameExpression}\` of type \`${friendlyTypeExpression}\``;
 
             const copyItem = new Completion.Item({
                 label: copyLabel,
