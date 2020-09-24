@@ -2,13 +2,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See License.md in the project root for license information.
 // ---------------------------------------------------------------------------------------------
-
 // TLE = Template Language Expression
-
 // tslint:disable:no-unnecessary-class // Grandfathered in
 // tslint:disable:switch-default // Grandfathered in
 // tslint:disable:max-classes-per-file // Grandfathered in
-
 import { templateKeys } from "../../constants";
 import { TemplatePositionContext } from "../../documents/positionContexts/TemplatePositionContext";
 import { IFunctionMetadata } from "../../documents/templates/IFunctionMetadata";
@@ -22,6 +19,11 @@ import { IssueKind } from "../IssueKind";
 import * as Json from "../json/JSON";
 import * as basic from "../json/Tokenizer";
 import { ContainsBehavior, Span } from "../Span";
+
+const tab: number = 4;
+const defaultMax: number = 40;
+const shortClosings = true;
+//const singleArgsOnSameLineIfFits = true;
 
 export function asStringValue(value: Value | undefined): StringValue | undefined {
     return value instanceof StringValue ? value : undefined;
@@ -69,13 +71,17 @@ export abstract class Value {
         return this.toString();
     }
 
+    public toString2(_indent: number, _max: number, _concatToString: boolean): string {
+        return this.toString();
+    }
+
     public abstract accept(visitor: Visitor): void;
 
     /**
      * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
      */
     public get __debugDisplay(): string {
-        return this.toString();
+        return this.toString2(0, defaultMax, true);
     }
 }
 
@@ -306,6 +312,32 @@ export class ArrayAccessValue extends ParentValue {
         }
         return result;
     }
+
+    public toString2(indent: number, max: number, concatToString: boolean): string {
+        //asdf testpoint: source needs multiple lines?
+        let result: string = `${this._source.toString2(indent, max, concatToString)}[`;
+        //asdf if (!!this._indexValue) {
+
+        //const sourceString = this.source.toString2(indent + tab, max); //asdf test
+
+        let indexAsString: string;
+        if (!this._indexValue //asdf testpoint
+            || this._indexValue instanceof StringValue
+            || this._indexValue instanceof NumberValue
+        ) {
+            indexAsString = this._indexValue?.toString() ?? '';
+        } else {
+            indexAsString = `\n${' '.repeat(indent + tab)}${this._indexValue.toString2(indent + 2 * tab, max, concatToString)}`;
+        }
+
+        result += indexAsString;
+        //}
+        if (!!this._rightSquareBracketToken) {
+            //result += `\n${' '.repeat(indent)}]`; //asdf
+            result += shortClosings ? `]` : `\n${' '.repeat(indent)}]`;
+        }
+        return result;
+    }
 }
 
 /**
@@ -492,7 +524,7 @@ export class FunctionCallValue extends ParentValue {
                     const arg1 = this.argumentExpressions[0];
                     if (arg1 instanceof StringValue) {
                         // tslint:disable-next-line: prefer-template
-                        return "${" + arg1.unquotedValue + "}";
+                        return "'${" + arg1.unquotedValue + "}'";
                     }
                 }
         }
@@ -576,12 +608,65 @@ export class FunctionCallValue extends ParentValue {
             return false;
         }
     }
+
+    public toString2(indent: number, max: number, concatToString: boolean): string {
+        const fullNameLC = this.fullName.toLocaleLowerCase();
+
+        if (fullNameLC === 'concat' || fullNameLC === 'parameters' || fullNameLC === 'variables') {
+            return this.toFriendlyString();
+        }
+
+        if (this.argumentExpressions.length === 0 //asdf testpoint
+            || (this.argumentExpressions.length === 1 &&
+                (
+                    this.argumentExpressions[0] instanceof StringValue
+                    || this.argumentExpressions[0] instanceof NumberValue
+                )
+            )
+        ) {
+            return this.toString();
+        }
+        //}
+
+        //asdf
+        // const fullName = this.fullName;
+
+        // if (this.argumentExpressions.length <= 1) {
+        //     const argsSingLine = this.argumentExpressions[0]?.toString() ?? '';
+        //     if (fullName.length + argsSingLine.length + indent <= max) {
+        //         return fullName + (!!this._leftParenthesisToken ? '(' : '') + argsSingLine + (!!this._rightParenthesisToken ? ')' : '');
+        //     }
+        // }
+
+        let result = this.fullName;
+
+        if (!!this._leftParenthesisToken) {
+            result += `(\n${' '.repeat(indent + tab)}`;
+        }
+
+        for (let i = 0; i < this._argumentExpressions.length; ++i) {
+            const argExpr = this._argumentExpressions[i];
+
+            if (i > 0) {
+                result += `,\n${' '.repeat(indent + tab)}`;
+            }
+            result += argExpr ? argExpr.toString2(indent + tab, max, concatToString) : ' ';
+        }
+
+        if (!!this._rightParenthesisToken) {
+            result += shortClosings ? `)` : `\n${' '.repeat(indent)})`;
+        }
+
+        return result;
+    }
 }
 
 /**
  * A TLE value representing a property access (source.property).
  */
 export class PropertyAccess extends ParentValue {
+
+    //asdf multiple lines if needed
     // We need to allow creating a property access expression whether the property name
     //   was correctly given or not, so we can have proper intellisense/etc.
     // I.e., we require the period, but after that might be empty or an error.

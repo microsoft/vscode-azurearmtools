@@ -142,11 +142,13 @@ export class AzureRMTools {
         borderStyle: "solid",
         light: {
             borderColor: "rgba(0, 0, 0, 0.2)",
-            backgroundColor: "rgba(0, 0, 0, 0.05)"
+            //asdf backgroundColor: "rgba(0, 0, 0, 0.05)"
+            backgroundColor: "rgba(0, 0, 0, 1)"
         },
         dark: {
             borderColor: "rgba(128, 128, 128, 0.5)",
-            backgroundColor: "rgba(128, 128, 128, 0.1)"
+            //asdf backgroundColor: "rgba(128, 128, 128, 0.1)"
+            backgroundColor: "rgba(128, 128, 128, 1)"
         }
     });
 
@@ -843,7 +845,13 @@ export class AzureRMTools {
                     return await this.onProvideHover(document, position, token);
                 }
             };
-            ext.context.subscriptions.push(vscode.languages.registerHoverProvider(templateDocumentSelector, hoverProvider));
+            const hoverProvider2: vscode.HoverProvider = {
+                provideHover: async (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover | undefined> => {
+                    return await this.onProvideHover2(document, position, token);
+                }
+            };
+            ext.context.subscriptions.push(vscode.languages.registerHoverProvider(templateDocumentSelector, hoverProvider2));
+            ext.context.subscriptions.push(vscode.languages.registerHoverProvider(templateDocumentSelector, hoverProvider)); //asdf
 
             const codeLensProvider = {
                 onDidChangeCodeLenses: this._codeLensChangedEmitter.event,
@@ -1193,8 +1201,50 @@ export class AzureRMTools {
                 if (hoverInfo) {
                     properties.hoverType = hoverInfo.friendlyType;
                     const hoverRange: vscode.Range = getVSCodeRangeFromSpan(doc, hoverInfo.span);
-                    const hover = new vscode.Hover(hoverInfo.getHoverText(), hoverRange);
+                    const strings: vscode.MarkdownString[] = [];
+                    strings.push(new vscode.MarkdownString(hoverInfo.getHoverText()));
+                    if (context instanceof TemplatePositionContext) {
+                        const expr = context.tleInfo?.tleParseResult.expression?.toString();
+                        if (expr) {
+                            const s = new vscode.MarkdownString();
+                            s.appendCodeblock(`"${expr}"`, 'arm-template');
+                            //strings.push(s); asdf
+                        }
+                    }
+                    const hover = new vscode.Hover(strings, hoverRange);
                     return hover;
+                }
+            }
+
+        });
+    }
+
+    private async onProvideHover2(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover | undefined> {
+        return await callWithTelemetryAndErrorHandling('Hover', async (actionContext: IActionContext): Promise<vscode.Hover | undefined> => {  //asdf
+            actionContext.errorHandling.suppressDisplay = true;
+            actionContext.telemetry.suppressIfSuccessful = true;
+            //asdf const properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>actionContext.telemetry.properties;
+
+            const cancel = new Cancellation(token, actionContext);
+            const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(document, cancel); //asdf optimize
+            if (doc) {
+                //asdf properties.hoverType = hoverInfo.friendlyType;
+                const context = doc.getContextFromDocumentLineAndColumnIndexes(position.line, position.character, associatedDoc);
+                if (context instanceof TemplatePositionContext) {
+                    const expr = context.tleInfo?.tleParseResult.expression;
+                    if (expr) {
+                        const exprString = expr.toString2(0, 20); //asdf
+                        //asdf const hoverRange: vscode.Range = getVSCodeRangeFromSpan(doc, expr.getSpan());
+                        const s = new vscode.MarkdownString();
+                        s.isTrusted = true;
+
+                        // Only trusted markdown supports links that execute commands, e.g. `[Run it](command:myCommandId)`.
+
+                        //s.appendMarkdown("### Full expression");
+                        //s.appendMarkdown("**Full expression**");
+                        s.appendCodeblock(`"[${exprString}\n]"`, 'arm-template');
+                        return new vscode.Hover(s); //asdf , hoverRange);
+                    }
                 }
             }
 
