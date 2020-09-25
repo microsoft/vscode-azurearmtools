@@ -144,31 +144,6 @@ export class InsertItem {
         return name;
     }
 
-    private async insertParameter(template: DeploymentTemplate, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
-    public async insertParameterWithDefaultValue(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor, context: IActionContext, name: string, value: string, description: string, options?: { undoStopBefore: boolean; undoStopAfter: boolean }): Promise<string> {
-        let parameter: Parameter = {
-            type: "string",
-            defaultValue: value
-        };
-        if (description) {
-            parameter.metadata = {
-                description: description
-            };
-        }
-        await this.insertInObject({
-            template,
-            textEditor,
-            part: templateKeys.parameters,
-            data: parameter,
-            name,
-            context,
-            setCursor: false,
-            reveal: false,
-            options: options
-        });
-        return name;
-    }
-
     private async insertParameter(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         let name = await this.ui.showInputBox({ prompt: "Name of parameter?" });
         const parameterType = await this.ui.showQuickPick(getItemType(), { placeHolder: 'Type of parameter?' });

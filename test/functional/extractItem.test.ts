@@ -11,7 +11,7 @@ import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import * as vscode from "vscode";
 import { TestUserInput } from 'vscode-azureextensiondev';
-import { DeploymentTemplate, ExtractItem } from '../../extension.bundle';
+import { DeploymentTemplateDoc, ExtractItem } from '../../extension.bundle';
 import { getActionContext } from '../support/getActionContext';
 import { getCodeActionContext } from '../support/getCodeActionContext';
 import { getTempFilePath } from '../support/getTempFilePath';
@@ -26,13 +26,13 @@ suite("ExtractItem", async (): Promise<void> => {
         await runExtractItemTests(startTemplate, expectedTemplate, selectedText, codeActionsCount, async (extractItem, template, editor) => await extractItem.extractVariable(editor, template, getActionContext()));
     }
 
-    async function runExtractItemTests(startTemplate: string, expectedTemplate: string, selectedText: string, codeActionsCount: number, action: (extractItem: ExtractItem, deploymentTemplate: DeploymentTemplate, textEditor: vscode.TextEditor) => Promise<void>): Promise<void> {
+    async function runExtractItemTests(startTemplate: string, expectedTemplate: string, selectedText: string, codeActionsCount: number, action: (extractItem: ExtractItem, deploymentTemplate: DeploymentTemplateDoc, textEditor: vscode.TextEditor) => Promise<void>): Promise<void> {
         const tempPath = getTempFilePath(`insertItem`, '.azrm');
         fse.writeFileSync(tempPath, startTemplate);
         let document = await vscode.workspace.openTextDocument(tempPath);
         let textEditor = await vscode.window.showTextDocument(document);
         let extractItem = new ExtractItem(testUserInput);
-        let deploymentTemplate = new DeploymentTemplate(document.getText(), document.uri);
+        let deploymentTemplate = new DeploymentTemplateDoc(document.getText(), document.uri);
         let text = document.getText(undefined);
         let index = text.indexOf(selectedText);
         let position = document.positionAt(index);

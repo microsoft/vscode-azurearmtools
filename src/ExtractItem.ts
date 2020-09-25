@@ -5,14 +5,14 @@
 
 import * as vscode from "vscode";
 import { IActionContext, IAzureUserInput } from "vscode-azureextensionui";
-import { DeploymentTemplate } from "./DeploymentTemplate";
-import { InsertItem } from "./insertItem";
+import { DeploymentTemplateDoc } from "./documents/templates/DeploymentTemplateDoc";
+import { InsertItem } from "./documents/templates/insertItem";
 export class ExtractItem {
     // tslint:disable-next-line:no-empty
     constructor(private ui: IAzureUserInput) {
     }
 
-    public async extractParameter(editor: vscode.TextEditor, template: DeploymentTemplate, context: IActionContext): Promise<void> {
+    public async extractParameter(editor: vscode.TextEditor, template: DeploymentTemplateDoc, context: IActionContext): Promise<void> {
         let selection = this.expandSelection(editor.selection, editor.document, template, editor);
         let selectedText = editor.document.getText(selection);
         let name = await this.ui.showInputBox({ prompt: "Name of parameter?" });
@@ -25,7 +25,7 @@ export class ExtractItem {
         editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.end), vscode.TextEditorRevealType.Default);
     }
 
-    public async extractVariable(editor: vscode.TextEditor, template: DeploymentTemplate, context: IActionContext): Promise<void> {
+    public async extractVariable(editor: vscode.TextEditor, template: DeploymentTemplateDoc, context: IActionContext): Promise<void> {
         let selection = this.expandSelection(editor.selection, editor.document, template, editor);
         let selectedText = editor.document.getText(selection);
         let name = await this.ui.showInputBox({ prompt: "Name of variable?" });
@@ -36,7 +36,7 @@ export class ExtractItem {
         editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.end), vscode.TextEditorRevealType.Default);
     }
 
-    public fixExtractTexts(selectedText: string, insertText: string, selection: vscode.Selection, template: DeploymentTemplate, editor: vscode.TextEditor): string[] {
+    public fixExtractTexts(selectedText: string, insertText: string, selection: vscode.Selection, template: DeploymentTemplateDoc, editor: vscode.TextEditor): string[] {
         if (this.isInsideExpression(selection, template, editor)) {
             if (this.isText(selectedText)) {
                 insertText = this.removeStartAndEnd(insertText);
@@ -52,7 +52,7 @@ export class ExtractItem {
         return [selectedText, insertText];
     }
 
-    public expandSelection(selection: vscode.Selection, document: vscode.TextDocument, template: DeploymentTemplate, editor: vscode.TextEditor): vscode.Selection {
+    public expandSelection(selection: vscode.Selection, document: vscode.TextDocument, template: DeploymentTemplateDoc, editor: vscode.TextEditor): vscode.Selection {
         if (selection.start.character === 0) {
             return selection;
         }
@@ -91,7 +91,7 @@ export class ExtractItem {
         return regEx.test(text);
     }
 
-    private isInsideExpression(selection: vscode.Selection, template: DeploymentTemplate, editor: vscode.TextEditor): boolean {
+    private isInsideExpression(selection: vscode.Selection, template: DeploymentTemplateDoc, editor: vscode.TextEditor): boolean {
         let pc = template.getContextFromDocumentLineAndColumnIndexes(selection.start.line, selection.start.character, undefined);
         if (pc.jsonValue && pc.jsonValue.asStringValue) {
             let selectedText = editor.document.getText(selection);

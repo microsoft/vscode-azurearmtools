@@ -5,7 +5,7 @@
 // tslint:disable: max-classes-per-file // Private classes are related to DeploymentTemplate implementation
 
 import * as assert from 'assert';
-import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
+import { CodeAction, CodeActionContext, CodeActionKind, Command, Range, Selection, Uri } from "vscode";
 import { TemplateScopeKind } from '../../../extension.bundle';
 import { configKeys, templateKeys } from "../../constants";
 import { ext } from '../../extensionVariables';
@@ -478,7 +478,113 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
             }
         }
 
+        let shouldAddExtractActions: boolean = false;
+        let pc = this.getContextFromDocumentLineAndColumnIndexes(range.start.line, range.start.character, undefined);
+        if (range.start.line === range.end.line) {
+            let jsonToken = pc.document.getJSONValueAtDocumentCharacterIndex(pc.jsonTokenStartIndex - 1, Span.ContainsBehavior.extended);
+            if (jsonToken instanceof Json.Property /* && pc.document.resourceObjects */) {
+                // if (!pc.document.resourceObjects.span.intersect(jsonToken.span)) {
+                //     return actions;
+                // }
+                const value = jsonToken.value as Json.StringValue;
+                if (range.start.character !== range.end.character) {
+                    let startIndex = this.getDocumentCharacterIndex(range.start.line, range.start.character);
+                    let endIndex = this.getDocumentCharacterIndex(range.end.line, range.end.character);
+                    let span: Span.Span = new Span.Span(startIndex, endIndex - startIndex);
+                    const selectedText = this.getDocumentTextWithSquareBrackets(span);
+                    if (this.isParameterOrVariableReference(selectedText)) {
+                        return actions;
+                    }
+                    if (pc.jsonValue && jsonToken.value && jsonToken.value.span === pc.jsonValue.span && selectedText && this.equalsWithSqareBrackets(pc.jsonValue.asStringValue?.unquotedValue, selectedText)) {
+                        shouldAddExtractActions = true;
+                    } else {
+                        if (this.isExpression(value.quotedValue)) {
+                            shouldAddExtractActions = this.isValidExpression(this.getDocumentTextWithSurroundingCharacters(span, "'", "'"));
+                        }
+                    }
+                } else {
+                    if (!this.isSimpleText(value.quotedValue)) {
+                        return actions;
+                    }
+                    if (pc.jsonValue && jsonToken.value && jsonToken.value.span === pc.jsonValue.span) {
+                        shouldAddExtractActions = true;
+                    }
+                }
+            }
+        }
+        if (shouldAddExtractActions) {
+            actions.push(this.createExtractCommand('Extract Parameter...', 'extractParameter'));
+            actions.push(this.createExtractCommand('Extract Variable...', 'extractVariable'));
+        }
+
         return actions;
+    }
+
+    private getDocumentTextWithSquareBrackets(span: Span.Span): string {
+        let text = this.getDocumentText(span);
+        if (text.startsWith("[") && text.endsWith("]")) {
+            return text;
+        }
+        let extendedSpan = span.extendLeft(1).extendRight(1);
+        let extendedText = this.getDocumentText(extendedSpan);
+        if (extendedText.startsWith("[") && extendedText.endsWith("]")) {
+            return extendedText;
+        }
+        return text;
+    }
+
+    private getDocumentTextWithSurroundingCharacters(span: Span.Span, start: string, end: string): string {
+        let text = this.getDocumentText(span);
+        if (text.startsWith(start) && text.endsWith(end)) {
+            return text;
+        }
+        let extendedSpan = span.extendLeft(1).extendRight(1);
+        let extendedText = this.getDocumentText(extendedSpan);
+        if (extendedText.startsWith(start) && extendedText.endsWith(end)) {
+            return extendedText;
+        }
+        return text;
+    }
+
+    private isParameterOrVariableReference(text: string): boolean {
+        const regEx = /^"?\[?(parameters|variables)\('.+'\)]?"?/gi;
+        return regEx.test(text);
+    }
+
+    private isSimpleText(text: string): boolean {
+        if (text.startsWith("\"[") || text.endsWith("]\"")) {
+            return false;
+        }
+        return text.startsWith("\"") && text.endsWith("\"");
+    }
+
+    public isExpression(text: string): boolean {
+        return (text.startsWith("\"[") && text.endsWith("]\""));
+    }
+
+    public isValidExpression(text: string): boolean {
+        const functionCallRegex = /^\s*[\w\.]+\(.*\)\s*$/gi;
+        const textRegex = /^\s*'.+'\s*$/gi;
+        return functionCallRegex.test(text) || textRegex.test(text);
+    }
+
+    private equalsWithSqareBrackets(text: string | undefined, selectedText: string): boolean {
+        if (!text) {
+            return false;
+        }
+        if (text === selectedText) {
+            return true;
+        }
+        if (text.startsWith("[") && text.endsWith("]")) {
+            text = text.substr(1, text.length - 2);
+        }
+        return text === selectedText;
+    }
+
+    private createExtractCommand(title: string, command: string): CodeAction {
+        const action = new CodeAction(title, CodeActionKind.RefactorExtract);
+        action.command = { command: `azurerm-vscode-tools.${command}`, title: '' };
+        return action;
     }
 
     public getTextAtTleValue(tleValue: TLE.Value, parentStringToken: Json.Token): string {

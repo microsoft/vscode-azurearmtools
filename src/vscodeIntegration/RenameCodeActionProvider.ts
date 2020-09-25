@@ -1,8 +1,8 @@
 
 import * as vscode from 'vscode';
 import { PositionContext } from '../documents/positionContexts/PositionContext';
+import { TemplatePositionContext } from '../documents/positionContexts/TemplatePositionContext';
 import { getRenameError } from '../util/getRenameError';
-import { TemplatePositionContext } from './TemplatePositionContext';
 const command = 'editor.action.rename';
 export class RenameCodeActionProvider implements vscode.CodeActionProvider {
 
@@ -11,9 +11,6 @@ export class RenameCodeActionProvider implements vscode.CodeActionProvider {
 
     public async provideCodeActions(document: vscode.TextDocument, range: vscode.Range): Promise<vscode.CodeAction[] | undefined> {
         let pc = await this.action(document, range.start) as TemplatePositionContext;
-        if (!pc) {
-            return;
-        }
         const referenceSiteInfo = pc.getReferenceSiteInfo(true);
         if (!referenceSiteInfo || getRenameError(referenceSiteInfo)) {
             return;

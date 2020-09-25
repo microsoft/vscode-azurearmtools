@@ -49,6 +49,7 @@ export { UserFunctionNamespaceDefinition } from "./src/documents/templates/UserF
 export { UserFunctionParameterDefinition } from "./src/documents/templates/UserFunctionParameterDefinition";
 export { isVariableDefinition, IVariableDefinition } from "./src/documents/templates/VariableDefinition";
 export { ext } from './src/extensionVariables';
+export { ExtractItem } from "./src/ExtractItem";
 export * from './src/language/expressions/AzureRMAssets';
 export * from "./src/language/expressions/friendlyExpressions";
 export * from "./src/language/expressions/isTleExpression";
