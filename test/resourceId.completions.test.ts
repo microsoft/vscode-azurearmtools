@@ -1052,4 +1052,56 @@ suite("ResourceId completions", () => {
                 false);
         });
     });
+
+    suite("regression tests", () => {
+        createResourceIdCompletionsTest2(
+            "#775",
+            {
+                "resources": [
+                    {
+                        "type": "Microsoft.Resources/deployments",
+                        "apiVersion": "2019-10-01",
+                        "name": "[concat(parameters('vmProperties')[copyIndex()].name,'Deployment')]",
+                        "properties": {
+                            "mode": "Incremental",
+                            "expressionEvaluationOptions": {
+                                "scope": "inner"
+                            },
+                            "template": {
+                                "resources": [
+                                    {
+                                        "type": "Microsoft.Compute/virtualMachines",
+                                        "apiVersion": "2019-07-01",
+                                        "resources": [
+                                            {
+                                                "type": "Microsoft.Compute/virtualMachines/extensions",
+                                                "apiVersion": "2019-12-01",
+                                                "name": "[concat(parameters('vmName'),copyIndex(1),'/dscext')]",
+                                                "dependsOn": [
+                                                    "[<context>]" // << COMPLETION HERE
+                                                ]
+                                            }
+                                        ],
+                                        "name": "[concat(parameters('vmName'),copyIndex(1))]",
+                                        "copy": {
+                                            "name": "[concat(parameters('vmName'),'vmcopy')]",
+                                            "count": "[parameters('loopCount')]"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "copy": {
+                            "name": "vmCopy",
+                            "count": "[length(parameters('vmProperties'))]"
+                        }
+                    }
+                ]
+            },
+            'resourceId(!)',
+            [
+                //asdf
+            ]
+        );
+    });
 });
