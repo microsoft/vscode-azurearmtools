@@ -5,8 +5,8 @@
 
 import * as vscode from "vscode";
 import { IActionContext, IAzureUserInput } from "vscode-azureextensionui";
-import { DeploymentTemplateDoc } from "./documents/templates/DeploymentTemplateDoc";
-import { InsertItem } from "./documents/templates/insertItem";
+import { DeploymentTemplateDoc } from "./DeploymentTemplateDoc";
+import { InsertItem } from "./insertItem";
 export class ExtractItem {
     // tslint:disable-next-line:no-empty
     constructor(private ui: IAzureUserInput) {

@@ -38,6 +38,7 @@ export { TemplatePositionContext } from "./src/documents/positionContexts/Templa
 export { ParameterDefinitionCodeLens, ShowCurrentParameterFileCodeLens } from "./src/documents/templates/deploymentTemplateCodeLenses";
 export { DeploymentTemplateDoc } from "./src/documents/templates/DeploymentTemplateDoc";
 export { ExpressionType } from "./src/documents/templates/ExpressionType";
+export { ExtractItem } from "./src/documents/templates/ExtractItem";
 export { looksLikeResourceTypeStringLiteral } from "./src/documents/templates/getResourceIdCompletions";
 export * from "./src/documents/templates/getResourcesInfo";
 export { InsertItem } from "./src/documents/templates/insertItem";
@@ -49,7 +50,6 @@ export { UserFunctionNamespaceDefinition } from "./src/documents/templates/UserF
 export { UserFunctionParameterDefinition } from "./src/documents/templates/UserFunctionParameterDefinition";
 export { isVariableDefinition, IVariableDefinition } from "./src/documents/templates/VariableDefinition";
 export { ext } from './src/extensionVariables';
-export { ExtractItem } from "./src/ExtractItem";
 export * from './src/language/expressions/AzureRMAssets';
 export * from "./src/language/expressions/friendlyExpressions";
 export * from "./src/language/expressions/isTleExpression";

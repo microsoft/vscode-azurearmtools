@@ -477,15 +477,19 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                 actions.push(...scopeActions);
             }
         }
+        return this.addExtractCodeActions(range, actions);
+    }
 
+    private addExtractCodeActions(range: Range | Selection, actions: (CodeAction | Command)[]): (CodeAction | Command)[] {
         let shouldAddExtractActions: boolean = false;
         let pc = this.getContextFromDocumentLineAndColumnIndexes(range.start.line, range.start.character, undefined);
         if (range.start.line === range.end.line) {
             let jsonToken = pc.document.getJSONValueAtDocumentCharacterIndex(pc.jsonTokenStartIndex - 1, Span.ContainsBehavior.extended);
-            if (jsonToken instanceof Json.Property /* && pc.document.resourceObjects */) {
-                // if (!pc.document.resourceObjects.span.intersect(jsonToken.span)) {
-                //     return actions;
-                // }
+            if (jsonToken instanceof Json.Property && pc.document.topLevelValue) {
+                let resources = pc.document.topLevelValue.getPropertyValue("resources");
+                if (!resources || !resources.span.intersect(jsonToken.span)) {
+                    return actions;
+                }
                 const value = jsonToken.value as Json.StringValue;
                 if (range.start.character !== range.end.character) {
                     let startIndex = this.getDocumentCharacterIndex(range.start.line, range.start.character);
@@ -503,10 +507,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                         }
                     }
                 } else {
-                    if (!this.isSimpleText(value.quotedValue)) {
-                        return actions;
-                    }
-                    if (pc.jsonValue && jsonToken.value && jsonToken.value.span === pc.jsonValue.span) {
+                    if (this.isSimpleText(value.quotedValue) && pc.jsonValue && jsonToken.value && jsonToken.value.span === pc.jsonValue.span) {
                         shouldAddExtractActions = true;
                     }
                 }
@@ -516,7 +517,6 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
             actions.push(this.createExtractCommand('Extract Parameter...', 'extractParameter'));
             actions.push(this.createExtractCommand('Extract Variable...', 'extractVariable'));
         }
-
         return actions;
     }
 
