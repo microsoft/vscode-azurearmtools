@@ -4,7 +4,7 @@
 
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length no-unnecessary-class
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name no-constant-condition
-// tslint:disable:prefer-template no-http-string
+// tslint:disable:prefer-template no-http-string no-invalid-template-strings
 
 import * as assert from 'assert';
 import { AzureRMAssets, looksLikeResourceTypeStringLiteral, splitResourceNameIntoSegments } from '../extension.bundle';
