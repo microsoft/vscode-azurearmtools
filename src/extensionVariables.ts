@@ -7,13 +7,14 @@ import * as os from 'os';
 import * as vscode from "vscode";
 import { IAzExtOutputChannel, IAzureUserInput } from "vscode-azureextensionui";
 import { LanguageClient } from "vscode-languageclient";
-import { CompletionsSpy } from "./CompletionsSpy";
-import { IConfiguration, VsCodeConfiguration } from "./Configuration";
 import { configPrefix, isWebpack } from "./constants";
+import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
 import { LanguageServerState } from "./languageclient/startArmLanguageServer";
-import { DeploymentFileMapping } from "./parameterFiles/DeploymentFileMapping";
-import { JsonOutlineProvider } from "./Treeview";
+import { ISnippetManager } from './snippets/ISnippetManager';
+import { CompletionsSpy } from "./util/CompletionsSpy";
 import { InitializeBeforeUse } from "./util/InitializeBeforeUse";
+import { IConfiguration, VsCodeConfiguration } from './vscodeIntegration/Configuration';
+import { JsonOutlineProvider } from "./vscodeIntegration/Treeview";
 
 /**
  * Namespace for common variables used throughout the extension. They must be initialized in the activate() method of extension.ts
@@ -28,31 +29,31 @@ class ExtensionVariables {
     private _ui: InitializeBeforeUse<IAzureUserInput> = new InitializeBeforeUse<IAzureUserInput>();
 
     public set context(context: vscode.ExtensionContext) {
-        this._context.setValue(context);
+        this._context.value = context;
     }
     public get context(): vscode.ExtensionContext {
-        return this._context.getValue();
+        return this._context.value;
     }
 
     public set jsonOutlineProvider(context: JsonOutlineProvider) {
-        this._jsonOutlineProvider.setValue(context);
+        this._jsonOutlineProvider.value = context;
     }
     public get jsonOutlineProvider(): JsonOutlineProvider {
-        return this._jsonOutlineProvider.getValue();
+        return this._jsonOutlineProvider.value;
     }
 
     public set outputChannel(outputChannel: IAzExtOutputChannel) {
-        this._outputChannel.setValue(outputChannel);
+        this._outputChannel.value = outputChannel;
     }
     public get outputChannel(): IAzExtOutputChannel {
-        return this._outputChannel.getValue();
+        return this._outputChannel.value;
     }
 
     public set ui(ui: IAzureUserInput) {
-        this._ui.setValue(ui);
+        this._ui.value = ui;
     }
     public get ui(): IAzureUserInput {
-        return this._ui.getValue();
+        return this._ui.value;
     }
 
     public EOL: string = os.EOL;
@@ -65,10 +66,14 @@ class ExtensionVariables {
     // Suite support - lets us know when diagnostics have been completely published for a file
     public addCompletedDiagnostic: boolean = false;
 
+    // Note: We can't effectively change the configuration for all actions right now because
+    // the language server reads the vscode configuration directly in order to
+    // receive the parameter file mappings.
     public readonly configuration: IConfiguration = new VsCodeConfiguration(configPrefix);
 
     public readonly completionItemsSpy: CompletionsSpy = new CompletionsSpy();
     public deploymentFileMapping: InitializeBeforeUse<DeploymentFileMapping> = new InitializeBeforeUse<DeploymentFileMapping>();
+    public snippetManager: InitializeBeforeUse<ISnippetManager> = new InitializeBeforeUse<ISnippetManager>();
 }
 
 // tslint:disable-next-line: no-any

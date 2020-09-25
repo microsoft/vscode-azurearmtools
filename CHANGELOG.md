@@ -2,6 +2,70 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.12.0
+
+### Added
+
+- Snippet contextualization [#654](https://github.com/microsoft/vscode-azurearmtools/issues/654)
+  - Snippets now appear only in locations where they make sense
+  - Automatically bring up snippets for new parameters, variables, outputs, etc. when the first double quote is typed
+  - Automatically bring up snippets for new resources, user function parameters, etc. when the first curly brace is typed
+- Support code lenses, errors, intellisense and code actions for nested templates, just like for parameter files [#837](https://github.com/microsoft/vscode-azurearmtools/issues/837)
+
+### Fixed
+
+- "filename.json does not appear to be an Azure Resource Manager deployment template file" [#838](https://github.com/microsoft/vscode-azurearmtools/issues/838)
+- The notification information is inconsistent with the status bar "Select/Create Parameter File…" [#873](https://github.com/microsoft/vscode-azurearmtools/issues/873)
+- Show error icon in pick list for current parameter file if not found [#693](https://github.com/microsoft/Sscode-azurearmtools/icon issues/693)
+- Revision comparison shows unexpected problems [#601](https://github.com/microsoft/vscode-azurearmtools/issues/601)
+- The ARM function listchannelwithkeys is not recognized as a valid function. [#846](https://github.com/microsoft/vscode-azurearmtools/issues/846)
+- Error shows when selecting parameter file for an unsaved template file [#841](https://github.com/microsoft/vscode-azurearmtools/issues/841)
+- Status bar doesn't show up when changing a file to arm-template [#839](https://github.com/microsoft/vscode-azurearmtools/issues/839)
+- Assertion failure in parameter file with no "parameters" object if there are missing parameters [#829](https://github.com/microsoft/vscode-azurearmtools/issues/829)
+- Adding in Resource Group snippet (thanks Ryan Yates @kilasuit!) [#726](https://github.com/microsoft/vscode-azurearmtools/issues/726)
+- SetDiagnosticsFromTask for source 'arm-template (validation)' throws an exception during suites [#875](https://github.com/microsoft/vscode-azurearmtools/issues/875)
+- Disable display of "documentColumnIndex (29) cannot be greater than the line's maximum index" assertion [#843](https://github.com/microsoft/vscode-azurearmtools/issues/843)
+- "value cannot be null" when providing keyvault reference to a nested deployment parameter [#827](https://github.com/microsoft/vscode-azurearmtools/issues/827)
+- Error message and !!MISSING: command!! messages in code lenses opening template file when params file missing [#810](https://github.com/microsoft/vscode-azurearmtools/issues/810)
+- Error shows when selecting parameter file for an unsaved template file [#666](https://github.com/microsoft/vscode-azurearmtools/issues/666)
+- Invalid location given for error when resource name evaluates to empty string [#816](https://github.com/microsoft/vscode-azurearmtools/issues/816)
+- Using 'copy' in nested template variables triggered an template validation error [#730](https://github.com/microsoft/vscode-azurearmtools/issues/730)
+
+## Version 0.11.0
+
+### Added
+
+- Better support for nested templates [#484](https://github.com/microsoft/vscode-azurearmtools/pull/484)
+  - Support for inner-scoped expressions (expressionEvaluationOptions.scope = 'inner') for parameters, variables and user functions [#554](https://github.com/microsoft/vscode-azurearmtools/pull/554)
+  - Fixed null reference exception with nested templates when a parameter file is used [#716](https://github.com/microsoft/vscode-azurearmtools/pull/716)
+  - Code lenses mark nested and linked template and their effective expression scope
+  - Warning about unreachable parameters/variables in a nested template with outer scope
+- New code lenses show effective source and value of top-level parameters [#675](https://github.com/microsoft/vscode-azurearmtools/issues/675)
+- First step taken to allow us to restrict snippets to appropriate locations in a template file [#789](https://github.com/microsoft/vscode-azurearmtools/pull/789)
+- Unused parameters and variables are now displayed grayed out like unused code [#679](https://github.com/microsoft/vscode-azurearmtools/issues/679)
+- Recognition for the listKeyValue function [#720](https://github.com/microsoft/vscode-azurearmtools/pull/720)
+
+### Fixed
+
+- 'Load Balancer Internal' snippet: incorrect placement of subnet for frontendIPConfigurations (thanks Anatoly Basharin @abasharin!) [#725](https://github.com/microsoft/vscode-azurearmtools/pull/725)
+- Format document breaks when using multi-line functions [#435](https://github.com/microsoft/vscode-azurearmtools/issues/435)
+- Made prompt for "Type a parameter name" more explanatory [#765](https://github.com/microsoft/vscode-azurearmtools/issues/765)
+- Improvements for Insert Item... menu (thanks Nils Hedström @nilshedstrom!) [#670](https://github.com/microsoft/vscode-azurearmtools/issues/670)
+- Fails to create a parameter file for arm template when encoded with UTF-8 BOM [#721](https://github.com/microsoft/vscode-azurearmtools/issues/721)
+- Schema validation is not identifying correct location in nested templates [#625](https://github.com/microsoft/vscode-azurearmtools/issues/625)
+- Shortened many schema-related warning messages [#623](https://github.com/microsoft/vscode-azurearmtools/issues/623)
+- "Internal Error: Validation threw an exception" with assembly including linked templates [#773](https://github.com/microsoft/vscode-azurearmtools/issues/773)
+- Completion list for "location" shows incorrect icons [#676](https://github.com/microsoft/vscode-azurearmtools/issues/676)
+- Formatting: empty object blocks should be left alone, not expanded to multi-line [#753](https://github.com/microsoft/vscode-azurearmtools/issues/753)
+- Template validation reports parameter value not specified when it uses a keyvault reference [#609](https://github.com/microsoft/vscode-azurearmtools/issues/609)
+- Template with apiProfile not honored among resources [#635](https://github.com/microsoft/vscode-azurearmtools/issues/635)
+- Microsoft.Logic/workflows snippet apiVersion references removed schema [#700](https://github.com/microsoft/vscode-azurearmtools/issues/700)
+
+### Changed
+
+- Made naming of linked template snippet consistent with the terminology in current [docs](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/linked-templates) and added a new snippet for nested templates [#744](https://github.com/microsoft/vscode-azurearmtools/issues/744)
+- Updated schema cache [#790](https://github.com/microsoft/vscode-azurearmtools/issues/790)
+
 ## Version 0.10.0
 
 ### Added

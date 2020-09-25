@@ -19,7 +19,9 @@
             "./typings"
         ]
     },
-    "exclude": [
-        "node_modules"
+    "include": [
+        "src",
+        "test",
+        "extension.bundle.ts"
     ]
 }

@@ -1,0 +1,34 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "rgNamePrefix": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "rgEnvList": {
+            "type": "array",
+            "allowedValues": [
+                "DEV",
+                "TEST",
+                "PROD"
+            ],
+            "defaultValue": []
+        },
+        "instanceCount": {
+            "type": "int",
+            "defaultValue": 2
+        }
+    },
+    "variables": {},
+    "resources": [],
+    "outputs": {
+        "resourceGroups": {
+            "type": "array",
+            "copy": {
+                "count": "[parameters('instanceCount')]",
+                "input": "[resourceId('Microsoft.Resources/resourceGroups', concat(parameters('rgNamePrefix'),'-',parameters('rgEnvList')[copyIndex()]))]"
+            }
+        }
+    }
+}

@@ -5,7 +5,7 @@
 // tslint:disable:no-unused-expression
 
 import * as assert from "assert";
-import { Json, Language, ParameterDefinition } from "../extension.bundle";
+import { Json, ParameterDefinition, Span } from "../extension.bundle";
 
 suite("ParameterDefinition", () => {
     suite("constructor(Json.Property)", () => {
@@ -20,8 +20,8 @@ suite("ParameterDefinition", () => {
         });
 
         test("with property with no metadata", () => {
-            const parameterName = new Json.StringValue(new Language.Span(0, 13), "'parameterName'");
-            const parameterDefinition = new Json.ObjectValue(new Language.Span(16, 2), []);
+            const parameterName = new Json.StringValue(new Span(0, 13), "'parameterName'");
+            const parameterDefinition = new Json.ObjectValue(new Span(16, 2), []);
             const property = new Json.Property(parameterName.span.union(parameterDefinition.span), parameterName, parameterDefinition);
 
             const pd = new ParameterDefinition(property);

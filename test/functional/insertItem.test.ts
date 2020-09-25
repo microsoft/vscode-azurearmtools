@@ -13,9 +13,10 @@ import * as vscode from "vscode";
 // tslint:disable-next-line:no-duplicate-imports
 import { window, workspace } from "vscode";
 import { IAzureUserInput, PromptResult } from 'vscode-azureextensionui';
-import { DeploymentTemplate, InsertItem, TemplateSectionType } from '../../extension.bundle';
+import { DeploymentTemplateDoc, InsertItem, TemplateSectionType } from '../../extension.bundle';
 import { getActionContext } from '../support/getActionContext';
 import { getTempFilePath } from "../support/getTempFilePath";
+import { testWithRealSnippets } from '../support/TestSnippets';
 
 suite("InsertItem", async (): Promise<void> => {
     function assertTemplate(actual: String, expected: String, textEditor: vscode.TextEditor, ignoreWhiteSpace: boolean = false): void {
@@ -38,28 +39,28 @@ suite("InsertItem", async (): Promise<void> => {
         assert.equal(actual, expected);
     }
 
-    function testInsertItem(template: string, expected: String, action: (insertItem: InsertItem, deploymentTemplate: DeploymentTemplate, textEditor: vscode.TextEditor) => Promise<void>, showInputBox: string[], textToInsert: string = '', ignoreWhiteSpace: boolean = false): void {
-        test("Tabs CRLF", async () => {
+    function testInsertItem(template: string, expected: String, action: (insertItem: InsertItem, deploymentTemplate: DeploymentTemplateDoc, textEditor: vscode.TextEditor) => Promise<void>, showInputBox: string[], textToInsert: string = '', ignoreWhiteSpace: boolean = false): void {
+        testWithRealSnippets("Tabs CRLF", async () => {
             await testInsertItemWithSettings(template, expected, false, 4, true, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
-        test("Spaces CRLF", async () => {
+        testWithRealSnippets("Spaces CRLF", async () => {
             await testInsertItemWithSettings(template, expected, true, 4, true, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
-        test("Spaces (2) CRLF", async () => {
+        testWithRealSnippets("Spaces (2) CRLF", async () => {
             await testInsertItemWithSettings(template, expected, true, 2, true, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
-        test("Spaces LF", async () => {
+        testWithRealSnippets("Spaces LF", async () => {
             await testInsertItemWithSettings(template, expected, true, 4, false, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
-        test("Tabs LF", async () => {
+        testWithRealSnippets("Tabs LF", async () => {
             await testInsertItemWithSettings(template, expected, false, 4, false, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
-        test("Spaces (2) LF", async () => {
+        testWithRealSnippets("Spaces (2) LF", async () => {
             await testInsertItemWithSettings(template, expected, true, 2, false, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
     }
 
-    async function testInsertItemWithSettings(template: string, expected: String, insertSpaces: boolean, tabSize: number, eolAsCRLF: boolean, action: (insertItem: InsertItem, deploymentTemplate: DeploymentTemplate, textEditor: vscode.TextEditor) => Promise<void>, showInputBox: string[], textToInsert: string = '', ignoreWhiteSpace: boolean = false): Promise<void> {
+    async function testInsertItemWithSettings(template: string, expected: String, insertSpaces: boolean, tabSize: number, eolAsCRLF: boolean, action: (insertItem: InsertItem, deploymentTemplate: DeploymentTemplateDoc, textEditor: vscode.TextEditor) => Promise<void>, showInputBox: string[], textToInsert: string = '', ignoreWhiteSpace: boolean = false): Promise<void> {
         if (eolAsCRLF) {
             template = template.replace(/\n/g, '\r\n');
         }
@@ -75,7 +76,7 @@ suite("InsertItem", async (): Promise<void> => {
         let textEditor = await window.showTextDocument(document);
         let ui = new MockUserInput(showInputBox);
         let insertItem = new InsertItem(ui);
-        let deploymentTemplate = new DeploymentTemplate(document.getText(), document.uri);
+        let deploymentTemplate = new DeploymentTemplateDoc(document.getText(), document.uri);
         await action(insertItem, deploymentTemplate, textEditor);
         await textEditor.edit(builder => builder.insert(textEditor.selection.active, textToInsert));
         const docTextAfterInsertion = document.getText();

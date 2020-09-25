@@ -10,7 +10,7 @@ export interface ITestPreparation {
 }
 
 export interface ITestPreparationResult {
-    postTest?(): void;
+    postTestActions?(): void;
 
     // If non-empty, skips the test, displaying the string as a message
     skipTest?: string;
@@ -38,13 +38,21 @@ export function testWithPrep(expectation: string, preparations?: ITestPreparatio
                         return;
                     }
 
-                    if (prepResult.postTest) {
-                        postTests.push(prepResult.postTest);
+                    if (prepResult.postTestActions) {
+                        postTests.push(prepResult.postTestActions);
                     }
                 }
 
                 // Perform the test
-                return await callback.call(this);
+                try {
+                    return await callback.call(this);
+                } catch (error) {
+                    if ((<{ message?: string }>error).message === 'sync skip') {
+                        // test skipped
+                    } else {
+                        throw error;
+                    }
+                }
             }
             finally {
                 // Perform post-test preparations

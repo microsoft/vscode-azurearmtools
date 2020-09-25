@@ -6,7 +6,7 @@
 
 import * as assert from "assert";
 import * as os from 'os';
-import { HoverInfo, Language } from "../extension.bundle";
+import { HoverInfo, Span } from "../extension.bundle";
 
 suite("Hover", () => {
     suite("HoverInfo", () => {
@@ -17,9 +17,9 @@ suite("Hover", () => {
                     friendlyType: "type",
                     description: "description"
                 },
-                new Language.Span(17, 7));
+                new Span(17, 7));
             assert.deepEqual(`**usage**${os.EOL}*(type)*${os.EOL}${os.EOL}description`, info.getHoverText());
-            assert.deepEqual(new Language.Span(17, 7), info.span);
+            assert.deepEqual(new Span(17, 7), info.span);
         });
 
         test("no description", () => {
@@ -29,7 +29,7 @@ suite("Hover", () => {
                     friendlyType: "type",
                     description: undefined
                 },
-                new Language.Span(17, 7));
+                new Span(17, 7));
             assert.deepEqual(`**usage**${os.EOL}*(type)*`, info.getHoverText());
         });
 
@@ -40,7 +40,7 @@ suite("Hover", () => {
                     friendlyType: "type",
                     description: ""
                 },
-                new Language.Span(17, 7));
+                new Span(17, 7));
             assert.deepEqual(`**usage**${os.EOL}*(type)*`, info.getHoverText());
         });
     });

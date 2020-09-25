@@ -6,7 +6,7 @@
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name no-constant-condition
 
 import * as assert from "assert";
-import { Json, Language, mapJsonObjectValue } from "../extension.bundle";
+import { Json, mapJsonObjectValue, Span } from "../extension.bundle";
 import { stringify } from "./support/stringify";
 
 suite("mapJsonObjectValue", () => {
@@ -20,8 +20,8 @@ suite("mapJsonObjectValue", () => {
 
     function newProperty(name: string, value: unknown): Json.Property {
         return new Json.Property(
-            new Language.Span(0, 0),
-            new Json.StringValue(new Language.Span(0, 0), `"${name}"`),
+            new Span(0, 0),
+            new Json.StringValue(new Span(0, 0), `"${name}"`),
             Json.parse(stringify(value)).value
         );
     }

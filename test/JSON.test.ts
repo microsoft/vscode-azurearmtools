@@ -5,7 +5,7 @@
 // tslint:disable:max-func-body-length align no-non-null-assertion
 
 import * as assert from "assert";
-import { basic, Json, Language, Utilities } from "../extension.bundle";
+import { basic, ContainsBehavior, Json, Span, strings } from "../extension.bundle";
 import { testStringAtEachIndex } from "./support/testStringAtEachIndex";
 
 /**
@@ -207,35 +207,35 @@ suite("JSON", () => {
             let result: Json.ParseResult = Json.parse("'hello there'");
             assert.deepStrictEqual(result.tokenCount, 1);
             assert.deepStrictEqual(result.lineLengths, [13]);
-            assert.deepStrictEqual(result.value, new Json.StringValue(new Language.Span(0, 13), "'hello there'"));
+            assert.deepStrictEqual(result.value, new Json.StringValue(new Span(0, 13), "'hello there'"));
         });
 
         test("with number", () => {
             let result: Json.ParseResult = Json.parse("14");
             assert.deepStrictEqual(result.tokenCount, 1);
             assert.deepStrictEqual(result.lineLengths, [2]);
-            assert.deepStrictEqual(result.value, new Json.NumberValue(new Language.Span(0, 2), "14"));
+            assert.deepStrictEqual(result.value, new Json.NumberValue(new Span(0, 2), "14"));
         });
 
         test("with boolean (false)", () => {
             let result: Json.ParseResult = Json.parse("false");
             assert.deepStrictEqual(result.tokenCount, 1);
             assert.deepStrictEqual(result.lineLengths, [5]);
-            assert.deepStrictEqual(result.value, new Json.BooleanValue(new Language.Span(0, 5), false));
+            assert.deepStrictEqual(result.value, new Json.BooleanValue(new Span(0, 5), false));
         });
 
         test("with boolean (true)", () => {
             let result: Json.ParseResult = Json.parse("true");
             assert.deepStrictEqual(result.tokenCount, 1);
             assert.deepStrictEqual(result.lineLengths, [4]);
-            assert.deepStrictEqual(result.value, new Json.BooleanValue(new Language.Span(0, 4), true));
+            assert.deepStrictEqual(result.value, new Json.BooleanValue(new Span(0, 4), true));
         });
 
         test("with left curly bracket", () => {
             let result: Json.ParseResult = Json.parse("{");
             assert.deepStrictEqual(result.tokenCount, 1);
             assert.deepStrictEqual(result.lineLengths, [1]);
-            assert.deepStrictEqual(result.value, new Json.ObjectValue(new Language.Span(0, 1), []));
+            assert.deepStrictEqual(result.value, new Json.ObjectValue(new Span(0, 1), []));
         });
 
         test("with right curly bracket", () => {
@@ -249,7 +249,7 @@ suite("JSON", () => {
             let result: Json.ParseResult = Json.parse("{}");
             assert.deepStrictEqual(result.tokenCount, 2);
             assert.deepStrictEqual(result.lineLengths, [2]);
-            assert.deepStrictEqual(result.value, new Json.ObjectValue(new Language.Span(0, 2), []));
+            assert.deepStrictEqual(result.value, new Json.ObjectValue(new Span(0, 2), []));
         });
 
         test("with object with one string property", () => {
@@ -263,7 +263,7 @@ suite("JSON", () => {
 
             const v2: Json.StringValue | undefined = Json.asStringValue(v1.getPropertyValue("name"));
             if (!v2) { throw new Error("failed"); }
-            assert.deepStrictEqual(v2.span, new Language.Span(10, 5));
+            assert.deepStrictEqual(v2.span, new Span(10, 5));
             assert.deepStrictEqual(v2.toString(), "Dan");
         });
 
@@ -278,12 +278,12 @@ suite("JSON", () => {
 
             const a: Json.StringValue | undefined = Json.asStringValue(top.getPropertyValue("a"));
             if (!a) { throw new Error("failed"); }
-            assert.deepStrictEqual(a.span, new Language.Span(7, 3));
+            assert.deepStrictEqual(a.span, new Span(7, 3));
             assert.deepStrictEqual(a.toString(), "A");
 
             const b: Json.NumberValue | undefined = Json.asNumberValue(top.getPropertyValue("b"));
             if (!b) { throw new Error("failed"); }
-            assert.deepStrictEqual(b.span, new Language.Span(17, 2));
+            assert.deepStrictEqual(b.span, new Span(17, 2));
         });
 
         test("with object with one boolean property and one number property", () => {
@@ -293,17 +293,17 @@ suite("JSON", () => {
 
             const top: Json.ObjectValue | undefined = Json.asObjectValue(result.value);
             if (!top) { throw new Error("failed"); }
-            assert.deepStrictEqual(top.span, new Language.Span(0, 22));
+            assert.deepStrictEqual(top.span, new Span(0, 22));
             assert.deepStrictEqual(top.propertyNames, ["a", "b"]);
 
             const a: Json.BooleanValue | undefined = Json.asBooleanValue(top.getPropertyValue("a"));
             if (!a) { throw new Error("failed"); }
-            assert.deepStrictEqual(a.span, new Language.Span(7, 4));
+            assert.deepStrictEqual(a.span, new Span(7, 4));
             assert.deepStrictEqual(a.toBoolean(), true);
 
             const b: Json.NumberValue | undefined = Json.asNumberValue(top.getPropertyValue("b"));
             if (!b) { throw new Error("failed"); }
-            assert.deepStrictEqual(b.span, new Language.Span(18, 2));
+            assert.deepStrictEqual(b.span, new Span(18, 2));
         });
 
         test("with object with object property", () => {
@@ -313,17 +313,17 @@ suite("JSON", () => {
 
             const top: Json.ObjectValue | undefined = Json.asObjectValue(result.value);
             if (!top) { throw new Error("failed"); }
-            assert.deepStrictEqual(top.span, new Language.Span(0, 21));
+            assert.deepStrictEqual(top.span, new Span(0, 21));
             assert.deepStrictEqual(top.propertyNames, ["a"]);
 
             const a: Json.ObjectValue | undefined = Json.asObjectValue(top.getPropertyValue("a"));
             if (!a) { throw new Error("failed"); }
-            assert.deepStrictEqual(a.span, new Language.Span(7, 12));
+            assert.deepStrictEqual(a.span, new Span(7, 12));
             assert.deepStrictEqual(a.propertyNames, ["b"]);
 
             const b: Json.StringValue | undefined = Json.asStringValue(a.getPropertyValue("b"));
             if (!b) { throw new Error("failed"); }
-            assert.deepStrictEqual(b.span, new Language.Span(14, 3));
+            assert.deepStrictEqual(b.span, new Span(14, 3));
             assert.deepStrictEqual(b.toString(), "B");
         });
 
@@ -348,17 +348,17 @@ suite("JSON", () => {
 
             const top: Json.ObjectValue | undefined = Json.asObjectValue(result.value);
             if (!top) { throw new Error("failed"); }
-            assert.deepStrictEqual(top.span, new Language.Span(0, 16));
+            assert.deepStrictEqual(top.span, new Span(0, 16));
             assert.deepStrictEqual(top.propertyNames, ["a"]);
 
             const a: Json.ArrayValue | undefined = Json.asArrayValue(top.getPropertyValue("a"));
             if (!a) { throw new Error("failed"); }
-            assert.deepStrictEqual(a.span, new Language.Span(7, 7));
+            assert.deepStrictEqual(a.span, new Span(7, 7));
             assert.deepStrictEqual(a.length, 1);
 
             const a0: Json.StringValue | undefined = Json.asStringValue(a.elements[0]);
             if (!a0) { throw new Error("failed"); }
-            assert.deepStrictEqual(a0.span, new Language.Span(9, 3));
+            assert.deepStrictEqual(a0.span, new Span(9, 3));
             assert.deepStrictEqual(a0.toString(), "A");
         });
 
@@ -369,22 +369,22 @@ suite("JSON", () => {
 
             const top: Json.ObjectValue | undefined = Json.asObjectValue(result.value);
             if (!top) { throw new Error("failed"); }
-            assert.deepStrictEqual(top.span, new Language.Span(0, 20));
+            assert.deepStrictEqual(top.span, new Span(0, 20));
             assert.deepStrictEqual(top.propertyNames, ["a"]);
 
             const a: Json.ArrayValue | undefined = Json.asArrayValue(top.getPropertyValue("a"));
             if (!a) { throw new Error("failed"); }
-            assert.deepStrictEqual(a.span, new Language.Span(7, 11));
+            assert.deepStrictEqual(a.span, new Span(7, 11));
             assert.deepStrictEqual(a.length, 2);
 
             const a0: Json.StringValue | undefined = Json.asStringValue(a.elements[0]);
             if (!a0) { throw new Error("failed"); }
-            assert.deepStrictEqual(a0.span, new Language.Span(9, 3));
+            assert.deepStrictEqual(a0.span, new Span(9, 3));
             assert.deepStrictEqual(a0.toString(), "A");
 
             const a1: Json.NumberValue | undefined = Json.asNumberValue(a.elements[1]);
             if (!a1) { throw new Error("failed"); }
-            assert.deepStrictEqual(a1.span, new Language.Span(14, 2));
+            assert.deepStrictEqual(a1.span, new Span(14, 2));
         });
 
         test("with array with literal and then quoted string elements without comma separator", () => {
@@ -394,17 +394,17 @@ suite("JSON", () => {
 
             const top: Json.ObjectValue | undefined = Json.asObjectValue(result.value);
             if (!top) { throw new Error("failed"); }
-            assert.deepStrictEqual(top.span, new Language.Span(0, 21));
+            assert.deepStrictEqual(top.span, new Span(0, 21));
             assert.deepStrictEqual(top.propertyNames, ["a"]);
 
             const a: Json.ArrayValue | undefined = Json.asArrayValue(top.getPropertyValue("a"));
             if (!a) { throw new Error("failed"); }
-            assert.deepStrictEqual(a.span, new Language.Span(7, 12));
+            assert.deepStrictEqual(a.span, new Span(7, 12));
             assert.deepStrictEqual(a.length, 1);
 
             const a0: Json.StringValue | undefined = Json.asStringValue(a.elements[0]);
             if (!a0) { throw new Error("failed"); }
-            assert.deepStrictEqual(a0.span, new Language.Span(14, 3));
+            assert.deepStrictEqual(a0.span, new Span(14, 3));
             assert.deepStrictEqual(a0.toString(), "A");
         });
 
@@ -415,17 +415,17 @@ suite("JSON", () => {
 
             const top: Json.ObjectValue | undefined = Json.asObjectValue(result.value);
             if (!top) { throw new Error("failed"); }
-            assert.deepStrictEqual(top.span, new Language.Span(0, 22));
+            assert.deepStrictEqual(top.span, new Span(0, 22));
             assert.deepStrictEqual(top.propertyNames, ["a"]);
 
             const a: Json.ArrayValue | undefined = Json.asArrayValue(top.getPropertyValue("a"));
             if (!a) { throw new Error("failed"); }
-            assert.deepStrictEqual(a.span, new Language.Span(7, 13));
+            assert.deepStrictEqual(a.span, new Span(7, 13));
             assert.deepStrictEqual(a.length, 1);
 
             const a0: Json.StringValue | undefined = Json.asStringValue(a.elements[0]);
             if (!a0) { throw new Error("failed"); }
-            assert.deepStrictEqual(a0.span, new Language.Span(15, 3));
+            assert.deepStrictEqual(a0.span, new Span(15, 3));
             assert.deepStrictEqual(a0.toString(), "A");
         });
     });
@@ -439,7 +439,7 @@ suite("JSON", () => {
                     expectedTokens = [expectedTokens];
                 }
 
-                test(`with ${Utilities.escapeAndQuote(text)}`, () => {
+                test(`with ${strings.escapeAndQuote(text)}`, () => {
                     const tokenizer = new Json.Tokenizer(text);
 
                     for (const expectedToken of expectedTokens as Json.Token[]) {
@@ -676,7 +676,7 @@ suite("JSON", () => {
             test(`with ${startIndex} startIndex`, () => {
                 const t: Json.Token = Json.LeftCurlyBracket(startIndex);
                 assert.deepStrictEqual(t.type, Json.TokenType.LeftCurlyBracket);
-                assert.deepStrictEqual(t.span, new Language.Span(startIndex, 1));
+                assert.deepStrictEqual(t.span, new Span(startIndex, 1));
                 assert.deepStrictEqual(t.toString(), "{");
             });
         }
@@ -690,7 +690,7 @@ suite("JSON", () => {
             test(`with ${startIndex} startIndex`, () => {
                 const t: Json.Token = Json.RightCurlyBracket(startIndex);
                 assert.deepStrictEqual(t.type, Json.TokenType.RightCurlyBracket);
-                assert.deepStrictEqual(t.span, new Language.Span(startIndex, 1));
+                assert.deepStrictEqual(t.span, new Span(startIndex, 1));
                 assert.deepStrictEqual(t.toString(), "}");
             });
         }
@@ -704,7 +704,7 @@ suite("JSON", () => {
             test(`with ${startIndex} startIndex`, () => {
                 const t: Json.Token = Json.LeftSquareBracket(startIndex);
                 assert.deepStrictEqual(t.type, Json.TokenType.LeftSquareBracket);
-                assert.deepStrictEqual(t.span, new Language.Span(startIndex, 1));
+                assert.deepStrictEqual(t.span, new Span(startIndex, 1));
                 assert.deepStrictEqual(t.toString(), "[");
             });
         }
@@ -718,7 +718,7 @@ suite("JSON", () => {
             test(`with ${startIndex} startIndex`, () => {
                 const t: Json.Token = Json.RightSquareBracket(startIndex);
                 assert.deepStrictEqual(t.type, Json.TokenType.RightSquareBracket);
-                assert.deepStrictEqual(t.span, new Language.Span(startIndex, 1));
+                assert.deepStrictEqual(t.span, new Span(startIndex, 1));
                 assert.deepStrictEqual(t.toString(), "]");
             });
         }
@@ -732,7 +732,7 @@ suite("JSON", () => {
             test(`with ${startIndex} startIndex`, () => {
                 const t: Json.Token = Json.Comma(startIndex);
                 assert.deepStrictEqual(t.type, Json.TokenType.Comma);
-                assert.deepStrictEqual(t.span, new Language.Span(startIndex, 1));
+                assert.deepStrictEqual(t.span, new Span(startIndex, 1));
                 assert.deepStrictEqual(t.toString(), ",");
             });
         }
@@ -746,7 +746,7 @@ suite("JSON", () => {
             test(`with ${startIndex} startIndex`, () => {
                 const t: Json.Token = Json.Colon(startIndex);
                 assert.deepStrictEqual(t.type, Json.TokenType.Colon);
-                assert.deepStrictEqual(t.span, new Language.Span(startIndex, 1));
+                assert.deepStrictEqual(t.span, new Span(startIndex, 1));
                 assert.deepStrictEqual(t.toString(), ":");
             });
         }
@@ -975,7 +975,7 @@ suite("JSON", () => {
     suite("getCommentTokenAtDocumentIndex", () => {
         function createGetCommentTokenAtDocumentIndexTest(
             testName: string,
-            containsBehavior: Language.Contains,
+            containsBehavior: ContainsBehavior,
             jsonWithMarkers: string
         ): void {
             test(testName, () =>
@@ -996,20 +996,20 @@ suite("JSON", () => {
         suite("enclosed", () => {
             createGetCommentTokenAtDocumentIndexTest(
                 "simple",
-                Language.Contains.enclosed,
+                ContainsBehavior.enclosed,
                 `<!false!>{
                 hi: "there"
             }`
             );
             createGetCommentTokenAtDocumentIndexTest(
                 "line comments",
-                Language.Contains.enclosed,
+                ContainsBehavior.enclosed,
                 `<!false!>{ /<!true!>/ one
 <!false!>                hi: "there" /<!true!>/ two
 <!false!>            }/<!true!>/ three`);
             createGetCommentTokenAtDocumentIndexTest(
                 "block comments",
-                Language.Contains.enclosed,
+                ContainsBehavior.enclosed,
                 `<!false!>{ /<!true!>* one */<!false!>
                     hi: "there" /<!true!>* two
                     still a comment
@@ -1021,13 +1021,13 @@ suite("JSON", () => {
         suite("strict", () => {
             createGetCommentTokenAtDocumentIndexTest(
                 "line comments",
-                Language.Contains.strict,
+                ContainsBehavior.strict,
                 `<!false!>{ <!true!>// one
 <!false!>                hi: "there" <!true!>// two
 <!false!>            }<!true!>// three`);
             createGetCommentTokenAtDocumentIndexTest(
                 "block comments",
-                Language.Contains.strict,
+                ContainsBehavior.strict,
                 `<!false!>{ <!true!>/* one */<!false!>
                     hi: "there" <!true!>/* two
                     still a comment

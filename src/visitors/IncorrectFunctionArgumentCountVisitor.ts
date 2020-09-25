@@ -3,11 +3,12 @@
 // ----------------------------------------------------------------------------
 
 import { isNullOrUndefined } from "util";
-import * as assets from "../AzureRMAssets";
+import { TemplateScope } from "../documents/templates/scopes/TemplateScope";
+import { UserFunctionNamespaceDefinition } from "../documents/templates/UserFunctionNamespaceDefinition";
 import { assert } from "../fixed_assert";
-import { IncorrectArgumentsCountIssue } from "../IncorrectArgumentsCountIssue";
-import { FunctionCallValue, Value, Visitor } from "../TLE";
-import { UserFunctionNamespaceDefinition } from "../UserFunctionNamespaceDefinition";
+import * as assets from "../language/expressions/AzureRMAssets";
+import { FunctionCallValue, Value, Visitor } from "../language/expressions/TLE";
+import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 
 /**
  * A TLE visitor that creates errors if an incorrect number of arguments are used when calling a
@@ -16,7 +17,7 @@ import { UserFunctionNamespaceDefinition } from "../UserFunctionNamespaceDefinit
 export class IncorrectFunctionArgumentCountVisitor extends Visitor {
     private _errors: IncorrectArgumentsCountIssue[] = [];
 
-    constructor(private _tleFunctions: assets.FunctionsMetadata) {
+    constructor(private readonly _scope: TemplateScope, private readonly _tleFunctions: assets.FunctionsMetadata) {
         super();
     }
 
@@ -36,7 +37,7 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
 
         if (tleFunction.namespaceToken) {
             const namespaceName: string = tleFunction.namespaceToken.stringValue.toString();
-            const nsDefinition: UserFunctionNamespaceDefinition | undefined = tleFunction.scope.getFunctionNamespaceDefinition(namespaceName);
+            const nsDefinition: UserFunctionNamespaceDefinition | undefined = this._scope.getFunctionNamespaceDefinition(namespaceName);
 
             // If not found, will be handled by the UnrecognizedFunctionVisitor visitor
             if (!nsDefinition) {
@@ -97,8 +98,8 @@ export class IncorrectFunctionArgumentCountVisitor extends Visitor {
         return `argument${argumentCount === 1 ? "" : "s"}`;
     }
 
-    public static visit(tleValue: Value | undefined, tleFunctions: assets.FunctionsMetadata): IncorrectFunctionArgumentCountVisitor {
-        const visitor = new IncorrectFunctionArgumentCountVisitor(tleFunctions);
+    public static visit(scope: TemplateScope, tleValue: Value | undefined, tleFunctions: assets.FunctionsMetadata): IncorrectFunctionArgumentCountVisitor {
+        const visitor = new IncorrectFunctionArgumentCountVisitor(scope, tleFunctions);
         if (tleValue) {
             tleValue.accept(visitor);
         }

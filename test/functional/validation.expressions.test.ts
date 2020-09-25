@@ -4,7 +4,7 @@
 
 // tslint:disable:no-suspicious-comment
 
-import { sources, testDiagnosticsFromFile } from "../support/diagnostics";
+import { diagnosticSources, testDiagnosticsFromFile } from "../support/diagnostics";
 import { testWithLanguageServer } from "../support/testWithLanguageServer";
 
 suite("Expression validation", () => {
@@ -15,7 +15,7 @@ suite("Expression validation", () => {
                 'templates/new-vm.jsonc',
                 {
                     includeRange: true,
-                    includeSources: [sources.expressions]
+                    includeSources: [diagnosticSources.expressions]
                 },
                 [
                     "Warning: The parameter 'backupVaultRGIsNew' is never used. (arm-template (expressions)) [32,8-32,28]",

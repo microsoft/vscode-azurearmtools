@@ -1,0 +1,64 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "linkedTemplatesLocation": {
+            "type": "string",
+            "defaultValue": "https://raw.githubusercontent.com/StephenWeatherford/template-examples/master/linkedTemplates/twoLinked/templates/library"
+        },
+        "intvalue": {
+            "type": "int",
+            "defaultValue": 123
+        }
+    },
+    "variables": {
+        "firstTemplate": "../linkedTemplate1.json",
+        "secondTemplate": "linkedTemplate2.json",
+        "stringValue": "abc",
+        "nestedDeployment2Name": "nestedDeployment2",
+        "mode": "Incremental",
+        "contentVersion": "1.2.3.4"
+    },
+    "resources": [
+        {
+            "name": "[variables('nestedDeployment2Name')]",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2017-05-10",
+            "properties": {
+                "mode": "[variables('mode')]",
+                "templateLink": {
+                    // THESE REFER TO THE TOP-LEVEL PARAMS/VARS
+                    "uri": "[concat(parameters('linkedTemplatesLocation'), '/', variables('secondTemplate'))]",
+                    "contentVersion": "[variables('contentVersion')]"
+                },
+                "parameters": {
+                    "linked2param1": {
+                        "value": "[variables('stringValue')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "nestedDeployment1",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2017-05-10",
+            "properties": {
+                "mode": "[variables('mode')]",
+                "templateLink": {
+                    // THESE REFER TO THE TOP-LEVEL PARAMS/VARS
+                    "uri": "[concat(parameters('linkedTemplatesLocation'), '/', variables('firstTemplate'))]"
+                },
+                "parameters": {
+                    "linked1param1": {
+                        "value": "[parameters('intvalue')]"
+                    }
+                },
+                "debugSetting": {
+                    "detailLevel": "requestContent,responseContent"
+                }
+            }
+        }
+    ],
+    "outputs": {},
+    "functions": []
+}

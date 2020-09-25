@@ -5,12 +5,12 @@
 // tslint:disable:max-func-body-length
 
 import * as assert from "assert";
-import { basic, Utilities } from "../extension.bundle";
+import { basic, strings } from "../extension.bundle";
 
 suite("Tokenizer", () => {
     suite("Token", () => {
         function constructorTest(text: string, tokenType: basic.TokenType): void {
-            test(`with ${Utilities.escapeAndQuote(text)}`, () => {
+            test(`with ${strings.escapeAndQuote(text)}`, () => {
                 const token = new basic.Token(text, tokenType);
                 assert.deepStrictEqual(token.toString(), text);
                 assert.deepStrictEqual(token.length(), text.length);
@@ -125,7 +125,7 @@ suite("Tokenizer", () => {
     suite("Tokenizer", () => {
         suite("constructor()", () => {
             function constructorTest(text: string): void {
-                test(`with ${Utilities.escapeAndQuote(text)}`, () => {
+                test(`with ${strings.escapeAndQuote(text)}`, () => {
                     const tokenizer = new basic.Tokenizer(text);
                     assert.deepStrictEqual(tokenizer.hasStarted(), false);
                     assert.deepStrictEqual(tokenizer.current(), undefined);
@@ -148,7 +148,7 @@ suite("Tokenizer", () => {
                     expectedTokens = [expectedTokens];
                 }
 
-                test(`with ${Utilities.escapeAndQuote(text)}`, () => {
+                test(`with ${strings.escapeAndQuote(text)}`, () => {
                     const tokenizer = new basic.Tokenizer(text);
 
                     for (const expectedToken of expectedTokens as basic.Token[]) {

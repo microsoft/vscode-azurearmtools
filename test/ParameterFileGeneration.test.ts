@@ -29,7 +29,7 @@ suite("parameterFileGeneration tests", () => {
                     parameters: <{ [key: string]: IDeploymentParameterDefinition }>parameters
                 };
                 const dt = await parseTemplate(template);
-                const paramFile = createParameterFileContents(dt, 4, onlyRequiredParams);
+                const paramFile = createParameterFileContents(dt.topLevelScope, 4, onlyRequiredParams);
                 assert.equal(paramFile, expectedContents);
             });
         }
@@ -67,7 +67,7 @@ suite("parameterFileGeneration tests", () => {
                 const foundDefinition = dt.topLevelScope.getParameterDefinition(parameterName);
                 assert(foundDefinition);
                 // tslint:disable-next-line:no-non-null-assertion
-                const param = createParameterFromTemplateParameter(dt, foundDefinition!, spacesPerIndent);
+                const param = createParameterFromTemplateParameter(dt.topLevelScope, foundDefinition!, spacesPerIndent);
                 assert.equal(param, expectedContents);
             });
         }

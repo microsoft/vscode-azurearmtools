@@ -11,7 +11,6 @@ import { AzureRMAssets, looksLikeResourceTypeStringLiteral, splitResourceNameInt
 import { template_101_acsengine_swarmmode, template_101_app_service_regional_vnet_integration, template_201_time_series_insights_environment_with_eventhub } from './resourceId.completions.templates';
 import { createExpressionCompletionsTest } from './support/createCompletionsTest';
 import { IDeploymentTemplate, IPartialDeploymentTemplate } from './support/diagnostics';
-import { parseTemplate } from './support/parseTemplate';
 import { stringify } from './support/stringify';
 import { allTestDataExpectedCompletions, UseRealFunctionMetadata } from './TestData';
 
@@ -742,13 +741,7 @@ suite("ResourceId completions", () => {
                             testName += " - do not know how to split, expecting original expression minus brackets";
                         }
                         test(testName, async () => {
-                            const fakeTemplate: IPartialDeploymentTemplate = {
-                                resources: [{
-                                    "name": resourceName
-                                }]
-                            };
-                            const dt = await parseTemplate(fakeTemplate);
-                            const actual = splitResourceNameIntoSegments(resourceName, dt);
+                            const actual = splitResourceNameIntoSegments(resourceName);
                             assert.deepStrictEqual(actual, expected);
                         });
                     }

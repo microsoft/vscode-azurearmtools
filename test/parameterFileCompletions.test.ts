@@ -7,7 +7,7 @@
 
 import * as assert from 'assert';
 import { isNullOrUndefined } from 'util';
-import { DeploymentTemplate } from "../extension.bundle";
+import { DeploymentTemplateDoc } from "../extension.bundle";
 import { newParamValueCompletionLabel } from './support/constants';
 import { IDeploymentParametersFile, IDeploymentTemplate } from "./support/diagnostics";
 import { parseParametersWithMarkers, parseTemplate } from "./support/parseTemplate";
@@ -33,7 +33,7 @@ suite("Parameter file completions", () => {
     ): void {
         const fullName = isNullOrUndefined(options.cursorIndex) ? testName : `${testName}, index=${options.cursorIndex}`;
         test(fullName, async () => {
-            let dt: DeploymentTemplate | undefined = template ? await parseTemplate(template) : undefined;
+            let dt: DeploymentTemplateDoc | undefined = template ? await parseTemplate(template) : undefined;
 
             const { dp, markers: { bang } } = await parseParametersWithMarkers(params);
             const cursorIndex = !isNullOrUndefined(options.cursorIndex) ? options.cursorIndex : bang.index;
@@ -42,10 +42,10 @@ suite("Parameter file completions", () => {
             }
 
             const pc = dp.getContextFromDocumentCharacterIndex(cursorIndex, dt);
-            const completions = pc.getCompletionItems("");
+            const completions = await pc.getCompletionItems("");
 
-            const completionNames = completions.map(c => c.label).sort();
-            const completionInserts = completions.map(c => c.insertText).sort();
+            const completionNames = completions.items.map(c => c.label).sort();
+            const completionInserts = completions.items.map(c => c.insertText).sort();
 
             const expectedNames = (<unknown[]>expectedNamesAndInsertTexts).map(e => Array.isArray(e) ? <string>e[0] : <string>e).sort();
             // tslint:disable-next-line: no-any

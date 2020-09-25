@@ -11,11 +11,15 @@ import { assert } from "../fixed_assert";
 export class InitializeBeforeUse<T> {
     private _value: { value: T; initialized: true } | { initialized: false } = { initialized: false };
 
-    public setValue(value: T): void {
+    public get hasValue(): boolean {
+        return this._value.initialized;
+    }
+
+    public set value(value: T) {
         this._value = { value: value, initialized: true };
     }
 
-    public getValue(): T {
+    public get value(): T {
         if (this._value.initialized) {
             return this._value.value;
         } else {

@@ -84,16 +84,16 @@ export function createExpressionCompletionsTestEx(
             const { dt, markers: { bang } } = await parseTemplateWithMarkers(template, undefined, { ignoreBang: true });
             assert(bang, "Didn't find ! marker in text");
             const pc = dt.getContextFromDocumentCharacterIndex(bang.index, undefined);
-            const completions = pc.getCompletionItems(options?.triggerCharacter);
+            const completions = await pc.getCompletionItems(options?.triggerCharacter);
 
-            const completionNames = completions.map(c => c.label).sort();
-            const completionInserts = completions.map(c => c.insertText).sort();
+            const completionNames = completions.items.map(c => c.label).sort();
+            const completionInserts = completions.items.map(c => c.insertText).sort();
 
             const expectedNames = (<unknown[]>expectedCompletions).map(e => Array.isArray(e) ? <string>e[0] : <string>e).sort();
             // tslint:disable-next-line: no-any
             const expectedInsertTexts = expectedCompletions.every((e: any) => Array.isArray(e)) ? (<[string, string][]>expectedCompletions).map(e => e[1]).sort() : undefined;
 
-            assert.deepStrictEqual(completionNames, expectedNames, "Completion names didn't match");
+            assert.deepStrictEqual(completionNames, expectedNames);
             if (expectedInsertTexts !== undefined) {
                 assert.deepStrictEqual(completionInserts, expectedInsertTexts, "Completion insert texts didn't match");
             }

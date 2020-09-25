@@ -46,6 +46,8 @@ export namespace configKeys {
     export const checkForLatestSchema = 'checkForLatestSchema';
     export const checkForMatchingParameterFiles = 'checkForMatchingParameterFiles';
     export const parameterFiles = 'parameterFiles';
+    export const enableCodeLens = 'codelens.enable';
+    export const codeLensForParameters = 'codelens.parameters';
 }
 
 export namespace globalStateKeys {
@@ -74,10 +76,10 @@ export namespace templateKeys {
     export const apiProfile = 'apiProfile';
 
     // Copy blocks
-    export const loopVarCopy = "copy";
-    export const loopVarName = 'name';
-    export const loopVarInput = 'input';
-    export const loopVarCount = 'count';
+    export const copyLoop = "copy";
+    export const copyName = 'name';
+    export const copyInput = 'input';
+    export const copyCount = 'count';
 
     // Resources
     export const properties = 'properties';
@@ -85,10 +87,19 @@ export namespace templateKeys {
     export const resourceApiVersion = 'apiVersion';
     export const resourceDependsOn = 'dependsOn';
     export const resourceName = 'name';
+    export const tags = 'tags';
+    export const displayNameTag = 'displayName';
 
     // Nested templates
     export const nestedDeploymentExprEvalOptions = 'expressionEvaluationOptions';
     export const nestedDeploymentExprEvalScope = 'scope';
     export const nestedDeploymentExprEvalScopeInner = 'inner';
     export const nestedDeploymentTemplateProperty = 'template';
+
+    // Linked templates
+    export const linkedDeploymentTemplateLink = 'templateLink';
+
+    // User functions
+    export const userFunctionNamespace = 'namespace';
+    export const userFunctionMembers = 'members';
 }
