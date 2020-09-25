@@ -151,7 +151,7 @@
                 },
                 "azureResourceManagerTools.codelens.resourceChildren": {
                     "type": "boolean",
-                    "description": "Enables Code Lens that displays the parent and children each resource",
+                    "description": "Enables Code Lens that displays the parent and children of each resource",
                     "default": true
                 }
             }
