@@ -1220,12 +1220,12 @@ export class AzureRMTools {
 
             const cancel = new Cancellation(token, actionContext);
 
-            const pc: PositionContext | undefined = await this.getPositionContext(document, position, cancel);
-            if (pc) {
+            const pc2: PositionContext | undefined = await this.getPositionContext(document, position, cancel);
+            if (pc2) {
                 const triggerCharacter = context.triggerKind === vscode.CompletionTriggerKind.TriggerCharacter
                     ? context.triggerCharacter
                     : undefined;
-                const { items, triggerSuggest } = await pc.getCompletionItems(triggerCharacter);
+                const { items, triggerSuggest } = await pc2.getCompletionItems(triggerCharacter);
                 if (triggerSuggest) {
                     // The user typed the beginning of a parent object, open up the completions context menu because it's
                     // likely they want to use a snippet immediately
@@ -1237,12 +1237,13 @@ export class AzureRMTools {
                     });
                     return undefined;
                 } else {
-                    const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c));
-                    ext.completionItemsSpy.postCompletionItemsResult(pc.document, items, vsCodeItems);
+                    const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc2.document, c));
+                    ext.completionItemsSpy.postCompletionItemsResult(pc2.document, items, vsCodeItems);
 
                     // vscode requires all spans to include the original position and be on the same line, otherwise
                     //   it ignores it.  Verify that here.
                     for (let item of vsCodeItems) {
+                        // <<<<< SET BREAKPOINT ON NEXT LINE
                         assert(item.range, "Completion item doesn't have a range");
                         assert(item.range?.contains(position), "Completion item range doesn't include cursor");
                         assert(item.range?.isSingleLine, "Completion item range must be a single line");
