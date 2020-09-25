@@ -4,7 +4,6 @@
 
 import { assert } from "../../fixed_assert";
 import { AzureRMAssets } from "../../language/expressions/AzureRMAssets";
-import { getFriendlyExpressionFromTleExpression } from "../../language/expressions/friendlyExpressions";
 import * as TLE from "../../language/expressions/TLE";
 import * as Json from "../../language/json/JSON";
 import { Span } from "../../language/Span";
@@ -114,7 +113,7 @@ function getCompletions(
     for (let info of filteredResources) {
         const insertText = info.nameSegmentExpressions[nameSegmentIndex];
         if (insertText) {
-            const label = getFriendlyExpressionFromTleExpression(insertText);
+            const label = insertText;
 
             let nameSegmentArgument = funcCall.argumentExpressions[argIndex];
             let span = getReplacementSpan(pc, nameSegmentArgument, parentStringToken);
@@ -220,7 +219,7 @@ function getResourceTypeCompletions(
     for (let info of getResourcesInfo(scope)) {
         const insertText = info.getFullTypeExpression();
         if (insertText) {
-            const label = info.getFriendlyTypeExpression({ fullType: true });
+            const label = insertText;
             let typeArgument = funcCall.argumentExpressions[argumentIndex];
             let span = getReplacementSpan(pc, typeArgument, parentStringToken);
 
