@@ -1052,4 +1052,63 @@ suite("ResourceId completions", () => {
                 false);
         });
     });
+
+    suite("regression tests", () => {
+        createResourceIdCompletionsTest2(
+            "#775",
+            {
+                "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "resources": [
+                    {
+                        "type": "Microsoft.Resources/deployments",
+                        "apiVersion": "2019-10-01",
+                        "name": "[concat(parameters('vmProperties')[copyIndex()].name,'Deployment')]",
+                        "properties": {
+                            "mode": "Incremental",
+                            "expressionEvaluationOptions": {
+                                "scope": "inner"
+                            },
+                            "template": {
+                                "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                                "contentVersion": "1.0.0.0",
+                                "resources": [
+                                    {
+                                        "type": "Microsoft.Compute/virtualMachines",
+                                        "apiVersion": "2019-07-01",
+                                        "resources": [
+                                            {
+                                                "type": "Microsoft.Compute/virtualMachines/extensions",
+                                                "apiVersion": "2019-12-01",
+                                                "name": "[concat(parameters('vmName'),copyIndex(1),'/dscext')]",
+                                                "dependsOn": [
+                                                    "[<context>]" // << COMPLETION HERE
+                                                ]
+                                            }
+                                        ],
+                                        "name": "[concat(parameters('vmName'),copyIndex(1))]",
+                                        "copy": {
+                                            "name": "[concat(parameters('vmName'),'vmcopy')]",
+                                            "count": "[parameters('loopCount')]"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "copy": {
+                            "name": "vmCopy",
+                            "count": "[length(parameters('vmProperties'))]"
+                        }
+                    }
+                ]
+            },
+            'resourceId(!)',
+            [
+                "LOOP ${vmName}vmcopy",
+                "'Microsoft.Compute/virtualMachines'",
+                "'Microsoft.Compute/virtualMachines/extensions'",
+                "[concat(${vmName}, copyIndex(1))]",
+            ]
+        );
+    });
 });

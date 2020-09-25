@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { CodeAction, CodeActionContext, CodeLens, Command, Range, Selection, Uri } from "vscode";
+import { CodeAction, CodeActionContext, CodeLens, Command, Position, Range, Selection, Uri } from "vscode";
 import { INamedDefinition } from "../language/INamedDefinition";
 import { Issue } from "../language/Issue";
 import * as Json from "../language/json/JSON";
@@ -44,11 +44,18 @@ export abstract class DeploymentDocument implements IJsonDocument {
     }
 
     // tslint:disable-next-line:function-name
-    public _debugShowTextAt(position: number | Span): string {
-        if (position instanceof Span) {
-            return __debugMarkRangeInString(this.documentText, position.startIndex, position.length);
+    public _debugShowTextAt(positionOrRange: number | Span | Range | Position): string {
+        if (positionOrRange instanceof Span) {
+            return __debugMarkRangeInString(this.documentText, positionOrRange.startIndex, positionOrRange.length);
+        } else if (positionOrRange instanceof Range) {
+            const startIndex = this.getDocumentCharacterIndex(positionOrRange.start.line, positionOrRange.start.character);
+            const endIndex = this.getDocumentCharacterIndex(positionOrRange.end.line, positionOrRange.end.character);
+            return __debugMarkRangeInString(this.documentText, startIndex, endIndex - startIndex);
+        } else if (positionOrRange instanceof Position) {
+            const index = this.getDocumentCharacterIndex(positionOrRange.line, positionOrRange.character);
+            return __debugMarkPositionInString(this.documentText, index);
         } else {
-            return __debugMarkPositionInString(this.documentText, position);
+            return __debugMarkPositionInString(this.documentText, positionOrRange);
         }
     }
 
