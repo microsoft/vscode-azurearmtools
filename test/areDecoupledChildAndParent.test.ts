@@ -377,7 +377,7 @@ suite("areDecoupledChildAndParent", () => {
                 createChildParentTest(
                     "type expr 2",
                     {
-                        type: "variables('parent')",
+                        type: "[variables('parent')]",
                         name: "resource1"
                     },
                     {
@@ -385,6 +385,19 @@ suite("areDecoupledChildAndParent", () => {
                         name: "resource1/resource2"
                     },
                     true,
+                    false);
+
+                createChildParentTest(
+                    "type expr 2b - expression shouldn't match against a string literal",
+                    {
+                        type: "variables('parent')",
+                        name: "resource1"
+                    },
+                    {
+                        type: "[concat(variables('parent'), '/', 'type2')]",
+                        name: "resource1/resource2"
+                    },
+                    false,
                     false);
 
                 createChildParentTest(

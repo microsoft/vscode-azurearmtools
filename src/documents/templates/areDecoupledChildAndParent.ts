@@ -14,7 +14,7 @@ export function areDecoupledChildAndParent(child: IResourceInfo, parent: IResour
     const childTypeSegments = child.typeSegmentExpressions;
     const parentTypeSegments = parent.typeSegmentExpressions;
 
-    if (child.parent || parent.parent) {
+    if ((child.parent && !child.isDecoupledChild) || (parent.parent && !parent.isDecoupledChild)) {
         // Not root-level resources
         return false;
     }

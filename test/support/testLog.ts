@@ -36,12 +36,8 @@ export class StringTestLog implements ITestLog {
     public writeLine(message: string | undefined): void {
         this._data.push(message === undefined ? '(undefined)' : message);
         if (alwaysEchoTestLog) {
-            console.log(`testLog: ${message}`);
+            console.warn(`testLog: ${message}`);
         }
-    }
-
-    public writeLineIfLogCreated(message: string | undefined): void {
-        this.writeLine(message);
     }
 
     public toString(): string {
