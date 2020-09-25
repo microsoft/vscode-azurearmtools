@@ -60,7 +60,7 @@ export class ExtractItem {
             let pc = template.getContextFromDocumentLineAndColumnIndexes(selection.start.line, selection.start.character, undefined);
             if (pc.jsonValue) {
                 const span = pc.jsonValue.span;
-                return new vscode.Selection(editor.document.positionAt(span.startIndex + 1), editor.document.positionAt(span.endIndex));;
+                return new vscode.Selection(editor.document.positionAt(span.startIndex + 1), editor.document.positionAt(span.endIndex));
             }
         }
         const startPos = new vscode.Position(selection.anchor.line, selection.anchor.character - 1);

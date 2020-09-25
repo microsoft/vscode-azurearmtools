@@ -38,7 +38,7 @@ suite("ExtractItem", async (): Promise<void> => {
         let position = document.positionAt(index);
         let position2 = document.positionAt(index + selectedText.length);
         textEditor.selection = new vscode.Selection(position, position2);
-        let codeActions = await deploymentTemplate.getCodeActions(undefined, textEditor.selection, getCodeActionContext());
+        let codeActions = deploymentTemplate.getCodeActions(undefined, textEditor.selection, getCodeActionContext());
         assert.equal(codeActions.length, codeActionsCount, `GetCodeAction should return ${codeActionsCount}`);
         if (codeActionsCount > 0) {
             await action(extractItem, deploymentTemplate, textEditor);
