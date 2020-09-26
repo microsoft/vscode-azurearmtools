@@ -479,7 +479,6 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         }
         return this.addExtractCodeActions(range, actions);
     }
-
     private addExtractCodeActions(range: Range | Selection, actions: (CodeAction | Command)[]): (CodeAction | Command)[] {
         let shouldAddExtractActions: boolean = false;
         let pc = this.getContextFromDocumentLineAndColumnIndexes(range.start.line, range.start.character, undefined);
