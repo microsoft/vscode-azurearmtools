@@ -10,6 +10,7 @@ import { commands } from "vscode";
 import { IActionContext, IAzureQuickPickItem, IAzureUserInput } from "vscode-azureextensionui";
 import { Json, templateKeys } from "../../../extension.bundle";
 import { ext } from "../../extensionVariables";
+import { ObjectValue } from "../../language/json/JSON";
 import { ISnippet } from "../../snippets/ISnippet";
 import { KnownContexts } from "../../snippets/KnownContexts";
 import { assertNever } from '../../util/assertNever';
@@ -82,23 +83,23 @@ export class InsertItem {
         }
         switch (sectionType) {
             case TemplateSectionType.Functions:
-                await this.insertFunction(template, textEditor, context);
+                await this.insertFunction(template.topLevelValue, textEditor, context);
                 vscode.window.showInformationMessage("Please type the output of the function.");
                 break;
             case TemplateSectionType.Outputs:
-                await this.insertOutput(template, textEditor, context);
+                await this.insertOutput(template.topLevelValue, textEditor, context);
                 vscode.window.showInformationMessage("Please type the value of the output.");
                 break;
             case TemplateSectionType.Parameters:
-                await this.insertParameter(template, textEditor, context);
+                await this.insertParameter(template.topLevelValue, textEditor, context);
                 vscode.window.showInformationMessage("Done inserting parameter.");
                 break;
             case TemplateSectionType.Resources:
-                await this.insertResource(template, textEditor, context);
+                await this.insertResource(template.topLevelValue, textEditor, context);
                 vscode.window.showInformationMessage("Press TAB to move between the tab stops.");
                 break;
             case TemplateSectionType.Variables:
-                await this.insertVariable(template, textEditor, context);
+                await this.insertVariable(template.topLevelValue, textEditor, context);
                 vscode.window.showInformationMessage("Please type the value of the variable.");
                 break;
             case TemplateSectionType.TopLevel:
@@ -108,19 +109,19 @@ export class InsertItem {
         }
     }
 
-    private getTemplateObjectPart(template: DeploymentTemplateDoc, templatePart: string): Json.ObjectValue | undefined {
-        return this.getTemplatePart(template, templatePart)?.asObjectValue;
+    private getTemplateObjectPart(templateTopLevel: ObjectValue | undefined, templatePart: string): Json.ObjectValue | undefined {
+        return this.getTemplatePart(templateTopLevel, templatePart)?.asObjectValue;
     }
 
-    private getTemplateArrayPart(template: DeploymentTemplateDoc, templatePart: string): Json.ArrayValue | undefined {
-        return this.getTemplatePart(template, templatePart)?.asArrayValue;
+    private getTemplateArrayPart(templateTopLevel: ObjectValue | undefined, templatePart: string): Json.ArrayValue | undefined {
+        return this.getTemplatePart(templateTopLevel, templatePart)?.asArrayValue;
     }
 
-    private getTemplatePart(template: DeploymentTemplateDoc, templatePart: string): Json.Value | undefined {
-        return template.topLevelValue?.getPropertyValue(templatePart);
+    private getTemplatePart(templateTopLevel: ObjectValue | undefined, templatePart: string): Json.Value | undefined {
+        return templateTopLevel?.getPropertyValue(templatePart);
     }
 
-    public async insertParameterWithDefaultValue(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor, context: IActionContext, name: string, value: string, description: string, options?: { undoStopBefore: boolean; undoStopAfter: boolean }): Promise<string> {
+    public async insertParameterWithDefaultValue(templateTopLevel: ObjectValue | undefined, textEditor: vscode.TextEditor, context: IActionContext, name: string, value: string, description: string, options?: { undoStopBefore: boolean; undoStopAfter: boolean }): Promise<string> {
         let parameter: Parameter = {
             type: "string",
             defaultValue: value
@@ -131,7 +132,7 @@ export class InsertItem {
             };
         }
         await this.insertInObject({
-            template,
+            templateTopLevel,
             textEditor,
             part: templateKeys.parameters,
             data: parameter,
@@ -144,7 +145,7 @@ export class InsertItem {
         return name;
     }
 
-    private async insertParameter(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
+    private async insertParameter(templateTopLevel: ObjectValue | undefined, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         let name = await this.ui.showInputBox({ prompt: "Name of parameter?" });
         const parameterType = await this.ui.showQuickPick(getItemType(), { placeHolder: 'Type of parameter?' });
         let parameter: Parameter = {
@@ -161,7 +162,7 @@ export class InsertItem {
             };
         }
         await this.insertInObject({
-            template,
+            templateTopLevel,
             textEditor,
             part: templateKeys.parameters,
             data: parameter,
@@ -217,8 +218,8 @@ export class InsertItem {
         }
     }
 
-    private async insertInObject(
-        { template,
+    public async insertInObject(
+        { templateTopLevel,
             textEditor,
             part,
             data,
@@ -228,7 +229,7 @@ export class InsertItem {
             reveal = true,
             options = { undoStopBefore: true, undoStopAfter: true }
         }: {
-            template: DeploymentTemplateDoc;
+            templateTopLevel: ObjectValue | undefined;
             textEditor: vscode.TextEditor;
             part: string;
             data: Data | unknown;
@@ -238,17 +239,16 @@ export class InsertItem {
             reveal?: boolean;
             options?: { undoStopBefore: boolean; undoStopAfter: boolean };
         }): Promise<void> {
-        let templatePart = this.getTemplateObjectPart(template, part);
+        let templatePart = this.getTemplateObjectPart(templateTopLevel, part);
         if (!templatePart) {
-            let topLevel = template.topLevelValue;
-            if (!topLevel) {
+            if (!templateTopLevel) {
                 context.errorHandling.suppressReportIssue = true;
                 throw new Error("Invalid ARM template!");
             }
             let subPart: Data = {};
             subPart[name] = data;
             await this.insertInObjectHelper({
-                templatePart: topLevel,
+                templatePart: templateTopLevel,
                 textEditor,
                 data: subPart,
                 name: part,
@@ -307,10 +307,10 @@ export class InsertItem {
         return await this.insertText(textEditor, index, `${startText}${indentedText}${endText}`, setCursor, reveal, options);
     }
 
-    private async insertVariable(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
+    private async insertVariable(templateTopLevel: ObjectValue | undefined, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         let name = await this.ui.showInputBox({ prompt: "Name of variable?" });
         await this.insertInObject({
-            template,
+            templateTopLevel,
             textEditor,
             part: templateKeys.variables,
             data: insertCursorText,
@@ -319,9 +319,9 @@ export class InsertItem {
         });
     }
 
-    public async insertVariableWithValue(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor, context: IActionContext, name: string, value: string, options?: { undoStopBefore: boolean; undoStopAfter: boolean }): Promise<void> {
+    public async insertVariableWithValue(templateTopLevel: ObjectValue | undefined, textEditor: vscode.TextEditor, context: IActionContext, name: string, value: string, options?: { undoStopBefore: boolean; undoStopAfter: boolean }): Promise<void> {
         await this.insertInObject({
-            template,
+            templateTopLevel,
             textEditor,
             part: templateKeys.variables,
             data: value,
@@ -333,7 +333,7 @@ export class InsertItem {
         });
     }
 
-    private async insertOutput(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
+    private async insertOutput(templateTopLevel: ObjectValue | undefined, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         let name = await this.ui.showInputBox({ prompt: "Name of output?" });
         const outputType = await this.ui.showQuickPick(getItemType(), { placeHolder: 'Type of output?' });
         let output: Output = {
@@ -341,7 +341,7 @@ export class InsertItem {
             value: insertCursorText.replace(/"/g, '')
         };
         await this.insertInObject({
-            template,
+            templateTopLevel,
             textEditor,
             part: templateKeys.outputs,
             data: output,
@@ -397,11 +397,11 @@ export class InsertItem {
         });
     }
 
-    private async insertFunction(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
-        let functions = this.getTemplateArrayPart(template, templateKeys.functions);
+    private async insertFunction(templateTopLevel: ObjectValue | undefined, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
+        let functions = this.getTemplateArrayPart(templateTopLevel, templateKeys.functions);
         if (!functions) {
             // tslint:disable-next-line:no-unsafe-any
-            await this.insertFunctionAsTopLevel(template.topLevelValue, textEditor, context);
+            await this.insertFunctionAsTopLevel(templateTopLevel, textEditor, context);
             return;
         }
         if (functions.length === 0) {
@@ -427,19 +427,19 @@ export class InsertItem {
         return;
     }
 
-    private async insertResource(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
-        let resources = this.getTemplateArrayPart(template, templateKeys.resources);
+    private async insertResource(templateTopLevel: ObjectValue | undefined, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
+        let resources = this.getTemplateArrayPart(templateTopLevel, templateKeys.resources);
         let index: number;
         let prepend = "\r\n\t\t\r\n\t";
         if (!resources) {
-            if (!template.topLevelValue) {
+            if (!templateTopLevel) {
                 context.errorHandling.suppressReportIssue = true;
                 throw new Error("Invalid ARM template!");
             }
             // tslint:disable-next-line:no-any
             let subPart: any = [];
             index = await this.insertInObjectHelper({
-                templatePart: template.topLevelValue,
+                templatePart: templateTopLevel,
                 textEditor,
                 data: subPart,
                 name: templateKeys.resources,

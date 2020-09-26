@@ -5,6 +5,7 @@
 
 import * as vscode from "vscode";
 import { IActionContext, IAzureUserInput } from "vscode-azureextensionui";
+import { ObjectValue } from "../../language/json/JSON";
 import { DeploymentTemplateDoc } from "./DeploymentTemplateDoc";
 import { InsertItem } from "./insertItem";
 export class ExtractItem {
@@ -20,9 +21,15 @@ export class ExtractItem {
         let description = await this.ui.showInputBox({ prompt: "Description?", placeHolder: leaveEmpty });
         const insertText = `[parameters('${name}')]`;
         const texts = this.fixExtractTexts(selectedText, insertText, selection, template, editor);
+        let topLevel = this.getTopLevel(template, selection);
         await editor.edit(builder => builder.replace(selection, texts[1]), { undoStopBefore: true, undoStopAfter: false });
-        await new InsertItem(this.ui).insertParameterWithDefaultValue(template, editor, context, name, texts[0], description, { undoStopBefore: false, undoStopAfter: true });
+        await new InsertItem(this.ui).insertParameterWithDefaultValue(topLevel, editor, context, name, texts[0], description, { undoStopBefore: false, undoStopAfter: true });
         editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.end), vscode.TextEditorRevealType.Default);
+    }
+
+    private getTopLevel(template: DeploymentTemplateDoc, selection: vscode.Selection): ObjectValue | undefined {
+        let scope = template.getContextFromDocumentLineAndColumnIndexes(selection.start.line, selection.start.character, undefined).getScope();
+        return scope.scopeKind === "NestedDeploymentWithInnerScope" ? scope.rootObject : template.topLevelValue;
     }
 
     public async extractVariable(editor: vscode.TextEditor, template: DeploymentTemplateDoc, context: IActionContext): Promise<void> {
@@ -31,8 +38,9 @@ export class ExtractItem {
         let name = await this.ui.showInputBox({ prompt: "Name of variable?" });
         let insertText = `[variables('${name}')]`;
         const texts = this.fixExtractTexts(selectedText, insertText, selection, template, editor);
+        let topLevel = this.getTopLevel(template, selection);
         await editor.edit(builder => builder.replace(selection, texts[1]), { undoStopBefore: true, undoStopAfter: false });
-        await new InsertItem(this.ui).insertVariableWithValue(template, editor, context, name, texts[0], { undoStopBefore: false, undoStopAfter: true });
+        await new InsertItem(this.ui).insertVariableWithValue(topLevel, editor, context, name, texts[0], { undoStopBefore: false, undoStopAfter: true });
         editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.end), vscode.TextEditorRevealType.Default);
     }
 
