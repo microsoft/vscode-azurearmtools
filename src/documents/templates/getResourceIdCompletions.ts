@@ -23,9 +23,8 @@ export function getResourceIdCompletions(
 ): Completion.Item[] {
     assert(parentStringToken.type === Json.TokenType.QuotedString, "parentStringToken should be a string token");
 
-    // tslint:disable-next-line: no-suspicious-comment
-    // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/775: Use scope at current position
-    const scope = pc.document.topLevelScope;
+    // Use scope at current position
+    const scope = pc.getScope();
 
     if (!funcCall.isUserDefinedFunction && funcCall.name) {
         const functionMetadata = AzureRMAssets.getFunctionMetadataFromName(funcCall.name);
@@ -216,7 +215,8 @@ function getResourceTypeCompletions(
     }
 
     const results: Completion.Item[] = [];
-    for (let info of getResourcesInfo(scope)) {
+    const infos = getResourcesInfo(scope);
+    for (let info of infos) {
         const insertText = info.getFullTypeExpression();
         if (insertText) {
             const label = insertText;
