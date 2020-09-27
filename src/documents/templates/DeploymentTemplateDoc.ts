@@ -497,7 +497,11 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
             if (pc.jsonToken && pc.jsonTokenStartIndex > 0) {
                 let jsonToken = pc.document.getJSONValueAtDocumentCharacterIndex(pc.jsonTokenStartIndex - 1, Span.ContainsBehavior.extended);
                 if (jsonToken instanceof Json.Property && pc.document.topLevelValue) {
-                    let resources = pc.document.topLevelValue.getPropertyValue(templateKeys.resources);
+                    let scope = pc.getScope();
+                    if (!scope.rootObject) {
+                        return [];
+                    }
+                    let resources = scope.rootObject.getPropertyValue(templateKeys.resources);
                     // Are we inside the resources object?
                     if (!resources || !resources.span.intersect(jsonToken.span)) {
                         return [];
