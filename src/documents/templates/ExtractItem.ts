@@ -15,7 +15,7 @@ export class ExtractItem {
     public async extractParameter(editor: vscode.TextEditor, template: DeploymentTemplateDoc, context: IActionContext): Promise<void> {
         let selection = this.expandSelection(editor.selection, editor.document, template, editor);
         let selectedText = editor.document.getText(selection);
-        let name = await this.ui.showInputBox({ prompt: "Name of parameter?" });
+        let name = await this.ui.showInputBox({ prompt: "Enter the new parameter name" });
         const leaveEmpty = "Press 'Enter' if you do not want to add a description.";
         let description = await this.ui.showInputBox({ prompt: "Description?", placeHolder: leaveEmpty });
         const insertText = `[parameters('${name}')]`;
@@ -28,7 +28,7 @@ export class ExtractItem {
     public async extractVariable(editor: vscode.TextEditor, template: DeploymentTemplateDoc, context: IActionContext): Promise<void> {
         let selection = this.expandSelection(editor.selection, editor.document, template, editor);
         let selectedText = editor.document.getText(selection);
-        let name = await this.ui.showInputBox({ prompt: "Name of variable?" });
+        let name = await this.ui.showInputBox({ prompt: "Enter the new variable name" });
         let insertText = `[variables('${name}')]`;
         const texts = this.fixExtractTexts(selectedText, insertText, selection, template, editor);
         await editor.edit(builder => builder.replace(selection, texts[1]), { undoStopBefore: true, undoStopAfter: false });

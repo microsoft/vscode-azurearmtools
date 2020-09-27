@@ -467,6 +467,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     ): (Command | CodeAction)[] {
         const actions: (CodeAction | Command)[] = [];
 
+        // Add missing parameter values
         for (const scope of this.uniqueScopes) {
             if (scope.parameterValuesSource) {
                 const scopeActions = getParameterValuesCodeActions(
@@ -477,46 +478,65 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                 actions.push(...scopeActions);
             }
         }
-        return this.addExtractCodeActions(range, actions);
+
+        // Extract param/var
+        actions.push(...this.getExtractVarParamCodeActions(range));
+
+        return actions;
     }
-    private addExtractCodeActions(range: Range | Selection, actions: (CodeAction | Command)[]): (CodeAction | Command)[] {
+
+    // tslint:disable-next-line: no-suspicious-comment
+    // tslint:disable-next-line: cyclomatic-complexity // TODO: Consider refactoring
+    private getExtractVarParamCodeActions(range: Range | Selection): (CodeAction | Command)[] {
         let shouldAddExtractActions: boolean = false;
         let pc = this.getContextFromDocumentLineAndColumnIndexes(range.start.line, range.start.character, undefined);
+
+        // We currently only handle single-line strings
         if (range.start.line === range.end.line) {
-            let jsonToken = pc.document.getJSONValueAtDocumentCharacterIndex(pc.jsonTokenStartIndex - 1, Span.ContainsBehavior.extended);
-            if (jsonToken instanceof Json.Property && pc.document.topLevelValue) {
-                let resources = pc.document.topLevelValue.getPropertyValue("resources");
-                if (!resources || !resources.span.intersect(jsonToken.span)) {
-                    return actions;
-                }
-                const value = jsonToken.value as Json.StringValue;
-                if (range.start.character !== range.end.character) {
-                    let startIndex = this.getDocumentCharacterIndex(range.start.line, range.start.character);
-                    let endIndex = this.getDocumentCharacterIndex(range.end.line, range.end.character);
-                    let span: Span.Span = new Span.Span(startIndex, endIndex - startIndex);
-                    const selectedText = this.getDocumentTextWithSquareBrackets(span);
-                    if (this.isParameterOrVariableReference(selectedText)) {
-                        return actions;
+            // Can only call pc.jsonTokenStartIndex if we're inside a JSON token
+            if (pc.jsonToken && pc.jsonTokenStartIndex > 0) {
+                let jsonToken = pc.document.getJSONValueAtDocumentCharacterIndex(pc.jsonTokenStartIndex - 1, Span.ContainsBehavior.extended);
+                if (jsonToken instanceof Json.Property && pc.document.topLevelValue) {
+                    let resources = pc.document.topLevelValue.getPropertyValue(templateKeys.resources);
+                    // Are we inside the resources object?
+                    if (!resources || !resources.span.intersect(jsonToken.span)) {
+                        return [];
                     }
-                    if (pc.jsonValue && jsonToken.value && jsonToken.value.span === pc.jsonValue.span && selectedText && this.equalsWithSqareBrackets(pc.jsonValue.asStringValue?.unquotedValue, selectedText)) {
-                        shouldAddExtractActions = true;
-                    } else {
-                        if (this.isExpression(value.quotedValue)) {
-                            shouldAddExtractActions = this.isValidExpression(this.getDocumentTextWithSurroundingCharacters(span, "'", "'"));
+                    const stringValue = jsonToken.value?.asStringValue;
+                    if (stringValue) {
+                        if (!range.isEmpty) {
+                            let startIndex = this.getDocumentCharacterIndex(range.start.line, range.start.character);
+                            let endIndex = this.getDocumentCharacterIndex(range.end.line, range.end.character);
+                            let span: Span.Span = new Span.Span(startIndex, endIndex - startIndex);
+                            const selectedText = this.getDocumentTextWithSquareBrackets(span);
+                            if (this.isParameterOrVariableReference(selectedText)) {
+                                return [];
+                            }
+                            if (pc.jsonValue && jsonToken.value && jsonToken.value.span === pc.jsonValue.span && selectedText && this.equalsWithSqareBrackets(pc.jsonValue.asStringValue?.unquotedValue, selectedText)) {
+                                shouldAddExtractActions = true;
+                            } else {
+                                if (this.isExpression(stringValue.quotedValue)) {
+                                    shouldAddExtractActions = this.isValidExpression(this.getDocumentTextWithSurroundingCharacters(span, "'", "'"));
+                                }
+                            }
+                        } else {
+                            if (this.isSimpleText(stringValue.quotedValue) && pc.jsonValue && jsonToken.value && jsonToken.value.span === pc.jsonValue.span) {
+                                shouldAddExtractActions = true;
+                            }
                         }
-                    }
-                } else {
-                    if (this.isSimpleText(value.quotedValue) && pc.jsonValue && jsonToken.value && jsonToken.value.span === pc.jsonValue.span) {
-                        shouldAddExtractActions = true;
                     }
                 }
             }
         }
+
         if (shouldAddExtractActions) {
-            actions.push(this.createExtractCommand('Extract Parameter...', 'extractParameter'));
-            actions.push(this.createExtractCommand('Extract Variable...', 'extractVariable'));
+            return [
+                this.createExtractCommand('Extract Parameter...', 'extractParameter'),
+                this.createExtractCommand('Extract Variable...', 'extractVariable'),
+            ];
         }
-        return actions;
+
+        return [];
     }
 
     private getDocumentTextWithSquareBrackets(span: Span.Span): string {
