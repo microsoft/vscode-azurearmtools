@@ -8,6 +8,7 @@ import { IActionContext, IAzureUserInput } from "vscode-azureextensionui";
 import { ObjectValue } from "../../language/json/JSON";
 import { DeploymentTemplateDoc } from "./DeploymentTemplateDoc";
 import { InsertItem } from "./insertItem";
+
 export class ExtractItem {
     // tslint:disable-next-line:no-empty
     constructor(private ui: IAzureUserInput) {
@@ -22,8 +23,8 @@ export class ExtractItem {
         const insertText = `[parameters('${name}')]`;
         const texts = this.fixExtractTexts(selectedText, insertText, selection, template, editor);
         let topLevel = this.getTopLevel(template, selection);
-        await editor.edit(builder => builder.replace(selection, texts[1]), { undoStopBefore: true, undoStopAfter: false });
-        await new InsertItem(this.ui).insertParameterWithDefaultValue(topLevel, editor, context, name, texts[0], description, { undoStopBefore: false, undoStopAfter: true });
+        await editor.edit(builder => builder.replace(selection, texts.insertText), { undoStopBefore: true, undoStopAfter: false });
+        await new InsertItem(this.ui).insertParameterWithDefaultValue(topLevel, editor, context, name, texts.selectedText, description, { undoStopBefore: false, undoStopAfter: true });
         editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.end), vscode.TextEditorRevealType.Default);
     }
 
@@ -39,25 +40,32 @@ export class ExtractItem {
         let insertText = `[variables('${name}')]`;
         const texts = this.fixExtractTexts(selectedText, insertText, selection, template, editor);
         let topLevel = this.getTopLevel(template, selection);
-        await editor.edit(builder => builder.replace(selection, texts[1]), { undoStopBefore: true, undoStopAfter: false });
-        await new InsertItem(this.ui).insertVariableWithValue(topLevel, editor, context, name, texts[0], { undoStopBefore: false, undoStopAfter: true });
+        await editor.edit(builder => builder.replace(selection, texts.insertText), { undoStopBefore: true, undoStopAfter: false });
+        await new InsertItem(this.ui).insertVariableWithValue(topLevel, editor, context, name, texts.selectedText, { undoStopBefore: false, undoStopAfter: true });
         editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.end), vscode.TextEditorRevealType.Default);
     }
 
-    private fixExtractTexts(selectedText: string, insertText: string, selection: vscode.Selection, template: DeploymentTemplateDoc, editor: vscode.TextEditor): string[] {
+    private fixExtractTexts(selectedText: string, insertText: string, selection: vscode.Selection, template: DeploymentTemplateDoc, editor: vscode.TextEditor): { selectedText: string; insertText: string } {
         if (this.isInsideExpression(selection, template, editor)) {
+            // If the selected text is inside an expression ("[concat('selectedText','')]")
             if (this.isText(selectedText)) {
+                // The selected text surrounded by single quotes then the quare brackets of "[variables('v')]" should be removed
                 insertText = this.removeStartAndEnd(insertText);
+                // The selected text surrounded by single quotes then the single quotes should be removed ('selectedText')
                 selectedText = this.removeStartAndEnd(selectedText.trim());
             } else if (this.isNumber(selectedText)) {
+                // If a number is selected then the quare brackets of "[variables('v')]" should be removed
                 insertText = this.removeStartAndEnd(insertText);
+                // If a number is selected then the extra spaces surrounding the number should be removed " 12345 "
                 selectedText = selectedText.trim();
             } else {
+                // If the selected text is an expression then the quare brackets of "[variables('v')]" should be removed
                 insertText = this.removeStartAndEnd(insertText);
+                // If the selected text is an expression then we should add square brackets to the selected text
                 selectedText = this.addSquareBrackets(selectedText);
             }
         }
-        return [selectedText, insertText];
+        return { selectedText: selectedText, insertText: insertText };
     }
 
     private expandSelection(selection: vscode.Selection, document: vscode.TextDocument, template: DeploymentTemplateDoc, editor: vscode.TextEditor): vscode.Selection {
