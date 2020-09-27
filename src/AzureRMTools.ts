@@ -173,28 +173,6 @@ export class AzureRMTools {
                 await this.sortTemplate(sectionType.value, uri, editor);
             }
         });
-        registerCommand("azurerm-vscode-tools.extractParameter", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
-            editor = editor || vscode.window.activeTextEditor;
-            uri = uri || vscode.window.activeTextEditor?.document.uri;
-            if (editor) {
-                let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
-                if (!deploymentTemplate) {
-                    return;
-                }
-                await new ExtractItem(ext.ui).extractParameter(editor, deploymentTemplate, _context);
-            }
-        });
-        registerCommand("azurerm-vscode-tools.extractVariable", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
-            editor = editor || vscode.window.activeTextEditor;
-            uri = uri || vscode.window.activeTextEditor?.document.uri;
-            if (editor) {
-                let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
-                if (!deploymentTemplate) {
-                    return;
-                }
-                await new ExtractItem(ext.ui).extractVariable(editor, deploymentTemplate, _context);
-            }
-        });
         registerCommand("azurerm-vscode-tools.sortFunctions", async () => {
             await this.sortTemplate(TemplateSectionType.Functions);
         });
@@ -261,6 +239,28 @@ export class AzureRMTools {
         });
         registerCommand("azurerm-vscode-tools.codeAction.addMissingRequiredParameters", async (actionContext: IActionContext, source?: vscode.Uri, args?: IAddMissingParametersArgs) => {
             await this.addMissingParameters(actionContext, source, args, true);
+        });
+        registerCommand("azurerm-vscode-tools.codeAction.extractParameter", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
+            editor = editor || vscode.window.activeTextEditor;
+            uri = uri || vscode.window.activeTextEditor?.document.uri;
+            if (editor) {
+                let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
+                if (!deploymentTemplate) {
+                    return;
+                }
+                await new ExtractItem(ext.ui).extractParameter(editor, deploymentTemplate, _context);
+            }
+        });
+        registerCommand("azurerm-vscode-tools.codeAction.extractVariable", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
+            editor = editor || vscode.window.activeTextEditor;
+            uri = uri || vscode.window.activeTextEditor?.document.uri;
+            if (editor) {
+                let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
+                if (!deploymentTemplate) {
+                    return;
+                }
+                await new ExtractItem(ext.ui).extractVariable(editor, deploymentTemplate, _context);
+            }
         });
 
         // Code lens commands

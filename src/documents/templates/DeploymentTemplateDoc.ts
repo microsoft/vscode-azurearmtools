@@ -606,7 +606,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
     private createExtractCommand(title: string, command: string): CodeAction {
         const action = new CodeAction(title, CodeActionKind.RefactorExtract);
-        action.command = { command: `azurerm-vscode-tools.${command}`, title: '' };
+        action.command = { command: `azurerm-vscode-tools.codeAction.${command}`, title: '' };
         return action;
     }
 
