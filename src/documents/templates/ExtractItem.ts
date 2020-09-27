@@ -44,7 +44,7 @@ export class ExtractItem {
         editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.end), vscode.TextEditorRevealType.Default);
     }
 
-    public fixExtractTexts(selectedText: string, insertText: string, selection: vscode.Selection, template: DeploymentTemplateDoc, editor: vscode.TextEditor): string[] {
+    private fixExtractTexts(selectedText: string, insertText: string, selection: vscode.Selection, template: DeploymentTemplateDoc, editor: vscode.TextEditor): string[] {
         if (this.isInsideExpression(selection, template, editor)) {
             if (this.isText(selectedText)) {
                 insertText = this.removeStartAndEnd(insertText);
@@ -60,7 +60,7 @@ export class ExtractItem {
         return [selectedText, insertText];
     }
 
-    public expandSelection(selection: vscode.Selection, document: vscode.TextDocument, template: DeploymentTemplateDoc, editor: vscode.TextEditor): vscode.Selection {
+    private expandSelection(selection: vscode.Selection, document: vscode.TextDocument, template: DeploymentTemplateDoc, editor: vscode.TextEditor): vscode.Selection {
         if (selection.start.character === 0) {
             return selection;
         }
