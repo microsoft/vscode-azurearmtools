@@ -29,7 +29,7 @@ export function getDependsOnCompletions(
     }
 
     const scope = pc.getScope();
-    const infos = getResourcesInfo(scope);
+    const infos = getResourcesInfo({ scope, recognizeDecoupledChildren: true });
     if (infos.length === 0) {
         return completions;
     }
@@ -46,7 +46,7 @@ export function getDependsOnCompletions(
             continue;
         }
 
-        const items = getDependsOnCompletionsForResource(resource, span);
+        const items = getDependsOnCompletionsForResource(resource, span, currentResource?.parent === resource);
         completions.push(...items);
     }
 
@@ -56,7 +56,7 @@ export function getDependsOnCompletions(
 /**
  * Get possible completions for entries inside a resource's "dependsOn" array
  */
-function getDependsOnCompletionsForResource(resource: IJsonResourceInfo, span: Span): Completion.Item[] {
+function getDependsOnCompletionsForResource(resource: IJsonResourceInfo, span: Span, isParent: boolean): Completion.Item[] {
     const completions: Completion.Item[] = [];
 
     const resourceIdExpression = resource.getResourceIdExpression();
@@ -71,15 +71,14 @@ function getDependsOnCompletionsForResource(resource: IJsonResourceInfo, span: S
         const documentation = `Inserts this resourceId reference:\n\`\`\`arm-template\n"[${resourceIdExpression}]"\n\`\`\`\n<br/>`;
 
         const item = new Completion.Item({
-            label,
-            insertText,
+            label: isParent ? `parent (${label})` : label,
+            insertText: insertText,
             detail,
             documentation: new MarkdownString(documentation),
             span,
             kind: Completion.CompletionKind.dependsOnResourceId,
-            // Normally vscode uses label if this isn't specified, but it doesn't seem to like the "[" in the label,
-            // so specify filter text explicitly
-            filterText: insertText
+            filterText: `${insertText}${isParent ? " parent" : ""}`, // Allow filtering off of "parent"
+            priority: isParent ? Completion.CompletionPriority.high : Completion.CompletionPriority.normal
         });
 
         completions.push(item);
@@ -97,6 +96,7 @@ ${copyInsertText}
 \`\`\`
 from resource \`${friendlyNameExpression}\` of type \`${friendlyTypeExpression}\``;
 
+            // CONSIDER: set parent as preselected if the resource doesn't already have it listed in dependsOn (requires understanding non-resourceId types of dependsOn entries)
             const copyItem = new Completion.Item({
                 label: copyLabel,
                 insertText: copyInsertText,

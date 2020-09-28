@@ -58,7 +58,7 @@ function getCompletions(
         return getResourceTypeCompletions(funcCall, pc, scope, resourceIdCompletions, argIndexAtCursor, parentStringToken);
     }
 
-    const allResources = getResourcesInfo(scope);
+    const allResources = getResourcesInfo({ scope, recognizeDecoupledChildren: false });
 
     // Check previous arguments in the call to see if any of them matches a known resource type
     let argWithResourceType = findFunctionCallArgumentWithResourceType(
@@ -215,8 +215,8 @@ function getResourceTypeCompletions(
     }
 
     const results: Completion.Item[] = [];
-    const infos = getResourcesInfo(scope);
-    for (let info of infos) {
+    const infos = getResourcesInfo({ scope, recognizeDecoupledChildren: false });
+    for (const info of infos) {
         const insertText = info.getFullTypeExpression();
         if (insertText) {
             const label = insertText;

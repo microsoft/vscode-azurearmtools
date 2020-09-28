@@ -9,16 +9,28 @@ import { getFriendlyExpressionFromTleExpression } from "../../language/expressio
 import * as TLE from "../../language/expressions/TLE";
 import * as Json from "../../language/json/JSON";
 import { isSingleQuoted, removeSingleQuotes } from "../../util/strings";
+import { areDecoupledChildAndParent } from "./areDecoupledChildAndParent";
 import { TemplateScope } from "./scopes/TemplateScope";
 
 /**
  * Get useful info about each resource in the template in a flat list, including the ability to understand full resource names and types in the
  * presence of parent/child resources
  */
-export function getResourcesInfo(scope: TemplateScope): IJsonResourceInfo[] {
+export function getResourcesInfo(
+    { scope, recognizeDecoupledChildren }:
+        {
+            scope: TemplateScope;
+            recognizeDecoupledChildren: boolean;
+        }
+): IJsonResourceInfo[] {
     const resourcesArray = scope.rootObject?.getPropertyValue(templateKeys.resources)?.asArrayValue;
     if (resourcesArray) {
-        return getInfoFromResourcesArray(resourcesArray, undefined);
+        const infos = getInfoFromResourcesArray(resourcesArray, undefined);
+        if (recognizeDecoupledChildren) {
+            findAndSetDecoupledChildren(infos);
+        }
+
+        return infos;
     }
 
     return [];
@@ -38,7 +50,16 @@ export function getResourceInfo(
 // tslint:disable-next-line: no-suspicious-comment
 // TODO: Consider combining with or hanging off of IResource. IResource currently only used for sorting templates and finding nested deployments? Nested subnets are not currently IResources but are IResourceInfos
 export interface IResourceInfo {
+    /**
+     * The parent resource, if any (might be a decoupled parent)
+     */
     parent?: IResourceInfo;
+
+    /**
+     * True if this is a child that was defined at top level instead of nested inside the parent
+     */
+    isDecoupledChild: boolean;
+
     children: IResourceInfo[];
 
     /**
@@ -123,6 +144,7 @@ export class ResourceInfo implements IResourceInfo {
             parent.children.push(this);
         }
     }
+    public isDecoupledChild: boolean = false;
 
     public get shortNameExpression(): string {
         return this.nameSegmentExpressions[this.nameSegmentExpressions.length - 1];
@@ -148,11 +170,11 @@ export class ResourceInfo implements IResourceInfo {
     }
 
     public getFullTypeExpression(): string | undefined {
-        return concatExpressionWithSeparator(this.typeSegmentExpressions, '/');
+        return concatExpressionsWithSeparator(this.typeSegmentExpressions, '/');
     }
 
     public getFullNameExpression(): string | undefined {
-        return concatExpressionWithSeparator(this.nameSegmentExpressions, '/');
+        return concatExpressionsWithSeparator(this.nameSegmentExpressions, '/');
     }
 
     public getResourceIdExpression(): string | undefined {
@@ -203,7 +225,7 @@ export class JsonResourceInfo extends ResourceInfo implements IJsonResourceInfo 
  *
  * `concat(parameters('a'), '/b/c/d/', 123, '/', 456, '/', parameters('e'), '/', parameters('f'), '/g/h')`
  */
-function concatExpressionWithSeparator(expressions: string[], unquotedLiteralSeparator?: string): string | undefined {
+function concatExpressionsWithSeparator(expressions: string[], unquotedLiteralSeparator?: string): string | undefined {
     if (expressions.length < 2) {
         return expressions[0];
     }
@@ -384,21 +406,43 @@ export function splitResourceNameIntoSegments(nameUnquotedValue: string): string
 //   ->
 // [ "'Microsoft.Network/networkSecurityGroups'", "'securityRules'" ]
 function splitResourceTypeIntoSegments(typeNameUnquotedValue: string): string[] {
-    let segments: string[];
+    if (!typeNameUnquotedValue) {
+        return [`''`];
+    }
 
-    if (isJsonStringAnExpression(typeNameUnquotedValue)) {
-        // It's an expression.  Try to break it into segments by handling certain common patterns
-        // Example: "[concat(variables('a'), '/', variables('c'))]"
-        return splitExpressionIntoSegments(typeNameUnquotedValue);
-    } else {
-        segments = typeNameUnquotedValue.split('/');
+    if (!isJsonStringAnExpression(typeNameUnquotedValue)) {
+        // It's just a plain string.  Separate by "/".
+        let segmentsAsStrings = typeNameUnquotedValue.split('/');
 
-        if (segments.length >= 2) {
+        if (segmentsAsStrings.length >= 2) {
             // The first segment consists of a namespace and an initial name (e.g. 'Microsoft.sql/servers'), so combine our first two entries
-            segments = [`${segments[0]}/${segments[1]}`].concat(segments.slice(2));
+            segmentsAsStrings = [`${segmentsAsStrings[0]}/${segmentsAsStrings[1]}`].concat(segmentsAsStrings.slice(2));
         }
 
-        return segments.map(segment => `'${segment}'`);
+        // Turn into string expressions by adding single quotes
+        return segmentsAsStrings.map(segment => `'${segment}'`);
+    } else {
+        // It's an expression.  Try to break it into segments by handling certain common patterns
+        // Example: "[concat(variables('a'), '/', variables('c'))]"
+        let segmentsAsExpressions = splitExpressionIntoSegments(typeNameUnquotedValue);
+
+        if (segmentsAsExpressions.length >= 2) {
+            // The first segment consists of a namespace and an initial name (e.g. 'Microsoft.sql/servers').  If the first segment is an expression and doesn't contain
+            // '/', we'll assume it represents the namespace and the initial name and leave it alone.
+            if (isSingleQuoted(segmentsAsExpressions[0])) {
+                // First expression is a string literal
+                if (!segmentsAsExpressions[0].includes('/')) {
+                    // ... that doesn't contain '/' already
+
+                    // So we'll combine it with the second expression, using concat if necessary
+                    const combinedSegment = concatExpressionsWithSeparator(segmentsAsExpressions.slice(0, 2), '/') ?? '';
+                    segmentsAsExpressions = [combinedSegment].concat(segmentsAsExpressions.slice(2));
+                }
+            }
+        }
+
+        // They're already expressions, return them
+        return segmentsAsExpressions;
     }
 }
 
@@ -425,7 +469,7 @@ function splitExpressionIntoSegments(jsonString: string): string[] {
                     let rewrittenArgs: (TLE.Value | string)[] = []; // string instances are string literals
                     for (let arg of argumentExpressions) {
                         if (arg instanceof TLE.StringValue && arg.unquotedValue.includes('/')) {
-                            const refactoredArg: string[] = splitStringWithSeparator(arg.unquotedValue, '/')
+                            const refactoredArg: string[] = splitStringAndKeepSeparators(arg.unquotedValue, '/')
                                 .map(s => `'${s}'`);
                             rewrittenArgs.push(...refactoredArg);
                         } else {
@@ -472,7 +516,7 @@ function splitExpressionIntoSegments(jsonString: string): string[] {
  * Splits a string using a separator, but unlike string.split, the separators
  * are keep in the array returned.
  */
-function splitStringWithSeparator(s: string, separator: string): string[] {
+function splitStringAndKeepSeparators(s: string, separator: string): string[] {
     let result: string[] = [];
     let substrings: string[] = s.split(separator);
 
@@ -544,4 +588,34 @@ function getFriendlyResourceLabel(
     let typeLabel = getFriendlyTypeExpression({ resource, fullType });
 
     return `${nameLabel} (${typeLabel})`;
+}
+
+function findAndSetDecoupledChildren(infos: IJsonResourceInfo[]): void {
+    const topLevel = infos.filter(info => !info.parent);
+    const possibleParents = topLevel;
+    const possibleChildren = topLevel.filter(info => !info.parent && info.nameSegmentExpressions.length > 1);
+
+    for (const parent of possibleParents) { // Note: a resource could be a parent of multiple children (some nested, some decoupled)
+        const removeIndices: number[] = [];
+        possibleChildren.slice().forEach((child, index) => { // slice() makes a copy of the array so we can modify it while looping
+            assert(!child.parent, "Should have been removed from the array already");
+            if (areDecoupledChildAndParent(child, parent)) {
+                parent.children.push(child);
+                child.parent = parent;
+                child.isDecoupledChild = true;
+
+                // A resource can't have two parents (whether nested or decoupled), so remove from possibilities
+                // Can't actually remove until we're done with the loop
+                removeIndices.push(index);
+            }
+        });
+
+        for (let i = removeIndices.length - 1; i >= 0; --i) {
+            possibleChildren.splice(removeIndices[i], 1);
+        }
+
+        if (possibleChildren.length === 0) {
+            break;
+        }
+    }
 }

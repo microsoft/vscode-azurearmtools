@@ -33,7 +33,7 @@ suite("ResourceId completions", () => {
         // Can either be an array of completion names, or an array of
         //   [completion name, insert text] tuples
         expectedCompletions: string[],
-        addFunctionCompletions: boolean = true
+        ignoreTleFunctionCompletions: boolean = true
     ): void {
         if (!("outputs" in template)) {
             template.outputs = {};
@@ -46,18 +46,14 @@ suite("ResourceId completions", () => {
             };
         }
 
-        if (addFunctionCompletions) {
-            // Add default completions for built-in functions
-            expectedCompletions = [...expectedCompletions, ...defaultCompletions];
-        }
-
         createExpressionCompletionsTest(
             expressionWithBang,
             expectedCompletions,
             template,
             {
                 name,
-                preps: [new UseRealFunctionMetadata()]
+                preps: [new UseRealFunctionMetadata()],
+                ignoreCompletionNames: ignoreTleFunctionCompletions ? defaultCompletions : undefined // Ignore default completions for built-in functions?
             });
     }
 
@@ -1107,7 +1103,7 @@ suite("ResourceId completions", () => {
                 "LOOP ${vmName}vmcopy",
                 "'Microsoft.Compute/virtualMachines'",
                 "'Microsoft.Compute/virtualMachines/extensions'",
-                "[concat(${vmName}, copyIndex(1))]",
+                "parent ([concat(${vmName}, copyIndex(1))])",
             ]
         );
     });
