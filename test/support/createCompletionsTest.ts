@@ -88,11 +88,12 @@ export function createExpressionCompletionsTestEx(
             const pc = dt.getContextFromDocumentCharacterIndex(bang.index, undefined);
             const completions = await pc.getCompletionItems(options?.triggerCharacter);
 
-            let completionNames = completions.items.map(c => c.label).sort();
-            // Remove comletions to ignore
-            completionNames = completionNames.filter(n => !(options?.ignoreCompletionNames ?? []).includes(n));
+            // Remove completions to ignore
+            const completionItems = completions.items.filter(c => !(options?.ignoreCompletionNames ?? []).includes(c.label));
 
-            const completionInserts = completions.items.map(c => c.insertText).sort();
+            const completionNames = completionItems.map(c => c.label).sort();
+
+            const completionInserts = completionItems.map(c => c.insertText).sort();
 
             const expectedNames = (<unknown[]>expectedCompletions).map(e => Array.isArray(e) ? <string>e[0] : <string>e).sort();
             // tslint:disable-next-line: no-any
