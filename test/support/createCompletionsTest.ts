@@ -24,6 +24,7 @@ export function createExpressionCompletionsTest(
     options?: {
         name?: string;
         preps?: ITestPreparation[];
+        ignoreCompletionNames?: string[];
     }
 ): void {
     const defaultTemplate = <IDeploymentTemplate>{
@@ -67,6 +68,7 @@ export function createExpressionCompletionsTestEx(
         name?: string;
         preps?: ITestPreparation[];
         triggerCharacter?: string;
+        ignoreCompletionNames?: string[];
     }
 ): void {
     const name = options?.name;
@@ -86,7 +88,10 @@ export function createExpressionCompletionsTestEx(
             const pc = dt.getContextFromDocumentCharacterIndex(bang.index, undefined);
             const completions = await pc.getCompletionItems(options?.triggerCharacter);
 
-            const completionNames = completions.items.map(c => c.label).sort();
+            let completionNames = completions.items.map(c => c.label).sort();
+            // Remove comletions to ignore
+            completionNames = completionNames.filter(n => !(options?.ignoreCompletionNames ?? []).includes(n));
+
             const completionInserts = completions.items.map(c => c.insertText).sort();
 
             const expectedNames = (<unknown[]>expectedCompletions).map(e => Array.isArray(e) ? <string>e[0] : <string>e).sort();
