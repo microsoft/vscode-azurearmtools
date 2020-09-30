@@ -9,6 +9,7 @@ import * as assert from 'assert';
 import * as path from 'path';
 import { Uri } from "vscode";
 import { DeploymentFileMapping, isWin32, normalizePath } from "../extension.bundle";
+import { ext } from '../src/extensionVariables';
 import { TestConfiguration } from "./support/TestConfiguration";
 import { testOnWin32 } from './support/testOnPlatform';
 
@@ -29,7 +30,7 @@ suite("DeploymentFileMapping", () => {
         const t = template1;
         const p = param1;
 
-        await mapping.mapParameterFile(t, p);
+        await mapping.mapParameterFile(t, p, { saveInSettings: true }); //asdf
 
         assert.equal(mapping.getParameterFile(t)?.fsPath, p.fsPath);
         assert.equal(mapping.getTemplateFile(p)?.fsPath, t.fsPath);
@@ -41,7 +42,7 @@ suite("DeploymentFileMapping", () => {
         const t = template1variation;
         const p = param1variation;
 
-        await mapping.mapParameterFile(t, p);
+        await mapping.mapParameterFile(t, p, { saveInSettings: true });
 
         assert.equal(mapping.getParameterFile(t)?.fsPath, path.resolve(p.fsPath));
         assert.equal(mapping.getTemplateFile(p)?.fsPath, path.resolve(t.fsPath));
@@ -53,7 +54,7 @@ suite("DeploymentFileMapping", () => {
         const t = template1;
         const p = param1subfolder;
 
-        await mapping.mapParameterFile(t, p);
+        await mapping.mapParameterFile(t, p, { saveInSettings: true });
 
         assert.equal(mapping.getParameterFile(t)?.fsPath, p.fsPath);
         assert.equal(mapping.getTemplateFile(p)?.fsPath, t.fsPath);
@@ -65,7 +66,7 @@ suite("DeploymentFileMapping", () => {
         const t = template1;
         const p = param1parentfolder;
 
-        await mapping.mapParameterFile(t, p);
+        await mapping.mapParameterFile(t, p, { saveInSettings: true });
 
         assert.equal(mapping.getParameterFile(t)?.fsPath, p.fsPath);
         assert.equal(mapping.getTemplateFile(p)?.fsPath, t.fsPath);
@@ -77,7 +78,7 @@ suite("DeploymentFileMapping", () => {
         const t = Uri.file("c:\\temp\\template1.params.json");
         const p = Uri.file("d:\\temp\\template1.params.json");
 
-        await mapping.mapParameterFile(t, p);
+        await mapping.mapParameterFile(t, p, { saveInSettings: true });
 
         assert.equal(mapping.getParameterFile(t)?.fsPath, p.fsPath);
         assert.equal(mapping.getTemplateFile(p)?.fsPath, t.fsPath);
@@ -89,52 +90,84 @@ suite("DeploymentFileMapping", () => {
         const t = template1;
         const p = param1subfolder;
 
-        await mapping.mapParameterFile(t, p);
+        await mapping.mapParameterFile(t, p, { saveInSettings: true });
 
         const parameterFiles = <{ [key: string]: string }>testConfig.get("parameterFiles");
         const pStoredPath = parameterFiles[t.fsPath];
         assert(!path.isAbsolute(pStoredPath));
     });
 
-    testOnWin32("Case-insensitive on Windows", async () => {
-        const testConfig = new TestConfiguration();
-        const mapping = new DeploymentFileMapping(testConfig);
-        const t = Uri.file("C:\\TEMP\\Template1.json");
-        const p = Uri.file("C:\\TEMP\\Template1.Params.json");
+    test("Case-insensitive on Windows", async () => {
+        try {
+            ext.isFileSystemCaseSensitive = false;
 
-        await mapping.mapParameterFile(t, p);
+            const testConfig = new TestConfiguration();
+            const mapping = new DeploymentFileMapping(testConfig);
+            const t = Uri.file(`${root}TEMP/Template1.json`);
+            const p = Uri.file(`${root}TEMP/Template1.Params.json`);
 
-        assert.equal(mapping.getParameterFile(Uri.file("c:\\temp\\tEMPLATE1.jSON"))?.fsPath, p.fsPath.toLocaleLowerCase());
-        assert.equal(mapping.getTemplateFile(Uri.file("c:\\temP\\TemPLATE1.pARAMS.jSOn"))?.fsPath, t.fsPath.toLowerCase());
+            await mapping.mapParameterFile(t, p, { saveInSettings: true });
+
+            assert.strictEqual(mapping.getParameterFile(Uri.file(`${root}temp/tEMPLATE1.jSON`))?.fsPath, p.fsPath.toLocaleLowerCase());
+            assert.strictEqual(mapping.getTemplateFile(Uri.file(`${root}temP/TemPLATE1.pARAMS.jSOn`))?.fsPath, t.fsPath.toLowerCase());
+        } finally {
+            ext.isFileSystemCaseSensitive = !isWin32;
+        }
     });
 
-    testOnWin32("Case-insensitive on Windows - last entry wins", async () => {
-        const testConfig = new TestConfiguration();
-        const mapping = new DeploymentFileMapping(testConfig);
-        const t1 = Uri.file("C:\\TEMP\\Template1.json");
-        const t2 = Uri.file("C:\\TEMP\\TEMPLATE1.json");
-        const t3 = Uri.file("C:\\TEMP\\tempLATE1.json");
-        const p1 = Uri.file("C:\\TEMP\\Template1.Params.json");
-        const p2 = Uri.file("C:\\TEMP\\TEMPLATE1.PARAMS.json");
-        const p3 = Uri.file("C:\\TEMP\\tempLATE1.paRAMS.json");
+    test("Case sensitive on Linux/Mac", async () => {
+        try {
+            ext.isFileSystemCaseSensitive = true;
 
-        const obj: { [key: string]: unknown } = {};
-        testConfig.Test_globalValues.set("parameterFiles", obj);
-        obj[t1.fsPath] = p1.fsPath;
-        obj[t2.fsPath] = p2.fsPath;
-        obj[t3.fsPath] = p3.fsPath;
+            const testConfig = new TestConfiguration();
+            const mapping = new DeploymentFileMapping(testConfig);
+            const t = Uri.file(`${root}TEMP/Template1.json`);
+            const p = Uri.file(`${root}TEMP/Template1.Params.json`);
 
-        // Look-up on any template version returns p2
-        const normalizedTemplate = normalizePath(t1.fsPath);
-        assert(normalizedTemplate === normalizePath(t2.fsPath) && normalizedTemplate === normalizePath(t3.fsPath));
-        assert.equal(mapping.getParameterFile(t1)?.fsPath, p3.fsPath);
-        assert.equal(mapping.getParameterFile(t2)?.fsPath, p3.fsPath);
-        assert.equal(mapping.getParameterFile(t3)?.fsPath, p3.fsPath);
+            await mapping.mapParameterFile(t, p, { saveInSettings: true });
 
-        // Look-up on any parameter version returns same path
-        assert.equal(mapping.getTemplateFile(p1)?.fsPath, t3.fsPath);
-        assert.equal(mapping.getTemplateFile(p2)?.fsPath, t3.fsPath);
-        assert.equal(mapping.getTemplateFile(p3)?.fsPath, t3.fsPath);
+            assert.strictEqual(mapping.getParameterFile(Uri.file(`${root}temp/tEMPLATE1.jSON`)), undefined);
+            assert.strictEqual(mapping.getTemplateFile(Uri.file(`${root}TemPLATE1.pARAMS.jSOn`)), undefined);
+            assert.strictEqual(mapping.getParameterFile(t)?.fsPath, p.fsPath);
+            assert.strictEqual(mapping.getTemplateFile(p)?.fsPath, t.fsPath);
+        } finally {
+            ext.resetIsFileSystemCaseSensitive();
+        }
+    });
+
+    test("Case-insensitive on Windows - last entry wins", async () => {
+        try {
+            ext.isFileSystemCaseSensitive = false;
+
+            const testConfig = new TestConfiguration();
+            const mapping = new DeploymentFileMapping(testConfig);
+            const t1 = Uri.file(`${root}TEMP/Template1.json`);
+            const t2 = Uri.file(`${root}TEMP/TEMPLATE1.json`);
+            const t3 = Uri.file(`${root}TEMP/tempLATE1.json`);
+            const p1 = Uri.file(`${root}TEMP/Template1.Params.json`);
+            const p2 = Uri.file(`${root}TEMP/TEMPLATE1.PARAMS.json`);
+            const p3 = Uri.file(`${root}TEMP/tempLATE1.paRAMS.json`);
+
+            const obj: { [key: string]: unknown } = {};
+            testConfig.Test_globalValues.set("parameterFiles", obj);
+            obj[t1.fsPath] = p1.fsPath;
+            obj[t2.fsPath] = p2.fsPath;
+            obj[t3.fsPath] = p3.fsPath;
+
+            // Look-up on any template version returns p2
+            const normalizedTemplate = normalizePath(t1.fsPath);
+            assert(normalizedTemplate === normalizePath(t2.fsPath) && normalizedTemplate === normalizePath(t3.fsPath));
+            assert.equal(mapping.getParameterFile(t1)?.fsPath, p3.fsPath);
+            assert.equal(mapping.getParameterFile(t2)?.fsPath, p3.fsPath);
+            assert.equal(mapping.getParameterFile(t3)?.fsPath, p3.fsPath);
+
+            // Look-up on any parameter version returns same path
+            assert.equal(mapping.getTemplateFile(p1)?.fsPath, t3.fsPath);
+            assert.equal(mapping.getTemplateFile(p2)?.fsPath, t3.fsPath);
+            assert.equal(mapping.getTemplateFile(p3)?.fsPath, t3.fsPath);
+        } finally {
+            ext.resetIsFileSystemCaseSensitive();
+        }
     });
 
     test("Bad settings 1", async () => {
@@ -182,11 +215,11 @@ suite("DeploymentFileMapping", () => {
         const testConfig = new TestConfiguration();
         const mapping = new DeploymentFileMapping(testConfig);
 
-        await mapping.mapParameterFile(template1, param1);
+        await mapping.mapParameterFile(template1, param1, { saveInSettings: true });
         assert.equal(mapping.getParameterFile(template1)?.fsPath, param1.fsPath);
         assert.equal(mapping.getTemplateFile(param1)?.fsPath, template1.fsPath);
 
-        await mapping.mapParameterFile(template1, undefined);
+        await mapping.mapParameterFile(template1, undefined, { saveInSettings: true });
         assert.equal(mapping.getParameterFile(template1), undefined);
         assert.equal(mapping.getTemplateFile(param1), undefined);
     });

@@ -23,6 +23,7 @@ interface IMapping {
 }
 
 export class DeploymentFileMapping {
+    private _tempMappingsToParams: { [key: string]: string } = {}; //asdf should only be case-insenstive on Mac/Linux
     private _mapToParams: Map<string, IMapping> | undefined;
     private _mapToTemplates: Map<string, IMapping> | undefined;
 
@@ -39,12 +40,14 @@ export class DeploymentFileMapping {
         }
 
         this._mapToParams = new Map<string, IMapping>();
-        this._mapToTemplates = new Map<string, IMapping>();
 
         const paramFiles: { [key: string]: unknown } | undefined =
-            this.configuration.get<{ [key: string]: unknown }>(configKeys.parameterFiles)
-            // tslint:disable-next-line: strict-boolean-expressions
-            || {};
+            // The Object.assign turns it into a regular object asdf
+            Object.assign(
+                {},
+                this._tempMappingsToParams,
+                this.configuration.get<{ [key: string]: unknown }>(configKeys.parameterFiles) ?? {}
+            );
         if (typeof paramFiles === 'object') {
             for (let templatePath of Object.getOwnPropertyNames(paramFiles)) {
                 let paramPathObject = paramFiles[templatePath];
@@ -77,6 +80,7 @@ export class DeploymentFileMapping {
         }
 
         // Create reverse mapping
+        this._mapToTemplates = new Map<string, IMapping>();
         for (let entry of this._mapToParams) {
             const mapping: IMapping = entry[1];
             this._mapToTemplates.set(mapping.normalizedParams.fsPath, mapping);
@@ -106,36 +110,52 @@ export class DeploymentFileMapping {
     /**
      * Sets a mapping from a template file to a parameter file
      */
-    public async mapParameterFile(templateUri: Uri, paramFileUri: Uri | undefined): Promise<void> {
+    public async mapParameterFile(
+        templateUri: Uri,
+        paramFileUri: Uri | undefined,
+        options: {
+            /**
+             * If true, the mapping is saved in user settings. Otherwise the mapping is valid only for this session of VS Code
+             */
+            saveInSettings: boolean;
+        } //asdf
+    ): Promise<void> { //asdf temp/saved settings should override each other including case-insensitive   asdf null overrides temp
         const relativeParamFilePath: string | undefined = paramFileUri ? getRelativeParameterFilePath(templateUri, paramFileUri) : undefined;
         const normalizedTemplatePath = normalizePath(templateUri.fsPath);
 
-        // We want to adjust the collection in the user settings, ignoring anything in the workspace settings
-        let map = this.configuration
-            .inspect<{ [key: string]: string | undefined }>(configKeys.parameterFiles)?.globalValue
-            // tslint:disable-next-line: strict-boolean-expressions
-            || {};
+        if (options.saveInSettings) {
+            // We want to adjust the collection in the user settings, ignoring anything in the workspace settings
+            let map = this.configuration
+                .inspect<{ [key: string]: string | undefined }>(configKeys.parameterFiles)?.globalValue
+                // tslint:disable-next-line: strict-boolean-expressions
+                || {};
 
-        if (typeof map !== 'object') {
-            map = {};
-        }
+            if (typeof map !== 'object') {
+                map = {};
+            }
 
-        // Copy existing entries that don't match (might be multiple entries with different casing, so can't do simple delete)
-        const newMap: { [key: string]: string | undefined } = {};
+            // Remove any entries with the new path by copying existing entries that don't match (might be multiple entries with different casing, so can't do simple delete)
+            const newMap: { [key: string]: string | undefined } = {};
 
-        for (let templatePath of Object.getOwnPropertyNames(map)) {
-            if (normalizePath(templatePath) !== normalizedTemplatePath) {
-                newMap[templatePath] = map[templatePath];
+            for (let templatePath of Object.getOwnPropertyNames(map)) {
+                if (normalizePath(templatePath) !== normalizedTemplatePath) {
+                    newMap[templatePath] = map[templatePath];
+                }
+            }
+
+            // Add new entry
+            if (paramFileUri) {
+                newMap[normalizedTemplatePath] = relativeParamFilePath;
+            }
+
+            await this.configuration.update(configKeys.parameterFiles, newMap, ConfigurationTarget.Global);
+            this.resetCache();
+        } else {
+            if (relativeParamFilePath) { //asdf else
+                this._tempMappingsToParams[normalizedTemplatePath] = relativeParamFilePath;
+                this.resetCache();
             }
         }
-
-        // Add new entry
-        if (paramFileUri) {
-            newMap[normalizedTemplatePath] = relativeParamFilePath;
-        }
-
-        await this.configuration.update(configKeys.parameterFiles, newMap, ConfigurationTarget.Global);
-        this.resetCache();
     }
 }
 

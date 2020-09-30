@@ -470,7 +470,7 @@ export async function getDiagnosticsForTemplate(
             }
 
             // Map template to params
-            await mapParameterFile(templateFile.uri, paramsFile.uri);
+            await mapParameterFile(templateFile.uri, paramsFile.uri, { saveInSettings: true, waitForLanguageServer: true }); //asdf?
         }
 
         editor = new TempEditor(document);
@@ -488,7 +488,7 @@ export async function getDiagnosticsForTemplate(
 
         if (templateFile) {
             // Unmap template file
-            await mapParameterFile(templateFile.uri, undefined, false);
+            await mapParameterFile(templateFile.uri, undefined, { saveInSettings: true, waitForLanguageServer: false }); //asdf?
             templateFile.dispose();
         }
         if (paramsFile) {

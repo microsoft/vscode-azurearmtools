@@ -37,4 +37,12 @@ suite("CaseInsensitiveMap", () => {
         const keys: string[] = Array.from(map.keys());
         assert.deepEqual(keys, ["Abc", "def"]);
     });
+
+    test("Entries returns original casing", () => {
+        const map = new CaseInsensitiveMap<string, string>();
+        map.set("Abc", "abc");
+        map.set("def", "def");
+        const entries: [string, string][] = Array.from(map.entries());
+        assert.deepEqual(entries, [["Abc", "abc"], ["def", "def"]]);
+    });
 });

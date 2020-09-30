@@ -63,7 +63,7 @@ suite("Functional parameter file completions", () => {
 
                 // Map template to params
                 if (templateFile) {
-                    await mapParameterFile(templateFile.uri, paramsFile.uri);
+                    await mapParameterFile(templateFile.uri, paramsFile.uri, { saveInSettings: true, waitForLanguageServer: true }); //asdf?
                 }
 
                 // Open params in editor
@@ -124,7 +124,7 @@ suite("Functional parameter file completions", () => {
                     await editor.dispose();
                 }
                 if (templateFile) {
-                    await mapParameterFile(templateFile.uri, undefined, false);
+                    await mapParameterFile(templateFile.uri, undefined, { saveInSettings: true, waitForLanguageServer: false }); //asdf?
                     templateFile.dispose();
                 }
             }

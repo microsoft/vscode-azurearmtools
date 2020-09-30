@@ -7,7 +7,7 @@ import * as fse from 'fs-extra';
 import * as path from 'path';
 import { commands, MessageItem, TextDocument, Uri, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, DialogResponses, IActionContext, IAzureQuickPickItem, UserCancelledError } from 'vscode-azureextensionui';
-import { armTemplateLanguageId, configKeys, configPrefix, globalStateKeys } from '../../constants';
+import { armTemplateLanguageId, configKeys } from '../../constants';
 import { ext } from '../../extensionVariables';
 import { containsParametersSchema } from '../../schemas';
 import { normalizePath } from '../../util/normalizePath';
@@ -81,8 +81,8 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
     // None
 
     // Remove the mapping for this file
-    await neverAskAgain(templateUri, actionContext);
-    await mapping.mapParameterFile(templateUri, undefined);
+    await dontAskAboutThisFile(templateUri, actionContext);
+    await mapping.mapParameterFile(templateUri, undefined, { saveInSettings: true });
   } else if (result === quickPickList.browse) {
     // Browse...
 
@@ -108,15 +108,15 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
       }
     }
 
-    await neverAskAgain(templateUri, actionContext);
+    await dontAskAboutThisFile(templateUri, actionContext);
 
     // Map to the browsed file
-    await mapping.mapParameterFile(templateUri, selectedParamsPath);
+    await mapping.mapParameterFile(templateUri, selectedParamsPath, { saveInSettings: true });
   } else if (result === quickPickList.newFile) {
     // New parameter file
 
     let newUri: Uri = await queryCreateParameterFile(actionContext, template.topLevelScope);
-    await mapping.mapParameterFile(templateUri, newUri);
+    await mapping.mapParameterFile(templateUri, newUri, { saveInSettings: true });
     await commands.executeCommand('azurerm-vscode-tools.openParameterFile', templateUri, newUri);
   } else if (result === quickPickList.openCurrent) {
     // Open current
@@ -131,8 +131,8 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
     // Item in the list selected
 
     assert(result.data, "Quick pick item should have had data");
-    await neverAskAgain(templateUri, actionContext);
-    await mapping.mapParameterFile(templateUri, result.data?.uri);
+    await dontAskAboutThisFile(templateUri, actionContext);
+    await mapping.mapParameterFile(templateUri, result.data?.uri, { saveInSettings: true });
   }
 }
 
@@ -380,7 +380,7 @@ function removeAllExtensions(fileName: string): string {
  */
 export function considerQueryingForParameterFile(mapping: DeploymentFileMapping, document: TextDocument): void {
   // Only deal with saved files, because we don't have an accurate
-  //   URI that we can track for unsaved files, and it's a better user experience.
+  //   URI that we can track for unsaved files, and it's a better user experience. asdf
   if (document.uri.scheme !== 'file') {
     return;
   }
@@ -388,10 +388,12 @@ export function considerQueryingForParameterFile(mapping: DeploymentFileMapping,
   const templateUri = document.uri;
   const templatPath = templateUri.fsPath;
   const alreadyHasParamFile: boolean = !!mapping.getParameterFile(document.uri);
+  //asdf const alwaysUseMatchingParameterFile = ext.configuration.get<boolean>(configKeys.alwaysUseMatchingParameterFile);
 
   // tslint:disable-next-line: no-floating-promises Don't wait
   callWithTelemetryAndErrorHandling('queryAddParameterFile', async (actionContext: IActionContext): Promise<void> => {
     actionContext.telemetry.properties.alreadyHasParamFile = String(alreadyHasParamFile);
+    //asdf actionContext.telemetry.properties.alwaysUseMatchingParameterFile = String(alwaysUseMatchingParameterFile);
 
     if (alreadyHasParamFile) {
       return;
@@ -413,15 +415,32 @@ export function considerQueryingForParameterFile(mapping: DeploymentFileMapping,
       return;
     }
 
-    const yes: MessageItem = { title: "Yes" };
-    const no: MessageItem = { title: "No" };
-    const another: MessageItem = { title: "Choose File..." };
+    // Is there just a single match?
+    actionContext.telemetry.properties.automaticallyUsingMatchingParamFile = 'false';
+    if (closeMatches.length === 1 && !closestMatch.fileNotFound /*asdf&& alwaysUseMatchingParameterFile*/) {
+      actionContext.telemetry.properties.automaticallyUsingMatchingParamFile = 'true';
+      ext.outputChannel.appendLine(`Found matching parameter file: "${templatPath}" -> "${closestMatch.uri.fsPath}"`);
+      //asdf
+      // Don't store this in settings, since we picked it automatically. If the file is deleted or renamed, or another is
+      //   added, saving it in settings would prevent us from picking up the new one automatically
+      // // if (!ext.context.globalState.get<boolean>(globalStateKeys.alreadyToldAboutUseMatchingParamFiles)) {
+      // //   window.showInformationMessage(
+      // //     `Found a matching parameter file "${closestMatch.uri.fsPath}". `
+      // //   ); // Don't wait
+      //   await ext.context.globalState.update(globalStateKeys.alreadyToldAboutUseMatchingParamFiles, true);
+      // }
+
+      await mapping.mapParameterFile(templateUri, closestMatch.uri, { saveInSettings: false }); //asdf
+      return;
+    }
+
+    const neverForThisFile: MessageItem = { title: "Never for this file" };
+    const choose: MessageItem = { title: "Choose File..." };
 
     const response: MessageItem | undefined = await window.showInformationMessage(
-      `A parameter file "${closestMatch.friendlyPath}" has been detected. Do you want use it as the parameter file for "${path.basename(templatPath)}"? This will enable additional functionality, such as more complete validation.`,
-      yes,
-      no,
-      another
+      `Multiple matching parameter files have been been detected. Would you like to choose one? This will enable additional functionality, such as more complete validation.`,
+      choose,
+      neverForThisFile,
     );
     if (!response) {
       actionContext.telemetry.properties.response = 'Canceled';
@@ -431,18 +450,15 @@ export function considerQueryingForParameterFile(mapping: DeploymentFileMapping,
     actionContext.telemetry.properties.response = response.title;
 
     switch (response.title) {
-      case yes.title:
-        await mapping.mapParameterFile(templateUri, closestMatch.uri);
-        break;
-      case no.title:
+      case neverForThisFile.title:
         // We won't ask again
-        await neverAskAgain(templateUri, actionContext);
+        await dontAskAboutThisFile(templateUri, actionContext);
 
         // Let them know how to do it manually
         // Don't wait for an answer
         window.showInformationMessage(howToMessage);
         break;
-      case another.title:
+      case choose.title:
         await commands.executeCommand("azurerm-vscode-tools.selectParameterFile", templateUri);
         break;
       default:
@@ -453,25 +469,27 @@ export function considerQueryingForParameterFile(mapping: DeploymentFileMapping,
 }
 
 function canAsk(templateUri: Uri, actionContext: IActionContext): boolean {
-  const checkForMatchingParamFilesSetting: boolean = !!workspace.getConfiguration(configPrefix).get<boolean>(configKeys.checkForMatchingParameterFiles);
+  const checkForMatchingParamFilesSetting: boolean = !!ext.configuration.get<boolean>(configKeys.checkForMatchingParameterFiles);
   actionContext.telemetry.properties.checkForMatchingParamFiles = String(checkForMatchingParamFilesSetting);
   if (!checkForMatchingParamFilesSetting) {
     return false;
   }
 
   // tslint:disable-next-line: strict-boolean-expressions
-  const neverAskFiles: string[] = ext.context.globalState.get<string[]>(globalStateKeys.dontAskAboutParameterFiles) || [];
-  const key = normalizePath(templateUri);
-  if (neverAskFiles.includes(key)) {
-    actionContext.telemetry.properties.isInDontAskList = 'true';
-    return false;
-  }
+  //asdf const neverAskFiles: string[] = ext.context.globalState.get<string[]>(globalStateKeys.dontAskAboutParameterFiles) || [];
+  //const key = normalizePath(templateUri);
+  //asdf
+  // if (neverAskFiles.includes(key)) {
+  //   actionContext.telemetry.properties.isInDontAskList = 'true';
+  //   return false;
+  // }
 
-  let ignoreThisSession = _filesToIgnoreThisSession.has(normalizePath(templateUri));
-  if (ignoreThisSession) {
-    actionContext.telemetry.properties.ignoreThisSession = 'true';
-    return false;
-  }
+  //asdfs
+  // let ignoreThisSession = _filesToIgnoreThisSession.has(normalizePath(templateUri));
+  // if (ignoreThisSession) {
+  //   actionContext.telemetry.properties.ignoreThisSession = 'true';
+  //   return false;
+  // }
 
   return true;
 }
@@ -480,12 +498,16 @@ function dontAskAgainThisSession(templateUri: Uri, actionContext: IActionContext
   _filesToIgnoreThisSession.add(normalizePath(templateUri));
 }
 
-async function neverAskAgain(templateUri: Uri, actionContext: IActionContext): Promise<void> {
-  // tslint:disable-next-line: strict-boolean-expressions
-  const neverAskFiles: string[] = ext.context.globalState.get<string[]>(globalStateKeys.dontAskAboutParameterFiles) || [];
-  const key: string = normalizePath(templateUri);
-  neverAskFiles.push(key);
-  await ext.context.globalState.update(globalStateKeys.dontAskAboutParameterFiles, neverAskFiles);
+async function dontAskAboutThisFile(templateUri: Uri, actionContext: IActionContext): Promise<void> {
+  // asdf comment
+  await ext.deploymentFileMapping.value.mapParameterFile(templateUri, undefined, { saveInSettings: true });
+
+  //asdf
+  // const neverAskFiles: string[] = ext.context.globalState.get<string[]>(globalStateKeys.dontAskAboutParameterFiles) || [];
+  // const key: string = normalizePath(templateUri);
+  // neverAskFiles.push(key);
+  // await ext.context.globalState.update(globalStateKeys.dontAskAboutParameterFiles, neverAskFiles);
+  // ext.configuration.update
 }
 
 function hasSupportedParameterFileExtension(filePath: string): boolean {

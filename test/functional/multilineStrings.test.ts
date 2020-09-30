@@ -6,7 +6,6 @@
 // tslint:disable:no-non-null-assertion
 
 import * as assert from 'assert';
-import * as os from 'os';
 import { ext, indentMultilineString, unindentMultilineString } from "../../extension.bundle";
 
 for (let eolIndex of [0, 1]) {
@@ -43,7 +42,7 @@ for (let eolIndex of [0, 1]) {
 
                         assert.equal(indentedEscaped, expectedEscaped);
                     } finally {
-                        ext.EOL = os.EOL;
+                        ext.resetEOL();
                     }
                 });
             }
@@ -83,7 +82,7 @@ for (let eolIndex of [0, 1]) {
                         const expectedEscaped = escape(expected);
                         assert.equal(indentedEscaped, expectedEscaped);
                     } finally {
-                        ext.EOL = os.EOL;
+                        ext.resetEOL();
                     }
                 });
             }

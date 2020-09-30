@@ -17,6 +17,11 @@
             // must instead be structured as node modules with separate folders
             // and index.d.ts files
             "./typings"
+        ],
+        "plugins": [
+            {
+                "name": "typescript-tslint-plugin"
+            }
         ]
     },
     "include": [

@@ -4,13 +4,13 @@
 
 import * as path from 'path';
 import { Uri } from "vscode";
-import { isWin32 } from '../constants';
+import { ext } from '../extensionVariables';
 
 export function normalizePath(filePath: Uri | string): string {
     const fsPath: string = typeof filePath === 'string' ? filePath :
         filePath.fsPath;
     let normalizedPath = path.normalize(fsPath);
-    if (isWin32) {
+    if (!ext.isFileSystemCaseSensitive) {
         normalizedPath = normalizedPath.toLowerCase();
     }
 

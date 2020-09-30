@@ -34,6 +34,15 @@ export class CaseInsensitiveMap<TKey extends string, TValue> {
         return casePreservedKeys.values();
     }
 
+    /**
+     * Retrieve the entries, in the original casing that they were set with
+     */
+    public entries(): IterableIterator<[TKey, TValue]> { //asdf test
+        const tuples: [TKey, [TKey, TValue]][] = Array.from(this._map.entries());
+        const casePreservedEntries: [TKey, TValue][] = tuples.map(tuple => [tuple[1][0], tuple[1][1]]);
+        return casePreservedEntries.values();
+    }
+
     public map<TReturn>(callbackfn: (key: TKey, value: TValue) => TReturn): TReturn[] {
         const array: TReturn[] = [];
         this._map.forEach((entry: [TKey, TValue]) => {

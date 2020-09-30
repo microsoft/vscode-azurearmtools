@@ -7,7 +7,7 @@ import * as os from 'os';
 import * as vscode from "vscode";
 import { IAzExtOutputChannel, IAzureUserInput } from "vscode-azureextensionui";
 import { LanguageClient } from "vscode-languageclient";
-import { configPrefix, isWebpack } from "./constants";
+import { configPrefix, isWebpack, isWin32 } from "./constants";
 import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
 import { LanguageServerState } from "./languageclient/startArmLanguageServer";
 import { ISnippetManager } from './snippets/ISnippetManager';
@@ -57,6 +57,14 @@ class ExtensionVariables {
     }
 
     public EOL: string = os.EOL;
+    public resetEOL(): void {
+        this.EOL = os.EOL;
+    }
+
+    public isFileSystemCaseSensitive: boolean = !isWin32;
+    public resetIsFileSystemCaseSensitive(): void {
+        this.isFileSystemCaseSensitive = !isWin32;
+    }
 
     public readonly ignoreBundle: boolean = !isWebpack;
 

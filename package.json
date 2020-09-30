@@ -101,7 +101,7 @@
                 "azureResourceManagerTools.languageServer.waitForDebugger": {
                     "type": "boolean",
                     "default": false,
-                    "description": "If set to true, the language server process will wait in startup until a debugger is attached, and then will force a break (requires restart)"
+                    "description": "(For developers) If set to true, the language server process will wait in startup until a debugger is attached, and then will force a break (requires restart)"
                 },
                 "azureResourceManagerTools.languageServer.traceLevel": {
                     "type": "string",
@@ -129,6 +129,11 @@
                 "azureResourceManagerTools.checkForMatchingParameterFiles": {
                     "type": "boolean",
                     "description": "Check if an opened template file has a matching params file and ask to use it",
+                    "default": true
+                },
+                "azureResourceManagerTools.alwaysUseMatchingParameterFile": {
+                    "type": "boolean",
+                    "description": "If only a single matching parameter file is found, it will automatically be used. If multiple matching files are found, the user will be asked asdf",
                     "default": true
                 },
                 "azureResourceManagerTools.parameterFiles": {
@@ -607,7 +612,7 @@
         "@types/fs-extra": "^5.1.0",
         "@types/gulp": "^4.0.6",
         "@types/mocha": "^2.2.41",
-        "@types/node": "^14.0.27",
+        "@types/node": "^14.11.2",
         "@types/opn": "^5.5.0",
         "@types/recursive-readdir": "^2.2.0",
         "@types/rimraf": "2.0.2",
@@ -626,6 +631,7 @@
         "tslint": "^5.20.1",
         "tslint-microsoft-contrib": "5.0.3",
         "typescript": "^3.9.7",
+        "typescript-tslint-plugin": "^0.5.5",
         "vsce": "^1.77.0",
         "vscode": "^1.1.37",
         "vscode-azureextensiondev": "^0.5.0",

@@ -45,17 +45,22 @@ export namespace configKeys {
     export const langServerPath = 'languageServer.path';
     export const checkForLatestSchema = 'checkForLatestSchema';
     export const checkForMatchingParameterFiles = 'checkForMatchingParameterFiles';
+    //asdf export const alwaysUseMatchingParameterFile = 'alwaysUseMatchingParameterFile';
     export const parameterFiles = 'parameterFiles';
     export const enableCodeLens = 'codelens.enable';
     export const codeLensForParameters = 'codelens.parameters';
     export const codeLensForResourceParentsAndChildren = 'codelens.resourceChildren';
+
+    //asdf add new configs to telemetry
 }
 
 export namespace globalStateKeys {
     // Set of files to not ask about using the newest schema
     export const dontAskAboutSchemaFiles = 'dontAskAboutSchemaFiles';
     // Set of files to not automatically search for params files for
-    export const dontAskAboutParameterFiles = 'dontAskAboutParameterFiles';
+    //asdf export const dontAskAboutParameterFiles = 'dontAskAboutParameterFiles';
+    //asdf comment
+    //asdf export const alreadyToldAboutUseMatchingParamFiles = 'alwaysToldAboutUseMatchingParamFile';
 
     export namespace survey {
         export const neverShowSurvey = 'neverShowSurvey';
