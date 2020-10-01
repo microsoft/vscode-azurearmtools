@@ -6,6 +6,7 @@
 import { Location } from "vscode";
 import { configKeys } from "../../constants";
 import { ext } from "../../extensionVariables";
+import { Span } from "../../language/Span";
 import { sortArrayByProperty } from "../../util/sortArrayByProperty";
 import { IPeekResourcesArgs } from "../../vscodeIntegration/commandArguments";
 import { getVSCodeRangeFromSpan } from "../../vscodeIntegration/vscodePosition";
@@ -33,7 +34,15 @@ export abstract class ParentOrChildCodeLens extends ResolvableCodeLens {
         scope: TemplateScope,
         protected readonly sourceResource: IJsonResourceInfo,
     ) {
-        super(scope, sourceResource.resourceObject.span);
+        super(scope, ParentOrChildCodeLens.getSpan(scope, sourceResource));
+    }
+
+    private static getSpan(scope: TemplateScope, sourceResource: IJsonResourceInfo): Span {
+        const resourceSpan = sourceResource.resourceObject.span;
+        let pos = scope.document.getDocumentPosition(resourceSpan.startIndex);
+        let startIndex = scope.document.getDocumentCharacterIndex(pos.line + 1, pos.column);
+        let endIndex = resourceSpan.endIndex < startIndex ? startIndex : resourceSpan.endIndex; // asdf zero-length?
+        return new Span(startIndex, endIndex);
     }
 
     protected resolveCore(title: string, targets: IJsonResourceInfo[], kind: 'parent' | 'children'): boolean {
