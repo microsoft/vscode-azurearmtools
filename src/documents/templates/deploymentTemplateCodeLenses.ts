@@ -116,14 +116,14 @@ export class ParameterDefinitionCodeLens extends ResolvableCodeLens {
             const paramValue = param?.value;
             const paramReference = param?.reference;
             const givenValueAsString = paramValue?.toFullFriendlyString();
-            const defaultValueAsString = this.parameterDefinition.defaultValue?.toFullFriendlyString();
+            const hasDefaultValue = !!this.parameterDefinition.defaultValue;
 
             if (!!paramReference) {
                 title = 'Value: (KeyVault reference)';
             } else if (givenValueAsString !== undefined) {
                 title = `Value: ${givenValueAsString}`;
-            } else if (defaultValueAsString !== undefined) {
-                title = `Using default value: ${defaultValueAsString}`;
+            } else if (hasDefaultValue) {
+                title = "Using default value";
             } else {
                 title = "$(warning) No value found";
             }
