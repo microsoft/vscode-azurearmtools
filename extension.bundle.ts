@@ -80,7 +80,7 @@ export { indentMultilineString, unindentMultilineString } from "./src/util/multi
 export * from "./src/util/nonNull";
 export { normalizePath } from "./src/util/normalizePath";
 export * from "./src/util/readUtf8FileWithBom";
-export * from "./src/util/sortArrayByProperty";
+export * from "./src/util/sorting";
 export * as strings from "./src/util/strings";
 export * from './src/util/time';
 export { wrapError } from "./src/util/wrapError";

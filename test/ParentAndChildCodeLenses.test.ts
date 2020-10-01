@@ -6,7 +6,7 @@
 // tslint:disable:max-func-body-length no-non-null-assertion no-invalid-template-strings
 
 import * as assert from "assert";
-import { getResourcesInfo, IJsonResourceInfo, IPeekResourcesArgs, ParentOrChildCodeLens } from "../extension.bundle";
+import { getResourcesInfo, IJsonResourceInfo, IPeekResourcesArgs, ParentOrChildCodeLens, sortArray } from "../extension.bundle";
 import { IPartialDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 
@@ -32,7 +32,9 @@ suite("ParentAndChildCodeLenses", () => {
             for (const lens of lenses) {
                 await lens.resolve();
                 // Find the resource the lens is inside
-                const res = allInfos.find(info => info.resourceObject.span.startIndex === lens.span.startIndex);
+                const enclosingResources: IJsonResourceInfo[] = allInfos.filter(info => info.resourceObject.span.startIndex <= lens.span.startIndex && info.resourceObject.span.endIndex >= lens.span.endIndex);
+                // If more than one, take the one that starts last, which will be the innermost
+                const res = sortArray(enclosingResources, info => info.resourceObject.startIndex, { descending: true })[0];
                 assert(res, "Could not find a resource at the location of the code lens");
                 const targetStartLines = lens.command?.arguments ?
                     (<IPeekResourcesArgs>lens.command.arguments[0]).targets.map(loc => loc.range.start.line) :
@@ -57,6 +59,18 @@ suite("ParentAndChildCodeLenses", () => {
                     name: "self",
                     type: "microsoft.abc/def"
                 }
+            ]
+        },
+        [
+            ["self", "No parent", undefined],
+            ["self", "No children", undefined]
+        ]);
+
+    createTest(
+        "single resource on single line",
+        {
+            resources: [
+                { name: "self", type: "microsoft.abc/def" }
             ]
         },
         [

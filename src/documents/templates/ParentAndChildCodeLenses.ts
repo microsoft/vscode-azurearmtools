@@ -6,7 +6,9 @@
 import { Location } from "vscode";
 import { configKeys } from "../../constants";
 import { ext } from "../../extensionVariables";
-import { sortArrayByProperty } from "../../util/sortArrayByProperty";
+import { assert } from "../../fixed_assert";
+import { Span } from "../../language/Span";
+import { sortArrayByProperty } from "../../util/sorting";
 import { IPeekResourcesArgs } from "../../vscodeIntegration/commandArguments";
 import { getVSCodeRangeFromSpan } from "../../vscodeIntegration/vscodePosition";
 import { ResolvableCodeLens } from "../DeploymentDocument";
@@ -33,7 +35,25 @@ export abstract class ParentOrChildCodeLens extends ResolvableCodeLens {
         scope: TemplateScope,
         protected readonly sourceResource: IJsonResourceInfo,
     ) {
-        super(scope, sourceResource.resourceObject.span);
+        super(scope, ParentOrChildCodeLens.getCodeLensSpan(scope, sourceResource));
+    }
+
+    private static getCodeLensSpan(scope: TemplateScope, sourceResource: IJsonResourceInfo): Span {
+        // To allow the code lens to be collapsed if the resource is collapsed in the editor, we put the
+        //   code lens on the first line *after* the opening brace
+        const resourceSpan = sourceResource.resourceObject.span;
+        const resourceFirstLine = scope.document.getDocumentPosition(resourceSpan.startIndex).line;
+
+        // Start lens on next line
+        let lensStartIndex = scope.document.getDocumentCharacterIndex(resourceFirstLine + 1, 0);
+        const lensEndIndex = resourceSpan.endIndex;
+
+        if (lensStartIndex > lensEndIndex) {
+            // The entire resource must be on a single line - start at the opening brace after all
+            lensStartIndex = resourceSpan.startIndex;
+            assert(lensStartIndex <= lensEndIndex);
+        }
+        return new Span(lensStartIndex, lensEndIndex - lensStartIndex);
     }
 
     protected resolveCore(title: string, targets: IJsonResourceInfo[], kind: 'parent' | 'children'): boolean {
