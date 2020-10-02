@@ -709,7 +709,16 @@ export class AzureRMTools {
         return await callWithTelemetryAndErrorHandling('reportDeploymentParametersErrors', async (actionContext: IActionContext): Promise<IErrorsAndWarnings> => {
             actionContext.telemetry.suppressIfSuccessful = true;
 
-            const template = await this.getOrReadAssociatedTemplate(textDocument.uri, Cancellation.cantCancel);
+            const templateUri: vscode.Uri | undefined = this._mapping.getTemplateFile(deploymentParameters.documentUri);
+            let template: DeploymentTemplateDoc | undefined;
+            if (templateUri) {
+                const templateFileExists = await pathExists(templateUri);
+                actionContext.telemetry.properties.templateFileExists = String(templateFileExists);
+                if (templateFileExists) {
+                    template = await this.getOrReadDeploymentTemplate(templateUri);
+                }
+            }
+
             return this.reportDeploymentDocumentErrors(textDocument, deploymentParameters, template);
         });
     }
@@ -1402,17 +1411,6 @@ export class AzureRMTools {
         // Nope, have to read it from disk
         const contents = await readUtf8FileWithBom(uri.fsPath);
         return new DeploymentParametersDoc(contents, uri);
-    }
-
-    private async getOrReadAssociatedTemplate(parameterFileUri: vscode.Uri, cancel: Cancellation): Promise<DeploymentTemplateDoc | undefined> {
-        const templateUri: vscode.Uri | undefined = this._mapping.getTemplateFile(parameterFileUri);
-        if (templateUri) {
-            const template = await this.getOrReadDeploymentTemplate(templateUri);
-            cancel.throwIfCancelled();
-            return template;
-        }
-
-        return undefined;
     }
 
     private getDocTypeForTelemetry(doc: DeploymentDocument): string {
