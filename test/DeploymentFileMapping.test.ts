@@ -9,6 +9,7 @@ import * as assert from 'assert';
 import * as path from 'path';
 import { Uri } from "vscode";
 import { DeploymentFileMapping, isWin32, normalizePath } from "../extension.bundle";
+import { configKeys } from '../src/constants';
 import { ext } from '../src/extensionVariables';
 import { TestConfiguration } from "./support/TestConfiguration";
 import { testOnWin32 } from './support/testOnPlatform';
@@ -32,8 +33,8 @@ suite("DeploymentFileMapping", () => {
 
         await mapping.mapParameterFile(t, p, { saveInSettings: true }); //asdf
 
-        assert.equal(mapping.getParameterFile(t)?.fsPath, p.fsPath);
-        assert.equal(mapping.getTemplateFile(p)?.fsPath, t.fsPath);
+        assert.strictEqual(mapping.getParameterFile(t)?.fsPath, p.fsPath);
+        assert.strictEqual(mapping.getTemplateFile(p)?.fsPath, t.fsPath);
     });
 
     test("Update/get - paths normalized", async () => {
@@ -44,8 +45,8 @@ suite("DeploymentFileMapping", () => {
 
         await mapping.mapParameterFile(t, p, { saveInSettings: true });
 
-        assert.equal(mapping.getParameterFile(t)?.fsPath, path.resolve(p.fsPath));
-        assert.equal(mapping.getTemplateFile(p)?.fsPath, path.resolve(t.fsPath));
+        assert.strictEqual(mapping.getParameterFile(t)?.fsPath, path.resolve(p.fsPath));
+        assert.strictEqual(mapping.getTemplateFile(p)?.fsPath, path.resolve(t.fsPath));
     });
 
     test("Update/get - param in subfolder", async () => {
@@ -56,8 +57,8 @@ suite("DeploymentFileMapping", () => {
 
         await mapping.mapParameterFile(t, p, { saveInSettings: true });
 
-        assert.equal(mapping.getParameterFile(t)?.fsPath, p.fsPath);
-        assert.equal(mapping.getTemplateFile(p)?.fsPath, t.fsPath);
+        assert.strictEqual(mapping.getParameterFile(t)?.fsPath, p.fsPath);
+        assert.strictEqual(mapping.getTemplateFile(p)?.fsPath, t.fsPath);
     });
 
     test("Update/get - param in parent folder", async () => {
@@ -68,8 +69,8 @@ suite("DeploymentFileMapping", () => {
 
         await mapping.mapParameterFile(t, p, { saveInSettings: true });
 
-        assert.equal(mapping.getParameterFile(t)?.fsPath, p.fsPath);
-        assert.equal(mapping.getTemplateFile(p)?.fsPath, t.fsPath);
+        assert.strictEqual(mapping.getParameterFile(t)?.fsPath, p.fsPath);
+        assert.strictEqual(mapping.getTemplateFile(p)?.fsPath, t.fsPath);
     });
 
     testOnWin32("Update/get - param on different drive", async () => {
@@ -80,8 +81,8 @@ suite("DeploymentFileMapping", () => {
 
         await mapping.mapParameterFile(t, p, { saveInSettings: true });
 
-        assert.equal(mapping.getParameterFile(t)?.fsPath, p.fsPath);
-        assert.equal(mapping.getTemplateFile(p)?.fsPath, t.fsPath);
+        assert.strictEqual(mapping.getParameterFile(t)?.fsPath, p.fsPath);
+        assert.strictEqual(mapping.getTemplateFile(p)?.fsPath, t.fsPath);
     });
 
     test("Param paths are stored in settings relative to template folder", async () => {
@@ -157,14 +158,14 @@ suite("DeploymentFileMapping", () => {
             // Look-up on any template version returns p2
             const normalizedTemplate = normalizePath(t1.fsPath);
             assert(normalizedTemplate === normalizePath(t2.fsPath) && normalizedTemplate === normalizePath(t3.fsPath));
-            assert.equal(mapping.getParameterFile(t1)?.fsPath, p3.fsPath);
-            assert.equal(mapping.getParameterFile(t2)?.fsPath, p3.fsPath);
-            assert.equal(mapping.getParameterFile(t3)?.fsPath, p3.fsPath);
+            assert.strictEqual(mapping.getParameterFile(t1)?.fsPath, p3.fsPath);
+            assert.strictEqual(mapping.getParameterFile(t2)?.fsPath, p3.fsPath);
+            assert.strictEqual(mapping.getParameterFile(t3)?.fsPath, p3.fsPath);
 
             // Look-up on any parameter version returns same path
-            assert.equal(mapping.getTemplateFile(p1)?.fsPath, t3.fsPath);
-            assert.equal(mapping.getTemplateFile(p2)?.fsPath, t3.fsPath);
-            assert.equal(mapping.getTemplateFile(p3)?.fsPath, t3.fsPath);
+            assert.strictEqual(mapping.getTemplateFile(p1)?.fsPath, t3.fsPath);
+            assert.strictEqual(mapping.getTemplateFile(p2)?.fsPath, t3.fsPath);
+            assert.strictEqual(mapping.getTemplateFile(p3)?.fsPath, t3.fsPath);
         } finally {
             ext.resetIsFileSystemCaseSensitive();
         }
@@ -174,7 +175,7 @@ suite("DeploymentFileMapping", () => {
         const testConfig = new TestConfiguration();
         const mapping = new DeploymentFileMapping(testConfig);
 
-        assert.equal(mapping.getParameterFile(template1), undefined);
+        assert.strictEqual(mapping.getParameterFile(template1), undefined);
     });
 
     test("Bad settings 2", async () => {
@@ -198,29 +199,54 @@ suite("DeploymentFileMapping", () => {
         obj[`${root}good1.json`] = "a.";
 
         // getParameterFile
-        assert.equal(mapping.getParameterFile(Uri.file("")), undefined);
-        assert.equal(mapping.getParameterFile(Uri.file("foo")), undefined);
-        assert.equal(mapping.getParameterFile(Uri.file("temp/relative/foo.json")), undefined);
-        assert.equal(mapping.getParameterFile(Uri.file(`${root}t1.json`)), undefined);
-        assert.equal(mapping.getParameterFile(Uri.file(`${root}t3.json`)), undefined);
-        assert.equal(mapping.getParameterFile(Uri.file(`${root}t4.json`)), undefined);
-        assert.equal(mapping.getParameterFile(Uri.file(`${root}good1.json`))?.fsPath, `${root}a.`);
+        assert.strictEqual(mapping.getParameterFile(Uri.file("")), undefined);
+        assert.strictEqual(mapping.getParameterFile(Uri.file("foo")), undefined);
+        assert.strictEqual(mapping.getParameterFile(Uri.file("temp/relative/foo.json")), undefined);
+        assert.strictEqual(mapping.getParameterFile(Uri.file(`${root}t1.json`)), undefined);
+        assert.strictEqual(mapping.getParameterFile(Uri.file(`${root}t3.json`)), undefined);
+        assert.strictEqual(mapping.getParameterFile(Uri.file(`${root}t4.json`)), undefined);
+        assert.strictEqual(mapping.getParameterFile(Uri.file(`${root}good1.json`))?.fsPath, `${root}a.`);
 
         // getTemplateFile
-        assert.equal(mapping.getTemplateFile(Uri.file("")), undefined);
-        assert.equal(mapping.getTemplateFile(Uri.file("foo.params.json")), undefined);
+        assert.strictEqual(mapping.getTemplateFile(Uri.file("")), undefined);
+        assert.strictEqual(mapping.getTemplateFile(Uri.file("foo.params.json")), undefined);
     });
 
-    test("Remove mapping", async () => {
+    //asdf win32 vs mac
+
+    test("Set mapping back to automatic", async () => {
         const testConfig = new TestConfiguration();
         const mapping = new DeploymentFileMapping(testConfig);
 
         await mapping.mapParameterFile(template1, param1, { saveInSettings: true });
-        assert.equal(mapping.getParameterFile(template1)?.fsPath, param1.fsPath);
-        assert.equal(mapping.getTemplateFile(param1)?.fsPath, template1.fsPath);
+        assert.strictEqual(mapping.getParameterFile(template1)?.fsPath, param1.fsPath);
+        assert.strictEqual(mapping.getTemplateFile(param1)?.fsPath, template1.fsPath);
 
         await mapping.mapParameterFile(template1, undefined, { saveInSettings: true });
-        assert.equal(mapping.getParameterFile(template1), undefined);
-        assert.equal(mapping.getTemplateFile(param1), undefined);
+        assert.strictEqual(mapping.getParameterFile(template1), undefined);
+        assert.strictEqual(mapping.getTemplateFile(param1), undefined);
+
+        // Config should have undefined as the entry value
+        const configParamFiles = testConfig.get<{ [key: string]: string }>(configKeys.parameterFiles)!;
+        assert.strictEqual(configParamFiles[template1.fsPath], undefined);
     });
+
+    test("Map to no parameter file", async () => {
+        const testConfig = new TestConfiguration();
+        const mapping = new DeploymentFileMapping(testConfig);
+
+        await mapping.mapParameterFile(template1, param1, { saveInSettings: true });
+        assert.strictEqual(mapping.getParameterFile(template1)?.fsPath, param1.fsPath);
+        assert.strictEqual(mapping.getTemplateFile(param1)?.fsPath, template1.fsPath);
+
+        await mapping.mapParameterFile(template1, '', { saveInSettings: true });
+        assert.strictEqual(mapping.getParameterFile(template1), undefined);
+        assert.strictEqual(mapping.getTemplateFile(param1), undefined);
+
+        // Config should have empty string as the entry value
+        const configParamFiles = testConfig.get<{ [key: string]: string }>(configKeys.parameterFiles)!;
+        assert.strictEqual(configParamFiles[template1.fsPath], '');
+    });
+
+    //asdf test not using settings
 });

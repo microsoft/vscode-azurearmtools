@@ -281,7 +281,7 @@ export class AzureRMTools {
         vscode.workspace.onDidCloseTextDocument(this.onDocumentClosed, this, ext.context.subscriptions);
         vscode.workspace.onDidChangeConfiguration(
             async () => {
-                this._mapping.resetCache();
+                this._mapping.clearCache({ clearAutomaticMappings: true });
                 // tslint:disable-next-line: no-floating-promises
                 this.updateEditorState();
                 this._codeLensChangedEmitter.fire();

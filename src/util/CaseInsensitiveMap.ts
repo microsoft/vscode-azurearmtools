@@ -2,12 +2,21 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { ICaseAwareMap } from "./ICaseAwareMap";
+
 /**
  * Map with case-insensitive keys. Last set wins if keys differ only by case
  */
-export class CaseInsensitiveMap<TKey extends string, TValue> {
+export class CaseInsensitiveMap<TKey extends string, TValue> implements ICaseAwareMap<TKey, TValue> {
+    public toObject(): { [key: string]: TValue } {
+        throw new Error("Method not implemented.");
+    }
     // Maps case-insensitive key to tuple of [case-preserved key, value]
     private _map: Map<TKey, [TKey, TValue]> = new Map<TKey, [TKey, TValue]>();
+
+    public clear(): void {
+        this._map.clear();
+    }
 
     public get size(): number {
         return this._map.size;
@@ -20,9 +29,14 @@ export class CaseInsensitiveMap<TKey extends string, TValue> {
     }
 
     // tslint:disable-next-line: no-reserved-keywords
-    public set(key: TKey, value: TValue): CaseInsensitiveMap<TKey, TValue> {
+    public set(key: TKey, value: TValue): ICaseAwareMap<TKey, TValue> {
         this._map.set(<TKey>key.toLowerCase(), [key, value]);
         return this;
+    }
+
+    // tslint:disable-next-line: no-reserved-keywords
+    public delete(key: TKey): boolean {
+        return this._map.delete(<TKey>key.toLowerCase());
     }
 
     /**

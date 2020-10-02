@@ -387,7 +387,7 @@ export function considerQueryingForParameterFile(mapping: DeploymentFileMapping,
 
   const templateUri = document.uri;
   const templatPath = templateUri.fsPath;
-  const alreadyHasParamFile: boolean = !!mapping.getParameterFile(document.uri);
+  const alreadyHasParamFile: boolean = !!mapping.getParameterFile(document.uri); //asdf
   //asdf const alwaysUseMatchingParameterFile = ext.configuration.get<boolean>(configKeys.alwaysUseMatchingParameterFile);
 
   // tslint:disable-next-line: no-floating-promises Don't wait
@@ -403,7 +403,7 @@ export function considerQueryingForParameterFile(mapping: DeploymentFileMapping,
       return;
     }
 
-    const suggestions = await findSuggestedParameterFiles(document.uri);
+    const suggestions = await findSuggestedParameterFiles(document.uri); //asdf optimize for single-file case
     const closeMatches = suggestions.filter(pf => pf.isCloseNameMatch);
     actionContext.telemetry.measurements.closeMatches = closeMatches.length;
     actionContext.telemetry.measurements.totalFound = suggestions.length;
@@ -418,7 +418,7 @@ export function considerQueryingForParameterFile(mapping: DeploymentFileMapping,
     // Is there just a single match?
     actionContext.telemetry.properties.automaticallyUsingMatchingParamFile = 'false';
     if (closeMatches.length === 1 && !closestMatch.fileNotFound /*asdf&& alwaysUseMatchingParameterFile*/) {
-      actionContext.telemetry.properties.automaticallyUsingMatchingParamFile = 'true';
+      //asdf actionContext.telemetry.properties.automaticallyUsingMatchingParamFile = 'true';
       ext.outputChannel.appendLine(`Found matching parameter file: "${templatPath}" -> "${closestMatch.uri.fsPath}"`);
       //asdf
       // Don't store this in settings, since we picked it automatically. If the file is deleted or renamed, or another is

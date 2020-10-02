@@ -128,12 +128,7 @@
                 },
                 "azureResourceManagerTools.checkForMatchingParameterFiles": {
                     "type": "boolean",
-                    "description": "Check if an opened template file has a matching params file and ask to use it",
-                    "default": true
-                },
-                "azureResourceManagerTools.alwaysUseMatchingParameterFile": {
-                    "type": "boolean",
-                    "description": "If only a single matching parameter file is found, it will automatically be used. If multiple matching files are found, the user will be asked asdf",
+                    "description": "Check if an opened template file has a matching parameter file, and if so, automatically associate them for validation.",
                     "default": true
                 },
                 "azureResourceManagerTools.parameterFiles": {
