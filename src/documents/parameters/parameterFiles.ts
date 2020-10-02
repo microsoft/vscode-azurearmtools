@@ -463,9 +463,8 @@ function canAsk(templateUri: Uri, actionContext: IActionContext): boolean {
     return false;
   }
 
-  // tslint:disable-next-line: strict-boolean-expressions
   // CONSIDER: It would be nicer to simply place a mapping to an empty string in the user settings, instead of using global state which isn't visible to the user
-  const neverAskFiles: string[] = ext.context.globalState.get<string[]>(globalStateKeys.dontAskAboutParameterFiles) || [];
+  const neverAskFiles: string[] = ext.context.globalState.get<string[]>(globalStateKeys.dontAskAboutParameterFiles) ?? [];
   const key = normalizePath(templateUri);
   if (neverAskFiles.includes(key)) {
     actionContext.telemetry.properties.isInDontAskList = 'true';
