@@ -6,7 +6,6 @@
 import { Location } from "vscode";
 import { configKeys } from "../../constants";
 import { ext } from "../../extensionVariables";
-import { sortArrayByProperty } from "../../util/sortArrayByProperty";
 import { IPeekResourcesArgs } from "../../vscodeIntegration/commandArguments";
 import { getVSCodeRangeFromSpan } from "../../vscodeIntegration/vscodePosition";
 import { ResolvableCodeLens } from "../DeploymentDocument";
@@ -85,9 +84,8 @@ export class ChildrenCodeLens extends ParentOrChildCodeLens {
         let title: string;
         const children = <IJsonResourceInfo[]>this.sourceResource?.children ?? [];
         if (children.length > 0) {
-            const orderedChildren = sortArrayByProperty(children, "shortNameExpression");
-            const countOfChildrenTitle = `${orderedChildren.length} ${orderedChildren.length === 1 ? "child" : "children"}`;
-            const childrenLabels = orderedChildren.map(child => (<IJsonResourceInfo>child).getFriendlyResourceLabel({})).join(", ");
+            const countOfChildrenTitle = `${children.length} ${children.length === 1 ? "child" : "children"}`;
+            const childrenLabels = children.map(child => (<IJsonResourceInfo>child).getFriendlyResourceLabel({})).join(", ");
             title = `${countOfChildrenTitle}: ${childrenLabels}`;
         } else {
             title = "No children";
