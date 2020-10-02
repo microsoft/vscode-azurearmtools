@@ -972,7 +972,7 @@ export class AzureRMTools {
                     if (paramFileUri) {
                         templateFileHasParamFile = true;
                         const doesParamFileExist = await pathExists(paramFileUri);
-                        statusBarText = `Parameters: ${getFriendlyPathToFile(paramFileUri)}`;
+                        statusBarText = `Parameter file: ${getFriendlyPathToFile(paramFileUri)}`;
                         if (!doesParamFileExist) {
                             statusBarText += " $(error) Not found";
                         }
