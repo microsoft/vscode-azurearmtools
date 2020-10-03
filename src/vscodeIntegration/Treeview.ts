@@ -280,12 +280,20 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<IElementInfo
         }
     }
 
+    public clearRevealRange(): void {
+
+    }
+
     public revealRangeInEditor(range: vscode.Range): void {
         const editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
         if (editor) {
-            // Center the method in the document
+            // Don't select the entire range, just put the cursor at the start of it
+            const pos = range.start;
+            range = new vscode.Range(pos, pos);
+
+            // Center the range in the document
             editor.revealRange(range, vscode.TextEditorRevealType.Default);
-            // Select the method name
+            // Select the range
             editor.selection = new vscode.Selection(range.start, range.end);
             // Swap the focus to the editor
             vscode.window.showTextDocument(editor.document, editor.viewColumn, false);

@@ -149,6 +149,16 @@
                     "type": "boolean",
                     "description": "Enables Code Lens that displays the parent and children of each resource",
                     "default": true
+                },
+                "azureResourceManagerTools.appearance.braceHighlightColorDark": {
+                    "type": "string",
+                    "description": "Highlight to use for matching braces inside of expressions (for dark themes), as a CSS name or RGB expression (restart required)",
+                    "default": "#FF6060"
+                },
+                "azureResourceManagerTools.appearance.braceHighlightColorLight": {
+                    "type": "string",
+                    "description": "Highlight to use for matching braces inside of expressions (for light themes), as a CSS name or RGB expression (restart required)",
+                    "default": "#FF4040"
                 }
             }
         },
