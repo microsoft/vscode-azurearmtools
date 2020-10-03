@@ -23,6 +23,7 @@ import { addMissingParameters } from "./documents/parameters/ParameterValues";
 import { IReferenceSite, PositionContext } from "./documents/positionContexts/PositionContext";
 import { TemplatePositionContext } from "./documents/positionContexts/TemplatePositionContext";
 import { DeploymentTemplateDoc } from "./documents/templates/DeploymentTemplateDoc";
+import { getResourcesInfo } from './documents/templates/getResourcesInfo';
 import { gotoResources } from './documents/templates/gotoResources';
 import { getItemTypeQuickPicks, InsertItem } from "./documents/templates/insertItem";
 import { getQuickPickItems, sortTemplate } from "./documents/templates/sortTemplate";
@@ -139,6 +140,19 @@ export class AzureRMTools {
     // More information can be found about this definition at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
     // Several of these properties are CSS properties. More information about those can be found at https://www.w3.org/wiki/CSS/Properties
     private readonly _braceHighlightDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
+        borderWidth: "1px",
+        borderStyle: "solid",
+        light: {
+            borderColor: "rgba(0, 0, 0, 0.2)",
+            backgroundColor: "rgba(0, 0, 0, 0.05)"
+        },
+        dark: {
+            borderColor: "rgba(128, 128, 128, 0.5)",
+            backgroundColor: "rgba(128, 128, 128, 0.1)"
+        }
+    });
+
+    private readonly _resourceDescriptionDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         borderWidth: "1px",
         borderStyle: "solid",
         light: {
@@ -468,6 +482,92 @@ export class AzureRMTools {
                             AzureRMTools.setLanguageToArm(textDocument, actionContext);
                             return;
                         }
+                    }
+
+                    if (editor && editor.document === textDocument) {
+                        const infos = getResourcesInfo({ scope: deploymentTemplate.topLevelScope/*asdf*/, recognizeDecoupledChildren: false });
+                        const options: vscode.DecorationOptions[] = [];
+                        for (const info of infos) {
+                            const resourceRange = getVSCodeRangeFromSpan(deploymentTemplate, info.resourceObject.span);
+                            //asdf use displayname
+
+                            // options.push({
+                            //     range: new vscode.Range(resourceRange.start.line, Number.MAX_SAFE_INTEGER, resourceRange.start.line, Number.MAX_SAFE_INTEGER),
+                            //     hoverMessage: "asdf hover message",
+                            //     renderOptions: {
+                            //         after: {
+                            //             // asdf color: "#90EE90",
+                            //             //color: "#A0A0A0",
+                            //             //asdf color: "#D8D8E0",
+                            //             color: "green",
+                            //             //textDecoration: "underline",
+                            //             //asdf contentText: `name: '${info.getFriendlyNameExpression({ fullName: false })}', type: '${info.getFriendlyTypeExpression({ fullType: false })})'`,
+                            //             contentText: `${info.getFriendlyTypeExpression({ fullType: false })}: '${info.getFriendlyNameExpression({ fullName: false })}'`,
+                            //             fontStyle: "italic",
+                            //             //fontWeight: "100",
+                            //             margin: "0 0 0 1em"
+                            //         }
+                            //     }
+
+                            // });
+                            options.push({
+                                range: new vscode.Range(resourceRange.start.line, Number.MAX_SAFE_INTEGER, resourceRange.start.line, Number.MAX_SAFE_INTEGER),
+                                hoverMessage: "asdf hover message",
+                                renderOptions: {
+                                    before: {
+                                        // asdf color: "#90EE90",
+                                        //color: "#A0A0A0",
+                                        //asdf color: "#D8D8E0",
+                                        color: "#009900",
+                                        //textDecoration: "underline",
+                                        //asdf contentText: `name: '${info.getFriendlyNameExpression({ fullName: false })}', type: '${info.getFriendlyTypeExpression({ fullType: false })})'`,
+                                        contentText: `${info.getFriendlyTypeExpression({ fullType: false })}:`,
+                                        fontStyle: "italic",
+                                        //fontWeight: "100",
+                                        margin: "0 0 0 1em"
+                                    }
+                                }
+
+                            });
+                            options.push({
+                                range: new vscode.Range(resourceRange.start.line, Number.MAX_SAFE_INTEGER, resourceRange.start.line, Number.MAX_SAFE_INTEGER),
+                                hoverMessage: "asdf hover message",
+                                renderOptions: {
+                                    after: {
+                                        // asdf color: "#90EE90",
+                                        //color: "#A0A0A0",
+                                        //asdf color: "#D8D8E0",
+                                        color: "rgb(50,192,50)",
+                                        //textDecoration: "underline",
+                                        //asdf contentText: `name: '${info.getFriendlyNameExpression({ fullName: false })}', type: '${info.getFriendlyTypeExpression({ fullType: false })})'`,
+                                        contentText: `'${info.getFriendlyNameExpression({ fullName: false })}'`,
+                                        fontStyle: "italic",
+                                        //fontWeight: "100",
+                                        margin: "0 0 0 1em"
+                                    }
+                                }
+
+                            });
+                            options.push({
+                                range: new vscode.Range(resourceRange.end.line, Number.MAX_SAFE_INTEGER, resourceRange.end.line, Number.MAX_SAFE_INTEGER),
+                                hoverMessage: "asdf hover message",
+                                renderOptions: {
+                                    after: {
+                                        // asdf color: "#90EE90",
+                                        //color: "#A0A0A0",
+                                        color: "#D8D8E080",
+                                        //textDecoration: "underline",
+                                        //asdf contentText: `name: '${info.getFriendlyNameExpression({ fullName: false })}', type: '${info.getFriendlyTypeExpression({ fullType: false })})'`,
+                                        contentText: `end of ${info.getFriendlyTypeExpression({ fullType: false })}: '${info.getFriendlyNameExpression({ fullName: false })}'`,
+                                        fontStyle: "italic",
+                                        //fontWeight: "100",
+                                        margin: "0 0 0 1em"
+                                    }
+                                }
+
+                            });
+                        }
+                        editor.setDecorations(this._resourceDescriptionDecorationType, options);
                     }
 
                     // Not waiting for return
