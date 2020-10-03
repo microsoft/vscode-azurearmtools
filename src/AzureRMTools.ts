@@ -134,16 +134,26 @@ export class AzureRMTools {
     private _mapping: DeploymentFileMapping = ext.deploymentFileMapping.value;
     private _codeLensChangedEmitter: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
 
+    private get braceHighlightColorSettingDark(): string | undefined { //asdf allow changing without reload
+        return ext.configuration.get<string>(configKeys.appearanceBraceHighlightColorDark);
+    }
+    private get braceHighlightColorSettingLight(): string | undefined {
+        return ext.configuration.get<string>(configKeys.
+            appearanceBraceHighlightColorLight);
+    }
+
     // More information can be found about this definition at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
     // Several of these properties are CSS properties. More information about those can be found at https://www.w3.org/wiki/CSS/Properties
     private readonly _braceHighlightDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         borderWidth: "1px",
         borderStyle: "solid",
         light: {
+            color: sanitizeUserSpecifiedColor(this.braceHighlightColorSettingLight),
             borderColor: "rgba(0, 0, 0, 0.2)",
             backgroundColor: "rgba(0, 0, 0, 0.05)"
         },
         dark: {
+            color: sanitizeUserSpecifiedColor(this.braceHighlightColorSettingDark),
             borderColor: "rgba(128, 128, 128, 0.5)",
             backgroundColor: "rgba(128, 128, 128, 0.1)"
         }
@@ -1691,4 +1701,11 @@ export class AzureRMTools {
             this.closeDeploymentFile(closedDocument);
         });
     }
+}
+
+function sanitizeUserSpecifiedColor(color: string | undefined): string | undefined {
+    // Don't allow arbitrary strings to avoid the possibity of injection attacks
+    return color?.match(/^[-a-zA-Z0-9#().]+$/)
+        ? color
+        : undefined;
 }
