@@ -6,7 +6,7 @@
 // tslint:disable:max-func-body-length no-non-null-assertion no-invalid-template-strings
 
 import * as assert from "assert";
-import { getResourcesInfo, IJsonResourceInfo, IPeekResourcesArgs, ParentOrChildCodeLens } from "../extension.bundle";
+import { getResourcesInfo, IGotoResourcesArgs, IJsonResourceInfo, ParentOrChildCodeLens } from "../extension.bundle";
 import { IPartialDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 
@@ -35,7 +35,7 @@ suite("ParentAndChildCodeLenses", () => {
                 const res = allInfos.find(info => info.resourceObject.span.startIndex === lens.span.startIndex);
                 assert(res, "Could not find a resource at the location of the code lens");
                 const targetStartLines = lens.command?.arguments ?
-                    (<IPeekResourcesArgs>lens.command.arguments[0]).targets.map(loc => loc.range.start.line) :
+                    (<IGotoResourcesArgs>lens.command.arguments[0]).targets.map(loc => loc.range.start.line) :
                     undefined;
                 actual.push(
                     [
