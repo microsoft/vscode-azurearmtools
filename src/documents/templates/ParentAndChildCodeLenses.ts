@@ -21,8 +21,12 @@ export function getParentAndChildCodeLenses(scope: TemplateScope, infos: IJsonRe
     const lenses: ResolvableCodeLens[] = [];
 
     for (const resource of infos) {
-        lenses.push(new ParentCodeLens(scope, resource));
-        lenses.push(new ChildrenCodeLens(scope, resource));
+        if (!!resource.parent) {
+            lenses.push(new ParentCodeLens(scope, resource));
+        }
+        if (resource.children.length > 0) {
+            lenses.push(new ChildrenCodeLens(scope, resource));
+        }
     }
 
     return lenses;
