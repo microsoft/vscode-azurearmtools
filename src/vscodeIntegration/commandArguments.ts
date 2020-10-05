@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { Location, Range, Uri } from "vscode";
+import { Location, Range, TextEditor, Uri } from "vscode";
 import { IParameterDefinitionsSource } from "../documents/parameters/IParameterDefinitionsSource";
 import { IParameterValuesSource } from "../documents/parameters/IParameterValuesSource";
 
@@ -31,4 +31,9 @@ export interface IGotoResourcesArgs {
     source: Location;
     targets: Location[];
     telemetryProperties?: { [key: string]: string };
+}
+
+export interface ITreeviewGoto {
+    editor: TextEditor;
+    range: Range;
 }

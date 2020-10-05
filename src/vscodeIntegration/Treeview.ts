@@ -16,6 +16,7 @@ import { assert } from '../fixed_assert';
 import { getFriendlyExpressionFromJsonString } from '../language/expressions/friendlyExpressions';
 import * as Json from "../language/json/JSON";
 import { ContainsBehavior } from '../language/Span';
+import { ITreeviewGoto } from './commandArguments';
 
 const topLevelIcons: [string, string][] = [
     ["$schema", "label.svg"],
@@ -262,25 +263,16 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<IElementInfo
             collapsibleState: elementInfo.current.collapsible ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
             iconPath: this.getIconPath(elementInfo),
             command: {
-                arguments: [new vscode.Range(start, end)],
+                arguments: [<ITreeviewGoto>{
+                    editor: activeTextEditor,
+                    range: new vscode.Range(start, end)
+                }],
                 command: "azurerm-vscode-tools.treeview.goto",
                 title: "",
             }
         };
 
         return treeItem;
-    }
-
-    public revealRangeInEditor(range: vscode.Range): void {
-        const editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-        if (editor) {
-            // Center the method in the document
-            editor.revealRange(range, vscode.TextEditorRevealType.Default);
-            // Select the method name
-            editor.selection = new vscode.Selection(range.start, range.end);
-            // Swap the focus to the editor
-            vscode.window.showTextDocument(editor.document, editor.viewColumn, false);
-        }
     }
 
     private parseTree(document?: vscode.TextDocument): void {

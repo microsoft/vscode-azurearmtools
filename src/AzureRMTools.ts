@@ -38,6 +38,7 @@ import { getPreferredSchema } from "./schemas";
 import { showInsertionContext } from "./snippets/showInsertionContext";
 import { SnippetManager } from "./snippets/SnippetManager";
 import { survey } from "./survey";
+import { TemporaryDecorator } from './TemporaryDecorator';
 import { CachedPromise } from "./util/CachedPromise";
 import { escapeNonPaths } from "./util/escapeNonPaths";
 import { expectTemplateDocument } from "./util/expectDocument";
@@ -50,7 +51,7 @@ import { Stopwatch } from "./util/Stopwatch";
 import { Cancellation } from "./util/throwOnCancel";
 import { IncorrectArgumentsCountIssue } from "./visitors/IncorrectArgumentsCountIssue";
 import { UnrecognizedBuiltinFunctionIssue } from "./visitors/UnrecognizedFunctionIssues";
-import { IAddMissingParametersArgs, IGotoParameterValueArgs, IGotoResourcesArgs } from "./vscodeIntegration/commandArguments";
+import { IAddMissingParametersArgs, IGotoParameterValueArgs, IGotoResourcesArgs, ITreeviewGoto } from "./vscodeIntegration/commandArguments";
 import { ConsoleOutputChannelWrapper } from "./vscodeIntegration/ConsoleOutputChannelWrapper";
 import * as Hover from './vscodeIntegration/Hover';
 import { RenameCodeActionProvider } from "./vscodeIntegration/RenameCodeActionProvider";
@@ -60,6 +61,7 @@ import { getFunctionParamUsage } from "./vscodeIntegration/signatureFormatting";
 import { onCompletionActivated, toVsCodeCompletionItem } from "./vscodeIntegration/toVsCodeCompletionItem";
 import { JsonOutlineProvider } from "./vscodeIntegration/Treeview";
 import { getVSCodeRangeFromSpan } from "./vscodeIntegration/vscodePosition";
+import { waitForEditorSelectionChanged } from './vscodeIntegration/waitForEditorSelectionChanged';
 
 interface IErrorsAndWarnings {
     errors: Issue[];
@@ -133,10 +135,13 @@ export class AzureRMTools {
     private _diagnosticsVersion: number = 0;
     private _mapping: DeploymentFileMapping = ext.deploymentFileMapping.value;
     private _codeLensChangedEmitter: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
+    private _currentTreeviewSyncHighlighter: TemporaryDecorator | undefined;
 
-    // More information can be found about this definition at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
-    // Several of these properties are CSS properties. More information about those can be found at https://www.w3.org/wiki/CSS/Properties
-    private readonly _braceHighlightDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
+    // More information can be found about decoration types at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
+    // More information about their css properties can be found at https://www.w3.org/wiki/CSS/Properties
+
+    // Used for highlight braces inside TLE expressions
+    private readonly _braceHighlightDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({ //asdf move these
         borderWidth: "1px",
         borderStyle: "solid",
         light: {
@@ -149,6 +154,13 @@ export class AzureRMTools {
         }
     });
 
+    // Used for highlighting an area synchronized with the treeview
+    private readonly _treeviewSyncDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
+        backgroundColor: "#FF800050", // transparent orange
+        isWholeLine: true,
+        overviewRulerColor: "#FF8000",
+    });
+
     // tslint:disable-next-line: max-func-body-length
     constructor(context: vscode.ExtensionContext) {
         const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
@@ -159,8 +171,34 @@ export class AzureRMTools {
         registerCommand("azurerm-vscode-tools.completion-activated", (actionContext: IActionContext, args: object) => {
             onCompletionActivated(actionContext, <{ [key: string]: string }>args);
         });
-        registerCommand("azurerm-vscode-tools.treeview.goto", (_actionContext: IActionContext, range: vscode.Range) => {
-            jsonOutline.revealRangeInEditor(range);
+        registerCommand("azurerm-vscode-tools.treeview.goto", async (_actionContext: IActionContext, args: ITreeviewGoto) => {
+            // Remove any previous highlight
+            this._currentTreeviewSyncHighlighter?.dispose();
+
+            const { editor, range } = args;
+
+            // Reveal the selection
+            editor.revealRange(range, vscode.TextEditorRevealType.Default);
+
+            // Set selection to just the start of the resource
+            editor.selection = new vscode.Selection(range.start, range.start);
+
+            // Swap the focus to the editor
+            await vscode.window.showTextDocument(editor.document, editor.viewColumn, false);
+
+            // Highlight the selection
+            const highlighter = new TemporaryDecorator(this._treeviewSyncDecorationType, editor, [range]);
+            this._currentTreeviewSyncHighlighter = highlighter;
+
+            // Wait at least 500ms
+            const minimumActiveTimeMs = 500;
+            await delay(minimumActiveTimeMs);
+
+            // ... then wait until the user changes the selection
+            await waitForEditorSelectionChanged(editor);
+
+            // .. then remove the decorations (if not already removed)
+            highlighter.dispose();
         });
         registerCommand("azurerm-vscode-tools.sortTemplate", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
             editor = editor || vscode.window.activeTextEditor;
@@ -313,10 +351,12 @@ export class AzureRMTools {
         this._diagnosticsCollection = vscode.languages.createDiagnosticCollection("azurerm-tools-expressions");
         context.subscriptions.push(this._diagnosticsCollection);
 
-        const activeEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-        if (activeEditor) {
-            const activeDocument = activeEditor.document;
-            this.updateOpenedDocument(activeDocument);
+        {
+            const activeEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+            if (activeEditor) {
+                const activeDocument = activeEditor.document;
+                this.updateOpenedDocument(activeDocument);
+            }
         }
     }
 
@@ -1648,28 +1688,35 @@ export class AzureRMTools {
         });
     }
 
-    private async onTextSelectionChanged(): Promise<void> {
+    private clearTreeviewSyncDecorations(editor: vscode.TextEditor): void {
+        editor.setDecorations(this._treeviewSyncDecorationType, []);
+    }
+
+    private async onTextSelectionChanged(evt: vscode.TextEditorSelectionChangeEvent): Promise<void> {
         await callWithTelemetryAndErrorHandling('onTextSelectionChanged', async (actionContext: IActionContext): Promise<void> => {
             actionContext.telemetry.properties.isActivationEvent = 'true';
             actionContext.errorHandling.suppressDisplay = true;
             actionContext.telemetry.suppressIfSuccessful = true;
 
-            let editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-            if (editor) {
-                let position = editor.selection.anchor;
-                let pc: PositionContext | undefined =
-                    await this.getPositionContext(editor.document, position, Cancellation.cantCancel);
-                if (pc && pc instanceof TemplatePositionContext) {
-                    let tleBraceHighlightIndexes: number[] = TLE.BraceHighlighter.getHighlightCharacterIndexes(pc);
+            let editor: vscode.TextEditor = evt.textEditor;
 
-                    let braceHighlightRanges: vscode.Range[] = [];
-                    for (let tleHighlightIndex of tleBraceHighlightIndexes) {
-                        const highlightSpan = new Span(tleHighlightIndex + pc.jsonTokenStartIndex, 1);
-                        braceHighlightRanges.push(getVSCodeRangeFromSpan(pc.document, highlightSpan));
-                    }
+            // Treeview sync decorations
+            this.clearTreeviewSyncDecorations(editor);
 
-                    editor.setDecorations(this._braceHighlightDecorationType, braceHighlightRanges);
+            // Expression brace highlights
+            let position = editor.selection.anchor;
+            let pc: PositionContext | undefined =
+                await this.getPositionContext(editor.document, position, Cancellation.cantCancel);
+            if (pc && pc instanceof TemplatePositionContext) {
+                let tleBraceHighlightIndexes: number[] = TLE.BraceHighlighter.getHighlightCharacterIndexes(pc);
+
+                let braceHighlightRanges: vscode.Range[] = [];
+                for (let tleHighlightIndex of tleBraceHighlightIndexes) {
+                    const highlightSpan = new Span(tleHighlightIndex + pc.jsonTokenStartIndex, 1);
+                    braceHighlightRanges.push(getVSCodeRangeFromSpan(pc.document, highlightSpan));
                 }
+
+                editor.setDecorations(this._braceHighlightDecorationType, braceHighlightRanges);
             }
         });
     }
