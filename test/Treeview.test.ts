@@ -1703,7 +1703,7 @@ suite("TreeView", async (): Promise<void> => {
                                 ]
                             },
                             {
-                                label: "${existingVirtualNetworkName}/${newSubnetName} (subnets)",
+                                label: "${newSubnetName} (subnets)",
                                 collapsibleState: 1,
                                 icon: "resources.svg",
                                 children: [
@@ -2822,7 +2822,7 @@ suite("TreeView", async (): Promise<void> => {
                                 ]
                             },
                             {
-                                label: "${virtualMachineName}/${diagnosticsExtensionName} (extensions)",
+                                label: "${diagnosticsExtensionName} (extensions)",
                                 collapsibleState: 1,
                                 icon: "extensions.svg",
                                 children: [
@@ -3239,7 +3239,7 @@ suite("TreeView", async (): Promise<void> => {
                                                                 ]
                                                             },
                                                             {
-                                                                label: "${backupVaultName}/${backupPolicyName} (backupPolicies)",
+                                                                label: "${backupPolicyName} (backupPolicies)",
                                                                 collapsibleState: 1,
                                                                 icon: "resources.svg",
                                                                 children: [
@@ -3337,7 +3337,7 @@ suite("TreeView", async (): Promise<void> => {
                                                         collapsibleState: 1,
                                                         children: [
                                                             {
-                                                                label: "${backupVaultName}/${backupFabricName}/${backupItemName} (backupProtectionIntent)",
+                                                                label: "${backupItemName} (backupProtectionIntent)",
                                                                 collapsibleState: 1,
                                                                 icon: "resources.svg",
                                                                 children: [
