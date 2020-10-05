@@ -6,7 +6,7 @@
 import { Location } from "vscode";
 import { configKeys } from "../../constants";
 import { ext } from "../../extensionVariables";
-import { sortArrayByProperty } from "../../util/sorting";
+import { sortArrayByProperty } from "../../util/sortArrayByProperty";
 import { IGotoResourcesArgs } from "../../vscodeIntegration/commandArguments";
 import { getVSCodeRangeFromSpan } from "../../vscodeIntegration/vscodePosition";
 import { ResolvableCodeLens } from "../DeploymentDocument";
