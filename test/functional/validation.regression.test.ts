@@ -108,7 +108,7 @@ suite("Validation regression tests", () => {
         async () =>
             testDiagnostics(
                 {
-                    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
                     "parameters": {
                         "backupPolicyName": {
@@ -566,6 +566,17 @@ suite("Validation regression tests", () => {
                         "Warning: The parameter 'projectName' is never used. (arm-template (expressions)) [791,24-791,37]",
                         "Warning: The variable 'intlbRef' is never used. (arm-template (expressions)) [927,24-927,34]",
                         "Warning: Value must be one of the following types: integer (arm-template (schema)) [641,16-641,30]"
+                    ]);
+            });
+
+            // https://github.com/microsoft/vscode-azurearmtools/issues/904
+            testWithLanguageServer(`#904 Validation giving false positives for top-level params used in outer-scoped nested template`, async () => {
+                await testDiagnostics(
+                    'templates/regression/904.json',
+                    {
+                        parametersFile: 'templates/regression/904.parameters.json',
+                    },
+                    [
                     ]);
             });
         });
