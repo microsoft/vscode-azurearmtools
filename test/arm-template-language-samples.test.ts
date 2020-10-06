@@ -32,7 +32,11 @@ suite("arm-template-language-samples", () => {
         testSample("arm-is-not-case-sensitive.json");
         testSample("copy-and-multiline-values.json");
         testSample("schema-expressions-everywhere.json");
-        testSample("some-schema-thing-I-have-not-seen-before.json");
+        testSample(
+            "some-schema-thing-I-have-not-seen-before.json",
+            [
+                `Warning: Please use https for the schema URL (arm-template (schema))`
+            ]);
         testSample("subscription-level.json", [
             // TODO: top-level metadata
             // https://github.com/microsoft/vscode-azurearmtools/issues/677
