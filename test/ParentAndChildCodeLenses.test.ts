@@ -62,8 +62,8 @@ suite("ParentAndChildCodeLenses", () => {
             ]
         },
         [
-            ["self", "No parent", undefined],
-            ["self", "No children", undefined]
+            // Not showing if not applicable (#1009) ["self", "No parent", undefined],
+            // Not showing if not applicable (#1009) ["self", "No children", undefined]
         ]);
 
     createTest(
@@ -96,10 +96,10 @@ suite("ParentAndChildCodeLenses", () => {
                 ]
             },
             [
-                ["parent", "No parent", undefined],
+                // Not showing if not applicable (#1009) ["parent", "No parent", undefined],
                 ["parent", "1 child: child (ghi)", [6]],
                 ["child", "Parent: parent (def)", [2]],
-                ["child", "No children", undefined],
+                // Not showing if not applicable (#1009) ["child", "No children", undefined],
             ]);
 
         createTest(
@@ -124,11 +124,11 @@ suite("ParentAndChildCodeLenses", () => {
             },
             [
                 ["child2", "Parent: parent (def)", [6]],
-                ["child2", "No children", undefined],
-                ["parent", "No parent", undefined],
+                // Not showing if not applicable (#1009) ["child2", "No children", undefined],
+                // Not showing if not applicable (#1009) ["parent", "No parent", undefined],
                 ["parent", "2 children: child1 (jkl), child2 (ghi)", [10, 2]], // sorted by short name
                 ["child1", "Parent: parent (def)", [6]],
-                ["child1", "No children", undefined],
+                // Not showing if not applicable (#1009) ["child1", "No children", undefined],
             ]);
     });
 
@@ -232,11 +232,8 @@ suite("ParentAndChildCodeLenses", () => {
             }
         },
         [
-            [
-                "inner1",
-                "No parent",
-                undefined
-            ],
+            /* Not showing if not applicable (#1009)
+            [ "inner1", "No parent", undefined],
             [
                 "inner1",
                 "No children",
@@ -251,7 +248,7 @@ suite("ParentAndChildCodeLenses", () => {
                 "outer1",
                 "No children",
                 undefined
-            ],
+            ],*/
             [
                 "${bastion-subnet-name}",
                 "Parent: ${vnet-name} (virtualNetworks)",
@@ -259,6 +256,7 @@ suite("ParentAndChildCodeLenses", () => {
                     72
                 ]
             ],
+            /* Not showing if not applicable (#1009)
             [
                 "${bastion-subnet-name}",
                 "No children",
@@ -268,7 +266,7 @@ suite("ParentAndChildCodeLenses", () => {
                 "${vnet-name}",
                 "No parent",
                 undefined
-            ],
+            ],*/
             [
                 "${vnet-name}",
                 "2 children: ${bastion-subnet-name} (subnets), ${bastion-subnet-name} (subnets)",
@@ -284,6 +282,7 @@ suite("ParentAndChildCodeLenses", () => {
                     72
                 ]
             ],
+            /* Not showing if not applicable (#1009)
             [
                 "${bastion-subnet-name}",
                 "No children",
@@ -293,7 +292,7 @@ suite("ParentAndChildCodeLenses", () => {
                 "virtualNetwork1",
                 "No parent",
                 undefined
-            ],
+            ],*/
             [
                 "virtualNetwork1",
                 "2 children: Subnet-1 (subnets), Subnet-2 (subnets)",
@@ -309,11 +308,12 @@ suite("ParentAndChildCodeLenses", () => {
                     13
                 ]
             ],
+            /* Not showing if not applicable (#1009)
             [
                 "Subnet-1",
                 "No children",
                 undefined
-            ],
+            ],*/
             [
                 "Subnet-2",
                 "Parent: virtualNetwork1 (virtualNetworks)",
@@ -321,6 +321,7 @@ suite("ParentAndChildCodeLenses", () => {
                     13
                 ]
             ],
+            /* Not showing if not applicable (#1009)
             [
                 "Subnet-2",
                 "No children",
@@ -330,7 +331,7 @@ suite("ParentAndChildCodeLenses", () => {
                 "virtualNetwork1",
                 "No parent",
                 undefined
-            ],
+            ],*/
             [
                 "virtualNetwork1",
                 "2 children: Subnet-1 (subnets), Subnet-2 (subnets)",
@@ -346,22 +347,24 @@ suite("ParentAndChildCodeLenses", () => {
                     45
                 ]
             ],
+            /* Not showing if not applicable (#1009)
             [
                 "Subnet-1",
                 "No children",
                 undefined
-            ],
+            ],*/
             [
                 "Subnet-2",
                 "Parent: virtualNetwork1 (virtualNetworks)",
                 [
                     45
                 ]
-            ],
+            ]
+            /* Not showing if not applicable (#1009)
             [
                 "Subnet-2",
                 "No children",
                 undefined
-            ]
+            ]*/
         ]);
 });

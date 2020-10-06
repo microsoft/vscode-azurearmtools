@@ -20,9 +20,9 @@ import { getRelativeParameterFilePath } from './parameterFilePaths';
 
 const readAtMostBytesToFindParamsSchema = 4 * 1024;
 const currentMessage = "Current";
-const similarFilenameMessage = "Similar filename";
+const similarFilenameMessage = "Matching filename";
 const fileNotFoundMessage = "File not found";
-const howToMessage = `You can manually select the parameter file for this template at any time by clicking "Select/Create Parameter File..." in the status bar or the editor context menu.`;
+const howToMessage = `Note: You can manually select the parameter file for a template by clicking "Select/Create Parameter File..." in the status bar or the editor context menu.`;
 
 // Not worrying about Win32 case-insensitivity here because
 // it's this vscode instance and local only and thus likely to be the
@@ -80,7 +80,7 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
   if (result === quickPickList.none) {
     // None
 
-    // Remove the mapping for this file
+    // Remove the mapping for this file, and never ask so the user selection sticks
     await neverAskAgain(templateUri, actionContext);
     await mapping.mapParameterFile(templateUri, undefined);
   } else if (result === quickPickList.browse) {
@@ -108,6 +108,7 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
       }
     }
 
+    // never ask so the user selection sticks
     await neverAskAgain(templateUri, actionContext);
 
     // Map to the browsed file
@@ -131,6 +132,7 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
     // Item in the list selected
 
     assert(result.data, "Quick pick item should have had data");
+    // never ask so the user selection sticks
     await neverAskAgain(templateUri, actionContext);
     await mapping.mapParameterFile(templateUri, result.data?.uri);
   }
@@ -150,13 +152,25 @@ export async function openParameterFile(mapping: DeploymentFileMapping, template
 
 export async function openTemplateFile(mapping: DeploymentFileMapping, parameterUri: Uri | undefined, templateUri: Uri | undefined): Promise<void> {
   if (parameterUri) {
-    let templateFile: Uri | undefined = templateUri || mapping.getTemplateFile(parameterUri);
-    if (!templateFile) {
+    templateUri = templateUri ?? mapping.getTemplateFile(parameterUri);
+    if (!templateUri) {
       throw new Error(`There is no template file currently associated with parameter file "${parameterUri.fsPath}"`);
     }
 
-    let doc: TextDocument = await workspace.openTextDocument(templateFile);
-    await window.showTextDocument(doc);
+    if (await pathExists(templateUri)) {
+      let doc: TextDocument = await workspace.openTextDocument(templateUri);
+      await window.showTextDocument(doc);
+    } else {
+      const remove: MessageItem = { title: `Unlink` };
+      const response: MessageItem = await ext.ui.showWarningMessage(
+        `Could not find associated template file "${templateUri.fsPath}".  Unlink this association?`,
+        remove,
+        DialogResponses.cancel
+      );
+      if (response.title === remove.title) {
+        await mapping.mapParameterFile(templateUri, undefined);
+      }
+    }
   }
 }
 
@@ -379,18 +393,17 @@ function removeAllExtensions(fileName: string): string {
  * Search for potential parameter file matches for the given document, and ask the user if appropriate whether to associate it
  */
 export function considerQueryingForParameterFile(mapping: DeploymentFileMapping, document: TextDocument): void {
+  const templateUri = document.uri;
+
   // Only deal with saved files, because we don't have an accurate
   //   URI that we can track for unsaved files, and it's a better user experience.
-  if (document.uri.scheme !== 'file') {
+  if (templateUri.scheme !== 'file') {
     return;
   }
 
-  const templateUri = document.uri;
-  const templatPath = templateUri.fsPath;
-  const alreadyHasParamFile: boolean = !!mapping.getParameterFile(document.uri);
-
   // tslint:disable-next-line: no-floating-promises Don't wait
   callWithTelemetryAndErrorHandling('queryAddParameterFile', async (actionContext: IActionContext): Promise<void> => {
+    const alreadyHasParamFile: boolean = !!mapping.getParameterFile(document.uri);
     actionContext.telemetry.properties.alreadyHasParamFile = String(alreadyHasParamFile);
 
     if (alreadyHasParamFile) {
@@ -413,15 +426,21 @@ export function considerQueryingForParameterFile(mapping: DeploymentFileMapping,
       return;
     }
 
-    const yes: MessageItem = { title: "Yes" };
-    const no: MessageItem = { title: "No" };
-    const another: MessageItem = { title: "Choose File..." };
+    if (closeMatches.length === 1) {
+      // Exactly one close match, go ahead and use it automatically
+      actionContext.telemetry.properties.automaticallyPickedClosestMatch = 'true';
+      ext.outputChannel.appendLine(`Found and mapped a matching parameter file: "${document.uri}" -> "${closestMatch.uri.fsPath}"`);
+      await mapping.mapParameterFile(templateUri, closestMatch.uri);
+      return;
+    }
+
+    const select: MessageItem = { title: "Select..." };
+    const ignore: MessageItem = { title: "None" };
 
     const response: MessageItem | undefined = await window.showInformationMessage(
-      `A parameter file "${closestMatch.friendlyPath}" has been detected. Do you want use it as the parameter file for "${path.basename(templatPath)}"? This will enable additional functionality, such as more complete validation.`,
-      yes,
-      no,
-      another
+      `Multiple matching parameter files have been detected for template file "${getFriendlyPathToFile(templateUri)}". Please select one to validate against.`,
+      select,
+      ignore
     );
     if (!response) {
       actionContext.telemetry.properties.response = 'Canceled';
@@ -431,10 +450,7 @@ export function considerQueryingForParameterFile(mapping: DeploymentFileMapping,
     actionContext.telemetry.properties.response = response.title;
 
     switch (response.title) {
-      case yes.title:
-        await mapping.mapParameterFile(templateUri, closestMatch.uri);
-        break;
-      case no.title:
+      case ignore.title:
         // We won't ask again
         await neverAskAgain(templateUri, actionContext);
 
@@ -442,7 +458,7 @@ export function considerQueryingForParameterFile(mapping: DeploymentFileMapping,
         // Don't wait for an answer
         window.showInformationMessage(howToMessage);
         break;
-      case another.title:
+      case select.title:
         await commands.executeCommand("azurerm-vscode-tools.selectParameterFile", templateUri);
         break;
       default:
@@ -459,8 +475,8 @@ function canAsk(templateUri: Uri, actionContext: IActionContext): boolean {
     return false;
   }
 
-  // tslint:disable-next-line: strict-boolean-expressions
-  const neverAskFiles: string[] = ext.context.globalState.get<string[]>(globalStateKeys.dontAskAboutParameterFiles) || [];
+  // CONSIDER: It would be nicer to simply place a mapping to an empty string in the user settings, instead of using global state which isn't visible to the user
+  const neverAskFiles: string[] = ext.context.globalState.get<string[]>(globalStateKeys.dontAskAboutParameterFiles) ?? [];
   const key = normalizePath(templateUri);
   if (neverAskFiles.includes(key)) {
     actionContext.telemetry.properties.isInDontAskList = 'true';

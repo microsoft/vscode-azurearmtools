@@ -8,7 +8,6 @@ import { configKeys } from "../../constants";
 import { ext } from "../../extensionVariables";
 import { assert } from "../../fixed_assert";
 import { Span } from "../../language/Span";
-import { sortArrayByProperty } from "../../util/sorting";
 import { IPeekResourcesArgs } from "../../vscodeIntegration/commandArguments";
 import { getVSCodeRangeFromSpan } from "../../vscodeIntegration/vscodePosition";
 import { ResolvableCodeLens } from "../DeploymentDocument";
@@ -23,8 +22,12 @@ export function getParentAndChildCodeLenses(scope: TemplateScope, infos: IJsonRe
     const lenses: ResolvableCodeLens[] = [];
 
     for (const resource of infos) {
-        lenses.push(new ParentCodeLens(scope, resource));
-        lenses.push(new ChildrenCodeLens(scope, resource));
+        if (!!resource.parent) {
+            lenses.push(new ParentCodeLens(scope, resource));
+        }
+        if (resource.children.length > 0) {
+            lenses.push(new ChildrenCodeLens(scope, resource));
+        }
     }
 
     return lenses;
@@ -105,9 +108,8 @@ export class ChildrenCodeLens extends ParentOrChildCodeLens {
         let title: string;
         const children = <IJsonResourceInfo[]>this.sourceResource?.children ?? [];
         if (children.length > 0) {
-            const orderedChildren = sortArrayByProperty(children, "shortNameExpression");
-            const countOfChildrenTitle = `${orderedChildren.length} ${orderedChildren.length === 1 ? "child" : "children"}`;
-            const childrenLabels = orderedChildren.map(child => (<IJsonResourceInfo>child).getFriendlyResourceLabel({})).join(", ");
+            const countOfChildrenTitle = `${children.length} ${children.length === 1 ? "child" : "children"}`;
+            const childrenLabels = children.map(child => (<IJsonResourceInfo>child).getFriendlyResourceLabel({})).join(", ");
             title = `${countOfChildrenTitle}: ${childrenLabels}`;
         } else {
             title = "No children";

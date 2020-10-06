@@ -1,0 +1,204 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "PrimaryrgName": {
+            "type": "string"
+        },
+        "SecondaryrgName": {
+            "type": "string"
+        },
+        "PrimaryVnetSettings": {
+            "type": "object"
+        },
+        "PrimarySubnets": {
+            "type": "array"
+        },
+        "PrimaryLocation": {
+            "type": "string"
+        },
+        "SecondaryLocation": {
+            "type": "string"
+        },
+        "SecondaryVnetSettings": {
+            "type": "object"
+        },
+        "SecondarySubnets": {
+            "type": "array"
+        },
+        "PrimaryTags": {
+            "type": "object"
+        },
+        "SecondaryTags": {
+            "type": "object"
+        }
+    },
+    "variables": {
+        "Vnet1Name": "[parameters('PrimaryVNetSettings').name]",
+        "Vnet2Name": "[parameters('SecondaryVNetSettings').name]",
+        "vNet1tovNet2PeeringName": "[concat(variables('vNet1Name'), '_', variables('vNet2Name'))]",
+        "vNet2tovNet1PeeringName": "[concat(variables('vNet2Name'), '_', variables('vNet1Name'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "InfVNET01Template",
+            "resourceGroup": "[parameters('primaryrgname')]",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "name": "[parameters('PrimaryVNetSettings').name]",
+                            "type": "Microsoft.Network/virtualNetworks",
+                            "apiVersion": "2019-04-01",
+                            "location": "[parameters('Primarylocation')]",
+                            "tags": "[parameters('PrimaryTags')]",
+                            "properties": {
+                                "addressSpace": {
+                                    "addressPrefixes": [
+                                        "[parameters('PrimaryVNetSettings').addressPrefixes[0].addressPrefix]"
+                                    ]
+                                },
+                                "copy": [
+                                    {
+                                        "name": "subnets",
+                                        "count": "[length(parameters('Primarysubnets'))]",
+                                        "input": {
+                                            "name": "[parameters('Primarysubnets')[copyIndex('subnets')].name]",
+                                            "properties": {
+                                                "addressPrefix": "[parameters('Primarysubnets')[copyIndex('subnets')].addressPrefix]"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "InfVNET02Template",
+            "resourceGroup": "[parameters('secondaryrgname')]",
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "name": "[parameters('SecondaryVNetSettings').name]",
+                            "type": "Microsoft.Network/virtualNetworks",
+                            "apiVersion": "2019-11-01",
+                            "location": "[parameters('SecondaryLocation')]",
+                            "tags": "[parameters('SecondaryTags')]",
+                            "properties": {
+                                "addressSpace": {
+                                    "addressPrefixes": [
+                                        "[parameters('SecondaryVNetSettings').addressPrefixes[0].addressPrefix]"
+                                    ]
+                                },
+                                "copy": [
+                                    {
+                                        "name": "subnets",
+                                        "count": "[length(parameters('Secondarysubnets'))]",
+                                        "input": {
+                                            "name": "[parameters('Secondarysubnets')[copyIndex('subnets')].name]",
+                                            "properties": {
+                                                "addressPrefix": "[parameters('Secondarysubnets')[copyIndex('subnets')].addressPrefix]"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "InfPeer01Template",
+            "resourceGroup": "[parameters('primaryrgname')]",
+            "dependsOn": [
+                "InfVNET01Template",
+                "InfVNET02Template"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "apiVersion": "2019-04-01",
+                            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                            "name": "[concat(variables('Vnet1Name'), '/', variables('vNet1tovNet2PeeringName'))]",
+                            "location": "[parameters('PrimaryLocation')]",
+                            "comments": "[concat('This is the Peering from ', variables('Vnet1Name'), ' To ', variables('vNet2Name'))]",
+                            "properties": {
+                                "allowVirtualNetworkAccess": true,
+                                "allowForwardedTraffic": false,
+                                "allowGatewayTransit": false,
+                                "useRemoteGateways": false,
+                                "remoteVirtualNetwork": {
+                                    "id": "[resourceId(parameters('secondaryrgname'),'Microsoft.Network/virtualNetworks',variables('vNet2Name'))]"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "name": "InfPeer02Template",
+            "resourceGroup": "[parameters('secondaryrgname')]",
+            "dependsOn": [
+                "InfVNET02Template",
+                "InfVNET01Template"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "variables": {},
+                    "resources": [
+                        {
+                            "apiVersion": "2019-04-01",
+                            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+                            "name": "[concat(variables('Vnet2Name'), '/', variables('vNet2tovNet1PeeringName'))]",
+                            "location": "[parameters('SecondaryLocation')]",
+                            "comments": "[concat('This is the Peering from ', variables('Vnet2Name'), ' To ', variables('vNet1Name'))]",
+                            "properties": {
+                                "allowVirtualNetworkAccess": true,
+                                "allowForwardedTraffic": false,
+                                "allowGatewayTransit": false,
+                                "useRemoteGateways": false,
+                                "remoteVirtualNetwork": {
+                                    "id": "[resourceId(parameters('primaryrgname'),'Microsoft.Network/virtualNetworks',variables('vNet1Name'))]"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
