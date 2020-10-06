@@ -1100,10 +1100,10 @@ suite("ResourceId completions", () => {
             },
             'resourceId(!)',
             [
-                "LOOP ${vmName}vmcopy",
+                "Loop ${vmName}vmcopy",
                 "'Microsoft.Compute/virtualMachines'",
                 "'Microsoft.Compute/virtualMachines/extensions'",
-                "parent ([concat(${vmName}, copyIndex(1))])",
+                "Parent ([concat(${vmName}, copyIndex(1))])",
             ]
         );
     });
