@@ -6,7 +6,7 @@
 import { Location } from "vscode";
 import { configKeys } from "../../constants";
 import { ext } from "../../extensionVariables";
-import { IPeekResourcesArgs } from "../../vscodeIntegration/commandArguments";
+import { IGotoResourcesArgs } from "../../vscodeIntegration/commandArguments";
 import { getVSCodeRangeFromSpan } from "../../vscodeIntegration/vscodePosition";
 import { ResolvableCodeLens } from "../DeploymentDocument";
 import { IJsonResourceInfo } from "./getResourcesInfo";
@@ -48,10 +48,10 @@ export abstract class ParentOrChildCodeLens extends ResolvableCodeLens {
             );
             this.command = {
                 title: title,
-                command: 'azurerm-vscode-tools.codeLens.peekResources',
+                command: 'azurerm-vscode-tools.codeLens.gotoResources',
                 arguments:
                     [
-                        <IPeekResourcesArgs>{
+                        <IGotoResourcesArgs>{
                             source: { uri: this.scope.document.documentUri, range: this.range },
                             targets: targetLocations,
                             telemetryProperties: {

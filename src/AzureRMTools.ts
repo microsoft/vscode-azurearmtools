@@ -23,6 +23,7 @@ import { addMissingParameters } from "./documents/parameters/ParameterValues";
 import { IReferenceSite, PositionContext } from "./documents/positionContexts/PositionContext";
 import { TemplatePositionContext } from "./documents/positionContexts/TemplatePositionContext";
 import { DeploymentTemplateDoc } from "./documents/templates/DeploymentTemplateDoc";
+import { gotoResources } from './documents/templates/gotoResources';
 import { getItemTypeQuickPicks, InsertItem } from "./documents/templates/insertItem";
 import { getQuickPickItems, sortTemplate } from "./documents/templates/sortTemplate";
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, templateDocumentSelector, templateOrParameterDocumentSelector } from "./documents/templates/supported";
@@ -51,7 +52,7 @@ import { Stopwatch } from "./util/Stopwatch";
 import { Cancellation } from "./util/throwOnCancel";
 import { IncorrectArgumentsCountIssue } from "./visitors/IncorrectArgumentsCountIssue";
 import { UnrecognizedBuiltinFunctionIssue } from "./visitors/UnrecognizedFunctionIssues";
-import { IAddMissingParametersArgs, IGotoParameterValueArgs, IPeekResourcesArgs } from "./vscodeIntegration/commandArguments";
+import { IAddMissingParametersArgs, IGotoParameterValueArgs, IGotoResourcesArgs } from "./vscodeIntegration/commandArguments";
 import { ConsoleOutputChannelWrapper } from "./vscodeIntegration/ConsoleOutputChannelWrapper";
 import * as Hover from './vscodeIntegration/Hover';
 import { RenameCodeActionProvider } from "./vscodeIntegration/RenameCodeActionProvider";
@@ -252,9 +253,9 @@ export class AzureRMTools {
             });
         registerCommand(
             // Executed when the user clicks on a code lens that shows the children or parent of a resource
-            "azurerm-vscode-tools.codeLens.peekResources",
-            async (actionContext: IActionContext, args: IPeekResourcesArgs) => {
-                await this.onPeekResources(actionContext, args);
+            "azurerm-vscode-tools.codeLens.gotoResources",
+            async (actionContext: IActionContext, args: IGotoResourcesArgs) => {
+                await gotoResources(actionContext, args);
             });
 
         // Developer commands
@@ -1299,19 +1300,6 @@ export class AzureRMTools {
             editor.selection = new vscode.Selection(range.start, range.end);
             editor.revealRange(range);
         }
-    }
-
-    private async onPeekResources(actionContext: IActionContext, args: IPeekResourcesArgs): Promise<void> {
-        // Set telemetry properties
-        Object.assign(actionContext.telemetry.properties, args.telemetryProperties ?? {});
-
-        // Show the references
-        await vscode.commands.executeCommand(
-            'editor.action.showReferences',
-            args.source.uri,
-            args.source.range.start,
-            args.targets
-        );
     }
 
     // CONSIDER: Cache when we have to read from disk, or better, load into text
