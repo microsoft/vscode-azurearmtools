@@ -6,8 +6,7 @@
 // tslint:disable:max-func-body-length no-non-null-assertion no-invalid-template-strings
 
 import * as assert from "assert";
-import { getResourcesInfo, IGotoResourcesArgs, IJsonResourceInfo, ParentOrChildCodeLens } from "../extension.bundle";
-import { sortArray } from "../src/util/sorting";
+import { getResourcesInfo, IGotoResourcesArgs, IJsonResourceInfo, ParentOrChildCodeLens, sortArray } from "../extension.bundle";
 import { IPartialDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 
