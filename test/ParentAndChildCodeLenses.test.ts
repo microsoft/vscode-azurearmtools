@@ -7,6 +7,7 @@
 
 import * as assert from "assert";
 import { getResourcesInfo, IGotoResourcesArgs, IJsonResourceInfo, ParentOrChildCodeLens } from "../extension.bundle";
+import { sortArray } from "../src/util/sorting";
 import { IPartialDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 
