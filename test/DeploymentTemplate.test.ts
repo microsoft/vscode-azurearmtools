@@ -1056,9 +1056,16 @@ suite("DeploymentTemplate", () => {
                     pc.tleInfo;
                     pc.getReferenceSiteInfo(true);
                     pc.getHoverInfo();
+                    pc.getEnclosingParent();
+                    pc.getFunctionCallArgumentIndex(undefined);
+                    pc.getInsertionContext({});
+                    pc.getInsertionParent();
+                    pc.getScope();
                     await pc.getCompletionItems(undefined);
                 } catch (err) {
-                    throw new Error(`exercisePositionContextAtRandomPointsInTheDoc: Threw at index ${i}:\n${json.slice(i)}<***HERE***>${json.slice(i)}`);
+                    throw new Error(`exercisePositionContextAtRandomPointsInTheDoc: Threw at index ${i}:\n${json.slice(i)}<***HERE***>${json.slice(i)}
+
+${err}`);
                 }
             }
         }

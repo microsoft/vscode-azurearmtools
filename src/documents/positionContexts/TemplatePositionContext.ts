@@ -788,7 +788,8 @@ export class TemplatePositionContext extends PositionContext {
     }
 
     /**
-     * Get the index (0-based) of the argument in the given function call, at the current position
+     * Get the index (0-based) of the argument in the given function call, at the current position.
+     * Returns -1 if the position is inside the function call, but not inside any of the parameters
      */
     public getFunctionCallArgumentIndex(functionCall?: TLE.FunctionCallValue): number | undefined {
         const tleInfo = this.tleInfo;
@@ -802,6 +803,10 @@ export class TemplatePositionContext extends PositionContext {
             }
 
             if (functionCall) {
+                if (!functionCall.leftParenthesisToken || tleInfo.tleCharacterIndex <= functionCall.leftParenthesisToken?.span.endIndex) {
+                    return -1;
+                }
+
                 let currentArgumentIndex: number = 0;
 
                 for (const commaToken of functionCall.commaTokens) {
