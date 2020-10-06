@@ -77,7 +77,7 @@ function getDependsOnCompletionsForResource(resource: IJsonResourceInfo, span: S
         const documentation = `Inserts this resourceId reference:\n\`\`\`arm-template\n"[${resourceIdExpression}]"\n\`\`\`\n<br/>`;
 
         const item = new Completion.Item({
-            label: isParent ? `parent (${label})` : label,
+            label: isParent ? `Parent (${label})` : label,
             insertText: insertText,
             detail,
             documentation: new MarkdownString(documentation),
@@ -92,7 +92,7 @@ function getDependsOnCompletionsForResource(resource: IJsonResourceInfo, span: S
         const copyName = resource.copyBlockElement?.getPropertyValue(templateKeys.copyName)?.asStringValue?.unquotedValue;
         if (copyName) {
             const copyNameExpression = jsonStringToTleExpression(copyName);
-            const copyLabel = `LOOP ${getFriendlyExpressionFromTleExpression(copyNameExpression)}`;
+            const copyLabel = `Loop ${getFriendlyExpressionFromTleExpression(copyNameExpression)}`;
             const copyInsertText = isTleExpression(copyName) ? `"[${copyNameExpression}]"` : `"${copyName}"`;
             const copyDetail = detail;
             // tslint:disable-next-line: prefer-template
