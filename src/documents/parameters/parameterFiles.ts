@@ -152,13 +152,25 @@ export async function openParameterFile(mapping: DeploymentFileMapping, template
 
 export async function openTemplateFile(mapping: DeploymentFileMapping, parameterUri: Uri | undefined, templateUri: Uri | undefined): Promise<void> {
   if (parameterUri) {
-    let templateFile: Uri | undefined = templateUri || mapping.getTemplateFile(parameterUri);
-    if (!templateFile) {
+    templateUri = templateUri ?? mapping.getTemplateFile(parameterUri);
+    if (!templateUri) {
       throw new Error(`There is no template file currently associated with parameter file "${parameterUri.fsPath}"`);
     }
 
-    let doc: TextDocument = await workspace.openTextDocument(templateFile);
-    await window.showTextDocument(doc);
+    if (await pathExists(templateUri)) {
+      let doc: TextDocument = await workspace.openTextDocument(templateUri);
+      await window.showTextDocument(doc);
+    } else {
+      const remove: MessageItem = { title: `Unlink` };
+      const response: MessageItem = await ext.ui.showWarningMessage(
+        `Could not find associated template file "${templateUri.fsPath}".  Unlink this association?`,
+        remove,
+        DialogResponses.cancel
+      );
+      if (response.title === remove.title) {
+        await mapping.mapParameterFile(templateUri, undefined);
+      }
+    }
   }
 }
 
