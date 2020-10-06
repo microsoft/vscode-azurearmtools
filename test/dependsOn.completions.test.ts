@@ -675,7 +675,7 @@ from resource \`name1a\` of type \`def\``
                     resources: [
                         {
                             dependsOn: [
-                                "<!replaceStart!>name<!cursor!>2a"
+                                "<!replaceStart!><!cursor!>name2a"
                             ]
                         },
                         {
@@ -694,6 +694,26 @@ from resource \`name1a\` of type \`def\``
             }
         );
 
+        createDependsOnCompletionsTest(
+            "no dependsOn completions except at the start of the string (#1008)",
+            {
+                template: {
+                    resources: [
+                        {
+                            dependsOn: [
+                                "<!replaceStart!>name<!cursor!>2a"
+                            ]
+                        },
+                        {
+                            type: "microsoft.abc/def",
+                            name: "name1a"
+                        }
+                    ]
+                },
+                expected: [
+                ]
+            }
+        );
     });
 
     createDependsOnCompletionsTest(
@@ -703,7 +723,7 @@ from resource \`name1a\` of type \`def\``
                 resources: [
                     {
                         DEPENDSON: [
-                            "<!replaceStart!>name<!cursor!>2a"
+                            "<!replaceStart!><!cursor!>name2a"
                         ]
                     },
                     {

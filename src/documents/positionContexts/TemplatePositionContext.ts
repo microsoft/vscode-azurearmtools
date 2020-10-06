@@ -36,6 +36,9 @@ import { ICompletionItemsResult, IReferenceSite, PositionContext, ReferenceSiteK
 class TleInfo implements ITleInfo {
     public constructor(
         public readonly tleParseResult: TLE.TleParseResult,
+        /**
+         * Index of the cursor from the start of the TLE string
+         */
         public readonly tleCharacterIndex: number,
         public readonly tleValue: TLE.Value | undefined,
         public readonly scope: TemplateScope
