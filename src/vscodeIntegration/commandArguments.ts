@@ -27,7 +27,7 @@ export interface IAddMissingParametersArgs {
     parameterValuesSource: IParameterValuesSource;
 }
 
-export interface IPeekResourcesArgs {
+export interface IGotoResourcesArgs {
     source: Location;
     targets: Location[];
     telemetryProperties?: { [key: string]: string };

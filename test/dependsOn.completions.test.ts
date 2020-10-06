@@ -87,7 +87,7 @@ suite("dependsOn completions", () => {
                         "kind": Completion.CompletionKind.dependsOnResourceId
                     },
                     {
-                        "label": "LOOP copy",
+                        "label": "Loop copy",
                         "kind": Completion.CompletionKind.dependsOnResourceCopyLoop
                     },
                     {
@@ -95,7 +95,7 @@ suite("dependsOn completions", () => {
                         "kind": Completion.CompletionKind.dependsOnResourceId
                     },
                     {
-                        "label": "LOOP ${p1}/${v1}",
+                        "label": "Loop ${p1}/${v1}",
                         "kind": Completion.CompletionKind.dependsOnResourceCopyLoop
                     }
                 ]
@@ -171,7 +171,7 @@ suite("dependsOn completions", () => {
                         "label": "name1"
                     },
                     {
-                        "label": "LOOP copyname",
+                        "label": "Loop copyname",
                         "detail": "def"
                     }
                 ]
@@ -316,13 +316,13 @@ from resource \`name1a\` of type \`def\``
                         "label": `name1`
                     },
                     {
-                        "label": `LOOP copynameliteral`
+                        "label": `Loop copynameliteral`
                     },
                     {
                         "label": `name2`
                     },
                     {
-                        "label": `LOOP copyname1`
+                        "label": `Loop copyname1`
                     }
                 ]
             }
@@ -675,7 +675,7 @@ from resource \`name1a\` of type \`def\``
                     resources: [
                         {
                             dependsOn: [
-                                "<!replaceStart!>name<!cursor!>2a"
+                                "<!replaceStart!><!cursor!>name2a"
                             ]
                         },
                         {
@@ -694,6 +694,26 @@ from resource \`name1a\` of type \`def\``
             }
         );
 
+        createDependsOnCompletionsTest(
+            "no dependsOn completions except at the start of the string (#1008)",
+            {
+                template: {
+                    resources: [
+                        {
+                            dependsOn: [
+                                "<!replaceStart!>name<!cursor!>2a"
+                            ]
+                        },
+                        {
+                            type: "microsoft.abc/def",
+                            name: "name1a"
+                        }
+                    ]
+                },
+                expected: [
+                ]
+            }
+        );
     });
 
     createDependsOnCompletionsTest(
@@ -703,7 +723,7 @@ from resource \`name1a\` of type \`def\``
                 resources: [
                     {
                         DEPENDSON: [
-                            "<!replaceStart!>name<!cursor!>2a"
+                            "<!replaceStart!><!cursor!>name2a"
                         ]
                     },
                     {
@@ -835,7 +855,7 @@ from resource \`name1a\` of type \`def\``
                     },
                     expected: [
                         {
-                            label: "parent (${sqlServer})",
+                            label: "Parent (${sqlServer})",
                             detail: "servers",
                             insertText: `"[resourceId('Microsoft.Sql/servers', variables('sqlServer'))]"`
                         }
@@ -984,7 +1004,7 @@ from resource \`name1a\` of type \`def\``
                         },
                         {
                             // parent
-                            label: "parent (${sqlServer})"
+                            label: "Parent (${sqlServer})"
                         },
                         {
                             // sibling child
@@ -1162,7 +1182,7 @@ from resource \`name1a\` of type \`def\``
                 },
                 expected: [
                     {
-                        label: "parent (${parent1})"
+                        label: "Parent (${parent1})"
                     },
                     {
                         label: "child1b"

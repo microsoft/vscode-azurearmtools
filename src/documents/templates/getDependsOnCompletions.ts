@@ -28,6 +28,12 @@ export function getDependsOnCompletions(
         span = pc.emptySpanAtDocumentCharacterIndex;
     }
 
+    // Allow suggest dependsOn completions when at the very beginning of the string or outside a string.  Elsewhere in
+    //   the expression they will just add a bunch of completions that are confusing for the context
+    if (pc.tleInfo && pc.tleInfo.tleCharacterIndex > 1) {
+        return [];
+    }
+
     const scope = pc.getScope();
     const infos = getResourcesInfo({ scope, recognizeDecoupledChildren: true });
     if (infos.length === 0) {
@@ -71,7 +77,7 @@ function getDependsOnCompletionsForResource(resource: IJsonResourceInfo, span: S
         const documentation = `Inserts this resourceId reference:\n\`\`\`arm-template\n"[${resourceIdExpression}]"\n\`\`\`\n<br/>`;
 
         const item = new Completion.Item({
-            label: isParent ? `parent (${label})` : label,
+            label: isParent ? `Parent (${label})` : label,
             insertText: insertText,
             detail,
             documentation: new MarkdownString(documentation),
@@ -86,7 +92,7 @@ function getDependsOnCompletionsForResource(resource: IJsonResourceInfo, span: S
         const copyName = resource.copyBlockElement?.getPropertyValue(templateKeys.copyName)?.asStringValue?.unquotedValue;
         if (copyName) {
             const copyNameExpression = jsonStringToTleExpression(copyName);
-            const copyLabel = `LOOP ${getFriendlyExpressionFromTleExpression(copyNameExpression)}`;
+            const copyLabel = `Loop ${getFriendlyExpressionFromTleExpression(copyNameExpression)}`;
             const copyInsertText = isTleExpression(copyName) ? `"[${copyNameExpression}]"` : `"${copyName}"`;
             const copyDetail = detail;
             // tslint:disable-next-line: prefer-template
