@@ -74,8 +74,8 @@ suite("ParentAndChildCodeLenses", () => {
             ]
         },
         [
-            ["self", "No parent", undefined],
-            ["self", "No children", undefined]
+            // Not showing if not applicable (#1009) ["self", "No parent", undefined],
+            // Not showing if not applicable (#1009) ["self", "No children", undefined]
         ]);
 
     suite("nested children", () => {
