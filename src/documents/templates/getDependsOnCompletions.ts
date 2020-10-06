@@ -28,6 +28,12 @@ export function getDependsOnCompletions(
         span = pc.emptySpanAtDocumentCharacterIndex;
     }
 
+    // Allow suggest dependsOn completions when at the very beginning of the string or outside a string.  Elsewhere in
+    //   the expression they will just add a bunch of completions that are confusing for the context
+    if (pc.tleInfo && pc.tleInfo.tleCharacterIndex > 1) {
+        return [];
+    }
+
     const scope = pc.getScope();
     const infos = getResourcesInfo({ scope, recognizeDecoupledChildren: true });
     if (infos.length === 0) {
