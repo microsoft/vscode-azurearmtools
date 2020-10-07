@@ -241,9 +241,13 @@ function getResourceTypeCompletions(
                 }
             });
 
-            assert(item.span.contains(pc.documentCharacterIndex, ContainsBehavior.strict), "Replacement span doesn't contain cursor");
-
-            results.push(item);
+            if (item.span.contains(pc.documentCharacterIndex, ContainsBehavior.strict)) {
+                results.push(item);
+            } else {
+                // tslint:disable-next-line: no-suspicious-comment
+                // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1030
+                // assert(false, "Replacement span doesn't contain cursor");
+            }
         }
     }
 
