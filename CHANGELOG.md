@@ -18,9 +18,9 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 
 - If we find just a single matching parameter file, we now automatically use it without asking. It can be manually disassociated or associated with a different parameter file, and this behavior can be turned off via VS Code settings [#911](https://github.com/microsoft/vscode-azurearmtools/issues/911)
 - ARM Template Outline view and Intellisense now use a more compact format for the name and type of resources that are expressions, based on the new string interpolation format for Bicep
-- ARM Template Outline view now shows only the last segment of a resource name
-- ARM Template Outline view now also shows the last segment of a resource type
-- For a cleaner look, parameter code lenses just show "Using default value" for parameters with default values, and do not actually show the default value [#999](https://github.com/microsoft/vscode-azurearmtools/issues/999)
+- ARM Template Outline view now shows only the last segment of a resource's name
+- ARM Template Outline view now also shows the last segment of a resource's type
+- For a cleaner look, parameter code lenses just show "Using default value" for parameters with default values, and do not actually repeat the default value [#999](https://github.com/microsoft/vscode-azurearmtools/issues/999)
 
 ### Fixed
 
