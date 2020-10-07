@@ -2,6 +2,37 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.13.0 (2020-10-07)
+
+### Added
+
+- Completions for `dependsOn` array elements
+- Intellisense improvements:
+  - Fixed:
+    - Completions cause entire current word to be deleted [#903](https://github.com/microsoft/vscode-azurearmtools/issues/903)
+    - Tab completion of params/vars wipes out remainder of string [#349](https://github.com/microsoft/vscode-azurearmtools/issues/349)
+    - Sparse filtering does not work for our expression Intellisense [#572](https://github.com/microsoft/vscode-azurearmtools/issues/572)
+-  Child/parent code lenses for resources
+
+### Changed
+
+- If we find just a single matching parameter file, we now automatically use it without asking. It can be manually disassociated or associated with a different parameter file, and this behavior can be turned off via VS Code settings [#911](https://github.com/microsoft/vscode-azurearmtools/issues/911)
+- ARM Template Outline view and Intellisense now use a more compact format for the name and type of resources that are expressions, based on the new string interpolation format for Bicep
+- ARM Template Outline view now shows only the last segment of a resource name
+- ARM Template Outline view now also shows the last segment of a resource type
+- For a cleaner look, parameter code lenses just show "Using default value" for parameters with default values, and do not actually show the default value [#999](https://github.com/microsoft/vscode-azurearmtools/issues/999)
+
+### Fixed
+
+- Missing one warning in the error list after changing the property from "inner" to "outer" [#891](https://github.com/microsoft/vscode-azurearmtools/issues/891)
+- Added location property to deployment() function metadata [#936](https://github.com/microsoft/vscode-azurearmtools/issues/936)
+- "Cannot read property 'start' of undefined: TypeError: Cannot read property 'start' of undefined" in suites [#858](https://github.com/microsoft/vscodeissues/858)
+- List function is not recognized [#949](https://github.com/microsoft/vscodeissues/949)
+- Support for new template functions: createObject(), false(), true(), null()
+- resourceId completion should pull from within the correct scope of resources [#775](https://github.com/microsoft/vscodeissues/775)
+- Unable to remove file reference from parameter file to template file if template file is deleted [#952](https://github.com/microsoft/vscode-azurearmtools/issues/952)
+- Using schema with http instead of https sets language to arm-template but schema Intellisense/validation don't work [#834](https://github.com/microsoft/vscode-azurearmtools/issues/834)
+
 ## Version 0.12.0
 
 ### Added
