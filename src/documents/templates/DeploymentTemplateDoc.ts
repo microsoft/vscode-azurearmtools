@@ -16,7 +16,7 @@ import { Issue } from '../../language/Issue';
 import { IssueKind } from '../../language/IssueKind';
 import * as Json from "../../language/json/JSON";
 import { ReferenceList } from "../../language/ReferenceList";
-import { Span } from "../../language/Span";
+import { ContainsBehavior, Span } from "../../language/Span";
 import { isArmSchema } from "../../schemas";
 import { CachedValue } from '../../util/CachedValue';
 import { expectParameterDocumentOrUndefined } from '../../util/expectDocument';
@@ -497,7 +497,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         if (range.start.line === range.end.line) {
             // Can only call pc.jsonTokenStartIndex if we're inside a JSON token
             if (pc.jsonToken && pc.jsonTokenStartIndex > 0) {
-                let jsonToken = pc.document.getJSONValueAtDocumentCharacterIndex(pc.jsonTokenStartIndex - 1, Span.ContainsBehavior.extended);
+                let jsonToken = pc.document.getJSONValueAtDocumentCharacterIndex(pc.jsonTokenStartIndex - 1, ContainsBehavior.extended);
                 if (jsonToken instanceof Json.Property && pc.document.topLevelValue) {
                     let scope = pc.getScope();
                     if (!scope.rootObject) {
@@ -513,7 +513,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                         if (!range.isEmpty) {
                             let startIndex = this.getDocumentCharacterIndex(range.start.line, range.start.character);
                             let endIndex = this.getDocumentCharacterIndex(range.end.line, range.end.character);
-                            let span: Span.Span = new Span.Span(startIndex, endIndex - startIndex);
+                            let span: Span = new Span(startIndex, endIndex - startIndex);
                             const selectedText = this.getDocumentTextWithSquareBrackets(span);
                             if (this.isParameterOrVariableReference(selectedText)) {
                                 return [];
@@ -545,7 +545,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         return [];
     }
 
-    private getDocumentTextWithSquareBrackets(span: Span.Span): string {
+    private getDocumentTextWithSquareBrackets(span: Span): string {
         let text = this.getDocumentText(span);
         if (text.startsWith("[") && text.endsWith("]")) {
             return text;
@@ -558,7 +558,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         return text;
     }
 
-    private getDocumentTextWithSurroundingCharacters(span: Span.Span, start: string, end: string): string {
+    private getDocumentTextWithSurroundingCharacters(span: Span, start: string, end: string): string {
         let text = this.getDocumentText(span);
         if (text.startsWith(start) && text.endsWith(end)) {
             return text;

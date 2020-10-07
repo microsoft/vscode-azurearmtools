@@ -16,6 +16,7 @@ export class ExtractItem {
 
     public async extractParameter(editor: vscode.TextEditor, template: DeploymentTemplateDoc, context: IActionContext): Promise<void> {
         let selection = this.expandSelection(editor.selection, editor.document, template, editor);
+        editor.selection = selection;
         let selectedText = editor.document.getText(selection);
         let name = await this.ui.showInputBox({ prompt: "Enter the new parameter name" });
         const leaveEmpty = "Press 'Enter' if you do not want to add a description.";
@@ -35,12 +36,16 @@ export class ExtractItem {
 
     public async extractVariable(editor: vscode.TextEditor, template: DeploymentTemplateDoc, context: IActionContext): Promise<void> {
         let selection = this.expandSelection(editor.selection, editor.document, template, editor);
+        editor.selection = selection;
         let selectedText = editor.document.getText(selection);
         let name = await this.ui.showInputBox({ prompt: "Enter the new variable name" });
         let insertText = `[variables('${name}')]`;
         const texts = this.fixExtractTexts(selectedText, insertText, selection, template, editor);
         let topLevel = this.getTopLevel(template, selection);
         await editor.edit(builder => builder.replace(selection, texts.insertText), { undoStopBefore: true, undoStopAfter: false });
+        if (editor.document.getText(editor.selection) !== texts.insertText) {
+            let sju = 7;
+        }
         await new InsertItem(this.ui).insertVariableWithValue(topLevel, editor, context, name, texts.selectedText, { undoStopBefore: false, undoStopAfter: true });
         editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.end), vscode.TextEditorRevealType.Default);
     }
