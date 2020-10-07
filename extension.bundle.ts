@@ -96,6 +96,7 @@ export { UnrecognizedFunctionVisitor } from "./src/visitors/UnrecognizedFunction
 export * from "./src/vscodeIntegration/commandArguments";
 export { IConfiguration } from "./src/vscodeIntegration/Configuration";
 export { HoverInfo } from "./src/vscodeIntegration/Hover";
+export * from "./src/vscodeIntegration/toVsCodeCompletionItem";
 export { IElementInfo, JsonOutlineProvider, shortenTreeLabel } from "./src/vscodeIntegration/Treeview";
 export * from "./src/vscodeIntegration/vscodePosition";
 export { Completion };
