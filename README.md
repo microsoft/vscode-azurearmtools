@@ -177,7 +177,7 @@ Right-click on a parameter, variable, or user-defined function name and select *
 
 ## Completions
 
-The ARM Tools extension provides code completions for many [built-in functions](https://go.microsoft.com/fwlink/?LinkID=733958) such as resourceId and variable.
+The ARM Tools extension provides code completions for many [built-in functions](https://go.microsoft.com/fwlink/?LinkID=733958), for example `resourceId` and `variables`, as well as for entries inside a `dependsOn` list and parameter values in a parameter file.
 
 ## Other features
 
