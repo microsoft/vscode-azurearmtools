@@ -53,4 +53,22 @@ suite("sortArrayByProperty", () => {
             { key: "ten", value: 10 },
         ]);
     });
+
+    test("descending", () => {
+        const actual = sortArrayByProperty(array, "value", { descending: true });
+        assert.deepStrictEqual(
+            actual, [
+            { key: "ten", value: 10 },
+            { key: "nine", value: 9 },
+            { key: "eight", value: 8 },
+            { key: "seven", value: 7 },
+            { key: "six", value: 6 },
+            { key: "five", value: 5 },
+            { key: "four", value: 4 },
+            { key: "three", value: 3 },
+            { key: "two", value: 2 },
+            { key: "one", value: 1 },
+
+        ]);
+    });
 });
