@@ -19,6 +19,8 @@ import { TemplateSectionType } from "./TemplateSectionType";
 
 const insertCursorText = '[]';
 
+const invalidTemplateMessage = `The ARM template file appears to be invalid.  If you need to, you can add contents for a new template by typing "arm!" and selecting the desired snippet.`;
+
 export class QuickPickItem<T> implements vscode.QuickPickItem {
     public label: string;
     public value: T;
@@ -182,14 +184,14 @@ export class InsertItem {
             case "int":
                 let intValue = Number(defaultValue);
                 if (isNaN(intValue)) {
-                    this.throwExpectedError("Invalid integer!", context);
+                    this.throwExpectedError("Please enter a valid integer value", context);
                 }
                 return intValue;
             case "array":
                 try {
                     return JSON.parse(defaultValue);
                 } catch (error) {
-                    this.throwExpectedError("Invalid array!", context);
+                    this.throwExpectedError("Please enter a valid array value", context);
                 }
                 break;
             case "object":
@@ -197,7 +199,7 @@ export class InsertItem {
                 try {
                     return JSON.parse(defaultValue);
                 } catch (error) {
-                    this.throwExpectedError("Invalid object!", context);
+                    this.throwExpectedError("Please enter a valid object value", context);
                 }
                 break;
             case "bool":
@@ -207,7 +209,7 @@ export class InsertItem {
                     case "false":
                         return false;
                     default:
-                        this.throwExpectedError("Invalid boolean!", context);
+                        this.throwExpectedError("Please enter 'true' or 'false'", context);
                 }
                 break;
             case "string":
@@ -243,7 +245,7 @@ export class InsertItem {
         if (!templatePart) {
             if (!templateTopLevel) {
                 context.errorHandling.suppressReportIssue = true;
-                throw new Error("Invalid ARM template!");
+                throw new Error(invalidTemplateMessage);
             }
             let subPart: Data = {};
             subPart[name] = data;
@@ -352,7 +354,7 @@ export class InsertItem {
     private async insertFunctionAsTopLevel(topLevel: Json.ObjectValue | undefined, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
         if (!topLevel) {
             context.errorHandling.suppressReportIssue = true;
-            throw new Error("Invalid ARM template!");
+            throw new Error(invalidTemplateMessage);
         }
         let functions = [await this.getFunctionNamespace()];
         await this.insertInObjectHelper({
@@ -411,7 +413,7 @@ export class InsertItem {
         let namespace = Json.asObjectValue(functions.elements[0]);
         if (!namespace) {
             context.errorHandling.suppressReportIssue = true;
-            throw new Error("The first namespace in functions is not an object!");
+            throw new Error(`The first namespace in "functions" is not an object`);
         }
         let members = namespace.getPropertyValue(templateKeys.userFunctionMembers);
         if (!members) {
@@ -421,7 +423,7 @@ export class InsertItem {
         let membersObject = Json.asObjectValue(members);
         if (!membersObject) {
             context.errorHandling.suppressReportIssue = true;
-            throw new Error("The first namespace in functions does not have members as an object!");
+            throw new Error(`The first namespace in "functions" does not have members as an object!`);
         }
         await this.insertFunctionAsFunction(membersObject, textEditor);
         return;
@@ -434,7 +436,7 @@ export class InsertItem {
         if (!resources) {
             if (!templateTopLevel) {
                 context.errorHandling.suppressReportIssue = true;
-                throw new Error("Invalid ARM template!");
+                throw new Error(invalidTemplateMessage);
             }
             // tslint:disable-next-line:no-any
             let subPart: any = [];

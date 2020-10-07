@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 // tslint:disable:promise-function-async max-line-length // Grandfathered in
 // CONSIDER: Refactor this file
-import * as assert from "assert";
 import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
@@ -21,17 +20,19 @@ import { addMissingParameters } from "./documents/parameters/ParameterValues";
 import { IReferenceSite, PositionContext } from "./documents/positionContexts/PositionContext";
 import { TemplatePositionContext } from "./documents/positionContexts/TemplatePositionContext";
 import { DeploymentTemplateDoc } from "./documents/templates/DeploymentTemplateDoc";
+import { gotoResources } from './documents/templates/gotoResources';
 import { ExtractItem } from './documents/templates/ExtractItem';
 import { getItemTypeQuickPicks, InsertItem } from "./documents/templates/insertItem";
 import { getQuickPickItems, sortTemplate } from "./documents/templates/sortTemplate";
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, templateDocumentSelector, templateOrParameterDocumentSelector } from "./documents/templates/supported";
 import { TemplateSectionType } from "./documents/templates/TemplateSectionType";
 import { ext } from "./extensionVariables";
+import { assert } from './fixed_assert';
 import * as TLE from "./language/expressions/TLE";
 import { Issue } from "./language/Issue";
 import * as Json from "./language/json/JSON";
 import { ReferenceList } from "./language/ReferenceList";
-import * as Span from "./language/Span";
+import { Span } from "./language/Span";
 import { startArmLanguageServerInBackground } from "./languageclient/startArmLanguageServer";
 import { getPreferredSchema } from "./schemas";
 import { showInsertionContext } from "./snippets/showInsertionContext";
@@ -49,7 +50,7 @@ import { Stopwatch } from "./util/Stopwatch";
 import { Cancellation } from "./util/throwOnCancel";
 import { IncorrectArgumentsCountIssue } from "./visitors/IncorrectArgumentsCountIssue";
 import { UnrecognizedBuiltinFunctionIssue } from "./visitors/UnrecognizedFunctionIssues";
-import { IAddMissingParametersArgs, IGotoParameterValueArgs } from "./vscodeIntegration/commandArguments";
+import { IAddMissingParametersArgs, IGotoParameterValueArgs, IGotoResourcesArgs } from "./vscodeIntegration/commandArguments";
 import { ConsoleOutputChannelWrapper } from "./vscodeIntegration/ConsoleOutputChannelWrapper";
 import * as Hover from './vscodeIntegration/Hover';
 import { RenameCodeActionProvider } from "./vscodeIntegration/RenameCodeActionProvider";
@@ -265,9 +266,16 @@ export class AzureRMTools {
 
         // Code lens commands
         registerCommand(
+            // Executed when the user clicks on a code lens for a parameter value
             "azurerm-vscode-tools.codeLens.gotoParameterValue",
             async (actionContext: IActionContext, args: IGotoParameterValueArgs) => {
                 await this.onGotoParameterValue(actionContext, args);
+            });
+        registerCommand(
+            // Executed when the user clicks on a code lens that shows the children or parent of a resource
+            "azurerm-vscode-tools.codeLens.gotoResources",
+            async (actionContext: IActionContext, args: IGotoResourcesArgs) => {
+                await gotoResources(actionContext, args);
             });
 
         // Developer commands
@@ -722,7 +730,16 @@ export class AzureRMTools {
         return await callWithTelemetryAndErrorHandling('reportDeploymentParametersErrors', async (actionContext: IActionContext): Promise<IErrorsAndWarnings> => {
             actionContext.telemetry.suppressIfSuccessful = true;
 
-            const template = await this.getOrReadAssociatedTemplate(textDocument.uri, Cancellation.cantCancel);
+            const templateUri: vscode.Uri | undefined = this._mapping.getTemplateFile(deploymentParameters.documentUri);
+            let template: DeploymentTemplateDoc | undefined;
+            if (templateUri) {
+                const templateFileExists = await pathExists(templateUri);
+                actionContext.telemetry.properties.templateFileExists = String(templateFileExists);
+                if (templateFileExists) {
+                    template = await this.getOrReadDeploymentTemplate(templateUri);
+                }
+            }
+
             return this.reportDeploymentDocumentErrors(textDocument, deploymentParameters, template);
         });
     }
@@ -986,7 +1003,7 @@ export class AzureRMTools {
                     if (paramFileUri) {
                         templateFileHasParamFile = true;
                         const doesParamFileExist = await pathExists(paramFileUri);
-                        statusBarText = `Parameters: ${getFriendlyPathToFile(paramFileUri)}`;
+                        statusBarText = `Parameter file: ${getFriendlyPathToFile(paramFileUri)}`;
                         if (!doesParamFileExist) {
                             statusBarText += " $(error) Not found";
                         }
@@ -1170,7 +1187,6 @@ export class AzureRMTools {
                     // the code lens because onProvideCodeLenses is supposed to be fast.
                     parametersProvider = new ParameterValuesSourceProviderFromParameterFile(this, dpUri);
                 }
-
                 return doc.getCodeLenses(parametersProvider);
             }
 
@@ -1184,7 +1200,7 @@ export class AzureRMTools {
 
             if (codeLens instanceof ResolvableCodeLens) {
                 if (await codeLens.resolve()) {
-                    assert(codeLens.command?.command && codeLens.command.title, "CodeLens wasn't resolved");
+                    assert(codeLens.command?.title, "CodeLens wasn't resolved");
                     return codeLens;
                 }
             } else {
@@ -1252,17 +1268,8 @@ export class AzureRMTools {
                     });
                     return undefined;
                 } else {
-                    const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c));
+                    const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c, position));
                     ext.completionItemsSpy.postCompletionItemsResult(pc.document, items, vsCodeItems);
-
-                    // vscode requires all spans to include the original position and be on the same line, otherwise
-                    //   it ignores it.  Verify that here.
-                    for (let item of vsCodeItems) {
-                        assert(item.range, "Completion item doesn't have a range");
-                        assert(item.range?.contains(position), "Completion item range doesn't include cursor");
-                        assert(item.range?.isSingleLine, "Completion item range must be a single line");
-                    }
-
                     return new vscode.CompletionList(vsCodeItems, true);
                 }
             }
@@ -1295,7 +1302,7 @@ export class AzureRMTools {
                 // Second choice: To the "properties" section
                 ?? parameterValues.parameterValuesProperty?.nameValue.span
                 // Third choice: top of the file
-                ?? new Span.Span(0, 0);
+                ?? new Span(0, 0);
             range = getVSCodeRangeFromSpan(doc, span);
         } else if (args.inTemplateFile && doc instanceof DeploymentTemplateDoc) {
             range = args.inTemplateFile.range;
@@ -1404,17 +1411,6 @@ export class AzureRMTools {
         // Nope, have to read it from disk
         const contents = await readUtf8FileWithBom(uri.fsPath);
         return new DeploymentParametersDoc(contents, uri);
-    }
-
-    private async getOrReadAssociatedTemplate(parameterFileUri: vscode.Uri, cancel: Cancellation): Promise<DeploymentTemplateDoc | undefined> {
-        const templateUri: vscode.Uri | undefined = this._mapping.getTemplateFile(parameterFileUri);
-        if (templateUri) {
-            const template = await this.getOrReadDeploymentTemplate(templateUri);
-            cancel.throwIfCancelled();
-            return template;
-        }
-
-        return undefined;
     }
 
     private getDocTypeForTelemetry(doc: DeploymentDocument): string {
@@ -1668,7 +1664,7 @@ export class AzureRMTools {
 
                     let braceHighlightRanges: vscode.Range[] = [];
                     for (let tleHighlightIndex of tleBraceHighlightIndexes) {
-                        const highlightSpan = new Span.Span(tleHighlightIndex + pc.jsonTokenStartIndex, 1);
+                        const highlightSpan = new Span(tleHighlightIndex + pc.jsonTokenStartIndex, 1);
                         braceHighlightRanges.push(getVSCodeRangeFromSpan(pc.document, highlightSpan));
                     }
 

@@ -58,6 +58,8 @@ export enum ContainsBehavior {
  * A span representing the character indexes that are contained by a JSONToken.
  */
 export class Span {
+    public static readonly empty: Span = new Span(0, 0);
+
     constructor(private _startIndex: number, private _length: number) {
     }
 

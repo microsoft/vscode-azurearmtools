@@ -7,7 +7,7 @@
 
 import * as assert from "assert";
 import { Position, Range, Uri } from "vscode";
-import { IGotoParameterValueArgs, IParameterValuesSource, IParameterValuesSourceProvider, ParameterDefinitionCodeLens, ShowCurrentParameterFileCodeLens } from "../extension.bundle";
+import { IGotoParameterValueArgs, IParameterValuesSource, IParameterValuesSourceProvider, ParameterDefinitionCodeLens, ParentOrChildCodeLens, ShowCurrentParameterFileCodeLens } from "../extension.bundle";
 import { IDeploymentTemplate, IPartialDeploymentTemplate } from "./support/diagnostics";
 import { parseParametersWithMarkers, parseTemplate } from "./support/parseTemplate";
 import { rangeToString } from "./support/rangeToString";
@@ -227,11 +227,11 @@ suite("DeploymentTemplate code lenses", () => {
 
             createParamLensTest('requiredInt', { value: '123' }, 'Value: 123');
             createParamLensTest('requiredInt', { value: '-123' }, 'Value: -123');
-            createParamLensTest('optionalInt', undefined, 'Using default value: 123');
+            createParamLensTest('optionalInt', undefined, 'Using default value');
             createParamLensTest('requiredInt', undefined, '$(warning) No value found');
 
             createParamLensTest('requiredString', { value: '"def"' }, 'Value: "def"');
-            createParamLensTest('optionalString', undefined, 'Using default value: "abc"');
+            createParamLensTest('optionalString', undefined, 'Using default value');
             createParamLensTest('requiredString', undefined, '$(warning) No value found');
 
             // Value too long
@@ -241,7 +241,7 @@ suite("DeploymentTemplate code lenses", () => {
                 'Value: "I am a very long string, yes, sir, a very long string indeed.  If I were a very long string, I would say that I ...');
 
             createParamLensTest('optionalSecureString', { value: '"def"' }, 'Value: "def"');
-            createParamLensTest('optionalSecureString', undefined, 'Using default value: "abc"');
+            createParamLensTest('optionalSecureString', undefined, 'Using default value');
             createParamLensTest(
                 'optionalSecureString',
                 {
@@ -255,28 +255,28 @@ suite("DeploymentTemplate code lenses", () => {
 
             createParamLensTest('optionalBool', { value: 'true' }, 'Value: true');
             createParamLensTest('optionalBool', { value: 'false' }, 'Value: false');
-            createParamLensTest('optionalBool', undefined, 'Using default value: true');
+            createParamLensTest('optionalBool', undefined, 'Using default value');
 
             createParamLensTest('optionalArray', { value: '[]' }, 'Value: []');
             createParamLensTest('optionalArray', { value: '[\n]' }, 'Value: []');
             createParamLensTest('optionalArray', { value: '[\r\n]' }, 'Value: []');
             createParamLensTest('optionalArray', { value: '[\r\n\t     123\t\r\n    ]' }, 'Value: [123]');
             createParamLensTest('optionalArray', { value: '[\r\n\t     {"a": "b"}\t\r\n    ]' }, 'Value: [{"a": "b"}]');
-            createParamLensTest('optionalArray', undefined, 'Using default value: [true]');
+            createParamLensTest('optionalArray', undefined, 'Using default value');
 
             createParamLensTest('optionalObject', { value: '{}' }, 'Value: {}');
             createParamLensTest('optionalObject', { value: '{\r\n"a": "b",\r\n  "i": -123}' }, 'Value: {"a": "b", "i": -123}');
-            createParamLensTest('optionalObject', undefined, 'Using default value: {"myTrueProp": true}');
+            createParamLensTest('optionalObject', undefined, 'Using default value');
 
             createParamLensTest('optionalSecureObject', { value: '{}' }, 'Value: {}');
-            createParamLensTest('optionalSecureObject', undefined, 'Using default value: {"value1": true}');
+            createParamLensTest('optionalSecureObject', undefined, 'Using default value');
 
             suite("undefined in param value", () => {
-                createParamLensTest('optionalString', { value: 'undefined' }, 'Using default value: "abc"');
+                createParamLensTest('optionalString', { value: 'undefined' }, 'Using default value');
             });
             suite("Expression in default value", () => {
                 createParamLensTest('optionalString2', { value: '"123"' }, 'Value: "123"');
-                createParamLensTest('optionalString2', undefined, `Using default value: "[parameters('optionalString')]"`);
+                createParamLensTest('optionalString2', undefined, `Using default value`);
             });
         });
 
@@ -286,7 +286,7 @@ suite("DeploymentTemplate code lenses", () => {
                     testName = testName;
                     const dt = await parseTemplate(template);
 
-                    let lenses = dt.getCodeLenses(undefined);
+                    let lenses = dt.getCodeLenses(undefined).filter(cl => !(cl instanceof ParentOrChildCodeLens));
                     for (const lens of lenses) {
                         const result = await lens.resolve();
                         assert(result);
@@ -357,7 +357,7 @@ suite("DeploymentTemplate code lenses", () => {
                 [
                     "TopLevel: \"Select or create a parameter file to enable full validation...\" (azurerm-vscode-tools.selectParameterFile) at [0,0-0,0]",
                     "NestedDeploymentWithInnerScope: \"Nested template with inner scope\" () at [21,20-46,9]",
-                    "NestedDeploymentWithInnerScope: \"Using default value: \"p1 default value\"\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [25,12-25,16]",
+                    "NestedDeploymentWithInnerScope: \"Using default value\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [25,12-25,16]",
                     "NestedDeploymentWithInnerScope: \"Value: \"p2 value\"\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [29,12-29,16]",
                     "NestedDeploymentWithInnerScope: \"Value: \"[add(1, 2)]\"\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [32,12-32,16]",
                     "NestedDeploymentWithInnerScope: \"$(warning) No value found\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [35,12-35,16]",
@@ -413,7 +413,7 @@ suite("DeploymentTemplate code lenses", () => {
                 [
                     "TopLevel: \"Select or create a parameter file to enable full validation...\" (azurerm-vscode-tools.selectParameterFile) at [0,0-0,0]",
                     "NestedDeploymentWithInnerScope: \"Nested template with inner scope\" () at [13,20-38,9]",
-                    "NestedDeploymentWithInnerScope: \"Using default value: \"p1 default value\"\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [17,12-17,16]",
+                    "NestedDeploymentWithInnerScope: \"Using default value\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [17,12-17,16]",
                     "NestedDeploymentWithInnerScope: \"$(warning) No value found\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [21,12-21,16]",
                     "NestedDeploymentWithInnerScope: \"$(warning) No value found\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [24,12-24,16]",
                     "NestedDeploymentWithInnerScope: \"$(warning) No value found\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [27,12-27,16]",

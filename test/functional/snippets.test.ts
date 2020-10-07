@@ -86,7 +86,7 @@ const overrideTemplateForSnippet: { [name: string]: string } = {
     "User Function Namespace": `{
 \t"resources": [
 \t],
-\t"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+\t"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
 \t"contentVersion": "1.0.0.0",
 \t"functions": [
 \t\t//Insert here: namespace

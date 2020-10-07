@@ -40,9 +40,9 @@ let options: { [key: string]: string | boolean | number | object } = {
 // See https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options for all available options
 
 // Defaults
-options.reporter = 'mocha-multi-reporters';
+options.reporter = 'cypress-multi-reporters';
 options.reporterOptions = {
-    reporterEnabled: "spec, mocha-junit-reporter",
+    reporterEnabled: "spec, cypress-junit-reporter",
     mochaJunitReporterReporterOptions: {
         mochaFile: path.join(__dirname, '..', '..', 'test-results.xml')
     }

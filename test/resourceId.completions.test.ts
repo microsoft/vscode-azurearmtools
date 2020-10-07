@@ -4,7 +4,7 @@
 
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length no-unnecessary-class
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name no-constant-condition
-// tslint:disable:prefer-template no-http-string
+// tslint:disable:prefer-template no-http-string no-invalid-template-strings
 
 import * as assert from 'assert';
 import { AzureRMAssets, looksLikeResourceTypeStringLiteral, splitResourceNameIntoSegments } from '../extension.bundle';
@@ -33,7 +33,7 @@ suite("ResourceId completions", () => {
         // Can either be an array of completion names, or an array of
         //   [completion name, insert text] tuples
         expectedCompletions: string[],
-        addFunctionCompletions: boolean = true
+        ignoreTleFunctionCompletions: boolean = true
     ): void {
         if (!("outputs" in template)) {
             template.outputs = {};
@@ -46,18 +46,14 @@ suite("ResourceId completions", () => {
             };
         }
 
-        if (addFunctionCompletions) {
-            // Add default completions for built-in functions
-            expectedCompletions = [...expectedCompletions, ...defaultCompletions];
-        }
-
         createExpressionCompletionsTest(
             expressionWithBang,
             expectedCompletions,
             template,
             {
                 name,
-                preps: [new UseRealFunctionMetadata()]
+                preps: [new UseRealFunctionMetadata()],
+                ignoreCompletionNames: ignoreTleFunctionCompletions ? defaultCompletions : undefined // Ignore default completions for built-in functions?
             });
     }
 
@@ -1051,5 +1047,62 @@ suite("ResourceId completions", () => {
                 [`'name1a'`, `'name1b'`],
                 false);
         });
+    });
+
+    suite("regression tests", () => {
+        createResourceIdCompletionsTest2(
+            "#775",
+            {
+                "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "resources": [
+                    {
+                        "type": "Microsoft.Resources/deployments",
+                        "apiVersion": "2019-10-01",
+                        "name": "[concat(parameters('vmProperties')[copyIndex()].name,'Deployment')]",
+                        "properties": {
+                            "mode": "Incremental",
+                            "expressionEvaluationOptions": {
+                                "scope": "inner"
+                            },
+                            "template": {
+                                "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                                "contentVersion": "1.0.0.0",
+                                "resources": [
+                                    {
+                                        "type": "Microsoft.Compute/virtualMachines",
+                                        "apiVersion": "2019-07-01",
+                                        "resources": [
+                                            {
+                                                "type": "Microsoft.Compute/virtualMachines/extensions",
+                                                "apiVersion": "2019-12-01",
+                                                "name": "[concat(parameters('vmName'),copyIndex(1),'/dscext')]",
+                                                "dependsOn": [
+                                                    "[<context>]" // << COMPLETION HERE
+                                                ]
+                                            }
+                                        ],
+                                        "name": "[concat(parameters('vmName'),copyIndex(1))]",
+                                        "copy": {
+                                            "name": "[concat(parameters('vmName'),'vmcopy')]",
+                                            "count": "[parameters('loopCount')]"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "copy": {
+                            "name": "vmCopy",
+                            "count": "[length(parameters('vmProperties'))]"
+                        }
+                    }
+                ]
+            },
+            'resourceId(!)',
+            [
+                "'Microsoft.Compute/virtualMachines'",
+                "'Microsoft.Compute/virtualMachines/extensions'",
+            ]
+        );
     });
 });

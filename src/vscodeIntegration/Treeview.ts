@@ -317,16 +317,16 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<IElementInfo
                     // It's a resource
                     const info = getResourceInfo(keyNode);
                     if (info) {
-                        return info.getFriendlyResourceLabel({ fullName: true });
+                        return info.getFriendlyResourceLabel({ fullName: false });
                     }
                 }
 
-                let label = this.getLabelFromProperties("name", keyNode);
+                let label = this.getLabelFromPropery("name", keyNode);
                 if (label !== undefined) {
                     return label;
                 }
 
-                label = this.getLabelFromProperties("namespace", keyNode); // For user-function namespaces
+                label = this.getLabelFromPropery("namespace", keyNode); // For user-function namespaces
                 if (label !== undefined) {
                     return label;
                 }
@@ -348,7 +348,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<IElementInfo
         return "";
     }
 
-    private getLabelFromProperties(propertyName: string, keyNode: Json.ObjectValue): string | undefined {
+    private getLabelFromPropery(propertyName: string, keyNode: Json.ObjectValue): string | undefined {
         // tslint:disable-next-line:one-variable-per-declaration
         for (var i = 0, l = keyNode.properties.length; i < l; i++) {
             let props = keyNode.properties[i];
