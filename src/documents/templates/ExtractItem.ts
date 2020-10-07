@@ -5,6 +5,7 @@
 
 import * as vscode from "vscode";
 import { IActionContext, IAzureUserInput } from "vscode-azureextensionui";
+import { isTleExpression } from "../../language/expressions/isTleExpression";
 import { ObjectValue } from "../../language/json/JSON";
 import { DeploymentTemplateDoc } from "./DeploymentTemplateDoc";
 import { InsertItem } from "./insertItem";
@@ -43,9 +44,6 @@ export class ExtractItem {
         const texts = this.fixExtractTexts(selectedText, insertText, selection, template, editor);
         let topLevel = this.getTopLevel(template, selection);
         await editor.edit(builder => builder.replace(selection, texts.insertText), { undoStopBefore: true, undoStopAfter: false });
-        if (editor.document.getText(editor.selection) !== texts.insertText) {
-            let sju = 7;
-        }
         await new InsertItem(this.ui).insertVariableWithValue(topLevel, editor, context, name, texts.selectedText, { undoStopBefore: false, undoStopAfter: true });
         editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.end), vscode.TextEditorRevealType.Default);
     }
@@ -119,7 +117,7 @@ export class ExtractItem {
             if (selectedText === pc.jsonValue.asStringValue.unquotedValue) {
                 return false;
             }
-            return template.isExpression(pc.jsonValue.asStringValue?.quotedValue);
+            return isTleExpression(pc.jsonValue.asStringValue?.unquotedValue);
         }
         return false;
     }

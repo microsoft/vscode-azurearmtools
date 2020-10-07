@@ -10,6 +10,7 @@ import { TemplateScopeKind } from '../../../extension.bundle';
 import { configKeys, templateKeys } from "../../constants";
 import { ext } from '../../extensionVariables';
 import { AzureRMAssets, FunctionsMetadata } from "../../language/expressions/AzureRMAssets";
+import { isTleExpression } from '../../language/expressions/isTleExpression';
 import * as TLE from "../../language/expressions/TLE";
 import { INamedDefinition } from '../../language/INamedDefinition';
 import { Issue } from '../../language/Issue';
@@ -521,7 +522,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                             if (pc.jsonValue && jsonToken.value && jsonToken.value.span === pc.jsonValue.span && selectedText && this.equalsWithSqareBrackets(pc.jsonValue.asStringValue?.unquotedValue, selectedText)) {
                                 shouldAddExtractActions = true;
                             } else {
-                                if (this.isExpression(stringValue.quotedValue)) {
+                                if (isTleExpression(stringValue.unquotedValue)) {
                                     shouldAddExtractActions = this.isValidExpression(this.getDocumentTextWithSurroundingCharacters(span, "'", "'"));
                                 }
                             }
@@ -581,10 +582,6 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
             return false;
         }
         return text.startsWith("\"") && text.endsWith("\"");
-    }
-
-    public isExpression(text: string): boolean {
-        return (text.startsWith("\"[") && text.endsWith("]\""));
     }
 
     public isValidExpression(text: string): boolean {
