@@ -18,11 +18,11 @@ import { getTempFilePath } from '../support/getTempFilePath';
 
 suite("ExtractItem", async (): Promise<void> => {
     let testUserInput: TestUserInput = new TestUserInput(vscode);
-    async function createExtractParameterTests(startTemplate: string, expectedTemplate: string, selectedText: string, codeActionsCount: number = 2): Promise<void> {
+    async function runExtractParameterTests(startTemplate: string, expectedTemplate: string, selectedText: string, codeActionsCount: number = 2): Promise<void> {
         await runExtractItemTests(startTemplate, expectedTemplate, selectedText, codeActionsCount, async (extractItem, template, editor) => await extractItem.extractParameter(editor, template, getActionContext()));
     }
 
-    async function createExtractVariableTests(startTemplate: string, expectedTemplate: string, selectedText: string, codeActionsCount: number = 2): Promise<void> {
+    async function runExtractVariableTests(startTemplate: string, expectedTemplate: string, selectedText: string, codeActionsCount: number = 2): Promise<void> {
         await runExtractItemTests(startTemplate, expectedTemplate, selectedText, codeActionsCount, async (extractItem, template, editor) => await extractItem.extractVariable(editor, template, getActionContext()));
     }
 
@@ -118,24 +118,24 @@ suite("ExtractItem", async (): Promise<void> => {
 }`;
         test('StorageKind', async () => {
             await testUserInput.runWithInputs(["storageKind", "Kind of storage"], async () => {
-                await createExtractParameterTests(baseTemplate, storageNameTemplate, "StorageV2");
+                await runExtractParameterTests(baseTemplate, storageNameTemplate, "StorageV2");
             });
         });
         test('[resourceGroup().location]', async () => {
             await testUserInput.runWithInputs(["location", "Location of resource"], async () => {
-                await createExtractParameterTests(baseTemplate, locationTemplate, "[resourceGroup().location]");
+                await runExtractParameterTests(baseTemplate, locationTemplate, "[resourceGroup().location]");
             });
         });
         test('resourceGroup().location', async () => {
             await testUserInput.runWithInputs(["location", "Location of resource"], async () => {
-                await createExtractParameterTests(baseTemplate, locationTemplate, "resourceGroup().location");
+                await runExtractParameterTests(baseTemplate, locationTemplate, "resourceGroup().location");
             });
         });
         test('[parameters(\'location\')] should not generate code action', async () => {
-            await createExtractParameterTests(locationTemplate, '', "[parameters('location')]", 0);
+            await runExtractParameterTests(locationTemplate, '', "[parameters('location')]", 0);
         });
         test('[parameters(\'location\')] should not generate code action', async () => {
-            await createExtractParameterTests(locationTemplate, '', "parameters('location')", 0);
+            await runExtractParameterTests(locationTemplate, '', "parameters('location')", 0);
         });
     });
     suite("ExtractVariable", () => {
@@ -179,24 +179,24 @@ suite("ExtractItem", async (): Promise<void> => {
 }`;
         test('Storageaccount1', async () => {
             await testUserInput.runWithInputs(["storageKind"], async () => {
-                await createExtractVariableTests(baseTemplate, storageKindTemplate, "StorageV2");
+                await runExtractVariableTests(baseTemplate, storageKindTemplate, "StorageV2");
             });
         });
         test('[resourceGroup().location]', async () => {
             await testUserInput.runWithInputs(["location"], async () => {
-                await createExtractVariableTests(baseTemplate, locationTemplate, "[resourceGroup().location]");
+                await runExtractVariableTests(baseTemplate, locationTemplate, "[resourceGroup().location]");
             });
         });
         test('resourceGroup().location', async () => {
             await testUserInput.runWithInputs(["location"], async () => {
-                await createExtractVariableTests(baseTemplate, locationTemplate, "resourceGroup().location");
+                await runExtractVariableTests(baseTemplate, locationTemplate, "resourceGroup().location");
             });
         });
         test('[variables(\'location\')] should not generate code action', async () => {
-            await createExtractParameterTests(locationTemplate, '', "[variables('location')]", 0);
+            await runExtractParameterTests(locationTemplate, '', "[variables('location')]", 0);
         });
         test('variables(\'location\') should not generate code action', async () => {
-            await createExtractParameterTests(locationTemplate, '', "variables('location')", 0);
+            await runExtractParameterTests(locationTemplate, '', "variables('location')", 0);
         });
     });
 });
