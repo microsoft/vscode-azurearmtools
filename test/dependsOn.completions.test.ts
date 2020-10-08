@@ -702,13 +702,13 @@ from resource \`name1a\` of type \`def\``
         );
 
         createDependsOnCompletionsTest(
-            "no dependsOn completions except at the start of the string (#1008)",
+            "no dependsOn completions inside an expression (#1008/1033)",
             {
                 template: {
                     resources: [
                         {
                             dependsOn: [
-                                "<!replaceStart!>name<!cursor!>2a"
+                                "[<!replaceStart!>name<!cursor!>2a"
                             ]
                         },
                         {
@@ -718,6 +718,7 @@ from resource \`name1a\` of type \`def\``
                     ]
                 },
                 expected: [
+                    ...allTestDataExpectedCompletions(0, Number.MAX_SAFE_INTEGER).map(c => ({ label: c.label }))
                 ]
             }
         );
