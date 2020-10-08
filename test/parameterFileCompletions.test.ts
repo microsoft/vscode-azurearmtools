@@ -39,7 +39,7 @@ suite("Parameter file completions", () => {
             // tslint:disable-next-line: strict-boolean-expressions
             const cursorIndex = !isNullOrUndefined(options.cursorIndex) ? options.cursorIndex : cursor?.index;
             if (isNullOrUndefined(cursorIndex)) {
-                assert.fail(`Expected either a cursor index in options or a <!CURSOR!> in the parameters file`);
+                assert.fail(`Expected either a cursor index in options or a <!cursor!> in the parameters file`);
             }
 
             const pc = dp.getContextFromDocumentCharacterIndex(cursorIndex, dt);
@@ -87,7 +87,7 @@ suite("Parameter file completions", () => {
                 $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
                 "contentVersion": "1.0.0.0",
                 "parameters": {
-                    <!CURSOR!>
+                    <!cursor!>
                 }
             }`,
             undefined,
@@ -102,7 +102,7 @@ suite("Parameter file completions", () => {
                 $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
                 "contentVersion": "1.0.0.0",
                 "parameters": {
-                    <!CURSOR!>
+                    <!cursor!>
                 }
             }`,
             emptyTemplate,
@@ -118,7 +118,7 @@ suite("Parameter file completions", () => {
                     $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
                     "contentVersion": "1.0.0.0",
                     "parameters": {
-                        <!CURSOR!>
+                        <!cursor!>
                     }
                 }`,
                 {
@@ -148,7 +148,7 @@ suite("Parameter file completions", () => {
                             "p2": {
                                 "value": "string"
                             },
-                            <!CURSOR!>
+                            <!cursor!>
                         }
                     }`,
                 {
@@ -178,7 +178,7 @@ suite("Parameter file completions", () => {
                         "PARAmeter2": {
                             "value": "string"
                         },
-                        <!CURSOR!>
+                        <!cursor!>
                     }
                 }`,
                 {
@@ -208,7 +208,7 @@ suite("Parameter file completions", () => {
                             "Parameter2": {
                                 "value": "string"
                             },
-                            <!CURSOR!>
+                            <!cursor!>
                             "Parameter10": {
                                 "value": "string"
                             }
@@ -247,7 +247,7 @@ suite("Parameter file completions", () => {
                         "Parameter10": {
                             "value": "string"
                         },
-                        <!CURSOR!>
+                        <!cursor!>
                     }
                 }`,
                 {
@@ -272,7 +272,7 @@ suite("Parameter file completions", () => {
                     $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
                     "contentVersion": "1.0.0.0",
                     "parameters": {
-                        <!CURSOR!>
+                        <!cursor!>
                     }
                 }`,
                 {
