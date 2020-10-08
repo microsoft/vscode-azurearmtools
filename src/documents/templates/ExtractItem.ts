@@ -44,7 +44,7 @@ export class ExtractItem {
         const texts = this.fixExtractTexts(selectedText, insertText, selection, template, editor);
         let topLevel = this.getTopLevel(template, selection);
         await new InsertItem(this.ui).insertVariableWithValue(topLevel, editor, context, name, texts.selectedText, { undoStopBefore: true, undoStopAfter: false });
-        await editor.edit(builder => builder.replace(selection, texts.insertText), { undoStopBefore: false, undoStopAfter: true });
+        await editor.edit(builder => builder.replace(editor.selection, texts.insertText), { undoStopBefore: false, undoStopAfter: true });
         editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.end), vscode.TextEditorRevealType.Default);
     }
 
