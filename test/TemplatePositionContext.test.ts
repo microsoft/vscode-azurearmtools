@@ -199,15 +199,15 @@ suite("TemplatePositionContext", () => {
         }
 
         test("hyphens and exclamation points", async () => {
-            const dt = await parseTemplate("{ arm-keyvault!hello }", undefined, { ignoreBang: true });
+            const dt = await parseTemplate("{ arm-keyvault<!>hello }");
 
             assert.equal(getTextAtReplacementSpan(dt, 0), undefined); // {
             assert.equal(getTextAtReplacementSpan(dt, 1), undefined);
             for (let i = 2; i <= 19; ++i) { // a-o
-                assert.equal(getTextAtReplacementSpan(dt, i), 'arm-keyvault!hello');
+                assert.equal(getTextAtReplacementSpan(dt, i), 'arm-keyvault<!>hello');
             }
 
-            assert.equal(getTextAtReplacementSpan(dt, 20), 'arm-keyvault!hello'); // space after hello
+            assert.equal(getTextAtReplacementSpan(dt, 20), 'arm-keyvault<!>hello'); // space after hello
             assert.equal(getTextAtReplacementSpan(dt, 21), undefined); // }
             assert.equal(getTextAtReplacementSpan(dt, 22), undefined);
         });
@@ -707,50 +707,50 @@ suite("TemplatePositionContext", () => {
                 "string",
                 []);
 
-            // A bang ("!") in the expression marks the position to test at
+            // A bang ("<!>") in the expression marks the position to test at
             async function testUdfSignatureHelp(expressionWithBang: string, expected: TLE.FunctionSignatureHelp | undefined): Promise<void> {
                 const templateString = stringify(udfTemplate).replace('<o1value>', expressionWithBang);
 
                 const { dt, markers: { bang } } = await parseTemplateWithMarkers(templateString);
-                assert(bang, "You must place a bang ('!') in the expression string to indicate position");
+                assert(bang, "You must place a bang marker ('<!>') in the expression string to indicate position");
                 const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex(bang.index, undefined);
                 const functionSignatureHelp: TLE.FunctionSignatureHelp | undefined = pc.getSignatureHelp();
                 assert.deepStrictEqual(functionSignatureHelp, expected);
             }
 
             test("in UDF function name", async () => {
-                await testUdfSignatureHelp("udf.!con", undefined);
+                await testUdfSignatureHelp("udf.<!>con", undefined);
             });
 
             test("in UDF namespace name", async () => {
-                await testUdfSignatureHelp("u!df.con", undefined);
+                await testUdfSignatureHelp("u<!>df.con", undefined);
             });
 
             test("in UDF call's period", async () => {
-                await testUdfSignatureHelp("udf!.con", undefined);
+                await testUdfSignatureHelp("udf<!>.con", undefined);
             });
 
             test("after UDF left parenthesis, with same name as built-in function and UDF function not defined", async () => {
-                await testUdfSignatureHelp("udf.add(!", undefined);
+                await testUdfSignatureHelp("udf.add(<!>", undefined);
             });
 
             test("after UDF left parenthesis, with same name as built-in function, udf exists", async () => {
-                await testUdfSignatureHelp("udf.concat(!",
+                await testUdfSignatureHelp("udf.concat(<!>",
                     new FunctionSignatureHelp(0, expectedUdfConcatMetadata));
             });
 
             test("inside first parameter", async () => {
-                await testUdfSignatureHelp("udf.concat('hello!', 'there')",
+                await testUdfSignatureHelp("udf.concat('hello<!>', 'there')",
                     new FunctionSignatureHelp(0, expectedUdfConcatMetadata));
             });
 
             test("inside second parameter", async () => {
-                await testUdfSignatureHelp("udf.concat('hello', 'th!ere')",
+                await testUdfSignatureHelp("udf.concat('hello', 'th<!>ere')",
                     new FunctionSignatureHelp(1, expectedUdfConcatMetadata));
             });
 
             test("no params", async () => {
-                await testUdfSignatureHelp("udf.random(!)",
+                await testUdfSignatureHelp("udf.random(<!>)",
                     new FunctionSignatureHelp(
                         0,
                         new UserFunctionMetadata(
@@ -764,7 +764,7 @@ suite("TemplatePositionContext", () => {
             });
 
             test("one param", async () => {
-                await testUdfSignatureHelp("udf.double(12!345) [int]",
+                await testUdfSignatureHelp("udf.double(12<!>345) [int]",
                     new FunctionSignatureHelp(
                         0,
                         new UserFunctionMetadata(
@@ -781,7 +781,7 @@ suite("TemplatePositionContext", () => {
             });
 
             test("param with no type", async () => {
-                await testUdfSignatureHelp("udf.mysterious(12!345, 2)",
+                await testUdfSignatureHelp("udf.mysterious(12<!>345, 2)",
                     new FunctionSignatureHelp(
                         0,
                         new UserFunctionMetadata(
@@ -799,7 +799,7 @@ suite("TemplatePositionContext", () => {
             });
 
             test("invalid return type", async () => {
-                await testUdfSignatureHelp("udf.badreturn(!)",
+                await testUdfSignatureHelp("udf.badreturn(<!>)",
                     new FunctionSignatureHelp(
                         0,
                         new UserFunctionMetadata(
@@ -815,7 +815,7 @@ suite("TemplatePositionContext", () => {
             });
 
             test("namespace but no function name", async () => {
-                await testUdfSignatureHelp("udf.!", undefined);
+                await testUdfSignatureHelp("udf.<!>", undefined);
             });
         });
     });
