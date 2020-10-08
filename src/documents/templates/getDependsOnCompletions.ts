@@ -28,9 +28,9 @@ export function getDependsOnCompletions(
         span = pc.emptySpanAtDocumentCharacterIndex;
     }
 
-    // Allow suggest dependsOn completions when at the very beginning of the string or outside a string.  Elsewhere in
-    //   the expression they will just add a bunch of completions that are confusing for the context
-    if (pc.tleInfo && pc.tleInfo.tleCharacterIndex > 1) {
+    // Allow suggest dependsOn completions only when the string is not (yet) an expression.  Inside
+    //  an expression they will just add a bunch of completions that are confusing for the context
+    if (pc.tleInfo?.tleParseResult.leftSquareBracketToken) {
         return [];
     }
 

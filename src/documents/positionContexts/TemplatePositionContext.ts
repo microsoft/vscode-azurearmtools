@@ -882,6 +882,7 @@ export class TemplatePositionContext extends PositionContext {
         return variableCompletions;
     }
 
+    // tslint:disable-next-line: max-func-body-length // lots of comments
     private getParameterOrVariableNameReplaceInfo(tleValue: TLE.StringValue | TLE.FunctionCallValue, tleCharacterIndex: number): ITleReplaceSpanInfo | undefined {
         // Note: We icnclude closing parenthesis and single quote in the replacement span and the insertion text,
         // so that the cursor ends up after them once the replacement happens. This way the user can immediately start
@@ -902,7 +903,7 @@ export class TemplatePositionContext extends PositionContext {
             const stringStartIndex = stringSpan.startIndex;
             let tleReplaceSpan: Span;
 
-            if (tleCharacterIndex <= tleValue.getSpan().startIndex) {
+            if (tleCharacterIndex <= stringStartIndex) {
                 // The cursor is before the beginning of the string (or right at the open quote, which means it's not yet
                 //   inside the string) - just insert the completion text, don't replace anything existing (the user may be
                 //   trying to add to the expression before the cursor if this is an existing expression or string)
@@ -919,6 +920,28 @@ export class TemplatePositionContext extends PositionContext {
             } else if (tleCharacterIndex > tleValue.getSpan().endIndex) {
                 // Cursor is after the string - no replacements
                 return undefined;
+            } else if (tleCharacterIndex - stringStartIndex === 1 && tleValue.unquotedValue.startsWith(`''`)) {
+                // Special case - image user has
+                //
+                //   "[resourceId(<CURSOR>'Microsoft.Network/virtualNetworks', parameters('subnet2Name'))]"
+                //
+                // At the cursor they want to add "parameters('sku')" as a new first argument to resourceId, without
+                // deleting the existing 'Microsoft.Network/virtualNetworks' string, which will become the second argument
+                // after inserting.
+                //
+                // They type "parameters('" (note the initial single quote).  VS Code immediately adds the closing single
+                // quote, so they have:
+                //
+                //   "[resourceId('<CURSOR>''Microsoft.Network/virtualNetworks', parameters('subnet2Name'))]"
+                //
+                // when the completion request comes through here.  Since two single quotes inside a string are an escape
+                // for a single quote, the entire "'''Microsoft.Network/virtualNetworks'" string is tokenized as a single
+                // string literal, which means we would normally replace the entire string.  Instead, special case this as
+                // if it were two strings and only replace the first two single quotes, leaving the existing string alone.
+
+                tleReplaceSpan = new Span(stringStartIndex, 2);
+                includeSingleQuotesInCompletion = true;
+                includeRightParenthesisInCompletion = false;
             } else {
                 // The cursor is inside the string - replace the entire parameter, including the closing single
                 //   quote and parenthesis, so that the cursor will end up after the parameters call

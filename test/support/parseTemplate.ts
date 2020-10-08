@@ -45,6 +45,8 @@ interface Markers {
  */
 // tslint:disable-next-line: no-suspicious-comment
 // TODO: Make synchronous
+// tslint:disable-next-line: no-suspicious-comment
+// TODO: Don't allow ! and <!xxx!> style together, they don't work together always
 export async function parseTemplateWithMarkers(
     template: string | IPartialDeploymentTemplate,
     expectedDiagnosticMessages?: string[],
