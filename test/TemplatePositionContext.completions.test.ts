@@ -628,6 +628,8 @@ suite("TemplatePositionContext.completions", () => {
                         const { dt, markers: { bang, replstart } } = await parseTemplateWithMarkers(template);
                         // tslint:disable-next-line: strict-boolean-expressions
                         assert(!!replstart!, "Didn't find <!replstart!> in test expression");
+                        // tslint:disable-next-line: strict-boolean-expressions
+                        assert(!!bang!, "Didn't find <!bang!> or <!> in test expression");
                         const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex(bang.index, undefined);
 
                         let completionItems: Completion.Item[] = (await pc.getCompletionItems(undefined)).items;
@@ -732,7 +734,7 @@ suite("TemplatePositionContext.completions", () => {
                 testCompletionItemsWithRange(
                     "",
                     template1,
-                    `[<!replstart!>!]`,
+                    `[<!replstart!><!>]`,
                     {
                         label: "add",
                         insertText: "add",
@@ -743,7 +745,7 @@ suite("TemplatePositionContext.completions", () => {
                 testCompletionItemsWithRange(
                     "",
                     template1,
-                    `[<!replstart!>!param]`,
+                    `[<!replstart!><!>param]`,
                     {
                         label: "add",
                         insertText: "add",
@@ -754,7 +756,7 @@ suite("TemplatePositionContext.completions", () => {
                 testCompletionItemsWithRange(
                     "",
                     template1,
-                    `[<!replstart!>param!]`,
+                    `[<!replstart!>param<!>]`,
                     {
                         label: "parameters",
                         insertText: "parameters",
@@ -765,7 +767,7 @@ suite("TemplatePositionContext.completions", () => {
                 testCompletionItemsWithRange(
                     "Don't replace the entire function name, just what's to the left of the cursor",
                     template1,
-                    `[<!replstart!>param!eters]`,
+                    `[<!replstart!>param<!>eters]`,
                     {
                         label: "parameters",
                         insertText: "parameters",
@@ -780,7 +782,7 @@ suite("TemplatePositionContext.completions", () => {
                 testCompletionItemsWithRange(
                     "",
                     template1,
-                    `[<!replstart!>!]`,
+                    `[<!replstart!><!>]`,
                     {
                         label: "udf",
                         insertText: "udf",
@@ -791,7 +793,7 @@ suite("TemplatePositionContext.completions", () => {
                 testCompletionItemsWithRange(
                     "",
                     template1,
-                    `[<!replstart!>!ud]`,
+                    `[<!replstart!><!>ud]`,
                     {
                         label: "udf",
                         insertText: "udf",
@@ -802,7 +804,7 @@ suite("TemplatePositionContext.completions", () => {
                 testCompletionItemsWithRange(
                     "",
                     template1,
-                    `[<!replstart!>ud!]`,
+                    `[<!replstart!>ud<!>]`,
                     {
                         label: "udf",
                         insertText: "udf",
@@ -813,7 +815,7 @@ suite("TemplatePositionContext.completions", () => {
                 testCompletionItemsWithRange(
                     "Don't replace the entire namespace, just what's to the left of the cursor",
                     template1,
-                    `[<!replstart!>ud!f]`,
+                    `[<!replstart!>ud<!>f]`,
                     {
                         label: "udf",
                         insertText: "udf",
@@ -828,7 +830,7 @@ suite("TemplatePositionContext.completions", () => {
                 testCompletionItemsWithRange(
                     "",
                     template1,
-                    `[udf.<!replstart!>!myfunction]`,
+                    `[udf.<!replstart!><!>myfunction]`,
                     {
                         label: "udf.myfunction",
                         insertText: "myfunction",
@@ -839,7 +841,7 @@ suite("TemplatePositionContext.completions", () => {
                 testCompletionItemsWithRange(
                     "",
                     template1,
-                    `[udf.<!replstart!>myfunction!]`,
+                    `[udf.<!replstart!>myfunction<!>]`,
                     {
                         label: "udf.myfunction",
                         insertText: "myfunction",
@@ -850,7 +852,7 @@ suite("TemplatePositionContext.completions", () => {
                 testCompletionItemsWithRange(
                     "Don't replace the entire function name, just what's to the left of the cursor",
                     template1,
-                    `[udf.<!replstart!>myf!unction]`,
+                    `[udf.<!replstart!>myf<!>unction]`,
                     {
                         label: "udf.myfunction",
                         insertText: "myfunction",
@@ -872,7 +874,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "",
                         template1,
-                        `[parameters(<!replstart!>!)]`,
+                        `[parameters(<!replstart!><!>)]`,
                         {
                             label: "'sku'",
                             insertText: "'sku')",
@@ -882,7 +884,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "",
                         template1,
-                        `[variables(<!replstart!>!)]`,
+                        `[variables(<!replstart!><!>)]`,
                         {
                             label: "'subnet1Name'",
                             insertText: "'subnet1Name')",
@@ -893,7 +895,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "with whitespace",
                         template1,
-                        `[parameters(<!replstart!>! )]`,
+                        `[parameters(<!replstart!><!> )]`,
                         {
                             label: "'sku'",
                             insertText: "'sku')",
@@ -903,7 +905,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "with whitespace",
                         template1,
-                        `[variables(<!replstart!>! )]`,
+                        `[variables(<!replstart!><!> )]`,
                         {
                             label: "'subnet1Name'",
                             insertText: "'subnet1Name')",
@@ -914,7 +916,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "with whitespace #2",
                         template1,
-                        `[parameters( <!replstart!>!)]`,
+                        `[parameters( <!replstart!><!>)]`,
                         {
                             label: "'sku'",
                             insertText: "'sku')",
@@ -925,7 +927,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "no closing paren",
                         template1,
-                        `[parameters(<!replstart!>!]`,
+                        `[parameters(<!replstart!><!>]`,
                         {
                             label: "'sku'",
                             insertText: "'sku')",
@@ -935,7 +937,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "no closing paren",
                         template1,
-                        `[variables(<!replstart!>!]`,
+                        `[variables(<!replstart!><!>]`,
                         {
                             label: "'subnet1Name'",
                             insertText: "'subnet1Name')",
@@ -949,7 +951,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "",
                         template1,
-                        `[parameters(<!replstart!>!'hi')]`,
+                        `[parameters(<!replstart!><!>'hi')]`,
                         {
                             label: "'sku'",
                             insertText: "'sku'",
@@ -959,7 +961,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "",
                         template1,
-                        `[variables(<!replstart!>!'hi')]`,
+                        `[variables(<!replstart!><!>'hi')]`,
                         {
                             label: "'subnet1Name'",
                             insertText: "'subnet1Name'",
@@ -970,7 +972,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "with whitespace before string, cursor after whitespace",
                         template1,
-                        `[parameters( <!replstart!>!'hi')]`,
+                        `[parameters( <!replstart!><!>'hi')]`,
                         {
                             label: "'sku'",
                             insertText: "'sku'",
@@ -981,7 +983,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "no closing paren",
                         template1,
-                        `[parameters(<!replstart!>!'hi']`,
+                        `[parameters(<!replstart!><!>'hi']`,
                         {
                             label: "'sku'",
                             insertText: "'sku'",
@@ -994,7 +996,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "empty string",
                         template1,
-                        `[parameters(<!replstart!>'!')]`,
+                        `[parameters(<!replstart!>'<!>')]`,
                         {
                             label: "'sku'",
                             insertText: "'sku')",
@@ -1004,7 +1006,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "empty string",
                         template1,
-                        `[variables(<!replstart!>'!')]`,
+                        `[variables(<!replstart!>'<!>')]`,
                         {
                             label: "'subnet1Name'",
                             insertText: "'subnet1Name')",
@@ -1015,7 +1017,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "",
                         template1,
-                        `[parameters(<!replstart!>'!hi')]`,
+                        `[parameters(<!replstart!>'<!>hi')]`,
                         {
                             label: "'sku'",
                             insertText: "'sku')",
@@ -1025,7 +1027,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "",
                         template1,
-                        `[variables(<!replstart!>'!hi')]`,
+                        `[variables(<!replstart!>'<!>hi')]`,
                         {
                             label: "'subnet1Name'",
                             insertText: "'subnet1Name')",
@@ -1036,7 +1038,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "",
                         template1,
-                        `[parameters(<!replstart!>'h!i')]`,
+                        `[parameters(<!replstart!>'h<!>i')]`,
                         {
                             label: "'sku'",
                             insertText: "'sku')",
@@ -1046,7 +1048,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "",
                         template1,
-                        `[variables(<!replstart!>'h!i')]`,
+                        `[variables(<!replstart!>'h<!>i')]`,
                         {
                             label: "'subnet1Name'",
                             insertText: "'subnet1Name')",
@@ -1057,7 +1059,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "",
                         template1,
-                        `[parameters(<!replstart!>'hi!')]`,
+                        `[parameters(<!replstart!>'hi<!>')]`,
                         {
                             label: "'sku'",
                             insertText: "'sku')",
@@ -1067,7 +1069,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "",
                         template1,
-                        `[variables(<!replstart!>'hi!')]`,
+                        `[variables(<!replstart!>'hi<!>')]`,
                         {
                             label: "'subnet1Name'",
                             insertText: "'subnet1Name')",
@@ -1080,7 +1082,7 @@ suite("TemplatePositionContext.completions", () => {
                         testCompletionItemsWithRange(
                             "no closing paren",
                             template1,
-                            `[parameters(<!replstart!>'hi!']`,
+                            `[parameters(<!replstart!>'hi<!>']`,
                             {
                                 label: "'sku'",
                                 insertText: "'sku')",
@@ -1091,7 +1093,7 @@ suite("TemplatePositionContext.completions", () => {
                         testCompletionItemsWithRange(
                             "no closing quote",
                             template1,
-                            `[parameters(<!replstart!>'hi!)]`,
+                            `[parameters(<!replstart!>'hi<!>)]`,
                             {
                                 label: "'sku'",
                                 insertText: "'sku')",
@@ -1101,7 +1103,7 @@ suite("TemplatePositionContext.completions", () => {
                         testCompletionItemsWithRange(
                             "no closing quote or paren",
                             template1,
-                            `[parameters(<!replstart!>'hi!]`,
+                            `[parameters(<!replstart!>'hi<!>]`,
                             {
                                 label: "'sku'",
                                 insertText: "'sku')",
@@ -1111,7 +1113,7 @@ suite("TemplatePositionContext.completions", () => {
                         testCompletionItemsWithRange(
                             "no closing quote or paren",
                             template1,
-                            `[variables(<!replstart!>'hi!]`,
+                            `[variables(<!replstart!>'hi<!>]`,
                             {
                                 label: "'subnet1Name'",
                                 insertText: "'subnet1Name')",
@@ -1124,7 +1126,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "extra (invalid) args",
                         template1,
-                        `[parameters(<!replstart!>'hi!', 'there']`,
+                        `[parameters(<!replstart!>'hi<!>', 'there']`,
                         {
                             label: "'sku'",
                             insertText: "'sku'",
@@ -1134,7 +1136,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "extra (invalid) args",
                         template1,
-                        `[variables(<!replstart!>'hi!', 'there']`,
+                        `[variables(<!replstart!>'hi<!>', 'there']`,
                         {
                             label: "'subnet1Name'",
                             insertText: "'subnet1Name'",
@@ -1145,20 +1147,20 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "before second (invalid) arg",
                         template1,
-                        `[parameters('hi', !<!replstart!>'there']`,
+                        `[parameters('hi', <!><!replstart!>'there']`,
                         undefined
                     );
 
                     testCompletionItemsWithRange(
                         "in second (invalid) arg",
                         template1,
-                        `[parameters('hi', '!<!replstart!>!there']`,
+                        `[parameters('hi', '<!replstart!><!>there']`,
                         undefined
                     );
                     testCompletionItemsWithRange(
                         "in second (invalid) arg",
                         template1,
-                        `[variables('hi', '!<!replstart!>!there']`,
+                        `[variables('hi', '<!><!replstart!><!>there']`,
                         undefined
                     );
                 });
@@ -1169,7 +1171,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "user typed parameters( without apostrophe before completing",
                         template1,
-                        `[resourceId(parameters(<!replstart!>!'Microsoft.Network/virtualNetworks', parameters('subnet2Name'))]`,
+                        `[resourceId(parameters(<!replstart!><!>'Microsoft.Network/virtualNetworks', parameters('subnet2Name'))]`,
                         {
                             label: "'sku'",
                             insertText: "'sku'",
@@ -1180,7 +1182,7 @@ suite("TemplatePositionContext.completions", () => {
                     testCompletionItemsWithRange(
                         "user typed parameters(' with an apostrophe before completing",
                         template1,
-                        `[resourceId(parameters(<!replstart!>'!''Microsoft.Network/virtualNetworks', parameters('subnet2Name'))]`,
+                        `[resourceId(parameters(<!replstart!>'<!>''Microsoft.Network/virtualNetworks', parameters('subnet2Name'))]`,
                         {
                             label: "'sku'",
                             insertText: "'sku'",

@@ -83,7 +83,7 @@ export function createExpressionCompletionsTestEx(
             expressionWithBang = expressionWithBang.replace(/!/g, "<!bang!>");
             template = stringify(template).replace(contextFind, expressionWithBang);
 
-            const { dt, markers: { bang } } = await parseTemplateWithMarkers(template, undefined, { ignoreBang: true });
+            const { dt, markers: { bang } } = await parseTemplateWithMarkers(template);
             assert(bang, "Didn't find ! marker in text");
             const pc = dt.getContextFromDocumentCharacterIndex(bang.index, undefined);
             const completions = await pc.getCompletionItems(options?.triggerCharacter);
