@@ -17,19 +17,19 @@ import { allTestDataExpectedCompletions, UseRealFunctionMetadata } from './TestD
 suite("ResourceId completions", () => {
     function createResourceIdCompletionsTest(
         template: IPartialDeploymentTemplate,
-        expressionWithBang: string,
+        expressionWithCursorMarker: string,
         // Can either be an array of completion names, or an array of
         //   [completion name, insert text] tuples
         expectedCompletions: string[],
         addFunctionCompletions: boolean = true
     ): void {
-        createResourceIdCompletionsTest2(undefined, template, expressionWithBang, expectedCompletions, addFunctionCompletions);
+        createResourceIdCompletionsTest2(undefined, template, expressionWithCursorMarker, expectedCompletions, addFunctionCompletions);
     }
 
     function createResourceIdCompletionsTest2(
         name: string | undefined,
         template: IPartialDeploymentTemplate,
-        expressionWithBang: string,
+        expressionWithCursorMarker: string,
         // Can either be an array of completion names, or an array of
         //   [completion name, insert text] tuples
         expectedCompletions: string[],
@@ -47,7 +47,7 @@ suite("ResourceId completions", () => {
         }
 
         createExpressionCompletionsTest(
-            expressionWithBang,
+            expressionWithCursorMarker,
             expectedCompletions,
             template,
             {
@@ -91,16 +91,16 @@ suite("ResourceId completions", () => {
     suite("No resources section - empty completions", () => {
         const template: Partial<IDeploymentTemplate> = {
         };
-        createResourceIdCompletionsTest2("1st arg", template, `resourceId(!)`, []);
-        createResourceIdCompletionsTest2("2nd arg", template, `resourceId('',!)`, []);
+        createResourceIdCompletionsTest2("1st arg", template, `resourceId(<!cursor!>)`, []);
+        createResourceIdCompletionsTest2("2nd arg", template, `resourceId('',<!cursor!>)`, []);
     });
 
     suite("Empty resources section - empty completions", () => {
         const template: Partial<IPartialDeploymentTemplate> = {
             resources: []
         };
-        createResourceIdCompletionsTest2("1st arg", template, `resourceId(!)`, []);
-        createResourceIdCompletionsTest2("2nd arg", template, `resourceId('',!)`, []);
+        createResourceIdCompletionsTest2("1st arg", template, `resourceId(<!cursor!>)`, []);
+        createResourceIdCompletionsTest2("2nd arg", template, `resourceId('',<!cursor!>)`, []);
     });
 
     suite("Single resource completions", () => {
@@ -114,23 +114,23 @@ suite("ResourceId completions", () => {
         };
 
         suite("First arg completions - resource type", () => {
-            createResourceIdCompletionsTest(template, `resourceId(!)`, [`'type1'`]);
-            createResourceIdCompletionsTest(template, `resourceId( !)`, [`'type1'`]);
-            createResourceIdCompletionsTest(template, `resourceId( ! )`, [`'type1'`]);
+            createResourceIdCompletionsTest(template, `resourceId(<!cursor!>)`, [`'type1'`]);
+            createResourceIdCompletionsTest(template, `resourceId( <!cursor!>)`, [`'type1'`]);
+            createResourceIdCompletionsTest(template, `resourceId( <!cursor!> )`, [`'type1'`]);
         });
 
         suite("Second arg completions - resource name", () => {
-            createResourceIdCompletionsTest(template, `resourceId('type1',!)`, [`'name1'`]);
-            createResourceIdCompletionsTest(template, `resourceId('type1', !)`, [`'name1'`]);
-            createResourceIdCompletionsTest(template, `resourceId('type1', ! )`, [`'name1'`]);
+            createResourceIdCompletionsTest(template, `resourceId('type1',<!cursor!>)`, [`'name1'`]);
+            createResourceIdCompletionsTest(template, `resourceId('type1', <!cursor!>)`, [`'name1'`]);
+            createResourceIdCompletionsTest(template, `resourceId('type1', <!cursor!> )`, [`'name1'`]);
         });
 
         suite("Third arg completions - nothing", () => {
-            createResourceIdCompletionsTest(template, `resourceId('type1','name1',!)`, []);
+            createResourceIdCompletionsTest(template, `resourceId('type1','name1',<!cursor!>)`, []);
         });
 
         suite("resourceId case insensitive", () => {
-            createResourceIdCompletionsTest(template, `RESOURCEid(!)`, [`'type1'`]);
+            createResourceIdCompletionsTest(template, `RESOURCEid(<!cursor!>)`, [`'type1'`]);
         });
     });
 
@@ -148,9 +148,9 @@ suite("ResourceId completions", () => {
             ]
         };
 
-        createResourceIdCompletionsTest(template, `resourceId(!)`, [`'type1'`, `'type2'`]);
-        createResourceIdCompletionsTest(template, `resourceId('type1',!)`, [`'name1'`]);
-        createResourceIdCompletionsTest(template, `resourceId('type2',!)`, [`'name2'`]);
+        createResourceIdCompletionsTest(template, `resourceId(<!cursor!>)`, [`'type1'`, `'type2'`]);
+        createResourceIdCompletionsTest(template, `resourceId('type1',<!cursor!>)`, [`'name1'`]);
+        createResourceIdCompletionsTest(template, `resourceId('type2',<!cursor!>)`, [`'name2'`]);
     });
 
     suite("Multiple resource completions - deduped types", () => {
@@ -167,7 +167,7 @@ suite("ResourceId completions", () => {
             ]
         };
 
-        createResourceIdCompletionsTest(template, `resourceId(!)`, [`'type'`]);
+        createResourceIdCompletionsTest(template, `resourceId(<!cursor!>)`, [`'type'`]);
     });
 
     suite("Multiple resource completions - deduped names", () => {
@@ -184,7 +184,7 @@ suite("ResourceId completions", () => {
             ]
         };
 
-        createResourceIdCompletionsTest(template, `resourceId('type',!)`, [`'name'`]);
+        createResourceIdCompletionsTest(template, `resourceId('type',<!cursor!>)`, [`'name'`]);
     });
 
     suite("Multiple resource completions - deduped types, case insensitive", () => {
@@ -201,7 +201,7 @@ suite("ResourceId completions", () => {
             ]
         };
 
-        createResourceIdCompletionsTest(template, `resourceId(!)`, [`'type'`]);
+        createResourceIdCompletionsTest(template, `resourceId(<!cursor!>)`, [`'type'`]);
     });
 
     suite("Multiple resource completions - deduped names, case insensitive", () => {
@@ -218,7 +218,7 @@ suite("ResourceId completions", () => {
             ]
         };
 
-        createResourceIdCompletionsTest(template, `resourceId('type',!)`, [`'NAME'`]);
+        createResourceIdCompletionsTest(template, `resourceId('type',<!cursor!>)`, [`'NAME'`]);
     });
 
     suite("Multiple resource completions - names completions, with types matched case-insensitively", () => {
@@ -235,7 +235,7 @@ suite("ResourceId completions", () => {
             ]
         };
 
-        createResourceIdCompletionsTest(template, `resourceId('tyPE',!)`, [`'name1'`, `'name2'`]);
+        createResourceIdCompletionsTest(template, `resourceId('tyPE',<!cursor!>)`, [`'name1'`, `'name2'`]);
     });
 
     suite("No type, not in completions list", () => {
@@ -250,7 +250,7 @@ suite("ResourceId completions", () => {
                 }
             ]
         };
-        createResourceIdCompletionsTest(template, `resourceId(!)`, [`'type1'`]);
+        createResourceIdCompletionsTest(template, `resourceId(<!cursor!>)`, [`'type1'`]);
     });
 
     suite("No type, not in completions list", () => {
@@ -265,7 +265,7 @@ suite("ResourceId completions", () => {
                 }
             ]
         };
-        createResourceIdCompletionsTest(template, `resourceId(!)`, [`'type1'`]);
+        createResourceIdCompletionsTest(template, `resourceId(<!cursor!>)`, [`'type1'`]);
     });
 
     suite("Only show resource names that match the type in the first arg", () => {
@@ -285,10 +285,10 @@ suite("ResourceId completions", () => {
                 }
             ]
         };
-        createResourceIdCompletionsTest(template, `resourceId('type1',!)`, [`'name1a'`, `'name1b'`]);
+        createResourceIdCompletionsTest(template, `resourceId('type1',<!cursor!>)`, [`'name1a'`, `'name1b'`]);
 
         // Missing quotes around 'type1'
-        createResourceIdCompletionsTest(template, `resourceId(type1,!)`, []);
+        createResourceIdCompletionsTest(template, `resourceId(type1,<!cursor!>)`, []);
     });
 
     suite("Type is not a string", () => {
@@ -300,7 +300,7 @@ suite("ResourceId completions", () => {
                 }
             ]
         };
-        createResourceIdCompletionsTest(template, `resourceId(!)`, []);
+        createResourceIdCompletionsTest(template, `resourceId(<!cursor!>)`, []);
     });
 
     suite("Name is not a string", () => {
@@ -312,7 +312,7 @@ suite("ResourceId completions", () => {
                 }
             ]
         };
-        createResourceIdCompletionsTest(template, `resourceId('',!)`, []);
+        createResourceIdCompletionsTest(template, `resourceId('',<!cursor!>)`, []);
     });
 
     suite("Type is an expression", () => {
@@ -324,8 +324,8 @@ suite("ResourceId completions", () => {
                 }
             ]
         };
-        createResourceIdCompletionsTest(template, `resourceId(!)`, [`variables('type')`]);
-        createResourceIdCompletionsTest(template, `resourceId(variables('type'),!)`, [`'name1'`]);
+        createResourceIdCompletionsTest(template, `resourceId(<!cursor!>)`, [`variables('type')`]);
+        createResourceIdCompletionsTest(template, `resourceId(variables('type'),<!cursor!>)`, [`'name1'`]);
     });
 
     suite("Name is an expression", () => {
@@ -337,7 +337,7 @@ suite("ResourceId completions", () => {
                 }
             ]
         };
-        createResourceIdCompletionsTest(template, `resourceId('type',!)`, [`variables('name')`]);
+        createResourceIdCompletionsTest(template, `resourceId('type',<!cursor!>)`, [`variables('name')`]);
     });
 
     suite("subscriptionResourceId", () => {
@@ -354,9 +354,9 @@ suite("ResourceId completions", () => {
             ]
         };
 
-        createResourceIdCompletionsTest(template, `SUBSCRIPTIONRESOURCEID(!)`, [`'type1'`, `'type2'`]);
-        createResourceIdCompletionsTest(template, `subscriptionResourceId('type1',!)`, [`'name1'`]);
-        createResourceIdCompletionsTest(template, `subscriptionResourceId('type2',!)`, [`'name2'`]);
+        createResourceIdCompletionsTest(template, `SUBSCRIPTIONRESOURCEID(<!cursor!>)`, [`'type1'`, `'type2'`]);
+        createResourceIdCompletionsTest(template, `subscriptionResourceId('type1',<!cursor!>)`, [`'name1'`]);
+        createResourceIdCompletionsTest(template, `subscriptionResourceId('type2',<!cursor!>)`, [`'name2'`]);
     });
 
     suite("other names, no dice", () => {
@@ -373,9 +373,9 @@ suite("ResourceId completions", () => {
             ]
         };
 
-        createResourceIdCompletionsTest(template, `extensionResourceId2(!)`, []);
-        createResourceIdCompletionsTest(template, `udf1.resourceId('type1',!)`, []);
-        createResourceIdCompletionsTest(template, `concat(!)`, []);
+        createResourceIdCompletionsTest(template, `extensionResourceId2(<!cursor!>)`, []);
+        createResourceIdCompletionsTest(template, `udf1.resourceId('type1',<!cursor!>)`, []);
+        createResourceIdCompletionsTest(template, `concat(<!cursor!>)`, []);
     });
 
     suite("101_acsengine_swarmmode", () => {
@@ -421,7 +421,7 @@ suite("ResourceId completions", () => {
 
         createResourceIdCompletionsTest(
             template_101_acsengine_swarmmode,
-            'resourceId(!)',
+            'resourceId(<!cursor!>)',
             [
                 "'Microsoft.Network/publicIPAddresses'",
                 "'Microsoft.Compute/virtualMachineScaleSets'",
@@ -437,40 +437,40 @@ suite("ResourceId completions", () => {
 
         createResourceIdCompletionsTest(
             template_101_acsengine_swarmmode,
-            `resourceId('Microsoft.COMPUTE/VIRTUALMachineScaleSets',!)`,
+            `resourceId('Microsoft.COMPUTE/VIRTUALMachineScaleSets',<!cursor!>)`,
             [
                 `concat(variables('agentVMNamePrefix'), '-vmss')`
             ]);
         createResourceIdCompletionsTest(
             template_101_acsengine_swarmmode,
-            `resourceId('Microsoft.Network/publicIPAddresses',!)`,
+            `resourceId('Microsoft.Network/publicIPAddresses',<!cursor!>)`,
             [
                 `variables('agentIPAddressName')`,
                 `variables('masterPublicIPAddressName')`
             ]);
         createResourceIdCompletionsTest(
             template_101_acsengine_swarmmode,
-            `resourceId('Microsoft.Network/loadBalancers',!)`,
+            `resourceId('Microsoft.Network/loadBalancers',<!cursor!>)`,
             [
                 `variables('agentLbName')`,
                 `variables('masterLbName')`,
             ]);
         createResourceIdCompletionsTest(
             template_101_acsengine_swarmmode,
-            `resourceId('Microsoft.Network/loadBalancers/inboundNatRules',!)`,
+            `resourceId('Microsoft.Network/loadBalancers/inboundNatRules',<!cursor!>)`,
             [
                 `variables('masterLbName')`,
                 `concat(variables('masterSshPort22InboundNatRuleNamePrefix'), '0')`
             ]);
         createResourceIdCompletionsTest(
             template_101_acsengine_swarmmode,
-            `resourceId('Microsoft.Network/loadBalancers/inboundNatRules',variables('masterLbName'),!)`,
+            `resourceId('Microsoft.Network/loadBalancers/inboundNatRules',variables('masterLbName'),<!cursor!>)`,
             [
                 `concat('SSH-', variables('masterVMNamePrefix'), copyIndex())`
             ]);
         createResourceIdCompletionsTest(
             template_101_acsengine_swarmmode,
-            `resourceId('Microsoft.Storage/accounts',!)`,
+            `resourceId('Microsoft.Storage/accounts',<!cursor!>)`,
             [
             ]);
 
@@ -499,19 +499,19 @@ suite("ResourceId completions", () => {
                 createResourceIdCompletionsTest2(
                     "1st arg",
                     nestedSubnetsTemplate,
-                    `resourceId(!)`,
+                    `resourceId(<!cursor!>)`,
                     [`'Microsoft.Network/virtualNetworks'`, `'Microsoft.Network/virtualNetworks/subnets'`]
                 );
                 createResourceIdCompletionsTest2(
                     "2nd arg",
                     nestedSubnetsTemplate,
-                    `resourceId('Microsoft.Network/virtualNetworks/subnets', !)`,
+                    `resourceId('Microsoft.Network/virtualNetworks/subnets', <!cursor!>)`,
                     [`'vnet1'`]
                 );
                 createResourceIdCompletionsTest2(
                     "2nd arg",
                     nestedSubnetsTemplate,
-                    `resourceId('Microsoft.Network/virtualNetworks/subnets', 'vnet1', !)`,
+                    `resourceId('Microsoft.Network/virtualNetworks/subnets', 'vnet1', <!cursor!>)`,
                     [`'subnet1'`, `'subnet2'`]
                 );
             });
@@ -521,7 +521,7 @@ suite("ResourceId completions", () => {
                 createResourceIdCompletionsTest2(
                     "1st arg",
                     template_101_app_service_regional_vnet_integration,
-                    `resourceId(!)`,
+                    `resourceId(<!cursor!>)`,
                     [
                         `'Microsoft.Network/virtualNetworks'`,
                         `'Microsoft.Network/virtualNetworks/subnets'`,
@@ -533,7 +533,7 @@ suite("ResourceId completions", () => {
                 createResourceIdCompletionsTest2(
                     "2nd arg",
                     template_101_app_service_regional_vnet_integration,
-                    `resourceId('Microsoft.Network/virtualNetworks/subnets',!)`,
+                    `resourceId('Microsoft.Network/virtualNetworks/subnets',<!cursor!>)`,
                     [
                         `variables('vnetName')`
                     ]
@@ -541,14 +541,14 @@ suite("ResourceId completions", () => {
                 createResourceIdCompletionsTest2(
                     "3rd arg",
                     template_101_app_service_regional_vnet_integration,
-                    `resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), !)`,
+                    `resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), <!cursor!>)`,
                     [`variables('subnetName')`]
                 );
 
                 createResourceIdCompletionsTest2(
                     "3rd arg, networkConfig",
                     template_101_app_service_regional_vnet_integration,
-                    `resourceId('Microsoft.Web/sites/networkConfig',parameters('appName'),!)`,
+                    `resourceId('Microsoft.Web/sites/networkConfig',parameters('appName'),<!cursor!>)`,
                     [`'virtualNetwork'`]
                 );
             });
@@ -557,15 +557,15 @@ suite("ResourceId completions", () => {
                 // "agentVnetSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('agentSubnetName'))]",
                 createResourceIdCompletionsTest(
                     template_101_acsengine_swarmmode,
-                    `resourceId('Microsoft.Network/virtualNetworks/subnets', !)`,
+                    `resourceId('Microsoft.Network/virtualNetworks/subnets', <!cursor!>)`,
                     [`variables('virtualNetworkName')`]);
                 createResourceIdCompletionsTest(
                     template_101_acsengine_swarmmode,
-                    `resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'),!)`,
+                    `resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'),<!cursor!>)`,
                     [`variables('masterSubnetName')`, `variables('agentSubnetName')`]);
                 createResourceIdCompletionsTest(
                     template_101_acsengine_swarmmode,
-                    `resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('agentSubnetName'),!)`,
+                    `resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('agentSubnetName'),<!cursor!>)`,
                     []);
             });
         });
@@ -573,15 +573,15 @@ suite("ResourceId completions", () => {
         suite("Microsoft.Compute/virtualMachines/extensions", () => {
             createResourceIdCompletionsTest(
                 template_101_acsengine_swarmmode,
-                `resourceId('Microsoft.Compute/virtualMachines/extensions', !)`,
+                `resourceId('Microsoft.Compute/virtualMachines/extensions', <!cursor!>)`,
                 [`concat(variables('masterVMNamePrefix'), copyIndex())`]);
             createResourceIdCompletionsTest(
                 template_101_acsengine_swarmmode,
-                `resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('masterVMNamePrefix'), copyIndex()), !)`,
+                `resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('masterVMNamePrefix'), copyIndex()), <!cursor!>)`,
                 [`'configuremaster'`]);
             createResourceIdCompletionsTest(
                 template_101_acsengine_swarmmode,
-                `resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('masterVMNamePrefix'), copyIndex()), 'configuremaster'), !)`,
+                `resourceId('Microsoft.Compute/virtualMachines/extensions', concat(variables('masterVMNamePrefix'), copyIndex()), 'configuremaster'), <!cursor!>)`,
                 []);
         });
     });
@@ -673,24 +673,24 @@ suite("ResourceId completions", () => {
             suite("1st arg - should sugggest parent and child types", () => {
                 createResourceIdCompletionsTest(
                     template,
-                    `resourceId(!)`,
+                    `resourceId(<!cursor!>)`,
                     allResourceTypeCompletions);
             });
             suite("Referencing the parent", () => {
                 // Valid: "[resourceId('Microsoft.Network/networkSecurityGroups', 'networkSecurityGroup1')]"
-                createResourceIdCompletionsTest(template, `resourceId('Microsoft.Network/networkSecurityGroups', !)`, [`'networkSecurityGroup1'`, `'networkSecurityGroup2'`]);
-                createResourceIdCompletionsTest(template, `resourceId('Microsoft.Network/networkSecurityGroups', 'networkSecurityGroup1', !)`, []);
+                createResourceIdCompletionsTest(template, `resourceId('Microsoft.Network/networkSecurityGroups', <!cursor!>)`, [`'networkSecurityGroup1'`, `'networkSecurityGroup2'`]);
+                createResourceIdCompletionsTest(template, `resourceId('Microsoft.Network/networkSecurityGroups', 'networkSecurityGroup1', <!cursor!>)`, []);
             });
             suite("Referencing the nested children", () => {
                 // Valid: resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'networkSecurityGroup1', 'networkSecurityGroupRule1a')
-                createResourceIdCompletionsTest2("2nd arg (1st part of name)", template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRULES', !)`, [`'networkSecurityGroup1'`, `'networkSecurityGroup2'`]);
-                createResourceIdCompletionsTest2("3rd arg (2nd part of name)", template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'NETWORKSecurityGroup1', !)`, [`'networkSecurityGroupRule1a'`, `'networkSecurityGroupRule1b'`]);
-                createResourceIdCompletionsTest2("4th arg (not valid)", template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'NETWORKSecurityGroup1', 'networkSecurityGroupRule2', !)`, []);
+                createResourceIdCompletionsTest2("2nd arg (1st part of name)", template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRULES', <!cursor!>)`, [`'networkSecurityGroup1'`, `'networkSecurityGroup2'`]);
+                createResourceIdCompletionsTest2("3rd arg (2nd part of name)", template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'NETWORKSecurityGroup1', <!cursor!>)`, [`'networkSecurityGroupRule1a'`, `'networkSecurityGroupRule1b'`]);
+                createResourceIdCompletionsTest2("4th arg (not valid)", template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'NETWORKSecurityGroup1', 'networkSecurityGroupRule2', <!cursor!>)`, []);
 
-                createResourceIdCompletionsTest2("3rd arg #2", template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'NETWORKSecurityGroup2', !)`, [`'networkSecurityGroupRule2'`]);
+                createResourceIdCompletionsTest2("3rd arg #2", template, `resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'NETWORKSecurityGroup2', <!cursor!>)`, [`'networkSecurityGroupRule2'`]);
 
                 suite("not matched or invalid but doesn't look like a type - returns match of all resource types", () => {
-                    createResourceIdCompletionsTest2("type doesn't match", template, `resourceId(variables('a'), !)`, allResourceTypeCompletions);
+                    createResourceIdCompletionsTest2("type doesn't match", template, `resourceId(variables('a'), <!cursor!>)`, allResourceTypeCompletions);
                 });
 
                 // Invalid: "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', 'networkSecurityGroupRule1a')]"
@@ -719,13 +719,13 @@ suite("ResourceId completions", () => {
                 };
 
                 // resourceId('Microsoft.Sql/servers/firewallRules',variables('sqlServer'),variables('firewallRuleName'))
-                createResourceIdCompletionsTest2("1st arg", template, `resourceId(,!)`, [`'Microsoft.Sql/servers/firewallRules'`, `'Microsoft.Sql/servers'`]);
-                createResourceIdCompletionsTest2("2nd arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',!)`, [`variables('sqlServer')`]);
-                createResourceIdCompletionsTest2("3rd arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',variables('sqlServer'), !)`, [`variables('firewallRuleName')`]);
-                createResourceIdCompletionsTest2("4th arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',variables('sqlServer'), variables('firewallRuleName'),!)`, []);
+                createResourceIdCompletionsTest2("1st arg", template, `resourceId(,<!cursor!>)`, [`'Microsoft.Sql/servers/firewallRules'`, `'Microsoft.Sql/servers'`]);
+                createResourceIdCompletionsTest2("2nd arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',<!cursor!>)`, [`variables('sqlServer')`]);
+                createResourceIdCompletionsTest2("3rd arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',variables('sqlServer'), <!cursor!>)`, [`variables('firewallRuleName')`]);
+                createResourceIdCompletionsTest2("4th arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',variables('sqlServer'), variables('firewallRuleName'),<!cursor!>)`, []);
 
                 suite("Whitespace ignored when looking at previous args", () => {
-                    createResourceIdCompletionsTest2("ignore whitespace, 3rd arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',variables( 'sqlServer' ) , !)`, [`variables('firewallRuleName')`]);
+                    createResourceIdCompletionsTest2("ignore whitespace, 3rd arg", template, `resourceId('Microsoft.Sql/servers/firewallRules',variables( 'sqlServer' ) , <!cursor!>)`, [`variables('firewallRuleName')`]);
                 });
 
                 suite("splitResourceNameIntoSegments", () => {
@@ -872,10 +872,10 @@ suite("ResourceId completions", () => {
                         }
                     ]
                 };
-                createResourceIdCompletionsTest2("1st arg", template, `resourceId(, !)`, [`'type1'`, `'type2'`]);
-                createResourceIdCompletionsTest2("2nd arg", template, `resourceId(1, !)`, [`'type1'`, `'type2'`]);
-                createResourceIdCompletionsTest2("3rd arg", template, `resourceId(1, resourceGroup().id, !)`, [`'type1'`, `'type2'`]);
-                createResourceIdCompletionsTest2("4th arg - no type more completions", template, `resourceId(1, resourceGroup().id, 'nothing', !)`, []);
+                createResourceIdCompletionsTest2("1st arg", template, `resourceId(, <!cursor!>)`, [`'type1'`, `'type2'`]);
+                createResourceIdCompletionsTest2("2nd arg", template, `resourceId(1, <!cursor!>)`, [`'type1'`, `'type2'`]);
+                createResourceIdCompletionsTest2("3rd arg", template, `resourceId(1, resourceGroup().id, <!cursor!>)`, [`'type1'`, `'type2'`]);
+                createResourceIdCompletionsTest2("4th arg - no type more completions", template, `resourceId(1, resourceGroup().id, 'nothing', <!cursor!>)`, []);
             });
 
             const template1: IPartialDeploymentTemplate = {
@@ -903,31 +903,31 @@ suite("ResourceId completions", () => {
                 createResourceIdCompletionsTest2(
                     "1st arg - returns all types as usual",
                     template1,
-                    `resourceId(!)`,
+                    `resourceId(<!cursor!>)`,
                     [`'ns.type1'`, `'ns.type1/type2'`, `'ns.type1/type2/type3'`]
                 );
                 createResourceIdCompletionsTest2(
                     "2nd arg - still returns all types since 1st arg not recognized",
                     template1,
-                    `resourceId(subscription().id, !)`,
+                    `resourceId(subscription().id, <!cursor!>)`,
                     [`'ns.type1'`, `'ns.type1/type2'`, `'ns.type1/type2/type3'`]
                 );
                 createResourceIdCompletionsTest2(
                     "3rd arg - recognizes type in 2nd arg, returns first part of name",
                     template1,
-                    `resourceId(subscription().id, 'ns.type1/type2/type3', !)`,
+                    `resourceId(subscription().id, 'ns.type1/type2/type3', <!cursor!>)`,
                     [`'name1'`]
                 );
                 createResourceIdCompletionsTest2(
                     "4th arg - returns second part of name",
                     template1,
-                    `resourceId(subscription().id, 'ns.type1/type2/type3', 'name1', !)`,
+                    `resourceId(subscription().id, 'ns.type1/type2/type3', 'name1', <!cursor!>)`,
                     [`'name2'`]
                 );
                 createResourceIdCompletionsTest2(
                     "5th arg - third part of name",
                     template1,
-                    `resourceId(subscription().id, 'ns.type1/type2/type3', 'name1', 'name2', !)`,
+                    `resourceId(subscription().id, 'ns.type1/type2/type3', 'name1', 'name2', <!cursor!>)`,
                     [`'name3'`]
                 );
             });
@@ -936,13 +936,13 @@ suite("ResourceId completions", () => {
                 createResourceIdCompletionsTest2(
                     "2nd arg doesn't look like type",
                     template1,
-                    `resourceId('hi, mom', !)`,
+                    `resourceId('hi, mom', <!cursor!>)`,
                     [`'ns.type1'`, `'ns.type1/type2'`, `'ns.type1/type2/type3'`]
                 );
                 createResourceIdCompletionsTest2(
                     "2nd arg looks like type",
                     template1,
-                    `resourceId('Microsoft.Hello/Mom', !)`,
+                    `resourceId('Microsoft.Hello/Mom', <!cursor!>)`,
                     []
                 );
             });
@@ -953,7 +953,7 @@ suite("ResourceId completions", () => {
             createResourceIdCompletionsTest2(
                 "1st arg",
                 template_201_time_series_insights_environment_with_eventhub,
-                `resourceId(!)`,
+                `resourceId(<!cursor!>)`,
                 [
                     `'Microsoft.EventHub/namespaces'`,
                     `'Microsoft.EventHub/namespaces/eventhubs'`,
@@ -967,31 +967,31 @@ suite("ResourceId completions", () => {
             createResourceIdCompletionsTest2(
                 "2nd arg",
                 template_201_time_series_insights_environment_with_eventhub,
-                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', !)`,
+                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', <!cursor!>)`,
                 [`parameters('eventHubNamespaceName')`]
             );
             createResourceIdCompletionsTest2(
                 "3rd arg",
                 template_201_time_series_insights_environment_with_eventhub,
-                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), !)`,
+                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), <!cursor!>)`,
                 [`parameters('eventHubName')`]
             );
             createResourceIdCompletionsTest2(
                 "4th arg",
                 template_201_time_series_insights_environment_with_eventhub,
-                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), !)`,
+                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), <!cursor!>)`,
                 [`parameters('eventSourceKeyName')`]
             );
             createResourceIdCompletionsTest2(
                 "5th arg",
                 template_201_time_series_insights_environment_with_eventhub,
-                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), parameters('eventSourceKeyName'), !)`,
+                `resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), parameters('eventSourceKeyName'), <!cursor!>)`,
                 []
             );
             createResourceIdCompletionsTest2(
                 "6th arg with two optional params",
                 template_201_time_series_insights_environment_with_eventhub,
-                `resourceId('look', 'ma', 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), !)`,
+                `resourceId('look', 'ma', 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), <!cursor!>)`,
                 [`parameters('eventSourceKeyName')`]
             );
         });
@@ -1020,12 +1020,12 @@ suite("ResourceId completions", () => {
         suite("First arg completions - existing resource type", () => {
             createResourceIdCompletionsTest(
                 template,
-                `resourceId('!','name1')`,
+                `resourceId('<!cursor!>','name1')`,
                 [`'type1'`, `'type2'`],
                 false);
             createResourceIdCompletionsTest(
                 template,
-                `resourceId('tp!e1','nam!')`,
+                `resourceId('tp<!cursor!>e1','nam<!cursor!>')`,
                 [`'type1'`, `'type2'`],
                 false);
         });
@@ -1033,17 +1033,17 @@ suite("ResourceId completions", () => {
         suite("Second arg completions - existing resource name", () => {
             createResourceIdCompletionsTest(
                 template,
-                `resourceId('type1','!')`,
+                `resourceId('type1','<!cursor!>')`,
                 [`'name1a'`, `'name1b'`],
                 false);
             createResourceIdCompletionsTest(
                 template,
-                `resourceId('type1','nam!')`,
+                `resourceId('type1','nam<!cursor!>')`,
                 [`'name1a'`, `'name1b'`],
                 false);
             createResourceIdCompletionsTest(
                 template,
-                `resourceId('type1','nam!e1a')`,
+                `resourceId('type1','nam<!cursor!>e1a')`,
                 [`'name1a'`, `'name1b'`],
                 false);
         });
@@ -1098,7 +1098,7 @@ suite("ResourceId completions", () => {
                     }
                 ]
             },
-            'resourceId(!)',
+            'resourceId(<!cursor!>)',
             [
                 "'Microsoft.Compute/virtualMachines'",
                 "'Microsoft.Compute/virtualMachines/extensions'",

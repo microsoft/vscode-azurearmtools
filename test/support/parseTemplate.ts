@@ -39,8 +39,7 @@ interface Markers {
 }
 
 /**
- * Pass in a template with positions marked using the notation <!tagname!>.  <!> is a shortcut for <!bang!>
- * Returns the parsed document without the tags, plus a dictionary of the tags and their positions
+ * Pass in a template with positions marked using the notation <!tagname!>. * Returns the parsed document without the tags, plus a dictionary of the tags and their positions
  */
 // tslint:disable-next-line: no-suspicious-comment
 // TODO: Make synchronous
@@ -106,7 +105,7 @@ export async function parseTemplateWithMarkers(
 }
 
 /**
- * Pass in a parameter file with positions marked using the notation <!tagname!>.  <!> is a shortcut for <!bang!>
+ * Pass in a parameter file with positions marked using the notation <!tagname!>.
  * Returns the parsed document without the tags, plus a dictionary of the tags and their positions
  */
 export async function parseParametersWithMarkers(
@@ -141,9 +140,6 @@ export function getDocumentMarkers(doc: object | string, options?: {}): { unmark
 
     modified = removeEOLMarker(modified);
 
-    // Change <!> to <!bang!>
-    modified = modified.replace('<!>', '<!bang!>');
-
     // tslint:disable-next-line:no-constant-condition
     while (true) {
         let match: RegExpMatchArray | null = modified.match(/<!([a-zA-Z][a-zA-Z0-9$]*)!>/);
@@ -153,7 +149,7 @@ export function getDocumentMarkers(doc: object | string, options?: {}): { unmark
 
         // tslint:disable-next-line:no-non-null-assertion // Tested above
         const index: number = match.index!;
-        const name = match[1].toLowerCase();
+        const name = match[1];
         const marker: Marker = { name, index };
         markers[marker.name] = marker;
 

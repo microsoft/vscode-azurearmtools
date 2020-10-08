@@ -15,7 +15,7 @@ suite("dependsOn completions", () => {
     type PartialCompletionItem = Partial<Completion.Item & { replaceSpanStart: number; replaceSpanText: string }>;
 
     // <!replaceStart!> marks the start of the replace span
-    // <!CURSOR!> marks the cursor
+    // <!cursor!> marks the cursor
     function createDependsOnCompletionsTest(
         testName: string,
         options: {
@@ -26,7 +26,7 @@ suite("dependsOn completions", () => {
     ): void {
         test(testName, async () => {
             const { dt, markers: { cursor, replaceStart } } = await parseTemplateWithMarkers(options.template);
-            assert(cursor, "Missing <!CURSOR!> in testcase template");
+            assert(cursor, "Missing <!cursor!> in testcase template");
             const pc = dt.getContextFromDocumentCharacterIndex(cursor.index, undefined);
             const { items: completions } = await pc.getCompletionItems(options.triggerCharacter);
 
@@ -69,7 +69,7 @@ suite("dependsOn completions", () => {
                     resources: [
                         {
                             dependsOn: [
-                                "<!replaceStart!><!CURSOR!>"
+                                "<!replaceStart!><!cursor!>"
                             ]
                         },
                         {
@@ -118,7 +118,7 @@ suite("dependsOn completions", () => {
                     resources: [
                         {
                             dependsOn: [
-                                "<!replaceStart!><!CURSOR!>"
+                                "<!replaceStart!><!cursor!>"
                             ]
                         },
                         {
@@ -161,7 +161,7 @@ suite("dependsOn completions", () => {
                     resources: [
                         {
                             dependsOn: [
-                                "<!replaceStart!><!CURSOR!>"
+                                "<!replaceStart!><!cursor!>"
                             ]
                         },
                         {
@@ -193,7 +193,7 @@ suite("dependsOn completions", () => {
                     resources: [
                         {
                             dependsOn: [
-                                "<!replaceStart!><!CURSOR!>"
+                                "<!replaceStart!><!cursor!>"
                             ]
                         },
                         {
@@ -241,7 +241,7 @@ from resource \`name1a\` of type \`def\``
                     resources: [
                         {
                             dependsOn: [
-                                "<!replaceStart!><!CURSOR!>"
+                                "<!replaceStart!><!cursor!>"
                             ]
                         },
                         {
@@ -275,7 +275,7 @@ from resource \`name1a\` of type \`def\``
                     resources: [
                         {
                             dependsOn: [
-                                "<!replaceStart!><!CURSOR!>"
+                                "<!replaceStart!><!cursor!>"
                             ]
                         },
                         {
@@ -299,7 +299,7 @@ from resource \`name1a\` of type \`def\``
                     resources: [
                         {
                             dependsOn: [
-                                "<!replaceStart!><!CURSOR!>"
+                                "<!replaceStart!><!cursor!>"
                             ]
                         },
                         {
@@ -344,7 +344,7 @@ from resource \`name1a\` of type \`def\``
                     resources: [
                         {
                             dependsOn: [
-                                "<!replaceStart!><!CURSOR!>"
+                                "<!replaceStart!><!cursor!>"
                             ]
                         },
                         {
@@ -369,7 +369,7 @@ from resource \`name1a\` of type \`def\``
                     resources: [
                         {
                             dependsOn: [
-                                "<!replaceStart!><!CURSOR!>"
+                                "<!replaceStart!><!cursor!>"
                             ]
                         },
                         {
@@ -395,7 +395,7 @@ from resource \`name1a\` of type \`def\``
                 resources: [
                     {
                         dependsOn: [
-                            "<!replaceStart!><!CURSOR!>"
+                            "<!replaceStart!><!cursor!>"
                         ]
                     },
                     {
@@ -420,7 +420,7 @@ from resource \`name1a\` of type \`def\``
                 resources: [
                     {
                         dependsOn: [
-                            "<!replaceStart!><!CURSOR!>"
+                            "<!replaceStart!><!cursor!>"
                         ]
                     },
                     {
@@ -445,7 +445,7 @@ from resource \`name1a\` of type \`def\``
                 resources: [
                     {
                         dependsOn: [
-                            "<!replaceStart!><!CURSOR!>"
+                            "<!replaceStart!><!cursor!>"
                         ]
                     },
                     {
@@ -488,7 +488,7 @@ from resource \`name1a\` of type \`def\``
                 resources: [
                     {
                         dependsOn: [
-                            "<!replaceStart!><!CURSOR!>"
+                            "<!replaceStart!><!cursor!>"
                         ]
                     },
                     {
@@ -515,7 +515,7 @@ from resource \`name1a\` of type \`def\``
                     "resources": [
                         {
                             dependsOn: [
-                                "<!replaceStart!><!CURSOR!>"
+                                "<!replaceStart!><!cursor!>"
                             ]
                         },
                         {
@@ -577,7 +577,7 @@ from resource \`name1a\` of type \`def\``
                                         },
                                         {
                                             dependsOn: [
-                                                "<!replaceStart!><!CURSOR!>"
+                                                "<!replaceStart!><!cursor!>"
                                             ]
                                         }
                                     ]
@@ -603,7 +603,7 @@ from resource \`name1a\` of type \`def\``
                     "resources": [
                         {
                             "dependsOn": [
-                                <!replaceStart!><!CURSOR!>
+                                <!replaceStart!><!cursor!>
                             ]
                         },
                         {
@@ -629,7 +629,7 @@ from resource \`name1a\` of type \`def\``
                     resources: [
                         {
                             dependsOn: [
-                                "<!replaceStart!><!CURSOR!>"
+                                "<!replaceStart!><!cursor!>"
                             ]
                         },
                         {
@@ -655,7 +655,7 @@ from resource \`name1a\` of type \`def\``
                     resources: [
                         {
                             dependsOn: [
-                                "<!replaceStart!><!CURSOR!>"
+                                "<!replaceStart!><!cursor!>"
                             ]
                         },
                         {
@@ -682,7 +682,7 @@ from resource \`name1a\` of type \`def\``
                     resources: [
                         {
                             dependsOn: [
-                                "<!replaceStart!><!CURSOR!>name2a"
+                                "<!replaceStart!><!cursor!>name2a"
                             ]
                         },
                         {
@@ -708,7 +708,7 @@ from resource \`name1a\` of type \`def\``
                     resources: [
                         {
                             dependsOn: [
-                                "[<!replaceStart!>name<!CURSOR!>2a"
+                                "[<!replaceStart!>name<!cursor!>2a"
                             ]
                         },
                         {
@@ -731,7 +731,7 @@ from resource \`name1a\` of type \`def\``
                 resources: [
                     {
                         DEPENDSON: [
-                            "<!replaceStart!><!CURSOR!>name2a"
+                            "<!replaceStart!><!cursor!>name2a"
                         ]
                     },
                     {
@@ -757,7 +757,7 @@ from resource \`name1a\` of type \`def\``
                 resources: [
                     {
                         dependsOn: [
-                            "<!replaceStart!><!CURSOR!>"
+                            "<!replaceStart!><!cursor!>"
                         ]
                     },
                     {
@@ -803,7 +803,7 @@ from resource \`name1a\` of type \`def\``
                         "name": "[variables('sqlServer')]",
                         "type": "Microsoft.Sql/servers",
                         "dependsOn": [
-                            "<!CURSOR!>'"
+                            "<!cursor!>'"
                         ]
                     }
                 ]
@@ -824,7 +824,7 @@ from resource \`name1a\` of type \`def\``
                         resources: [
                             {
                                 dependsOn: [
-                                    "<!replaceStart!><!CURSOR!>"
+                                    "<!replaceStart!><!cursor!>"
                                 ]
                             },
                             {
@@ -856,7 +856,7 @@ from resource \`name1a\` of type \`def\``
                                 "name": "[concat(variables('sqlServer'), '/' , variables('firewallRuleName'))]",
                                 "type": "Microsoft.Sql/servers/firewallRules",
                                 "dependsOn": [
-                                    "<!CURSOR!>'"
+                                    "<!cursor!>'"
                                 ]
                             }
                         ]
@@ -894,7 +894,7 @@ from resource \`name1a\` of type \`def\``
                                 "name": "[variables('sqlServer')]",
                                 "type": "Microsoft.Sql/servers",
                                 "dependsOn": [
-                                    "<!CURSOR!>'"
+                                    "<!cursor!>'"
                                 ]
                             },
                             {
@@ -935,7 +935,7 @@ from resource \`name1a\` of type \`def\``
                                 name: "sibling",
                                 type: "a.b/c",
                                 "dependsOn": [
-                                    "<!CURSOR!>"
+                                    "<!cursor!>"
                                 ]
                             },
                             {
@@ -993,7 +993,7 @@ from resource \`name1a\` of type \`def\``
                                         "name": "[variables('firewallRuleName')]",
                                         "type": "firewallRules",
                                         "dependsOn": [
-                                            "<!CURSOR!>"
+                                            "<!cursor!>"
                                         ]
                                     },
                                     {
@@ -1045,7 +1045,7 @@ from resource \`name1a\` of type \`def\``
                                     }
                                 ],
                                 "dependsOn": [
-                                    "<!CURSOR!>"
+                                    "<!cursor!>"
                                 ]
                             },
                             {
@@ -1084,7 +1084,7 @@ from resource \`name1a\` of type \`def\``
                                     ]
                                 },
                                 "dependsOn": [
-                                    "<!CURSOR!>"
+                                    "<!cursor!>"
                                 ]
                             }
                         ]
@@ -1109,7 +1109,7 @@ from resource \`name1a\` of type \`def\``
                                             "name": "subnet1",
                                             "type": "subnets",
                                             "dependsOn": [
-                                                "<!CURSOR!>"
+                                                "<!cursor!>"
                                             ]
                                         }
                                     ]
@@ -1145,7 +1145,7 @@ from resource \`name1a\` of type \`def\``
                                     "name": "[variables('child1a')]",
                                     "type": "firewallRules",
                                     "dependsOn": [
-                                        "<!CURSOR!>"
+                                        "<!cursor!>"
                                     ],
                                     "resources": [
                                         {
@@ -1224,7 +1224,7 @@ from resource \`name1a\` of type \`def\``
                             "name": "[concat(parameters('vmName'),copyIndex(1),'/dscext')]",
                             "dependsOn": [
                                 // >>> CURSOR ON FOLLOWING LINE inside "resourceId"
-                                "[reso<!CURSOR!>urceId('Microsoft.Compute/virtualMachines/extensions', concat(parameters('vmName'),copyIndex(1),'/dscext'))]"
+                                "[reso<!cursor!>urceId('Microsoft.Compute/virtualMachines/extensions', concat(parameters('vmName'),copyIndex(1),'/dscext'))]"
                             ]
                         }
                     ]
@@ -1254,7 +1254,7 @@ from resource \`name1a\` of type \`def\``
                             "condition": "[not(empty(parameters('dscFunction')))]",
                             "dependsOn": [
                                 // >>> CURSOR ON FOLLOWING LINE inside "resourceId"
-                                "[reso<!CURSOR!>urceId('Microsoft.Compute/virtualMachines/extensions', concat(parameters('vmName'),copyIndex(1),'/dscext'))]"
+                                "[reso<!cursor!>urceId('Microsoft.Compute/virtualMachines/extensions', concat(parameters('vmName'),copyIndex(1),'/dscext'))]"
                             ],
                             "properties": {
                                 "publisher": "Microsoft.Powershell",
