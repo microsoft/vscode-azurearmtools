@@ -1162,6 +1162,33 @@ suite("TemplatePositionContext.completions", () => {
                         undefined
                     );
                 });
+
+                suite("#349 tab completion of params/vars shouldn't wipe out remainder of existing string when adding new parameters call before existing string", () => {
+                    // E.g.: "[resourceId(<CURSOR>'Microsoft.Network/virtualNetworks', parameters('subnet2Name'))]",
+
+                    testCompletionItemsWithRange(
+                        "user typed parameters( without apostrophe before completing",
+                        template1,
+                        `[resourceId(parameters(<!replstart!>!'Microsoft.Network/virtualNetworks', parameters('subnet2Name'))]`,
+                        {
+                            label: "'sku'",
+                            insertText: "'sku'",
+                            replaceSpanText: ""
+                        }
+                    );
+
+                    testCompletionItemsWithRange(
+                        "user typed parameters(' with an apostrophe before completing",
+                        template1,
+                        `[resourceId(parameters(<!replstart!>'!''Microsoft.Network/virtualNetworks', parameters('subnet2Name'))]`,
+                        {
+                            label: "'sku'",
+                            insertText: "'sku'",
+                            replaceSpanText: "''"
+                        }
+                    );
+                });
+
             });
 
         });
