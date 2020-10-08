@@ -13,8 +13,8 @@ import { ITestPreparation, testWithPrep } from './testWithPrep';
  * Creates a test for completions in a particular template language expression
  */
 export function createExpressionCompletionsTest(
-    // Contains the text of the expression. '!' indicates the cursor location
-    expressionWithBang: string,
+    // Contains the text of the expression. '<!cursor!>' indicates the cursor location
+    expressionWithCursorMarker: string,
     // Can either be an array of completion names, or an array of
     //   [completion name, insert text] tuples
     expectedCompletions: ([string, string][]) | (string[]),
@@ -40,7 +40,7 @@ export function createExpressionCompletionsTest(
     };
     template = template ?? defaultTemplate;
 
-    createExpressionCompletionsTestEx(template, '<context>', expressionWithBang, expectedCompletions, options);
+    createExpressionCompletionsTestEx(template, '<context>', expressionWithCursorMarker, expectedCompletions, options);
 }
 
 /**
@@ -50,7 +50,7 @@ export function createExpressionCompletionsTest(
 export function createExpressionCompletionsTestEx(
     template: string | Partial<IDeploymentTemplate> | IPartialDeploymentTemplate,
     /**
-     * Indicates where in the template to place the expressionWithBang and run the completions on
+     * Indicates where in the template to place the expressionWithCursorMarker and run the completions on
      *  Example: if the template had the following in it:
      *    "output1": {
      *        "value": "<output1>",
@@ -60,7 +60,7 @@ export function createExpressionCompletionsTestEx(
      *  completions tests
      */
     contextFind: string,
-    expressionWithBang: string,
+    expressionWithCursorMarker: string,
     // Can either be an array of completion names, or an array of
     //   [completion name, insert text] tuples
     expectedCompletions: ([string, string][]) | (string[]),
@@ -74,18 +74,17 @@ export function createExpressionCompletionsTestEx(
     const name = options?.name;
     testWithPrep(
         // tslint:disable-next-line:prefer-template
-        `Expression completion: ${name ? name + ': ' : ''}${expressionWithBang}`,
+        `Expression completion: ${name ? name + ': ' : ''}${expressionWithCursorMarker}`,
         options?.preps ?? [],
         async () => {
             let keepInClosure = name;
             keepInClosure = keepInClosure;
 
-            expressionWithBang = expressionWithBang.replace(/!/g, "<!bang!>");
-            template = stringify(template).replace(contextFind, expressionWithBang);
+            template = stringify(template).replace(contextFind, expressionWithCursorMarker);
 
-            const { dt, markers: { bang } } = await parseTemplateWithMarkers(template, undefined, { ignoreBang: true });
-            assert(bang, "Didn't find ! marker in text");
-            const pc = dt.getContextFromDocumentCharacterIndex(bang.index, undefined);
+            const { dt, markers: { cursor } } = await parseTemplateWithMarkers(template);
+            assert(cursor, "Didn't find <!cursor!> marker in text");
+            const pc = dt.getContextFromDocumentCharacterIndex(cursor.index, undefined);
             const completions = await pc.getCompletionItems(options?.triggerCharacter);
 
             // Remove completions to ignore

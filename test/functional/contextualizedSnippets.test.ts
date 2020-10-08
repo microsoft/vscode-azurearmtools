@@ -26,7 +26,7 @@ suite("Contextualized snippets", () => {
         testName: string,
         snippetPrefix: string,
         triggerCharacters: (string | undefined)[],
-        templateWithBang: string,
+        templateWithCursorMarker: string,
         expectedTemplate: string,
         expectedDiagnostics: string[]
     ): void {
@@ -35,8 +35,8 @@ suite("Contextualized snippets", () => {
             // tslint:disable-next-line: prefer-template
             const name = `${testName}, triggered by ${triggerCharacter ? ("'" + triggerCharacter + "'") : 'CTRL+SPACE'}`;
             testWithRealSnippets(name, async () => {
-                const { dt, markers: { bang } } = await parseTemplateWithMarkers(templateWithBang);
-                assert(bang !== undefined, "Bang not found in template");
+                const { dt, markers: { cursor } } = await parseTemplateWithMarkers(templateWithCursorMarker);
+                assert(cursor !== undefined, "<!curso!> not found in template");
 
                 let tempFile: TempFile | undefined;
                 let tempDoc: TempDocument | undefined;
@@ -56,7 +56,7 @@ suite("Contextualized snippets", () => {
                     let diagnosticResults = await getDiagnosticsForDocument(tempDoc.realDocument, 1, diagnosticOptions);
 
                     // Insert snippet (and wait for and verify diagnotics)
-                    const docPos = dt.getDocumentPosition(bang.index);
+                    const docPos = dt.getDocumentPosition(cursor.index);
                     const pos = new Position(docPos.line, docPos.line);
 
                     testLog.writeLine(`Document before inserting snippet:\n${tempEditor.document.realDocument.getText()}`);
@@ -102,7 +102,7 @@ suite("Contextualized snippets", () => {
             `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "parameters": {
-        !
+        <!cursor!>
     },
     "contentVersion": "1.0.0.0",
     "resources": []
@@ -132,7 +132,7 @@ suite("Contextualized snippets", () => {
             `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "variables": {
-        !
+        <!cursor!>
     },
     "contentVersion": "1.0.0.0",
     "resources": []
@@ -160,7 +160,7 @@ suite("Contextualized snippets", () => {
     "resources": [
     ],
     "outputs": {
-        !
+        <!cursor!>
     }
 }`,
             `{
@@ -190,7 +190,7 @@ suite("Contextualized snippets", () => {
     "resources": [
     ],
     "functions": [
-        !
+        <!cursor!>
     ]
 }`,
                 `{
@@ -249,7 +249,7 @@ suite("Contextualized snippets", () => {
                                     "type": "string"
                                 }
                             },
-                            !
+                            <!cursor!>
                         }
                     }
                 ]
@@ -317,7 +317,7 @@ suite("Contextualized snippets", () => {
                             "name": "parametername",
                             "type": "string"
                         },
-                        !
+                        <!cursor!>
                     ],
                     "output": {
                         "value": "function-return-value",
@@ -374,7 +374,7 @@ suite("Contextualized snippets", () => {
                 "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
                 "resources": [
-                    !
+                    <!cursor!>
                 ]
             }`,
                 `{
@@ -411,7 +411,7 @@ suite("Contextualized snippets", () => {
                 "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
                 "resources": [
-                    !
+                    <!cursor!>
                 ]
             }`,
                 `{
@@ -594,7 +594,7 @@ suite("Contextualized snippets", () => {
             "name": "webApp1",
             "type": "Microsoft.Web/sites",
             "apiVersion": "2018-11-01",
-            !
+            <!cursor!>
         }
     ]
 }`,
@@ -643,7 +643,7 @@ suite("Contextualized snippets", () => {
                     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
                     "parameters": {
-                        !
+                        <!cursor!>
                     },
                     "variables": {},
                     "resources": [],
@@ -708,7 +708,7 @@ suite("Contextualized snippets", () => {
                     "scope": "inner"
                 },
                 "parameters": {
-                    !
+                    <!cursor!>
                 },
                 "mode": "Incremental",
                 "template": {
@@ -789,7 +789,7 @@ suite("Contextualized snippets", () => {
                     "scope": "inner"
                 },
                 "parameters": {
-                    !
+                    <!cursor!>
                 },
                 "mode": "Incremental",
                 "template": {
