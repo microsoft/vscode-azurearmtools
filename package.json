@@ -31,7 +31,7 @@
         "color": "E7F1FA",
         "theme": "light"
     },
-    "homepage": "https://github.com/Microsoft/vscode-azurearmtools/blob/master/README.md",
+    "homepage": "https://github.com/Microsoft/vscode-azurearmtools/blob/main/README.md",
     "license": "SEE LICENSE IN LICENSE.md",
     "icon": "AzureRMTools128x128.png",
     "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",

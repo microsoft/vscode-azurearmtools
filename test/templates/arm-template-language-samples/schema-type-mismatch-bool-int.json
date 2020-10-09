@@ -65,7 +65,7 @@
       "metadata": {
         "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
       },
-      "defaultValue": "https://raw.githubusercontent.com/MyriamFentanes/azure-quickstart-templates/master/101-dukes-eap-openshift"
+      "defaultValue": "https://raw.githubusercontent.com/user/azure-quickstart-templates/main/101-dukes-eap-openshift"
     }
     /*
     "_artifactsLocationSasToken": {
@@ -87,9 +87,9 @@
     "ScriptFolder": "scripts",
     "ScriptFileName": "allinone.sh",
     //"gituser": "openshift",
-    //"branch": "master",
+    //"branch": "main",
     //"version": "3.7",
-    //"baseTemplateUrl": "https://raw.githubusercontent.com/MyriamFentanes/azure-quickstart-templates/master/101-dukes-eap-openshift",
+    //"baseTemplateUrl": "https://raw.githubusercontent.com/user/azure-quickstart-templates/main/101-dukes-eap-openshift",
     "location": "[resourceGroup().location]",
     "virtualNetworkName": "openshiftVnet",
     "addressPrefix": "10.0.0.0/16",
@@ -332,7 +332,7 @@
             }
           },
           {
-            "name": "default-allow-openshift-master",
+            "name": "default-allow-openshift-main",
             "properties": {
               "protocol": "Tcp",
               "sourcePortRange": "*",

@@ -55,7 +55,7 @@ suite("supported", () => {
             });
 
             suite("new root schemas", () => {
-                // From https://github.com/Azure/azure-resource-manager-schemas/blob/master/tools/tests.ts#L106
+                // From https://github.com/Azure/azure-resource-manager-schemas/blob/main/tools/tests.ts#L106
 
                 test("2014-04-01-preview (old root schema)", () => {
                     assert(isArmSchema("https://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json"));
