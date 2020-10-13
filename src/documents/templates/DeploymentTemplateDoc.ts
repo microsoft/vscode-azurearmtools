@@ -499,7 +499,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
             // Can only call pc.jsonTokenStartIndex if we're inside a JSON token
             if (pc.jsonToken && pc.jsonTokenStartIndex > 0) {
                 let jsonToken = pc.document.getJSONValueAtDocumentCharacterIndex(pc.jsonTokenStartIndex - 1, ContainsBehavior.extended);
-                if (jsonToken instanceof Json.Property && pc.document.topLevelValue) {
+                if ((jsonToken instanceof Json.Property || jsonToken instanceof Json.ArrayValue) && pc.document.topLevelValue) {
                     let scope = pc.getScope();
                     if (!scope.rootObject) {
                         return [];
@@ -509,7 +509,11 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                     if (!resources || !resources.span.intersect(jsonToken.span)) {
                         return [];
                     }
-                    const stringValue = jsonToken.value?.asStringValue;
+                    let jsonValue = pc.document.getJSONValueAtDocumentCharacterIndex(pc.jsonTokenStartIndex, ContainsBehavior.extended);
+                    if (!jsonValue) {
+                        return [];
+                    }
+                    const stringValue = jsonValue.asStringValue;
                     if (stringValue) {
                         if (!range.isEmpty) {
                             let startIndex = this.getDocumentCharacterIndex(range.start.line, range.start.character);
@@ -519,7 +523,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                             if (this.isParameterOrVariableReference(selectedText)) {
                                 return [];
                             }
-                            if (pc.jsonValue && jsonToken.value && jsonToken.value.span === pc.jsonValue.span && selectedText && this.equalsWithSqareBrackets(pc.jsonValue.asStringValue?.unquotedValue, selectedText)) {
+                            if (pc.jsonValue && jsonValue.span === pc.jsonValue.span && selectedText && this.equalsWithSqareBrackets(pc.jsonValue.asStringValue?.unquotedValue, selectedText)) {
                                 shouldAddExtractActions = true;
                             } else {
                                 if (isTleExpression(stringValue.unquotedValue)) {
@@ -527,7 +531,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                                 }
                             }
                         } else {
-                            if (this.isSimpleText(stringValue.quotedValue) && pc.jsonValue && jsonToken.value && jsonToken.value.span === pc.jsonValue.span) {
+                            if (this.isSimpleText(stringValue.quotedValue) && pc.jsonValue && jsonValue.span === pc.jsonValue.span) {
                                 shouldAddExtractActions = true;
                             }
                         }

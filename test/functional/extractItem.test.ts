@@ -588,6 +588,9 @@ suite("ExtractItem", async (): Promise<void> => {
                             type: "Microsoft.Resources/deployments",
                             apiVersion: "2017-05-10",
                             properties: {
+                                expressionEvaluationOptions: {
+                                    scope: "inner"
+                                },
                                 template: {
                                     resources: [
                                         {
@@ -620,7 +623,7 @@ suite("ExtractItem", async (): Promise<void> => {
                                         {
                                             name: "storageaccount1",
                                             type: "Microsoft.Storage/storageAccounts",
-                                            apiVersion: "[variables('v1')]",
+                                            apiVersion: "[parameters('p1')]",
                                         }
                                     ],
                                     parameters: {
