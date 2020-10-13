@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------------------------
 
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length no-http-string no-suspicious-comment
-// tslint:disable:no-non-null-assertion object-literal-key-quotes
+// tslint:disable:no-non-null-assertion
 
 // WARNING: At the breakpoint, the extension will be in an inactivate state (i.e., if you make changes in the editor, diagnostics,
 //   formatting, etc. will not be updated until you F5 again)
@@ -61,17 +61,17 @@ suite("ExtractItem", async (): Promise<void> => {
     }
 
     const baseTemplate = {
-        "parameters": {},
-        "variables": {},
-        "resources": [
+        parameters: {},
+        variables: {},
+        resources: [
             {
-                "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                "type": "Microsoft.Storage/storageAccounts",
-                "apiVersion": "2019-06-01",
-                "location": "[resourceGroup().location]",
-                "kind": "StorageV2",
-                "sku": {
-                    "name": "Premium_LRS"
+                name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                type: "Microsoft.Storage/storageAccounts",
+                apiVersion: "2019-06-01",
+                location: "[resourceGroup().location]",
+                kind: "StorageV2",
+                sku: {
+                    name: "Premium_LRS"
                 }
             }
         ]
@@ -83,25 +83,25 @@ suite("ExtractItem", async (): Promise<void> => {
 
         test('StorageKind', async () => {
             const expected = {
-                "parameters": {
-                    "storageKind": {
-                        "type": "string",
-                        "defaultValue": "StorageV2",
-                        "metadata": {
-                            "description": "Kind of storage"
+                parameters: {
+                    storageKind: {
+                        type: "string",
+                        defaultValue: "StorageV2",
+                        metadata: {
+                            description: "Kind of storage"
                         }
                     }
                 },
-                "variables": {},
-                "resources": [
+                variables: {},
+                resources: [
                     {
-                        "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                        "type": "Microsoft.Storage/storageAccounts",
-                        "apiVersion": "2019-06-01",
-                        "location": "[resourceGroup().location]",
-                        "kind": "[parameters('storageKind')]",
-                        "sku": {
-                            "name": "Premium_LRS"
+                        name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                        type: "Microsoft.Storage/storageAccounts",
+                        apiVersion: "2019-06-01",
+                        location: "[resourceGroup().location]",
+                        kind: "[parameters('storageKind')]",
+                        sku: {
+                            name: "Premium_LRS"
                         }
                     }
                 ]
@@ -111,25 +111,25 @@ suite("ExtractItem", async (): Promise<void> => {
 
         suite("Extract to location parameter", () => {
             const expected = {
-                "parameters": {
-                    "location": {
-                        "type": "string",
-                        "defaultValue": "[resourceGroup().location]",
-                        "metadata": {
-                            "description": "Location of resource"
+                parameters: {
+                    location: {
+                        type: "string",
+                        defaultValue: "[resourceGroup().location]",
+                        metadata: {
+                            description: "Location of resource"
                         }
                     }
                 },
-                "variables": {},
-                "resources": [
+                variables: {},
+                resources: [
                     {
-                        "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                        "type": "Microsoft.Storage/storageAccounts",
-                        "apiVersion": "2019-06-01",
-                        "location": "[parameters('location')]",
-                        "kind": "StorageV2",
-                        "sku": {
-                            "name": "Premium_LRS"
+                        name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                        type: "Microsoft.Storage/storageAccounts",
+                        apiVersion: "2019-06-01",
+                        location: "[parameters('location')]",
+                        kind: "StorageV2",
+                        sku: {
+                            name: "Premium_LRS"
                         }
                     }
                 ]
@@ -144,15 +144,15 @@ suite("ExtractItem", async (): Promise<void> => {
 
         suite("Don't extract variable or parameter references", () => {
             const template = {
-                "resources": [
+                resources: [
                     {
-                        "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                        "type": "Microsoft.Storage/storageAccounts",
-                        "apiVersion": "2019-06-01",
-                        "location": "[parameters('location')]",
-                        "kind": "StorageV2",
-                        "sku": {
-                            "name": "Premium_LRS"
+                        name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                        type: "Microsoft.Storage/storageAccounts",
+                        apiVersion: "2019-06-01",
+                        location: "[parameters('location')]",
+                        kind: "StorageV2",
+                        sku: {
+                            name: "Premium_LRS"
                         }
                     }
                 ]
@@ -168,11 +168,11 @@ suite("ExtractItem", async (): Promise<void> => {
         test('No existing params', async () => {
             await runExtractParameterTest(
                 {
-                    "resources": [
+                    resources: [
                         {
-                            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                            "type": "Microsoft.Storage/storageAccounts",
-                            "apiVersion": "2019-06-01"
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "2019-06-01"
                         }
                     ]
                 },
@@ -180,19 +180,19 @@ suite("ExtractItem", async (): Promise<void> => {
                 ["p1", "description"],
                 2,
                 {
-                    "resources": [
+                    resources: [
                         {
-                            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                            "type": "Microsoft.Storage/storageAccounts",
-                            "apiVersion": "[parameters('p1')]"
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "[parameters('p1')]"
                         }
                     ],
-                    "parameters": {
-                        "p1": {
-                            "type": "string",
-                            "defaultValue": "2019-06-01",
-                            "metadata": {
-                                "description": "description"
+                    parameters: {
+                        p1: {
+                            type: "string",
+                            defaultValue: "2019-06-01",
+                            metadata: {
+                                description: "description"
                             }
                         }
                     }
@@ -203,16 +203,16 @@ suite("ExtractItem", async (): Promise<void> => {
         test('One existing param', async () => {
             await runExtractParameterTest(
                 {
-                    "resources": [
+                    resources: [
                         {
-                            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                            "type": "Microsoft.Storage/storageAccounts",
-                            "apiVersion": "2019-06-01"
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "2019-06-01"
                         }
                     ],
-                    "parameters": {
-                        "p1": {
-                            "type": "string"
+                    parameters: {
+                        p1: {
+                            type: "string"
                         }
                     }
                 },
@@ -220,22 +220,22 @@ suite("ExtractItem", async (): Promise<void> => {
                 ["p2", "description"],
                 2,
                 {
-                    "resources": [
+                    resources: [
                         {
-                            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                            "type": "Microsoft.Storage/storageAccounts",
-                            "apiVersion": "[parameters('p2')]"
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "[parameters('p2')]"
                         }
                     ],
-                    "parameters": {
-                        "p1": {
-                            "type": "string"
+                    parameters: {
+                        p1: {
+                            type: "string"
                         },
-                        "p2": {
-                            "type": "string",
-                            "defaultValue": "2019-06-01",
-                            "metadata": {
-                                "description": "description"
+                        p2: {
+                            type: "string",
+                            defaultValue: "2019-06-01",
+                            metadata: {
+                                description: "description"
                             }
                         }
                     }
@@ -246,16 +246,16 @@ suite("ExtractItem", async (): Promise<void> => {
         test('ENTER for no description', async () => {
             await runExtractParameterTest(
                 {
-                    "resources": [
+                    resources: [
                         {
-                            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                            "type": "Microsoft.Storage/storageAccounts",
-                            "apiVersion": "2019-06-01"
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "2019-06-01"
                         }
                     ],
-                    "parameters": {
-                        "p1": {
-                            "type": "string"
+                    parameters: {
+                        p1: {
+                            type: "string"
                         }
                     }
                 },
@@ -263,20 +263,20 @@ suite("ExtractItem", async (): Promise<void> => {
                 ["p2", ""],
                 2,
                 {
-                    "resources": [
+                    resources: [
                         {
-                            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                            "type": "Microsoft.Storage/storageAccounts",
-                            "apiVersion": "[parameters('p2')]"
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "[parameters('p2')]"
                         }
                     ],
-                    "parameters": {
-                        "p1": {
-                            "type": "string"
+                    parameters: {
+                        p1: {
+                            type: "string"
                         },
-                        "p2": {
-                            "type": "string",
-                            "defaultValue": "2019-06-01"
+                        p2: {
+                            type: "string",
+                            defaultValue: "2019-06-01"
                         }
                     }
                 }
@@ -289,19 +289,19 @@ suite("ExtractItem", async (): Promise<void> => {
     suite("ExtractVariable", () => {
         test('Storageaccount1', async () => {
             const expected = {
-                "parameters": {},
-                "variables": {
-                    "storageKind": "StorageV2"
+                parameters: {},
+                variables: {
+                    storageKind: "StorageV2"
                 },
-                "resources": [
+                resources: [
                     {
-                        "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                        "type": "Microsoft.Storage/storageAccounts",
-                        "apiVersion": "2019-06-01",
-                        "location": "[resourceGroup().location]",
-                        "kind": "[variables('storageKind')]",
-                        "sku": {
-                            "name": "Premium_LRS"
+                        name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                        type: "Microsoft.Storage/storageAccounts",
+                        apiVersion: "2019-06-01",
+                        location: "[resourceGroup().location]",
+                        kind: "[variables('storageKind')]",
+                        sku: {
+                            name: "Premium_LRS"
                         }
                     }
                 ]
@@ -312,19 +312,19 @@ suite("ExtractItem", async (): Promise<void> => {
         suite("Extract to location variable", () => {
 
             const expected = {
-                "parameters": {},
-                "variables": {
-                    "location": "[resourceGroup().location]"
+                parameters: {},
+                variables: {
+                    location: "[resourceGroup().location]"
                 },
-                "resources": [
+                resources: [
                     {
-                        "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                        "type": "Microsoft.Storage/storageAccounts",
-                        "apiVersion": "2019-06-01",
-                        "location": "[variables('location')]",
-                        "kind": "StorageV2",
-                        "sku": {
-                            "name": "Premium_LRS"
+                        name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                        type: "Microsoft.Storage/storageAccounts",
+                        apiVersion: "2019-06-01",
+                        location: "[variables('location')]",
+                        kind: "StorageV2",
+                        sku: {
+                            name: "Premium_LRS"
                         }
                     }
                 ]
@@ -339,19 +339,19 @@ suite("ExtractItem", async (): Promise<void> => {
 
         suite("Don't extract variable or parameter references", () => {
             const baseTemplate2 = {
-                "parameters": {},
-                "variables": {
-                    "location": "[resourceGroup().location]"
+                parameters: {},
+                variables: {
+                    location: "[resourceGroup().location]"
                 },
-                "resources": [
+                resources: [
                     {
-                        "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                        "type": "Microsoft.Storage/storageAccounts",
-                        "apiVersion": "2019-06-01",
-                        "location": "[variables('location')]",
-                        "kind": "StorageV2",
-                        "sku": {
-                            "name": "Premium_LRS"
+                        name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                        type: "Microsoft.Storage/storageAccounts",
+                        apiVersion: "2019-06-01",
+                        location: "[variables('location')]",
+                        kind: "StorageV2",
+                        sku: {
+                            name: "Premium_LRS"
                         }
                     }
                 ]
@@ -367,11 +367,11 @@ suite("ExtractItem", async (): Promise<void> => {
         test('No existing vars', async () => {
             await runExtractVariableTest(
                 {
-                    "resources": [
+                    resources: [
                         {
-                            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                            "type": "Microsoft.Storage/storageAccounts",
-                            "apiVersion": "2019-06-01"
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "2019-06-01"
                         }
                     ]
                 },
@@ -379,15 +379,15 @@ suite("ExtractItem", async (): Promise<void> => {
                 ["v1"],
                 2,
                 {
-                    "resources": [
+                    resources: [
                         {
-                            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                            "type": "Microsoft.Storage/storageAccounts",
-                            "apiVersion": "[variables('v1')]"
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "[variables('v1')]"
                         }
                     ],
-                    "variables": {
-                        "v1": "2019-06-01"
+                    variables: {
+                        v1: "2019-06-01"
                     }
                 }
             );
@@ -396,31 +396,31 @@ suite("ExtractItem", async (): Promise<void> => {
         test('One existing var', async () => {
             await runExtractVariableTest(
                 {
-                    "resources": [
+                    resources: [
                         {
-                            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                            "type": "Microsoft.Storage/storageAccounts",
-                            "apiVersion": "2019-06-01"
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "2019-06-01"
                         }
                     ],
-                    "variables": {
-                        "v1": "v1"
+                    variables: {
+                        v1: "v1"
                     }
                 },
                 "2019-06-01",
                 ["v2"],
                 2,
                 {
-                    "resources": [
+                    resources: [
                         {
-                            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                            "type": "Microsoft.Storage/storageAccounts",
-                            "apiVersion": "[variables('v2')]"
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "[variables('v2')]"
                         }
                     ],
-                    "variables": {
-                        "v1": "v1",
-                        "v2": "2019-06-01"
+                    variables: {
+                        v1: "v1",
+                        v2: "2019-06-01"
                     }
                 }
             );
@@ -432,11 +432,11 @@ suite("ExtractItem", async (): Promise<void> => {
     test("Don't allow from inside a property name", async () => {
         await runExtractVariableTest(
             {
-                "resources": [
+                resources: [
                     {
-                        "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                        "type": "Microsoft.Storage/storageAccounts",
-                        "apiVersion": "2019-06-01"
+                        name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                        type: "Microsoft.Storage/storageAccounts",
+                        apiVersion: "2019-06-01"
                     }
                 ]
             },
@@ -450,11 +450,11 @@ suite("ExtractItem", async (): Promise<void> => {
         test("in variables", async () => {
             await runExtractVariableTest(
                 {
-                    "variables":
+                    variables:
                     {
-                        "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-                        "type": "Microsoft.Storage/storageAccounts",
-                        "apiVersion": "2019-06-01"
+                        name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                        type: "Microsoft.Storage/storageAccounts",
+                        apiVersion: "2019-06-01"
                     }
                 },
                 "2019-06-01",
@@ -466,12 +466,12 @@ suite("ExtractItem", async (): Promise<void> => {
         test("in parameters", async () => {
             await runExtractVariableTest(
                 {
-                    "parameters": {
-                        "location": {
-                            "type": "string",
-                            "defaultValue": "abc",
-                            "metadata": {
-                                "description": "Location of resource"
+                    parameters: {
+                        location: {
+                            type: "string",
+                            defaultValue: "abc",
+                            metadata: {
+                                description: "Location of resource"
                             }
                         }
                     },
@@ -485,22 +485,22 @@ suite("ExtractItem", async (): Promise<void> => {
         test("in user-functions", async () => {
             await runExtractVariableTest(
                 {
-                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                    "contentVersion": "1.0.0.0",
-                    "functions": [
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    contentVersion: "1.0.0.0",
+                    functions: [
                         {
-                            "namespace": "udf",
-                            "members": {
-                                "storageUri": {
-                                    "parameters": [
+                            namespace: "udf",
+                            members: {
+                                storageUri: {
+                                    parameters: [
                                         {
-                                            "name": "storageAccountName",
-                                            "type": "string"
+                                            name: "storageAccountName",
+                                            type: "string"
                                         }
                                     ],
-                                    "output": {
-                                        "type": "string",
-                                        "value": "my value"
+                                    output: {
+                                        type: "string",
+                                        value: "my value"
                                     }
                                 }
                             }
@@ -522,22 +522,22 @@ suite("ExtractItem", async (): Promise<void> => {
         test("Inner-scoped nested template", async () => {
             await runExtractVariableTest(
                 {
-                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                    "contentVersion": "1.0.0.0",
-                    "resources": [
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    contentVersion: "1.0.0.0",
+                    resources: [
                         {
-                            "type": "Microsoft.Resources/deployments",
-                            "apiVersion": "2017-05-10",
-                            "properties": {
-                                "expressionEvaluationOptions": {
-                                    "scope": "inner"
+                            type: "Microsoft.Resources/deployments",
+                            apiVersion: "2017-05-10",
+                            properties: {
+                                expressionEvaluationOptions: {
+                                    scope: "inner"
                                 },
-                                "template": {
-                                    "resources": [
+                                template: {
+                                    resources: [
                                         {
-                                            "name": "storageaccount1",
-                                            "type": "Microsoft.Storage/storageAccounts",
-                                            "apiVersion": "2019-06-01",
+                                            name: "storageaccount1",
+                                            type: "Microsoft.Storage/storageAccounts",
+                                            apiVersion: "2019-06-01",
                                         }
                                     ]
                                 }
@@ -549,26 +549,26 @@ suite("ExtractItem", async (): Promise<void> => {
                 ["v1"],
                 2,
                 {
-                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                    "contentVersion": "1.0.0.0",
-                    "resources": [
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    contentVersion: "1.0.0.0",
+                    resources: [
                         {
-                            "type": "Microsoft.Resources/deployments",
-                            "apiVersion": "2017-05-10",
-                            "properties": {
-                                "expressionEvaluationOptions": {
-                                    "scope": "inner"
+                            type: "Microsoft.Resources/deployments",
+                            apiVersion: "2017-05-10",
+                            properties: {
+                                expressionEvaluationOptions: {
+                                    scope: "inner"
                                 },
-                                "template": {
-                                    "resources": [
+                                template: {
+                                    resources: [
                                         {
-                                            "name": "storageaccount1",
-                                            "type": "Microsoft.Storage/storageAccounts",
-                                            "apiVersion": "[variables('v1')]",
+                                            name: "storageaccount1",
+                                            type: "Microsoft.Storage/storageAccounts",
+                                            apiVersion: "[variables('v1')]",
                                         }
                                     ],
-                                    "variables": {
-                                        "v1": "2019-06-01"
+                                    variables: {
+                                        v1: "2019-06-01"
                                     }
                                 }
                             }
@@ -581,19 +581,19 @@ suite("ExtractItem", async (): Promise<void> => {
         test("Outer-scoped nested template", async () => {
             await runExtractParameterTest(
                 {
-                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                    "contentVersion": "1.0.0.0",
-                    "resources": [
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    contentVersion: "1.0.0.0",
+                    resources: [
                         {
-                            "type": "Microsoft.Resources/deployments",
-                            "apiVersion": "2017-05-10",
-                            "properties": {
-                                "template": {
-                                    "resources": [
+                            type: "Microsoft.Resources/deployments",
+                            apiVersion: "2017-05-10",
+                            properties: {
+                                template: {
+                                    resources: [
                                         {
-                                            "name": "storageaccount1",
-                                            "type": "Microsoft.Storage/storageAccounts",
-                                            "apiVersion": "2019-06-01",
+                                            name: "storageaccount1",
+                                            type: "Microsoft.Storage/storageAccounts",
+                                            apiVersion: "2019-06-01",
                                         }
                                     ]
                                 }
@@ -605,28 +605,28 @@ suite("ExtractItem", async (): Promise<void> => {
                 ["p1", ""],
                 2,
                 {
-                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                    "contentVersion": "1.0.0.0",
-                    "resources": [
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    contentVersion: "1.0.0.0",
+                    resources: [
                         {
-                            "type": "Microsoft.Resources/deployments",
-                            "apiVersion": "2017-05-10",
-                            "properties": {
-                                "expressionEvaluationOptions": {
-                                    "scope": "inner"
+                            type: "Microsoft.Resources/deployments",
+                            apiVersion: "2017-05-10",
+                            properties: {
+                                expressionEvaluationOptions: {
+                                    scope: "inner"
                                 },
-                                "template": {
-                                    "resources": [
+                                template: {
+                                    resources: [
                                         {
-                                            "name": "storageaccount1",
-                                            "type": "Microsoft.Storage/storageAccounts",
-                                            "apiVersion": "[variables('v1')]",
+                                            name: "storageaccount1",
+                                            type: "Microsoft.Storage/storageAccounts",
+                                            apiVersion: "[variables('v1')]",
                                         }
                                     ],
-                                    "parameters": {
-                                        "p1": {
-                                            "type": "string",
-                                            "defaultValue": "2019-06-01"
+                                    parameters: {
+                                        p1: {
+                                            type: "string",
+                                            defaultValue: "2019-06-01"
                                         }
                                     }
                                 }
@@ -640,23 +640,23 @@ suite("ExtractItem", async (): Promise<void> => {
         test("Don't allow in nested template if outside resources", async () => {
             await runExtractParameterTest(
                 {
-                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                    "contentVersion": "1.0.0.0",
-                    "resources": [
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    contentVersion: "1.0.0.0",
+                    resources: [
                         {
-                            "type": "Microsoft.Resources/deployments",
-                            "apiVersion": "2017-05-10",
-                            "properties": {
-                                "template": {
-                                    "resources": [
+                            type: "Microsoft.Resources/deployments",
+                            apiVersion: "2017-05-10",
+                            properties: {
+                                template: {
+                                    resources: [
                                         {
-                                            "name": "storageaccount1",
-                                            "type": "Microsoft.Storage/storageAccounts",
-                                            "apiVersion": "2019-06-01",
+                                            name: "storageaccount1",
+                                            type: "Microsoft.Storage/storageAccounts",
+                                            apiVersion: "2019-06-01",
                                         }
                                     ],
-                                    "variables": {
-                                        "v1": "my value"
+                                    variables: {
+                                        v1: "my value"
                                     }
                                 }
                             }
@@ -674,19 +674,19 @@ suite("ExtractItem", async (): Promise<void> => {
         test("tags", async () => {
             await runExtractVariableTest(
                 {
-                    "resources": [
+                    resources: [
                         {
-                            "name": "storageaccount1",
-                            "type": "Microsoft.Storage/storageAccounts",
-                            "apiVersion": "2019-06-01",
-                            "tags": {
-                                "displayName": "storageaccount1DispayName"
+                            name: "storageaccount1",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "2019-06-01",
+                            tags: {
+                                displayName: "storageaccount1DispayName"
                             },
-                            "location": "[resourceGroup().location]",
-                            "kind": "StorageV2",
-                            "sku": {
-                                "name": "Premium_LRS",
-                                "tier": "Premium"
+                            location: "[resourceGroup().location]",
+                            kind: "StorageV2",
+                            sku: {
+                                name: "Premium_LRS",
+                                tier: "Premium"
                             }
                         }
                     ]
@@ -695,24 +695,24 @@ suite("ExtractItem", async (): Promise<void> => {
                 ["v1"],
                 2,
                 {
-                    "resources": [
+                    resources: [
                         {
-                            "name": "storageaccount1",
-                            "type": "Microsoft.Storage/storageAccounts",
-                            "apiVersion": "2019-06-01",
-                            "tags": {
-                                "displayName": "[variables('v1')]"
+                            name: "storageaccount1",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "2019-06-01",
+                            tags: {
+                                displayName: "[variables('v1')]"
                             },
-                            "location": "[resourceGroup().location]",
-                            "kind": "StorageV2",
-                            "sku": {
-                                "name": "Premium_LRS",
-                                "tier": "Premium"
+                            location: "[resourceGroup().location]",
+                            kind: "StorageV2",
+                            sku: {
+                                name: "Premium_LRS",
+                                tier: "Premium"
                             }
                         }
                     ],
-                    "variables": {
-                        "v1": "storageaccount1DispayName"
+                    variables: {
+                        v1: "storageaccount1DispayName"
                     }
                 }
             );
@@ -723,10 +723,10 @@ suite("ExtractItem", async (): Promise<void> => {
                 {
                     resources: [
                         {
-                            "type": "firewallRules",
-                            "apiVersion": "2018-06-01-preview",
-                            "name": "AllowAllWindowsAzureIps",
-                            "dependsOn": [
+                            type: "firewallRules",
+                            apiVersion: "2018-06-01-preview",
+                            name: "AllowAllWindowsAzureIps",
+                            dependsOn: [
                                 "abc"
                             ]
                         },
@@ -738,10 +738,10 @@ suite("ExtractItem", async (): Promise<void> => {
                 {
                     resources: [
                         {
-                            "type": "firewallRules",
-                            "apiVersion": "2018-06-01-preview",
-                            "name": "AllowAllWindowsAzureIps",
-                            "dependsOn": [
+                            type: "firewallRules",
+                            apiVersion: "2018-06-01-preview",
+                            name: "AllowAllWindowsAzureIps",
+                            dependsOn: [
                                 "[variables('v1')]"
                             ]
                         },
