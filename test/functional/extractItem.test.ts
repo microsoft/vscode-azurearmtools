@@ -46,6 +46,7 @@ suite("ExtractItem", async (): Promise<void> => {
             let deploymentTemplate = new DeploymentTemplateDoc(document.getText(), document.uri);
             let text = document.getText(undefined);
             let index = text.indexOf(selectedText);
+            assert(index >= 0, `Couldn't find selected text "${selectedText}"`);
             let position = document.positionAt(index);
             let endPosition = document.positionAt(index + selectedText.length);
             textEditor.selection = new vscode.Selection(position, endPosition);
@@ -425,4 +426,406 @@ suite("ExtractItem", async (): Promise<void> => {
             );
         });
     });
+
+    //////////// Expressions
+
+    test("Don't allow from inside a property name", async () => {
+        await runExtractVariableTest(
+            {
+                "resources": [
+                    {
+                        "name": "[concat(resourceGroup().id, 'storageid', 123)]",
+                        "type": "Microsoft.Storage/storageAccounts",
+                        "apiVersion": "2019-06-01"
+                    }
+                ]
+            },
+            "name",
+            [],
+            0
+        );
+    });
+
+    suite("Don't allow outside of 'resources'", async () => {
+        test("in variables", async () => {
+            await runExtractVariableTest(
+                {
+                    "variables":
+                    {
+                        "name": "[concat(resourceGroup().id, 'storageid', 123)]",
+                        "type": "Microsoft.Storage/storageAccounts",
+                        "apiVersion": "2019-06-01"
+                    }
+                },
+                "2019-06-01",
+                [],
+                0
+            );
+        });
+
+        test("in parameters", async () => {
+            await runExtractVariableTest(
+                {
+                    "parameters": {
+                        "location": {
+                            "type": "string",
+                            "defaultValue": "abc",
+                            "metadata": {
+                                "description": "Location of resource"
+                            }
+                        }
+                    },
+                },
+                "abc",
+                [],
+                0
+            );
+        });
+
+        test("in user-functions", async () => {
+            await runExtractVariableTest(
+                {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "functions": [
+                        {
+                            "namespace": "udf",
+                            "members": {
+                                "storageUri": {
+                                    "parameters": [
+                                        {
+                                            "name": "storageAccountName",
+                                            "type": "string"
+                                        }
+                                    ],
+                                    "output": {
+                                        "type": "string",
+                                        "value": "my value"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "my value",
+                [],
+                0
+            );
+        });
+    });
+
+    suite("Extract expressions", async () => {
+        test('TODO');
+    });
+
+    suite("Nested templates", async () => {
+        test("Inner-scoped nested template", async () => {
+            await runExtractVariableTest(
+                {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.Resources/deployments",
+                            "apiVersion": "2017-05-10",
+                            "properties": {
+                                "expressionEvaluationOptions": {
+                                    "scope": "inner"
+                                },
+                                "template": {
+                                    "resources": [
+                                        {
+                                            "name": "storageaccount1",
+                                            "type": "Microsoft.Storage/storageAccounts",
+                                            "apiVersion": "2019-06-01",
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "2019-06-01",
+                ["v1"],
+                2,
+                {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.Resources/deployments",
+                            "apiVersion": "2017-05-10",
+                            "properties": {
+                                "expressionEvaluationOptions": {
+                                    "scope": "inner"
+                                },
+                                "template": {
+                                    "resources": [
+                                        {
+                                            "name": "storageaccount1",
+                                            "type": "Microsoft.Storage/storageAccounts",
+                                            "apiVersion": "[variables('v1')]",
+                                        }
+                                    ],
+                                    "variables": {
+                                        "v1": "2019-06-01"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            );
+        });
+
+        test("Outer-scoped nested template", async () => {
+            await runExtractParameterTest(
+                {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.Resources/deployments",
+                            "apiVersion": "2017-05-10",
+                            "properties": {
+                                "template": {
+                                    "resources": [
+                                        {
+                                            "name": "storageaccount1",
+                                            "type": "Microsoft.Storage/storageAccounts",
+                                            "apiVersion": "2019-06-01",
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "2019-06-01",
+                ["p1", ""],
+                2,
+                {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.Resources/deployments",
+                            "apiVersion": "2017-05-10",
+                            "properties": {
+                                "expressionEvaluationOptions": {
+                                    "scope": "inner"
+                                },
+                                "template": {
+                                    "resources": [
+                                        {
+                                            "name": "storageaccount1",
+                                            "type": "Microsoft.Storage/storageAccounts",
+                                            "apiVersion": "[variables('v1')]",
+                                        }
+                                    ],
+                                    "parameters": {
+                                        "p1": {
+                                            "type": "string",
+                                            "defaultValue": "2019-06-01"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            );
+        });
+
+        test("Don't allow in nested template if outside resources", async () => {
+            await runExtractParameterTest(
+                {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "Microsoft.Resources/deployments",
+                            "apiVersion": "2017-05-10",
+                            "properties": {
+                                "template": {
+                                    "resources": [
+                                        {
+                                            "name": "storageaccount1",
+                                            "type": "Microsoft.Storage/storageAccounts",
+                                            "apiVersion": "2019-06-01",
+                                        }
+                                    ],
+                                    "variables": {
+                                        "v1": "my value"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "my value",
+                [],
+                0
+            );
+        });
+    });
+
+    suite("arrays", async () => {
+        test("tags", async () => {
+            await runExtractVariableTest(
+                {
+                    "resources": [
+                        {
+                            "name": "storageaccount1",
+                            "type": "Microsoft.Storage/storageAccounts",
+                            "apiVersion": "2019-06-01",
+                            "tags": {
+                                "displayName": "storageaccount1DispayName"
+                            },
+                            "location": "[resourceGroup().location]",
+                            "kind": "StorageV2",
+                            "sku": {
+                                "name": "Premium_LRS",
+                                "tier": "Premium"
+                            }
+                        }
+                    ]
+                },
+                "storageaccount1DispayName",
+                ["v1"],
+                2,
+                {
+                    "resources": [
+                        {
+                            "name": "storageaccount1",
+                            "type": "Microsoft.Storage/storageAccounts",
+                            "apiVersion": "2019-06-01",
+                            "tags": {
+                                "displayName": "[variables('v1')]"
+                            },
+                            "location": "[resourceGroup().location]",
+                            "kind": "StorageV2",
+                            "sku": {
+                                "name": "Premium_LRS",
+                                "tier": "Premium"
+                            }
+                        }
+                    ],
+                    "variables": {
+                        "v1": "storageaccount1DispayName"
+                    }
+                }
+            );
+        });
+
+        test("dependsOn array", async () => {
+            await runExtractVariableTest(
+                {
+                    resources: [
+                        {
+                            "type": "firewallRules",
+                            "apiVersion": "2018-06-01-preview",
+                            "name": "AllowAllWindowsAzureIps",
+                            "dependsOn": [
+                                "abc"
+                            ]
+                        },
+                    ]
+                },
+                "abc",
+                ["v1"],
+                2,
+                {
+                    resources: [
+                        {
+                            "type": "firewallRules",
+                            "apiVersion": "2018-06-01-preview",
+                            "name": "AllowAllWindowsAzureIps",
+                            "dependsOn": [
+                                "[variables('v1')]"
+                            ]
+                        },
+                    ],
+                    variables: {
+                        v1: "abc"
+                    }
+                }
+            );
+        });
+    });
+
+    /* TODO: ?
+    suite("Don't allow for multi-line strings", async () => {
+        test('Simple multi-line string', async () => {
+            await runExtractVariableTest(
+                `{
+    "resources": [
+        {
+            "name": "storageaccount1",
+            "type": "Microsoft.Storage/storageAccounts",
+            "whatever": "This is a
+multi-line
+string"
+        }
+    ]
+}`,
+                `This is a
+multi-line
+string`,
+                ["v1"],
+                2,
+                // NOTE: Ideally we wouldn't replace newlines with \n, but this is acceptable
+                {
+                    "resources": [
+                        {
+                            "name": "storageaccount1",
+                            "type": "Microsoft.Storage/storageAccounts",
+                            "whatever": "[variables('v1')]"
+                        }
+                    ],
+                    "variables": {
+                        "v1": "This is a\nmulti-line\nstring"
+                    }
+                }
+            );
+        });
+
+        test("Multi-line expressions", async () => {
+            await runExtractVariableTest(
+                `{
+    "resources": [
+        {
+            "name": "storageaccount1",
+            "type": "Microsoft.Storage/storageAccounts",
+            "whatever": "[concat('This is a
+multi-line
+string', 'This is
+another')]"
+        }
+    ]
+}`,
+                `'This is
+another'`,
+                ["v1"],
+                2,
+                // NOTE: Ideally we wouldn't replace newlines with \n, but this is acceptable
+                `{
+                    "resources": [
+                        {
+                            "name": "storageaccount1",
+                            "type": "Microsoft.Storage/storageAccounts",
+                            "whatever": "[concat('This is a
+multi-line
+string', variables('v1'))]"
+                        }
+                    ],
+                    "variables": {
+                        "v1": "This is a\nanother"
+                    }
+                }`
+            );
+        });
+
+    }); */
+
 });
