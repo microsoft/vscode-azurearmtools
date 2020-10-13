@@ -23,7 +23,7 @@ suite("ExtractItem", async (): Promise<void> => {
         await runExtractItemTest(startTemplate, selectedText, codeActionsCount, expectedTemplate, async (extractItem, template, editor) => await extractItem.extractParameter(editor, template, getActionContext()));
     }
 
-    async function runExtractVariableTests(startTemplate: string, selectedText: string, codeActionsCount: number = 2, expectedTemplate?: string): Promise<void> {
+    async function runExtractVariableTest(startTemplate: string, selectedText: string, codeActionsCount: number = 2, expectedTemplate?: string): Promise<void> {
         await runExtractItemTest(startTemplate, selectedText, codeActionsCount, expectedTemplate, async (extractItem, template, editor) => await extractItem.extractVariable(editor, template, getActionContext()));
     }
 
@@ -64,6 +64,8 @@ suite("ExtractItem", async (): Promise<void> => {
         }
     ]
 }`;
+
+    ///////////////// Extract parameters
 
     suite("ExtractParameter", () => {
 
@@ -159,13 +161,134 @@ suite("ExtractItem", async (): Promise<void> => {
                 await runExtractParameterTest(template, "parameters('location')", 0);
             });
         });
-    });
 
-    suite("ExtractVariable", () => {
-        test('Storageaccount1', async () => {
-            await testUserInput.runWithInputs(["storageKind"], async () => {
-                const expected =
+        test('No existing params', async () => {
+            await testUserInput.runWithInputs(["p1", "description"], async () => {
+                await runExtractParameterTest(
                     `{
+    "resources": [
+        {
+            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01"
+        }
+    ]
+}`,
+                    "2019-06-01",
+                    2,
+                    `{
+    "resources": [
+        {
+            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "[parameters('p1')]"
+        }
+    ],
+    "parameters": {
+        "p1": {
+            "type": "string",
+            "defaultValue": "2019-06-01",
+            "metadata": {
+                "description": "description"
+            }
+        }
+    }
+}`
+                );
+            });
+        });
+
+        test('One existing param', async () => {
+            await testUserInput.runWithInputs(["p2", "description"], async () => {
+                await runExtractParameterTest(
+                    `{
+    "resources": [
+        {
+            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01"
+        }
+    ],
+    "parameters": {
+        "p1": {
+            "type": "string"
+        }
+    }
+}`,
+                    "2019-06-01",
+                    2,
+                    `{
+    "resources": [
+        {
+            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "[parameters('p2')]"
+        }
+    ],
+    "parameters": {
+        "p1": {
+            "type": "string"
+        },
+        "p2": {
+            "type": "string",
+            "defaultValue": "2019-06-01",
+            "metadata": {
+                "description": "description"
+            }
+        }
+    }
+}`
+                );
+            });
+        });
+
+        test('No description', async () => {
+            await testUserInput.runWithInputs(["p2", ""], async () => {
+                await runExtractParameterTest(
+                    `{
+    "resources": [
+        {
+            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01"
+        }
+    ],
+    "parameters": {
+        "p1": {
+            "type": "string"
+        }
+    }
+}`,
+                    "2019-06-01",
+                    2,
+                    `{
+    "resources": [
+        {
+            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "[parameters('p2')]"
+        }
+    ],
+    "parameters": {
+        "p1": {
+            "type": "string"
+        },
+        "p2": {
+            "type": "string",
+            "defaultValue": "2019-06-01"
+        }
+    }
+}`
+                );
+            });
+
+            ///////////////// Extract variables
+
+            suite("ExtractVariable", () => {
+                test('Storageaccount1', async () => {
+                    await testUserInput.runWithInputs(["storageKind"], async () => {
+                        const expected =
+                            `{
     "parameters": {},
     "variables": {
         "storageKind": "StorageV2"
@@ -183,13 +306,14 @@ suite("ExtractItem", async (): Promise<void> => {
         }
     ]
 }`;
-                await runExtractVariableTests(baseTemplate, "StorageV2", 2, expected);
-            });
-        });
-        suite("Extract to location variable", () => {
+                        await runExtractVariableTest(baseTemplate, "StorageV2", 2, expected);
+                    });
+                });
 
-            const expected =
-                `{
+                suite("Extract to location variable", () => {
+
+                    const expected =
+                        `{
     "parameters": {},
     "variables": {
         "location": "[resourceGroup().location]"
@@ -207,21 +331,21 @@ suite("ExtractItem", async (): Promise<void> => {
         }
     ]
 }`;
-            test('[resourceGroup().location]', async () => {
-                await testUserInput.runWithInputs(["location"], async () => {
-                    await runExtractVariableTests(baseTemplate, "[resourceGroup().location]", 2, expected);
+                    test('[resourceGroup().location]', async () => {
+                        await testUserInput.runWithInputs(["location"], async () => {
+                            await runExtractVariableTest(baseTemplate, "[resourceGroup().location]", 2, expected);
+                        });
+                    });
+                    test('resourceGroup().location', async () => {
+                        await testUserInput.runWithInputs(["location"], async () => {
+                            await runExtractVariableTest(baseTemplate, "resourceGroup().location", 2, expected);
+                        });
+                    });
                 });
-            });
-            test('resourceGroup().location', async () => {
-                await testUserInput.runWithInputs(["location"], async () => {
-                    await runExtractVariableTests(baseTemplate, "resourceGroup().location", 2, expected);
-                });
-            });
-        });
 
-        suite("Don't extract variable or parameter references", () => {
-            const baseTemplate2 =
-                `{
+                suite("Don't extract variable or parameter references", () => {
+                    const baseTemplate2 =
+                        `{
     "parameters": {},
     "variables": {
         "location": "[resourceGroup().location]"
@@ -239,11 +363,77 @@ suite("ExtractItem", async (): Promise<void> => {
         }
     ]
 }`;
-            test('[variables(\'location\')] should not generate code action', async () => {
-                await runExtractParameterTest(baseTemplate2, "[variables('location')]", 0);
-            });
-            test('variables(\'location\') should not generate code action', async () => {
-                await runExtractParameterTest(baseTemplate2, "variables('location')", 0);
+                    test('[variables(\'location\')] should not generate code action', async () => {
+                        await runExtractVariableTest(baseTemplate2, "[variables('location')]", 0);
+                    });
+                    test('variables(\'location\') should not generate code action', async () => {
+                        await runExtractVariableTest(baseTemplate2, "variables('location')", 0);
+                    });
+                });
+
+                test('No existing vars', async () => {
+                    await testUserInput.runWithInputs(["v1"], async () => {
+                        await runExtractVariableTest(
+                            `{
+    "resources": [
+        {
+            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01"
+        }
+    ]
+}`,
+                            "2019-06-01",
+                            2,
+                            `{
+    "resources": [
+        {
+            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "[variables('v1')]"
+        }
+    ],
+    "variables": {
+        "v1": "2019-06-01"
+    }
+}`
+                        );
+                    });
+                });
+
+                test('One existing var', async () => {
+                    await testUserInput.runWithInputs(["v2"], async () => {
+                        await runExtractVariableTest(
+                            `{
+    "resources": [
+        {
+            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01"
+        }
+    ],
+    "variables": {
+        "v1": "v1"
+    }
+}`,
+                            "2019-06-01",
+                            2,
+                            `{
+    "resources": [
+        {
+            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "[variables('v2')]"
+        }
+    ],
+    "variables": {
+        "v1": "v1",
+        "v2": "2019-06-01"
+    }
+}`
+                        );
+                    });
+                });
             });
         });
     });
