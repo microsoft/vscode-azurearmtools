@@ -1,6 +1,7 @@
-// ----------------------------------------------------------------------------
-// Copyright (c) Microsoft Corporation.  All rights reserved.
-// ----------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See License.md in the project root for license information.
+// ---------------------------------------------------------------------------------------------
 
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length no-http-string no-suspicious-comment
 // tslint:disable:no-non-null-assertion
@@ -12,191 +13,819 @@ import * as fse from 'fs-extra';
 import * as vscode from "vscode";
 import { TestUserInput } from 'vscode-azureextensiondev';
 import { DeploymentTemplateDoc, ExtractItem } from '../../extension.bundle';
+import { IPartialDeploymentTemplate } from '../support/diagnostics';
 import { getActionContext } from '../support/getActionContext';
 import { getCodeActionContext } from '../support/getCodeActionContext';
 import { getTempFilePath } from '../support/getTempFilePath';
+import { stringify } from '../support/stringify';
 
 suite("ExtractItem", async (): Promise<void> => {
     let testUserInput: TestUserInput = new TestUserInput(vscode);
-    async function runExtractParameterTests(startTemplate: string, expectedTemplate: string, selectedText: string, codeActionsCount: number = 2): Promise<void> {
-        await runExtractItemTests(startTemplate, expectedTemplate, selectedText, codeActionsCount, async (extractItem, template, editor) => await extractItem.extractParameter(editor, template, getActionContext()));
+    async function runExtractParameterTest(startTemplate: string | IPartialDeploymentTemplate, selectedText: string, testInputs: (string | RegExp)[], codeActionsCount: number = 2, expectedTemplate?: string | IPartialDeploymentTemplate): Promise<void> {
+        await runExtractItemTest(startTemplate, selectedText, testInputs, codeActionsCount, expectedTemplate, async (extractItem, template, editor) => await extractItem.extractParameter(editor, template, getActionContext()));
     }
 
-    async function runExtractVariableTests(startTemplate: string, expectedTemplate: string, selectedText: string, codeActionsCount: number = 2): Promise<void> {
-        await runExtractItemTests(startTemplate, expectedTemplate, selectedText, codeActionsCount, async (extractItem, template, editor) => await extractItem.extractVariable(editor, template, getActionContext()));
+    async function runExtractVariableTest(startTemplate: string | IPartialDeploymentTemplate, selectedText: string, testInputs: (string | RegExp)[], codeActionsCount: number = 2, expectedTemplate?: string | IPartialDeploymentTemplate): Promise<void> {
+        await runExtractItemTest(startTemplate, selectedText, testInputs, codeActionsCount, expectedTemplate, async (extractItem, template, editor) => await extractItem.extractVariable(editor, template, getActionContext()));
     }
 
-    async function runExtractItemTests(startTemplate: string, expectedTemplate: string, selectedText: string, codeActionsCount: number, action: (extractItem: ExtractItem, deploymentTemplate: DeploymentTemplateDoc, textEditor: vscode.TextEditor) => Promise<void>): Promise<void> {
-        const tempPath = getTempFilePath(`insertItem`, '.azrm');
-        fse.writeFileSync(tempPath, startTemplate);
-        let document = await vscode.workspace.openTextDocument(tempPath);
-        let textEditor = await vscode.window.showTextDocument(document);
-        let extractItem = new ExtractItem(testUserInput);
-        let deploymentTemplate = new DeploymentTemplateDoc(document.getText(), document.uri);
-        let text = document.getText(undefined);
-        let index = text.indexOf(selectedText);
-        let position = document.positionAt(index);
-        let position2 = document.positionAt(index + selectedText.length);
-        textEditor.selection = new vscode.Selection(position, position2);
-        let codeActions = deploymentTemplate.getCodeActions(undefined, textEditor.selection, getCodeActionContext());
-        assert.equal(codeActions.length, codeActionsCount, `GetCodeAction should return ${codeActionsCount}`);
-        if (codeActionsCount > 0) {
-            await action(extractItem, deploymentTemplate, textEditor);
-            const docTextAfterInsertion = document.getText();
-            assert.equal(docTextAfterInsertion, expectedTemplate, "extractVaraiable should perform expected result");
-        }
-    }
-    const baseTemplate =
-        `{
-    "parameters": {},
-    "variables": {},
-    "resources": [
-        {
-            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-06-01",
-            "location": "[resourceGroup().location]",
-            "kind": "StorageV2",
-            "sku": {
-                "name": "Premium_LRS"
+    async function runExtractItemTest(startTemplate: string | IPartialDeploymentTemplate, selectedText: string, testInputs: (string | RegExp)[], codeActionsCount: number, expectedTemplate: string | IPartialDeploymentTemplate | undefined, doExtract: (extractItem: ExtractItem, deploymentTemplate: DeploymentTemplateDoc, textEditor: vscode.TextEditor) => Promise<void>): Promise<void> {
+        await testUserInput.runWithInputs(testInputs, async () => {
+            const tempPath = getTempFilePath(`insertItem`, '.azrm');
+            if (typeof startTemplate !== 'string') {
+                startTemplate = stringify(startTemplate);
             }
-        }
-    ]
-}`;
+            if (expectedTemplate && typeof expectedTemplate !== 'string') {
+                expectedTemplate = stringify(expectedTemplate);
+            }
+
+            fse.writeFileSync(tempPath, startTemplate);
+            let document = await vscode.workspace.openTextDocument(tempPath);
+            let textEditor = await vscode.window.showTextDocument(document);
+            let extractItem = new ExtractItem(testUserInput);
+            let deploymentTemplate = new DeploymentTemplateDoc(document.getText(), document.uri);
+            let text = document.getText(undefined);
+            let index = text.indexOf(selectedText);
+            assert(index >= 0, `Couldn't find selected text "${selectedText}"`);
+            let position = document.positionAt(index);
+            let endPosition = document.positionAt(index + selectedText.length);
+            textEditor.selection = new vscode.Selection(position, endPosition);
+            let codeActions = deploymentTemplate.getCodeActions(undefined, textEditor.selection, getCodeActionContext());
+            assert.equal(codeActions.length, codeActionsCount, `GetCodeAction should return ${codeActionsCount}`);
+            if (codeActionsCount > 0) {
+                await doExtract(extractItem, deploymentTemplate, textEditor);
+                const docTextAfterInsertion = document.getText();
+                assert.equal(docTextAfterInsertion, expectedTemplate, "extractVaraiable should perform expected result");
+            }
+        });
+    }
+
+    const baseTemplate = {
+        parameters: {},
+        variables: {},
+        resources: [
+            {
+                name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                type: "Microsoft.Storage/storageAccounts",
+                apiVersion: "2019-06-01",
+                location: "[resourceGroup().location]",
+                kind: "StorageV2",
+                sku: {
+                    name: "Premium_LRS"
+                }
+            }
+        ]
+    };
+
+    ///////////////// Extract parameters
 
     suite("ExtractParameter", () => {
 
-        const storageNameTemplate =
-            `{
-    "parameters": {
-        "storageKind": {
-            "type": "string",
-            "defaultValue": "StorageV2",
-            "metadata": {
-                "description": "Kind of storage"
-            }
-        }
-    },
-    "variables": {},
-    "resources": [
-        {
-            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-06-01",
-            "location": "[resourceGroup().location]",
-            "kind": "[parameters('storageKind')]",
-            "sku": {
-                "name": "Premium_LRS"
-            }
-        }
-    ]
-}`;
-        const locationTemplate =
-            `{
-    "parameters": {
-        "location": {
-            "type": "string",
-            "defaultValue": "[resourceGroup().location]",
-            "metadata": {
-                "description": "Location of resource"
-            }
-        }
-    },
-    "variables": {},
-    "resources": [
-        {
-            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-06-01",
-            "location": "[parameters('location')]",
-            "kind": "StorageV2",
-            "sku": {
-                "name": "Premium_LRS"
-            }
-        }
-    ]
-}`;
         test('StorageKind', async () => {
-            await testUserInput.runWithInputs(["storageKind", "Kind of storage"], async () => {
-                await runExtractParameterTests(baseTemplate, storageNameTemplate, "StorageV2");
+            const expected = {
+                parameters: {
+                    storageKind: {
+                        type: "string",
+                        defaultValue: "StorageV2",
+                        metadata: {
+                            description: "Kind of storage"
+                        }
+                    }
+                },
+                variables: {},
+                resources: [
+                    {
+                        name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                        type: "Microsoft.Storage/storageAccounts",
+                        apiVersion: "2019-06-01",
+                        location: "[resourceGroup().location]",
+                        kind: "[parameters('storageKind')]",
+                        sku: {
+                            name: "Premium_LRS"
+                        }
+                    }
+                ]
+            };
+            await runExtractParameterTest(baseTemplate, "StorageV2", ["storageKind", "Kind of storage"], 2, expected);
+        });
+
+        suite("Extract to location parameter", () => {
+            const expected = {
+                parameters: {
+                    location: {
+                        type: "string",
+                        defaultValue: "[resourceGroup().location]",
+                        metadata: {
+                            description: "Location of resource"
+                        }
+                    }
+                },
+                variables: {},
+                resources: [
+                    {
+                        name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                        type: "Microsoft.Storage/storageAccounts",
+                        apiVersion: "2019-06-01",
+                        location: "[parameters('location')]",
+                        kind: "StorageV2",
+                        sku: {
+                            name: "Premium_LRS"
+                        }
+                    }
+                ]
+            };
+            test('[resourceGroup().location]', async () => {
+                await runExtractParameterTest(baseTemplate, "[resourceGroup().location]", ["location", "Location of resource"], 2, expected);
+            });
+            test('resourceGroup().location', async () => {
+                await runExtractParameterTest(baseTemplate, "resourceGroup().location", ["location", "Location of resource"], 2, expected);
             });
         });
-        test('[resourceGroup().location]', async () => {
-            await testUserInput.runWithInputs(["location", "Location of resource"], async () => {
-                await runExtractParameterTests(baseTemplate, locationTemplate, "[resourceGroup().location]");
+
+        suite("Don't extract variable or parameter references", () => {
+            const template = {
+                resources: [
+                    {
+                        name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                        type: "Microsoft.Storage/storageAccounts",
+                        apiVersion: "2019-06-01",
+                        location: "[parameters('location')]",
+                        kind: "StorageV2",
+                        sku: {
+                            name: "Premium_LRS"
+                        }
+                    }
+                ]
+            };
+            test('[parameters(\'location\')] should not generate code action', async () => {
+                await runExtractParameterTest(template, "[parameters('location')]", [], 0);
+            });
+            test('[parameters(\'location\')] should not generate code action', async () => {
+                await runExtractParameterTest(template, "parameters('location')", [], 0);
             });
         });
-        test('resourceGroup().location', async () => {
-            await testUserInput.runWithInputs(["location", "Location of resource"], async () => {
-                await runExtractParameterTests(baseTemplate, locationTemplate, "resourceGroup().location");
-            });
+
+        test('No existing params', async () => {
+            await runExtractParameterTest(
+                {
+                    resources: [
+                        {
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "2019-06-01"
+                        }
+                    ]
+                },
+                "2019-06-01",
+                ["p1", "description"],
+                2,
+                {
+                    resources: [
+                        {
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "[parameters('p1')]"
+                        }
+                    ],
+                    parameters: {
+                        p1: {
+                            type: "string",
+                            defaultValue: "2019-06-01",
+                            metadata: {
+                                description: "description"
+                            }
+                        }
+                    }
+                }
+            );
         });
-        test('[parameters(\'location\')] should not generate code action', async () => {
-            await runExtractParameterTests(locationTemplate, '', "[parameters('location')]", 0);
+
+        test('One existing param', async () => {
+            await runExtractParameterTest(
+                {
+                    resources: [
+                        {
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "2019-06-01"
+                        }
+                    ],
+                    parameters: {
+                        p1: {
+                            type: "string"
+                        }
+                    }
+                },
+                "2019-06-01",
+                ["p2", "description"],
+                2,
+                {
+                    resources: [
+                        {
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "[parameters('p2')]"
+                        }
+                    ],
+                    parameters: {
+                        p1: {
+                            type: "string"
+                        },
+                        p2: {
+                            type: "string",
+                            defaultValue: "2019-06-01",
+                            metadata: {
+                                description: "description"
+                            }
+                        }
+                    }
+                }
+            );
         });
-        test('[parameters(\'location\')] should not generate code action', async () => {
-            await runExtractParameterTests(locationTemplate, '', "parameters('location')", 0);
+
+        test('ENTER for no description', async () => {
+            await runExtractParameterTest(
+                {
+                    resources: [
+                        {
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "2019-06-01"
+                        }
+                    ],
+                    parameters: {
+                        p1: {
+                            type: "string"
+                        }
+                    }
+                },
+                "2019-06-01",
+                ["p2", ""],
+                2,
+                {
+                    resources: [
+                        {
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "[parameters('p2')]"
+                        }
+                    ],
+                    parameters: {
+                        p1: {
+                            type: "string"
+                        },
+                        p2: {
+                            type: "string",
+                            defaultValue: "2019-06-01"
+                        }
+                    }
+                }
+            );
         });
     });
+
+    ///////////////// Extract variables
+
     suite("ExtractVariable", () => {
-        const storageKindTemplate =
-            `{
-    "parameters": {},
-    "variables": {
-        "storageKind": "StorageV2"
-    },
-    "resources": [
-        {
-            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-06-01",
-            "location": "[resourceGroup().location]",
-            "kind": "[variables('storageKind')]",
-            "sku": {
-                "name": "Premium_LRS"
-            }
-        }
-    ]
-}`;
-        const locationTemplate =
-            `{
-    "parameters": {},
-    "variables": {
-        "location": "[resourceGroup().location]"
-    },
-    "resources": [
-        {
-            "name": "[concat(resourceGroup().id, 'storageid', 123)]",
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-06-01",
-            "location": "[variables('location')]",
-            "kind": "StorageV2",
-            "sku": {
-                "name": "Premium_LRS"
-            }
-        }
-    ]
-}`;
         test('Storageaccount1', async () => {
-            await testUserInput.runWithInputs(["storageKind"], async () => {
-                await runExtractVariableTests(baseTemplate, storageKindTemplate, "StorageV2");
+            const expected = {
+                parameters: {},
+                variables: {
+                    storageKind: "StorageV2"
+                },
+                resources: [
+                    {
+                        name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                        type: "Microsoft.Storage/storageAccounts",
+                        apiVersion: "2019-06-01",
+                        location: "[resourceGroup().location]",
+                        kind: "[variables('storageKind')]",
+                        sku: {
+                            name: "Premium_LRS"
+                        }
+                    }
+                ]
+            };
+            await runExtractVariableTest(baseTemplate, "StorageV2", ["storageKind"], 2, expected);
+        });
+
+        suite("Extract to location variable", () => {
+
+            const expected = {
+                parameters: {},
+                variables: {
+                    location: "[resourceGroup().location]"
+                },
+                resources: [
+                    {
+                        name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                        type: "Microsoft.Storage/storageAccounts",
+                        apiVersion: "2019-06-01",
+                        location: "[variables('location')]",
+                        kind: "StorageV2",
+                        sku: {
+                            name: "Premium_LRS"
+                        }
+                    }
+                ]
+            };
+            test('[resourceGroup().location]', async () => {
+                await runExtractVariableTest(baseTemplate, "[resourceGroup().location]", ["location"], 2, expected);
+            });
+            test('resourceGroup().location', async () => {
+                await runExtractVariableTest(baseTemplate, "resourceGroup().location", ["location"], 2, expected);
             });
         });
-        test('[resourceGroup().location]', async () => {
-            await testUserInput.runWithInputs(["location"], async () => {
-                await runExtractVariableTests(baseTemplate, locationTemplate, "[resourceGroup().location]");
+
+        suite("Don't extract variable or parameter references", () => {
+            const baseTemplate2 = {
+                parameters: {},
+                variables: {
+                    location: "[resourceGroup().location]"
+                },
+                resources: [
+                    {
+                        name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                        type: "Microsoft.Storage/storageAccounts",
+                        apiVersion: "2019-06-01",
+                        location: "[variables('location')]",
+                        kind: "StorageV2",
+                        sku: {
+                            name: "Premium_LRS"
+                        }
+                    }
+                ]
+            };
+            test('[variables(\'location\')] should not generate code action', async () => {
+                await runExtractVariableTest(baseTemplate2, "[variables('location')]", [], 0);
+            });
+            test('variables(\'location\') should not generate code action', async () => {
+                await runExtractVariableTest(baseTemplate2, "variables('location')", [], 0);
             });
         });
-        test('resourceGroup().location', async () => {
-            await testUserInput.runWithInputs(["location"], async () => {
-                await runExtractVariableTests(baseTemplate, locationTemplate, "resourceGroup().location");
-            });
+
+        test('No existing vars', async () => {
+            await runExtractVariableTest(
+                {
+                    resources: [
+                        {
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "2019-06-01"
+                        }
+                    ]
+                },
+                "2019-06-01",
+                ["v1"],
+                2,
+                {
+                    resources: [
+                        {
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "[variables('v1')]"
+                        }
+                    ],
+                    variables: {
+                        v1: "2019-06-01"
+                    }
+                }
+            );
         });
-        test('[variables(\'location\')] should not generate code action', async () => {
-            await runExtractParameterTests(locationTemplate, '', "[variables('location')]", 0);
-        });
-        test('variables(\'location\') should not generate code action', async () => {
-            await runExtractParameterTests(locationTemplate, '', "variables('location')", 0);
+
+        test('One existing var', async () => {
+            await runExtractVariableTest(
+                {
+                    resources: [
+                        {
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "2019-06-01"
+                        }
+                    ],
+                    variables: {
+                        v1: "v1"
+                    }
+                },
+                "2019-06-01",
+                ["v2"],
+                2,
+                {
+                    resources: [
+                        {
+                            name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "[variables('v2')]"
+                        }
+                    ],
+                    variables: {
+                        v1: "v1",
+                        v2: "2019-06-01"
+                    }
+                }
+            );
         });
     });
+
+    //////////// Expressions
+
+    test("Don't allow from inside a property name", async () => {
+        await runExtractVariableTest(
+            {
+                resources: [
+                    {
+                        name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                        type: "Microsoft.Storage/storageAccounts",
+                        apiVersion: "2019-06-01"
+                    }
+                ]
+            },
+            "name",
+            [],
+            0
+        );
+    });
+
+    suite("Don't allow outside of 'resources'", async () => {
+        test("in variables", async () => {
+            await runExtractVariableTest(
+                {
+                    variables:
+                    {
+                        name: "[concat(resourceGroup().id, 'storageid', 123)]",
+                        type: "Microsoft.Storage/storageAccounts",
+                        apiVersion: "2019-06-01"
+                    }
+                },
+                "2019-06-01",
+                [],
+                0
+            );
+        });
+
+        test("in parameters", async () => {
+            await runExtractVariableTest(
+                {
+                    parameters: {
+                        location: {
+                            type: "string",
+                            defaultValue: "abc",
+                            metadata: {
+                                description: "Location of resource"
+                            }
+                        }
+                    },
+                },
+                "abc",
+                [],
+                0
+            );
+        });
+
+        test("in user-functions", async () => {
+            await runExtractVariableTest(
+                {
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    contentVersion: "1.0.0.0",
+                    functions: [
+                        {
+                            namespace: "udf",
+                            members: {
+                                storageUri: {
+                                    parameters: [
+                                        {
+                                            name: "storageAccountName",
+                                            type: "string"
+                                        }
+                                    ],
+                                    output: {
+                                        type: "string",
+                                        value: "my value"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "my value",
+                [],
+                0
+            );
+        });
+    });
+
+    suite("Extract expressions", async () => {
+        test('TODO');
+    });
+
+    suite("Nested templates", async () => {
+        test("Inner-scoped nested template", async () => {
+            await runExtractVariableTest(
+                {
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    contentVersion: "1.0.0.0",
+                    resources: [
+                        {
+                            type: "Microsoft.Resources/deployments",
+                            apiVersion: "2017-05-10",
+                            properties: {
+                                expressionEvaluationOptions: {
+                                    scope: "inner"
+                                },
+                                template: {
+                                    resources: [
+                                        {
+                                            name: "storageaccount1",
+                                            type: "Microsoft.Storage/storageAccounts",
+                                            apiVersion: "2019-06-01",
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "2019-06-01",
+                ["v1"],
+                2,
+                {
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    contentVersion: "1.0.0.0",
+                    resources: [
+                        {
+                            type: "Microsoft.Resources/deployments",
+                            apiVersion: "2017-05-10",
+                            properties: {
+                                expressionEvaluationOptions: {
+                                    scope: "inner"
+                                },
+                                template: {
+                                    resources: [
+                                        {
+                                            name: "storageaccount1",
+                                            type: "Microsoft.Storage/storageAccounts",
+                                            apiVersion: "[variables('v1')]",
+                                        }
+                                    ],
+                                    variables: {
+                                        v1: "2019-06-01"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            );
+        });
+
+        test("Outer-scoped nested template", async () => {
+            await runExtractParameterTest(
+                {
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    contentVersion: "1.0.0.0",
+                    resources: [
+                        {
+                            type: "Microsoft.Resources/deployments",
+                            apiVersion: "2017-05-10",
+                            properties: {
+                                template: {
+                                    resources: [
+                                        {
+                                            name: "storageaccount1",
+                                            type: "Microsoft.Storage/storageAccounts",
+                                            apiVersion: "2019-06-01",
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "2019-06-01",
+                ["p1", ""],
+                2,
+                {
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    contentVersion: "1.0.0.0",
+                    resources: [
+                        {
+                            type: "Microsoft.Resources/deployments",
+                            apiVersion: "2017-05-10",
+                            properties: {
+                                expressionEvaluationOptions: {
+                                    scope: "inner"
+                                },
+                                template: {
+                                    resources: [
+                                        {
+                                            name: "storageaccount1",
+                                            type: "Microsoft.Storage/storageAccounts",
+                                            apiVersion: "[variables('v1')]",
+                                        }
+                                    ],
+                                    parameters: {
+                                        p1: {
+                                            type: "string",
+                                            defaultValue: "2019-06-01"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            );
+        });
+
+        test("Don't allow in nested template if outside resources", async () => {
+            await runExtractParameterTest(
+                {
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    contentVersion: "1.0.0.0",
+                    resources: [
+                        {
+                            type: "Microsoft.Resources/deployments",
+                            apiVersion: "2017-05-10",
+                            properties: {
+                                template: {
+                                    resources: [
+                                        {
+                                            name: "storageaccount1",
+                                            type: "Microsoft.Storage/storageAccounts",
+                                            apiVersion: "2019-06-01",
+                                        }
+                                    ],
+                                    variables: {
+                                        v1: "my value"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "my value",
+                [],
+                0
+            );
+        });
+    });
+
+    suite("arrays", async () => {
+        test("tags", async () => {
+            await runExtractVariableTest(
+                {
+                    resources: [
+                        {
+                            name: "storageaccount1",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "2019-06-01",
+                            tags: {
+                                displayName: "storageaccount1DispayName"
+                            },
+                            location: "[resourceGroup().location]",
+                            kind: "StorageV2",
+                            sku: {
+                                name: "Premium_LRS",
+                                tier: "Premium"
+                            }
+                        }
+                    ]
+                },
+                "storageaccount1DispayName",
+                ["v1"],
+                2,
+                {
+                    resources: [
+                        {
+                            name: "storageaccount1",
+                            type: "Microsoft.Storage/storageAccounts",
+                            apiVersion: "2019-06-01",
+                            tags: {
+                                displayName: "[variables('v1')]"
+                            },
+                            location: "[resourceGroup().location]",
+                            kind: "StorageV2",
+                            sku: {
+                                name: "Premium_LRS",
+                                tier: "Premium"
+                            }
+                        }
+                    ],
+                    variables: {
+                        v1: "storageaccount1DispayName"
+                    }
+                }
+            );
+        });
+
+        test("dependsOn array", async () => {
+            await runExtractVariableTest(
+                {
+                    resources: [
+                        {
+                            type: "firewallRules",
+                            apiVersion: "2018-06-01-preview",
+                            name: "AllowAllWindowsAzureIps",
+                            dependsOn: [
+                                "abc"
+                            ]
+                        },
+                    ]
+                },
+                "abc",
+                ["v1"],
+                2,
+                {
+                    resources: [
+                        {
+                            type: "firewallRules",
+                            apiVersion: "2018-06-01-preview",
+                            name: "AllowAllWindowsAzureIps",
+                            dependsOn: [
+                                "[variables('v1')]"
+                            ]
+                        },
+                    ],
+                    variables: {
+                        v1: "abc"
+                    }
+                }
+            );
+        });
+    });
+
+    /* TODO: ?
+    suite("Don't allow for multi-line strings", async () => {
+        test('Simple multi-line string', async () => {
+            await runExtractVariableTest(
+                `{
+    "resources": [
+        {
+            "name": "storageaccount1",
+            "type": "Microsoft.Storage/storageAccounts",
+            "whatever": "This is a
+multi-line
+string"
+        }
+    ]
+}`,
+                `This is a
+multi-line
+string`,
+                ["v1"],
+                2,
+                // NOTE: Ideally we wouldn't replace newlines with \n, but this is acceptable
+                {
+                    "resources": [
+                        {
+                            "name": "storageaccount1",
+                            "type": "Microsoft.Storage/storageAccounts",
+                            "whatever": "[variables('v1')]"
+                        }
+                    ],
+                    "variables": {
+                        "v1": "This is a\nmulti-line\nstring"
+                    }
+                }
+            );
+        });
+
+        test("Multi-line expressions", async () => {
+            await runExtractVariableTest(
+                `{
+    "resources": [
+        {
+            "name": "storageaccount1",
+            "type": "Microsoft.Storage/storageAccounts",
+            "whatever": "[concat('This is a
+multi-line
+string', 'This is
+another')]"
+        }
+    ]
+}`,
+                `'This is
+another'`,
+                ["v1"],
+                2,
+                // NOTE: Ideally we wouldn't replace newlines with \n, but this is acceptable
+                `{
+                    "resources": [
+                        {
+                            "name": "storageaccount1",
+                            "type": "Microsoft.Storage/storageAccounts",
+                            "whatever": "[concat('This is a
+multi-line
+string', variables('v1'))]"
+                        }
+                    ],
+                    "variables": {
+                        "v1": "This is a\nanother"
+                    }
+                }`
+            );
+        });
+
+    }); */
+
 });
