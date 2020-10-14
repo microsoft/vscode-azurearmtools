@@ -82,14 +82,14 @@
             "name": "createArray",
             "expectedUsage": "createArray(arg1, arg2, arg3, ...)",
             "description": "Creates an array from the parameters.",
-            "minimumArguments": 1,
+            "minimumArguments": 0,
             "maximumArguments": null
         },
         {
             "name": "createObject",
             "expectedUsage": "createObject(key1, value1, key2, value2, ...)",
             "description": "Creates an object from the keys and values provided in the arguments.\nAn even number of arguments must be provided.",
-            "minimumArguments": 2,
+            "minimumArguments": 0,
             "maximumArguments": null
         },
         {
