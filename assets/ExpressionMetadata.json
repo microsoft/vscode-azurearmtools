@@ -88,7 +88,7 @@
         {
             "name": "createObject",
             "expectedUsage": "createObject(key1, value1, key2, value2, ...)",
-            "description": "Creates an object from the keys and values provided in the arguments.\nAn even number of arguments must be provided.",
+            "description": "Creates an object from the keys and values provided in the arguments.",
             "minimumArguments": 0,
             "maximumArguments": null
         },
