@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { Range, Uri } from "vscode";
+import { Location, Range, Uri } from "vscode";
 import { IParameterDefinitionsSource } from "../documents/parameters/IParameterDefinitionsSource";
 import { IParameterValuesSource } from "../documents/parameters/IParameterValuesSource";
 
@@ -25,4 +25,10 @@ export interface IGotoParameterValueArgs {
 export interface IAddMissingParametersArgs {
     parameterDefinitionsSource: IParameterDefinitionsSource;
     parameterValuesSource: IParameterValuesSource;
+}
+
+export interface IGotoResourcesArgs {
+    source: Location;
+    targets: Location[];
+    telemetryProperties?: { [key: string]: string };
 }

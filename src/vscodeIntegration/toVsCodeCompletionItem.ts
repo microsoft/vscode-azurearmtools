@@ -6,11 +6,12 @@
 import * as vscode from 'vscode';
 import { IActionContext } from 'vscode-azureextensionui';
 import { DeploymentDocument } from '../documents/DeploymentDocument';
+import { assert } from '../fixed_assert';
 import { assertNever } from '../util/assertNever';
 import * as Completion from './Completion';
 import { getVSCodeRangeFromSpan } from './vscodePosition';
 
-export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item: Completion.Item): vscode.CompletionItem {
+export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item: Completion.Item, cursorPosition: vscode.Position): vscode.CompletionItem {
     const range: vscode.Range = getVSCodeRangeFromSpan(deploymentFile, item.span);
 
     const vscodeItem = new vscode.CompletionItem(item.label);
@@ -68,6 +69,14 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
         ]
     };
 
+    // vscode requires all spans to include the original position and be on the same line, otherwise
+    //   it ignores it.  Verify that here.
+    assert(vscodeItem.range, "Completion item doesn't have a range");
+    // tslint:disable-next-line: no-non-null-assertion
+    assert(vscodeItem.range!.contains(cursorPosition), "Completion item range doesn't include cursor");
+    // tslint:disable-next-line: no-non-null-assertion
+    assert(vscodeItem.range!.isSingleLine, "Completion item range must be a single line");
+
     return vscodeItem;
 }
 
@@ -96,8 +105,10 @@ export function toVsCodeCompletionItemKind(kind: Completion.CompletionKind): vsc
         case Completion.CompletionKind.tleResourceIdResTypeParameter:
         case Completion.CompletionKind.tleResourceIdResNameParameter:
         case Completion.CompletionKind.dependsOnResourceId:
-        case Completion.CompletionKind.dependsOnResourceCopyLoop:
             return vscode.CompletionItemKind.Reference;
+
+        case Completion.CompletionKind.dependsOnResourceCopyLoop:
+            return vscode.CompletionItemKind.Enum;
 
         case Completion.CompletionKind.Snippet:
             return vscode.CompletionItemKind.Snippet;

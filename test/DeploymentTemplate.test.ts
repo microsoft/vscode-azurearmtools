@@ -1056,9 +1056,19 @@ suite("DeploymentTemplate", () => {
                     pc.tleInfo;
                     pc.getReferenceSiteInfo(true);
                     pc.getHoverInfo();
-                    await pc.getCompletionItems(undefined);
-                } catch (err) {
-                    throw new Error(`exercisePositionContextAtRandomPointsInTheDoc: Threw at index ${i}:\n${json.slice(i)}<***HERE***>${json.slice(i)}`);
+                    pc.getEnclosingParent();
+                    pc.getFunctionCallArgumentIndex(undefined);
+                    pc.getInsertionContext({});
+                    pc.getInsertionParent();
+                    pc.getScope();
+                    /*const items =*/ await pc.getCompletionItems(undefined);
+                    // tslint:disable-next-line: no-suspicious-comment
+                    /* TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1030
+                    items.items.map(i => toVsCodeCompletionItem(dt, i, getVSCodePositionFromPosition(pc.documentPosition)));
+                    */                } catch (err) {
+                    throw new Error(`exercisePositionContextAtRandomPointsInTheDoc: Threw at index ${i}:\n${json.slice(i)}<***HERE***>${json.slice(i)}
+
+${err}`);
                 }
             }
         }

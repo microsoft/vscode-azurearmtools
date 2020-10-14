@@ -17,6 +17,7 @@ import { UserFunctionNamespaceDefinition } from "../UserFunctionNamespaceDefinit
 import { IVariableDefinition } from '../VariableDefinition';
 
 export enum TemplateScopeKind {
+    Empty = "Empty",
     TopLevel = "TopLevel",
     ParameterDefaultValue = "ParameterDefaultValue",
     UserFunction = "UserFunction",
@@ -100,6 +101,7 @@ export abstract class TemplateScope implements IParameterDefinitionsSource {
             ?? [];
     }
 
+    // Retrieves only the top level of resources
     public get resources(): IResource[] {
         return this._resources.getOrCacheValue(() => this.getResources())
             ?? [];

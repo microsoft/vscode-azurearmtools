@@ -6,7 +6,7 @@ import { assert } from "../../fixed_assert";
 import { AzureRMAssets } from "../../language/expressions/AzureRMAssets";
 import * as TLE from "../../language/expressions/TLE";
 import * as Json from "../../language/json/JSON";
-import { Span } from "../../language/Span";
+import { ContainsBehavior, Span } from "../../language/Span";
 import * as Completion from "../../vscodeIntegration/Completion";
 import { PositionContext } from "../positionContexts/PositionContext";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
@@ -23,19 +23,18 @@ export function getResourceIdCompletions(
 ): Completion.Item[] {
     assert(parentStringToken.type === Json.TokenType.QuotedString, "parentStringToken should be a string token");
 
-    // tslint:disable-next-line: no-suspicious-comment
-    // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/775: Use scope at current position
-    const scope = pc.document.topLevelScope;
+    // Use scope at current position
+    const scope = pc.getScope();
 
     if (!funcCall.isUserDefinedFunction && funcCall.name) {
         const functionMetadata = AzureRMAssets.getFunctionMetadataFromName(funcCall.name);
         if (functionMetadata?.hasBehavior(FunctionBehaviors.usesResourceIdCompletions)) {
-            // If the completion is for 'resourceId' or related function, then in addition
+            // If the completion is for 'resourceId' or a related function, then in addition
             // to the regular completions, also add special completions for resourceId
 
             // What argument to the function call is the cursor in?
             const argumentIndex = pc.getFunctionCallArgumentIndex(funcCall);
-            if (typeof argumentIndex === 'number') {
+            if (typeof argumentIndex === 'number' && argumentIndex >= 0) {
                 const segmentIndex = argumentIndex;
                 return getCompletions(pc, scope, funcCall, parentStringToken, segmentIndex, { maxOptionalParameters: 2 });
             }
@@ -59,7 +58,7 @@ function getCompletions(
         return getResourceTypeCompletions(funcCall, pc, scope, resourceIdCompletions, argIndexAtCursor, parentStringToken);
     }
 
-    const allResources = getResourcesInfo(scope);
+    const allResources = getResourcesInfo({ scope, recognizeDecoupledChildren: false });
 
     // Check previous arguments in the call to see if any of them matches a known resource type
     let argWithResourceType = findFunctionCallArgumentWithResourceType(
@@ -216,14 +215,15 @@ function getResourceTypeCompletions(
     }
 
     const results: Completion.Item[] = [];
-    for (let info of getResourcesInfo(scope)) {
+    const infos = getResourcesInfo({ scope, recognizeDecoupledChildren: false });
+    for (const info of infos) {
         const insertText = info.getFullTypeExpression();
         if (insertText) {
             const label = insertText;
             let typeArgument = funcCall.argumentExpressions[argumentIndex];
             let span = getReplacementSpan(pc, typeArgument, parentStringToken);
 
-            results.push(new Completion.Item({
+            const item = new Completion.Item({
                 label,
                 insertText,
                 span,
@@ -239,7 +239,15 @@ function getResourceTypeCompletions(
                     arg: String(argumentIndex),
                     function: funcCall.fullName
                 }
-            }));
+            });
+
+            if (item.span.contains(pc.documentCharacterIndex, ContainsBehavior.strict)) {
+                results.push(item);
+            } else {
+                // tslint:disable-next-line: no-suspicious-comment
+                // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1030
+                // assert(false, "Replacement span doesn't contain cursor");
+            }
         }
     }
 

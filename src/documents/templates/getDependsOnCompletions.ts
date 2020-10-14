@@ -6,10 +6,10 @@
 import { MarkdownString } from "vscode";
 import { templateKeys } from "../../constants";
 import { assert } from "../../fixed_assert";
+import { getFriendlyExpressionFromTleExpression } from "../../language/expressions/friendlyExpressions";
 import { isTleExpression } from "../../language/expressions/isTleExpression";
 import * as Json from "../../language/json/JSON";
 import { ContainsBehavior, Span } from "../../language/Span";
-import { isSingleQuoted, removeSingleQuotes } from "../../util/strings";
 import * as Completion from "../../vscodeIntegration/Completion";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
 import { getResourcesInfo, IJsonResourceInfo, IResourceInfo, jsonStringToTleExpression } from "./getResourcesInfo";
@@ -28,8 +28,14 @@ export function getDependsOnCompletions(
         span = pc.emptySpanAtDocumentCharacterIndex;
     }
 
+    // Allow suggest dependsOn completions only when the string is not (yet) an expression.  Inside
+    //  an expression they will just add a bunch of completions that are confusing for the context
+    if (pc.tleInfo?.tleParseResult.leftSquareBracketToken) {
+        return [];
+    }
+
     const scope = pc.getScope();
-    const infos = getResourcesInfo(scope);
+    const infos = getResourcesInfo({ scope, recognizeDecoupledChildren: true });
     if (infos.length === 0) {
         return completions;
     }
@@ -46,7 +52,7 @@ export function getDependsOnCompletions(
             continue;
         }
 
-        const items = getDependsOnCompletionsForResource(resource, span);
+        const items = getDependsOnCompletionsForResource(resource, span, currentResource?.parent === resource);
         completions.push(...items);
     }
 
@@ -56,43 +62,37 @@ export function getDependsOnCompletions(
 /**
  * Get possible completions for entries inside a resource's "dependsOn" array
  */
-function getDependsOnCompletionsForResource(resource: IJsonResourceInfo, span: Span): Completion.Item[] {
+function getDependsOnCompletionsForResource(resource: IJsonResourceInfo, span: Span, isParent: boolean): Completion.Item[] {
     const completions: Completion.Item[] = [];
 
     const resourceIdExpression = resource.getResourceIdExpression();
-    const shortNameExpression = resource.shortNameExpression;
 
-    if (shortNameExpression && resourceIdExpression) {
-        const label = shortNameExpression;
-        const fullTypeExpression = resource.getFullTypeExpression();
-        let shortTypeExpression = fullTypeExpression;
-        if (shortTypeExpression && isSingleQuoted(shortTypeExpression)) {
-            // Simplify the type expression to remove quotes and the first prefix (e.g. 'Microsoft.Compute/')
-            shortTypeExpression = removeSingleQuotes(shortTypeExpression);
-            shortTypeExpression = shortTypeExpression.replace(/^[^/]+\//, '');
-        }
+    if (resourceIdExpression) {
+        const friendlyNameExpression = resource.getFriendlyNameExpression({ fullName: false });
+        let friendlyTypeExpression = resource.getFriendlyTypeExpression({ fullType: false });
+
+        const label = friendlyNameExpression;
         const insertText = `"[${resourceIdExpression}]"`;
-        const detail = shortTypeExpression;
+        const detail = friendlyTypeExpression;
         const documentation = `Inserts this resourceId reference:\n\`\`\`arm-template\n"[${resourceIdExpression}]"\n\`\`\`\n<br/>`;
 
         const item = new Completion.Item({
-            label,
+            label: isParent ? `Parent (${label})` : label,
             insertText: insertText,
             detail,
             documentation: new MarkdownString(documentation),
             span,
             kind: Completion.CompletionKind.dependsOnResourceId,
-            // Normally vscode uses label if this isn't specified, but it doesn't seem to like the "[" in the label,
-            // so specify filter text explicitly
-            filterText: insertText
+            filterText: `${insertText}${isParent ? " parent" : ""}`, // Allow filtering off of "parent"
+            priority: isParent ? Completion.CompletionPriority.high : Completion.CompletionPriority.normal
         });
 
         completions.push(item);
 
-        const copyName = resource.copyElement?.getPropertyValue(templateKeys.copyName)?.asStringValue?.unquotedValue;
+        const copyName = resource.copyBlockElement?.getPropertyValue(templateKeys.copyName)?.asStringValue?.unquotedValue;
         if (copyName) {
             const copyNameExpression = jsonStringToTleExpression(copyName);
-            const copyLabel = `LOOP ${copyNameExpression}`;
+            const copyLabel = `Loop ${getFriendlyExpressionFromTleExpression(copyNameExpression)}`;
             const copyInsertText = isTleExpression(copyName) ? `"[${copyNameExpression}]"` : `"${copyName}"`;
             const copyDetail = detail;
             // tslint:disable-next-line: prefer-template
@@ -100,8 +100,9 @@ function getDependsOnCompletionsForResource(resource: IJsonResourceInfo, span: S
 \`\`\`arm-template
 ${copyInsertText}
 \`\`\`
-from resource \`${shortNameExpression}\` of type \`${shortTypeExpression}\``;
+from resource \`${friendlyNameExpression}\` of type \`${friendlyTypeExpression}\``;
 
+            // CONSIDER: set parent as preselected if the resource doesn't already have it listed in dependsOn (requires understanding non-resourceId types of dependsOn entries)
             const copyItem = new Completion.Item({
                 label: copyLabel,
                 insertText: copyInsertText,

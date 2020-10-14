@@ -2,10 +2,10 @@
     "name": "azurerm-vscode-tools",
     "displayName": "Azure Resource Manager (ARM) Tools",
     "description": "Language server, editing tools and snippets for Azure Resource Manager (ARM) template files.",
-    "version": "0.12.1-alpha",
+    "version": "0.13.0-alpha",
     "publisher": "msazurermtools",
     "config": {
-        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20413.3"
+        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.20474.1"
     },
     "categories": [
         "Azure",
@@ -141,12 +141,17 @@
                 },
                 "azureResourceManagerTools.codelens.enable": {
                     "type": "boolean",
-                    "description": "Enables or disables all code lens features",
+                    "description": "Enables or disables all Code Lens features",
                     "default": true
                 },
                 "azureResourceManagerTools.codelens.parameters": {
                     "type": "boolean",
-                    "description": "Enables code lens for parameter definitions and values",
+                    "description": "Enables Code Lens for parameter definitions and values",
+                    "default": true
+                },
+                "azureResourceManagerTools.codelens.resourceChildren": {
+                    "type": "boolean",
+                    "description": "Enables Code Lens that displays the parent and children of each resource",
                     "default": true
                 }
             }
@@ -600,42 +605,42 @@
     "devDependencies": {
         "@types/decompress": "^4.2.3",
         "@types/fs-extra": "^5.1.0",
-        "@types/gulp": "^4.0.6",
+        "@types/gulp": "^4.0.7",
         "@types/mocha": "^2.2.41",
-        "@types/node": "^14.0.27",
+        "@types/node": "^14.11.7",
         "@types/opn": "^5.5.0",
         "@types/recursive-readdir": "^2.2.0",
         "@types/rimraf": "2.0.2",
         "@types/shelljs": "0.8.3",
-        "@types/webpack": "^4.41.21",
+        "@types/webpack": "^4.41.22",
+        "cypress-junit-reporter": "^1.3.1",
+        "cypress-multi-reporters": "^1.4.0",
         "decompress": "^4.2.0",
         "glob": "^7.1.6",
         "gulp": "^4.0.2",
         "gulp-decompress": "^2.0.2",
         "gulp-download": "^0.0.1",
-        "mocha": "^5.2.0",
-        "mocha-junit-reporter": "^1.23.3",
-        "mocha-multi-reporters": "^1.1.7",
+        "mocha": "^8.1.3",
         "recursive-readdir": "^2.2.2",
         "ts-node": "^8.10.2",
         "tslint": "^5.20.1",
         "tslint-microsoft-contrib": "5.0.3",
         "typescript": "^3.9.7",
-        "vsce": "^1.77.0",
+        "vsce": "^1.81.1",
         "vscode": "^1.1.37",
         "vscode-azureextensiondev": "^0.5.0",
-        "webpack": "^4.44.1",
+        "webpack": "^4.44.2",
         "webpack-cli": "^3.3.12"
     },
     "dependencies": {
         "fs-extra": "^7.0.1",
-        "moment": "^2.27.0",
+        "moment": "^2.29.1",
         "nuget": "^2.0.2",
         "opn": "^5.5.0",
         "rimraf": "2.6.3",
         "shelljs": "^0.8.4",
         "strip-json-comments": "^3.1.1",
-        "vscode-azureextensionui": "^0.35.0",
+        "vscode-azureextensionui": "^0.35.2",
         "vscode-jsonrpc": "^4.0.0",
         "vscode-languageclient": "^4.4.0"
     },

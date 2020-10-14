@@ -25,7 +25,12 @@ export async function acquireSharedDotnetInstallation(version: string): Promise<
         let dotnetPath: string | undefined;
 
         try {
-            result = await commands.executeCommand<IDotnetAcquireResult>('dotnet.acquire', { version });
+            result = await commands.executeCommand<IDotnetAcquireResult>(
+                'dotnet.acquire',
+                {
+                    version,
+                    requestingExtensionId: ext.extensionId
+                });
         } catch (err) {
             message = parseError(err).message;
         }

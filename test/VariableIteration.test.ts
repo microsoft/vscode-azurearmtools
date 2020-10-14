@@ -237,11 +237,11 @@ suite("Variable iteration (copy blocks)", () => {
                 }
             };
 
-            createExpressionCompletionsTestEx(disksTopLevelArrayTemplate, '<output1>', '[variables(!)]', ["'disks-top-level-array-of-object'"]);
+            createExpressionCompletionsTestEx(disksTopLevelArrayTemplate, '<output1>', '[variables(<!cursor!>)]', ["'disks-top-level-array-of-object'"]);
 
             // We don't currently support completions from an array, so these should return an empty list
-            createExpressionCompletionsTestEx(disksTopLevelArrayTemplate, '<output1>', "[variables('disks-top-level-array-of-object').!]", []);
-            createExpressionCompletionsTestEx(disksTopLevelArrayTemplate, '<output1>', "[variables('disks-top-level-array-of-object').data!]", []);
+            createExpressionCompletionsTestEx(disksTopLevelArrayTemplate, '<output1>', "[variables('disks-top-level-array-of-object').<!cursor!>]", []);
+            createExpressionCompletionsTestEx(disksTopLevelArrayTemplate, '<output1>', "[variables('disks-top-level-array-of-object').data<!cursor!>]", []);
 
         });
 
@@ -572,8 +572,8 @@ suite("Variable iteration (copy blocks)", () => {
                 }
             };
 
-            createExpressionCompletionsTestEx(template, '<output1>', '[variables(!)]', ["'disk-array-in-object'"]);
-            createExpressionCompletionsTestEx(template, '<output1>', "[variables('disk-array-in-object').!]", ["member1", "member2", "array1", "array2"]);
+            createExpressionCompletionsTestEx(template, '<output1>', '[variables(<!cursor!>)]', ["'disk-array-in-object'"]);
+            createExpressionCompletionsTestEx(template, '<output1>', "[variables('disk-array-in-object').<!cursor!>]", ["member1", "member2", "array1", "array2"]);
         });
 
     }); // end suite embedded variable copy blocks

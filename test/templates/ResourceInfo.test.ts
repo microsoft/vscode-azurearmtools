@@ -6,12 +6,120 @@
 // tslint:disable: max-func-body-length object-literal-key-quotes
 
 import * as assert from "assert";
-import { getResourcesInfo, ResourceInfo } from "../../extension.bundle";
+import { getResourceInfo, getResourcesInfo, ResourceInfo } from "../../extension.bundle";
 import { IPartialDeploymentTemplate } from "../support/diagnostics";
 import { parseTemplate } from "../support/parseTemplate";
 
 suite("ResourceInfo", () => {
-    suite("fullType", () => {
+
+    suite("split names", () => {
+        function createSplitNameTest(nameAsJsonString: string, expected: string[]): void {
+            test(nameAsJsonString, async () => {
+                const dt = await parseTemplate({
+                    resources: [
+                        {
+                            name: nameAsJsonString,
+                            type: "ms.abc/def"
+                        }
+                    ]
+                });
+                // tslint:disable-next-line: no-non-null-assertion
+                const info = getResourceInfo(dt.topLevelScope.rootObject!.getPropertyValue('resources')!.asArrayValue!.elements[0]!.asObjectValue!)!;
+                const actual = info.nameSegmentExpressions;
+                assert.deepStrictEqual(actual, expected);
+
+            });
+        }
+
+        createSplitNameTest("simple string", ["'simple string'"]);
+        createSplitNameTest("simple string/separated", ["'simple string'", "'separated'"]);
+        createSplitNameTest("simple string/separated/again", ["'simple string'", "'separated'", "'again'"]);
+        createSplitNameTest("[]", ['']);
+        createSplitNameTest("[variables('a')]", ["variables('a')"]);
+        createSplitNameTest("[concat(variables('a'), variables('b'))]", ["concat(variables('a'), variables('b'))"]);
+        createSplitNameTest("[concat(variables('a'), '/', variables('b'))]", ["variables('a')", "variables('b')"]);
+        createSplitNameTest("[concat(variables('a'), '/b')]", ["variables('a')", "'b'"]);
+        createSplitNameTest("[concat(variables('a'), '/b', '/', variables('c'))]", ["variables('a')", "'b'", "variables('c')"]);
+    });
+
+    suite("split types", () => {
+        function createSplitTypeTest(typeAsJsonString: string, expected: string[]): void {
+            test(typeAsJsonString, async () => {
+                const dt = await parseTemplate({
+                    resources: [
+                        {
+                            name: "name",
+                            type: typeAsJsonString
+                        }
+                    ]
+                });
+                // tslint:disable-next-line: no-non-null-assertion
+                const info = getResourceInfo(dt.topLevelScope.rootObject!.getPropertyValue('resources')!.asArrayValue!.elements[0]!.asObjectValue!)!;
+                const actual = info.typeSegmentExpressions;
+                assert.deepStrictEqual(actual, expected);
+
+            });
+        }
+
+        suite("invalid types", () => {
+            createSplitTypeTest("", ["''"]);
+            createSplitTypeTest("simple string", ["'simple string'"]);
+            createSplitTypeTest("simple string/separated", ["'simple string/separated'"]);
+            createSplitTypeTest("[]", ['']);
+            createSplitTypeTest("[variables('a')]", ["variables('a')"]);
+            createSplitTypeTest("[concat(variables('a'), variables('b'))]", ["concat(variables('a'), variables('b'))"]);
+        });
+
+        suite("simple strings", () => {
+            createSplitTypeTest("Microsoft.Sql/servers", ["'Microsoft.Sql/servers'"]);
+            createSplitTypeTest("Microsoft.Sql/servers/firewallRules", ["'Microsoft.Sql/servers'", "'firewallRules'"]);
+            createSplitTypeTest("Microsoft.Sql/servers/firewallRules/another", ["'Microsoft.Sql/servers'", "'firewallRules'", "'another'"]);
+        });
+
+        suite('expressions', () => {
+            createSplitTypeTest("[variables('sqlservers')]", ["variables('sqlservers')"]);
+            createSplitTypeTest("[concat('Microsoft.Sql/servers')]", ["'Microsoft.Sql/servers'"]);
+            createSplitTypeTest("[concat('Microsoft.Sql', '/servers')]", ["'Microsoft.Sql/servers'"]);
+            createSplitTypeTest("[concat('Microsoft.Sql/', 'servers')]", ["'Microsoft.Sql/servers'"]);
+            createSplitTypeTest("[concat('Microsoft.Sql', '/', 'servers')]", ["'Microsoft.Sql/servers'"]);
+
+            createSplitTypeTest("[concat('Microsoft.Sql', '/', variables('servers'))]", ["concat('Microsoft.Sql/', variables('servers'))"]);
+
+            // This one is ambiguous - we don't know if variables('a') or variables('b') contains a '/'.  If they do, they're separate segments, otherwise a single segment.
+            // Like with names, we always assume that variables/variables do *not* contain slashes.  But this is just one way to interpret this.
+            createSplitTypeTest("[concat('Microsoft.Sql', '/', variables('a'), variables('b'))]", ["concat('Microsoft.Sql/', concat(variables('a'), variables('b')))"]);
+
+            createSplitTypeTest("[concat('Microsoft.Sql', '/', variables('servers'),'/', variables('grandchild'))]", ["concat('Microsoft.Sql/', variables('servers'))", "variables('grandchild')"]);
+            createSplitTypeTest("[concat('Microsoft.Sql', '/', variables('servers'),'/', 'grandchild')]", ["concat('Microsoft.Sql/', variables('servers'))", "'grandchild'"]);
+
+            // Again, assuming "/servers" and variables('other') must go together because there's no '/' in between.
+            // Not currently optimizing the expression as well as we could
+            createSplitTypeTest("[concat('Microsoft.Sql', '/servers', variables('other'),'/', 'grandchild')]", ["concat('Microsoft.Sql/', concat('servers', variables('other')))", "'grandchild'"]);
+
+            createSplitTypeTest("[concat('Microsoft.Sql', variables('slashservers'),'/', 'grandchild')]", ["concat('Microsoft.Sql', variables('slashservers'))", "'grandchild'"]);
+            createSplitTypeTest("[concat('Microsoft.Sql/servers/', variables('servers'))]", ["'Microsoft.Sql/servers'", "variables('servers')"]);
+            createSplitTypeTest("[concat('Microsoft.Sql/servers/other2', variables('servers'))]", ["'Microsoft.Sql/servers'", "concat('other2', variables('servers'))"]);
+            createSplitTypeTest("[concat('Microsoft.Sql/servers/other2/', variables('servers'))]", ["'Microsoft.Sql/servers'", "'other2'", "variables('servers')"]);
+
+            createSplitTypeTest("Microsoft.Sql/servers", ["'Microsoft.Sql/servers'"]);
+            createSplitTypeTest("Microsoft.Sql/servers/firewallRules", ["'Microsoft.Sql/servers'", "'firewallRules'"]);
+            createSplitTypeTest("Microsoft.Sql/servers/firewallRules/another", ["'Microsoft.Sql/servers'", "'firewallRules'", "'another'"]);
+        });
+
+        createSplitTypeTest("[variables('a')]", ["variables('a')"]);
+        createSplitTypeTest("[concat(variables('a'), variables('b'))]", ["concat(variables('a'), variables('b'))"]);
+        createSplitTypeTest("[concat(variables('a'), '/', variables('b'))]", ["variables('a')", "variables('b')"]);
+        createSplitTypeTest("[concat(variables('a'), '/b')]", ["variables('a')", "'b'"]);
+        createSplitTypeTest("[concat(variables('a'), '/b', '/', variables('c'))]", ["variables('a')", "'b'", "variables('c')"]);
+        createSplitTypeTest("[concat(variables('a'), '/b')]", ["variables('a')", "'b'"]);
+
+        createSplitTypeTest("[concat('ms.abc', '/', parameters('b'))]", ["concat('ms.abc/', parameters('b'))"]);
+        createSplitTypeTest("[concat('ms.abc', '/', parameters('b'))]", ["concat('ms.abc/', parameters('b'))"]);
+        createSplitTypeTest("[concat('ms.abc/', parameters('b'))]", ["concat('ms.abc/', parameters('b'))"]);
+        createSplitTypeTest("[concat(parameters('a'), '/def/', parameters('b'))]", ["parameters('a')", "'def'", "parameters('b')"]);
+    });
+
+    suite("fullTypeExpression", () => {
         function createFullTypeTest(
             typeSegmentExpressions: string[],
             expected: string | undefined
@@ -47,15 +155,51 @@ suite("ResourceInfo", () => {
         });
     });
 
-    suite("fullName", () => {
-        function createFullNameTest(
+    suite("shortTypeExpression", () => {
+        function createShortTypeTest(
             typeSegmentExpressions: string[],
             expected: string | undefined
         ): void {
             const testName = JSON.stringify(typeSegmentExpressions);
             test(testName, () => {
                 const ri = new ResourceInfo([], typeSegmentExpressions);
-                const typeName = ri.getFullTypeExpression();
+                const typeName = ri.shortTypeExpression;
+                assert.deepStrictEqual(typeName, expected);
+            });
+        }
+
+        createShortTypeTest([], undefined);
+        createShortTypeTest([`'a'`], `'a'`);
+        createShortTypeTest([`'ms.abc'`], `'ms.abc'`);
+        createShortTypeTest([`'ms.abc'`, `'def'`], `'def'`);
+        createShortTypeTest([`'ms.abc'`, `'def'`, `'ghi'`], `'ghi'`);
+
+        suite("expressions", () => {
+            createShortTypeTest([`parameters('abc')`], `parameters('abc')`);
+            createShortTypeTest([`parameters('abc')`, `'def'`], `'def'`);
+            createShortTypeTest([`'abc'`, `parameters('def')`], `parameters('def')`);
+            createShortTypeTest([`parameters('abc')`, `parameters('def')`], `parameters('def')`);
+            createShortTypeTest([`parameters('abc')`, `'def'`, `parameters('ghi')`], `parameters('ghi')`);
+        });
+
+        suite("coalesce consecutive strings", () => {
+            createShortTypeTest(
+                [
+                    `parameters('a')`, `'b'`, `'c'`, `'d'`, `parameters('e')`, `parameters('f')`, `'g'`, `'h'`
+                ],
+                `'h'`);
+        });
+    });
+
+    suite("fullNameExpression", () => {
+        function createFullNameTest(
+            nameSegmentExpressions: string[],
+            expected: string | undefined
+        ): void {
+            const testName = JSON.stringify(nameSegmentExpressions);
+            test(testName, () => {
+                const ri = new ResourceInfo(nameSegmentExpressions, []);
+                const typeName = ri.getFullNameExpression();
                 assert.deepStrictEqual(typeName, expected);
             });
         }
@@ -89,6 +233,139 @@ suite("ResourceInfo", () => {
                 ],
                 `concat(parameters('a'), '/b/c/d/', 123, '/', 456, '/', parameters('e'), '/', parameters('f'), '/g/h')`);
         });
+    });
+
+    suite("shortNameExpression", () => {
+        function createShortNameTest(
+            nameSegmentExpressions: string[],
+            expected: string | undefined
+        ): void {
+            const testName = JSON.stringify(nameSegmentExpressions);
+            test(testName, () => {
+                const ri = new ResourceInfo(nameSegmentExpressions, []);
+                const typeName = ri.shortNameExpression;
+                assert.deepStrictEqual(typeName, expected);
+            });
+        }
+
+        createShortNameTest([], undefined);
+        createShortNameTest([`'a'`], `'a'`);
+        createShortNameTest([`'abc'`, `'def'`], `'def'`);
+        createShortNameTest([`'abc'`, `'def'`, `'ghi'`], `'ghi'`);
+
+        suite("expressions", () => {
+            createShortNameTest([`parameters('abc')`], `parameters('abc')`);
+            createShortNameTest([`parameters('abc')`, `'def'`], `'def'`);
+            createShortNameTest([`'abc'`, `parameters('def')`], `parameters('def')`);
+            createShortNameTest([`parameters('abc')`, `parameters('def')`], `parameters('def')`);
+            createShortNameTest([`parameters('abc')`, `'def'`, `parameters('ghi')`], `parameters('ghi')`);
+        });
+
+        suite("coalesce consequence strings", () => {
+            createShortNameTest(
+                [
+                    `parameters('a')`,
+                    `'b'`,
+                    `'c'`,
+                    `'d'`,
+                    `123`,
+                    `456`,
+                    `parameters('e')`,
+                    `parameters('f')`,
+                    `'g'`,
+                    `'h'`
+                ],
+                `'h'`);
+        });
+    });
+
+    suite("IResource getFriendlyName", () => {
+        function createFriendlyNameTest(
+            resource: ResourceInfo,
+            expectedWithShortResourceName: string | undefined,
+            expectedWithFullResourceName: string | undefined
+        ): void {
+            const testName = JSON.stringify(`${resource.getFullTypeExpression()}: ${resource.getFullNameExpression()}`);
+            test(`${testName} (short name)`, () => {
+                const actualShort = resource.getFriendlyResourceLabel({});
+                assert.deepStrictEqual(actualShort, expectedWithShortResourceName);
+            });
+            test(`${testName} (full name)`, () => {
+                const actualFull = resource.getFriendlyResourceLabel({ fullName: true });
+                assert.deepStrictEqual(actualFull, expectedWithFullResourceName);
+            });
+        }
+
+        createFriendlyNameTest(
+            // simple string name with parent
+            new ResourceInfo(
+                [`'parent name'`, `'my name'`],
+                [`'Microsoft.AAD/domainServices'`]),
+            `my name (domainServices)`,
+            `parent name/my name (domainServices)`
+        );
+
+        // simple param/var name
+        createFriendlyNameTest(
+            new ResourceInfo(
+                ["variables('b')"],
+                [`'Microsoft.AAD/domainServices'`]),
+            // tslint:disable-next-line: no-invalid-template-strings
+            '${b} (domainServices)',
+            // tslint:disable-next-line: no-invalid-template-strings
+            '${b} (domainServices)');
+
+        // interpolatable name
+        createFriendlyNameTest(
+            new ResourceInfo(
+                ["'prefix'", "variables('b')"],
+                [`'Microsoft.AAD/domainServices'`]),
+            // tslint:disable-next-line: no-invalid-template-strings
+            '${b} (domainServices)',
+            // tslint:disable-next-line: no-invalid-template-strings
+            'prefix/${b} (domainServices)');
+
+        // name with expression
+        createFriendlyNameTest(
+            new ResourceInfo(
+                ["add(add(1, 2), '/', variables('b'))"],
+                [`'Microsoft.AAD/domainServices'`]),
+            // tslint:disable-next-line: no-invalid-template-strings
+            "[add(add(1, 2), '/', ${b})] (domainServices)",
+            // tslint:disable-next-line: no-invalid-template-strings
+            "[add(add(1, 2), '/', ${b})] (domainServices)");
+
+        // simple type name with parent
+        createFriendlyNameTest(
+            new ResourceInfo(
+                [`'my name'`],
+                [`'Microsoft.AAD/domainServices/abc'`]),
+            // tslint:disable-next-line: no-invalid-template-strings
+            "my name (abc)",
+            // tslint:disable-next-line: no-invalid-template-strings
+            "my name (abc)"
+        );
+
+        // type name with simple var/param
+        createFriendlyNameTest(
+            new ResourceInfo(
+                [`'my name'`],
+                [`variables('typeName')`]),
+            // tslint:disable-next-line: no-invalid-template-strings
+            "my name (${typeName})",
+            // tslint:disable-next-line: no-invalid-template-strings
+            "my name (${typeName})"
+        );
+
+        // type name with expression
+        createFriendlyNameTest(
+            new ResourceInfo(
+                [`'my name'`],
+                [`add(1, variables('typeName'))`]),
+            // tslint:disable-next-line: no-invalid-template-strings
+            "my name ([add(1, ${typeName})])",
+            // tslint:disable-next-line: no-invalid-template-strings
+            "my name ([add(1, ${typeName})])");
     });
 
     suite("getResourceIdExpression", () => {
@@ -272,7 +549,7 @@ suite("ResourceInfo", () => {
             };
 
             const dt = await parseTemplate(template);
-            const infos = getResourcesInfo(dt.topLevelScope);
+            const infos = getResourcesInfo({ scope: dt.topLevelScope, recognizeDecoupledChildren: false });
 
             const actual = infos.map(info => ({
                 name: info.shortNameExpression,

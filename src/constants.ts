@@ -48,6 +48,7 @@ export namespace configKeys {
     export const parameterFiles = 'parameterFiles';
     export const enableCodeLens = 'codelens.enable';
     export const codeLensForParameters = 'codelens.parameters';
+    export const codeLensForResourceParentsAndChildren = 'codelens.resourceChildren';
 }
 
 export namespace globalStateKeys {
@@ -87,6 +88,8 @@ export namespace templateKeys {
     export const resourceApiVersion = 'apiVersion';
     export const resourceDependsOn = 'dependsOn';
     export const resourceName = 'name';
+    export const tags = 'tags';
+    export const displayNameTag = 'displayName';
 
     // Nested templates
     export const nestedDeploymentExprEvalOptions = 'expressionEvaluationOptions';

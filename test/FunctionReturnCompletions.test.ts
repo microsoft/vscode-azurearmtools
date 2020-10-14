@@ -10,7 +10,7 @@ import { createExpressionCompletionsTest } from "./support/createCompletionsTest
 suite("Function return value completions", () => {
     suite("Must match full function name, not just a prefix", () => {
         createExpressionCompletionsTest(
-            '[resourceGrou().!]',
+            '[resourceGrou().<!cursor!>]',
             []);
     });
 
@@ -19,25 +19,25 @@ suite("Function return value completions", () => {
         // REMEMBER: These are using TestData.ExpressionMetadata.json, not real metadata
 
         createExpressionCompletionsTest(
-            '[resourceGroup().!]',
+            '[resourceGroup().<!cursor!>]',
             ["id", "properties", "name", "location", "tags"]);
         createExpressionCompletionsTest(
-            '[subscription().!]',
+            '[subscription().<!cursor!>]',
             ["displayName", "id", "subscriptionId", "tenantId"]);
         createExpressionCompletionsTest(
-            '[DEployment().!]',
+            '[DEployment().<!cursor!>]',
             ["name", "properties"]);
         createExpressionCompletionsTest(
-            '[listKeys().!]',
+            '[listKeys().<!cursor!>]',
             ["keys"]);
     });
 
     suite("Completions with property prefix", () => {
         createExpressionCompletionsTest(
-            '[subscription().d!]',
+            '[subscription().d<!cursor!>]',
             ["displayName"]);
         createExpressionCompletionsTest(
-            '[subscription().DI!]',
+            '[subscription().DI<!cursor!>]',
             ["displayName"]);
     });
 });

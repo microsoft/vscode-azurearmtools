@@ -20,7 +20,6 @@ export async function parseTemplate(
     options?: {
         fromFile?: boolean; // if true, template is a path
         ignoreWarnings?: boolean;
-        ignoreBang?: boolean;
         includeDiagnosticLineNumbers?: boolean;
         replacements?: { [key: string]: string | { [key: string]: unknown } };
     }
@@ -40,11 +39,11 @@ interface Markers {
 }
 
 /**
- * Pass in a template with positions marked using the notation <!tagname!>
- * Returns the parsed document without the tags, plus a dictionary of the tags and their positions
+ * Pass in a template with positions marked using the notation <!tagname!>. * Returns the parsed document without the tags, plus a dictionary of the tags and their positions
  */
 // tslint:disable-next-line: no-suspicious-comment
 // TODO: Make synchronous
+// tslint:disable-next-line: no-suspicious-comment
 export async function parseTemplateWithMarkers(
     template: string | IPartialDeploymentTemplate,
     expectedDiagnosticMessages?: string[],
@@ -52,7 +51,6 @@ export async function parseTemplateWithMarkers(
         fromFile?: boolean; // if true, template is a path
         ignoreWarnings?: boolean;
         includeDiagnosticLineNumbers?: boolean;
-        ignoreBang?: boolean;
         replacements?: { [key: string]: string | { [key: string]: unknown } };
     }
 ): Promise<{ dt: DeploymentTemplateDoc; markers: Markers }> {
@@ -107,7 +105,7 @@ export async function parseTemplateWithMarkers(
 }
 
 /**
- * Pass in a parameter file with positions marked using the notation <!tagname!>
+ * Pass in a parameter file with positions marked using the notation <!tagname!>.
  * Returns the parsed document without the tags, plus a dictionary of the tags and their positions
  */
 export async function parseParametersWithMarkers(
@@ -135,7 +133,7 @@ export function removeEOLMarker(s: string): string {
  * Pass in a template with positions marked using the notation <!tagname!>
  * Returns the document without the tags, plus a dictionary of the tags and their positions
  */
-export function getDocumentMarkers(doc: object | string, options?: { ignoreBang?: boolean }): { unmarkedText: string; markers: Markers } {
+export function getDocumentMarkers(doc: object | string, options?: {}): { unmarkedText: string; markers: Markers } {
     let markers: Markers = {};
     doc = typeof doc === "string" ? doc : stringify(doc);
     let modified = doc;
@@ -157,15 +155,6 @@ export function getDocumentMarkers(doc: object | string, options?: { ignoreBang?
 
         // Remove marker from the document
         modified = modified.slice(0, marker.index) + modified.slice(index + match[0].length);
-    }
-
-    // Also look for shortcut marker "!" with id "bang" used in some tests
-    if (!options?.ignoreBang) {
-        let bangIndex = modified.indexOf('!');
-        if (bangIndex >= 0) {
-            markers.bang = { name: 'bang', index: bangIndex };
-            modified = modified.slice(0, bangIndex) + modified.slice(bangIndex + 1);
-        }
     }
 
     const malformed =

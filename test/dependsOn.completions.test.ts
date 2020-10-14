@@ -2,13 +2,14 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-// tslint:disable:max-func-body-length object-literal-key-quotes
+// tslint:disable:max-func-body-length object-literal-key-quotes no-invalid-template-strings
 
 import * as assert from "assert";
-import { Completion } from '../extension.bundle';
+import { Completion, getVSCodePositionFromPosition, toVsCodeCompletionItem } from '../extension.bundle';
 import { assertEx } from './support/assertEx';
 import { IPartialDeploymentTemplate } from './support/diagnostics';
 import { parseTemplateWithMarkers } from './support/parseTemplate';
+import { allTestDataExpectedCompletions } from "./TestData";
 
 suite("dependsOn completions", () => {
     type PartialCompletionItem = Partial<Completion.Item & { replaceSpanStart: number; replaceSpanText: string }>;
@@ -28,6 +29,12 @@ suite("dependsOn completions", () => {
             assert(cursor, "Missing <!cursor!> in testcase template");
             const pc = dt.getContextFromDocumentCharacterIndex(cursor.index, undefined);
             const { items: completions } = await pc.getCompletionItems(options.triggerCharacter);
+
+            // Run toVsCodeCompletionItem on the items - this will run some additional validation
+            const vscodeItems = completions.map(item =>
+                toVsCodeCompletionItem(dt, item, getVSCodePositionFromPosition(pc.documentPosition))
+            );
+            assert.strictEqual(vscodeItems.length, completions.length);
 
             const actual: PartialCompletionItem[] = completions.map(filterActual);
 
@@ -71,16 +78,31 @@ suite("dependsOn completions", () => {
                             copy: {
                                 name: "copy"
                             }
+                        },
+                        {
+                            type: "microsoft.ghi/jkl",
+                            name: "name2",
+                            copy: {
+                                name: "[concat(parameters('p1'), '/', variables('v1'))]"
+                            }
                         }
                     ]
                 },
                 expected: [
                     {
-                        "label": "'name1'",
+                        "label": "name1",
                         "kind": Completion.CompletionKind.dependsOnResourceId
                     },
                     {
-                        "label": "LOOP 'copy'",
+                        "label": "Loop copy",
+                        "kind": Completion.CompletionKind.dependsOnResourceCopyLoop
+                    },
+                    {
+                        "label": "name2",
+                        "kind": Completion.CompletionKind.dependsOnResourceId
+                    },
+                    {
+                        "label": "Loop ${p1}/${v1}",
                         "kind": Completion.CompletionKind.dependsOnResourceCopyLoop
                     }
                 ]
@@ -90,7 +112,7 @@ suite("dependsOn completions", () => {
 
     suite("detail", () => {
         createDependsOnCompletionsTest(
-            "detailMatchesTypeNameMinusSegment",
+            "detail matches friendy type name",
             {
                 template: {
                     resources: [
@@ -115,17 +137,17 @@ suite("dependsOn completions", () => {
                 },
                 expected: [
                     {
-                        "label": "'name1a'",
+                        "label": "name1a",
                         "insertText": `"[resourceId('Microsoft.abc/def', 'name1a')]"`,
                         "detail": "def"
                     },
                     {
-                        "label": "'name1b'",
+                        "label": "name1b",
                         "insertText": `"[resourceId('microsoft.123/456/789', 'name1b')]"`,
-                        "detail": "456/789"
+                        "detail": "789"
                     },
                     {
-                        "label": "'name1c'",
+                        "label": "name1c",
                         "insertText": `"[resourceId('singlesegment', 'name1c')]"`,
                         "detail": "singlesegment"
                     }
@@ -133,7 +155,7 @@ suite("dependsOn completions", () => {
             });
 
         createDependsOnCompletionsTest(
-            "detail for copy loop is short type name",
+            "detail for copy loop is friendly type name",
             {
                 template: {
                     resources: [
@@ -153,10 +175,10 @@ suite("dependsOn completions", () => {
                 },
                 expected: [
                     {
-                        "label": "'name1'"
+                        "label": "name1"
                     },
                     {
-                        "label": "LOOP 'copyname'",
+                        "label": "Loop copyname",
                         "detail": "def"
                     }
                 ]
@@ -203,7 +225,7 @@ suite("dependsOn completions", () => {
 \`\`\`arm-template
 "copyname"
 \`\`\`
-from resource \`'name1a'\` of type \`def\``
+from resource \`name1a\` of type \`def\``
                         }
                     }
                 ]
@@ -230,7 +252,7 @@ from resource \`'name1a'\` of type \`def\``
                 },
                 expected: [
                     {
-                        "label": `'name1a'`,
+                        "label": `name1a`,
                         "insertText": `"[resourceId('microsoft.abc/def', 'name1a')]"`,
                         // tslint:disable-next-line: no-any
                         "documention": <any>{
@@ -264,7 +286,7 @@ from resource \`'name1a'\` of type \`def\``
                 },
                 expected: [
                     {
-                        "label": `'name1b'`
+                        "label": `name1b`
                     }
                 ]
             }
@@ -298,16 +320,16 @@ from resource \`'name1a'\` of type \`def\``
                 },
                 expected: [
                     {
-                        "label": `'name1'`
+                        "label": `name1`
                     },
                     {
-                        "label": `LOOP 'copynameliteral'`
+                        "label": `Loop copynameliteral`
                     },
                     {
-                        "label": `'name2'`
+                        "label": `name2`
                     },
                     {
-                        "label": `LOOP concat('copy', 'name1')`
+                        "label": `Loop copyname1`
                     }
                 ]
             }
@@ -333,7 +355,7 @@ from resource \`'name1a'\` of type \`def\``
                 },
                 expected: [
                     {
-                        "label": "'name1a'",
+                        "label": "name1a",
                         "insertText": `"[resourceId(variables('microsoft.abc/def'), 'name1a')]"`
                     }
                 ]
@@ -352,14 +374,14 @@ from resource \`'name1a'\` of type \`def\``
                         },
                         {
                             type: "microsoft.abc/def",
-                            name: "[concat(parameters('name1a'), 'foo')]"
+                            name: "[add(parameters('name1a'), 'foo')]"
                         }
                     ]
                 },
                 expected: [
                     {
-                        "label": "concat(parameters('name1a'), 'foo')",
-                        "insertText": `"[resourceId('microsoft.abc/def', concat(parameters('name1a'), 'foo'))]"`
+                        "label": "[add(${name1a}, 'foo')]",
+                        "insertText": `"[resourceId('microsoft.abc/def', add(parameters('name1a'), 'foo'))]"`
                     }
                 ]
             }
@@ -384,7 +406,7 @@ from resource \`'name1a'\` of type \`def\``
             },
             expected: [
                 {
-                    "label": "'foo'",
+                    "label": "foo",
                     "insertText": `"[resourceId('microsoft.abc/def', parameters('name1a'), 'foo')]"`
                 }
             ]
@@ -409,7 +431,7 @@ from resource \`'name1a'\` of type \`def\``
             },
             expected: [
                 {
-                    "label": "'foo'",
+                    "label": "foo",
                     "insertText": `"[resourceId('microsoft.abc/def', parameters('name1a'), 'foo')]"`
                 }
             ]
@@ -444,13 +466,13 @@ from resource \`'name1a'\` of type \`def\``
             },
             expected: [
                 {
-                    "label": `'name1'`
+                    "label": `name1`
                 },
                 {
                     "insertText": `"copynameliteral"`
                 },
                 {
-                    "label": `'name2'`
+                    "label": `name2`
                 },
                 {
                     "insertText": `"[concat('copy', 'name1')]"`
@@ -477,7 +499,7 @@ from resource \`'name1a'\` of type \`def\``
             },
             expected: [
                 {
-                    "label": "sum(parameters('name1a'), 1)",
+                    "label": "[sum(${name1a}, 1)]",
                     "insertText": `"[resourceId('microsoft.abc/def', sum(parameters('name1a'), 1))]"`
                 }
             ]
@@ -592,7 +614,7 @@ from resource \`'name1a'\` of type \`def\``
                 }`,
                 expected: [
                     {
-                        "label": "'name1a'",
+                        "label": "name1a",
                         "insertText": `"[resourceId('microsoft.abc/def', 'name1a')]"`,
                         replaceSpanText: ``
                     }
@@ -618,7 +640,7 @@ from resource \`'name1a'\` of type \`def\``
                 },
                 expected: [
                     {
-                        "label": "'name1a'",
+                        "label": "name1a",
                         "insertText": `"[resourceId('microsoft.abc/def', 'name1a')]"`,
                         replaceSpanText: `""`
                     }
@@ -644,7 +666,7 @@ from resource \`'name1a'\` of type \`def\``
                 },
                 expected: [
                     {
-                        "label": "'name1a'",
+                        "label": "name1a",
                         "insertText": `"[resourceId('microsoft.abc/def', 'name1a')]"`,
                         replaceSpanText: `""`
                     }
@@ -660,7 +682,7 @@ from resource \`'name1a'\` of type \`def\``
                     resources: [
                         {
                             dependsOn: [
-                                "<!replaceStart!>name<!cursor!>2a"
+                                "<!replaceStart!><!cursor!>name2a"
                             ]
                         },
                         {
@@ -671,7 +693,7 @@ from resource \`'name1a'\` of type \`def\``
                 },
                 expected: [
                     {
-                        "label": "'name1a'",
+                        "label": "name1a",
                         "insertText": `"[resourceId('microsoft.abc/def', 'name1a')]"`,
                         replaceSpanText: `"name2a"`
                     }
@@ -679,6 +701,27 @@ from resource \`'name1a'\` of type \`def\``
             }
         );
 
+        createDependsOnCompletionsTest(
+            "no dependsOn completions inside an expression (#1008/1033)",
+            {
+                template: {
+                    resources: [
+                        {
+                            dependsOn: [
+                                "[<!replaceStart!>name<!cursor!>2a"
+                            ]
+                        },
+                        {
+                            type: "microsoft.abc/def",
+                            name: "name1a"
+                        }
+                    ]
+                },
+                expected: [
+                    ...allTestDataExpectedCompletions(0, Number.MAX_SAFE_INTEGER).map(c => ({ label: c.label }))
+                ]
+            }
+        );
     });
 
     createDependsOnCompletionsTest(
@@ -688,7 +731,7 @@ from resource \`'name1a'\` of type \`def\``
                 resources: [
                     {
                         DEPENDSON: [
-                            "<!replaceStart!>name<!cursor!>2a"
+                            "<!replaceStart!><!cursor!>name2a"
                         ]
                     },
                     {
@@ -699,7 +742,7 @@ from resource \`'name1a'\` of type \`def\``
             },
             expected: [
                 {
-                    "label": "'name1a'",
+                    "label": "name1a",
                     "insertText": `"[resourceId('microsoft.abc/def', 'name1a')]"`,
                     replaceSpanText: `"name2a"`
                 }
@@ -733,17 +776,17 @@ from resource \`'name1a'\` of type \`def\``
             },
             expected: [
                 {
-                    "label": "'name1a'",
+                    "label": "name1a",
                     "insertText": `"[resourceId('microsoft.abc/def', 'name1a')]"`,
                     replaceSpanText: `""`
                 },
                 {
-                    "label": "'name1b'",
+                    "label": "name1b",
                     "insertText": `"[resourceId('microsoft.abc/def', 'name1b')]"`,
                     replaceSpanText: `""`
                 },
                 {
-                    "label": "'name2'",
+                    "label": "name2",
                     "insertText": `"[resourceId('type2', 'name2')]"`,
                     replaceSpanText: `""`
                 }
@@ -820,7 +863,7 @@ from resource \`'name1a'\` of type \`def\``
                     },
                     expected: [
                         {
-                            label: "variables('sqlServer')",
+                            label: "Parent (${sqlServer})",
                             detail: "servers",
                             insertText: `"[resourceId('Microsoft.Sql/servers', variables('sqlServer'))]"`
                         }
@@ -883,7 +926,55 @@ from resource \`'name1a'\` of type \`def\``
         suite("nested parent/child", () => {
 
             createDependsOnCompletionsTest(
-                "Reference parent from nested child",
+                "Two ways to name nested children",
+                {
+                    template: {
+                        "resources": [
+                            {
+                                // sibling
+                                name: "sibling",
+                                type: "a.b/c",
+                                "dependsOn": [
+                                    "<!cursor!>"
+                                ]
+                            },
+                            {
+                                // Parent
+                                "name": "[variables('sqlServer')]",
+                                "type": "Microsoft.Sql/servers",
+                                "resources": [
+                                    {
+                                        // Child (nested) - Name/type don't include parent name/type (this is the normal and documented case)
+                                        "name": "[variables('firewallRuleName')]",
+                                        "type": "firewallRules"
+                                    },
+                                    {
+                                        // Child (nested) - But name/type *can* include parent name/type (as long as both name and type do)
+                                        "name": "[concat(variables('sqlServer'), '/', variables('firewallRuleName2'))]",
+                                        "type": "Microsoft.Sql/servers/firewallRules"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    expected: [
+                        {
+                            label: "${sqlServer}"
+                        },
+                        {
+                            label: "${firewallRuleName}",
+                            insertText: `"[resourceId('Microsoft.Sql/servers/firewallRules', variables('sqlServer'), variables('firewallRuleName'))]"`
+                        },
+                        {
+                            label: "${firewallRuleName2}",
+                            insertText: `"[resourceId('Microsoft.Sql/servers/firewallRules', variables('sqlServer'), variables('firewallRuleName2'))]"`
+                        }
+                    ]
+                }
+            );
+
+            createDependsOnCompletionsTest(
+                "Reference parent and siblings from nested child",
                 {
                     template: {
                         "resources": [
@@ -898,12 +989,17 @@ from resource \`'name1a'\` of type \`def\``
                                 "type": "Microsoft.Sql/servers",
                                 "resources": [
                                     {
-                                        // Child (nested) - Name must not include parent name
+                                        // Child (nested) - Name/type don't include parent name/type (this is the normal and documented case)
                                         "name": "[variables('firewallRuleName')]",
                                         "type": "firewallRules",
                                         "dependsOn": [
                                             "<!cursor!>"
                                         ]
+                                    },
+                                    {
+                                        // Child (nested) - But name/type *can* include parent name/type (as long as both name and type do)
+                                        "name": "[concat(variables('sqlServer'), '/', variables('firewallRuleName2'))]",
+                                        "type": "Microsoft.Sql/servers/firewallRules"
                                     }
                                 ]
                             }
@@ -911,10 +1007,16 @@ from resource \`'name1a'\` of type \`def\``
                     },
                     expected: [
                         {
-                            label: "'sibling'"
+                            // another top-level resource
+                            label: "sibling"
                         },
                         {
-                            label: "variables('sqlServer')"
+                            // parent
+                            label: "Parent (${sqlServer})"
+                        },
+                        {
+                            // sibling child
+                            label: "${firewallRuleName2}"
                         }
                     ]
                 }
@@ -1088,23 +1190,116 @@ from resource \`'name1a'\` of type \`def\``
                 },
                 expected: [
                     {
-                        label: "variables('parent1')"
+                        label: "Parent (${parent1})"
                     },
                     {
-                        label: "'child1b'"
+                        label: "child1b"
                     },
                     {
-                        label: "'sibling1'"
+                        label: "sibling1"
                     },
                     {
-                        label: "'child2a'"
+                        label: "child2a"
                     },
                     {
-                        label: "'grandchild2'"
+                        label: "grandchild2"
                     },
                     {
-                        label: "variables('child2b')"
+                        label: "${child2b}"
                     }
+                ]
+            }
+        );
+    });
+
+    suite("Regression", () => {
+        createDependsOnCompletionsTest(
+            "#974 simple",
+            {
+                template: {
+                    "resources": [
+                        {
+                            "type": "Microsoft.Compute/virtualMachines/extensions",
+                            "apiVersion": "2019-12-01",
+                            "name": "[concat(parameters('vmName'),copyIndex(1),'/dscext')]",
+                            "dependsOn": [
+                                // >>> CURSOR ON FOLLOWING LINE inside "resourceId"
+                                "[reso<!cursor!>urceId('Microsoft.Compute/virtualMachines/extensions', concat(parameters('vmName'),copyIndex(1),'/dscext'))]"
+                            ]
+                        }
+                    ]
+                },
+                expected: [
+                    // Just the built-in function names, nothing else (and don't assert)
+                    ...allTestDataExpectedCompletions(0, Number.MAX_SAFE_INTEGER).map(c => ({ label: c.label }))
+                ]
+            }
+        );
+
+        createDependsOnCompletionsTest(
+            "#974",
+            {
+                template: {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {},
+                    "functions": [],
+                    "variables": {},
+                    "resources": [
+                        {
+                            "type": "Microsoft.Compute/virtualMachines/extensions",
+                            "apiVersion": "2019-12-01",
+                            "name": "[concat(parameters('vmName'),copyIndex(1),'/dscext')]",
+                            "location": "[resourceGroup().location]",
+                            "condition": "[not(empty(parameters('dscFunction')))]",
+                            "dependsOn": [
+                                // >>> CURSOR ON FOLLOWING LINE inside "resourceId"
+                                "[reso<!cursor!>urceId('Microsoft.Compute/virtualMachines/extensions', concat(parameters('vmName'),copyIndex(1),'/dscext'))]"
+                            ],
+                            "properties": {
+                                "publisher": "Microsoft.Powershell",
+                                "type": "DSC",
+                                "typeHandlerVersion": "2.11",
+                                "autoUpgradeMinorVersion": true,
+                                "settings": {
+                                    "ModulesUrl": "[concat(parameters('dscLocation'),'DSC/DeployRDSLab.zip')]",
+                                    "ConfigurationFunction": "[parameters('dscFunction')]",
+                                    "Properties": {
+                                        "AdminCreds": {
+                                            "UserName": "[parameters('adminUser')]",
+                                            "Password": "PrivateSettingsRef:AdminPassword"
+                                        },
+                                        "RDSParameters": [
+                                            {
+                                                "TimeZoneID": "[parameters('TimeZoneID')]",
+                                                "DomainName": "[parameters('adDomainName')]",
+                                                "DNSServer": "[parameters('firstDcIP')]",
+                                                "MainConnectionBroker": "[parameters('MainConnectionBroker')]",
+                                                "WebAccessServer": "[concat(parameters('WebAccessServerName'),'1')]",
+                                                "SessionHost": "[concat(parameters('SessionHostName'),'1')]",
+                                                "LicenseServer": "[concat(parameters('LicenseServerName'),'1')]",
+                                                "ExternalFqdn": "[parameters('ExternalFqdn')]",
+                                                "ExternalDnsDomain": "[parameters('ExternalDnsDomain')]",
+                                                "IntBrokerLBIP": "[parameters('intLbBrokerIP')]",
+                                                "IntWebGWLBIP": "[parameters('intLbWebGWIP')]",
+                                                "WebGWDNS": "[parameters('webGwName')]"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "protectedSettings": {
+                                    "Items": {
+                                        "AdminPassword": "[parameters('adminPasswd')]"
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "outputs": {}
+                },
+                expected: [
+                    // Just the built-in function names, nothing else (and don't assert)
+                    ...allTestDataExpectedCompletions(0, Number.MAX_SAFE_INTEGER).map(c => ({ label: c.label }))
                 ]
             }
         );
