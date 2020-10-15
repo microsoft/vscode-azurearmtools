@@ -10,6 +10,7 @@ import { randomBytes } from "crypto";
 import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
 import { Uri } from "vscode";
 import { DefinitionKind, DeploymentTemplateDoc, Histogram, INamedDefinition, IncorrectArgumentsCountIssue, IParameterDefinition, Issue, IssueKind, IVariableDefinition, Json, LineColPos, ReferenceInVariableDefinitionsVisitor, ReferenceList, Span, TemplateScope, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "../extension.bundle";
+import { getVSCodeRangeFromSpan } from "../src/vscodeIntegration/vscodePosition";
 import { diagnosticSources, IDeploymentTemplate, testDiagnostics } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
@@ -1061,6 +1062,7 @@ suite("DeploymentTemplate", () => {
                     pc.getInsertionContext({});
                     pc.getInsertionParent();
                     pc.getScope();
+                    dt.getCodeActions(undefined, getVSCodeRangeFromSpan(dt, new Span(index, 0)), { diagnostics: [] });
                     /*const items =*/ await pc.getCompletionItems(undefined);
                     // tslint:disable-next-line: no-suspicious-comment
                     /* TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1030

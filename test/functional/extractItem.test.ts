@@ -134,10 +134,10 @@ suite("ExtractItem", async (): Promise<void> => {
                     }
                 ]
             };
-            test('[resourceGroup().location]', async () => {
+            test('full expression with square brackets', async () => {
                 await runExtractParameterTest(baseTemplate, "[resourceGroup().location]", ["location", "Location of resource"], 2, expected);
             });
-            test('resourceGroup().location', async () => {
+            test('full expression without square brackets', async () => {
                 await runExtractParameterTest(baseTemplate, "resourceGroup().location", ["location", "Location of resource"], 2, expected);
             });
         });
@@ -329,10 +329,10 @@ suite("ExtractItem", async (): Promise<void> => {
                     }
                 ]
             };
-            test('[resourceGroup().location]', async () => {
+            test('full expression with square brackets', async () => {
                 await runExtractVariableTest(baseTemplate, "[resourceGroup().location]", ["location"], 2, expected);
             });
-            test('resourceGroup().location', async () => {
+            test('full expression without square brackets', async () => {
                 await runExtractVariableTest(baseTemplate, "resourceGroup().location", ["location"], 2, expected);
             });
         });
@@ -427,8 +427,6 @@ suite("ExtractItem", async (): Promise<void> => {
         });
     });
 
-    //////////// Expressions
-
     test("Don't allow from inside a property name", async () => {
         await runExtractVariableTest(
             {
@@ -514,8 +512,112 @@ suite("ExtractItem", async (): Promise<void> => {
         });
     });
 
-    suite("Extract expressions", async () => {
-        test('TODO');
+    //////////// Expressions
+
+    suite("Extract within expressions", async () => {
+        async function runExtractFromExpressionTest(expression: string, selectedText: string, expectedVarValue?: string, expectedExpression?: string): Promise<void> {
+            if (expectedVarValue && expectedExpression) {
+                // Expecting successful extraction
+                await runExtractVariableTest(
+                    {
+                        resources: [
+                            {
+                                property: expression
+                            }
+                        ]
+                    },
+                    selectedText,
+                    ["v1"],
+                    2,
+                    {
+                        resources: [
+                            {
+                                property: expectedExpression
+                            }
+                        ],
+                        variables: {
+                            v1: expectedVarValue
+                        }
+                    }
+                );
+            } else {
+                // Expecting no code actions offered for extraction
+                await runExtractVariableTest(
+                    {
+                        resources: [
+                            {
+                                property: expression
+                            }
+                        ]
+                    },
+                    selectedText,
+                    [],
+                    0
+                );
+            }
+        }
+
+        suite("String literals", () => {
+
+            test("without single quotes", async () => {
+                await runExtractFromExpressionTest(`[concat('abc', 'def')]`, `abc`, `abc`, `[concat(variables('v1'), 'def')]`);
+            });
+
+            test("with single quotes", async () => {
+                await runExtractFromExpressionTest(`[concat('abc', 'def')]`, `'abc'`, `abc`, `[concat(variables('v1'), 'def')]`);
+            });
+
+            /*TODO: P2
+            test("empty", async () => {
+                await runExtractFromExpressionTest(`[concat('', 'def')]`, `''`, `abc`, `[concat(variables('v1'), 'def')]`);
+            });*/
+
+            /*TODO: P2
+            suite("string literal with escaped single quotes - escaped single quotes should removed in variable definition", async () => {
+                test("one escaped", async () => {
+                    await runExtractFromExpressionTest(`[concat('That''s fine', 'def')]`, `'That''s fine'`, `That's fine`, `[concat(variables('v1'), 'def')]`);
+                });
+
+                test("two escaped", async () => {
+                    await runExtractFromExpressionTest(`[concat('That ''is'' fine', 'def')]`, `'That ''is'' fine'`, `That 'is' fine`, `[concat(variables('v1'), 'def')]`);
+                });
+
+                test("two sequential", async () => {
+                    await runExtractFromExpressionTest(`[concat('That '''' fine', 'def')]`, `'That '''' fine'`, `That '' fine`, `[concat(variables('v1'), 'def')]`);
+                });
+            });
+            */
+
+            test("copyIndex(1)", async () => {
+                await runExtractFromExpressionTest(`[concat(parameters('vmName'),'pip',copyIndex(1))]`, `copyIndex(1)`, `[copyIndex(1)]`, `[concat(parameters('vmName'),'pip',variables('v1'))]`);
+            });
+
+            /*TODO: P2 failing
+            test("copyIndex(1)) - invalid", async () => {
+                await runExtractFromExpressionTest(`[concat(parameters('vmName'),'pip',copyIndex(1))]`, `copyIndex(1))`);
+            });*/
+
+            test("int literal - invalid", async () => {
+                await runExtractFromExpressionTest(`[concat(parameters('vmName'),'pip',copyIndex(1))]`, `1`);
+            });
+
+            test("resourceGroup() from property access chain", async () => {
+                await runExtractFromExpressionTest(`[resourceGroup().location]`, `resourceGroup()`, `[resourceGroup()]`, `[variables('v1').location]`);
+            });
+
+            test("user-defined function #1", async () => {
+                await runExtractFromExpressionTest(`[concat(ns.udf1('a'), ns.udf2(ns.udf3()))]`, `ns.udf3()`, `[ns.udf3()]`, `[concat(ns.udf1('a'), ns.udf2(variables('v1')))]`);
+            });
+
+            test("user-defined function #2", async () => {
+                await runExtractFromExpressionTest(
+                    `[concat(ns.udf1('a'), ns.udf2(ns.udf3()))]`,
+                    `ns.udf2(ns.udf3())`,
+                    `[ns.udf2(ns.udf3())]`,
+                    `[concat(ns.udf1('a'), variables('v1'))]`
+                );
+            });
+        });
     });
 
     suite("Nested templates", async () => {
