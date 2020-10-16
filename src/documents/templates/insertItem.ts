@@ -254,7 +254,6 @@ export class InsertItem {
                 textEditor,
                 data: subPart,
                 name: part,
-                indentLevel: 1,
                 setCursor,
                 reveal,
                 options
@@ -265,7 +264,6 @@ export class InsertItem {
                 textEditor,
                 data,
                 name,
-                indentLevel: undefined,
                 setCursor,
                 reveal,
                 options
@@ -283,30 +281,43 @@ export class InsertItem {
             textEditor,
             data,
             name,
-            indentLevel = 2,
             setCursor = true,
             reveal = true,
             options = { undoStopBefore: true, undoStopAfter: true }
         }: {
-            templatePart: Json.ObjectValue;
+            templatePart: Json.ObjectValue; // The parent to place the new text into
             textEditor: vscode.TextEditor;
             // tslint:disable-next-line:no-any
             data: any;
             name: string;
-            indentLevel?: number;
             setCursor?: boolean;
             reveal?: boolean;
             options?: { undoStopBefore: boolean; undoStopAfter: boolean };
         }): Promise<number> {
         let isFirstItem = templatePart.properties.length === 0;
         let startText = isFirstItem ? '' : ',';
-        let index = isFirstItem ? templatePart.span.endIndex :
+
+        // Figure out the indenting level based on existing text
+        let templatePartStartPos = textEditor.document.positionAt(templatePart.span.startIndex);
+        let templatePartStartLine = textEditor.document.lineAt(templatePartStartPos.line);
+        // tslint:disable-next-line: no-non-null-assertion // Will always match at least empty string
+        let templatePartInitialWhitespace: string = templatePartStartLine.text.match(/^\s*/)![0];
+        let spacesPerTab = Math.max(1, Number(textEditor.options.tabSize) ?? 1);
+        let templatePartIndentColumn = templatePartInitialWhitespace.replace(/\t/g, ' '.repeat(spacesPerTab)).length;
+        spacesPerTab = Number.isSafeInteger(spacesPerTab) ? spacesPerTab : 1;
+        let templatePartIndentLevel = Math.max(0, Math.floor(templatePartIndentColumn / spacesPerTab));
+        let textIndentLevel = templatePartIndentLevel + 1;
+
+        let insertIndex = isFirstItem ?
+            templatePart.span.endIndex :
             templatePart.properties[templatePart.properties.length - 1].span.afterEndIndex;
-        let tabs = '\t'.repeat(indentLevel - 1);
-        let endText = isFirstItem ? `\r\n${tabs}` : ``;
+
+        let endTabs = '\t'.repeat(textIndentLevel - 1);
+        let endText = isFirstItem ? `\r\n${endTabs}` : ``;
+
         let text = typeof (data) === 'object' ? JSON.stringify(data, null, '\t') : `"${data}"`;
-        let indentedText = this.indent(`\r\n"${name}": ${text}`, indentLevel);
-        return await this.insertText(textEditor, index, `${startText}${indentedText}${endText}`, setCursor, reveal, options);
+        let indentedText = this.indent(`\r\n"${name}": ${text}`, textIndentLevel);
+        return await this.insertText(textEditor, insertIndex, `${startText}${indentedText}${endText}`, setCursor, reveal, options);
     }
 
     private async insertVariable(templateTopLevel: ObjectValue | undefined, textEditor: vscode.TextEditor, context: IActionContext): Promise<void> {
@@ -362,7 +373,6 @@ export class InsertItem {
             textEditor,
             data: functions,
             name: templateKeys.functions,
-            indentLevel: 1
         });
     }
 
@@ -383,7 +393,6 @@ export class InsertItem {
             textEditor,
             data: members,
             name: templateKeys.userFunctionMembers,
-            indentLevel: 3
         });
     }
 
@@ -395,7 +404,6 @@ export class InsertItem {
             textEditor,
             data: functionDef,
             name: functionName,
-            indentLevel: 4
         });
     }
 
@@ -445,7 +453,6 @@ export class InsertItem {
                 textEditor,
                 data: subPart,
                 name: templateKeys.resources,
-                indentLevel: 1
             });
         } else {
             index = resources.span.endIndex;

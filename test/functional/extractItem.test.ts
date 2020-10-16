@@ -13,6 +13,7 @@ import * as fse from 'fs-extra';
 import * as vscode from "vscode";
 import { TestUserInput } from 'vscode-azureextensiondev';
 import { DeploymentTemplateDoc, ExtractItem } from '../../extension.bundle';
+import { assertEx } from '../support/assertEx';
 import { IPartialDeploymentTemplate } from '../support/diagnostics';
 import { getActionContext } from '../support/getActionContext';
 import { getCodeActionContext } from '../support/getCodeActionContext';
@@ -51,11 +52,11 @@ suite("ExtractItem", async (): Promise<void> => {
             let endPosition = document.positionAt(index + selectedText.length);
             textEditor.selection = new vscode.Selection(position, endPosition);
             let codeActions = deploymentTemplate.getCodeActions(undefined, textEditor.selection, getCodeActionContext());
-            assert.equal(codeActions.length, codeActionsCount, `GetCodeAction should return ${codeActionsCount}`);
+            assert.strictEqual(codeActions.length, codeActionsCount, `GetCodeAction should return ${codeActionsCount}`);
             if (codeActionsCount > 0) {
                 await doExtract(extractItem, deploymentTemplate, textEditor);
                 const docTextAfterInsertion = document.getText();
-                assert.equal(docTextAfterInsertion, expectedTemplate, "extractVaraiable should perform expected result");
+                assertEx.strictEqual(docTextAfterInsertion, expectedTemplate, {}, "extractVaraiable should perform expected result");
             }
         });
     }
