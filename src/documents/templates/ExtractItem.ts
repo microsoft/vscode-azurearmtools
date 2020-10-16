@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from "vscode";
-import { IActionContext, IAzureUserInput } from "vscode-azureextensionui";
+import { IActionContext, IAzureUserInput, UserCancelledError } from "vscode-azureextensionui";
 import { isTleExpression } from "../../language/expressions/isTleExpression";
 import { ObjectValue } from "../../language/json/JSON";
 import { DeploymentTemplateDoc } from "./DeploymentTemplateDoc";
@@ -20,6 +20,10 @@ export class ExtractItem {
         editor.selection = selection;
         let selectedText = editor.document.getText(selection);
         let name = await this.ui.showInputBox({ prompt: "Enter the new parameter name" });
+        if (!name) {
+            context.telemetry.properties.cancelStep = 'name';
+            throw new UserCancelledError();
+        }
         const leaveEmpty = "Press 'Enter' if you do not want to add a description.";
         let description = await this.ui.showInputBox({ prompt: "Description?", placeHolder: leaveEmpty });
         const insertText = `[parameters('${name}')]`;
@@ -40,6 +44,10 @@ export class ExtractItem {
         editor.selection = selection;
         let selectedText = editor.document.getText(selection);
         let name = await this.ui.showInputBox({ prompt: "Enter the new variable name" });
+        if (!name) {
+            context.telemetry.properties.cancelStep = 'name';
+            throw new UserCancelledError();
+        }
         let insertText = `[variables('${name}')]`;
         const texts = this.fixExtractTexts(selectedText, insertText, selection, template, editor);
         let topLevel = this.getTopLevel(template, selection);
