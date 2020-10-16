@@ -659,7 +659,7 @@ suite("ExtractItem", async (): Promise<void> => {
                             apiVersion: "2017-05-10",
                             properties: {
                                 expressionEvaluationOptions: {
-                                    scope: "inner"
+                                    scope: "outer"
                                 },
                                 template: {
                                     resources: [
