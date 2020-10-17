@@ -726,14 +726,201 @@ suite("ExtractItem", async (): Promise<void> => {
                                         {
                                             name: "storageaccount1",
                                             type: "Microsoft.Storage/storageAccounts",
-                                            apiVersion: "[parameters('p1')]",
+                                            apiVersion: "[parameters('p1')]"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    parameters: {
+                        p1: {
+                            type: "string",
+                            defaultValue: "2019-06-01"
+                        }
+                    }
+                }
+            );
+        });
+
+        test("Deeply-nested outer-scoped templates", async () => {
+            await runExtractVariableTest(
+                {
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    contentVersion: "1.0.0.0",
+                    resources: [
+                        {
+                            name: "inner1",
+                            type: "Microsoft.Resources/deployments",
+                            apiVersion: "2019-10-01",
+                            properties: {
+                                expressionEvaluationOptions: {
+                                    scope: "inner"
+                                },
+                                mode: "Incremental",
+                                template: {
+                                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                                    contentVersion: "1.0.0.0",
+                                    resources: [
+                                        {
+                                            name: "outer2",
+                                            type: "Microsoft.Resources/deployments",
+                                            apiVersion: "2019-10-01",
+                                            properties: {
+                                                expressionEvaluationOptions: {
+                                                    scope: "outer"
+                                                },
+                                                mode: "Incremental",
+                                                template: {
+                                                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                                                    contentVersion: "1.0.0.0",
+                                                    resources: [
+                                                        {
+                                                            name: "outer3",
+                                                            type: "Microsoft.Resources/deployments",
+                                                            apiVersion: "2019-10-01",
+                                                            properties: {
+                                                                expressionEvaluationOptions: {
+                                                                    scope: "outer"
+                                                                },
+                                                                mode: "Incremental",
+                                                                template: {
+                                                                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                                                                    contentVersion: "1.0.0.0",
+                                                                    resources: [
+                                                                        {
+                                                                            name: "outer4",
+                                                                            type: "Microsoft.Resources/deployments",
+                                                                            apiVersion: "2019-10-01",
+                                                                            properties: {
+                                                                                expressionEvaluationOptions: {
+                                                                                    scope: "outer"
+                                                                                },
+                                                                                mode: "Incremental",
+                                                                                template: {
+                                                                                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                                                                                    contentVersion: "1.0.0.0",
+                                                                                    resources: [
+                                                                                        {
+                                                                                            name: "storageaccount1",
+                                                                                            type: "Microsoft.Storage/storageAccounts",
+                                                                                            apiVersion: "2019-06-01",
+                                                                                            tags: {
+                                                                                                displayName: "storageaccount1"
+                                                                                            },
+                                                                                            location: "[resourceGroup().location]",
+                                                                                            kind: "StorageV2",
+                                                                                            sku: {
+                                                                                                name: "Premium_LRS",
+                                                                                                tier: "Premium"
+                                                                                            }
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "Premium_LRS",
+                ["v1"],
+                2,
+                {
+                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    contentVersion: "1.0.0.0",
+                    resources: [
+                        {
+                            name: "inner1",
+                            type: "Microsoft.Resources/deployments",
+                            apiVersion: "2019-10-01",
+                            properties: {
+                                expressionEvaluationOptions: {
+                                    scope: "inner"
+                                },
+                                mode: "Incremental",
+                                template: {
+                                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                                    contentVersion: "1.0.0.0",
+                                    resources: [
+                                        {
+                                            name: "outer2",
+                                            type: "Microsoft.Resources/deployments",
+                                            apiVersion: "2019-10-01",
+                                            properties: {
+                                                expressionEvaluationOptions: {
+                                                    scope: "outer"
+                                                },
+                                                mode: "Incremental",
+                                                template: {
+                                                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                                                    contentVersion: "1.0.0.0",
+                                                    resources: [
+                                                        {
+                                                            name: "outer3",
+                                                            type: "Microsoft.Resources/deployments",
+                                                            apiVersion: "2019-10-01",
+                                                            properties: {
+                                                                expressionEvaluationOptions: {
+                                                                    scope: "outer"
+                                                                },
+                                                                mode: "Incremental",
+                                                                template: {
+                                                                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                                                                    contentVersion: "1.0.0.0",
+                                                                    resources: [
+                                                                        {
+                                                                            name: "outer4",
+                                                                            type: "Microsoft.Resources/deployments",
+                                                                            apiVersion: "2019-10-01",
+                                                                            properties: {
+                                                                                expressionEvaluationOptions: {
+                                                                                    scope: "outer"
+                                                                                },
+                                                                                mode: "Incremental",
+                                                                                template: {
+                                                                                    $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                                                                                    contentVersion: "1.0.0.0",
+                                                                                    resources: [
+                                                                                        {
+                                                                                            name: "storageaccount1",
+                                                                                            type: "Microsoft.Storage/storageAccounts",
+                                                                                            apiVersion: "2019-06-01",
+                                                                                            tags: {
+                                                                                                displayName: "storageaccount1"
+                                                                                            },
+                                                                                            location: "[resourceGroup().location]",
+                                                                                            kind: "StorageV2",
+                                                                                            sku: {
+                                                                                                name: "[variables('v1')]",
+                                                                                                tier: "Premium"
+                                                                                            }
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            }
                                         }
                                     ],
-                                    parameters: {
-                                        p1: {
-                                            type: "string",
-                                            defaultValue: "2019-06-01"
-                                        }
+                                    variables: {
+                                        v1: "Premium_LRS"
                                     }
                                 }
                             }
