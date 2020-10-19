@@ -253,7 +253,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         const warningMessage =
             // tslint:disable-next-line: prefer-template
             'Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. '
-            + `If you intended inner scope, set properties.nestedDeploymentExprEvalOptions.scope to 'inner'.`;
+            + `If you intended inner scope, set properties.ExpressionEvaluationOptions.scope to 'inner'.`;
 
         for (const scope of this.allScopes) {
             if (scope instanceof NestedTemplateOuterScope) {
