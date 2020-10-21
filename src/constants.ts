@@ -69,6 +69,7 @@ export const expressionsDiagnosticsCompletionMessage = diagnosticsCompletePrefix
 
 export namespace templateKeys {
     // Top-level
+    export const schema = '$schema';
     export const parameters = 'parameters';
     export const resources = 'resources';
     export const variables = 'variables';

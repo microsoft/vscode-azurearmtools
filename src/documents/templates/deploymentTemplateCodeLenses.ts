@@ -6,6 +6,7 @@
 
 import { Range, Uri } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
+import { getScopeDeploymentScopeFriendlyName } from '../../getScopeDeploymentScopeFriendlyName';
 import { Span } from '../../language/Span';
 import { pathExists } from '../../util/pathExists';
 import { IGotoParameterValueArgs } from '../../vscodeIntegration/commandArguments';
@@ -188,11 +189,13 @@ export class NestedTemplateCodeLen extends ResolvableCodeLens {
     }
 
     public static create(scope: TemplateScope, span: Span): NestedTemplateCodeLen | undefined {
+        const friendlyDeploymentScope = getScopeDeploymentScopeFriendlyName(scope);
+
         switch (scope.scopeKind) {
             case TemplateScopeKind.NestedDeploymentWithInnerScope:
-                return new NestedTemplateCodeLen(scope, span, "Nested template with inner scope");
+                return new NestedTemplateCodeLen(scope, span, `Nested template (inner-scoped) to a ${friendlyDeploymentScope}`);
             case TemplateScopeKind.NestedDeploymentWithOuterScope:
-                return new NestedTemplateCodeLen(scope, span, "Nested template with outer scope");
+                return new NestedTemplateCodeLen(scope, span, `Nested template (outer-scoped) to a ${friendlyDeploymentScope}`);
             default:
                 return undefined;
         }
@@ -218,7 +221,31 @@ export class LinkedTemplateCodeLens extends ResolvableCodeLens {
     }
 
     public static create(scope: TemplateScope, span: Span): LinkedTemplateCodeLens {
-        return new LinkedTemplateCodeLens(scope, span, "Linked template");
+        return new LinkedTemplateCodeLens(scope, span, "Linked template to a resource group"); //asdf
+    }
+
+    public async resolve(): Promise<boolean> {
+        // Nothing else to do
+        return true;
+    }
+}
+
+export class TopLevelDeploymentCodeLens extends ResolvableCodeLens {
+    private constructor(
+        scope: TemplateScope,
+        span: Span,
+        title: string
+    ) {
+        super(scope, span);
+        this.command = {
+            title: title,
+            command: ''
+        };
+    }
+
+    public static create(scope: TemplateScope, span: Span): LinkedTemplateCodeLens {
+        const friendlyDeploymentScope = getScopeDeploymentScopeFriendlyName(scope);
+        return new TopLevelDeploymentCodeLens(scope, span, `Deployment to a ${friendlyDeploymentScope}`); //asdf
     }
 
     public async resolve(): Promise<boolean> {

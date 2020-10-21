@@ -26,11 +26,13 @@ import { DeploymentTemplateDoc } from "./documents/templates/DeploymentTemplateD
 import { getResourcesInfo } from './documents/templates/getResourcesInfo';
 import { gotoResources } from './documents/templates/gotoResources';
 import { getItemTypeQuickPicks, InsertItem } from "./documents/templates/insertItem";
+import { TemplateScopeKind } from './documents/templates/scopes/TemplateScope';
 import { getQuickPickItems, sortTemplate } from "./documents/templates/sortTemplate";
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, templateDocumentSelector, templateOrParameterDocumentSelector } from "./documents/templates/supported";
 import { TemplateSectionType } from "./documents/templates/TemplateSectionType";
 import { ext } from "./extensionVariables";
 import { assert } from './fixed_assert';
+import { getScopeDeploymentScopeFriendlyName } from './getScopeDeploymentScopeFriendlyName';
 import * as TLE from "./language/expressions/TLE";
 import { Issue } from "./language/Issue";
 import * as Json from "./language/json/JSON";
@@ -153,6 +155,19 @@ export class AzureRMTools {
     });
 
     private readonly _resourceDescriptionDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
+        borderWidth: "1px",
+        borderStyle: "solid",
+        light: {
+            borderColor: "rgba(0, 0, 0, 0.2)",
+            backgroundColor: "rgba(0, 0, 0, 0.05)"
+        },
+        dark: {
+            borderColor: "rgba(128, 128, 128, 0.5)",
+            backgroundColor: "rgba(128, 128, 128, 0.1)"
+        }
+    });
+
+    private readonly _deploymentScopeDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
         borderWidth: "1px",
         borderStyle: "solid",
         light: {
@@ -484,7 +499,65 @@ export class AzureRMTools {
                         }
                     }
 
+                    const startColor1 = "#009900";
+                    const startColor2 = "rgb(50,192,50)";
+                    const endColor = "#D8D8E080";
+                    const margin = "0 0 0 1.5em";
+
                     if (editor && editor.document === textDocument) {
+                        // Deployment scope decorations
+                        {
+                            const options1: vscode.DecorationOptions[] = [];
+                            for (const scope of deploymentTemplate.allScopes) {
+                                switch (scope.scopeKind) {
+                                    default:
+                                        break;
+
+                                    case TemplateScopeKind.LinkedDeployment:
+                                    case TemplateScopeKind.NestedDeploymentWithInnerScope:
+                                    case TemplateScopeKind.NestedDeploymentWithOuterScope:
+                                    case TemplateScopeKind.TopLevel:
+                                        const startIndex = deploymentTemplate.topLevelValue?.span.startIndex;
+                                        if (startIndex !== undefined) {
+                                            const startPos = deploymentTemplate.getDocumentPosition(startIndex);
+                                            let schemaType: string = getScopeDeploymentScopeFriendlyName(scope);
+                                            options1.push({
+                                                range: new vscode.Range(startPos.line, Number.MAX_SAFE_INTEGER, startPos.line, Number.MAX_SAFE_INTEGER),
+                                                hoverMessage: "asdf hover message",
+                                                renderOptions: {
+                                                    after: {
+                                                        color: startColor1,
+                                                        contentText: `Deployment to a ${schemaType}`,
+                                                        fontStyle: "italic",
+                                                        margin: margin
+
+                                                    }
+                                                }
+                                            });
+                                            options1.push({
+                                                range: new vscode.Range(startPos.line, Number.MAX_SAFE_INTEGER, startPos.line, Number.MAX_SAFE_INTEGER),
+                                                hoverMessage: "asdf hover message",
+                                                renderOptions: {
+                                                    after: {
+                                                        color: "#90EE90",
+                                                        //color: "#A0A0A0",
+                                                        //color: "#D8D8E080",
+                                                        //textDecoration: "underline",
+                                                        contentText: `End of deployment to ${schemaType} scope`,
+                                                        fontStyle: "italic",
+                                                        //fontWeight: "100",
+                                                        margin: margin
+
+                                                    }
+                                                }
+                                            });
+                                        }
+                                }
+                            }
+
+                            editor.setDecorations(this._deploymentScopeDecorationType, options1);
+                        }
+
                         const infos = getResourcesInfo({ scope: deploymentTemplate.topLevelScope/*asdf*/, recognizeDecoupledChildren: false });
                         const options: vscode.DecorationOptions[] = [];
                         for (const info of infos) {
@@ -510,6 +583,11 @@ export class AzureRMTools {
                             //     }
 
                             // });
+
+                            const friendlyResourceName = info.getFriendlyNameExpression({ fullName: false });
+                            const friendlyResourceType = info.getFriendlyNameExpression({ fullName: false });
+
+                            // Resource friendly short name
                             options.push({
                                 range: new vscode.Range(resourceRange.start.line, Number.MAX_SAFE_INTEGER, resourceRange.start.line, Number.MAX_SAFE_INTEGER),
                                 hoverMessage: "asdf hover message",
@@ -518,17 +596,37 @@ export class AzureRMTools {
                                         // asdf color: "#90EE90",
                                         //color: "#A0A0A0",
                                         //asdf color: "#D8D8E0",
-                                        color: "#009900",
+                                        color: startColor1,
                                         //textDecoration: "underline",
-                                        //asdf contentText: `name: '${info.getFriendlyNameExpression({ fullName: false })}', type: '${info.getFriendlyTypeExpression({ fullType: false })})'`,
-                                        contentText: `${info.getFriendlyTypeExpression({ fullType: false })}:`,
+                                        contentText: `Resource '${friendlyResourceName}'`,
                                         fontStyle: "italic",
                                         //fontWeight: "100",
-                                        margin: "0 0 0 1em"
+                                        margin: margin
                                     }
                                 }
 
                             });
+
+                            options.push({
+                                range: new vscode.Range(resourceRange.start.line, Number.MAX_SAFE_INTEGER, resourceRange.start.line, Number.MAX_SAFE_INTEGER),
+                                hoverMessage: "asdf hover message",
+                                renderOptions: {
+                                    before: {
+                                        // asdf color: "#90EE90",
+                                        //color: "#A0A0A0",
+                                        //asdf color: "#D8D8E0",
+                                        color: startColor1,
+                                        //textDecoration: "underline",
+                                        contentText: `hello`,
+                                        fontStyle: "italic",
+                                        //fontWeight: "100",
+                                        margin: margin
+                                    }
+                                }
+
+                            });
+
+                            // Resource friendly short type name
                             options.push({
                                 range: new vscode.Range(resourceRange.start.line, Number.MAX_SAFE_INTEGER, resourceRange.start.line, Number.MAX_SAFE_INTEGER),
                                 hoverMessage: "asdf hover message",
@@ -537,17 +635,19 @@ export class AzureRMTools {
                                         // asdf color: "#90EE90",
                                         //color: "#A0A0A0",
                                         //asdf color: "#D8D8E0",
-                                        color: "rgb(50,192,50)",
+                                        color: startColor2,
                                         //textDecoration: "underline",
                                         //asdf contentText: `name: '${info.getFriendlyNameExpression({ fullName: false })}', type: '${info.getFriendlyTypeExpression({ fullType: false })})'`,
-                                        contentText: `'${info.getFriendlyNameExpression({ fullName: false })}'`,
+                                        contentText: ` (${friendlyResourceType})`,
                                         fontStyle: "italic",
                                         //fontWeight: "100",
-                                        margin: "0 0 0 1em"
+                                        margin: "0"
                                     }
                                 }
 
                             });
+
+                            // End of resource
                             options.push({
                                 range: new vscode.Range(resourceRange.end.line, Number.MAX_SAFE_INTEGER, resourceRange.end.line, Number.MAX_SAFE_INTEGER),
                                 hoverMessage: "asdf hover message",
@@ -555,10 +655,10 @@ export class AzureRMTools {
                                     after: {
                                         // asdf color: "#90EE90",
                                         //color: "#A0A0A0",
-                                        color: "#D8D8E080",
+                                        color: endColor,
                                         //textDecoration: "underline",
                                         //asdf contentText: `name: '${info.getFriendlyNameExpression({ fullName: false })}', type: '${info.getFriendlyTypeExpression({ fullType: false })})'`,
-                                        contentText: `end of ${info.getFriendlyTypeExpression({ fullType: false })}: '${info.getFriendlyNameExpression({ fullName: false })}'`,
+                                        contentText: `end of resource: '${friendlyResourceName}' (${friendlyResourceType})`,
                                         fontStyle: "italic",
                                         //fontWeight: "100",
                                         margin: "0 0 0 1em"

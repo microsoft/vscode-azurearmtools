@@ -35,7 +35,7 @@ import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSo
 import { getMissingParameterErrors, getParameterValuesCodeActions } from '../parameters/ParameterValues';
 import { SynchronousParameterValuesSourceProvider } from "../parameters/SynchronousParameterValuesSourceProvider";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
-import { LinkedTemplateCodeLens, NestedTemplateCodeLen, ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
+import { LinkedTemplateCodeLens, NestedTemplateCodeLen, ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens, TopLevelDeploymentCodeLens } from './deploymentTemplateCodeLenses';
 import { getResourcesInfo } from './getResourcesInfo';
 import { getParentAndChildCodeLenses } from './ParentAndChildCodeLenses';
 import { TemplateScope } from "./scopes/TemplateScope";
@@ -523,6 +523,9 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
             lenses.push(...getParentAndChildCodeLenses(scope, infos));
         }
 
+        if (this.topLevelValue) {
+            lenses.push(TopLevelDeploymentCodeLens.create(this.topLevelScope, this.topLevelValue.span.extendLeft(-10/*asdf moves to next line*/)));
+        }
         lenses.push(...this.getChildTemplateCodeLenses());
 
         return lenses;
