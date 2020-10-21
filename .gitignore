@@ -307,3 +307,6 @@ languageServer/**
 
 # Logs to publish
 logs
+
+# Mac folder metadata
+.DS_Store
