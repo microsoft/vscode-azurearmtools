@@ -21,6 +21,9 @@ import { createParameterFromTemplateParameter, defaultTabSize } from "./paramete
 const EOL: string = ext.EOL;
 const newParameterValueSnippetLabel = `new-parameter-value`;
 
+/**
+ * Code actions for adding missing parameter values
+ */
 export function getParameterValuesCodeActions(
     parameterValuesSource: IParameterValuesSource,
     parameterDefinitionsSource: IParameterDefinitionsSource | undefined,

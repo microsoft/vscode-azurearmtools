@@ -307,15 +307,23 @@ export class NestedTemplateOuterScope extends TemplateScope {
     // Shares its members with its parent
     public readonly hasUniqueParamsVarsAndFunctions: boolean = false;
 
+    protected getMemberOwningRootObject(): Json.ObjectValue | undefined {
+        // Shares its members with its parent
+        return this.parentScope.memberOwningRootObject;
+    }
+
     protected getParameterDefinitions(): IParameterDefinition[] | undefined {
+        // tslint:disable-next-line: no-non-null-assertion // constructor guarantees not undefined
         return this.parentScope.parameterDefinitions;
     }
 
     protected getVariableDefinitions(): IVariableDefinition[] | undefined {
+        // tslint:disable-next-line: no-non-null-assertion // constructor guarantees not undefined
         return this.parentScope.variableDefinitions;
     }
 
     protected getNamespaceDefinitions(): UserFunctionNamespaceDefinition[] | undefined {
+        // tslint:disable-next-line: no-non-null-assertion // constructor guarantees not undefined
         return this.parentScope.namespaceDefinitions;
     }
 
@@ -324,7 +332,7 @@ export class NestedTemplateOuterScope extends TemplateScope {
     }
 }
 
-export class LinkedTemplate extends TemplateScope {
+export class LinkedTemplateScope extends TemplateScope {
     public constructor(
         private readonly parentScope: TemplateScope,
         templateLinkObject: Json.ObjectValue | undefined,
@@ -347,14 +355,17 @@ export class LinkedTemplate extends TemplateScope {
     public readonly hasUniqueParamsVarsAndFunctions: boolean = false;
 
     protected getParameterDefinitions(): IParameterDefinition[] | undefined {
+        // tslint:disable-next-line: no-non-null-assertion // constructor guarantees not undefined
         return this.parentScope.parameterDefinitions;
     }
 
     protected getVariableDefinitions(): IVariableDefinition[] | undefined {
+        // tslint:disable-next-line: no-non-null-assertion // constructor guarantees not undefined
         return this.parentScope.variableDefinitions;
     }
 
     protected getNamespaceDefinitions(): UserFunctionNamespaceDefinition[] | undefined {
+        // tslint:disable-next-line: no-non-null-assertion // constructor guarantees not undefined
         return this.parentScope.namespaceDefinitions;
     }
 
@@ -433,7 +444,7 @@ export function getChildTemplateForResourceObject(
                 propertiesObject
                     ?.getPropertyValue(templateKeys.linkedDeploymentTemplateLink)?.asObjectValue;
             if (templateLinkObject) {
-                return new LinkedTemplate(parentScope, templateLinkObject, `Linked template "${templateName}"`);
+                return new LinkedTemplateScope(parentScope, templateLinkObject, `Linked template "${templateName}"`);
             }
         }
 

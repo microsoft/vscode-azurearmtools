@@ -54,6 +54,8 @@
         "onCommand:azurerm-vscode-tools.openTemplateFile",
         "onCommand:azurerm-vscode-tools.codeAction.addAllMissingParameters",
         "onCommand:azurerm-vscode-tools.codeAction.addMissingRequiredParameters",
+        "onCommand:azurerm-vscode-tools.codeAction.extractParameter",
+        "onCommand:azurerm-vscode-tools.codeAction.extractVariable",
         "onCommand:azurerm-vscode-tools.insertItem",
         "onCommand:azurerm-vscode-tools.insertParameter",
         "onCommand:azurerm-vscode-tools.insertVariable",
