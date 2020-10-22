@@ -6,8 +6,6 @@ import { stringify } from './stringify';
 import { testLog } from './testLog';
 import { typeInDocumentAndWait } from './typeInDocumentAndWait';
 
-// tslint:disable-next-line: no-suspicious-comment
-// tslint:disable-next-line: export-name //TODO: rename file
 export async function simulateCompletion(
     editor: TextEditor,
     completion: string,

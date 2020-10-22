@@ -1079,8 +1079,6 @@ suite("User functions", () => {
             };
 
             await parseTemplate(template, [
-                // tslint:disable-next-line: no-suspicious-comment
-                // TODO: Better error message?
                 'Error: Unrecognized user-defined function namespace \'udf\'.'
             ]);
         });
