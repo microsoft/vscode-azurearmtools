@@ -353,7 +353,7 @@ suite('TLE colorization', function (this: ISuiteCallbackContext): void {
 
     testFiles.forEach(testFile => {
         // tslint:disable-next-line: no-suspicious-comment
-        if (testFile.startsWith('TODO')) {
+        if (testFile.startsWith('TO' + 'DO')) {
             test(testFile);
         } else {
             test(testFile, async function (this: ITestCallbackContext): Promise<void> {

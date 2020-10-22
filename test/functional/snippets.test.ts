@@ -21,11 +21,11 @@ import { diagnosticSources, getDiagnosticsForDocument, IGetDiagnosticsOptions } 
 import { formatDocumentAndWait } from '../support/formatDocumentAndWait';
 import { getTempFilePath } from "../support/getTempFilePath";
 import { resolveInTestFolder } from '../support/resolveInTestFolder';
+import { simulateCompletion } from '../support/simulateCompletion';
 import { testLog } from '../support/testLog';
 import { UseRealSnippets } from '../support/TestSnippets';
 import { RequiresLanguageServer } from '../support/testWithLanguageServer';
 import { testWithPrep } from '../support/testWithPrep';
-import { simulateCompletion } from '../support/triggerCompletion';
 
 let resourceTemplate: string = `{
 \t"resources": [

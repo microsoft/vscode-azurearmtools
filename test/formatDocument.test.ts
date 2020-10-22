@@ -96,9 +96,7 @@ suite("Format document", function (this: ISuiteCallbackContext): void {
             testFormat('{\r\n}', '{\r\n}', '{\r\n}');
         });
 
-        // tslint:disable-next-line: no-suspicious-comment
-        // TODO: Currently fails due to https://dev.azure.com/devdiv/DevDiv/_workitems/edit/892851
-        //testFormat('empty', '', '');
+        testFormat('empty', '', '');
 
         suite('Multiline strings', () => {
             const template435 =
