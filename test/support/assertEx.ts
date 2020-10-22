@@ -13,6 +13,22 @@ export namespace assertEx {
         ignorePropertiesNotInExpected: boolean;
     }
 
+    export function strictEqual<T>(actual: T, expected: T, options: {}, message?: string): asserts actual is T {
+        if (typeof actual === 'string' && typeof expected === 'string') {
+            const actualNoWitespace = actual.replace(/\s+/g, ' ');
+            const expectedNoWhitespace = expected.replace(/\s+/g, ' ');
+            if (expectedNoWhitespace === actualNoWitespace) {
+                assert.strictEqual(actual, expected, `${message ?? 'String match failed'}\n*** STRINGS DIFFER ONLY IN WHITESPACE ***`);
+                return;
+            } else if (actual.toLowerCase() === expected.toLowerCase()) {
+                assert.strictEqual(actual, expected, `${message ?? 'String match failed'}\n*** STRINGS DIFFER ONLY IN CASING ***`);
+                return;
+            }
+        }
+
+        assert.strictEqual(actual, expected, message);
+    }
+
     export function deepEqual<T>(actual: T, expected: T, options: IEqualExOptions): asserts actual is T {
         let partial: Partial<T> = actual;
         if (options.ignorePropertiesNotInExpected) {
