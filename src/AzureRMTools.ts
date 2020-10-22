@@ -2,11 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
 // tslint:disable:promise-function-async max-line-length // Grandfathered in
-
 // CONSIDER: Refactor this file
-
 import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
@@ -23,6 +20,7 @@ import { addMissingParameters } from "./documents/parameters/ParameterValues";
 import { IReferenceSite, PositionContext } from "./documents/positionContexts/PositionContext";
 import { TemplatePositionContext } from "./documents/positionContexts/TemplatePositionContext";
 import { DeploymentTemplateDoc } from "./documents/templates/DeploymentTemplateDoc";
+import { ExtractItem } from './documents/templates/ExtractItem';
 import { gotoResources } from './documents/templates/gotoResources';
 import { getItemTypeQuickPicks, InsertItem } from "./documents/templates/insertItem";
 import { getQuickPickItems, sortTemplate } from "./documents/templates/sortTemplate";
@@ -242,6 +240,28 @@ export class AzureRMTools {
         });
         registerCommand("azurerm-vscode-tools.codeAction.addMissingRequiredParameters", async (actionContext: IActionContext, source?: vscode.Uri, args?: IAddMissingParametersArgs) => {
             await this.addMissingParameters(actionContext, source, args, true);
+        });
+        registerCommand("azurerm-vscode-tools.codeAction.extractParameter", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
+            editor = editor || vscode.window.activeTextEditor;
+            uri = uri || vscode.window.activeTextEditor?.document.uri;
+            if (editor) {
+                let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
+                if (!deploymentTemplate) {
+                    return;
+                }
+                await new ExtractItem(ext.ui).extractParameter(editor, deploymentTemplate, _context);
+            }
+        });
+        registerCommand("azurerm-vscode-tools.codeAction.extractVariable", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
+            editor = editor || vscode.window.activeTextEditor;
+            uri = uri || vscode.window.activeTextEditor?.document.uri;
+            if (editor) {
+                let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
+                if (!deploymentTemplate) {
+                    return;
+                }
+                await new ExtractItem(ext.ui).extractVariable(editor, deploymentTemplate, _context);
+            }
         });
 
         // Code lens commands
@@ -890,7 +910,8 @@ export class AzureRMTools {
                     codeActionProvider,
                     {
                         providedCodeActionKinds: [
-                            vscode.CodeActionKind.QuickFix
+                            vscode.CodeActionKind.QuickFix,
+                            vscode.CodeActionKind.RefactorExtract
                         ]
                     }
                 ));

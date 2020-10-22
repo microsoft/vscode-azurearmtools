@@ -5,18 +5,19 @@
 // tslint:disable: max-classes-per-file // Private classes are related to DeploymentTemplate implementation
 
 import * as assert from 'assert';
-import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
+import { CodeAction, CodeActionContext, CodeActionKind, Command, Range, Selection, Uri } from "vscode";
 import { TemplateScopeKind } from '../../../extension.bundle';
 import { configKeys, templateKeys } from "../../constants";
 import { ext } from '../../extensionVariables';
 import { AzureRMAssets, FunctionsMetadata } from "../../language/expressions/AzureRMAssets";
+import { isTleExpression } from '../../language/expressions/isTleExpression';
 import * as TLE from "../../language/expressions/TLE";
 import { INamedDefinition } from '../../language/INamedDefinition';
 import { Issue } from '../../language/Issue';
 import { IssueKind } from '../../language/IssueKind';
 import * as Json from "../../language/json/JSON";
 import { ReferenceList } from "../../language/ReferenceList";
-import { Span } from "../../language/Span";
+import { ContainsBehavior, Span } from "../../language/Span";
 import { isArmSchema } from "../../schemas";
 import { CachedValue } from '../../util/CachedValue';
 import { expectParameterDocumentOrUndefined } from '../../util/expectDocument';
@@ -469,6 +470,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     ): (Command | CodeAction)[] {
         const actions: (CodeAction | Command)[] = [];
 
+        // Add missing parameter values
         for (const scope of this.uniqueScopes) {
             if (scope.parameterValuesSource) {
                 const scopeActions = getParameterValuesCodeActions(
@@ -480,7 +482,135 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
             }
         }
 
+        // Extract param/var
+        actions.push(...this.getExtractVarParamCodeActions(range));
+
         return actions;
+    }
+
+    // tslint:disable-next-line: no-suspicious-comment
+    // tslint:disable-next-line: cyclomatic-complexity // TODO: Consider refactoring
+    private getExtractVarParamCodeActions(range: Range | Selection): (CodeAction | Command)[] {
+        let shouldAddExtractActions: boolean = false;
+        let pc = this.getContextFromDocumentLineAndColumnIndexes(range.start.line, range.start.character, undefined);
+
+        // We currently only handle single-line strings
+        if (range.start.line === range.end.line) {
+            // Can only call pc.jsonTokenStartIndex if we're inside a JSON token
+            if (pc.jsonToken && pc.jsonTokenStartIndex > 0) {
+                let jsonToken = pc.document.getJSONValueAtDocumentCharacterIndex(pc.jsonTokenStartIndex - 1, ContainsBehavior.extended);
+                if ((jsonToken instanceof Json.Property || jsonToken instanceof Json.ArrayValue) && pc.document.topLevelValue) {
+                    let scope = pc.getScope();
+                    if (!scope.rootObject) {
+                        return [];
+                    }
+                    let resources = scope.rootObject.getPropertyValue(templateKeys.resources);
+                    // Are we inside the resources object?
+                    if (!resources || !resources.span.intersect(jsonToken.span)) {
+                        return [];
+                    }
+                    let jsonValue = pc.document.getJSONValueAtDocumentCharacterIndex(pc.jsonTokenStartIndex, ContainsBehavior.extended);
+                    if (!jsonValue) {
+                        return [];
+                    }
+                    const stringValue = jsonValue.asStringValue;
+                    if (stringValue) {
+                        if (!range.isEmpty) {
+                            let startIndex = this.getDocumentCharacterIndex(range.start.line, range.start.character);
+                            let endIndex = this.getDocumentCharacterIndex(range.end.line, range.end.character);
+                            let span: Span = new Span(startIndex, endIndex - startIndex);
+                            const selectedText = this.getDocumentTextWithSquareBrackets(span);
+                            if (this.isParameterOrVariableReference(selectedText)) {
+                                return [];
+                            }
+                            if (pc.jsonValue && jsonValue.span === pc.jsonValue.span && selectedText && this.equalsWithSqareBrackets(pc.jsonValue.asStringValue?.unquotedValue, selectedText)) {
+                                shouldAddExtractActions = true;
+                            } else {
+                                if (isTleExpression(stringValue.unquotedValue)) {
+                                    shouldAddExtractActions = this.isValidExpression(this.getDocumentTextWithSurroundingCharacters(span, "'", "'"));
+                                }
+                            }
+                        } else {
+                            if (this.isSimpleText(stringValue.quotedValue) && pc.jsonValue && jsonValue.span === pc.jsonValue.span) {
+                                shouldAddExtractActions = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (shouldAddExtractActions) {
+            return [
+                this.createExtractCommand('Extract Parameter...', 'extractParameter'),
+                this.createExtractCommand('Extract Variable...', 'extractVariable'),
+            ];
+        }
+
+        return [];
+    }
+
+    private getDocumentTextWithSquareBrackets(span: Span): string {
+        let text = this.getDocumentText(span);
+        if (text.startsWith("[") && text.endsWith("]")) {
+            return text;
+        }
+        let extendedSpan = span.extendLeft(1).extendRight(1);
+        let extendedText = this.getDocumentText(extendedSpan);
+        if (extendedText.startsWith("[") && extendedText.endsWith("]")) {
+            return extendedText;
+        }
+        return text;
+    }
+
+    private getDocumentTextWithSurroundingCharacters(span: Span, start: string, end: string): string {
+        let text = this.getDocumentText(span);
+        if (text.startsWith(start) && text.endsWith(end)) {
+            return text;
+        }
+        let extendedSpan = span.extendLeft(1).extendRight(1);
+        let extendedText = this.getDocumentText(extendedSpan);
+        if (extendedText.startsWith(start) && extendedText.endsWith(end)) {
+            return extendedText;
+        }
+        return text;
+    }
+
+    private isParameterOrVariableReference(text: string): boolean {
+        const regEx = /^"?\[?(parameters|variables)\('.+'\)]?"?/gi;
+        return regEx.test(text);
+    }
+
+    private isSimpleText(text: string): boolean {
+        if (text.startsWith("\"[") || text.endsWith("]\"")) {
+            return false;
+        }
+        return text.startsWith("\"") && text.endsWith("\"");
+    }
+
+    public isValidExpression(text: string): boolean {
+        const functionCallRegex = /^\s*[\w\.]+\(.*\)\s*$/gi;
+        const textRegex = /^\s*'.+'\s*$/gi;
+        return functionCallRegex.test(text) || textRegex.test(text);
+    }
+
+    private equalsWithSqareBrackets(text: string | undefined, selectedText: string): boolean {
+        if (!text) {
+            return false;
+        }
+        if (text === selectedText) {
+            return true;
+        }
+        if (text.startsWith("[") && text.endsWith("]")) {
+            text = text.substr(1, text.length - 2);
+        }
+        return text === selectedText;
+    }
+
+    private createExtractCommand(title: string, command: string): CodeAction {
+        const action = new CodeAction(title, CodeActionKind.RefactorExtract);
+        action.command = { command: `azurerm-vscode-tools.codeAction.${command}`, title: '' };
+        return action;
     }
 
     public getTextAtTleValue(tleValue: TLE.Value, parentStringToken: Json.Token): string {

@@ -61,6 +61,18 @@ export abstract class TemplateScope implements IParameterDefinitionsSource {
      */
     public readonly hasUniqueParamsVarsAndFunctions: boolean = true;
 
+    /**
+     * The root object that owns the parameters, variables and user functions that are used by
+     * this scope (will be the scope's root object itself if hasUniqueParamsVarsAndFunctions = true)
+     */
+    public get memberOwningRootObject(): Json.ObjectValue | undefined {
+        return this.getMemberOwningRootObject();
+    }
+
+    protected getMemberOwningRootObject(): Json.ObjectValue | undefined {
+        return this.rootObject;
+    }
+
     // undefined means not supported in this context
     protected getParameterDefinitions(): IParameterDefinition[] | undefined {
         // undefined means not supported in this context
