@@ -188,7 +188,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
             const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
             const functions: FunctionsMetadata = AzureRMAssets.getFunctionsMetadata();
 
-            // Find and add references that match the definition we're looking for
+            // Find all references for all reachable strings
             this.visitAllReachableStringValues(jsonStringValue => {
                 const tleParseResult: IScopedParseResult | undefined = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
                 if (tleParseResult.parseResult.expression) {
