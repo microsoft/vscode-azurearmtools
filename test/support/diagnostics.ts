@@ -254,7 +254,7 @@ export interface IGetDiagnosticsOptions {
     waitForChange?: boolean;
 }
 
-export async function testDiagnosticsFromFile(filePath: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: ExpectedDiagnostics): Promise<void> {
+export async function testDiagnosticsFromFile(filePath: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: ExpectedDiagnostics): Promise<void> { //asdf remove
     await testDiagnosticsCore(filePath, 1, options, expected);
 }
 
