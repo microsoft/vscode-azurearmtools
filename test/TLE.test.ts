@@ -7,7 +7,7 @@
 
 import * as assert from "assert";
 import { Uri } from "vscode";
-import { AzureRMAssets, BuiltinFunctionMetadata, DefinitionKind, DeploymentTemplateDoc, FindReferencesVisitor, FunctionsMetadata, IncorrectArgumentsCountIssue, IncorrectFunctionArgumentCountVisitor, Issue, IssueKind, isTleExpression, nonNullValue, ReferenceList, Span, TemplatePositionContext, TLE, TopLevelTemplateScope, UndefinedParameterAndVariableVisitor, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue, UnrecognizedFunctionVisitor } from "../extension.bundle";
+import { AzureRMAssets, BuiltinFunctionMetadata, DefinitionKind, DeploymentTemplateDoc, FindReferencesVisitor, FunctionsMetadata, INamedDefinition, IncorrectArgumentsCountIssue, IncorrectFunctionArgumentCountVisitor, Issue, IssueKind, isTleExpression, nonNullValue, ReferenceList, Span, TemplatePositionContext, TLE, TopLevelTemplateScope, UndefinedParameterAndVariableVisitor, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue, UnrecognizedFunctionVisitor } from "../extension.bundle";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 
@@ -2207,32 +2207,35 @@ suite("TLE", () => {
         suite("visit(tle.Value,string,string)", () => {
             test("with undefined TLE", async () => {
                 const dt = await parseTemplate(template);
+                const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
                 assert(param);
-                const visitor = FindReferencesVisitor.visit(dt, dt.topLevelScope, undefined, param, metadata);
+                const visitor = FindReferencesVisitor.visit(dt, dt.topLevelScope, 0, undefined, metadata, referenceListsMap);
                 assert(visitor);
-                assert.deepStrictEqual(visitor.references, new ReferenceList(DefinitionKind.Parameter));
+                assert.deepStrictEqual(referenceListsMap.get(param), undefined);
             });
 
             test("with undefined TLE", async () => {
                 const dt = await parseTemplate(template);
+                const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
                 assert(param);
                 // tslint:disable-next-line:no-any
-                const visitor = FindReferencesVisitor.visit(dt, dt.topLevelScope, <any>undefined, param, metadata);
+                const visitor = FindReferencesVisitor.visit(dt, dt.topLevelScope, 0, <any>undefined, metadata, referenceListsMap);
                 assert(visitor);
-                assert.deepStrictEqual(visitor.references, new ReferenceList(DefinitionKind.Parameter));
+                assert.deepStrictEqual(referenceListsMap.get(param), undefined);
             });
 
             test("with TLE", async () => {
                 const dt = await parseTemplate(template);
+                const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
                 assert(param);
                 const pr: TLE.TleParseResult = parseExpression(`"[parameters('pName')]"`);
-                const visitor = FindReferencesVisitor.visit(dt, dt.topLevelScope, pr.expression, param, metadata);
+                const visitor = FindReferencesVisitor.visit(dt, dt.topLevelScope, 0, pr.expression, metadata, referenceListsMap);
                 assert(visitor);
                 assert.deepStrictEqual(
-                    visitor.references,
+                    referenceListsMap.get(param),
                     new ReferenceList(DefinitionKind.Parameter, [{ document: dt, span: new Span(14, 5) }]));
             });
         });

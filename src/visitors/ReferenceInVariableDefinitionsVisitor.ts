@@ -41,7 +41,7 @@ export class ReferenceInVariableDefinitionsVisitor extends Json.Visitor {
     }
 }
 
-class ReferenceInVariableDefinitionTLEVisitor extends TLE.Visitor {
+class ReferenceInVariableDefinitionTLEVisitor extends TLE.TleVisitor {
     private _referenceSpans: Span[] = [];
 
     public get referenceSpans(): Span[] {

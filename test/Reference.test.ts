@@ -83,31 +83,5 @@ suite("Reference", () => {
                 assert.deepStrictEqual(list.references.map(r => r.span), [new Span(10, 20)]);
             });
         });
-
-        suite("translate(number)", () => {
-            test("with empty list", () => {
-                const list = new ReferenceList(DefinitionKind.Parameter);
-                const list2 = list.translate(17);
-                assert.deepStrictEqual(list, list2);
-            });
-
-            test("with non-empty list", () => {
-                const list = new ReferenceList(DefinitionKind.Parameter, [{ document, span: new Span(10, 20) }]);
-                const list2 = list.translate(17);
-                assert.deepStrictEqual(list2, new ReferenceList(DefinitionKind.Parameter, [{ document, span: new Span(27, 20) }]));
-            });
-
-            test("with null movement", () => {
-                const list = new ReferenceList(DefinitionKind.Parameter, [{ document, span: new Span(10, 20) }]);
-                // tslint:disable-next-line:no-any
-                assert.throws(() => { list.translate(<any>null); });
-            });
-
-            test("with undefined movement", () => {
-                const list = new ReferenceList(DefinitionKind.Parameter, [{ document, span: new Span(10, 20) }]);
-                // tslint:disable-next-line:no-any
-                assert.throws(() => { list.translate(<any>undefined); });
-            });
-        });
     });
 });
