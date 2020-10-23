@@ -1274,7 +1274,7 @@ suite("User functions", () => {
                 await testGetReferences(dt, udfDef.index, [udfDef.index, udfReferenceAtNamespace.index]);
             });
 
-            test("Reference to built-in function with same name as UDF function doesn't find UDF", async () => {
+            test("Reference to built-in function with same name as UDF function doesn't find UDF function call", async () => {
                 const { dt, markers: { stringRef1, stringRef2, stringRef3, stringRef4 } } = await parseTemplateWithMarkers(userFuncsTemplate1);
                 await testGetReferences(dt, stringRef4.index, [stringRef1.index, stringRef2.index, stringRef3.index, stringRef4.index]);
             });
@@ -1483,8 +1483,8 @@ suite("User functions", () => {
                 };
 
                 await parseTemplate(template, [
+                    "Warning: The user-defined function 'udf.odd' is never used.",
                     "Warning: User-function parameter 'param1' is never used.",
-                    "Warning: The user-defined function 'udf.odd' is never used."
                 ]);
             });
 
@@ -1524,8 +1524,8 @@ suite("User functions", () => {
                 };
 
                 await parseTemplate(template, [
+                    "Warning: The user-defined function 'udf.odd' is never used.",
                     "Warning: User-function parameter 'param1' is never used.",
-                    "Warning: The user-defined function 'udf.odd' is never used."
                 ]);
             });
 
@@ -1560,8 +1560,8 @@ suite("User functions", () => {
 
                 await parseTemplate(template, [
                     "Warning: The parameter 'param1' is never used.",
+                    'Warning: The user-defined function \'udf.odd\' is never used.',
                     "Warning: User-function parameter 'param1' is never used.",
-                    'Warning: The user-defined function \'udf.odd\' is never used.'
                 ]);
             });
         });

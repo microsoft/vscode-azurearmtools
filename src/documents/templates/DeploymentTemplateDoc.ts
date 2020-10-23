@@ -58,6 +58,9 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     // A map from all JSON string value nodes to their cached TLE parse results
     private _jsonStringValueToTleParseResultMap: CachedValue<Map<Json.StringValue, IScopedParseResult>> = new CachedValue<Map<Json.StringValue, IScopedParseResult>>();
 
+    // A map from all definitions in the template to their referenced uses
+    private _referenceListsMap: CachedValue<Map<INamedDefinition, ReferenceList>> = new CachedValue<Map<INamedDefinition, ReferenceList>>();
+
     private _allScopes: CachedValue<TemplateScope[]> = new CachedValue<TemplateScope[]>();
 
     /**
@@ -174,39 +177,39 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     }
 
     public getWarnings(): Issue[] {
-        const unusedParams = this.findUnusedParameters();
-        const unusedVars = this.findUnusedVariables();
-        const unusedUserFuncs = this.findUnusedUserFunctions();
+        const unusedWarnings = this.getUnusedDefinitionWarnings();
         const inaccessibleScopeMembers = this.findInaccessibleScopeMembers();
-        return unusedParams.concat(unusedVars).concat(unusedUserFuncs).concat(inaccessibleScopeMembers);
+
+        return unusedWarnings.concat(inaccessibleScopeMembers);
     }
 
-    // CONSIDER: PERF: findUnused{Variables,Parameters,findUnusedNamespacesAndUserFunctions} are very inefficient}
+    private get referenceListsMap(): Map<INamedDefinition, ReferenceList> {
+        return this._referenceListsMap.getOrCacheValue(() => {
+            const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
+            const functions: FunctionsMetadata = AzureRMAssets.getFunctionsMetadata();
 
-    private findUnusedVariables(): Issue[] {
-        const warnings: Issue[] = [];
-
-        for (const scope of this.uniqueScopes) {
-            for (const variableDefinition of scope.variableDefinitions) {
-                const variableReferences: ReferenceList = this.findReferencesToDefinition(variableDefinition);
-                if (variableReferences.length === 1) {
-                    warnings.push(
-                        new Issue(variableDefinition.nameValue.span, `The variable '${variableDefinition.nameValue.toString()}' is never used.`, IssueKind.unusedVar));
+            // Find and add references that match the definition we're looking for
+            this.visitAllReachableStringValues(jsonStringValue => {
+                const tleParseResult: IScopedParseResult | undefined = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
+                if (tleParseResult.parseResult.expression) {
+                    // tslint:disable-next-line:no-non-null-assertion // Guaranteed by if
+                    const scope = tleParseResult.scope;
+                    FindReferencesVisitor.visit(this, scope, jsonStringValue.startIndex, tleParseResult.parseResult.expression, functions, referenceListsMap);
                 }
-            }
-        }
+            });
 
-        return warnings;
+            return referenceListsMap;
+        });
     }
 
-    private findUnusedParameters(): Issue[] {
+    private getUnusedDefinitionWarnings(): Issue[] {
         const warnings: Issue[] = [];
+        const referenceListsMap = this.referenceListsMap;
 
         for (const scope of this.uniqueScopes) {
+            // Unused parameters
             for (const parameterDefinition of scope.parameterDefinitions) {
-                const parameterReferences: ReferenceList =
-                    this.findReferencesToDefinition(parameterDefinition);
-                if (parameterReferences.length === 1) {
+                if (!referenceListsMap.has(parameterDefinition)) {
                     const message = parameterDefinition instanceof UserFunctionParameterDefinition
                         ? `User-function parameter '${parameterDefinition.nameValue.toString()}' is never used.`
                         : `The parameter '${parameterDefinition.nameValue.toString()}' is never used.`;
@@ -218,20 +221,19 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                             IssueKind.unusedParam));
                 }
             }
-        }
 
-        return warnings;
-    }
+            // Unused variables
+            for (const variableDefinition of scope.variableDefinitions) {
+                if (!referenceListsMap.has(variableDefinition)) {
+                    warnings.push(
+                        new Issue(variableDefinition.nameValue.span, `The variable '${variableDefinition.nameValue.toString()}' is never used.`, IssueKind.unusedVar));
+                }
+            }
 
-    private findUnusedUserFunctions(): Issue[] {
-        const warnings: Issue[] = [];
-
-        for (const scope of this.uniqueScopes) {
+            // Unused user-defined functions (we don't give a warning for unused namespaces)
             for (const ns of scope.namespaceDefinitions) {
                 for (const member of ns.members) {
-                    const userFuncReferences: ReferenceList =
-                        this.findReferencesToDefinition(member);
-                    if (userFuncReferences.length === 1) {
+                    if (!referenceListsMap.has(member)) {
                         warnings.push(
                             new Issue(
                                 member.nameValue.span,
@@ -435,23 +437,17 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
     public findReferencesToDefinition(definition: INamedDefinition): ReferenceList {
         const result: ReferenceList = new ReferenceList(definition.definitionKind);
-        const functions: FunctionsMetadata = AzureRMAssets.getFunctionsMetadata();
+
+        const referencesList = this.referenceListsMap.get(definition);
 
         // Add the definition of whatever's being referenced to the list
         if (definition.nameValue) {
             result.add({ document: this, span: definition.nameValue.unquotedSpan });
         }
 
-        // Find and add references that match the definition we're looking for
-        this.visitAllReachableStringValues(jsonStringValue => {
-            const tleParseResult: IScopedParseResult | undefined = this.getTLEParseResultFromJsonStringValue(jsonStringValue);
-            if (tleParseResult.parseResult.expression) {
-                // tslint:disable-next-line:no-non-null-assertion // Guaranteed by if
-                const scope = tleParseResult.scope;
-                const visitor = FindReferencesVisitor.visit(this, scope, tleParseResult.parseResult.expression, definition, functions);
-                result.addAll(visitor.references.translate(jsonStringValue.span.startIndex));
-            }
-        });
+        if (referencesList) {
+            result.addAll(referencesList);
+        }
 
         return result;
     }

@@ -3,13 +3,13 @@
 // ----------------------------------------------------------------------------
 
 import { assert } from "../fixed_assert";
-import { FunctionCallValue, Value, Visitor } from "../language/expressions/TLE";
+import { FunctionCallValue, TleVisitor, Value } from "../language/expressions/TLE";
 import { Histogram } from "../util/Histogram";
 
 /**
  * A TLE visitor that counts the function usages in a TLE value.
  */
-export class FunctionCountVisitor extends Visitor {
+export class FunctionCountVisitor extends TleVisitor {
     private _functionCounts: Histogram = new Histogram();
     /**
      * Get the histogram of function usages.

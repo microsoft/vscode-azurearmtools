@@ -69,7 +69,7 @@ export abstract class Value {
         return this.toString();
     }
 
-    public abstract accept(visitor: Visitor): void;
+    public abstract accept(visitor: TleVisitor): void;
 
     /**
      * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
@@ -163,7 +163,7 @@ export class StringValue extends Value {
         return parent instanceof FunctionCallValue ? parent : undefined;
     }
 
-    public accept(visitor: Visitor): void {
+    public accept(visitor: TleVisitor): void {
         visitor.visitString(this);
     }
 
@@ -203,7 +203,7 @@ export class NumberValue extends Value {
         return this.getSpan().contains(characterIndex, ContainsBehavior.extended);
     }
 
-    public accept(visitor: Visitor): void {
+    public accept(visitor: TleVisitor): void {
         visitor.visitNumber(this);
     }
 
@@ -281,7 +281,7 @@ export class ArrayAccessValue extends ParentValue {
         return this.getSpan().contains(characterIndex, this._rightSquareBracketToken ? ContainsBehavior.strict : ContainsBehavior.extended);
     }
 
-    public accept(visitor: Visitor): void {
+    public accept(visitor: TleVisitor): void {
         visitor.visitArrayAccess(this);
     }
 
@@ -472,7 +472,7 @@ export class FunctionCallValue extends ParentValue {
         return this.getSpan().contains(characterIndex, this._rightParenthesisToken ? ContainsBehavior.strict : ContainsBehavior.extended);
     }
 
-    public accept(visitor: Visitor): void {
+    public accept(visitor: TleVisitor): void {
         visitor.visitFunctionCall(this);
     }
 
@@ -654,7 +654,7 @@ export class PropertyAccess extends ParentValue {
         return this.getSpan().contains(characterIndex, ContainsBehavior.extended);
     }
 
-    public accept(visitor: Visitor): void {
+    public accept(visitor: TleVisitor): void {
         visitor.visitPropertyAccess(this);
     }
 
@@ -762,7 +762,7 @@ export class BraceHighlighter {
 /**
  * A generic visitor base class for TLE values.
  */
-export abstract class Visitor {
+export abstract class TleVisitor {
     public visitArrayAccess(tleArrayAccess: ArrayAccessValue | undefined): void {
         if (tleArrayAccess) {
             assert(tleArrayAccess.source);

@@ -169,9 +169,9 @@ export abstract class TemplateScope implements IParameterDefinitionsSource {
     }
 
     // Search is case-insensitive
-    public getUserFunctionDefinition(namespaceName: string, functionName: string): UserFunctionDefinition | undefined {
+    public getUserFunctionDefinition(namespace: string | UserFunctionNamespaceDefinition, functionName: string): UserFunctionDefinition | undefined {
         assert(!!functionName, "functionName cannot be null, undefined, or empty");
-        let nd = this.getFunctionNamespaceDefinition(namespaceName);
+        let nd = typeof namespace === 'string' ? this.getFunctionNamespaceDefinition(namespace) : namespace;
         if (nd) {
             let result = nd.getMemberDefinition(functionName);
             return result ? result : undefined;

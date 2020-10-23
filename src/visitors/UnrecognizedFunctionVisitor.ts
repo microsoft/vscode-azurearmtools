@@ -4,7 +4,7 @@
 
 import { TemplateScope } from "../documents/templates/scopes/TemplateScope";
 import * as assets from "../language/expressions/AzureRMAssets";
-import { FunctionCallValue, Value, Visitor } from "../language/expressions/TLE";
+import { FunctionCallValue, TleVisitor, Value } from "../language/expressions/TLE";
 import { Issue } from "../language/Issue";
 import { Span } from "../language/Span";
 import { UnrecognizedBuiltinFunctionIssue, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "./UnrecognizedFunctionIssues";
@@ -12,7 +12,7 @@ import { UnrecognizedBuiltinFunctionIssue, UnrecognizedUserFunctionIssue, Unreco
 /**
  * A TLE visitor that finds references to undefined functions.
  */
-export class UnrecognizedFunctionVisitor extends Visitor {
+export class UnrecognizedFunctionVisitor extends TleVisitor {
     private _errors: Issue[] = [];
     constructor(private _scope: TemplateScope, private _tleFunctions: assets.FunctionsMetadata) {
         super();

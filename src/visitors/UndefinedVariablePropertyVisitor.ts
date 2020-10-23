@@ -4,7 +4,7 @@
 
 import { TemplateScope } from "../documents/templates/scopes/TemplateScope";
 import { IVariableDefinition } from '../documents/templates/VariableDefinition';
-import { FunctionCallValue, PropertyAccess, Value, Visitor } from "../language/expressions/TLE";
+import { FunctionCallValue, PropertyAccess, TleVisitor, Value } from "../language/expressions/TLE";
 import { Issue } from "../language/Issue";
 import { IssueKind } from "../language/IssueKind";
 import * as Json from '../language/json/JSON';
@@ -12,7 +12,7 @@ import * as Json from '../language/json/JSON';
 /**
  * A TLE visitor that finds references to variable properties that aren't defined in the variable's value
  */
-export class UndefinedVariablePropertyVisitor extends Visitor {
+export class UndefinedVariablePropertyVisitor extends TleVisitor {
     private _errors: Issue[] = [];
     constructor(private _scope: TemplateScope) {
         super();

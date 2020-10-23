@@ -12,7 +12,7 @@ import { IssueKind } from '../language/IssueKind';
 /**
  * A TLE visitor that finds references to undefined parameters or variables.
  */
-export class UndefinedParameterAndVariableVisitor extends TLE.Visitor {
+export class UndefinedParameterAndVariableVisitor extends TLE.TleVisitor {
     private _errors: Issue[] = [];
 
     constructor(private _scope: TemplateScope) {

@@ -7,14 +7,14 @@ import { TemplateScope } from "../documents/templates/scopes/TemplateScope";
 import { UserFunctionNamespaceDefinition } from "../documents/templates/UserFunctionNamespaceDefinition";
 import { assert } from "../fixed_assert";
 import * as assets from "../language/expressions/AzureRMAssets";
-import { FunctionCallValue, Value, Visitor } from "../language/expressions/TLE";
+import { FunctionCallValue, TleVisitor, Value } from "../language/expressions/TLE";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 
 /**
  * A TLE visitor that creates errors if an incorrect number of arguments are used when calling a
  * TLE function.
  */
-export class IncorrectFunctionArgumentCountVisitor extends Visitor {
+export class IncorrectFunctionArgumentCountVisitor extends TleVisitor {
     private _errors: IncorrectArgumentsCountIssue[] = [];
 
     constructor(private readonly _scope: TemplateScope, private readonly _tleFunctions: assets.FunctionsMetadata) {
