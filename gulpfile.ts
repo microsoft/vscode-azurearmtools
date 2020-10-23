@@ -279,7 +279,7 @@ async function packageVsix(): Promise<void> {
     try {
         console.log(`Running vsce package in staging folder ${stagingFolder}`);
         shelljs.cd(stagingFolder);
-        executeInShell('vsce package');
+        executeInShell('vsce package --githubBranch main');
     } finally {
         shelljs.cd(__dirname);
     }

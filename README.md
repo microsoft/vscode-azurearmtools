@@ -260,7 +260,7 @@ There are several ways you can contribute to our [repo](https://github.com/Micro
 - **Ideas, feature requests, and bugs**: We are open to all ideas and we want to get rid of bugs! Use the [Issues](https://github.com/Microsoft/vscode-azurearmtools/issues) section to report a new issue, provide your ideas or contribute to existing threads.
 - **Documentation**: Found a typo or strangely worded sentences? Submit a PR!
 - **Snippets**: Have a fix for a snippet or a new snippet idea? File an [Issue](https://github.com/Microsoft/vscode-azurearmtools/issues) or submit a PR!
-  - See [our snippets file for ARM templates](https://github.com/microsoft/vscode-azurearmtools/blob/master/assets/armsnippets.jsonc)
+  - See [our snippets file for ARM templates](https://github.com/microsoft/vscode-azurearmtools/blob/main/assets/armsnippets.jsonc)
 - **Code**: Contribute bug fixes, features or design changes:
   - Clone the repository locally and open in VS Code.
   - Install [TSLint for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=eg2.tslint).
