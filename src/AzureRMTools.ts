@@ -790,7 +790,7 @@ export class AzureRMTools {
                 const neverForThisFile: vscode.MessageItem = { title: "Never for this file" };
 
                 const response = await ext.ui.showWarningMessage(
-                    `Would you like to use the latest schema for deployment template "${path.basename(document.uri.path)}" (note: some tools may be unable to process the latest schema)?`,
+                    `Warning: You are using a deprecrated schema version that is no longer maintained.  Would you like us to update "${path.basename(document.uri.path)}" to use the newest schema?`,
                     {
                         learnMoreLink: "https://aka.ms/vscode-azurearmtools-updateschema"
                     },
