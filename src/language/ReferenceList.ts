@@ -40,19 +40,4 @@ export class ReferenceList {
             this.add(ref);
         }
     }
-
-    public translate(movement: number): ReferenceList {
-        nonNullValue(movement, "movement");
-
-        const result = new ReferenceList(this._type);
-
-        for (const ref of this.references) {
-            result.add({
-                document: ref.document,
-                span: ref.span.translate(movement)
-            });
-        }
-
-        return result;
-    }
 }

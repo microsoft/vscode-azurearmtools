@@ -299,7 +299,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         return errors;
     }
 
-    //#region `Telemet`ry
+    //#region Telemetry
 
     /**
      * Gets info about TLE function usage, useful for telemetry
