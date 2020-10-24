@@ -14,7 +14,7 @@ import { Issue } from "../language/Issue";
 import { IssueKind } from "../language/IssueKind";
 import * as Reference from "../language/ReferenceList";
 import { Span } from "../language/Span";
-import { UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "./UnrecognizedFunctionIssues";
+import { UnrecognizedBuiltinFunctionIssue, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "./UnrecognizedFunctionIssues";
 import { validateBuiltInFunctionCallArgCounts, validateUserFunctionCallArgCounts } from "./validateFunctionCallArgCounts";
 
 /**
@@ -64,6 +64,7 @@ export class FindReferencesVisitor extends TleVisitor {
         }
 
         const namespaceName = tleFunctionCall.namespace;
+        const name = tleFunctionCall.name;
 
         if (tleFunctionCall.namespaceToken) {
             // Looking for a user namespace or user function (or any)
@@ -75,7 +76,7 @@ export class FindReferencesVisitor extends TleVisitor {
                     // ... Namespace exists, add reference
                     this.addReference(userNamespaceDefinition, tleFunctionCall.namespaceToken.span);
 
-                    const userFunctionDefinition: UserFunctionDefinition | undefined = this._scope.getUserFunctionDefinition(userNamespaceDefinition, tleFunctionCall.name);
+                    const userFunctionDefinition: UserFunctionDefinition | undefined = this._scope.getUserFunctionDefinition(userNamespaceDefinition, name);
                     if (userFunctionDefinition) {
                         // ... User-defined function exists in namespace, add reference
                         this.addReference(userFunctionDefinition, tleFunctionCall.nameToken.span);
@@ -96,6 +97,8 @@ export class FindReferencesVisitor extends TleVisitor {
         // Searching for built-in function call (including parameter or variable reference)
         if (!namespaceName) {
             const metadata: BuiltinFunctionMetadata | undefined = this._functionsMetadata.findbyName(tleFunctionCall.name);
+            this.addBuiltFunctionRefOrError(metadata, name, tleFunctionCall.nameToken);
+
             if (metadata) {
                 // Validate argument count
                 this.addErrorIf(validateBuiltInFunctionCallArgCounts(tleFunctionCall, metadata));
@@ -113,22 +116,19 @@ export class FindReferencesVisitor extends TleVisitor {
 
                     default:
                         // Any other built-in function call
-                        this.addBuiltFunctionRefOrError(metadata, tleFunctionCall.nameToken);
                         break;
                 }
-            } else {
-                //asdf
             }
         }
 
         super.visitFunctionCall(tleFunctionCall);
     }
 
-    private addBuiltFunctionRefOrError(metadata: BuiltinFunctionMetadata | undefined, functionCallNameToken: TLE.Token): void {
+    private addBuiltFunctionRefOrError(metadata: BuiltinFunctionMetadata | undefined, functionName: string, functionNameToken: TLE.Token): void {
         if (metadata) {
-            this.addReference(metadata, functionCallNameToken.span);
+            this.addReference(metadata, functionNameToken.span);
         } else {
-            //asdf
+            this.addErrorIf(new UnrecognizedBuiltinFunctionIssue(functionNameToken.span, functionName));
         }
     }
 
@@ -159,7 +159,7 @@ export class FindReferencesVisitor extends TleVisitor {
     }
 
     private addParameterRefOrError(tleFunctionCall: TLE.FunctionCallValue): void {
-        if (tleFunctionCall.argumentExpressions.length === 1) { //asdf error if not
+        if (tleFunctionCall.argumentExpressions.length === 1) {
             const arg: TLE.Value | undefined = tleFunctionCall.argumentExpressions[0];
             if (arg instanceof StringValue) {
                 const argName = arg.toString();

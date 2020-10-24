@@ -7,7 +7,7 @@
 
 import * as assert from "assert";
 import { Uri } from "vscode";
-import { AzureRMAssets, DefinitionKind, DeploymentTemplateDoc, FindReferencesVisitor, INamedDefinition, IncorrectArgumentsCountIssue, Issue, IssueKind, isTleExpression, nonNullValue, ReferenceList, Span, TemplatePositionContext, TemplateScope, TLE, TopLevelTemplateScope, UndefinedVariablePropertyVisitor } from "../extension.bundle";
+import { AzureRMAssets, BuiltinFunctionMetadata, DefinitionKind, DeploymentTemplateDoc, FindReferencesVisitor, FunctionsMetadata, INamedDefinition, IncorrectArgumentsCountIssue, Issue, IssueKind, isTleExpression, nonNullValue, ReferenceList, Span, TemplatePositionContext, TemplateScope, TLE, TopLevelTemplateScope, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue } from "../extension.bundle";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 
@@ -20,6 +20,13 @@ suite("TLE", () => {
 
     function parseExpression(stringValue: string): TLE.TleParseResult {
         return TLE.Parser.parse(stringValue);
+    }
+
+    function getReferenceErrors(scope: TemplateScope, expression: TLE.Value | undefined): Issue[] {
+        const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
+        const issues: Issue[] = [];
+        FindReferencesVisitor.visit(scope, 0, expression, AzureRMAssets.getFunctionsMetadata(), referenceListsMap, issues);
+        return issues;
     }
 
     suite("isExpression", () => {
@@ -1929,38 +1936,32 @@ suite("TLE", () => {
 
     suite("UnrecognizedFunctionVisitor", () => {
         suite("visit(tle.Value)", () => {
-            //const functionMetadata: FunctionsMetadata = new FunctionsMetadata([new BuiltinFunctionMetadata("CONCAT", "", "", 1, 2, [], undefined)]);
+            const functionMetadata: FunctionsMetadata = new FunctionsMetadata([new BuiltinFunctionMetadata("CONCAT", "", "", 0, 2, [], undefined)]);
 
-            //asdf
-            // test("with recognized function", () => {
-            //     const tleParseResult = parseExpression("'[concat()]'");
-            //     const visitor = UnrecognizedFunctionVisitor.visit(emptyScope, tleParseResult.expression, functionMetadata);
-            //     assert(visitor);
-            //     assert.deepStrictEqual([], visitor.errors);
-            // });
+            test("with recognized function", () => {
+                const tleParseResult = parseExpression("'[concat()]'");
+                const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
+                const errors: Issue[] = [];
+                FindReferencesVisitor.visit(emptyScope, 0, tleParseResult.expression, functionMetadata, referenceListsMap, errors);
+                assert.deepStrictEqual([], errors);
+            });
 
-            // test("with unrecognized function", () => {
-            //     const tleParseResult = parseExpression("'[concatenate()]'");
-            //     const visitor = UnrecognizedFunctionVisitor.visit(emptyScope, tleParseResult.expression, functionMetadata);
-            //     assert(visitor);
-            //     assert.deepStrictEqual(
-            //         [
-            //             new UnrecognizedBuiltinFunctionIssue(new Span(2, 11), "concatenate")
-            //         ],
-            //         visitor.errors);
-            //     assert.equal(visitor.errors[0].message, "Unrecognized function name 'concatenate'.");
-            // });
+            test("with unrecognized function", () => {
+                const tleParseResult = parseExpression("'[concatenate()]'");
+                const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
+                const errors: Issue[] = [];
+                FindReferencesVisitor.visit(emptyScope, 0, tleParseResult.expression, functionMetadata, referenceListsMap, errors);
+                assert.deepStrictEqual(
+                    [
+                        new UnrecognizedBuiltinFunctionIssue(new Span(2, 11), "concatenate")
+                    ],
+                    errors);
+                assert.strictEqual(errors[0].message, "Unrecognized function name 'concatenate'.");
+            });
         });
     });
 
     suite("IncorrectFunctionArgumentCountVisitor", () => {
-        function getReferenceErrors(scope: TemplateScope, expression: TLE.Value | undefined): Issue[] {
-            const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
-            const issues: Issue[] = [];
-            FindReferencesVisitor.visit(scope, 0, expression, AzureRMAssets.getFunctionsMetadata(), referenceListsMap, issues);
-            return issues;
-        }
-
         suite("visit(tle.Value, FunctionsMetadata)", () => {
             test("with undefined value", () => {
 

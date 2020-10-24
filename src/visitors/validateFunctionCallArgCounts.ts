@@ -32,7 +32,7 @@ export function validateBuiltInFunctionCallArgCounts(tleFunction: TLE.FunctionCa
     assert(typeof minimumArguments === 'number', `TLE function metadata for '${actualFullFunctionName}' has a null or undefined minimum argument value.`);
 
     maximumArguments = functionMetadata.maximumArguments;
-    assert(tleFunction.argumentExpressions);
+    assert(tleFunction.argumentExpressions); //asdf remove
 
     return getFunctionArgumentCountError(actualFullFunctionName, minimumArguments, maximumArguments, tleFunction);
 }
