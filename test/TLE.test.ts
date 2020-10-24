@@ -7,8 +7,7 @@
 
 import * as assert from "assert";
 import { Uri } from "vscode";
-import { AzureRMAssets, DefinitionKind, DeploymentTemplateDoc, FindReferencesVisitor, INamedDefinition, IncorrectArgumentsCountIssue, Issue, IssueKind, isTleExpression, nonNullValue, ReferenceList, Span, TemplatePositionContext, TLE, TopLevelTemplateScope, UndefinedVariablePropertyVisitor } from "../extension.bundle";
-import { TemplateScope } from "../src/documents/templates/scopes/TemplateScope";
+import { AzureRMAssets, DefinitionKind, DeploymentTemplateDoc, FindReferencesVisitor, INamedDefinition, IncorrectArgumentsCountIssue, Issue, IssueKind, isTleExpression, nonNullValue, ReferenceList, Span, TemplatePositionContext, TemplateScope, TLE, TopLevelTemplateScope, UndefinedVariablePropertyVisitor } from "../extension.bundle";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 
