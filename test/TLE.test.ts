@@ -7,7 +7,7 @@
 
 import * as assert from "assert";
 import { Uri } from "vscode";
-import { AzureRMAssets, BuiltinFunctionMetadata, DefinitionKind, DeploymentTemplateDoc, FindReferencesVisitor, FunctionsMetadata, INamedDefinition, IncorrectArgumentsCountIssue, IncorrectFunctionArgumentCountVisitor, Issue, IssueKind, isTleExpression, nonNullValue, ReferenceList, Span, TemplatePositionContext, TLE, TopLevelTemplateScope, UndefinedParameterAndVariableVisitor, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue, UnrecognizedFunctionVisitor } from "../extension.bundle";
+import { AzureRMAssets, BuiltinFunctionMetadata, DefinitionKind, DeploymentTemplateDoc, FindReferencesVisitor, FunctionsMetadata, INamedDefinition, IncorrectArgumentsCountIssue, Issue, IssueKind, isTleExpression, nonNullValue, ReferenceList, Span, TemplatePositionContext, TemplateScope, TLE, TopLevelTemplateScope, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue } from "../extension.bundle";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 
@@ -20,6 +20,13 @@ suite("TLE", () => {
 
     function parseExpression(stringValue: string): TLE.TleParseResult {
         return TLE.Parser.parse(stringValue);
+    }
+
+    function getReferenceErrors(scope: TemplateScope, expression: TLE.Value | undefined): Issue[] {
+        const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
+        const issues: Issue[] = [];
+        FindReferencesVisitor.visit(scope, 0, expression, AzureRMAssets.getFunctionsMetadata(), referenceListsMap, issues);
+        return issues;
     }
 
     suite("isExpression", () => {
@@ -403,43 +410,13 @@ suite("TLE", () => {
         });
     });
 
-    suite("UndefinedParameterAndVariableVisitor", () => {
-        suite("constructor(DeploymentTemplate)", () => {
-            test("with undefined", () => {
-                // tslint:disable-next-line:no-any
-                assert.throws(() => { new UndefinedParameterAndVariableVisitor(<any>undefined); });
-            });
-
-            test("with undefined", () => {
-                // tslint:disable-next-line:no-any
-                assert.throws(() => { new UndefinedParameterAndVariableVisitor(<any>undefined); });
-            });
-
-            test("with deployment template", () => {
-                const dt = new DeploymentTemplateDoc("\"{}\"", fakeId);
-                const visitor = new UndefinedParameterAndVariableVisitor(dt.topLevelScope);
-                assert.deepStrictEqual(visitor.errors, []);
-            });
-        });
-
+    suite("Undefined Parameters And Variables", () => {
         suite("visitString(StringValue)", () => {
-            test("with undefined", () => {
-                const dt = new DeploymentTemplateDoc("\"{}\"", fakeId);
-                const visitor = new UndefinedParameterAndVariableVisitor(dt.topLevelScope);
-                // tslint:disable-next-line:no-any
-                assert.throws(() => { visitor.visitString(<any>undefined); });
-            });
-
-            test("with undefined", () => {
-                const dt = new DeploymentTemplateDoc("\"{}\"", fakeId);
-                const visitor = new UndefinedParameterAndVariableVisitor(dt.topLevelScope);
-                // tslint:disable-next-line:no-any
-                assert.throws(() => { visitor.visitString(<any>undefined); });
-            });
-
             test("with empty StringValue in parameters() function", () => {
                 const dt = new DeploymentTemplateDoc("\"{}\"", fakeId);
-                const visitor = new UndefinedParameterAndVariableVisitor(dt.topLevelScope);
+                const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
+                const issues: Issue[] = [];
+                const metadata = AzureRMAssets.getFunctionsMetadata();
 
                 const stringValue = new TLE.StringValue(TLE.Token.createQuotedString(17, "''"));
                 stringValue.parent = new TLE.FunctionCallValue(
@@ -451,9 +428,9 @@ suite("TLE", () => {
                     [stringValue],
                     undefined);
 
-                visitor.visitString(stringValue);
+                FindReferencesVisitor.visit(dt.topLevelScope, 0, stringValue.parent, metadata, referenceListsMap, issues);
                 assert.deepStrictEqual(
-                    visitor.errors,
+                    issues,
                     [
                         new Issue(new Span(17, 2), "Undefined parameter reference: ''", IssueKind.undefinedParam)
                     ]
@@ -462,7 +439,9 @@ suite("TLE", () => {
 
             test("with empty StringValue in variables() function", () => {
                 const dt = new DeploymentTemplateDoc("\"{}\"", fakeId);
-                const visitor = new UndefinedParameterAndVariableVisitor(dt.topLevelScope);
+                const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
+                const issues: Issue[] = [];
+                const metadata = AzureRMAssets.getFunctionsMetadata();
 
                 const stringValue = new TLE.StringValue(TLE.Token.createQuotedString(17, "''"));
                 stringValue.parent = new TLE.FunctionCallValue(
@@ -474,9 +453,9 @@ suite("TLE", () => {
                     [stringValue],
                     undefined);
 
-                visitor.visitString(stringValue);
+                FindReferencesVisitor.visit(dt.topLevelScope, 0, stringValue.parent, metadata, referenceListsMap, issues);
                 assert.deepStrictEqual(
-                    visitor.errors,
+                    issues,
                     [
                         new Issue(new Span(17, 2), "Undefined variable reference: ''", IssueKind.undefinedVar)
                     ]
@@ -1957,196 +1936,178 @@ suite("TLE", () => {
 
     suite("UnrecognizedFunctionVisitor", () => {
         suite("visit(tle.Value)", () => {
-            const functionMetadata: FunctionsMetadata = new FunctionsMetadata([new BuiltinFunctionMetadata("CONCAT", "", "", 1, 2, [], undefined)]);
+            const functionMetadata: FunctionsMetadata = new FunctionsMetadata([new BuiltinFunctionMetadata("CONCAT", "", "", 0, 2, [], undefined)]);
 
             test("with recognized function", () => {
                 const tleParseResult = parseExpression("'[concat()]'");
-                const visitor = UnrecognizedFunctionVisitor.visit(emptyScope, tleParseResult.expression, functionMetadata);
-                assert(visitor);
-                assert.deepStrictEqual([], visitor.errors);
+                const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
+                const errors: Issue[] = [];
+                FindReferencesVisitor.visit(emptyScope, 0, tleParseResult.expression, functionMetadata, referenceListsMap, errors);
+                assert.deepStrictEqual([], errors);
             });
 
             test("with unrecognized function", () => {
                 const tleParseResult = parseExpression("'[concatenate()]'");
-                const visitor = UnrecognizedFunctionVisitor.visit(emptyScope, tleParseResult.expression, functionMetadata);
-                assert(visitor);
+                const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
+                const errors: Issue[] = [];
+                FindReferencesVisitor.visit(emptyScope, 0, tleParseResult.expression, functionMetadata, referenceListsMap, errors);
                 assert.deepStrictEqual(
                     [
                         new UnrecognizedBuiltinFunctionIssue(new Span(2, 11), "concatenate")
                     ],
-                    visitor.errors);
-                assert.equal(visitor.errors[0].message, "Unrecognized function name 'concatenate'.");
+                    errors);
+                assert.strictEqual(errors[0].message, "Unrecognized function name 'concatenate'.");
             });
         });
     });
 
     suite("IncorrectFunctionArgumentCountVisitor", () => {
         suite("visit(tle.Value, FunctionsMetadata)", () => {
-            const functions = AzureRMAssets.getFunctionsMetadata();
-
             test("with undefined value", () => {
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, undefined, functions);
-                assert(visitor);
-                assert.deepStrictEqual(visitor.errors, []);
+
+                const errors = getReferenceErrors(emptyScope, undefined);
+                assert.deepStrictEqual(errors, []);
             });
 
             test("with undefined value", () => {
                 // tslint:disable-next-line:no-any
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, <any>undefined, functions);
-                assert(visitor);
-                assert.deepStrictEqual(visitor.errors, []);
+                const errors = getReferenceErrors(emptyScope, <any>undefined);
+                assert.deepStrictEqual(errors, []);
             });
 
             test("with number value", () => {
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, new TLE.NumberValue(TLE.Token.createNumber(17, "3")), functions);
-                assert(visitor);
-                assert.deepStrictEqual(visitor.errors, []);
+                const errors = getReferenceErrors(emptyScope, new TLE.NumberValue(TLE.Token.createNumber(17, "3")));
+                assert.deepStrictEqual(errors, []);
             });
 
             test("with concat() with zero arguments", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[concat()]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
-                assert.deepStrictEqual(visitor.errors, []);
+                const errors = getReferenceErrors(emptyScope, concat);
+                assert.deepStrictEqual(errors, []);
             });
 
             test("with concat() with one argument", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[concat(12)]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
-                assert.deepStrictEqual(visitor.errors, []);
+                const errors = getReferenceErrors(emptyScope, concat);
+                assert.deepStrictEqual(errors, []);
             });
 
             test("with concat() with two arguments", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[concat(12, 'test')]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
-                assert.deepStrictEqual(visitor.errors, []);
+                const errors = getReferenceErrors(emptyScope, concat);
+                assert.deepStrictEqual(errors, []);
             });
 
             test("with add() with zero arguments", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[add()]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
+                const errors = getReferenceErrors(emptyScope, concat);
                 assert.deepStrictEqual(
-                    visitor.errors,
+                    errors,
                     [new IncorrectArgumentsCountIssue(new Span(2, 5), "The function 'add' takes 2 arguments.", "add", 0, 2, 2)]);
             });
 
             test("with add() with one argument", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[add(5)]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
+                const errors = getReferenceErrors(emptyScope, concat);
                 assert.deepStrictEqual(
-                    visitor.errors,
+                    errors,
                     [new IncorrectArgumentsCountIssue(new Span(2, 6), "The function 'add' takes 2 arguments.", "add", 1, 2, 2)]);
             });
 
             test("with add() with two arguments", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[add(5, 6)]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
-                assert.deepStrictEqual(visitor.errors, []);
+                const errors = getReferenceErrors(emptyScope, concat);
+                assert.deepStrictEqual(errors, []);
             });
 
             test("with add() with three arguments", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[add(5, 6, 7)]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
+                const errors = getReferenceErrors(emptyScope, concat);
                 assert.deepStrictEqual(
-                    visitor.errors,
+                    errors,
                     [new IncorrectArgumentsCountIssue(new Span(2, 12), "The function 'add' takes 2 arguments.", "add", 3, 2, 2)]);
             });
 
             test("with add() with three arguments and different casing", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[Add(5, 6, 7)]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
+                const errors = getReferenceErrors(emptyScope, concat);
                 assert.deepStrictEqual(
-                    visitor.errors,
+                    errors,
                     [new IncorrectArgumentsCountIssue(new Span(2, 12), "The function 'add' takes 2 arguments.", "add", 3, 2, 2)]);
             });
 
             test("with resourceId() with zero arguments", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[resourceId()]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
+                const errors = getReferenceErrors(emptyScope, concat);
                 assert.deepStrictEqual(
-                    visitor.errors,
+                    errors,
                     // tslint:disable-next-line:no-any
                     [new IncorrectArgumentsCountIssue(new Span(2, 12), "The function 'resourceId' takes at least 2 arguments.", "resourceId", 0, 2, <any>undefined)]);
             });
 
             test("with resourceId() with one argument", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[resourceId(5)]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
+                const errors = getReferenceErrors(emptyScope, concat);
                 assert.deepStrictEqual(
-                    visitor.errors,
+                    errors,
                     // tslint:disable-next-line:no-any
                     [new IncorrectArgumentsCountIssue(new Span(2, 13), "The function 'resourceId' takes at least 2 arguments.", "resourceId", 1, 2, <any>undefined)]);
             });
 
             test("with resourceId() with two arguments", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[resourceId(5, 6)]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
-                assert.deepStrictEqual(visitor.errors, []);
+                const errors = getReferenceErrors(emptyScope, concat);
+                assert.deepStrictEqual(errors, []);
             });
 
             test("with resourceId() with three arguments", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[resourceId(5, 6, 7)]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
-                assert.deepStrictEqual(visitor.errors, []);
+                const errors = getReferenceErrors(emptyScope, concat);
+                assert.deepStrictEqual(errors, []);
             });
 
             test("with substring() with zero arguments", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[substring()]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
+                const errors = getReferenceErrors(emptyScope, concat);
                 assert.deepStrictEqual(
-                    visitor.errors,
+                    errors,
                     [new IncorrectArgumentsCountIssue(new Span(2, 11), "The function 'substring' takes between 1 and 3 arguments.", "substring", 0, 1, 3)]);
             });
 
             test("with substring() with one argument", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[substring('abc')]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
-                assert.deepStrictEqual(visitor.errors, []);
+                const errors = getReferenceErrors(emptyScope, concat);
+                assert.deepStrictEqual(errors, []);
             });
 
             test("with substring() with two arguments", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[substring('abc', 1)]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
-                assert.deepStrictEqual(visitor.errors, []);
+                const errors = getReferenceErrors(emptyScope, concat);
+                assert.deepStrictEqual(errors, []);
             });
 
             test("with substring() with three arguments", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[substring('abc', 1, 1)]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
-                assert.deepStrictEqual(visitor.errors, []);
+                const errors = getReferenceErrors(emptyScope, concat);
+                assert.deepStrictEqual(errors, []);
             });
 
             test("with substring() with four arguments", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[substring('abc', 1, 1, 'blah')]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
+                const errors = getReferenceErrors(emptyScope, concat);
                 assert.deepStrictEqual(
-                    visitor.errors,
+                    errors,
                     [new IncorrectArgumentsCountIssue(new Span(2, 30), "The function 'substring' takes between 1 and 3 arguments.", "substring", 4, 1, 3)]);
             });
 
             test("user function with name matching a built-in, with zero arguments", () => {
                 const concat: TLE.Value = nonNullValue(parseExpression(`"[Contoso.resourceId()]"`).expression);
-                const visitor = IncorrectFunctionArgumentCountVisitor.visit(emptyScope, concat, functions);
-                assert(visitor);
+                const errors = getReferenceErrors(emptyScope, concat).map(e => e.message);
                 assert.deepStrictEqual(
-                    visitor.errors,
-                    []
+                    errors,
+                    [
+                        "Unrecognized user-defined function namespace 'Contoso'."
+                    ]
                 );
             });
         });
@@ -2208,35 +2169,41 @@ suite("TLE", () => {
             test("with undefined TLE", async () => {
                 const dt = await parseTemplate(template);
                 const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
+                const issues: Issue[] = [];
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
                 assert(param);
-                const visitor = FindReferencesVisitor.visit(dt, dt.topLevelScope, 0, undefined, metadata, referenceListsMap);
+                const visitor = FindReferencesVisitor.visit(dt.topLevelScope, 0, undefined, metadata, referenceListsMap, issues);
                 assert(visitor);
                 assert.deepStrictEqual(referenceListsMap.get(param), undefined);
+                assert.deepStrictEqual(issues, []);
             });
 
             test("with undefined TLE", async () => {
                 const dt = await parseTemplate(template);
                 const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
+                const issues: Issue[] = [];
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
                 assert(param);
                 // tslint:disable-next-line:no-any
-                const visitor = FindReferencesVisitor.visit(dt, dt.topLevelScope, 0, <any>undefined, metadata, referenceListsMap);
+                const visitor = FindReferencesVisitor.visit(dt.topLevelScope, 0, <any>undefined, metadata, referenceListsMap, issues);
                 assert(visitor);
                 assert.deepStrictEqual(referenceListsMap.get(param), undefined);
+                assert.deepStrictEqual(issues, []);
             });
 
             test("with TLE", async () => {
                 const dt = await parseTemplate(template);
                 const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
+                const issues: Issue[] = [];
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
                 assert(param);
                 const pr: TLE.TleParseResult = parseExpression(`"[parameters('pName')]"`);
-                const visitor = FindReferencesVisitor.visit(dt, dt.topLevelScope, 0, pr.expression, metadata, referenceListsMap);
+                const visitor = FindReferencesVisitor.visit(dt.topLevelScope, 0, pr.expression, metadata, referenceListsMap, issues);
                 assert(visitor);
                 assert.deepStrictEqual(
                     referenceListsMap.get(param),
                     new ReferenceList(DefinitionKind.Parameter, [{ document: dt, span: new Span(14, 5) }]));
+                assert.deepStrictEqual(issues, []);
             });
         });
     });

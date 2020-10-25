@@ -28,8 +28,14 @@ export enum LanguageServerState {
 }
 
 export async function stopArmLanguageServer(): Promise<void> {
-    ext.outputChannel.appendLine(`Stopping ${languageServerName}...`);
     // Work-around for https://github.com/microsoft/vscode/issues/83254 - store languageServerState global via ext to keep it a singleton
+
+    if (ext.languageServerState === LanguageServerState.NotStarted || ext.languageServerState === LanguageServerState.Stopped) {
+        ext.outputChannel.appendLine(`${languageServerName} already stopped...`);
+        return;
+    }
+
+    ext.outputChannel.appendLine(`Stopping ${languageServerName}...`);
     ext.languageServerState = LanguageServerState.Stopped;
     if (ext.languageServerClient) {
         let client: LanguageClient = ext.languageServerClient;

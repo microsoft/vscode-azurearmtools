@@ -753,8 +753,8 @@ suite("User functions", () => {
             };
 
             await parseTemplate(template, [
-                'Error: Expected a right parenthesis (\')\').',
                 'Error: Unrecognized user-defined function namespace \'ufo\'.',
+                'Error: Expected a right parenthesis (\')\').',
                 'Warning: The user-defined function \'udf.boo\' is never used.'
             ]);
         });

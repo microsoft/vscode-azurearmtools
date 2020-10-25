@@ -2,16 +2,10 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { DeploymentDocument } from "../documents/DeploymentDocument";
 import { assert } from "../fixed_assert";
 import { nonNullValue } from "../util/nonNull";
 import { DefinitionKind } from "./INamedDefinition";
-import { Span } from "./Span";
-
-export interface IReference {
-    span: Span;
-    document: DeploymentDocument;
-}
+import { IReference } from "./IReference";
 
 /**
  * A list of references that have been found.

@@ -26,11 +26,8 @@ import { nonNullValue } from '../../util/nonNull';
 import { FindReferencesVisitor } from "../../visitors/FindReferencesVisitor";
 import { FunctionCountVisitor } from "../../visitors/FunctionCountVisitor";
 import { GenericStringVisitor } from "../../visitors/GenericStringVisitor";
-import * as IncorrectFunctionArgumentCountVisitor from "../../visitors/IncorrectFunctionArgumentCountVisitor";
-import { ReferenceInVariableDefinitionsVisitor } from "../../visitors/ReferenceInVariableDefinitionsVisitor";
-import { UndefinedParameterAndVariableVisitor } from "../../visitors/UndefinedParameterAndVariableVisitor";
+import { ReferenceInVariableDefinitionsVisitor } from '../../visitors/ReferenceInVariableDefinitionsVisitor';
 import * as UndefinedVariablePropertyVisitor from "../../visitors/UndefinedVariablePropertyVisitor";
-import * as UnrecognizedFunctionVisitor from "../../visitors/UnrecognizedFunctionVisitor";
 import { DeploymentDocument, ResolvableCodeLens } from "../DeploymentDocument";
 import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSourceProvider';
 import { getMissingParameterErrors, getParameterValuesCodeActions } from '../parameters/ParameterValues';
@@ -48,6 +45,13 @@ export interface IScopedParseResult {
     scope: TemplateScope;
 }
 
+interface IAllReferences {
+    // A map from all definitions in the template to their referenced uses as a reference list
+    referenceListsMap: Map<INamedDefinition | undefined, ReferenceList>;
+    // Issues found while collecting references
+    issues: Issue[];
+}
+
 /**
  * Represents a deployment template file
  */
@@ -58,8 +62,8 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     // A map from all JSON string value nodes to their cached TLE parse results
     private _jsonStringValueToTleParseResultMap: CachedValue<Map<Json.StringValue, IScopedParseResult>> = new CachedValue<Map<Json.StringValue, IScopedParseResult>>();
 
-    // A map from all definitions in the template to their referenced uses
-    private _referenceListsMap: CachedValue<Map<INamedDefinition, ReferenceList>> = new CachedValue<Map<INamedDefinition, ReferenceList>>();
+    // All discovered references of all definitions in this template
+    private _allReferences: CachedValue<IAllReferences> = new CachedValue<IAllReferences>();
 
     private _allScopes: CachedValue<TemplateScope[]> = new CachedValue<TemplateScope[]>();
 
@@ -112,8 +116,10 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     }
 
     public getErrorsCore(_associatedParameters: DeploymentDocument | undefined): Issue[] {
-        let functions: FunctionsMetadata = AzureRMAssets.getFunctionsMetadata();
-        const parseErrors: Issue[] = [];
+        const errors: Issue[] = [];
+
+        // Reference-related issues (undefined param/var references, etc)
+        errors.push(...this.allReferences.issues);
 
         // Loop through each reachable string in the template
         this.visitAllReachableStringValues(jsonStringValue => {
@@ -125,34 +131,13 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
             const tleExpression: TLE.Value | undefined = tleParseResult.parseResult.expression;
 
             for (const error of tleParseResult.parseResult.errors) {
-                parseErrors.push(error.translate(jsonTokenStartIndex));
-            }
-
-            // Undefined parameter/variable references
-            const tleUndefinedParameterAndVariableVisitor =
-                UndefinedParameterAndVariableVisitor.visit(
-                    tleExpression,
-                    expressionScope);
-            for (const error of tleUndefinedParameterAndVariableVisitor.errors) {
-                parseErrors.push(error.translate(jsonTokenStartIndex));
-            }
-
-            // Unrecognized function calls
-            const tleUnrecognizedFunctionVisitor = UnrecognizedFunctionVisitor.UnrecognizedFunctionVisitor.visit(expressionScope, tleExpression, functions);
-            for (const error of tleUnrecognizedFunctionVisitor.errors) {
-                parseErrors.push(error.translate(jsonTokenStartIndex));
-            }
-
-            // Incorrect number of function arguments
-            const tleIncorrectArgumentCountVisitor = IncorrectFunctionArgumentCountVisitor.IncorrectFunctionArgumentCountVisitor.visit(expressionScope, tleExpression, functions);
-            for (const error of tleIncorrectArgumentCountVisitor.errors) {
-                parseErrors.push(error.translate(jsonTokenStartIndex));
+                errors.push(error.translate(jsonTokenStartIndex));
             }
 
             // Undefined variable properties
             const tleUndefinedVariablePropertyVisitor = UndefinedVariablePropertyVisitor.UndefinedVariablePropertyVisitor.visit(tleExpression, expressionScope);
             for (const error of tleUndefinedVariablePropertyVisitor.errors) {
-                parseErrors.push(error.translate(jsonTokenStartIndex));
+                errors.push(error.translate(jsonTokenStartIndex));
             }
         });
 
@@ -166,14 +151,14 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
                 // Can't call reference() inside variable definitions
                 for (const referenceSpan of referenceInVariablesFinder.referenceSpans) {
-                    parseErrors.push(
+                    errors.push(
                         new Issue(referenceSpan, "reference() cannot be invoked inside of a variable definition.", IssueKind.referenceInVar));
                 }
             }
         }
 
-        parseErrors.push(...this.getMissingParameterErrors());
-        return parseErrors;
+        errors.push(...this.getMissingParameterErrors());
+        return errors;
     }
 
     public getWarnings(): Issue[] {
@@ -183,9 +168,10 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         return unusedWarnings.concat(inaccessibleScopeMembers);
     }
 
-    private get referenceListsMap(): Map<INamedDefinition, ReferenceList> {
-        return this._referenceListsMap.getOrCacheValue(() => {
+    private get allReferences(): IAllReferences {
+        return this._allReferences.getOrCacheValue(() => {
             const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
+            const issues: Issue[] = [];
             const functions: FunctionsMetadata = AzureRMAssets.getFunctionsMetadata();
 
             // Find all references for all reachable strings
@@ -194,17 +180,20 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                 if (tleParseResult.parseResult.expression) {
                     // tslint:disable-next-line:no-non-null-assertion // Guaranteed by if
                     const scope = tleParseResult.scope;
-                    FindReferencesVisitor.visit(this, scope, jsonStringValue.startIndex, tleParseResult.parseResult.expression, functions, referenceListsMap);
+                    FindReferencesVisitor.visit(scope, jsonStringValue.startIndex, tleParseResult.parseResult.expression, functions, referenceListsMap, issues);
                 }
             });
 
-            return referenceListsMap;
+            return {
+                referenceListsMap,
+                issues
+            };
         });
     }
 
     private getUnusedDefinitionWarnings(): Issue[] {
         const warnings: Issue[] = [];
-        const referenceListsMap = this.referenceListsMap;
+        const referenceListsMap = this.allReferences.referenceListsMap;
 
         for (const scope of this.uniqueScopes) {
             // Unused parameters
@@ -438,7 +427,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     public findReferencesToDefinition(definition: INamedDefinition): ReferenceList {
         const result: ReferenceList = new ReferenceList(definition.definitionKind);
 
-        const referencesList = this.referenceListsMap.get(definition);
+        const referencesList = this.allReferences.referenceListsMap.get(definition);
 
         // Add the definition of whatever's being referenced to the list
         if (definition.nameValue) {
