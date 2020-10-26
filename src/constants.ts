@@ -49,6 +49,8 @@ export namespace configKeys {
     export const enableCodeLens = 'codelens.enable';
     export const codeLensForParameters = 'codelens.parameters';
     export const codeLensForResourceParentsAndChildren = 'codelens.resourceChildren';
+    export const appearanceBraceHighlightColorDark = 'appearance.braceHighlightColorDark';
+    export const appearanceBraceHighlightColorLight = 'appearance.braceHighlightColorLight';
 }
 
 export namespace globalStateKeys {
