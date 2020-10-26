@@ -15,6 +15,7 @@ import { InsertionContext } from "../../snippets/InsertionContext";
 import { KnownContexts } from "../../snippets/KnownContexts";
 import { CachedValue } from "../../util/CachedValue";
 import * as Completion from "../../vscodeIntegration/Completion";
+import { DeploymentDocument } from "../DeploymentDocument";
 import { DeploymentParametersDoc } from "../parameters/DeploymentParametersDoc";
 import { IParameterDefinition } from "../parameters/IParameterDefinition";
 import { getPropertyValueCompletionItems } from "../parameters/ParameterValues";
@@ -103,6 +104,7 @@ export class TemplatePositionContext extends PositionContext {
     // CONSIDER: should includeDefinition should always be true?  For instance, it would mean
     //  that we get hover over the definition of a param/var/etc and not just at references.
     //  Any bad side effects?
+    // tslint:disable-next-line: cyclomatic-complexity max-func-body-length //asdf
     public getReferenceSiteInfo(includeDefinition: boolean): IReferenceSite | undefined {
         const tleInfo = this.tleInfo;
         if (tleInfo) {
@@ -137,32 +139,52 @@ export class TemplatePositionContext extends PositionContext {
                             }
                         } else {
                             // Inside a reference to a built-in function
+                            const builtInFuncName: string = tleFuncCall.nameToken.stringValue.toLowerCase();
+
+                            // If it's inside a 'parameters' or 'variables' function call, get a reference to the referenced param/var instead of the parameters/variables built-infunction
+                            if (tleFuncCall.argumentExpressions.length === 1) {
+                                const arg = tleFuncCall.argumentExpressions[0];
+                                if (arg instanceof TLE.StringValue) {
+                                    const argStringValue: string | undefined = tleFuncCall.argumentExpressions[0]?.asStringValue?.unquotedValue;
+                                    if (argStringValue) {
+                                        if (builtInFuncName === templateKeys.parameters) {
+                                            const ref = this.getParameterReference(referenceDocument, definitionDocument, scope, referenceKind, arg);
+                                            if (ref) {
+                                                return ref;
+                                            }
+                                        } else if (builtInFuncName === templateKeys.variables) {
+                                            const ref = this.getVariableReference(referenceDocument, definitionDocument, scope, referenceKind, arg);
+                                            if (ref) {
+                                                return ref;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             const functionMetadata: BuiltinFunctionMetadata | undefined = AzureRMAssets.getFunctionMetadataFromName(tleFuncCall.nameToken.stringValue);
                             if (functionMetadata) {
                                 return { referenceKind, referenceDocument, definition: functionMetadata, unquotedReferenceSpan, definitionDocument };
                             }
+
                         }
                     }
                 }
             }
 
             const tleStringValue: TLE.StringValue | undefined = TLE.asStringValue(tleInfo.tleValue);
-            if (tleStringValue instanceof TLE.StringValue) {
+            if (tleStringValue) {
                 const referenceKind = ReferenceSiteKind.reference;
 
                 if (tleStringValue.isParametersArgument()) {
                     // Inside the 'xxx' of a parameters('xxx') reference
-                    const parameterDefinition: IParameterDefinition | undefined = scope.getParameterDefinition(tleStringValue.toString());
-                    if (parameterDefinition) {
-                        const unquotedReferenceSpan: Span = tleStringValue.unquotedSpan.translate(this.jsonTokenStartIndex);
-                        return { referenceKind, referenceDocument, definition: parameterDefinition, unquotedReferenceSpan, definitionDocument };
+                    const ref = this.getParameterReference(referenceDocument, definitionDocument, scope, referenceKind, tleStringValue);
+                    if (ref) {
+                        return ref;
                     }
                 } else if (tleStringValue.isVariablesArgument()) {
-                    const variableDefinition: IVariableDefinition | undefined = scope.getVariableDefinition(tleStringValue.toString());
-                    if (variableDefinition) {
-                        // Inside the 'xxx' of a variables('xxx') reference
-                        const unquotedReferenceSpan: Span = tleStringValue.unquotedSpan.translate(this.jsonTokenStartIndex);
-                        return { referenceKind, referenceDocument, definition: variableDefinition, unquotedReferenceSpan, definitionDocument };
+                    const ref = this.getVariableReference(referenceDocument, definitionDocument, scope, referenceKind, tleStringValue);
+                    if (ref) {
+                        return ref;
                     }
                 }
             }
@@ -182,6 +204,34 @@ export class TemplatePositionContext extends PositionContext {
         }
 
         return undefined;
+    }
+
+    private getParameterReference(referenceDocument: DeploymentDocument, definitionDocument: DeploymentDocument, scope: TemplateScope, referenceKind: ReferenceSiteKind, arg: TLE.StringValue): IReferenceSite | undefined {
+        const parameterDefinition: IParameterDefinition | undefined = scope.getParameterDefinition(arg.unquotedValue);
+        if (parameterDefinition) {
+            const unquotedReferenceSpan: Span = arg.unquotedSpan.translate(this.jsonTokenStartIndex);
+            return {
+                referenceKind,
+                referenceDocument,
+                definition: parameterDefinition,
+                unquotedReferenceSpan,
+                definitionDocument
+            };
+        }
+    }
+
+    private getVariableReference(referenceDocument: DeploymentDocument, definitionDocument: DeploymentDocument, scope: TemplateScope, referenceKind: ReferenceSiteKind, arg: TLE.StringValue): IReferenceSite | undefined {
+        const variableDefinition: IVariableDefinition | undefined = scope.getVariableDefinition(arg.unquotedValue);
+        if (variableDefinition) {
+            const unquotedReferenceSpan: Span = arg.unquotedSpan.translate(this.jsonTokenStartIndex);
+            return {
+                referenceKind,
+                referenceDocument,
+                definition: variableDefinition,
+                unquotedReferenceSpan,
+                definitionDocument
+            };
+        }
     }
 
     private isInsideParameterDefinitions(parents: (Json.ObjectValue | Json.ArrayValue | Json.Property)[]): boolean {

@@ -146,18 +146,19 @@ export abstract class TemplateScope implements IParameterDefinitionsSource {
 
     // parameterName can be surrounded with single quotes or not.  Search is case-insensitive
     public getParameterDefinition(parameterName: string): IParameterDefinition | undefined {
-        assert(parameterName, "parameterName cannot be null, undefined, or empty");
-
         const unquotedParameterName = strings.unquote(parameterName);
-        let parameterNameLC = unquotedParameterName.toLowerCase();
+        if (unquotedParameterName) {
+            let parameterNameLC = unquotedParameterName.toLowerCase();
 
-        // Find the last definition that matches, because that's what Azure does if there are matching names
-        for (let i = this.parameterDefinitions.length - 1; i >= 0; --i) {
-            let pd = this.parameterDefinitions[i];
-            if (pd.nameValue.toString().toLowerCase() === parameterNameLC) {
-                return pd;
+            // Find the last definition that matches, because that's what Azure does if there are matching names
+            for (let i = this.parameterDefinitions.length - 1; i >= 0; --i) {
+                let pd = this.parameterDefinitions[i];
+                if (pd.nameValue.toString().toLowerCase() === parameterNameLC) {
+                    return pd;
+                }
             }
         }
+
         return undefined;
     }
 
@@ -182,16 +183,16 @@ export abstract class TemplateScope implements IParameterDefinitionsSource {
 
     // variableName can be surrounded with single quotes or not.  Search is case-insensitive
     public getVariableDefinition(variableName: string): IVariableDefinition | undefined {
-        assert(variableName, "variableName cannot be null, undefined, or empty");
-
         const unquotedVariableName = strings.unquote(variableName);
-        const variableNameLC = unquotedVariableName.toLowerCase();
+        if (unquotedVariableName) {
+            const variableNameLC = unquotedVariableName.toLowerCase();
 
-        // Find the last definition that matches, because that's what Azure does
-        for (let i = this.variableDefinitions.length - 1; i >= 0; --i) {
-            let vd = this.variableDefinitions[i];
-            if (vd.nameValue.toString().toLowerCase() === variableNameLC) {
-                return vd;
+            // Find the last definition that matches, because that's what Azure does
+            for (let i = this.variableDefinitions.length - 1; i >= 0; --i) {
+                let vd = this.variableDefinitions[i];
+                if (vd.nameValue.toString().toLowerCase() === variableNameLC) {
+                    return vd;
+                }
             }
         }
 

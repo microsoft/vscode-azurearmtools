@@ -654,21 +654,14 @@ suite("DeploymentTemplate", () => {
     });
 
     suite("getParameterDefinition(string)", () => {
-        test("with undefined", () => {
-            const dt = new DeploymentTemplateDoc("{ 'parameters': { 'apples': { 'type': 'string' }, 'bananas': { 'type': 'integer' } } }", fakeId);
-            // tslint:disable-next-line:no-any
-            assert.throws(() => { dt.topLevelScope.getParameterDefinition(<any>undefined); });
-        });
-
-        test("with undefined", () => {
-            const dt = new DeploymentTemplateDoc("{ 'parameters': { 'apples': { 'type': 'string' }, 'bananas': { 'type': 'integer' } } }", fakeId);
-            // tslint:disable-next-line:no-any
-            assert.throws(() => { dt.topLevelScope.getParameterDefinition(<any>undefined); });
-        });
-
         test("with empty", () => {
             const dt = new DeploymentTemplateDoc("{ 'parameters': { 'apples': { 'type': 'string' }, 'bananas': { 'type': 'integer' } } }", fakeId);
-            assert.throws(() => { dt.topLevelScope.getParameterDefinition(""); });
+            assert.deepStrictEqual(undefined, dt.topLevelScope.getParameterDefinition("''"));
+        });
+
+        test("with empty string literal", () => {
+            const dt = new DeploymentTemplateDoc("{ 'parameters': { 'apples': { 'type': 'string' }, 'bananas': { 'type': 'integer' } } }", fakeId);
+            assert.deepStrictEqual(undefined, dt.topLevelScope.getParameterDefinition("''"));
         });
 
         test("with no parameters definition", () => {
@@ -770,21 +763,14 @@ suite("DeploymentTemplate", () => {
     });
 
     suite("getVariableDefinition(string)", () => {
-        test("with undefined", () => {
-            const dt = new DeploymentTemplateDoc("{ 'variables': { 'apples': 'yum', 'bananas': 'good' } }", fakeId);
-            // tslint:disable-next-line:no-any
-            assert.throws(() => { dt.topLevelScope.getVariableDefinition(<any>undefined); });
-        });
-
-        test("with undefined", () => {
-            const dt = new DeploymentTemplateDoc("{ 'variables': { 'apples': 'yum', 'bananas': 'good' } }", fakeId);
-            // tslint:disable-next-line:no-any
-            assert.throws(() => { dt.topLevelScope.getVariableDefinition(<any>undefined); });
-        });
-
         test("with empty", () => {
             const dt = new DeploymentTemplateDoc("{ 'variables': { 'apples': 'yum', 'bananas': 'good' } }", fakeId);
-            assert.throws(() => { dt.topLevelScope.getVariableDefinition(""); });
+            assert.deepStrictEqual(undefined, dt.topLevelScope.getVariableDefinition(""));
+        });
+
+        test("with empty string literal", () => {
+            const dt = new DeploymentTemplateDoc("{ 'variables': { 'apples': 'yum', 'bananas': 'good' } }", fakeId);
+            assert.deepStrictEqual(undefined, dt.topLevelScope.getVariableDefinition("''"));
         });
 
         test("with no variables definition", () => {
