@@ -276,7 +276,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<IElementInfo
     }
 
     public clearRevealRange(): void {
-
+        //asdf
     }
 
     public revealRangeInEditor(range: vscode.Range): void {
