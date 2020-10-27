@@ -868,6 +868,15 @@ suite("TemplatePositionContext", () => {
             assert.deepStrictEqual(parameterDefinition.description, undefined);
             assert.deepStrictEqual(parameterDefinition.fullSpan, new Span(18, 11));
         });
+
+        test("with cursor inside 'parameters'", async () => {
+            const dt = new DeploymentTemplateDoc("{ 'parameters': { 'pName': {} }, 'a': '[parameters(\"pName\")]' }", fakeId);
+            const context: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex("{ 'parameters': { 'pName': {} }, 'a': '[paramet".length, undefined);
+            const parameterDefinition: IParameterDefinition = nonNullValue(await getParameterDefinitionIfAtReference(context));
+            assert.deepStrictEqual(parameterDefinition.nameValue.toString(), "pName");
+            assert.deepStrictEqual(parameterDefinition.description, undefined);
+            assert.deepStrictEqual(parameterDefinition.fullSpan, new Span(18, 11));
+        });
     });
 
     suite("variableDefinition", () => {
@@ -908,9 +917,17 @@ suite("TemplatePositionContext", () => {
             assert.deepStrictEqual(vDef.span, new Span(17, 11));
         });
 
-        test("with cursor after parameter name end quote with matching parameter definition", () => {
+        test("with cursor after variable name end quote with matching variable  definition", () => {
             const dt = new DeploymentTemplateDoc("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\")]' }", fakeId);
             const context: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\"".length, undefined);
+            const vDef: IVariableDefinition = nonNullValue(getVariableDefinitionIfAtReference(context));
+            assert.deepStrictEqual(vDef.nameValue.toString(), "vName");
+            assert.deepStrictEqual(vDef.span, new Span(17, 11));
+        });
+
+        test("with cursor inside 'variables'", () => {
+            const dt = new DeploymentTemplateDoc("{ 'variables': { 'vName': {} }, 'a': '[variables(\"vName\")]' }", fakeId);
+            const context: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex("{ 'variables': { 'vName': {} }, 'a': '[v".length, undefined);
             const vDef: IVariableDefinition = nonNullValue(getVariableDefinitionIfAtReference(context));
             assert.deepStrictEqual(vDef.nameValue.toString(), "vName");
             assert.deepStrictEqual(vDef.span, new Span(17, 11));

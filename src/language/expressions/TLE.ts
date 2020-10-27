@@ -77,6 +77,26 @@ export abstract class Value {
     public get __debugDisplay(): string {
         return this.toString();
     }
+
+    public get asStringValue(): StringValue | undefined {
+        return asStringValue(this);
+    }
+
+    public get asNumberValue(): NumberValue | undefined {
+        return asNumberValue(this);
+    }
+
+    public get asArrayAccessValue(): ArrayAccessValue | undefined {
+        return asArrayAccessValue(this);
+    }
+
+    public get asFunctionCallValue(): FunctionCallValue | undefined {
+        return asFunctionCallValue(this);
+    }
+
+    public get asPropertyAccessValue(): PropertyAccess | undefined {
+        return asPropertyAccessValue(this);
+    }
 }
 
 export abstract class ParentValue extends Value {
