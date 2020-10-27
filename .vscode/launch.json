@@ -43,12 +43,12 @@
             ],
             "preLaunchTask": "npm: compile",
             "env": {
-                "MOCHA_grep": "", // RegExp of tests to run (case-insensitve, set to empty for all)
+                "MOCHA_grep": "treeview", // RegExp of tests to run (case-insensitve, set to empty for all)
                 "MOCHA_invert": "0", // Invert the RegExp
                 "MOCHA_bail": "0", // Bail after first failure
                 "AZCODE_ARM_IGNORE_BUNDLE": "1",
                 "MOCHA_enableTimeouts": "0", // Disable time-outs
-                "DEBUGTELEMETRY": "1", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
+                "DEBUGTELEMETRY": "0", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
                 "NODE_DEBUG": "",
                 "DISABLE_LANGUAGE_SERVER": "0",
                 "DISABLE_SLOW_TESTS": "0",
