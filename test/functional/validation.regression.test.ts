@@ -531,20 +531,20 @@ suite("Validation regression tests", () => {
         );
     }
 
-    // tslint:disable-next-line: no-suspicious-comment
-    // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/859
-    if (!isWin32) {
-        suite(`Using 'copy' in nested template variables triggered an template validation error #730`, () => {
-            testWithLanguageServer(`#730 scenario a: Template validation failed: Value cannot be null. (Parameter 'o')`, async () => {
-                await testDiagnostics(
-                    'templates/regression/730a.json',
-                    {
-                        parametersFile: 'templates/regression/730a.params.json',
-                    },
-                    [
-                    ]);
-            });
+    suite(`Using 'copy' in nested template variables triggered an template validation error #730`, () => {
+        testWithLanguageServer(`#730 scenario a: Template validation failed: Value cannot be null. (Parameter 'o')`, async () => {
+            await testDiagnostics(
+                'templates/regression/730a.json',
+                {
+                    parametersFile: 'templates/regression/730a.params.json',
+                },
+                [
+                ]);
+        });
 
+        // tslint:disable-next-line: no-suspicious-comment
+        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/859
+        if (!isWin32) {
             testWithLanguageServer(`#730 scenario b: Template validation failed: The template resource '' at line '<null>' and column '<null>' is not valid. The name property cannot be null or empty.`, async () => {
                 await testDiagnostics(
                     'templates/regression/730b.json',
@@ -555,32 +555,32 @@ suite("Validation regression tests", () => {
                         "Error: Template validation failed: The template resource '' at line '121' and column '158' is not valid. The name property cannot be null or empty. Please see https://aka.ms/arm-template/#resources for usage details. (arm-template (validation)) [120,157-120,157]"
                     ]);
             });
+        }
 
-            testWithLanguageServer(`#730 scenario c: Template function copyIndex not expected at this location`, async () => {
-                await testDiagnostics(
-                    'templates/regression/730c.json',
-                    {
-                        parametersFile: 'templates/regression/730c.params.json',
-                    },
-                    [
-                        "Warning: The parameter 'projectName' is never used. (arm-template (expressions)) [791,24-791,37]",
-                        "Warning: The variable 'intlbRef' is never used. (arm-template (expressions)) [927,24-927,34]",
-                        "Warning: Value must be one of the following types: integer (arm-template (schema)) [641,16-641,30]"
-                    ]);
-            });
-
-            // https://github.com/microsoft/vscode-azurearmtools/issues/904
-            testWithLanguageServer(`#904 Validation giving false positives for top-level params used in outer-scoped nested template`, async () => {
-                await testDiagnostics(
-                    'templates/regression/904.json',
-                    {
-                        parametersFile: 'templates/regression/904.parameters.json',
-                    },
-                    [
-                    ]);
-            });
+        testWithLanguageServer(`#730 scenario c: Template function copyIndex not expected at this location`, async () => {
+            await testDiagnostics(
+                'templates/regression/730c.json',
+                {
+                    parametersFile: 'templates/regression/730c.params.json',
+                },
+                [
+                    "Warning: The parameter 'projectName' is never used. (arm-template (expressions)) [791,24-791,37]",
+                    "Warning: The variable 'intlbRef' is never used. (arm-template (expressions)) [927,24-927,34]",
+                    "Warning: Value must be one of the following types: integer (arm-template (schema)) [641,16-641,30]"
+                ]);
         });
-    }
+
+        // https://github.com/microsoft/vscode-azurearmtools/issues/904
+        testWithLanguageServer(`#904 Validation giving false positives for top-level params used in outer-scoped nested template`, async () => {
+            await testDiagnostics(
+                'templates/regression/904.json',
+                {
+                    parametersFile: 'templates/regression/904.parameters.json',
+                },
+                [
+                ]);
+        });
+    });
 
     // tslint:disable-next-line: no-suspicious-comment
     /* TODO: #708
