@@ -9,8 +9,8 @@ import { DefinitionKind, INamedDefinition } from '../../language/INamedDefinitio
 import * as Json from "../../language/json/JSON";
 import { Span } from '../../language/Span';
 import { CachedValue } from '../../util/CachedValue';
-import { IUsageInfo } from '../../vscodeIntegration/Hover';
 import { getUserFunctionUsage } from '../../vscodeIntegration/signatureFormatting';
+import { IUsageInfo } from '../../vscodeIntegration/UsageInfoHoverInfo';
 import { IJsonDocument } from "./IJsonDocument";
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
 

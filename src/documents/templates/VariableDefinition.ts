@@ -9,7 +9,7 @@ import * as Json from "../../language/json/JSON";
 import { Span } from '../../language/Span';
 import { CachedValue } from '../../util/CachedValue';
 import { mapJsonObjectValue } from '../../util/mapJsonObjectValue';
-import { IUsageInfo } from '../../vscodeIntegration/Hover';
+import { IUsageInfo } from '../../vscodeIntegration/UsageInfoHoverInfo';
 
 /**
  * This represents the definition of a top-level parameter in a deployment template.

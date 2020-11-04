@@ -6,7 +6,7 @@
 
 import * as assert from "assert";
 import * as os from 'os';
-import { HoverInfo, Span } from "../extension.bundle";
+import { Span, UsageInfoHoverInfo } from "../extension.bundle";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 
@@ -26,10 +26,11 @@ suite("Hover.UserNamespaceInfo", () => {
                     }
                 ]
             });
-            const info = new HoverInfo(
+            const info = new UsageInfoHoverInfo(
+                'type',
                 dt.topLevelScope.getFunctionNamespaceDefinition("udf")!.usageInfo,
                 fakeSpan);
-            assert.equal(info.getHoverText(), `**udf**${os.EOL}*(user-defined namespace)*${os.EOL}${os.EOL}No members`);
+            assert.equal(info.getHoverText().value, `**udf**${os.EOL}*(user-defined namespace)*${os.EOL}${os.EOL}No members`);
         });
     });
 
@@ -47,10 +48,11 @@ suite("Hover.UserNamespaceInfo", () => {
                 }
             ]
         });
-        const info = new HoverInfo(
+        const info = new UsageInfoHoverInfo(
+            'type',
             dt.topLevelScope.getFunctionNamespaceDefinition("udf")!.usageInfo,
             fakeSpan);
-        assert.equal(info.getHoverText(), `**udf**${os.EOL}*(user-defined namespace)*${os.EOL}${os.EOL}Members:${os.EOL}* date()`);
+        assert.equal(info.getHoverText().value, `**udf**${os.EOL}*(user-defined namespace)*${os.EOL}${os.EOL}Members:${os.EOL}* date()`);
     });
 
     test("one member, one param, no type", async () => {
@@ -71,10 +73,11 @@ suite("Hover.UserNamespaceInfo", () => {
                 }
             ]
         });
-        const info = new HoverInfo(
+        const info = new UsageInfoHoverInfo(
+            'type',
             dt.topLevelScope.getFunctionNamespaceDefinition("udf")!.usageInfo,
             fakeSpan);
-        assert.equal(info.getHoverText(), `**udf**${os.EOL}*(user-defined namespace)*${os.EOL}${os.EOL}Members:${os.EOL}* date(param)`);
+        assert.equal(info.getHoverText().value, `**udf**${os.EOL}*(user-defined namespace)*${os.EOL}${os.EOL}Members:${os.EOL}* date(param)`);
     });
 
     test("one member, one param", async () => {
@@ -97,10 +100,11 @@ suite("Hover.UserNamespaceInfo", () => {
                 }
             ]
         });
-        const info = new HoverInfo(
+        const info = new UsageInfoHoverInfo(
+            'type',
             dt.topLevelScope.getFunctionNamespaceDefinition("udf")!.usageInfo,
             fakeSpan);
-        assert.equal(info.getHoverText(), `**udf**${os.EOL}*(user-defined namespace)*${os.EOL}${os.EOL}Members:${os.EOL}* date(param)`);
+        assert.equal(info.getHoverText().value, `**udf**${os.EOL}*(user-defined namespace)*${os.EOL}${os.EOL}Members:${os.EOL}* date(param)`);
     });
 
     test("one member, two params", async () => {
@@ -127,10 +131,11 @@ suite("Hover.UserNamespaceInfo", () => {
                 }
             ]
         });
-        const info = new HoverInfo(
+        const info = new UsageInfoHoverInfo(
+            'type',
             dt.topLevelScope.getFunctionNamespaceDefinition("udf")!.usageInfo,
             fakeSpan);
-        assert.equal(info.getHoverText(), `**udf**${os.EOL}*(user-defined namespace)*${os.EOL}${os.EOL}Members:${os.EOL}* date(param1 [string], param2 [securestring])`);
+        assert.equal(info.getHoverText().value, `**udf**${os.EOL}*(user-defined namespace)*${os.EOL}${os.EOL}Members:${os.EOL}* date(param1 [string], param2 [securestring])`);
     });
 
     test("two members", async () => {
@@ -165,9 +170,10 @@ suite("Hover.UserNamespaceInfo", () => {
                 }
             ]
         });
-        const info = new HoverInfo(
+        const info = new UsageInfoHoverInfo(
+            'type',
             dt.topLevelScope.getFunctionNamespaceDefinition("udf")!.usageInfo,
             fakeSpan);
-        assert.equal(info.getHoverText(), `**udf**${os.EOL}*(user-defined namespace)*${os.EOL}${os.EOL}Members:${os.EOL}* date(param1 [string], param2 [securestring])${os.EOL}* time(param [string])`);
+        assert.equal(info.getHoverText().value, `**udf**${os.EOL}*(user-defined namespace)*${os.EOL}${os.EOL}Members:${os.EOL}* date(param1 [string], param2 [securestring])${os.EOL}* time(param [string])`);
     });
 });

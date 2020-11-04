@@ -52,7 +52,7 @@ import { IncorrectArgumentsCountIssue } from "./visitors/IncorrectArgumentsCount
 import { UnrecognizedBuiltinFunctionIssue } from "./visitors/UnrecognizedFunctionIssues";
 import { IAddMissingParametersArgs, IGotoParameterValueArgs, IGotoResourcesArgs } from "./vscodeIntegration/commandArguments";
 import { ConsoleOutputChannelWrapper } from "./vscodeIntegration/ConsoleOutputChannelWrapper";
-import * as Hover from './vscodeIntegration/Hover';
+import { IHoverInfo } from './vscodeIntegration/IHoverInfo';
 import { RenameCodeActionProvider } from "./vscodeIntegration/RenameCodeActionProvider";
 import { resetGlobalState } from "./vscodeIntegration/resetGlobalState";
 import { setContext } from "./vscodeIntegration/setContext";
@@ -861,7 +861,7 @@ export class AzureRMTools {
      * actual template files are open, to avoid slowing performance when simple JSON files are opened.
      */
     // tslint:disable-next-line: no-suspicious-comment
-    // tslint:disable-next-line: max-func-body-length // TODO: refactor
+    // TODO: Refactor
     private ensureDeploymentDocumentEventsHookedUp(): void {
         if (this._areDeploymentTemplateEventsHookedUp) {
             return;
@@ -869,7 +869,7 @@ export class AzureRMTools {
         this._areDeploymentTemplateEventsHookedUp = true;
 
         // tslint:disable-next-line: no-suspicious-comment
-        // tslint:disable-next-line: max-func-body-length // TODO: refactor
+        // tslint:disable-next-line: max-func-body-length // TODO: Refactor
         callWithTelemetryAndErrorHandlingSync("ensureDeploymentTemplateEventsHookedUp", (actionContext: IActionContext) => {
             actionContext.telemetry.suppressIfSuccessful = true;
 
@@ -1225,13 +1225,11 @@ export class AzureRMTools {
             const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(document, cancel);
             if (doc) {
                 const context = doc.getContextFromDocumentLineAndColumnIndexes(position.line, position.character, associatedDoc);
-                const hoverInfo: Hover.HoverInfo | undefined = context.getHoverInfo();
-
-                if (hoverInfo) {
-                    properties.hoverType = hoverInfo.friendlyType;
-                    const hoverRange: vscode.Range = getVSCodeRangeFromSpan(doc, hoverInfo.span);
-                    const hover = new vscode.Hover(hoverInfo.getHoverText(), hoverRange);
-                    return hover;
+                const hoverInfos: IHoverInfo[] = context.getHoverInfo();
+                if (hoverInfos.length > 0) {
+                    properties.hoverTypes = hoverInfos.map(i => i.hoverType).join(',');
+                    const markdownStrings = hoverInfos.map(hi => hi.getHoverText());
+                    return new vscode.Hover(markdownStrings);
                 }
             }
 

@@ -6,7 +6,7 @@ import { assert } from "../../fixed_assert";
 import { DefinitionKind, INamedDefinition } from "../../language/INamedDefinition";
 import * as Json from "../../language/json/JSON";
 import { Span } from "../../language/Span";
-import { IUsageInfo } from "../../vscodeIntegration/Hover";
+import { IUsageInfo } from "../../vscodeIntegration/UsageInfoHoverInfo";
 import { ExpressionType, toValidExpressionType } from "../templates/ExpressionType";
 import { IParameterDefinition } from "./IParameterDefinition";
 

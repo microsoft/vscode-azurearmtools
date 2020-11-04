@@ -5,7 +5,9 @@
 // tslint:disable max-classes-per-file // Grandfathered in
 
 import * as os from 'os';
+import { MarkdownString } from 'vscode';
 import { Span } from '../language/Span';
+import { IHoverInfo } from './IHoverInfo';
 
 export interface IUsageInfo {
     usage: string;
@@ -16,22 +18,26 @@ export interface IUsageInfo {
 /**
  * The information that will be displayed when the cursor hovers over parts of a document.
  */
-export class HoverInfo {
-    constructor(private readonly _usageInfo: IUsageInfo, private readonly _referenceSpan: Span) {
+export class UsageInfoHoverInfo implements IHoverInfo {
+    constructor(private _hoverType: string, private readonly _usageInfo: IUsageInfo, private readonly _referenceSpan: Span) {
     }
 
-    public getHoverText(): string {
+    public getHoverText(): MarkdownString {
         let info = `**${this._usageInfo.usage}**${os.EOL}*(${this._usageInfo.friendlyType})*`;
         const description = this._usageInfo.description;
         if (description) {
             info += os.EOL + os.EOL + description;
         }
 
-        return info;
+        return new MarkdownString(info);
     }
 
     public get span(): Span {
         return this._referenceSpan;
+    }
+
+    public get hoverType(): string {
+        return this._hoverType;
     }
 
     public get friendlyType(): string {
@@ -51,6 +57,6 @@ export class HoverInfo {
      * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
      */
     public get __debugDisplay(): string {
-        return this.getHoverText();
+        return this.getHoverText().value;
     }
 }

@@ -93,9 +93,11 @@ export { UndefinedVariablePropertyVisitor } from "./src/visitors/UndefinedVariab
 export { UnrecognizedBuiltinFunctionIssue, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "./src/visitors/UnrecognizedFunctionIssues";
 export * from "./src/vscodeIntegration/commandArguments";
 export { IConfiguration } from "./src/vscodeIntegration/Configuration";
-export { HoverInfo } from "./src/vscodeIntegration/Hover";
+export * from "./src/vscodeIntegration/FormattedExpressionHoverInfo";
+export { IHoverInfo } from "./src/vscodeIntegration/IHoverInfo";
 export * from "./src/vscodeIntegration/toVsCodeCompletionItem";
 export { IElementInfo, JsonOutlineProvider, shortenTreeLabel } from "./src/vscodeIntegration/Treeview";
+export { UsageInfoHoverInfo } from "./src/vscodeIntegration/UsageInfoHoverInfo";
 export * from "./src/vscodeIntegration/vscodePosition";
 export { Completion };
 export { Json };

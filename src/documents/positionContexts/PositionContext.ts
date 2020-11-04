@@ -16,7 +16,8 @@ import { __debugMarkPositionInString } from "../../util/debugMarkStrings";
 import { InitializeBeforeUse } from "../../util/InitializeBeforeUse";
 import { nonNullValue } from "../../util/nonNull";
 import * as Completion from "../../vscodeIntegration/Completion";
-import { HoverInfo } from "../../vscodeIntegration/Hover";
+import { IHoverInfo } from '../../vscodeIntegration/IHoverInfo';
+import { UsageInfoHoverInfo } from "../../vscodeIntegration/UsageInfoHoverInfo";
 import { DeploymentDocument as DeploymentDocument } from "../DeploymentDocument";
 
 export enum ReferenceSiteKind {
@@ -241,15 +242,17 @@ export abstract class PositionContext {
      */
     protected abstract getReferencesCore(): ReferenceList | undefined;
 
-    public getHoverInfo(): HoverInfo | undefined {
+    public getHoverInfo(): IHoverInfo[] {
+        const infos: IHoverInfo[] = [];
+
         const reference: IReferenceSite | undefined = this.getReferenceSiteInfo(false);
         if (reference) {
             const span = reference.unquotedReferenceSpan;
             const definition = reference.definition;
-            return new HoverInfo(definition.usageInfo, span);
+            infos.push(new UsageInfoHoverInfo(definition.definitionKind, definition.usageInfo, span));
         }
 
-        return undefined;
+        return infos;
     }
 
     public abstract getCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult>;

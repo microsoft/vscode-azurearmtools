@@ -6,6 +6,7 @@ import { templateKeys } from "../../constants";
 import { ext } from "../../extensionVariables";
 import { assert } from '../../fixed_assert';
 import { AzureRMAssets, BuiltinFunctionMetadata } from "../../language/expressions/AzureRMAssets";
+import { isTleExpression } from "../../language/expressions/isTleExpression";
 import * as TLE from "../../language/expressions/TLE";
 import { INamedDefinition } from "../../language/INamedDefinition";
 import * as Json from "../../language/json/JSON";
@@ -15,6 +16,9 @@ import { InsertionContext } from "../../snippets/InsertionContext";
 import { KnownContexts } from "../../snippets/KnownContexts";
 import { CachedValue } from "../../util/CachedValue";
 import * as Completion from "../../vscodeIntegration/Completion";
+import { FormattedExpressionHoverInfo } from "../../vscodeIntegration/FormattedExpressionHoverInfo";
+import { FormattedStringHoverInfo } from "../../vscodeIntegration/FormattedStringHoverInfo";
+import { IHoverInfo } from "../../vscodeIntegration/IHoverInfo";
 import { DeploymentDocument } from "../DeploymentDocument";
 import { DeploymentParametersDoc } from "../parameters/DeploymentParametersDoc";
 import { IParameterDefinition } from "../parameters/IParameterDefinition";
@@ -104,7 +108,7 @@ export class TemplatePositionContext extends PositionContext {
     // CONSIDER: should includeDefinition should always be true?  For instance, it would mean
     //  that we get hover over the definition of a param/var/etc and not just at references.
     //  Any bad side effects?
-    // tslint:disable-next-line: cyclomatic-complexity max-func-body-length //asdf
+    // tslint:disable-next-line: cyclomatic-complexity // CONSIDER: refactor
     public getReferenceSiteInfo(includeDefinition: boolean): IReferenceSite | undefined {
         const tleInfo = this.tleInfo;
         if (tleInfo) {
@@ -204,6 +208,36 @@ export class TemplatePositionContext extends PositionContext {
         }
 
         return undefined;
+    }
+
+    public getHoverInfo(): IHoverInfo[] {
+        // Base hover info
+        const infos: IHoverInfo[] = super.getHoverInfo();
+
+        // Add a hover element for the formatted version of the expression
+        if (this.jsonValue instanceof Json.StringValue && isTleExpression(this.jsonValue.unquotedValue)) {
+            // Must be a string expression
+            const tleParseResult = this.tleInfo?.tleParseResult;
+            if (tleParseResult?.errors.length === 0) {
+                // ... with no errors
+                const expr = tleParseResult.expression;
+                if (expr) {
+                    infos.push(new FormattedExpressionHoverInfo(expr));
+                }
+            }
+        } else if (this.jsonValue instanceof Json.StringValue && this.jsonValue.unquotedValue.match(/\\r|\\n|\r|\n/)) {
+            // ... or a multi-line string or one containing \r or \n characters
+            const tleParseResult = this.tleInfo?.tleParseResult;
+            if (tleParseResult?.errors.length === 0) {
+                // ... with no errors
+                const expr = tleParseResult.expression;
+                if (expr) {
+                    infos.push(new FormattedStringHoverInfo(this.jsonValue));
+                }
+            }
+        }
+
+        return infos;
     }
 
     private getParameterReference(referenceDocument: DeploymentDocument, definitionDocument: DeploymentDocument, scope: TemplateScope, referenceKind: ReferenceSiteKind, arg: TLE.StringValue): IReferenceSite | undefined {
