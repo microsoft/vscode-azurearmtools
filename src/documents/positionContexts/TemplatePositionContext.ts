@@ -17,6 +17,7 @@ import { KnownContexts } from "../../snippets/KnownContexts";
 import { CachedValue } from "../../util/CachedValue";
 import * as Completion from "../../vscodeIntegration/Completion";
 import { FormattedExpressionHoverInfo } from "../../vscodeIntegration/FormattedExpressionHoverInfo";
+import { FormattedStringHoverInfo } from "../../vscodeIntegration/FormattedStringHoverInfo";
 import { IHoverInfo } from "../../vscodeIntegration/IHoverInfo";
 import { DeploymentDocument } from "../DeploymentDocument";
 import { DeploymentParametersDoc } from "../parameters/DeploymentParametersDoc";
@@ -222,6 +223,16 @@ export class TemplatePositionContext extends PositionContext {
                 const expr = tleParseResult.expression;
                 if (expr) {
                     infos.push(new FormattedExpressionHoverInfo(expr));
+                }
+            }
+        } else if (this.jsonValue instanceof Json.StringValue && this.jsonValue.unquotedValue.match(/\\r|\\n|\r|\n/)) {
+            // ... or a multi-line string or one containing \r or \n characters
+            const tleParseResult = this.tleInfo?.tleParseResult;
+            if (tleParseResult?.errors.length === 0) {
+                // ... with no errors
+                const expr = tleParseResult.expression;
+                if (expr) {
+                    infos.push(new FormattedStringHoverInfo(this.jsonValue));
                 }
             }
         }
