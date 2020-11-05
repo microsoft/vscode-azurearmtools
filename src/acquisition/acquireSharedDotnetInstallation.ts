@@ -18,7 +18,7 @@ export async function acquireSharedDotnetInstallation(version: string): Promise<
         // If this fails, the dotnet.acquire extension should display its own error, so no need to do
         // it here, other than to our output channel.
         actionContext.errorHandling.suppressDisplay = true; // Allow caller to handle
-        actionContext.errorHandling.rethrow = true;
+        actionContext.errorHandling.rethrow = false;
 
         let message: string | undefined;
         let result: IDotnetAcquireResult | undefined;
@@ -34,13 +34,15 @@ export async function acquireSharedDotnetInstallation(version: string): Promise<
         } catch (err) {
             message = parseError(err).message;
         }
+        actionContext.telemetry.properties.dotnetAcquireResult = result?.dotnetPath ? 'path returned' : 'undefined';
+
         if (!message) {
             if (!result) {
-                message = "dotnet.acquire returned undefined";
+                message = "dotnet.acquire failed";
             } else {
                 dotnetPath = result.dotnetPath;
                 if (!dotnetPath) {
-                    message = "dotnet.acquire returned undefined";
+                    message = "dotnet.acquire returned an undefined dotnetPath";
                 }
             }
         }
@@ -49,8 +51,9 @@ export async function acquireSharedDotnetInstallation(version: string): Promise<
             const linkMessage = `This extension requires .NET Core for full functionality, but we were unable to download and install a local copy for the extension. If this error persists, please see https://aka.ms/vscode-armtools-dotnet for troubleshooting tips.`;
             const err = wrapError(linkMessage, `Details: ${message}`);
             ext.outputChannel.appendLog(parseError(err).message);
-            ext.outputChannel.appendLog(`See '.NET Core Tooling' in the output window for more information.`);
+            ext.outputChannel.appendLog(`See '.NET Runtime' in the output window for more information.`);
             ext.outputChannel.show();
+            actionContext.telemetry.properties.dotnetAcquireError = message;
             throw err;
         }
 
