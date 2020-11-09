@@ -204,7 +204,10 @@ async function getDotNetPath(): Promise<string | undefined> {
 
             dotnetPath = await acquireSharedDotnetInstallation(downloadDotnetVersion);
             if (!dotnetPath) {
-                throw new Error("acquireSharedDotnetInstallation didn't return a path");
+                // Error is handled by dotnet extension
+                actionContext.errorHandling.suppressDisplay = true;
+                actionContext.errorHandling.rethrow = false;
+                throw new Error("acquireSharedDotnetInstallation failed (didn't return a path)");
             }
 
             if (!(await isFile(dotnetPath))) {
