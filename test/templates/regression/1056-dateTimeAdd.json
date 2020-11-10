@@ -1,0 +1,22 @@
+{
+    // From https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-date#datetimeadd
+
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters":{
+        "baseTime":{
+            "type":"string",
+            "defaultValue": "[utcNow('u')]"
+        }
+    },
+    "variables": {
+        "add3Years": "[dateTimeAdd(parameters('baseTime'), 'P3Y')]"
+    },
+    "resources": [],
+    "outputs": {
+        "add3Years": {
+            "value": "[variables('add3Years')]",
+            "type": "string"
+        }
+    }
+}
