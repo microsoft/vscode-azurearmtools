@@ -584,11 +584,23 @@ suite("Validation regression tests", () => {
         // https://github.com/microsoft/vscode-azurearmtools/issues/1056
         testWithLanguageServer(`#1056 dateTimeAdd() in certain scenarios gives a template validation error`, async () => {
             await testDiagnostics(
-                'templates/regression/1056.json',
+                'templates/regression/1056-dateTimeAdd.json',
                 {
-                    parametersFile: 'templates/regression/1056.parameters.json',
+                    parametersFile: 'templates/regression/1056-dateTimeAdd.parameters.json',
                 },
                 [
+                ]);
+        });
+
+        // https://github.com/microsoft/vscode-azurearmtools/issues/831
+        testWithLanguageServer(`#831 Validation error with resourceGroup() tags when using parameter file`, async () => {
+            await testDiagnostics(
+                'templates/regression/831.json',
+                {
+                    parametersFile: 'templates/regression/831.parameters.json',
+                },
+                [
+                    "Warning: The variable 'someTag' is never used. (arm-template (expressions)) [6,8-6,17]"
                 ]);
         });
     });

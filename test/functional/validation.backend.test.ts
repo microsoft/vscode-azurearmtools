@@ -121,7 +121,6 @@ suite("Backend validation", () => {
         );
     });
 
-    /* TODO: 831
     testWithLanguageServer("Validation error with resourceGroup() tags when using parameter file #831", async () => {
         await testDiagnosticsFromFile(
             {
@@ -145,8 +144,8 @@ suite("Backend validation", () => {
                 }
             },
             [
+                "Warning: The variable 'someTag' is never used. (arm-template (expressions)) [6,4-6,13]"
             ]
         );
     });
-    */
 });
