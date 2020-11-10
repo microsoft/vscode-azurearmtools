@@ -580,6 +580,17 @@ suite("Validation regression tests", () => {
                 [
                 ]);
         });
+
+        // https://github.com/microsoft/vscode-azurearmtools/issues/1056
+        testWithLanguageServer(`#1056 dateTimeAdd() in certain scenarios gives a template validation error`, async () => {
+            await testDiagnostics(
+                'templates/regression/1056.json',
+                {
+                    parametersFile: 'templates/regression/1056.parameters.json',
+                },
+                [
+                ]);
+        });
     });
 
     // tslint:disable-next-line: no-suspicious-comment
