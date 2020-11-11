@@ -605,16 +605,20 @@ suite("Validation regression tests", () => {
             ]);
     });
 
-    testWithLanguageServer(`#1060-rg Validation of template function "deployment" - RG scope - should give error`, async () => {
-        await testDiagnostics(
-            'templates/regression/1060-rg.json',
-            {
-                parametersFile: 'templates/regression/1060-rg.parameters.json',
-            },
-            [
-                `Error: Template validation failed: The template resource 'mgname-test' at line '14' and column '9' is not valid: The language expression property 'location' doesn't exist, available properties are 'name, properties'.. Please see https://aka.ms/arm-template-expressions for usage details. (arm-template (validation))`
-            ]);
-    });
+    // tslint:disable-next-line: no-suspicious-comment
+    // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/859
+    if (!isWin32) {
+        testWithLanguageServer(`#1060-rg Validation of template function "deployment" - RG scope - should give error`, async () => {
+            await testDiagnostics(
+                'templates/regression/1060-rg.json',
+                {
+                    parametersFile: 'templates/regression/1060-rg.parameters.json',
+                },
+                [
+                    `Error: Template validation failed: The template resource 'mgname-test' at line '14' and column '9' is not valid: The language expression property 'location' doesn't exist, available properties are 'name, properties'.. Please see https://aka.ms/arm-template-expressions for usage details. (arm-template (validation))`
+                ]);
+        });
+    }
 
     testWithLanguageServer(`#1060-mg Validation of template function "deployment" - MG scope - should succeed`, async () => {
         await testDiagnostics(
