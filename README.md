@@ -203,6 +203,18 @@ Select the element that you want to sort.
 
 Template sorting can also be engaged using the ARM template outline.
 
+### Extract to variable or parameter
+
+Select a JSON string or a subset of an expression string then select the lightbulb to extract it to a variable or parameter.
+
+![Image demonstrating extracting a variable and a parameter](./images/extract-vars-and-params.gif)
+
+### Hover to format complex expressions or multi-line strings
+
+![Image showing hovering over an expression](./images/hover-to-format-expression.png)
+
+![Image showing hovering over a multi-line string](./images/hover-to-format-string.png)
+
 ### Miscellaneous Features
 
   - [Signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
