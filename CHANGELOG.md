@@ -2,6 +2,24 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.14.0 (2020-11-10)
+
+### Added
+
+- New Feature: Extract to variable/parameter [#515] (https://github.com/microsoft/vscode-azurearmtools/issues/515)
+  - Thanks to Nils Hedström @nilshedstrom for implementing this new feature!
+- Hover over an expression or a multi-line string to see a easy-to-read, formatted version of it [#1092](https://github.com/microsoft/vscodeissues/1092)
+
+### Fixed
+
+- createArray() now supports creating an empty array, update tooling to avoid false positive [#1050](https://github.com/microsoft/vscodeissues/1050)
+- Extension causes high cpu load with large numbers of variables/parameters/resources [#1051](https://github.com/microsoft/vscode-azurearmtools/issues/1051)
+- We should support getting references from the entire 'variables('xxx')' or params expression, not just inside 'xxx' [#1046](https://github.com/microsoft/vscode-azurearmtools/issues/1046)
+- Stop displaying our own error message at the same time as .net extension [#1093](https://github.com/microsoft/vscode-azurearmtools/issues/1093)
+- Validation error with resourceGroup() tags when using parameter file [#831](https://github.com/microsoft/vscode-azurearmtools/issues/831)
+- dateTimeAdd() in certain scenarios gives a template validation error [#1056](https://github.com/microsoft/vscode-azurearmtools/issues/1056)
+- Validation of template function "deployment" [#1060](https://github.com/microsoft/vscode-azurearmtools/issues/1060)
+
 ## Version 0.13.0 (2020-10-07)
 
 ### Added
