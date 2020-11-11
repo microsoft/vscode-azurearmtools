@@ -1,0 +1,35 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "policyDefinitionId": {
+            "type": "string"
+        },
+        "parameters": {
+            "type": "object"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2015-07-01",
+            "name": "mgname-test",
+            // THIS SHOULD FAIL IN RG DEPLOYMENT
+            "location": "[deployment().location]",
+            "properties": {
+                "displayName": "test",
+                "description": "test",
+                "scope": "/providers/Microsoft.Management/managementGroups/mgname",
+                "policyDefinitionId": "[parameters('policyDefinitionId')]",
+                "parameters": "[parameters('parameters')]",
+                "metadata": {
+                    "assignedBy": "test"
+                },
+                "enforcementMode": "Default",
+                "principalId": "foo",
+                "roleDefinitionId": "foo"
+            }
+        }
+    ]
+}

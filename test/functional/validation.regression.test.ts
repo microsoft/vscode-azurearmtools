@@ -569,40 +569,61 @@ suite("Validation regression tests", () => {
                     "Warning: Value must be one of the following types: integer (arm-template (schema)) [641,16-641,30]"
                 ]);
         });
+    });
 
-        // https://github.com/microsoft/vscode-azurearmtools/issues/904
-        testWithLanguageServer(`#904 Validation giving false positives for top-level params used in outer-scoped nested template`, async () => {
-            await testDiagnostics(
-                'templates/regression/904.json',
-                {
-                    parametersFile: 'templates/regression/904.parameters.json',
-                },
-                [
-                ]);
-        });
+    // https://github.com/microsoft/vscode-azurearmtools/issues/904
+    testWithLanguageServer(`#904 Validation giving false positives for top-level params used in outer-scoped nested template`, async () => {
+        await testDiagnostics(
+            'templates/regression/904.json',
+            {
+                parametersFile: 'templates/regression/904.parameters.json',
+            },
+            [
+            ]);
+    });
 
-        // https://github.com/microsoft/vscode-azurearmtools/issues/1056
-        testWithLanguageServer(`#1056 dateTimeAdd() in certain scenarios gives a template validation error`, async () => {
-            await testDiagnostics(
-                'templates/regression/1056-dateTimeAdd.json',
-                {
-                    parametersFile: 'templates/regression/1056-dateTimeAdd.parameters.json',
-                },
-                [
-                ]);
-        });
+    // https://github.com/microsoft/vscode-azurearmtools/issues/1056
+    testWithLanguageServer(`#1056 dateTimeAdd() in certain scenarios gives a template validation error`, async () => {
+        await testDiagnostics(
+            'templates/regression/1056-dateTimeAdd.json',
+            {
+                parametersFile: 'templates/regression/1056-dateTimeAdd.parameters.json',
+            },
+            [
+            ]);
+    });
 
-        // https://github.com/microsoft/vscode-azurearmtools/issues/831
-        testWithLanguageServer(`#831 Validation error with resourceGroup() tags when using parameter file`, async () => {
-            await testDiagnostics(
-                'templates/regression/831.json',
-                {
-                    parametersFile: 'templates/regression/831.parameters.json',
-                },
-                [
-                    "Warning: The variable 'someTag' is never used. (arm-template (expressions)) [6,8-6,17]"
-                ]);
-        });
+    // https://github.com/microsoft/vscode-azurearmtools/issues/831
+    testWithLanguageServer(`#831 Validation error with resourceGroup() tags when using parameter file`, async () => {
+        await testDiagnostics(
+            'templates/regression/831.json',
+            {
+                parametersFile: 'templates/regression/831.parameters.json',
+            },
+            [
+                "Warning: The variable 'someTag' is never used. (arm-template (expressions)) [6,8-6,17]"
+            ]);
+    });
+
+    testWithLanguageServer(`#1060-rg Validation of template function "deployment" - RG scope - should give error`, async () => {
+        await testDiagnostics(
+            'templates/regression/1060-rg.json',
+            {
+                parametersFile: 'templates/regression/1060-rg.parameters.json',
+            },
+            [
+                `Error: Template validation failed: The template resource 'mgname-test' at line '14' and column '9' is not valid: The language expression property 'location' doesn't exist, available properties are 'name, properties'.. Please see https://aka.ms/arm-template-expressions for usage details. (arm-template (validation))`
+            ]);
+    });
+
+    testWithLanguageServer(`#1060-mg Validation of template function "deployment" - MG scope - should succeed`, async () => {
+        await testDiagnostics(
+            'templates/regression/1060-mg.json',
+            {
+                parametersFile: 'templates/regression/1060-mg.parameters.json',
+            },
+            [
+            ]);
     });
 
     // tslint:disable-next-line: no-suspicious-comment
