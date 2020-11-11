@@ -4,7 +4,7 @@
 
 import { Position, Range, TextDocument, workspace } from "vscode";
 import { armTemplateLanguageId, configKeys, configPrefix } from "../../constants";
-import { containsArmSchema, containsParametersSchema } from "../../schemas";
+import { containsArmSchema, containsParametersSchema } from "./schemas";
 
 export namespace documentSchemes {
     export const file: string = 'file'; // Locally-saved files

@@ -4,7 +4,7 @@
 
 // tslint:disable:object-literal-key-quotes no-http-string max-func-body-length
 
-import { testDiagnostics } from "../support/diagnostics";
+import { diagnosticSources, testDiagnostics } from "../support/diagnostics";
 import { testWithLanguageServer } from "../support/testWithLanguageServer";
 
 suite("Backend validation deployment scope", () => {
@@ -148,11 +148,43 @@ suite("Backend validation deployment scope", () => {
         */
     }); // Resource Group deployment scope
 
-    // tslint:disable-next-line: no-suspicious-comment
-    // TODO
-    test("management group deployment scope");
+    testWithLanguageServer("management group deployment scope", async () => {
+        await testDiagnostics(
+            'templates/scopes/1055-mg.json',
+            {
+            },
+            [
+            ]);
+    });
 
-    // tslint:disable-next-line: no-suspicious-comment
-    // TODO
-    test("tenant deployment scope");
+    testWithLanguageServer("tenant deployment scope", async () => {
+        await testDiagnostics(
+            'templates/scopes/1055-tenant.json',
+            {
+            },
+            [
+            ]);
+    });
+
+    testWithLanguageServer("subscription deployment scope", async () => {
+        await testDiagnostics(
+            'templates/scopes/1055-sub.json',
+            {
+            },
+            [
+            ]);
+    });
+
+    // https://github.com/microsoft/vscode-azurearmtools/issues/831
+    testWithLanguageServer(`Give warning if it looks like the $schema is incorrect for the resources being used #1055`, async () => {
+        await testDiagnostics(
+            'templates/scopes/1055-rg.json',
+            {
+                includeSources: [diagnosticSources.expressions]
+            },
+            [
+                "Warning: This resource type may not available for a deployment scoped to resource group. Are you using the correct schema? (arm-template (expressions)) [The schema is specified here]",
+                "Warning: This resource type may not available for a deployment scoped to resource group. Are you using the correct schema? (arm-template (expressions)) [The schema is specified here]"
+            ]);
+    });
 });

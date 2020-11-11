@@ -23,6 +23,7 @@ import { DeploymentTemplateDoc } from "./documents/templates/DeploymentTemplateD
 import { ExtractItem } from './documents/templates/ExtractItem';
 import { gotoResources } from './documents/templates/gotoResources';
 import { getItemTypeQuickPicks, InsertItem } from "./documents/templates/insertItem";
+import { allSchemas, getPreferredSchema } from './documents/templates/schemas';
 import { getQuickPickItems, sortTemplate } from "./documents/templates/sortTemplate";
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, templateDocumentSelector, templateOrParameterDocumentSelector } from "./documents/templates/supported";
 import { TemplateSectionType } from "./documents/templates/TemplateSectionType";
@@ -34,7 +35,6 @@ import * as Json from "./language/json/JSON";
 import { ReferenceList } from "./language/ReferenceList";
 import { Span } from "./language/Span";
 import { startArmLanguageServerInBackground } from "./languageclient/startArmLanguageServer";
-import { getPreferredSchema } from "./schemas";
 import { showInsertionContext } from "./snippets/showInsertionContext";
 import { SnippetManager } from "./snippets/SnippetManager";
 import { survey } from "./survey";
@@ -58,6 +58,7 @@ import { resetGlobalState } from "./vscodeIntegration/resetGlobalState";
 import { setContext } from "./vscodeIntegration/setContext";
 import { getFunctionParamUsage } from "./vscodeIntegration/signatureFormatting";
 import { onCompletionActivated, toVsCodeCompletionItem } from "./vscodeIntegration/toVsCodeCompletionItem";
+import { toVSCodeDiagnosticFromIssue } from './vscodeIntegration/toVSCodeDiagnosticFromIssue';
 import { JsonOutlineProvider } from "./vscodeIntegration/Treeview";
 import { getVSCodeRangeFromSpan } from "./vscodeIntegration/vscodePosition";
 
@@ -599,12 +600,17 @@ export class AzureRMTools {
             const schemaUri = deploymentTemplate.schemaUri;
             const schemaVersionAndScope = (schemaUri?.match(/([-0-9a-zA-Z]+\/[a-zA-Z]+\.json)#?$/) ?? [])[1];
             props.schema = escapeNonPaths(
-                restrictToAllowedListLC(
+                restrictToAllowedListLC<allSchemas>(
                     schemaVersionAndScope,
-                    ['2019-08-01/tenantDeploymentTemplate.json', '2018-05-01/subscriptionDeploymentTemplate.json',
-                        '2014-04-01-preview/deploymentTemplate.json', '2015-01-01/deploymentTemplate.json',
-                        '2019-04-01/deploymentTemplate.json', '2019-08-01/managementGroupDeploymentTemplate',
-                        '2019-08-01/tenantDeploymentTemplate.json']));
+                    [
+                        '2019-08-01/tenantDeploymentTemplate.json',
+                        '2018-05-01/subscriptionDeploymentTemplate.json',
+                        '2014-04-01-preview/deploymentTemplate.json',
+                        '2015-01-01/deploymentTemplate.json',
+                        '2019-04-01/deploymentTemplate.json',
+                        '2019-08-01/managementGroupDeploymentTemplate.json',
+                        '2019-08-01/tenantDeploymentTemplate.json'
+                    ]));
             props.schemaScheme = restrictToAllowedListLC((schemaUri?.match(/^https?/) ?? [])[0], ['http', 'https']);
 
             props.apiProfile = deploymentTemplate.apiProfile ?? "";
@@ -634,9 +640,9 @@ export class AzureRMTools {
         this.logFunctionCounts(deploymentTemplate);
         this.logResourceUsage(deploymentTemplate);
 
-        function restrictToAllowedListLC(s: string | undefined, allowedList: string[]): string {
-            allowedList = allowedList.map(s2 => s2.toLowerCase());
-            if (s && allowedList.includes(s.toLowerCase())) {
+        function restrictToAllowedListLC<T extends string>(s: string | undefined, allowedList: T[]): T | string {
+            allowedList = allowedList.map(s2 => <T>s2.toLowerCase());
+            if (s && allowedList.includes(<T>s.toLowerCase())) {
                 return s;
             }
 
@@ -692,12 +698,12 @@ export class AzureRMTools {
         const diagnostics: vscode.Diagnostic[] = [];
 
         for (const error of errors) {
-            diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentDocument, error, vscode.DiagnosticSeverity.Error));
+            diagnostics.push(toVSCodeDiagnosticFromIssue(deploymentDocument, error, vscode.DiagnosticSeverity.Error));
         }
 
         const warnings = deploymentDocument.getWarnings();
         for (const warning of warnings) {
-            diagnostics.push(this.getVSCodeDiagnosticFromIssue(deploymentDocument, warning, vscode.DiagnosticSeverity.Warning));
+            diagnostics.push(toVSCodeDiagnosticFromIssue(deploymentDocument, warning, vscode.DiagnosticSeverity.Warning));
         }
 
         let completionDiagnostic = this.getCompletedDiagnostic();
@@ -1129,18 +1135,6 @@ export class AzureRMTools {
             array.push(item);
         }
         return JSON.stringify(array);
-    }
-
-    private getVSCodeDiagnosticFromIssue(deploymentDocument: DeploymentDocument, issue: Issue, severity: vscode.DiagnosticSeverity): vscode.Diagnostic {
-        const range: vscode.Range = getVSCodeRangeFromSpan(deploymentDocument, issue.span);
-        const message: string = issue.message;
-        let diagnostic = new vscode.Diagnostic(range, message, severity);
-        diagnostic.source = expressionsDiagnosticsSource;
-        diagnostic.code = "";
-        if (issue.isUnnecessaryCode) {
-            diagnostic.tags = [vscode.DiagnosticTag.Unnecessary];
-        }
-        return diagnostic;
     }
 
     private closeDeploymentFile(document: vscode.TextDocument): void {

@@ -605,6 +605,18 @@ suite("Validation regression tests", () => {
         });
     });
 
+    // https://github.com/microsoft/vscode-azurearmtools/issues/831
+    testWithLanguageServer(`#831 Validation error with resourceGroup() tags when using parameter file`, async () => {
+        await testDiagnostics(
+            'templates/regression/831.json',
+            {
+                parametersFile: 'templates/regression/831.parameters.json',
+            },
+            [
+                "Warning: The variable 'someTag' is never used. (arm-template (expressions)) [6,8-6,17]"
+            ]);
+    });
+
     // tslint:disable-next-line: no-suspicious-comment
     /* TODO: #708
     testWithLanguageServer(`Null ref exception in validation with empty doc or doc containing only a comment #708`, async () => {

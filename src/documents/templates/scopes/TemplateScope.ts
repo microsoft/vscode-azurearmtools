@@ -15,6 +15,7 @@ import { IResource } from '../IResource';
 import { UserFunctionDefinition } from '../UserFunctionDefinition';
 import { UserFunctionNamespaceDefinition } from "../UserFunctionNamespaceDefinition";
 import { IVariableDefinition } from '../VariableDefinition';
+import { IDeploymentScopeReference } from './IDeploymentScopeReference';
 
 export enum TemplateScopeKind {
     Empty = "Empty",
@@ -45,9 +46,17 @@ export abstract class TemplateScope implements IParameterDefinitionsSource {
     constructor(
         public readonly document: IJsonDocument, // The document that contains this scope
         public readonly rootObject: Json.ObjectValue | undefined,
+        // Will be undefined if this scope is not a deployment (e.g. it's a user function scope).
+        // If it is a deployment scope but the schema is invalid, deploymentScope will be undefined and
+        //   contains kind=unknown
+        public readonly deploymentScope: IDeploymentScopeReference | undefined,
         // tslint:disable-next-line:variable-name
         public readonly __debugDisplay: string // Provides context for debugging
     ) {
+    }
+
+    public get isDeployment(): boolean {
+        return !!this.deploymentScope;
     }
 
     public readonly abstract scopeKind: TemplateScopeKind;

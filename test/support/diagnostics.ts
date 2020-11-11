@@ -17,7 +17,7 @@ import * as assert from "assert";
 import * as fs from 'fs';
 import * as path from 'path';
 import { Diagnostic, DiagnosticSeverity, Disposable, languages, Position, Range, TextDocument } from "vscode";
-import { diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
+import { backendValidationDiagnosticsSource, diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { delay } from "./delay";
 import { mapParameterFile } from "./mapParameterFile";
@@ -55,7 +55,7 @@ export const diagnosticSources = {
     expressions: { name: expressionsDiagnosticsSource },
     schema: { name: 'arm-template (schema)' },
     syntax: { name: 'arm-template (syntax)' },
-    template: { name: 'arm-template (validation)' },
+    backendValidation: { name: backendValidationDiagnosticsSource },
 };
 
 function isSourceFromLanguageServer(source: DiagnosticSource): boolean {

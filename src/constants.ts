@@ -24,6 +24,7 @@ export const outputChannelName = extensionName;
 
 // String that shows up in our errors as the source in parentheses
 export const expressionsDiagnosticsSource = "arm-template (expressions)";
+export const backendValidationDiagnosticsSource = 'arm-template (validation)';
 
 // Source string for errors related to the language server starting up or failing
 export const languageServerStateSource = "arm-template";
@@ -69,6 +70,7 @@ export const expressionsDiagnosticsCompletionMessage = diagnosticsCompletePrefix
 
 export namespace templateKeys {
     // Top-level
+    export const schema = '$schema';
     export const parameters = 'parameters';
     export const resources = 'resources';
     export const variables = 'variables';
