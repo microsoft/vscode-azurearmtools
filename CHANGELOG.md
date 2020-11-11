@@ -16,6 +16,9 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 - Extension causes high cpu load with large numbers of variables/parameters/resources [#1051](https://github.com/microsoft/vscode-azurearmtools/issues/1051)
 - We should support getting references from the entire 'variables('xxx')' or params expression, not just inside 'xxx' [#1046](https://github.com/microsoft/vscode-azurearmtools/issues/1046)
 - Stop displaying our own error message at the same time as .net extension [#1093](https://github.com/microsoft/vscode-azurearmtools/issues/1093)
+- Validation error with resourceGroup() tags when using parameter file [#831](https://github.com/microsoft/vscode-azurearmtools/issues/831)
+- dateTimeAdd() in certain scenarios gives a template validation error [#1056](https://github.com/microsoft/vscode-azurearmtools/issues/1056)
+- Validation of template function "deployment" [#1060](https://github.com/microsoft/vscode-azurearmtools/issues/1060)
 
 ## Version 0.13.0 (2020-10-07)
 
