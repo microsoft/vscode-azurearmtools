@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "policyDefinitionId": {
+            "type": "string"
+        },
+        "parameters": {
+            "type": "object"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Authorization/policyAssignments",
+            "apiVersion": "2019-09-01",
+            "name": "mgname-test",
+            // THIS SHOULD SUCCEED IN MG DEPLOYMENT
+            "location": "[deployment().location]",
+            "properties": {
+                "displayName": "test",
+                "description": "test",
+                "scope": "/providers/Microsoft.Management/managementGroups/mgname",
+                "policyDefinitionId": "[parameters('policyDefinitionId')]",
+                "parameters": "[parameters('parameters')]",
+                "metadata": {
+                    "assignedBy": "test"
+                },
+                "enforcementMode": "Default"
+            }
+        }
+    ]
+}
