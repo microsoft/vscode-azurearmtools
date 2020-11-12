@@ -1,0 +1,50 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "mgName": {
+            "type": "string",
+            "defaultValue": "2cc4a1e3-2d9e-4d60-9f42-43da6960ac91"
+        },
+        "targetMg": {
+            "type": "bool",
+            "defaultValue": true
+        }
+    },
+    "variables": {
+        "mgId": "[concat('Microsoft.Management/managementGroups/', parameters('mgName'))]", // "[tenantResourceId('Microsoft.Management/managementGroups', parameters('mgName'))]"
+        "subId": "subscriptions/e93d3ee6-fac1-412f-92d6-bfb379e81af2"
+    },
+    "resources": [
+        {
+            "name": "nested",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "scope": "[if(parameters('targetMg'), variables('mgId'), variables('subId'))]",
+            "location": "eastus",
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [],
+                    "outputs": {
+                        "deployed": {
+                            "type": "string",
+                            "value": "deployed to different MG"
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "innerOutput": {
+            "type": "string",
+            "value": "[reference('nested').outputs.deployed.value]"
+        }
+    }
+}
