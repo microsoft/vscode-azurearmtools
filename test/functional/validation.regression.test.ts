@@ -646,6 +646,19 @@ suite("Validation regression tests", () => {
             [
                 "Warning: The variable 'someTag' is never used. (arm-template (expressions)) [7,9-7,18]"
             ]);
+
+        // https://github.com/microsoft/vscode-azurearmtools/issues/967
+        testWithLanguageServer(`#967 Validation needs to recognize new top-level "scope" property `, async () => {
+            await testDiagnostics(
+                'templates/regression/831.json',
+                {
+                    parametersFile: 'templates/regression/831.parameters.json',
+                    includeSources: [diagnosticSources.backendValidation]
+                },
+                [
+                    "Warning: The variable 'someTag' is never used. (arm-template (expressions)) [6,8-6,17]"
+                ]);
+        });
     });
 
     // https://github.com/microsoft/vscode-azurearmtools/issues/967
