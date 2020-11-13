@@ -1,0 +1,124 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/managementGroupDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+        {
+            "properties": {
+                "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/e56962a6-4747-49cd-b67b-bf8b01975c4c",
+                "parameters": {},
+                "resourceGroup": "ProdRG",
+                "dependsOn": [],
+                "displayName": "Allowed locations for new resources",
+                "template": {}
+            },
+            "kind": "policyAssignment",
+            "id": "/providers/Microsoft.Blueprint/blueprints/common-policies/artifacts/allowed-locations",
+            "type": "Microsoft.Blueprint/blueprints/artifacts",
+            "name": "blueprints/artifacts",
+            "apiVersion": "2018-11-01-preview"
+        },
+        {
+            "name": "string",
+            "type": "Microsoft.Blueprint/blueprints",
+            "apiVersion": "2018-11-01-preview",
+            "properties": {
+                "displayName": "string",
+                "description": "string",
+                "targetScope": "managementGroup",
+                "parameters": {},
+                "resourceGroups": {},
+                "versions": {},
+                "layout": {}
+            },
+            "resources": []
+        },
+        {
+            "name": "string",
+            "type": "Microsoft.Blueprint/blueprintAssignments",
+            "apiVersion": "2018-11-01-preview",
+            "location": "string",
+            "identity": {
+                "type": "None",
+                "principalId": "string",
+                "tenantId": "string",
+                "userAssignedIdentities": {}
+            },
+            "properties": {
+                "displayName": "string",
+                "description": "string",
+                "blueprintId": "string",
+                "scope": "string",
+                "parameters": {},
+                "resourceGroups": {},
+                "locks": {
+                    "mode": "None",
+                    "excludedPrincipals": [
+                        "string"
+                    ],
+                    "excludedActions": [
+                        "string"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "name/versions",
+            "type": "Microsoft.Blueprint/blueprints/versions",
+            "apiVersion": "2018-11-01-preview",
+            "properties": {
+                "displayName": "string",
+                "description": "string",
+                "targetScope": "managementGroup",
+                "parameters": {},
+                "resourceGroups": {},
+                "blueprintName": "string",
+                "changeNotes": "string"
+            }
+        },
+        {
+            "name": "string",
+            "type": "Microsoft.Authorization/policyDefinitions",
+            "apiVersion": "2019-09-01",
+            "properties": {
+                "policyType": "BuiltIn",
+                "mode": "string",
+                "displayName": "string",
+                "description": "string",
+                "policyRule": {},
+                "metadata": {},
+                "parameters": {}
+            }
+        },
+        {
+            "name": "string",
+            "type": "Microsoft.Authorization/policySetDefinitions",
+            "apiVersion": "2019-09-01",
+            "properties": {
+                "policyType": "BuiltIn",
+                "displayName": "string",
+                "description": "string",
+                "metadata": {},
+                "parameters": {},
+                "policyDefinitions": [
+                    {
+                        "policyDefinitionId": "string",
+                        "parameters": {},
+                        "policyDefinitionReferenceId": "string",
+                        "groupNames": [
+                            "string"
+                        ]
+                    }
+                ],
+                "policyDefinitionGroups": [
+                    {
+                        "name": "string",
+                        "displayName": "string",
+                        "category": "string",
+                        "description": "string",
+                        "additionalMetadataId": "string"
+                    }
+                ]
+            }
+        }
+    ]
+}

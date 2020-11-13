@@ -9,10 +9,10 @@ import { commands, MessageItem, TextDocument, Uri, window, workspace } from 'vsc
 import { callWithTelemetryAndErrorHandling, DialogResponses, IActionContext, IAzureQuickPickItem, UserCancelledError } from 'vscode-azureextensionui';
 import { armTemplateLanguageId, configKeys, configPrefix, globalStateKeys } from '../../constants';
 import { ext } from '../../extensionVariables';
-import { containsParametersSchema } from '../../schemas';
 import { normalizePath } from '../../util/normalizePath';
 import { pathExists } from '../../util/pathExists';
 import { DeploymentTemplateDoc } from '../templates/DeploymentTemplateDoc';
+import { containsParametersSchema } from '../templates/schemas';
 import { documentSchemes } from '../templates/supported';
 import { DeploymentFileMapping } from './DeploymentFileMapping';
 import { queryCreateParameterFile } from './parameterFileGeneration';

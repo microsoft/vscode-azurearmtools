@@ -1,0 +1,65 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-08-01/tenantDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+        {
+            "name": "string",
+            "type": "Microsoft.Authorization/policyDefinitions",
+            "apiVersion": "2019-09-01",
+            "properties": {
+                "policyType": "BuiltIn",
+                "mode": "string",
+                "displayName": "string",
+                "description": "string",
+                "policyRule": {},
+                "metadata": {},
+                "parameters": {}
+            }
+        },
+        {
+            "name": "string",
+            "type": "Microsoft.Authorization/policySetDefinitions",
+            "apiVersion": "2019-09-01",
+            "properties": {
+                "policyType": "BuiltIn",
+                "displayName": "string",
+                "description": "string",
+                "metadata": {},
+                "parameters": {},
+                "policyDefinitions": [
+                    {
+                        "policyDefinitionId": "string",
+                        "parameters": {},
+                        "policyDefinitionReferenceId": "string",
+                        "groupNames": [
+                            "string"
+                        ]
+                    }
+                ],
+                "policyDefinitionGroups": [
+                    {
+                        "name": "string",
+                        "displayName": "string",
+                        "category": "string",
+                        "description": "string",
+                        "additionalMetadataId": "string"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "string",
+            "type": "Microsoft.Management/managementGroups",
+            "apiVersion": "2020-05-01",
+            "properties": {
+                "displayName": "string",
+                "details": {
+                    "parent": {
+                        "id": "string"
+                    }
+                }
+            },
+            "resources": []
+        }
+    ]
+}

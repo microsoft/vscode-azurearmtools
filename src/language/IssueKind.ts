@@ -20,6 +20,7 @@ export enum IssueKind {
     varInUdf = "varInUdf",
     undefinedVarProp = "undefinedVarProp",
     inaccessibleNestedScopeMembers = "inaccessibleNestedScopeMembers",
+    incorrectScopeWarning = "incorrectScopeWarning",
 
     // Parameter file issues
     params_templateFileNotFound = "params_templateFileNotFound",

@@ -18,7 +18,6 @@ import { IssueKind } from '../../language/IssueKind';
 import * as Json from "../../language/json/JSON";
 import { ReferenceList } from "../../language/ReferenceList";
 import { ContainsBehavior, Span } from "../../language/Span";
-import { isArmSchema } from "../../schemas";
 import { CachedValue } from '../../util/CachedValue';
 import { expectParameterDocumentOrUndefined } from '../../util/expectDocument';
 import { Histogram } from '../../util/Histogram';
@@ -36,6 +35,9 @@ import { TemplatePositionContext } from "../positionContexts/TemplatePositionCon
 import { LinkedTemplateCodeLens, NestedTemplateCodeLen, ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
 import { getResourcesInfo } from './getResourcesInfo';
 import { getParentAndChildCodeLenses } from './ParentAndChildCodeLenses';
+import { isArmSchema } from './schemas';
+import { DeploymentScopeKind } from './scopes/DeploymentScopeKind';
+import { IDeploymentScopeReference } from './scopes/IDeploymentScopeReference';
 import { TemplateScope } from "./scopes/TemplateScope";
 import { NestedTemplateOuterScope, TopLevelTemplateScope } from './scopes/templateScopes';
 import { UserFunctionParameterDefinition } from './UserFunctionParameterDefinition';
@@ -51,6 +53,20 @@ interface IAllReferences {
     // Issues found while collecting references
     issues: Issue[];
 }
+
+// This is not intended to be a complete list, just to hit 95% of cases
+const resourceTypesNotAllowedInRGDeployments: string[] = [
+    "microsoft.blueprint/blueprints/artifacts",
+    "microsoft.blueprint/blueprints",
+    "microsoft.blueprint/blueprintAssignments",
+    "microsoft.blueprint/blueprints/versions",
+    "Microsoft.Authorization/policyDefinitions",
+    "Microsoft.Authorization/policySetDefinitions",
+    "Microsoft.Resources/resourceGroups",
+    "Microsoft.ManagedNetwork/scopeAssignments",
+    "Microsoft.Management/managementGroups",
+];
+const resourceTypesNotAllowedInRGDeploymentsLC: string[] = resourceTypesNotAllowedInRGDeployments.map(resType => resType.toLowerCase());
 
 /**
  * Represents a deployment template file
@@ -163,9 +179,10 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
     public getWarnings(): Issue[] {
         const unusedWarnings = this.getUnusedDefinitionWarnings();
-        const inaccessibleScopeMembers = this.findInaccessibleScopeMembers();
+        const inaccessibleScopeMembers = this.getInaccessibleScopeMemberWarnings();
+        const incorrectScopeWarnings = this.getIncorrectScopeWarnings();
 
-        return unusedWarnings.concat(inaccessibleScopeMembers);
+        return unusedWarnings.concat(inaccessibleScopeMembers, incorrectScopeWarnings);
     }
 
     private get allReferences(): IAllReferences {
@@ -240,7 +257,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
      * Finds parameters/variables/functions inside outer-scoped nested templates, which
      * by definition can't be accessed in any expressions.
      */
-    private findInaccessibleScopeMembers(): Issue[] {
+    private getInaccessibleScopeMemberWarnings(): Issue[] {
         const warnings: Issue[] = [];
         const warningMessage =
             // tslint:disable-next-line: prefer-template
@@ -279,6 +296,43 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
                 function getPropertyValueOfScope(propertyName: string): Json.Value | undefined {
                     return scope.rootObject?.getProperty(propertyName)?.value;
+                }
+            }
+        }
+
+        return warnings;
+    }
+
+    /**
+     * Finds parameters/variables/functions inside outer-scoped nested templates, which
+     * by definition can't be accessed in any expressions.
+     */
+    private getIncorrectScopeWarnings(): Issue[] {
+        const warnings: Issue[] = [];
+
+        // Only check top-level scope for now
+        const scope = this.topLevelScope;
+        const deploymentScope: IDeploymentScopeReference | undefined = scope.deploymentScope;
+        if (deploymentScope?.matchingInfo?.deploymentScopeKind === DeploymentScopeKind.resourceGroup) {
+            for (const resource of scope.resources) {
+                if (resource.resourceTypeValue) {
+                    const resourceTypeLC: string | undefined = resource.resourceTypeValue.asStringValue?.unquotedValue.toLowerCase();
+                    if (resourceTypeLC && resourceTypesNotAllowedInRGDeploymentsLC.includes(resourceTypeLC)) {
+                        const warningMessage = `This resource type may not available for a deployment scoped to resource group. Are you using the correct schema?`;
+                        const warning = new Issue(resource.resourceTypeValue.span, warningMessage, IssueKind.incorrectScopeWarning);
+
+                        const schemaSpan = deploymentScope.schemaStringValue?.span;
+                        if (schemaSpan) {
+                            warning.relatedInformation.push({
+                                location: {
+                                    uri: this.documentUri,
+                                    span: schemaSpan
+                                },
+                                message: "The schema is specified here"
+                            });
+                        }
+                        warnings.push(warning);
+                    }
                 }
             }
         }

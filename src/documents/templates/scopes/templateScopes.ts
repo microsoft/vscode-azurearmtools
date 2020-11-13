@@ -18,6 +18,8 @@ import { IResource } from "../IResource";
 import { Resource } from "../Resource";
 import { UserFunctionNamespaceDefinition } from "../UserFunctionNamespaceDefinition";
 import { IVariableDefinition, TopLevelCopyBlockVariableDefinition, TopLevelVariableDefinition } from "../VariableDefinition";
+import { getDeploymentScope } from "./getDeploymentScope";
+import { IDeploymentScopeReference } from "./IDeploymentScopeReference";
 import { TemplateScope, TemplateScopeKind } from "./TemplateScope";
 
 export class EmptyScope extends TemplateScope {
@@ -25,7 +27,7 @@ export class EmptyScope extends TemplateScope {
 
     constructor(
     ) {
-        super(new DeploymentTemplateDoc('', Uri.parse('https://emptydoc')), undefined, "Empty Scope");
+        super(new DeploymentTemplateDoc('', Uri.parse('https://emptydoc')), undefined, undefined, "Empty Scope");
     }
 }
 
@@ -37,7 +39,7 @@ export class UserFunctionScope extends TemplateScope {
         // tslint:disable-next-line:variable-name
         public readonly __debugDisplay: string // Convenience for debugging
     ) {
-        super(document, rootObject, __debugDisplay);
+        super(document, rootObject, undefined, __debugDisplay);
     }
 
     public readonly scopeKind: TemplateScopeKind = TemplateScopeKind.UserFunction;
@@ -59,14 +61,14 @@ export class UserFunctionScope extends TemplateScope {
     }
 }
 
-export abstract class TemplateScopeFromObject extends TemplateScope {
+abstract class TemplateScopeFromObject extends TemplateScope {
     public constructor(
         document: IJsonDocument,
         private _templateRootObject: Json.ObjectValue | undefined,
         // tslint:disable-next-line: variable-name
         __debugDisplay: string
     ) {
-        super(document, _templateRootObject, __debugDisplay);
+        super(document, _templateRootObject, getDeploymentScopeFromRootObject(_templateRootObject), __debugDisplay);
     }
 
     protected getParameterDefinitions(): IParameterDefinition[] | undefined {
@@ -298,6 +300,7 @@ export class NestedTemplateOuterScope extends TemplateScope {
         super(
             parentScope.document,
             nestedTemplateObject,
+            getDeploymentScopeFromRootObject(nestedTemplateObject),
             __debugDisplay
         );
     }
@@ -342,6 +345,7 @@ export class LinkedTemplateScope extends TemplateScope {
         super(
             parentScope.document,
             templateLinkObject,
+            getDeploymentScopeFromRootObject(templateLinkObject),
             __debugDisplay
         );
     }
@@ -460,4 +464,9 @@ function getExpressionScopeKind(resourceObject: Json.ObjectValue | undefined): E
     return scopeValue?.toLowerCase() === templateKeys.nestedDeploymentExprEvalScopeInner
         ? ExpressionScopeKind.inner
         : ExpressionScopeKind.outer; // Defaults to outer
+}
+
+function getDeploymentScopeFromRootObject(rootObject: Json.ObjectValue | undefined): IDeploymentScopeReference {
+    const schemaStringValue = rootObject?.getPropertyValue(templateKeys.schema)?.asStringValue;
+    return getDeploymentScope(schemaStringValue);
 }

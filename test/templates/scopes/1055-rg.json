@@ -1,0 +1,35 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+        {
+            "properties": {
+                "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/e56962a6-4747-49cd-b67b-bf8b01975c4c",
+                "parameters": {},
+                "resourceGroup": "ProdRG",
+                "dependsOn": [],
+                "displayName": "Allowed locations for new resources",
+                "template": {}
+            },
+            "kind": "policyAssignment",
+            "id": "/providers/Microsoft.Blueprint/blueprints/common-policies/artifacts/allowed-locations",
+            "type": "Microsoft.Blueprint/blueprints/artifacts",
+            "name": "blueprints/artifacts",
+            "apiVersion": "2018-11-01-preview"
+        },
+        {
+            "name": "string",
+            "type": "Microsoft.Management/managementGroups",
+            "apiVersion": "2020-05-01",
+            "properties": {
+                "displayName": "string",
+                "details": {
+                    "parent": {
+                        "id": "string"
+                    }
+                }
+            },
+            "resources": []
+        }
+    ]
+}
