@@ -191,6 +191,8 @@ You can also right-click on any element in the ARM Template Outline view to init
 
 ![Inserting an item into an Azure Resource Manager template](./images/insert-item-outline.png)
 
+*Thanks to Nils Hedström [@nilshedstrom](https://github.com/nilshedstrom) for implementing this feature!*
+
 ### Sort template
 
 To sort elements of an ARM template alphabetically, right-click on the template and select **Sort Template...**.
@@ -203,11 +205,15 @@ Select the element that you want to sort.
 
 Template sorting can also be engaged using the ARM template outline.
 
+*Thanks to Nils Hedström [@nilshedstrom](https://github.com/nilshedstrom) for implementing this feature!*
+
 ### Extract to variable or parameter
 
 Select a JSON string or a subset of an expression string then select the lightbulb to extract it to a variable or parameter.
 
 ![Image demonstrating extracting a variable and a parameter](./images/extract-vars-and-params.gif)
+
+*Thanks to Nils Hedström [@nilshedstrom](https://github.com/nilshedstrom) for implementing this feature!*
 
 ### Hover to format complex expressions or multi-line strings
 

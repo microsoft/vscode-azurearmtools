@@ -6,8 +6,8 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 
 ### Added
 
-- New Feature: Extract to variable/parameter [#515] (https://github.com/microsoft/vscode-azurearmtools/issues/515)
-  - Thanks to Nils Hedström @nilshedstrom for implementing this new feature!
+- New Feature: Extract to variable/parameter [#515](https://github.com/microsoft/vscode-azurearmtools/issues/515)
+  - **Thanks to Nils Hedström @nilshedstrom for implementing this new feature!**
 - Hover over an expression or a multi-line string to see a easy-to-read, formatted version of it [#1092](https://github.com/microsoft/vscodeissues/1092)
 
 ### Fixed
@@ -510,4 +510,3 @@ If you would like to suggest additional features, or for other comments or probl
 ## Version 0.1.0
 
 - Initial release
-
