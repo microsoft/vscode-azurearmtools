@@ -560,10 +560,10 @@ export function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnost
 function compareDiagnostics(actual: Diagnostic[], expected: ExpectedDiagnostics, options: ITestDiagnosticsOptions): void {
     // Do the expected messages include ranges?
     let expectedHasRanges = expected.length === 0 ||
-        (typeof expected[0] === 'string' && !!expected[0].match(/[0-9]+,[0-9]+-[0-9]+,[0-9]+/)
+        (typeof expected[0] === 'string' && !!expected[0].match(/\[[0-9]+,[0-9]+-[0-9]+,[0-9]+\]/)
             || (typeof expected[0] !== 'string' && expected[0].startLineNumber !== undefined));
     let expectedHasPositions = expected.length > 0 &&
-        (typeof expected[0] === 'string' && !!expected[0].match(/[0-9]+,[0-9]+/));
+        (typeof expected[0] === 'string' && !!expected[0].match(/\[[0-9]+,[0-9]+\]/));
     let includeRange: IncludeRange = (!!options.includeRange || expectedHasRanges) ? IncludeRange.range
         : (!!options.includePositions || expectedHasPositions) ? IncludeRange.position
             : IncludeRange.no;
