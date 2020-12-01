@@ -355,12 +355,12 @@ suite("DeploymentTemplate code lenses", () => {
                     ]
                 },
                 [
-                    "TopLevel: \"Select or create a parameter file to enable full validation...\" (azurerm-vscode-tools.selectParameterFile) at [0,0-0,0]",
-                    "NestedDeploymentWithInnerScope: \"Nested template with inner scope\" () at [21,20-46,9]",
-                    "NestedDeploymentWithInnerScope: \"Using default value\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [25,12-25,16]",
-                    "NestedDeploymentWithInnerScope: \"Value: \"p2 value\"\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [29,12-29,16]",
-                    "NestedDeploymentWithInnerScope: \"Value: \"[add(1, 2)]\"\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [32,12-32,16]",
-                    "NestedDeploymentWithInnerScope: \"$(warning) No value found\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [35,12-35,16]",
+                    "TopLevel: \"Select or create a parameter file to enable full validation...\" (azurerm-vscode-tools.selectParameterFile) at [1,1-1,1]",
+                    "NestedDeploymentWithInnerScope: \"Nested template with inner scope\" () at [22,21-47,10]",
+                    "NestedDeploymentWithInnerScope: \"Using default value\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [26,13-26,17]",
+                    "NestedDeploymentWithInnerScope: \"Value: \"p2 value\"\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [30,13-30,17]",
+                    "NestedDeploymentWithInnerScope: \"Value: \"[add(1, 2)]\"\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [33,13-33,17]",
+                    "NestedDeploymentWithInnerScope: \"$(warning) No value found\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [36,13-36,17]",
                 ]
             );
 
@@ -411,12 +411,12 @@ suite("DeploymentTemplate code lenses", () => {
                     ]
                 },
                 [
-                    "TopLevel: \"Select or create a parameter file to enable full validation...\" (azurerm-vscode-tools.selectParameterFile) at [0,0-0,0]",
-                    "NestedDeploymentWithInnerScope: \"Nested template with inner scope\" () at [13,20-38,9]",
-                    "NestedDeploymentWithInnerScope: \"Using default value\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [17,12-17,16]",
-                    "NestedDeploymentWithInnerScope: \"$(warning) No value found\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [21,12-21,16]",
-                    "NestedDeploymentWithInnerScope: \"$(warning) No value found\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [24,12-24,16]",
-                    "NestedDeploymentWithInnerScope: \"$(warning) No value found\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [27,12-27,16]",
+                    "TopLevel: \"Select or create a parameter file to enable full validation...\" (azurerm-vscode-tools.selectParameterFile) at [1,1-1,1]",
+                    "NestedDeploymentWithInnerScope: \"Nested template with inner scope\" () at [14,21-39,10]",
+                    "NestedDeploymentWithInnerScope: \"Using default value\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [18,13-18,17]",
+                    "NestedDeploymentWithInnerScope: \"$(warning) No value found\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [22,13-22,17]",
+                    "NestedDeploymentWithInnerScope: \"$(warning) No value found\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [25,13-25,17]",
+                    "NestedDeploymentWithInnerScope: \"$(warning) No value found\" (azurerm-vscode-tools.codeLens.gotoParameterValue) at [28,13-28,17]",
                 ]
             );
 

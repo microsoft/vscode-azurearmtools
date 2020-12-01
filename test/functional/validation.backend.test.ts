@@ -144,7 +144,7 @@ suite("Backend validation", () => {
                 }
             },
             [
-                "Warning: The variable 'someTag' is never used. (arm-template (expressions)) [6,4-6,13]"
+                "Warning: The variable 'someTag' is never used. (arm-template (expressions)) [7,5-7,14]"
             ]
         );
     });
