@@ -99,7 +99,7 @@ suite("Expressions functional tests", () => {
         ]);
 
         testExpression("string after function", "[deployment()'world']", [
-            "Error: Expected the end of the string. (arm-template (expressions)) [10,30-10,37]"
+            "Error: Expected the end of the string. (arm-template (expressions)) [11,31]"
         ]);
 
         testExpression("with several invalid literals", ".[]82348923asdglih   asl .,'", [
@@ -110,7 +110,7 @@ suite("Expressions functional tests", () => {
             "[concat(reference(parameters('publicIpName')).dnsSettings.fqdn, ';  sudo docker volume rm ''dockercompose_cert-volume''; sudo docker-compose up')]",
             [
                 // This should be the only error we get.  In particular, no errors with the escaped apostrophes
-                "Error: Undefined parameter reference: 'publicIpName' (arm-template (expressions)) [10,46-10,60]"
+                "Error: Undefined parameter reference: 'publicIpName' (arm-template (expressions)) [11,47-11,61]"
             ]);
     });
 
@@ -219,23 +219,23 @@ suite("Expressions functional tests", () => {
     suite("Function calls", () => {
         suite("Missing left paren", () => {
             testExpression("", "[concat'abc')]", [
-                "Error: Expected the end of the string. (arm-template (expressions)) [10,24-10,29]",
-                "Error: Expected the end of the string. (arm-template (expressions)) [10,29-10,30]",
-                "Error: Missing function argument list. (arm-template (expressions)) [10,18-10,24]"
+                "Error: Expected the end of the string. (arm-template (expressions)) [11,25]",
+                "Error: Expected the end of the string. (arm-template (expressions)) [11,30]",
+                "Error: Missing function argument list. (arm-template (expressions)) [11,19]"
             ]);
 
             testExpression("", "[concat 1,2)]", [
-                'Error: Expected the end of the string. (arm-template (expressions)) [10,25-10,26]',
-                'Error: Expected the end of the string. (arm-template (expressions)) [10,26-10,27]',
-                'Error: Expected the end of the string. (arm-template (expressions)) [10,27-10,28]',
-                'Error: Expected the end of the string. (arm-template (expressions)) [10,28-10,29]',
-                'Error: Missing function argument list. (arm-template (expressions)) [10,18-10,24]'
+                'Error: Expected the end of the string. (arm-template (expressions)) [11,26]',
+                'Error: Expected the end of the string. (arm-template (expressions)) [11,27]',
+                'Error: Expected the end of the string. (arm-template (expressions)) [11,28]',
+                'Error: Expected the end of the string. (arm-template (expressions)) [11,29]',
+                'Error: Missing function argument list. (arm-template (expressions)) [11,19]'
             ]);
         });
 
         suite("Missing right paren", () => {
             testExpression("", "[concat('abc']", [
-                "Error: Expected a right parenthesis (')'). (arm-template (expressions)) [10,30-10,31]"
+                "Error: Expected a right parenthesis (')'). (arm-template (expressions)) [11,31-11,32]"
             ]);
         });
 
@@ -251,28 +251,28 @@ suite("Expressions functional tests", () => {
 
         // Missing comma
         testExpression("", "[equals('abc' 'bc')]", [
-            "Error: Expected a comma (','). (arm-template (expressions)) [10,31-10,35]",
-            "Error: The function 'equals' takes 2 arguments. (arm-template (expressions)) [10,18-10,36]"
+            "Error: Expected a comma (','). (arm-template (expressions)) [11,32-11,36]",
+            "Error: The function 'equals' takes 2 arguments. (arm-template (expressions)) [11,19-11,37]"
         ]);
 
         // Expected 2 args, has zero
         testExpression("", "[equals()]", [
-            "Error: The function 'equals' takes 2 arguments. (arm-template (expressions)) [10,18-10,26]"
+            "Error: The function 'equals' takes 2 arguments. (arm-template (expressions)) [11,19-11,27]"
         ]);
 
         // Expected 2 args, has one
         testExpression("", "[equals('a')]", [
-            "Error: The function 'equals' takes 2 arguments. (arm-template (expressions)) [10,18-10,29]"
+            "Error: The function 'equals' takes 2 arguments. (arm-template (expressions)) [11,19]"
         ]);
 
         // Expected 2 args, has three
         testExpression("", "[equals('a', 'b', 'c')]", [
-            "Error: The function 'equals' takes 2 arguments. (arm-template (expressions)) [10,18-10,39]"
+            "Error: The function 'equals' takes 2 arguments. (arm-template (expressions)) [11,19]"
         ]);
 
         // Unrecognized function name with arg
         testExpression("", "[parameter('arrayParam')]", [
-            "Error: Unrecognized function name 'parameter'. (arm-template (expressions)) [10,18-10,27]"
+            "Error: Unrecognized function name 'parameter'. (arm-template (expressions)) [11,19]"
         ]);
     });
 
@@ -289,13 +289,13 @@ suite("Expressions functional tests", () => {
 
         suite("Undefined parameters/variables", () => {
             testExpression("", "[parameters('undefined')]", [
-                'Error: Undefined parameter reference: \'undefined\' (arm-template (expressions)) [10,29-10,40]'
+                'Error: Undefined parameter reference: \'undefined\' (arm-template (expressions)) [11,30-11,41]'
             ]);
             testExpression("", "[variables('undefined')]", [
-                "Error: Undefined variable reference: 'undefined' (arm-template (expressions)) [10,28-10,39]"
+                "Error: Undefined variable reference: 'undefined' (arm-template (expressions)) [11,29-11,40]"
             ]);
             testExpression("", "[parameters('')]", [
-                "Error: Undefined parameter reference: '' (arm-template (expressions)) [10,29-10,31]"
+                "Error: Undefined parameter reference: '' (arm-template (expressions)) [11,30-11,32]"
             ]);
 
             /* CONSIDER: This doesn't give any errors. Should it?
@@ -304,12 +304,12 @@ suite("Expressions functional tests", () => {
 
             // No errors should be reported for a property access to an undefined variable, because the top priority error for the developer to address is the undefined variable reference.
             testExpression("with child property access from undefined variable reference", "[variables('undefVar').apples]", [
-                "Error: Undefined variable reference: 'undefVar' (arm-template (expressions)) [10,28-10,38]"
+                "Error: Undefined variable reference: 'undefVar' (arm-template (expressions)) [11,29-11,39]"
             ]);
 
             // No errors should be reported for a property access to an undefined variable, because the top priority error for the developer to address is the undefined variable reference.
             testExpression("with grandchild property access from undefined variable reference", "[variables('undefVar').apples.bananas]", [
-                "Error: Undefined variable reference: 'undefVar' (arm-template (expressions)) [10,28-10,38]"
+                "Error: Undefined variable reference: 'undefVar' (arm-template (expressions)) [11,29]"
             ]);
 
             testExpression("with child property access from variable reference to non-object variable", "[variables('intVar').apples]", [
@@ -338,7 +338,7 @@ suite("Expressions functional tests", () => {
         testExpression("", "[string(variables('arrayVar')[0])]", []);
 
         testExpression("", "[variables('arrayVar')[1][1]", [
-            "Error: Expected a right square bracket (']'). (arm-template (expressions)) [10,45-10,46]"
+            "Error: Expected a right square bracket (']'). (arm-template (expressions)) [11,46]"
         ]);
     });
 
@@ -348,22 +348,22 @@ suite("Expressions functional tests", () => {
 
         // Property access, missing period
         testExpression("", "[resourceGroup()name]", [
-            "Error: Expected the end of the string. (arm-template (expressions)) [10,33-10,37]"
+            "Error: Expected the end of the string. (arm-template (expressions)) [11,34]"
         ]);
 
         // Property access, quoted property name
         testExpression("", "[resourceGroup().'name']", [
-            "Error: Expected a literal value. (arm-template (expressions)) [10,34-10,40]"
+            "Error: Expected a literal value. (arm-template (expressions)) [11,35]"
         ]);
 
         // Property access, numeric property name
         testExpression("", "[resourceGroup().1]", [
-            "Error: Expected a literal value. (arm-template (expressions)) [10,34-10,35]"
+            "Error: Expected a literal value. (arm-template (expressions)) [11,35]"
         ]);
 
         // Property access, missing property name
         testExpression("", "[resourceGroup().]", [
-            "Error: Expected a literal value. (arm-template (expressions)) [10,34-10,35]"
+            "Error: Expected a literal value. (arm-template (expressions)) [11,35]"
         ]);
 
         // Property access, two deep
@@ -372,11 +372,11 @@ suite("Expressions functional tests", () => {
 
     suite("Miscellaneous and real scenarios", () => {
         testExpression("", "[concat(parameters('_artifactsLocation'), '/', '/scripts/azuremysql.sh', parameters('_artifactsLocationSasToken'))], )]", [
-            'Error: Nothing should exist after the closing \']\' except for whitespace. (arm-template (expressions)) [10,132-10,133]',
-            'Error: Nothing should exist after the closing \']\' except for whitespace. (arm-template (expressions)) [10,134-10,135]',
-            'Error: Nothing should exist after the closing \']\' except for whitespace. (arm-template (expressions)) [10,135-10,136]',
-            'Error: Undefined parameter reference: \'_artifactsLocation\' (arm-template (expressions)) [10,36-10,56]',
-            'Error: Undefined parameter reference: \'_artifactsLocationSasToken\' (arm-template (expressions)) [10,101-10,129]'
+            'Error: Nothing should exist after the closing \']\' except for whitespace. (arm-template (expressions)) [11,133-11,134]',
+            'Error: Nothing should exist after the closing \']\' except for whitespace. (arm-template (expressions)) [11,135-11,136]',
+            'Error: Nothing should exist after the closing \']\' except for whitespace. (arm-template (expressions)) [11,136-11,137]',
+            'Error: Undefined parameter reference: \'_artifactsLocation\' (arm-template (expressions)) [11,37-11,57]',
+            'Error: Undefined parameter reference: \'_artifactsLocationSasToken\' (arm-template (expressions)) [11,102-11,130]'
         ]);
     });
 });

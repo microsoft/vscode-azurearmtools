@@ -95,10 +95,10 @@ suite("Validation regression tests", () => {
 
                     // tslint:disable-next-line: no-suspicious-comment
                     // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/673
-                    "Error: Expected a comma (','). (arm-template (expressions)) [187,357-187,359]",
+                    "Error: Expected a comma (','). (arm-template (expressions)) [188,358-188,360]",
 
                     // Expected schema errors:
-                    "Warning: Value must be one of the following types: boolean (arm-template (schema)) [145,16-145,31]"
+                    "Warning: Value must be one of the following types: boolean (arm-template (schema)) [146,17-146,32]"
                 ]
             )
     );
@@ -320,8 +320,8 @@ suite("Validation regression tests", () => {
 }`,
                 {},
                 [
-                    "Warning: Value must be one of the following values: \"Storage\", \"StorageV2\", \"BlobStorage\", \"FileStorage\", \"BlockBlobStorage\" (arm-template (schema)) [19,28-19,34]",
-                    "Warning: Value must be one of the following values: \"Storage\", \"StorageV2\", \"BlobStorage\", \"FileStorage\", \"BlockBlobStorage\" (arm-template (schema)) [34,12-34,18]",
+                    "Warning: Value must be one of the following values: \"Storage\", \"StorageV2\", \"BlobStorage\", \"FileStorage\", \"BlockBlobStorage\" (arm-template (schema)) [20,29-20,35]",
+                    "Warning: Value must be one of the following values: \"Storage\", \"StorageV2\", \"BlobStorage\", \"FileStorage\", \"BlockBlobStorage\" (arm-template (schema)) [35,13-35,19]",
                 ]
             );
         }
@@ -525,8 +525,8 @@ suite("Validation regression tests", () => {
                     }
                 },
                 [
-                    "Error: Template validation failed: The template resource '' at line '11' and column '50' is not valid. The name property cannot be null or empty. Please see https://aka.ms/arm-template/#resources for usage details. (arm-template (validation)) [10,49-10,49]",
-                    "Warning: Missing required property \"properties\" (arm-template (schema)) [9,4-9,5]"
+                    "Error: Template validation failed: The template resource '' at line '11' and column '50' is not valid. The name property cannot be null or empty. Please see https://aka.ms/arm-template/#resources for usage details. (arm-template (validation)) [11,50-11,50]",
+                    "Warning: Missing required property \"properties\" (arm-template (schema)) [10,5-10,6]"
                 ])
         );
     }
@@ -552,7 +552,7 @@ suite("Validation regression tests", () => {
                         parametersFile: 'templates/regression/730b.parameters.json',
                     },
                     [
-                        "Error: Template validation failed: The template resource '' at line '121' and column '158' is not valid. The name property cannot be null or empty. Please see https://aka.ms/arm-template/#resources for usage details. (arm-template (validation)) [120,157-120,157]"
+                        "Error: Template validation failed: The template resource '' at line '121' and column '158' is not valid. The name property cannot be null or empty. Please see https://aka.ms/arm-template/#resources for usage details. (arm-template (validation)) [121,158-121,158]"
                     ]);
             });
         }
@@ -564,9 +564,9 @@ suite("Validation regression tests", () => {
                     parametersFile: 'templates/regression/730c.params.json',
                 },
                 [
-                    "Warning: The parameter 'projectName' is never used. (arm-template (expressions)) [791,24-791,37]",
-                    "Warning: The variable 'intlbRef' is never used. (arm-template (expressions)) [927,24-927,34]",
-                    "Warning: Value must be one of the following types: integer (arm-template (schema)) [641,16-641,30]"
+                    "Warning: The parameter 'projectName' is never used. (arm-template (expressions)) [792,25-792,38]",
+                    "Warning: The variable 'intlbRef' is never used. (arm-template (expressions)) [928,25-928,35]",
+                    "Warning: Value must be one of the following types: integer (arm-template (schema)) [642,17-642,31]"
                 ]);
         });
     });
@@ -601,7 +601,7 @@ suite("Validation regression tests", () => {
                 parametersFile: 'templates/regression/831.parameters.json',
             },
             [
-                "Warning: The variable 'someTag' is never used. (arm-template (expressions)) [6,8-6,17]"
+                "Warning: The variable 'someTag' is never used. (arm-template (expressions)) [7,9-7,18]"
             ]);
     });
 
@@ -638,7 +638,7 @@ suite("Validation regression tests", () => {
                 parametersFile: 'templates/regression/831.parameters.json',
             },
             [
-                "Warning: The variable 'someTag' is never used. (arm-template (expressions)) [6,8-6,17]"
+                "Warning: The variable 'someTag' is never used. (arm-template (expressions)) [7,9-7,18]"
             ]);
     });
 

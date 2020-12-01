@@ -22,7 +22,7 @@ import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { delay } from "./delay";
 import { mapParameterFile } from "./mapParameterFile";
 import { parseParametersWithMarkers } from "./parseTemplate";
-import { rangeToString } from "./rangeToString";
+import { positionToString, rangeToString } from "./rangeToString";
 import { resolveInTestFolder } from "./resolveInTestFolder";
 import { stringify } from "./stringify";
 import { TempDocument, TempEditor, TempFile } from "./TempFile";
@@ -33,6 +33,12 @@ export const diagnosticsTimeout = 2 * 60 * 1000; // CONSIDER: Use this long time
 enum ExpectedDiagnosticSeverity {
     Warning = 4,
     Error = 8,
+}
+
+enum IncludeRange {
+    no,
+    range,
+    position,
 }
 
 // In the style of the Copy context menu in vscode
@@ -235,6 +241,10 @@ export interface IGetDiagnosticsOptions {
      * defaults to false - whether to include the error range in the results for comparison (if true, ignored when expected messages don't have ranges)
      */
     includeRange?: boolean;
+    /**
+     * defaults to false - whether to include the error start position in the results for comparison (if true, ignored when expected messages don't have start positions)
+     */
+    includePositions?: boolean;
     /**
      * Run a replacement using this regex and replacement on the file/contents before testing for errors
      */
@@ -512,10 +522,10 @@ export function expectedDiagnosticToString(diagnostic: IExpectedDiagnostic): str
             code: ""
         },
         {},
-        true);
+        IncludeRange.range);
 }
 
-export function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOptions, includeRange: boolean): string {
+export function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnosticsOptions, includeRange: IncludeRange): string {
     assert(diagnostic.code === '', `Expecting empty code for all diagnostics, instead found Code="${String(diagnostic.code)}" for "${diagnostic.message}"`);
 
     let severity: string = "";
@@ -537,25 +547,31 @@ export function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnost
 
     function maybeRange(range: Range | undefined): string {
         // Do the expected messages include ranges?
-        if (includeRange) {
+        if (includeRange === IncludeRange.range) {
             return ' ' + rangeToString(range);
+        } else if (includeRange === IncludeRange.position) {
+            return ' ' + positionToString(range?.start);
+        } else {
+            return "";
         }
-
-        return "";
     }
 }
 
 function compareDiagnostics(actual: Diagnostic[], expected: ExpectedDiagnostics, options: ITestDiagnosticsOptions): void {
     // Do the expected messages include ranges?
     let expectedHasRanges = expected.length === 0 ||
-        (typeof expected[0] === 'string' && !!expected[0].match(/[0-9]+,[0-9]+-[0-9]+,[0-9]+/)
+        (typeof expected[0] === 'string' && !!expected[0].match(/\[[0-9]+,[0-9]+-[0-9]+,[0-9]+\]/)
             || (typeof expected[0] !== 'string' && expected[0].startLineNumber !== undefined));
-    let includeRanges = !!options.includeRange || expectedHasRanges;
+    let expectedHasPositions = expected.length > 0 &&
+        (typeof expected[0] === 'string' && !!expected[0].match(/\[[0-9]+,[0-9]+\]/));
+    let includeRange: IncludeRange = (!!options.includeRange || expectedHasRanges) ? IncludeRange.range
+        : (!!options.includePositions || expectedHasPositions) ? IncludeRange.position
+            : IncludeRange.no;
 
     let expectedAsStrings = expected.length === 0 ? []
         : typeof expected[0] === 'string' ? expected
             : (<IExpectedDiagnostic[]>expected).map(d => typeof d === 'string' ? d : expectedDiagnosticToString(d));
-    let actualAsStrings = actual.map(d => diagnosticToString(d, options, includeRanges));
+    let actualAsStrings = actual.map(d => diagnosticToString(d, options, includeRange));
 
     // Sort
     expectedAsStrings = expectedAsStrings.sort();
