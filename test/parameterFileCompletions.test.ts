@@ -26,6 +26,7 @@ suite("Parameter file completions", () => {
         template: string | Partial<IDeploymentTemplate> | undefined,
         options: {
             cursorIndex?: number;
+            tabSize?: number;
         },
         // Can either be an array of completion names, or an array of
         //   [completion name, insert text] tuples
@@ -43,7 +44,7 @@ suite("Parameter file completions", () => {
             }
 
             const pc = dp.getContextFromDocumentCharacterIndex(cursorIndex, dt);
-            const completions = await pc.getCompletionItems("");
+            const completions = await pc.getCompletionItems("", options.tabSize ?? 4);
 
             const completionNames = completions.items.map(c => c.label).sort();
             const completionInserts = completions.items.map(c => c.insertText).sort();

@@ -88,7 +88,7 @@ export abstract class PositionContext {
         }
 
         this._documentPosition.value = new LineColPos(documentLineIndex, documentColumnIndex);
-        this._documentCharacterIndex.value = this._document.getDocumentCharacterIndex(documentLineIndex, documentColumnIndex);
+        this._documentCharacterIndex.value = this._document.getDocumentCharacterIndex(documentLineIndex, documentColumnIndex, { allowOutOfBounds });
     }
 
     protected initFromDocumentCharacterIndex(documentCharacterIndex: number, allowOutOfBounds: boolean = true): void {
@@ -255,7 +255,7 @@ export abstract class PositionContext {
         return infos;
     }
 
-    public abstract getCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult>;
+    public abstract getCompletionItems(triggerCharacter: string | undefined, tabSize: number): Promise<ICompletionItemsResult>;
 
     public abstract getSignatureHelp(): FunctionSignatureHelp | undefined;
 

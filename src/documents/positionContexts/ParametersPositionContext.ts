@@ -78,11 +78,13 @@ export class ParametersPositionContext extends PositionContext {
         return refInfo ? this.document.findReferencesToDefinition(refInfo.definition) : undefined;
     }
 
-    public async getCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult> {
+    public async getCompletionItems(triggerCharacter: string | undefined, tabSize: number): Promise<ICompletionItemsResult> {
         return {
             items: getPropertyValueCompletionItems(
-                this._associatedTemplate?.topLevelScope,
+                this._associatedTemplate?.topLevelScope.parameterDefinitionsSource,
                 this.document.parameterValuesSource,
+                undefined,
+                tabSize,
                 this.documentCharacterIndex,
                 triggerCharacter
             )

@@ -93,6 +93,6 @@
             "check-format",
             "allow-leading-underscore"
         ],
-        "no-unnecessary-type-assertion": false // TODO: Turn this back on when done with strict null checking work
+        "no-unnecessary-type-assertion": false // TODO: Turn this back on when done with strict null checking work asdf
     }
 }

@@ -1,0 +1,12 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "mainTemplateParam": {
+            "value": "1"
+        },
+        "location": {
+            "value": "u swegsda kldsag kldsga klndsgst ld hlads dglldgadgkl kldgs akldas glhkg saldhk hklg asdghkld saghkl sdaklg adkls ghlksad gklhsa sdghkl dsaklhsg lahksd gkldsa lghk sadgs"
+        }
+    }
+}

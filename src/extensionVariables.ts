@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as os from 'os';
+import * as path from "path";
 import * as vscode from "vscode";
 import { IAzExtOutputChannel, IAzureUserInput } from "vscode-azureextensionui";
 import { LanguageClient } from "vscode-languageclient";
@@ -27,6 +28,8 @@ class ExtensionVariables {
     private _jsonOutlineProvider: InitializeBeforeUse<JsonOutlineProvider> = new InitializeBeforeUse<JsonOutlineProvider>();
     private _outputChannel: InitializeBeforeUse<IAzExtOutputChannel> = new InitializeBeforeUse<IAzExtOutputChannel>();
     private _ui: InitializeBeforeUse<IAzureUserInput> = new InitializeBeforeUse<IAzureUserInput>();
+    private _languageServerState: LanguageServerState = LanguageServerState.NotStarted;
+    private _languageServerStateEmitter: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
 
     public set context(context: vscode.ExtensionContext) {
         this._context.value = context;
@@ -57,13 +60,27 @@ class ExtensionVariables {
     }
 
     public EOL: string = os.EOL;
+    public pathSeparator: string = path.sep;
 
     public readonly ignoreBundle: boolean = !isWebpack;
 
     public languageServerClient: LanguageClient | undefined;
-    public languageServerState: LanguageServerState = LanguageServerState.NotStarted;
+    public set languageServerState(value: LanguageServerState) {
+        if (this._languageServerState !== value) {
+            this._languageServerState = value;
+            this._languageServerStateEmitter.fire();
+        }
+    }
+    public get languageServerState(): LanguageServerState {
+        return this._languageServerState;
+    }
+    public get languageServerStateChanged(): vscode.Event<void> {
+        return this._languageServerStateEmitter.event;
+    }
 
     // Suite support - lets us know when diagnostics have been completely published for a file
+    // tslint:disable-next-line: no-suspicious-comment
+    // TODO: Switch to using notifications?
     public addCompletedDiagnostic: boolean = false;
 
     // Note: We can't effectively change the configuration for all actions right now because

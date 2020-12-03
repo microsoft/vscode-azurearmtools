@@ -9,6 +9,7 @@ import { Span } from '../../language/Span';
 import { IUsageInfo } from '../../vscodeIntegration/UsageInfoHoverInfo';
 import { IParameterDefinition } from '../parameters/IParameterDefinition';
 import { ExpressionType, toValidExpressionType } from './ExpressionType';
+import { IJsonDocument } from './IJsonDocument';
 
 /**
  * This class represents the definition of a parameter in a user-defined function
@@ -16,14 +17,14 @@ import { ExpressionType, toValidExpressionType } from './ExpressionType';
 export class UserFunctionParameterDefinition implements IParameterDefinition {
     public readonly definitionKind: DefinitionKind = DefinitionKind.Parameter;
 
-    private constructor(private _name: Json.StringValue, private _objectValue: Json.ObjectValue) {
+    private constructor(public readonly document: IJsonDocument, private _name: Json.StringValue, private _objectValue: Json.ObjectValue) {
         assert(_objectValue);
     }
 
-    public static createIfValid(parameterObject: Json.ObjectValue): UserFunctionParameterDefinition | undefined {
+    public static createIfValid(document: IJsonDocument, parameterObject: Json.ObjectValue): UserFunctionParameterDefinition | undefined {
         const name = Json.asStringValue(parameterObject.getPropertyValue('name'));
         if (name) {
-            return new UserFunctionParameterDefinition(name, parameterObject);
+            return new UserFunctionParameterDefinition(document, name, parameterObject);
         }
 
         return undefined;

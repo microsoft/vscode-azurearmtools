@@ -52,6 +52,8 @@ export async function parseTemplateWithMarkers(
         ignoreWarnings?: boolean;
         includeDiagnosticLineNumbers?: boolean;
         replacements?: { [key: string]: string | { [key: string]: unknown } };
+        documentUri?: Uri;
+        tabSize?: number;
     }
 ): Promise<{ dt: DeploymentTemplateDoc; markers: Markers }> {
     if (options?.fromFile) {
@@ -62,7 +64,7 @@ export async function parseTemplateWithMarkers(
 
     const withReplacements = options?.replacements ? replaceInTemplate(template, options.replacements) : template;
     const { unmarkedText, markers } = getDocumentMarkers(withReplacements, options);
-    const dt: DeploymentTemplateDoc = new DeploymentTemplateDoc(unmarkedText, Uri.file("/parseTemplate template.json"));
+    const dt: DeploymentTemplateDoc = new DeploymentTemplateDoc(unmarkedText, options?.documentUri ?? Uri.file("/parseTemplate template.json"));
 
     type DiagIssue = {
         line: number;
@@ -133,9 +135,9 @@ export function removeEOLMarker(s: string): string {
  * Pass in a template with positions marked using the notation <!tagname!>
  * Returns the document without the tags, plus a dictionary of the tags and their positions
  */
-export function getDocumentMarkers(doc: object | string, options?: {}): { unmarkedText: string; markers: Markers } {
+export function getDocumentMarkers(doc: object | string, options?: { tabSize?: number }): { unmarkedText: string; markers: Markers } {
     let markers: Markers = {};
-    doc = typeof doc === "string" ? doc : stringify(doc);
+    doc = typeof doc === "string" ? doc : stringify(doc, options?.tabSize);
     let modified = doc;
 
     modified = removeEOLMarker(modified);
@@ -175,7 +177,8 @@ export function getDocumentMarkers(doc: object | string, options?: {}): { unmark
 
 export function replaceInTemplate(
     template: string | IPartialDeploymentTemplate,
-    replacements: { [key: string]: string | { [key: string]: unknown } }
+    replacements: { [key: string]: string | { [key: string]: unknown } },
+    options?: {}
 ): IPartialDeploymentTemplate {
     let templateString = stringify(template);
 

@@ -5,7 +5,9 @@
 // tslint:disable: max-classes-per-file // Private classes are related to DeploymentTemplate implementation
 
 import * as assert from 'assert';
-import { CodeAction, CodeActionContext, CodeActionKind, Command, Range, Selection, Uri } from "vscode";
+import * as path from 'path';
+import { CodeAction, CodeActionContext, CodeActionKind, Command, DocumentLink, Range, Selection, Uri } from "vscode";
+import { IActionContext } from 'vscode-azureextensionui';
 import { TemplateScopeKind } from '../../../extension.bundle';
 import { configKeys, templateKeys } from "../../constants";
 import { ext } from '../../extensionVariables';
@@ -22,12 +24,15 @@ import { CachedValue } from '../../util/CachedValue';
 import { expectParameterDocumentOrUndefined } from '../../util/expectDocument';
 import { Histogram } from '../../util/Histogram';
 import { nonNullValue } from '../../util/nonNull';
-import { FindReferencesVisitor } from "../../visitors/FindReferencesVisitor";
+import { ofType } from '../../util/ofType';
+import { FindReferencesAndErrorsVisitor } from "../../visitors/FindReferencesAndErrorsVisitor";
 import { FunctionCountVisitor } from "../../visitors/FunctionCountVisitor";
 import { GenericStringVisitor } from "../../visitors/GenericStringVisitor";
 import { ReferenceInVariableDefinitionsVisitor } from '../../visitors/ReferenceInVariableDefinitionsVisitor';
 import * as UndefinedVariablePropertyVisitor from "../../visitors/UndefinedVariablePropertyVisitor";
+import { getVSCodeRangeFromSpan } from '../../vscodeIntegration/vscodePosition';
 import { DeploymentDocument, ResolvableCodeLens } from "../DeploymentDocument";
+import { IParameterDefinitionsSource } from '../parameters/IParameterDefinitionsSource';
 import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSourceProvider';
 import { getMissingParameterErrors, getParameterValuesCodeActions } from '../parameters/ParameterValues';
 import { SynchronousParameterValuesSourceProvider } from "../parameters/SynchronousParameterValuesSourceProvider";
@@ -37,9 +42,9 @@ import { getResourcesInfo } from './getResourcesInfo';
 import { getParentAndChildCodeLenses } from './ParentAndChildCodeLenses';
 import { isArmSchema } from './schemas';
 import { DeploymentScopeKind } from './scopes/DeploymentScopeKind';
-import { IDeploymentScopeReference } from './scopes/IDeploymentScopeReference';
+import { IDeploymentSchemaReference } from './scopes/IDeploymentSchemaReference';
 import { TemplateScope } from "./scopes/TemplateScope";
-import { NestedTemplateOuterScope, TopLevelTemplateScope } from './scopes/templateScopes';
+import { IChildDeploymentScope, LinkedTemplateScope, NestedTemplateOuterScope, TopLevelTemplateScope } from './scopes/templateScopes';
 import { UserFunctionParameterDefinition } from './UserFunctionParameterDefinition';
 
 export interface IScopedParseResult {
@@ -65,8 +70,16 @@ const resourceTypesNotAllowedInRGDeployments: string[] = [
     "Microsoft.Resources/resourceGroups",
     "Microsoft.ManagedNetwork/scopeAssignments",
     "Microsoft.Management/managementGroups",
+    "Microsoft.Subscription/aliases",
 ];
 const resourceTypesNotAllowedInRGDeploymentsLC: string[] = resourceTypesNotAllowedInRGDeployments.map(resType => resType.toLowerCase());
+
+export interface IDocumentLinkInternal extends DocumentLink {
+    internal?: {
+        scope?: LinkedTemplateScope;
+        fallbackTarget?: Uri;
+    };
+}
 
 /**
  * Represents a deployment template file
@@ -197,7 +210,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                 if (tleParseResult.parseResult.expression) {
                     // tslint:disable-next-line:no-non-null-assertion // Guaranteed by if
                     const scope = tleParseResult.scope;
-                    FindReferencesVisitor.visit(scope, jsonStringValue.startIndex, tleParseResult.parseResult.expression, functions, referenceListsMap, issues);
+                    FindReferencesAndErrorsVisitor.visit(scope, jsonStringValue.startIndex, tleParseResult.parseResult.expression, functions, referenceListsMap, issues);
                 }
             });
 
@@ -212,9 +225,9 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         const warnings: Issue[] = [];
         const referenceListsMap = this.allReferences.referenceListsMap;
 
-        for (const scope of this.uniqueScopes) {
+        for (const scope of this.uniqueNonExternalScopes) { // Don't consider linked templates, they
             // Unused parameters
-            for (const parameterDefinition of scope.parameterDefinitions) {
+            for (const parameterDefinition of scope.parameterDefinitionsSource.parameterDefinitions) {
                 if (!referenceListsMap.has(parameterDefinition)) {
                     const message = parameterDefinition instanceof UserFunctionParameterDefinition
                         ? `User-function parameter '${parameterDefinition.nameValue.toString()}' is never used.`
@@ -312,8 +325,8 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
         // Only check top-level scope for now
         const scope = this.topLevelScope;
-        const deploymentScope: IDeploymentScopeReference | undefined = scope.deploymentScope;
-        if (deploymentScope?.matchingInfo?.deploymentScopeKind === DeploymentScopeKind.resourceGroup) {
+        const deploymentSchema: IDeploymentSchemaReference | undefined = scope.deploymentSchema;
+        if (deploymentSchema?.matchingInfo?.deploymentScopeKind === DeploymentScopeKind.resourceGroup) {
             for (const resource of scope.resources) {
                 if (resource.resourceTypeValue) {
                     const resourceTypeLC: string | undefined = resource.resourceTypeValue.asStringValue?.unquotedValue.toLowerCase();
@@ -321,7 +334,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                         const warningMessage = `This resource type may not available for a deployment scoped to resource group. Are you using the correct schema?`;
                         const warning = new Issue(resource.resourceTypeValue.span, warningMessage, IssueKind.incorrectScopeWarning);
 
-                        const schemaSpan = deploymentScope.schemaStringValue?.span;
+                        const schemaSpan = deploymentSchema.schemaStringValue?.span;
                         if (schemaSpan) {
                             warning.relatedInformation.push({
                                 location: {
@@ -345,7 +358,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
         for (const scope of this.uniqueScopes) {
             if (scope.parameterValuesSource) {
-                const scopeErrors = getMissingParameterErrors(scope.parameterValuesSource, scope);
+                const scopeErrors = getMissingParameterErrors(scope.parameterValuesSource, scope.parameterDefinitionsSource);
                 errors.push(...scopeErrors);
             }
         }
@@ -512,9 +525,11 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         // Add missing parameter values
         for (const scope of this.uniqueScopes) {
             if (scope.parameterValuesSource) {
+                let parentParameterDefinitionsSource: IParameterDefinitionsSource | undefined = scope.parentWithUniqueParamsVarsAndFunctions.parameterDefinitionsSource;
                 const scopeActions = getParameterValuesCodeActions(
                     scope.parameterValuesSource,
-                    scope,
+                    scope.parameterDefinitionsSource,
+                    parentParameterDefinitionsSource,
                     range,
                     context);
                 actions.push(...scopeActions);
@@ -660,28 +675,26 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
     /**
      * Retrieves code lenses for the top-level parameters and all child deployments
+     * @param topLevelParameterValuesProvider Represents the associated parameter values for the top level (could be a parameter file), if any
      */
     public getCodeLenses(
-        /**
-         * Represents the associated parameter values for the top level (could be a parameter file), if any
-         */
         topLevelParameterValuesProvider: IParameterValuesSourceProvider | undefined
     ): ResolvableCodeLens[] {
         const lenses: ResolvableCodeLens[] = [];
 
         for (const scope of this.allScopes) {
             if (scope.hasUniqueParamsVarsAndFunctions) {
-                let sourceProvider: IParameterValuesSourceProvider | undefined;
+                let paramValuesSourceProvider: IParameterValuesSourceProvider | undefined;
 
                 if (scope instanceof TopLevelTemplateScope) {
-                    sourceProvider = topLevelParameterValuesProvider;
+                    paramValuesSourceProvider = topLevelParameterValuesProvider;
                 } else {
                     // For anything other than the top level, we already have the parameter values source, no need to resolve lazily
                     const parameterValuesSource = scope.parameterValuesSource;
-                    sourceProvider = parameterValuesSource ? new SynchronousParameterValuesSourceProvider(parameterValuesSource) : undefined;
+                    paramValuesSourceProvider = parameterValuesSource ? new SynchronousParameterValuesSourceProvider(parameterValuesSource) : undefined;
                 }
 
-                const codelenses = this.getParameterCodeLenses(scope, sourceProvider);
+                const codelenses = this.getParameterCodeLenses(scope, paramValuesSourceProvider);
                 lenses.push(...codelenses);
             }
 
@@ -692,7 +705,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
             lenses.push(...getParentAndChildCodeLenses(scope, infos));
         }
 
-        lenses.push(...this.getChildTemplateCodeLenses());
+        lenses.push(...this.getChildTemplateCodeLenses(topLevelParameterValuesProvider));
 
         return lenses;
     }
@@ -707,7 +720,12 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
         const lenses: ResolvableCodeLens[] = [];
 
-        // Code lens for the "parameters" section itself - indicates where the parameters are coming from
+        if (uniqueScope.isExternal) {
+            // External parameter definitions (e.g. linked templates)
+            return [];
+        }
+
+        // Code lens for the top-level "parameters" section itself - indicates where the parameters are coming from
         if (uniqueScope instanceof TopLevelTemplateScope) {
             // Top level
             const parametersCodeLensSpan = uniqueScope.rootObject?.getProperty(templateKeys.parameters)?.span
@@ -716,37 +734,54 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
             // Is there a parameter file?
             const parameterFileUri = parameterValuesSourceProvider?.parameterFileUri;
             if (parameterFileUri) {
-                // Yes - indicate currently parameter file
+                // Yes - indicate current parameter file path
                 assert(uniqueScope instanceof TopLevelTemplateScope, "Expecting top-level scope");
                 lenses.push(new ShowCurrentParameterFileCodeLens(uniqueScope, parametersCodeLensSpan, parameterFileUri));
             }
 
             // Allow user to change or select/create parameter file
-            lenses.push(new SelectParameterFileCodeLens(this.topLevelScope, parametersCodeLensSpan, parameterFileUri));
+            lenses.push(new SelectParameterFileCodeLens(this.topLevelScope, parametersCodeLensSpan, parameterFileUri, {}));
         }
 
         // Code lens for each parameter definition
         if (parameterValuesSourceProvider) {
-            lenses.push(...uniqueScope.parameterDefinitions.map(pd => new ParameterDefinitionCodeLens(uniqueScope, pd, parameterValuesSourceProvider)));
+            lenses.push(...uniqueScope.parameterDefinitionsSource.parameterDefinitions.map(pd => new ParameterDefinitionCodeLens(uniqueScope, pd, parameterValuesSourceProvider)));
         }
 
         return lenses;
     }
 
-    private getChildTemplateCodeLenses(): ResolvableCodeLens[] {
+    private getChildTemplateCodeLenses(
+        topLevelParameterValuesProvider: IParameterValuesSourceProvider | undefined
+    ): ResolvableCodeLens[] {
         const lenses: ResolvableCodeLens[] = [];
         for (let scope of this.allScopes) {
-            if (scope.rootObject) {
+            const owningDeploymentResource = (<Partial<IChildDeploymentScope>>scope).owningDeploymentResource;
+            if (scope.rootObject || owningDeploymentResource) {
                 switch (scope.scopeKind) {
                     case TemplateScopeKind.NestedDeploymentWithInnerScope:
                     case TemplateScopeKind.NestedDeploymentWithOuterScope:
-                        const lens = NestedTemplateCodeLen.create(scope, scope.rootObject.span);
-                        if (lens) {
-                            lenses.push(lens);
+                        if (scope.rootObject) {
+                            const lens = NestedTemplateCodeLen.create(scope, scope.rootObject.span);
+                            if (lens) {
+                                lenses.push(lens);
+                            }
                         }
                         break;
                     case TemplateScopeKind.LinkedDeployment:
-                        lenses.push(LinkedTemplateCodeLens.create(scope, scope.rootObject.span));
+                        assert(scope instanceof LinkedTemplateScope, "Expected a LinkedTemplateScope");
+                        if (owningDeploymentResource) {
+                            const templateLinkObject = scope.templateLinkObject;
+                            let span = templateLinkObject ? templateLinkObject.span : owningDeploymentResource.span;
+
+                            lenses.push(...
+                                LinkedTemplateCodeLens.create(
+                                    scope,
+                                    span,
+                                    scope.linkedFileReferences,
+                                    topLevelParameterValuesProvider)
+                            );
+                        }
                         break;
                     default:
                         break;
@@ -757,11 +792,51 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         return lenses;
     }
 
+    public getDocumentLinks(context: IActionContext): DocumentLink[] {
+        const links: DocumentLink[] = [];
+
+        // Make a document link out of each deployment "relativePath" property value
+        for (const scope of ofType(this.allScopes, LinkedTemplateScope)) {
+            const relativePathValue: Json.StringValue | undefined =
+                scope.templateLinkObject?.getPropertyValue(templateKeys.linkedDeploymentTemplateLinkRelativePath)
+                    ?.asStringValue;
+            if (relativePathValue && relativePathValue.unquotedValue) {
+                // Add info directly to the link that we return, it will be handled back to us to resolve
+                const internalLink = <IDocumentLinkInternal>new DocumentLink(
+                    getVSCodeRangeFromSpan(this, relativePathValue.unquotedSpan));
+
+                // Provide the scope in order for the resolve code to be able to pick up the
+                //   correct link dynamically
+                // The fallback target is simply the calculated by appending the relative path to the
+                //   folder the template is in (which theoretically should be the same thing)
+                const fallbackTarget = Uri.file(
+                    path.resolve(path.dirname(this.documentUri.fsPath), relativePathValue.unquotedValue)
+                );
+                internalLink.internal = {
+                    scope,
+                    fallbackTarget,
+                };
+
+                links.push(internalLink);
+            }
+        }
+
+        return links;
+    }
+
     /**
      * Returns all scopes which actually host unique members
      */
     public get uniqueScopes(): TemplateScope[] {
         return this.allScopes.filter(scope => scope.hasUniqueParamsVarsAndFunctions);
+    }
+
+    /**
+     * Returns all scopes which actually host unique members and whose members are not defined
+     * external (linked templates)
+     */
+    public get uniqueNonExternalScopes(): TemplateScope[] {
+        return this.allScopes.filter(scope => scope.hasUniqueParamsVarsAndFunctions && !scope.isExternal);
     }
 
     /**

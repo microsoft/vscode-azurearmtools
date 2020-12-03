@@ -1048,7 +1048,7 @@ suite("DeploymentTemplate", () => {
                     pc.getInsertionParent();
                     pc.getScope();
                     dt.getCodeActions(undefined, getVSCodeRangeFromSpan(dt, new Span(index, 0)), { diagnostics: [] });
-                    /*const items =*/ await pc.getCompletionItems(undefined);
+                    /*const items =*/ await pc.getCompletionItems(undefined, 4);
                     // tslint:disable-next-line: no-suspicious-comment
                     /* TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1030
                     items.items.map(i => toVsCodeCompletionItem(dt, i, getVSCodePositionFromPosition(pc.documentPosition)));

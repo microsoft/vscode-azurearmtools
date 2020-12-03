@@ -14,10 +14,11 @@ const DEBUG_BREAK_AFTER_DIAGNOSTICS_COMPLETE = false;
 // tslint:disable:no-non-null-assertion
 
 import * as assert from "assert";
-import * as fs from 'fs';
+import * as fse from "fs-extra";
 import * as path from 'path';
-import { Diagnostic, DiagnosticSeverity, Disposable, languages, Position, Range, TextDocument } from "vscode";
-import { backendValidationDiagnosticsSource, diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource } from "../../extension.bundle";
+import { Diagnostic, DiagnosticSeverity, Disposable, languages, Position, Range, TextDocument, Uri } from "vscode";
+import { parseError } from "vscode-azureextensionui";
+import { backendValidationDiagnosticsSource, diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource, readUtf8FileWithBom } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { delay } from "./delay";
 import { mapParameterFile } from "./mapParameterFile";
@@ -28,7 +29,13 @@ import { stringify } from "./stringify";
 import { TempDocument, TempEditor, TempFile } from "./TempFile";
 import { testLog } from "./testLog";
 
-export const diagnosticsTimeout = 2 * 60 * 1000; // CONSIDER: Use this long timeout only for first test, or for suite setup
+export const diagnosticsTimeout = 20 * 60 * 1000; // CONSIDER: Use this long timeout only for first test, or for suite setup
+
+export type TransformDiagnosticMessage = (msg: string) => string;
+
+export interface ICompareDiagnosticsOptions {
+    transformResults?: TransformDiagnosticMessage;
+}
 
 enum ExpectedDiagnosticSeverity {
     Warning = 4,
@@ -217,8 +224,7 @@ export interface IPartialDeploymentTemplateResource {
 }
 
 // tslint:disable-next-line:no-empty-interface
-export interface ITestDiagnosticsOptions extends IGetDiagnosticsOptions {
-}
+export type ITestDiagnosticsOptions = IGetDiagnosticsOptions & ICompareDiagnosticsOptions;
 
 export interface IGetDiagnosticsOptions {
     /**
@@ -262,19 +268,28 @@ export interface IGetDiagnosticsOptions {
      * NOTE: If previousResults are passed in, waitForChange is assumed true
      */
     waitForChange?: boolean;
+
+    /**
+     * If specified, wait for the filter to return true as well as the normal tests before considering the diagnostics complete
+     */
+    waitForDiagnosticsFilter?(results: IDiagnosticsResults): boolean | Promise<boolean>;
 }
 
 export async function testDiagnosticsFromFile(filePath: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: ExpectedDiagnostics): Promise<void> {
-    await testDiagnosticsCore(filePath, 1, options, expected);
+    await testDiagnosticsCore(async () => await getDiagnosticsForTemplate(filePath, 1, options), options, expected);
 }
 
 export async function testDiagnostics(templateContentsOrFileName: string | Partial<IDeploymentTemplate>, options: ITestDiagnosticsOptions, expected: ExpectedDiagnostics): Promise<void> {
-    await testDiagnosticsCore(templateContentsOrFileName, 1, options, expected);
+    await testDiagnosticsCore(async () => await getDiagnosticsForTemplate(templateContentsOrFileName, 1, options), options, expected);
 }
 
-async function testDiagnosticsCore(templateContentsOrFileName: string | Partial<IDeploymentTemplate>, expectedMinimumVersionForEachSource: number, options: ITestDiagnosticsOptions, expected: ExpectedDiagnostics): Promise<void> {
-    let actual: IDiagnosticsResults = await getDiagnosticsForTemplate(templateContentsOrFileName, expectedMinimumVersionForEachSource, options);
+async function testDiagnosticsCore(getDiagnostics: () => Promise<IDiagnosticsResults>, options: ITestDiagnosticsOptions, expected: ExpectedDiagnostics): Promise<void> {
+    let actual: IDiagnosticsResults = await getDiagnostics();
     compareDiagnostics(actual.diagnostics, expected, options);
+}
+
+export async function testDiagnosticsFromUri(documentUri: Uri, options: ITestDiagnosticsOptions, expected: ExpectedDiagnostics): Promise<void> {
+    await testDiagnosticsCore(async () => await getDiagnosticsForDocument(documentUri, 1, options), options, expected);
 }
 
 export interface IDiagnosticsResults {
@@ -283,11 +298,13 @@ export interface IDiagnosticsResults {
 }
 
 export async function getDiagnosticsForDocument(
-    document: TextDocument,
+    document: TextDocument | Uri,
     expectedMinimumVersionForEachSource: number,
     options: IGetDiagnosticsOptions,
     previousResults?: IDiagnosticsResults // If specified, will wait until the versions change and are completed
 ): Promise<IDiagnosticsResults> {
+    const documentUri = document instanceof Uri ? document : document.uri;
+
     let dispose: Disposable | undefined;
     let timer: NodeJS.Timer | undefined;
 
@@ -313,7 +330,7 @@ export async function getDiagnosticsForDocument(
         function getCurrentDiagnostics(): IDiagnosticsResults {
             const sourceCompletionVersions: { [source: string]: number } = {};
 
-            currentDiagnostics = languages.getDiagnostics(document.uri);
+            currentDiagnostics = languages.getDiagnostics(documentUri);
 
             // Filter out any language server state diagnostics
             currentDiagnostics = currentDiagnostics.filter(d => d.source !== languageServerStateSource);
@@ -356,6 +373,15 @@ export async function getDiagnosticsForDocument(
             return true;
         }
 
+        async function diagnosticsFilterPasses(results: IDiagnosticsResults): Promise<boolean> {
+            if (options.waitForDiagnosticsFilter) {
+                const filterValue = await options.waitForDiagnosticsFilter(results);
+                return filterValue;
+            }
+
+            return true;
+        }
+
         let currentResults: IDiagnosticsResults = previousResults ?? getCurrentDiagnostics();
         const requiredSourceCompletionVersions = Object.assign({}, currentResults.sourceCompletionVersions);
         if (options.waitForChange || previousResults) {
@@ -365,7 +391,7 @@ export async function getDiagnosticsForDocument(
             }
         }
 
-        if (areAllSourcesComplete(currentResults.sourceCompletionVersions)) {
+        if (areAllSourcesComplete(currentResults.sourceCompletionVersions) && await diagnosticsFilterPasses(currentResults)) {
             resolve(currentResults);
             return;
         }
@@ -384,7 +410,7 @@ export async function getDiagnosticsForDocument(
 
         while (!done) {
             const results = getCurrentDiagnostics();
-            if (areAllSourcesComplete(results.sourceCompletionVersions)) {
+            if (areAllSourcesComplete(results.sourceCompletionVersions) && await diagnosticsFilterPasses(results)) {
                 resolve(results);
                 done = true;
             }
@@ -423,20 +449,17 @@ export async function getDiagnosticsForDocument(
 
     return diagnostics;
 }
-
 export async function getDiagnosticsForTemplate(
     templateContentsOrFileName: string | Partial<IDeploymentTemplate>,
     expectedMinimumVersionForEachSource: number,
     options?: IGetDiagnosticsOptions
 ): Promise<IDiagnosticsResults> {
     let templateContents: string | undefined;
-    let tempPathSuffix: string = '';
     let templateFile: TempFile | undefined;
     let paramsFile: TempFile | undefined;
     let editor: TempEditor | undefined;
 
     try {
-
         // tslint:disable-next-line: strict-boolean-expressions
         options = options || {};
 
@@ -444,39 +467,56 @@ export async function getDiagnosticsForTemplate(
             if (!!templateContentsOrFileName.match(/\.jsonc?$/)) {
                 // It's a filename
                 let sourcePath = resolveInTestFolder(templateContentsOrFileName);
-                templateContents = fs.readFileSync(sourcePath).toString();
-                tempPathSuffix = path.basename(templateContentsOrFileName, path.extname(templateContentsOrFileName));
+                templateFile = TempFile.fromExistingFile(sourcePath);
             } else {
-                // It's a string
+                // It's a content string
                 templateContents = templateContentsOrFileName;
             }
         } else {
             // It's a (flying?) object
-            let templateObject: Partial<IDeploymentTemplate> = templateContentsOrFileName;
+            const templateObject: Partial<IDeploymentTemplate> = templateContentsOrFileName;
             templateContents = stringify(templateObject);
         }
 
-        // Add schema if not already present (to make it easier to write tests)
-        if (!options.doNotAddSchema && !templateContents.includes('$schema')) {
-            templateContents = templateContents.replace(/\s*{\s*/, '{\n"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",\n');
+        // Search/relace needs a content string (at least for now)
+        if (options.search && !templateContents && templateFile) {
+            templateContents = await readUtf8FileWithBom(templateFile.fsPath);
+            templateFile = undefined;
         }
 
-        if (options.search) {
-            let newContents = templateContents.replace(options.search, options.replace!);
-            templateContents = newContents;
+        if (!templateFile) {
+            assert(templateContents);
+            // Add schema if not already present (to make it easier to write tests)
+            if (!options.doNotAddSchema && !templateContents.includes('$schema')) {
+                templateContents = templateContents.replace(/\s*{\s*/, '{\n"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",\n');
+            }
+
+            if (options.search) {
+                let newContents = templateContents.replace(options.search, options.replace!);
+                templateContents = newContents;
+            }
+
+            templateFile = TempFile.fromContents(templateContents, '.json');
         }
 
-        templateFile = new TempFile(templateContents, tempPathSuffix);
         const document = new TempDocument(templateFile);
 
         // Parameter file
         if (options.parameters || options.parametersFile) {
             if (options.parameters) {
                 const { unmarkedText: unmarkedParams } = await parseParametersWithMarkers(options.parameters);
-                paramsFile = new TempFile(unmarkedParams);
+                paramsFile = TempFile.fromContents(unmarkedParams);
             } else {
-                const absPath = resolveInTestFolder(options.parametersFile!);
-                paramsFile = await TempFile.fromExistingFile(absPath);
+                assert(options.parametersFile);
+
+                // First try relative to the template file
+                let absPath: string = path.join(path.dirname(templateFile.fsPath), options.parametersFile);
+                if (!fse.pathExistsSync(absPath)) {
+                    absPath = resolveInTestFolder(options.parametersFile!);
+                }
+
+                assert(fse.pathExistsSync(absPath), `Couldn't find parameter file ${absPath}`);
+                paramsFile = TempFile.fromExistingFile(absPath);
             }
 
             // Map template to params
@@ -558,6 +598,8 @@ export function diagnosticToString(diagnostic: Diagnostic, options: IGetDiagnost
 }
 
 function compareDiagnostics(actual: Diagnostic[], expected: ExpectedDiagnostics, options: ITestDiagnosticsOptions): void {
+    transformResults(actual, options);
+
     // Do the expected messages include ranges?
     let expectedHasRanges = expected.length === 0 ||
         (typeof expected[0] === 'string' && !!expected[0].match(/\[[0-9]+,[0-9]+-[0-9]+,[0-9]+\]/)
@@ -577,5 +619,27 @@ function compareDiagnostics(actual: Diagnostic[], expected: ExpectedDiagnostics,
     expectedAsStrings = expectedAsStrings.sort();
     actualAsStrings = actualAsStrings.sort();
 
-    assert.deepStrictEqual(actualAsStrings, expectedAsStrings);
+    try {
+        assert.deepStrictEqual(actualAsStrings, expectedAsStrings);
+    } catch (err) {
+        // Test engine reporting doesn't handle very long error messages
+        const msgMax = 5000;
+        let msg = parseError(err).message;
+        if (msg.length > msgMax) {
+            msg = `${msg.slice(0, msgMax)}\n...(more)`;
+        }
+
+        throw new Error(msg);
+    }
+}
+function transformResults(results: Diagnostic[], options: ICompareDiagnosticsOptions): void {
+    if (options.transformResults) {
+        for (const result of results) {
+            result.message = options.transformResults(result.message);
+        }
+    }
+}
+
+export function simplifyBadTypeResourceMessage(msg: string): string {
+    return msg.replace(/Value must be one of the following values: [a-zA-Z0-9-, "./]+/, "Value must be one of the following values: {...}");
 }

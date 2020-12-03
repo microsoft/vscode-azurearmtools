@@ -6,29 +6,40 @@
 
 import * as assert from 'assert';
 import * as fs from 'fs';
-import * as path from 'path';
 import { commands, TextDocument, TextEditor, Uri, window, workspace } from 'vscode';
-import { readUtf8FileWithBom } from "../../extension.bundle";
 import { getTempFilePath } from './getTempFilePath';
 
 export class TempFile {
     public readonly fsPath: string;
+    public readonly shouldDelete: boolean;
     public readonly uri: Uri;
 
-    public constructor(contents: string, baseFilename?: string, extension?: string) {
-        this.fsPath = getTempFilePath(baseFilename, extension);
+    public static fromContents(contents: string, baseFilename?: string, extension?: string): TempFile {
+        return new TempFile({ contents, baseFilename, extension });
+    }
+
+    public static fromExistingFile(existingFilePath: string): TempFile {
+        assert(fs.existsSync(existingFilePath), `TempFile: Couldn't find path ${existingFilePath}`);
+        return new TempFile({ path: existingFilePath });
+    }
+
+    private constructor(args: { path: string } | { contents: string; baseFilename?: string; extension?: string }) {
+        if ("path" in args) {
+            // Use an existing file
+            this.fsPath = args.path;
+            this.shouldDelete = false;
+        } else {
+            // Create temp file from contents
+            this.fsPath = getTempFilePath(args.baseFilename, args.extension);
+            this.shouldDelete = true;
+
+            fs.writeFileSync(this.fsPath, args.contents);
+        }
+
         this.uri = Uri.file(this.fsPath);
-
-        fs.writeFileSync(this.fsPath, contents);
     }
-
-    public static async fromExistingFile(filepath: string): Promise<TempFile> {
-        const contents: string = await readUtf8FileWithBom(filepath);
-        return new TempFile(contents, path.basename(filepath), path.extname(filepath));
-    }
-
     public dispose(): void {
-        if (fs.existsSync(this.fsPath)) {
+        if (this.shouldDelete && fs.existsSync(this.fsPath)) {
             fs.unlinkSync(this.fsPath);
         }
     }

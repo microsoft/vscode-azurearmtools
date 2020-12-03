@@ -7,7 +7,7 @@
 
 import * as assert from "assert";
 import { Uri } from "vscode";
-import { AzureRMAssets, BuiltinFunctionMetadata, DefinitionKind, DeploymentTemplateDoc, FindReferencesVisitor, FunctionsMetadata, INamedDefinition, IncorrectArgumentsCountIssue, Issue, IssueKind, isTleExpression, nonNullValue, ReferenceList, Span, TemplatePositionContext, TemplateScope, TLE, TopLevelTemplateScope, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue } from "../extension.bundle";
+import { AzureRMAssets, BuiltinFunctionMetadata, DefinitionKind, DeploymentTemplateDoc, FindReferencesAndErrorsVisitor, FunctionsMetadata, INamedDefinition, IncorrectArgumentsCountIssue, Issue, IssueKind, isTleExpression, nonNullValue, ReferenceList, Span, TemplatePositionContext, TemplateScope, TLE, TopLevelTemplateScope, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue } from "../extension.bundle";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 
@@ -25,7 +25,7 @@ suite("TLE", () => {
     function getReferenceErrors(scope: TemplateScope, expression: TLE.Value | undefined): Issue[] {
         const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
         const issues: Issue[] = [];
-        FindReferencesVisitor.visit(scope, 0, expression, AzureRMAssets.getFunctionsMetadata(), referenceListsMap, issues);
+        FindReferencesAndErrorsVisitor.visit(scope, 0, expression, AzureRMAssets.getFunctionsMetadata(), referenceListsMap, issues);
         return issues;
     }
 
@@ -428,7 +428,7 @@ suite("TLE", () => {
                     [stringValue],
                     undefined);
 
-                FindReferencesVisitor.visit(dt.topLevelScope, 0, stringValue.parent, metadata, referenceListsMap, issues);
+                FindReferencesAndErrorsVisitor.visit(dt.topLevelScope, 0, stringValue.parent, metadata, referenceListsMap, issues);
                 assert.deepStrictEqual(
                     issues,
                     [
@@ -453,7 +453,7 @@ suite("TLE", () => {
                     [stringValue],
                     undefined);
 
-                FindReferencesVisitor.visit(dt.topLevelScope, 0, stringValue.parent, metadata, referenceListsMap, issues);
+                FindReferencesAndErrorsVisitor.visit(dt.topLevelScope, 0, stringValue.parent, metadata, referenceListsMap, issues);
                 assert.deepStrictEqual(
                     issues,
                     [
@@ -1942,7 +1942,7 @@ suite("TLE", () => {
                 const tleParseResult = parseExpression("'[concat()]'");
                 const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
                 const errors: Issue[] = [];
-                FindReferencesVisitor.visit(emptyScope, 0, tleParseResult.expression, functionMetadata, referenceListsMap, errors);
+                FindReferencesAndErrorsVisitor.visit(emptyScope, 0, tleParseResult.expression, functionMetadata, referenceListsMap, errors);
                 assert.deepStrictEqual([], errors);
             });
 
@@ -1950,7 +1950,7 @@ suite("TLE", () => {
                 const tleParseResult = parseExpression("'[concatenate()]'");
                 const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
                 const errors: Issue[] = [];
-                FindReferencesVisitor.visit(emptyScope, 0, tleParseResult.expression, functionMetadata, referenceListsMap, errors);
+                FindReferencesAndErrorsVisitor.visit(emptyScope, 0, tleParseResult.expression, functionMetadata, referenceListsMap, errors);
                 assert.deepStrictEqual(
                     [
                         new UnrecognizedBuiltinFunctionIssue(new Span(2, 11), "concatenate")
@@ -2172,7 +2172,7 @@ suite("TLE", () => {
                 const issues: Issue[] = [];
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
                 assert(param);
-                const visitor = FindReferencesVisitor.visit(dt.topLevelScope, 0, undefined, metadata, referenceListsMap, issues);
+                const visitor = FindReferencesAndErrorsVisitor.visit(dt.topLevelScope, 0, undefined, metadata, referenceListsMap, issues);
                 assert(visitor);
                 assert.deepStrictEqual(referenceListsMap.get(param), undefined);
                 assert.deepStrictEqual(issues, []);
@@ -2185,7 +2185,7 @@ suite("TLE", () => {
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
                 assert(param);
                 // tslint:disable-next-line:no-any
-                const visitor = FindReferencesVisitor.visit(dt.topLevelScope, 0, <any>undefined, metadata, referenceListsMap, issues);
+                const visitor = FindReferencesAndErrorsVisitor.visit(dt.topLevelScope, 0, <any>undefined, metadata, referenceListsMap, issues);
                 assert(visitor);
                 assert.deepStrictEqual(referenceListsMap.get(param), undefined);
                 assert.deepStrictEqual(issues, []);
@@ -2198,7 +2198,7 @@ suite("TLE", () => {
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
                 assert(param);
                 const pr: TLE.TleParseResult = parseExpression(`"[parameters('pName')]"`);
-                const visitor = FindReferencesVisitor.visit(dt.topLevelScope, 0, pr.expression, metadata, referenceListsMap, issues);
+                const visitor = FindReferencesAndErrorsVisitor.visit(dt.topLevelScope, 0, pr.expression, metadata, referenceListsMap, issues);
                 assert(visitor);
                 assert.deepStrictEqual(
                     referenceListsMap.get(param),

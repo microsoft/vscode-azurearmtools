@@ -116,20 +116,26 @@ export class DeploymentParametersDoc extends DeploymentDocument {
         context: CodeActionContext
     ): (Command | CodeAction)[] {
         const template = expectTemplateDocumentOrUndefined(associatedDocument);
-        return getParameterValuesCodeActions(
-            this.parameterValuesSource,
-            template?.topLevelScope,
-            range,
-            context
-        );
+        if (template) {
+            return getParameterValuesCodeActions(
+                this.parameterValuesSource,
+                template.topLevelScope.parameterDefinitionsSource,
+                undefined,
+                range,
+                context
+            );
+        }
+
+        return [];
     }
+
     public getErrorsCore(associatedDocument: DeploymentDocument | undefined): Issue[] {
         if (!associatedDocument) {
             return [];
         }
 
         const template = expectTemplateDocument(associatedDocument);
-        return getMissingParameterErrors(this.parameterValuesSource, template.topLevelScope);
+        return getMissingParameterErrors(this.parameterValuesSource, template.topLevelScope.parameterDefinitionsSource);
     }
 
     public getWarnings(): Issue[] {

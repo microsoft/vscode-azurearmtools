@@ -645,7 +645,7 @@
         },
         {
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
+            "apiVersion": "2020-06-01",
             "name": "[concat(variables('vmProperties')[copyIndex()].name,'Deployment')]",
             "copy": {
                 "name": "vmCopy",

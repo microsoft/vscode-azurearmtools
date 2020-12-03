@@ -12,6 +12,7 @@ import { CachedValue } from '../../util/CachedValue';
 import { getUserFunctionUsage } from '../../vscodeIntegration/signatureFormatting';
 import { IUsageInfo } from '../../vscodeIntegration/UsageInfoHoverInfo';
 import { IJsonDocument } from "./IJsonDocument";
+import { TemplateScope } from './scopes/TemplateScope';
 import { UserFunctionDefinition } from "./UserFunctionDefinition";
 
 export function isUserNamespaceDefinition(definition: INamedDefinition): definition is UserFunctionNamespaceDefinition {
@@ -50,6 +51,7 @@ export class UserFunctionNamespaceDefinition implements INamedDefinition {
     private _members: CachedValue<UserFunctionDefinition[]> = new CachedValue<UserFunctionDefinition[]>();
 
     private constructor(
+        public readonly parentScope: TemplateScope,
         public readonly document: IJsonDocument,
         public readonly nameValue: Json.StringValue,
         private readonly _value: Json.ObjectValue
@@ -57,10 +59,10 @@ export class UserFunctionNamespaceDefinition implements INamedDefinition {
         assert(_value);
     }
 
-    public static createIfValid(document: IJsonDocument, functionValue: Json.ObjectValue): UserFunctionNamespaceDefinition | undefined {
+    public static createIfValid(parentScope: TemplateScope, document: IJsonDocument, functionValue: Json.ObjectValue): UserFunctionNamespaceDefinition | undefined {
         let nameValue: Json.StringValue | undefined = Json.asStringValue(functionValue.getPropertyValue("namespace"));
         if (nameValue) {
-            return new UserFunctionNamespaceDefinition(document, nameValue, functionValue);
+            return new UserFunctionNamespaceDefinition(parentScope, document, nameValue, functionValue);
         }
 
         return undefined;
@@ -87,7 +89,7 @@ export class UserFunctionNamespaceDefinition implements INamedDefinition {
                     let name: Json.StringValue = member.nameValue;
                     let value = Json.asObjectValue(member.value);
                     if (value) {
-                        let func = new UserFunctionDefinition(this.document, this, name, value, member.span);
+                        let func = new UserFunctionDefinition(this.parentScope, this.document, this, name, value, member.span);
                         membersResult.push(func);
                     }
                 }

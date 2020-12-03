@@ -31,6 +31,7 @@ export class UserFunctionDefinition implements INamedDefinition {
     public readonly definitionKind: DefinitionKind = DefinitionKind.UserFunction;
 
     constructor(
+        public readonly parentScope: TemplateScope,
         public readonly document: IJsonDocument,
         public readonly namespace: UserFunctionNamespaceDefinition,
         public readonly nameValue: Json.StringValue,
@@ -49,6 +50,7 @@ export class UserFunctionDefinition implements INamedDefinition {
         return this._scope.getOrCacheValue(() => {
             // Each user function has a scope of its own
             return new UserFunctionScope(
+                this.parentScope,
                 this.document,
                 this.objectValue,
                 this.parameterDefinitions,
@@ -82,7 +84,7 @@ export class UserFunctionDefinition implements INamedDefinition {
                 for (const parameter of parametersArray.elements) {
                     const parameterObject = Json.asObjectValue(parameter);
                     if (parameterObject) {
-                        const parameterDefinition = UserFunctionParameterDefinition.createIfValid(parameterObject);
+                        const parameterDefinition = UserFunctionParameterDefinition.createIfValid(this.document, parameterObject);
                         if (parameterDefinition) {
                             parameterDefinitions.push(parameterDefinition);
                         }

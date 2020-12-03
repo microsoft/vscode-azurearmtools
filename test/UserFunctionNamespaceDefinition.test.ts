@@ -19,7 +19,7 @@ suite("UserFunctionNamespaceDefinition", () => {
             const namespaceName = createStringProperty("namespaceMisspelled", "Contoso");
             const namespaceObject = new Json.ObjectValue(fakeSpan, [namespaceName]);
 
-            let pd = UserFunctionNamespaceDefinition.createIfValid(dt, namespaceObject);
+            let pd = UserFunctionNamespaceDefinition.createIfValid(dt.topLevelScope, dt, namespaceObject);
             assert(!pd, "No namespace name, should be invalid");
         });
 
@@ -27,7 +27,7 @@ suite("UserFunctionNamespaceDefinition", () => {
             const namespaceName = createStringProperty("namespace", "Contoso");
             const namespaceObject = new Json.ObjectValue(fakeSpan, [namespaceName]);
 
-            let pd = UserFunctionNamespaceDefinition.createIfValid(dt, namespaceObject);
+            let pd = UserFunctionNamespaceDefinition.createIfValid(dt.topLevelScope, dt, namespaceObject);
             assert(pd);
             pd = pd!;
 
@@ -41,7 +41,7 @@ suite("UserFunctionNamespaceDefinition", () => {
             const namespaceName = createStringProperty("namespacE", "Contoso");
             const namespaceObject = new Json.ObjectValue(fakeSpan, [namespaceName]);
 
-            let pd = UserFunctionNamespaceDefinition.createIfValid(dt, namespaceObject);
+            let pd = UserFunctionNamespaceDefinition.createIfValid(dt.topLevelScope, dt, namespaceObject);
             assert(pd);
             pd = pd!;
 
@@ -75,7 +75,7 @@ suite("UserFunctionNamespaceDefinition", () => {
                 );
 
             test("getMemberDefinition", () => {
-                let userNs = UserFunctionNamespaceDefinition.createIfValid(dt, namespace1);
+                let userNs = UserFunctionNamespaceDefinition.createIfValid(dt.topLevelScope, dt, namespace1);
                 assert(userNs);
                 userNs = userNs!;
 
@@ -86,7 +86,7 @@ suite("UserFunctionNamespaceDefinition", () => {
             });
 
             test("getMemberDefinition case insensitive", () => {
-                let userNs = UserFunctionNamespaceDefinition.createIfValid(dt, namespace2);
+                let userNs = UserFunctionNamespaceDefinition.createIfValid(dt.topLevelScope, dt, namespace2);
                 assert(userNs);
                 userNs = userNs!;
 

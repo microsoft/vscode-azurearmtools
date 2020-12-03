@@ -155,7 +155,7 @@ async function sortVariables(template: DeploymentTemplateDoc, textEditor: vscode
  */
 async function sortParameters(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor): Promise<boolean> {
     return await sortGeneric<IParameterDefinition>(
-        template.topLevelScope.parameterDefinitions,
+        template.topLevelScope.parameterDefinitionsSource.parameterDefinitions,
         x => x.nameValue.quotedValue, x => x.fullSpan, template, textEditor);
 }
 

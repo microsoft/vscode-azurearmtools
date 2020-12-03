@@ -1,0 +1,38 @@
+{
+    // "missing and extra parameters (validation)"
+
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+    },
+    "functions": [],
+    "variables": {
+        "v1": 123,
+        "v2": 321,
+        "v3": 456
+    },
+    "resources": [
+        {
+            "name": "linkedDeployment1",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-06-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "relativePath": "subfolder/child.json"
+                },
+                "parameters": {
+                    // ERROR: Missing value for stringParam
+                    "intParam": {
+                        "value": "[variables('v1')]"
+                    },
+                    // ERROR: Invalid parameter (not defined in the linked template)
+                    "extraParam": {
+                        "value": "[variables('v2')]"
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}

@@ -28,7 +28,7 @@ suite("dependsOn completions", () => {
             const { dt, markers: { cursor, replaceStart } } = await parseTemplateWithMarkers(options.template);
             assert(cursor, "Missing <!cursor!> in testcase template");
             const pc = dt.getContextFromDocumentCharacterIndex(cursor.index, undefined);
-            const { items: completions } = await pc.getCompletionItems(options.triggerCharacter);
+            const { items: completions } = await pc.getCompletionItems(options.triggerCharacter, 4);
 
             // Run toVsCodeCompletionItem on the items - this will run some additional validation
             const vscodeItems = completions.map(item =>

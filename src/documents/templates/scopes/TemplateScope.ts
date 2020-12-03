@@ -2,20 +2,21 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import * as assert from 'assert';
 import { Json, strings } from '../../../../extension.bundle';
 import { templateKeys } from '../../../constants';
+import { assert } from '../../../fixed_assert';
 import * as TLE from "../../../language/expressions/TLE";
 import { CachedValue } from '../../../util/CachedValue';
 import { IParameterDefinition } from '../../parameters/IParameterDefinition';
 import { IParameterDefinitionsSource } from '../../parameters/IParameterDefinitionsSource';
+import { IParameterDefinitionsSourceProvider } from "../../parameters/IParameterDefinitionsSourceProvider";
 import { IParameterValuesSource } from '../../parameters/IParameterValuesSource';
 import { IJsonDocument } from '../IJsonDocument';
 import { IResource } from '../IResource';
 import { UserFunctionDefinition } from '../UserFunctionDefinition';
 import { UserFunctionNamespaceDefinition } from "../UserFunctionNamespaceDefinition";
 import { IVariableDefinition } from '../VariableDefinition';
-import { IDeploymentScopeReference } from './IDeploymentScopeReference';
+import { IDeploymentSchemaReference } from './IDeploymentSchemaReference';
 
 export enum TemplateScopeKind {
     Empty = "Empty",
@@ -36,27 +37,26 @@ export enum TemplateScopeKind {
 /**
  * Represents the scoped access of parameters/variables/functions at a particular point in the template tree.
  */
-export abstract class TemplateScope implements IParameterDefinitionsSource {
-    private _parameterDefinitions: CachedValue<IParameterDefinition[] | undefined> = new CachedValue<IParameterDefinition[] | undefined>();
+export abstract class TemplateScope implements IParameterDefinitionsSourceProvider {
     private _variableDefinitions: CachedValue<IVariableDefinition[] | undefined> = new CachedValue<IVariableDefinition[] | undefined>();
     private _functionDefinitions: CachedValue<UserFunctionNamespaceDefinition[] | undefined> = new CachedValue<UserFunctionNamespaceDefinition[] | undefined>();
     private _resources: CachedValue<IResource[] | undefined> = new CachedValue<IResource[] | undefined>();
-    private _parameterValues: CachedValue<IParameterValuesSource | undefined> = new CachedValue<IParameterValuesSource | undefined>();
 
     constructor(
+        public readonly parent: TemplateScope | undefined,
         public readonly document: IJsonDocument, // The document that contains this scope
+        /** The object that the scope applies to (expressions inside this object will use this scope for evaluation) */
         public readonly rootObject: Json.ObjectValue | undefined,
-        // Will be undefined if this scope is not a deployment (e.g. it's a user function scope).
-        // If it is a deployment scope but the schema is invalid, deploymentScope will be undefined and
-        //   contains kind=unknown
-        public readonly deploymentScope: IDeploymentScopeReference | undefined,
+        /**
+         * The scope of the deployment if this represents a deployment (RG, subscription, MG, tenant)
+         * Undefined if this scope is not a deployment (e.g. it's a user function scope).
+         * If it is a deployment scope but the schema is invalid, deploymentScope will be undefined and
+         *  contains kind=unknown
+         */
+        public readonly deploymentSchema: IDeploymentSchemaReference | undefined,
         // tslint:disable-next-line:variable-name
         public readonly __debugDisplay: string // Provides context for debugging
     ) {
-    }
-
-    public get isDeployment(): boolean {
-        return !!this.deploymentScope;
     }
 
     public readonly abstract scopeKind: TemplateScopeKind;
@@ -66,9 +66,14 @@ export abstract class TemplateScope implements IParameterDefinitionsSource {
     /**
      * Indicates whether this scope's params, vars and namespaces are unique.
      * False if it shares its members with its parents.
-     * Note that resources are always unique for a scope.
+     * Note that resources are always unique to a scope.
      */
     public readonly hasUniqueParamsVarsAndFunctions: boolean = true;
+
+    /**
+     * True if this scope is external to the hosting template file (i.e., it's a linked deployment template)
+     */
+    public readonly isExternal: boolean = false;
 
     /**
      * The root object that owns the parameters, variables and user functions that are used by
@@ -82,11 +87,6 @@ export abstract class TemplateScope implements IParameterDefinitionsSource {
         return this.rootObject;
     }
 
-    // undefined means not supported in this context
-    protected getParameterDefinitions(): IParameterDefinition[] | undefined {
-        // undefined means not supported in this context
-        return undefined;
-    }
     protected getVariableDefinitions(): IVariableDefinition[] | undefined {
         // undefined means not supported in this context
         return undefined;
@@ -107,9 +107,12 @@ export abstract class TemplateScope implements IParameterDefinitionsSource {
         return undefined;
     }
 
+    protected abstract getParameterDefinitionsSource(): IParameterDefinitionsSource;
+
     public get parameterDefinitions(): IParameterDefinition[] {
-        return this._parameterDefinitions.getOrCacheValue(() => this.getParameterDefinitions())
-            ?? [];
+        // Note: This must not be cached, as a deployment template's parameter definitions can change when
+        //   linked template processing is completed.
+        return this.getParameterDefinitionsSource().parameterDefinitions;
     }
 
     public get variableDefinitions(): IVariableDefinition[] {
@@ -129,7 +132,11 @@ export abstract class TemplateScope implements IParameterDefinitionsSource {
     }
 
     public get parameterValuesSource(): IParameterValuesSource | undefined {
-        return this._parameterValues.getOrCacheValue(() => this.getParameterValuesSource());
+        return this.getParameterValuesSource();
+    }
+
+    public get parameterDefinitionsSource(): IParameterDefinitionsSource {
+        return this.getParameterDefinitionsSource();
     }
 
     public get childScopes(): TemplateScope[] {
@@ -140,8 +147,9 @@ export abstract class TemplateScope implements IParameterDefinitionsSource {
             }
         }
 
-        // If it's not unique, we'll end up getting the parent's function definitions
-        // instead of our own
+        // Get function definition scopes
+        // (If it's not unique, we'd end up getting the parent's function definitions
+        // instead of our own, so ignore)
         if (this.hasUniqueParamsVarsAndFunctions) {
             for (let namespace of this.namespaceDefinitions) {
                 for (let member of namespace.members) {
@@ -160,8 +168,8 @@ export abstract class TemplateScope implements IParameterDefinitionsSource {
             let parameterNameLC = unquotedParameterName.toLowerCase();
 
             // Find the last definition that matches, because that's what Azure does if there are matching names
-            for (let i = this.parameterDefinitions.length - 1; i >= 0; --i) {
-                let pd = this.parameterDefinitions[i];
+            for (let i = this.parameterDefinitionsSource.parameterDefinitions.length - 1; i >= 0; --i) {
+                let pd = this.parameterDefinitionsSource.parameterDefinitions[i];
                 if (pd.nameValue.toString().toLowerCase() === parameterNameLC) {
                     return pd;
                 }
@@ -173,14 +181,20 @@ export abstract class TemplateScope implements IParameterDefinitionsSource {
 
     // Search is case-insensitive
     public getFunctionNamespaceDefinition(namespaceName: string): UserFunctionNamespaceDefinition | undefined {
-        assert(!!namespaceName, "namespaceName cannot be null, undefined, or empty");
+        if (!namespaceName) {
+            return undefined;
+        }
+
         let namespaceNameLC = namespaceName.toLowerCase();
         return this.namespaceDefinitions.find((nd: UserFunctionNamespaceDefinition) => nd.nameValue.toString().toLowerCase() === namespaceNameLC);
     }
 
     // Search is case-insensitive
     public getUserFunctionDefinition(namespace: string | UserFunctionNamespaceDefinition, functionName: string): UserFunctionDefinition | undefined {
-        assert(!!functionName, "functionName cannot be null, undefined, or empty");
+        if (!functionName) {
+            return undefined;
+        }
+
         let nd = typeof namespace === 'string' ? this.getFunctionNamespaceDefinition(namespace) : namespace;
         if (nd) {
             let result = nd.getMemberDefinition(functionName);
@@ -244,5 +258,15 @@ export abstract class TemplateScope implements IParameterDefinitionsSource {
 
     public get isInUserFunction(): boolean {
         return this.scopeKind === TemplateScopeKind.UserFunction;
+    }
+
+    public get parentWithUniqueParamsVarsAndFunctions(): TemplateScope {
+        let parent = this.parent;
+        while (!parent?.hasUniqueParamsVarsAndFunctions) {
+            parent = parent?.parent;
+        }
+
+        assert(parent, "Should have found parent with unique params/vars/functions (top-level should be unique)");
+        return parent;
     }
 }

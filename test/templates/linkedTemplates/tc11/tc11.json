@@ -1,0 +1,28 @@
+{
+    // "Missing parameters - no 'parameters' object under linked template parameters"
+
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+    },
+    "functions": [],
+    "variables": {
+        "v1": 123,
+        "v2": 321
+    },
+    "resources": [
+        {
+            "name": "linkedDeployment1",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-06-01",
+            "properties": {
+                "mode": "Incremental",
+                // ERROR: Missing values for stringParam and intParam (there's no 'parameters' object)
+                "templateLink": {
+                    "relativePath": "subfolder/child.json"
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}

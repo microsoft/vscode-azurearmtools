@@ -1,0 +1,77 @@
+{
+    // Verify correct scope of expressions, variables, parameters
+
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "mainTemplateParam": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            },
+            "defaultValue": "1"
+        },
+        "location": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            },
+            "defaultValue": "uswest"
+        }
+    },
+    "functions": [
+        {
+            "namespace": "udf",
+            "members": {
+                "mainTemplateFunc": {
+                    "parameters": [
+                        {
+                            "name": "p1",
+                            "type": "string"
+                        },
+                        {
+                            "name": "p2",
+                            "type": "string"
+                        }
+                    ],
+                    "output": {
+                        "value": "[concat(parameters('p1'), parameters('p2'))]",
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    ],
+    "variables": {
+        "mainTemplateVar": ".0.0.0"
+    },
+    "resources": [
+        {
+            "name": "linkedDeployment1",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-06-01",
+            "properties": {
+                "mode": "Incremental",
+                // ERROR: Missing values for stringParam and intParam (there's no 'parameters' object)
+                "templateLink": {
+                    // This expression should be evaluated using the top-level scope (should be valid and should evaluate to "1.0.0.0")
+                    "contentVersion": "[udf.mainTemplateFunc(parameters('mainTemplateParam'), variables('mainTemplateVar'))]",
+                    "relativePath": "./subfolder/../subfolder/child.json"
+                },
+                "parameters": {
+                    "childIntParam": {
+                        "value": 0
+                    },
+                    "childStringParam": {
+                        "value": ""
+                    },
+                    "location": {
+                        // This expression should be evaluated using the top-level parameter 'location'
+                        "value": "[parameters('location')]"
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}

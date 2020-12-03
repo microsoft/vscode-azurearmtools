@@ -5,9 +5,9 @@
 
 import * as Json from "../../../language/json/JSON";
 import { findSchemaInfo } from "../schemas";
-import { IDeploymentScopeReference } from "./IDeploymentScopeReference";
+import { IDeploymentSchemaReference } from "./IDeploymentSchemaReference";
 
-export function getDeploymentScope(schemaStringValue: Json.StringValue | undefined): IDeploymentScopeReference {
+export function getDeploymentScopeReference(schemaStringValue: Json.StringValue | undefined): IDeploymentSchemaReference {
     const schemaUri = schemaStringValue?.unquotedValue;
     const matchingInfo = schemaUri ? findSchemaInfo(schemaUri) : undefined;
     return {

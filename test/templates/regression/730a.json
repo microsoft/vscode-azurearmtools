@@ -98,18 +98,18 @@
                 "description": "Number of VMs to be deployed"
             }
         },
-        "osDiskSizeGB" : {
+        "osDiskSizeGB": {
             "type": "int",
             "defaultValue": 128,
             "metadata": {
-               "description": "OS Disk size in GB"
+                "description": "OS Disk size in GB"
             }
         },
         "osDiskStorageAccountType": {
             "type": "string",
             "defaultValue": "Standard_LRS",
             "metadata": {
-               "description": "OS Disk storage account type, Possible values include: 'Standard_LRS', 'Premium_LRS', 'StandardSSD_LRS', 'UltraSSD_LRS'"
+                "description": "OS Disk storage account type, Possible values include: 'Standard_LRS', 'Premium_LRS', 'StandardSSD_LRS', 'UltraSSD_LRS'"
             }
         },
         "dataDiskArray": {
@@ -144,7 +144,7 @@
                 "name": "vmCopy",
                 "count": "[parameters('vmCount')]"
             },
-            "apiVersion": "2019-10-01",
+            "apiVersion": "2020-06-01",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "expressionEvaluationOptions": {
@@ -191,7 +191,7 @@
                         "value": "[parameters('virtualMachinesSize')]"
                     },
                     "osDiskSizeGB": {
-                        "value" : "[parameters('osDiskSizeGB')]"
+                        "value": "[parameters('osDiskSizeGB')]"
                     },
                     "osDiskStorageAccountType": {
                         "value": "[parameters('osDiskStorageAccountType')]"
