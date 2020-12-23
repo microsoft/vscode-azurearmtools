@@ -209,6 +209,12 @@ suite("AzureRMAssets", () => {
                     "maximumArguments": 1
                     },
                     {
+                    "name": "pickZones",
+                    "expectedUsage": "pickZones(providerNamespace, resourceType, location, [numberOfZones], [offset])",
+                    "minimumArguments": 3,
+                    "maximumArguments": 5
+                    },
+                    {
                     "name": "providers",
                     "expectedUsage": "providers(providerNamespace, [resourceType])",
                     "minimumArguments": 1,
