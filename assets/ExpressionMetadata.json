@@ -640,6 +640,13 @@
             "maximumArguments": 1
         },
         {
+            "name": "pickZones",
+            "expectedUsage": "pickZones(providerNamespace, resourceType, location, [numberOfZones], [offset])",
+            "description": "Determines whether a resource type supports zones for a region.",
+            "minimumArguments": 3,
+            "maximumArguments": 5
+        },
+        {
             "name": "providers",
             "expectedUsage": "providers(providerNamespace, [resourceType])",
             "description": "Return information about a resource provider and its supported resource types. If not type is provided, all of the supported types are returned.",
