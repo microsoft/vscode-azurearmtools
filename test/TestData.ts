@@ -65,7 +65,6 @@ export function allTestDataExpectedCompletions(startIndex: number, length: numbe
         expectedMulCompletion(startIndex, length),
         expectedPadLeftCompletion(startIndex, length),
         expectedParametersCompletion(startIndex, length),
-        expectedPickZonesCompletion(startIndex, length),
         expectedProvidersCompletion(startIndex, length),
         expectedReferenceCompletion(startIndex, length),
         expectedReplaceCompletion(startIndex, length),
@@ -164,10 +163,6 @@ export function expectedPadLeftCompletion(startIndex: number, length: number): C
 
 export function expectedParametersCompletion(startIndex: number, length: number): Completion.Item {
     return newCompletionItem("parameters", "parameters", new Span(startIndex, length), Completion.CompletionKind.tleFunction, "(function) parameters(parameterName)", "Returns a parameter value. The specified parameter name must be defined in the parameters section of the template.");
-}
-
-export function expectedPickZonesCompletion(startIndex: number, length: number): Completion.Item {
-    return newCompletionItem("pickZones", "pickZones", new Span(startIndex, length), Completion.CompletionKind.tleFunction, "(function) pickZones(providerNamespace, resourceType, location, [numberOfZones], [offset])", "Determines whether a resource type supports zones for a region.");
 }
 
 export function expectedProvidersCompletion(startIndex: number, length: number): Completion.Item {
