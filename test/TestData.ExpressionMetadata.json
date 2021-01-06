@@ -1,5 +1,13 @@
 {
-    "$schema": "../assets/schemas/ExpressionMetadata.schema.json",
+    "$comment1": "============== PLEASE READ! ==============",
+    "$comment2": "Please do not add to or make changes to the functions in this file when modifying ExpressionMetadata.json",
+    "$comment3": "This file is meant to be used only for unit tests in order to keep authors from having to alter testcases",
+    "$comment4": "  when updating ExpressionMetadata.json.",
+    "$comment5": "Thus this file will not be up to date with ExpressionMetadata.json, and should only be changed if new scenarios are",
+    "$comment6": "  need for the unit tests.",
+    "$comment7": "Note that some functional tests *do* use ExpressionMetadata.json, on an opt-in basis",
+    "$comment9": "==========================================",
+    "$schema": "../assets/ExpressionMetadata.schema.json",
     "functionSignatures": [
         {
             "name": "add",
