@@ -271,6 +271,11 @@ Use the following wiki article to help troubleshoot these known issues.
 - [VS Code Azure Resource Manager snippets and cross-platform deployment scripts](https://go.microsoft.com/fwlink/?LinkID=733962)
 - [Azure Quickstart Templates](https://go.microsoft.com/fwlink/?LinkID=734038)
 
+## Visualizing ARM Templates
+Another helpful extension for authoring ARM templates is the [ARM Viewer for VS Code extension](https://marketplace.visualstudio.com/items?itemName=bencoleman.armview). This extension displays a graphical preview of ARM templates. The view will show all resources with the official Azure icons and also linkage between the resources.
+
+You can find details on it's features and usage, visit the GitHub repo here: https://github.com/benc-uk/armview-vscode#usage
+
 ## Contributing
 
 There are several ways you can contribute to our [repo](https://github.com/Microsoft/vscode-azurearmtools):
