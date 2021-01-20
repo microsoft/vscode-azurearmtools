@@ -27,6 +27,7 @@ suite("Acceptance validation tests (all sources)", () => {
             []);
     });
 
+    /* TODO: blocked by https://github.com/microsoft/vscode-azurearmtools/issues/1143
     createAcceptanceTest(
         'templates/new-vm.jsonc',
         {
@@ -40,8 +41,9 @@ suite("Acceptance validation tests (all sources)", () => {
 
             // Unrelated errors:
             `Warning: For full schema validation, consider updating the value to one of the following: \"2016-05-15\". It is possible that the current resource version is valid but that a schema has not been generated. For more information see https://aka.ms/arm-tools-apiversion. (arm-template (schema)) [241,13-241,25]`,
-            `Warning: For full schema validation, consider updating the value to one of the following: \"2016-12-01\". It is possible that the current resource version is valid but that a schema has not been generated. For more information see https://aka.ms/arm-tools-apiversion. (arm-template (schema)) [294,29-294,41]`
+            `Warning: For full schema validation, consider updating the value to one of the following: \"2016-12-01\". It is possible that the current resource version is valid but that a schema has not been generated. For more information see https://aka.ms/arm-tools-apiversion. (arm-template (schema)) [294,29-294,41]`,
         ]);
+    */
 
     createAcceptanceTest(
         'templates/language-service-p0.template.json',
