@@ -13,7 +13,7 @@
     "resources": [
         {
             "type": "Microsoft.Authorization/roleAssignments",
-            "apiVersion": "2015-07-01",
+            "apiVersion": "2017-09-01", // "apiVersion": "2015-07-01",
             "name": "mgname-test",
             // THIS SHOULD FAIL IN RG DEPLOYMENT
             "location": "[deployment().location]",

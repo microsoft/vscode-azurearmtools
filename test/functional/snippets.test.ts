@@ -360,6 +360,9 @@ const overrideIgnoreSchemaValidation: { [name: string]: boolean } = {
     */
     "Public IP Prefix": true,
 
+    // TODO: Blocked by https://github.com/microsoft/vscode-azurearmtools/issues/1143
+    "Recovery Service Vault": true,
+
     /* TODO:
     +   'Value must be one of the following values: "2015-05-01-preview", "2015-06-15", "2016-03-30", "2018-04-01", "2018-06-01", "2018-07-01", "2019-04-01", "2019-06-01", "2019-07-01", "2019-08-01", "2019-09-01"'
     */
