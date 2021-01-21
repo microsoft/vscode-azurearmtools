@@ -225,7 +225,7 @@ To assist with navigating complex expressions or multi-line strings, VS Code has
 - Mac: Cmd+Shift+\
 - Windows: Ctrl+Shift+\
 - Windows with spanish keyboard: Ctrl+Shift+|
-- Windows with german keyboard: Ctrl+Shift+^
+- Windows with German keyboard: Ctrl+Shift+^
 
 ### Miscellaneous Features
 
