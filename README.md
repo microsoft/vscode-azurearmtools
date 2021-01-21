@@ -221,7 +221,7 @@ Select a JSON string or a subset of an expression string then select the lightbu
 
 ![Image showing hovering over a multi-line string](./images/hover-to-format-string.png)
 
-To assist with navigating complex expressions or multi-line strings, VS Code has a ("Go to Bracket" command)[https://www.youtube.com/watch?v=iYUJeFeXPfw&ab_channel=Code2020]. You can use the (command palette)[https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette] or a keyboard shortcut:
+To assist with navigating complex expressions or multi-line strings, VS Code has a ["Go to Bracket" command](https://www.youtube.com/watch?v=iYUJeFeXPfw&ab_channel=Code2020). You can use the [command palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette) or a keyboard shortcut:
 Mac Cmd+Shift+\
 Windows Ctrl+Shift+\
 Windows with spanish keyboard Ctrl+Shift+|
