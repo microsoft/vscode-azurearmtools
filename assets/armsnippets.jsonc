@@ -154,7 +154,29 @@
         "context": "resources"
     },
     "Nested Deployment": {
-        "prefix": "arm-nested-template",
+        "prefix": "arm-nested-template-outer",
+        "body": [
+            "{",
+            "\t\"name\": \"${1:nestedDeployment1}\",",
+            "\t\"type\": \"Microsoft.Resources/deployments\",",
+            "\t\"apiVersion\": \"2020-06-01\",",
+            "\t\"properties\": {",
+            "\t\t\"mode\": \"Incremental\",",
+            "\t\t\"template\": {",
+            "\t\t\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\",",
+            "\t\t\t\"contentVersion\": \"1.0.0.0\",",
+            "\t\t\t\"variables\": {},",
+            "\t\t\t\"resources\": [],",
+            "\t\t\t\"outputs\": {}",
+            "\t\t}",
+            "\t}",
+            "}"
+        ],
+        "description": "Nested (inline) Outer-Scoped Deployment. Expressions reference the parameters of the parent scope.",
+        "context": "resources"
+    },
+    "Nested Deployment With Inner Scope": {
+        "prefix": "arm-nested-template-inner",
         "body": [
             "{",
             "\t\"name\": \"${1:nestedDeployment1}\",",
@@ -162,9 +184,11 @@
             "\t\"apiVersion\": \"2020-06-01\",",
             "\t\"properties\": {",
             "\t\t\"expressionEvaluationOptions\": {",
-            "\t\t\t\"scope\": \"${2|outer,inner|}\"",
+            "\t\t\t\"scope\": \"inner\"",
             "\t\t},",
             "\t\t\"mode\": \"Incremental\",",
+            "\t\t\"parameters\": {",
+            "\t\t},",
             "\t\t\"template\": {",
             "\t\t\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#\",",
             "\t\t\t\"contentVersion\": \"1.0.0.0\",",
@@ -176,7 +200,7 @@
             "\t}",
             "}"
         ],
-        "description": "Nested (inline) Deployment",
+        "description": "Nested (inline) Inner-Scoped Deployment. Defines its own local parameters.",
         "context": "resources"
     },
     "App Service Plan (Server Farm)": {
