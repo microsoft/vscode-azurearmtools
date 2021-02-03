@@ -2,6 +2,16 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.14.1 (2021-02-05)
+
+### Fixed
+- Give warning if the wrong schema might be wrong for the deployment resources being used [#1055](https://github.com/microsoft/vscode-azurearmtools/issues/1055)
+- Add support for pickZones() function (thanks Brian Golden @bgold09!) [#1130](https://github.com/microsoft/vscode-azurearmtools/issues/1130)
+- Add mention of ARM Viewer to README [#1140](https://github.com/microsoft/vscode-azurearmtools/issues/1140)
+- Upgrade Microsoft.Resources/deployments apiVersion to support relativePath property [#1137](https://github.com/microsoft/vscode-azurearmtools/issues/1137)
+- Update schemas cache
+- Split nested snippet into inner/outer [#1157](https://github.com/microsoft/vscode-azurearmtools/issues/1157)
+
 ## Version 0.14.0 (2020-11-10)
 
 ### Added
