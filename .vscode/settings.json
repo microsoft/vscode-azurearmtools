@@ -39,5 +39,5 @@
             "url": "assets/schemas/snippets.schema.json"
         }
     ],
-    "typescript.tsdk": "node_modules\\typescript\\lib"
+    "typescript.tsdk": "node_modules/typescript/lib"
 }
