@@ -194,6 +194,11 @@ async function getDotNetPath(): Promise<string | undefined> {
 
         const overriddenDotNetExePath = workspace.getConfiguration(configPrefix).get<string>(configKeys.dotnetExePath);
         if (typeof overriddenDotNetExePath === "string" && !!overriddenDotNetExePath) {
+            ext.outputChannel.appendLine(
+                `WARNING: ${configPrefix}.${configKeys.dotnetExePath} is set. ` +
+                `This overrides the automatic download and usage of the dotnet runtime and should only be used to work around dotnet installation issues. ` +
+                `If you encounter problems, please try clearing this setting.`);
+            ext.outputChannel.appendLine("");
             if (!(await isFile(overriddenDotNetExePath))) {
                 throw new Error(`Invalid path given for ${configPrefix}.${configKeys.dotnetExePath} setting. Must point to dotnet executable. Could not find file ${overriddenDotNetExePath}`);
             }
