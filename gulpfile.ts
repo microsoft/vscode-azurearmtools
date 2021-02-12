@@ -47,7 +47,7 @@ const env = process.env;
 const preserveStagingFolder = !!env.ARMTOOLS_PRESERVE_STAGING_FOLDER;
 
 // Points to a local folder path to retrieve the language server from when packaging (for packaging private builds)
-// e.g. export LANGUAGE_SERVER_PACKAGING_PATH=~/repos/ARM-LanguageServer/artifacts/bin/Microsoft.ArmLanguageServer/Debug/netcoreapp3.1
+// e.g. (MacOS): "export LANGUAGE_SERVER_PACKAGING_PATH=~/repos/ARM-LanguageServer/artifacts/bin/Microsoft.ArmLanguageServer/Debug/netcoreapp3.1"
 const languageServerPackagingPath = env.LANGUAGE_SERVER_PACKAGING_PATH;
 
 // Official builds will download and include the language server bits (which are licensed differently than the code in the public repo)
