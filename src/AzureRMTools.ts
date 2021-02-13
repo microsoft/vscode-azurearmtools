@@ -47,7 +47,6 @@ import { escapeNonPaths } from "./util/escapeNonPaths";
 import { expectTemplateDocument } from "./util/expectDocument";
 import { getRenameError } from "./util/getRenameError";
 import { Histogram } from "./util/Histogram";
-import { NormalizedMap } from './util/NormalizedMap';
 import { pathExists } from "./util/pathExists";
 import { readUtf8FileWithBom } from "./util/readUtf8FileWithBom";
 import { Stopwatch } from "./util/Stopwatch";
@@ -1745,15 +1744,6 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             const rootTemplate = this.getOpenedDeploymentTemplate(rootTemplateUri);
 
             if (rootTemplate) {
-                const loadedTemplatesMap: NormalizedMap<vscode.Uri, DeploymentTemplateDoc> = new NormalizedMap<vscode.Uri, DeploymentTemplateDoc>(
-                    getNormalizedDocumentKey
-                );
-                for (const entry of this._deploymentDocuments) {
-                    if (entry[1] instanceof DeploymentTemplateDoc) {
-                        loadedTemplatesMap.set(entry[1].documentUri, entry[1]);
-                    }
-                }
-
                 for (const doc of vscode.workspace.textDocuments) {
                     const rootTemplateKey = getNormalizedDocumentKey(vscode.Uri.parse(e.rootTemplateUri, true));
                     if (getNormalizedDocumentKey(doc.uri) === rootTemplateKey) {

@@ -254,15 +254,17 @@ export class LinkedTemplateCodeLens extends ResolvableCodeLens {
                 title += " " + "(validation disabled)";
             } else if (firstLinkedTemplateRef) {
                 title += " " + "(validation enabled)";
+            } else {
+                title += " " + "(waiting for language server)";
             }
         } else {
             title = "Linked template  ($(warning) Validation with uri not yet supported, consider using relativePath property)";
         }
 
-        let loadState: string | undefined;
+        let langServerLoadState: string | undefined;
 
         // If language server not running yet, show language server state instead of file load state
-        loadState = LinkedTemplateCodeLens.getLoadStateFromLanguageServerStatus();
+        langServerLoadState = LinkedTemplateCodeLens.getLoadStateFromLanguageServerStatus();
 
         let linkedUri: Uri | undefined;
         let linkedRelativePath: string | undefined;
@@ -280,16 +282,16 @@ export class LinkedTemplateCodeLens extends ResolvableCodeLens {
             console.warn(parseError(error).message);
         }
 
-        if (firstLinkedTemplateRef && !loadState) {
+        if (firstLinkedTemplateRef && !langServerLoadState) {
             if (linkedRelativePath) {
                 title += `: "${linkedRelativePath}"`;
             }
 
-            loadState = LinkedTemplateCodeLens.getLinkedFileLoadStateLabelSuffix(firstLinkedTemplateRef);
+            langServerLoadState = LinkedTemplateCodeLens.getLinkedFileLoadStateLabelSuffix(firstLinkedTemplateRef);
         }
 
-        if (loadState) {
-            title += ` - ${loadState}`;
+        if (langServerLoadState) {
+            title += ` - ${langServerLoadState}`;
         }
 
         const lenses: LinkedTemplateCodeLens[] = [new LinkedTemplateCodeLens(scope, span, title, linkedUri)];
