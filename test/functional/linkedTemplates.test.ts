@@ -331,6 +331,8 @@ suite("Linked templates functional tests", () => {
         }
     );
 
+    // tslint:disable-next-line: no-suspicious-comment
+    /* TODO: Hangs on build machine
     createLinkedTemplateTest(
         "tc08",
         "2 levels deep, error in parameters to 2nd level, child1.json also has a parameter file - child2 gets traversed via the opened child1 (since child1 has a param file)",
@@ -359,6 +361,7 @@ suite("Linked templates functional tests", () => {
             ]
         }
     );
+    */
 
     createLinkedTemplateTest(
         "tc09",
