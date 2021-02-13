@@ -124,9 +124,9 @@ async function tryOpenLinkedFile(
         // Load into a text document (this does not cause the document to be shown)
         // Note: If the URI is already opened, this returns the existing document
         const document = await workspace.openTextDocument(localPath);
-        ext.outputChannel.appendLine(`... Opened linked file ${localPath}, langid = ${document.languageId}`);
+        // ext.outputChannel.appendLine(`... Opened linked file ${localPath}, langid = ${document.languageId}`);
         if (document.languageId !== armTemplateLanguageId) {
-            ext.outputChannel.appendLine(`... Setting langid to ${armTemplateLanguageId}`);
+            // ext.outputChannel.appendLine(`... Setting langid to ${armTemplateLanguageId}`);
             context.telemetry.properties.isLinkedTemplate = 'true';
             setLangIdToArm(document, context);
         }

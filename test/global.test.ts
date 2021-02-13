@@ -5,11 +5,13 @@
 
 import * as fse from 'fs-extra';
 import * as mocha from 'mocha';
+import * as path from 'path';
 import * as rimraf from 'rimraf';
 import * as vscode from 'vscode';
 import { armTemplateLanguageId, configKeys, configPrefix, ext, stopArmLanguageServer } from "../extension.bundle";
 import { displayCacheStatus } from './support/cache';
 import { delay } from "./support/delay";
+import { publishVsCodeLogs } from './support/publishVsCodeLogs';
 import { createTestLog, deleteTestLog, testLog } from './support/testLog';
 import { useTestSnippets } from './support/TestSnippets';
 import { logsFolder } from './testConstants';
@@ -70,9 +72,9 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
     await displayCacheStatus();
     // await publishCache(path.join(logsFolder, 'post-cache'));
 
-    // await publishVsCodeLogs('ms-dotnettools.vscode-dotnet-runtime');
-    // await publishVsCodeLogs(path.basename(ext.context.logPath));
-    // await publishVsCodeLogs(undefined);
+    await publishVsCodeLogs('ms-dotnettools.vscode-dotnet-runtime');
+    await publishVsCodeLogs(path.basename(ext.context.logPath));
+    await publishVsCodeLogs(undefined);
 
     /* Restoring settings doesn't seem to work at this point
     console.log('Restoring settings');
