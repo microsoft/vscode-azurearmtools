@@ -77,6 +77,7 @@ class ExtensionVariables {
     public get languageServerStateChanged(): vscode.Event<void> {
         return this._languageServerStateEmitter.event;
     }
+    public languageServerStartupError: string | undefined;
 
     // Suite support - lets us know when diagnostics have been completely published for a file
     // tslint:disable-next-line: no-suspicious-comment

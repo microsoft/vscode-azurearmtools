@@ -32,7 +32,7 @@ suite("TemplatePositionContext.completions", () => {
                     let keepInClosureForEasierDebugging = testName;
                     keepInClosureForEasierDebugging = keepInClosureForEasierDebugging;
 
-                    const dt = new DeploymentTemplateDoc(documentText, fakeId);
+                    const dt = new DeploymentTemplateDoc(documentText, fakeId, 0);
                     const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex(index, undefined);
 
                     let completionItems: Completion.Item[] = (await pc.getCompletionItems(undefined, 2)).items;

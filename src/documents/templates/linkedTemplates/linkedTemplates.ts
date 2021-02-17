@@ -44,6 +44,7 @@ enum PathType {
 
 export interface INotifyTemplateGraphArgs {
     rootTemplateUri: string;
+    rootTemplateDocVersion: number;
     linkedTemplates: ILinkedTemplateReference[];
     fullValidationEnabled: boolean;
     isComplete: boolean; // If there were validation errors, the graph might not be complete

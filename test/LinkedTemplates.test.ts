@@ -5,9 +5,9 @@
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length no-unnecessary-class
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name no-constant-condition
 
-import { isWin32 } from "../extension.bundle";
 import { testDiagnostics, testDiagnosticsFromFile } from "./support/diagnostics";
 import { testWithLanguageServer } from "./support/testWithLanguageServer";
+import { isWin32 } from "./testConstants";
 
 suite("Linked templates regressions", () => {
     suite("variables and parameters inside templateLink object refer to the parent's scope", () => {

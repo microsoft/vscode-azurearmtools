@@ -20,6 +20,7 @@ import { Stream } from 'stream';
 import { gulp_webpack } from 'vscode-azureextensiondev';
 import { langServerDotnetVersion, languageServerFolderName } from './src/constants';
 import { getTempFilePath } from './test/support/getTempFilePath';
+import { DEFAULT_TESTCASE_TIMEOUT_MS } from "./test/testConstants";
 
 // tslint:disable:no-require-imports
 import decompress = require('gulp-decompress');
@@ -86,8 +87,9 @@ function test(): cp.ChildProcess {
     env.DEBUGTELEMETRY = 'verbose';
     env.CODE_TESTS_PATH = path.join(__dirname, 'dist/test');
     // This is the timeout for individual tests
-    env.MOCHA_timeout = "120000";
+    env.MOCHA_timeout = String(DEFAULT_TESTCASE_TIMEOUT_MS);
     env.MOCHA_enableTimeouts = "1";
+    env.MOCHA_grep = "linked.*tc"; //asdf
     return cp.spawn('node', ['./node_modules/vscode/bin/test'], { stdio: 'inherit', env });
 }
 
@@ -353,12 +355,14 @@ async function verifyTestsReferenceOnlyExtensionBundle(testFolder: string): Prom
             const matches = contents.match(regex);
             if (matches) {
                 for (let match of matches) {
-                    errors.push(
-                        os.EOL +
-                        `${path.relative(__dirname, file)}: error: Test code may not import from the src folder, it should import from '../extension.bundle'${os.EOL}` +
-                        `  Error is here: ===> ${match}${os.EOL}`
-                    );
-                    console.error(match);
+                    if (match.includes('.shared.ts')) {
+                        errors.push(
+                            os.EOL +
+                            `${path.relative(__dirname, file)}: error: Test code may not import from the src folder, it should import from '../extension.bundle'${os.EOL}` +
+                            `  Error is here: ===> ${match}${os.EOL}`
+                        );
+                        console.error(match);
+                    }
                 }
             }
         }

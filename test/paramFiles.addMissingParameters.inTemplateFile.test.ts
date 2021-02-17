@@ -52,6 +52,7 @@ suite("Add missing parameters for nested/linked templates", () => {
                 const { dt: childDt } = await parseTemplateWithMarkers(linkedTemplate, undefined, { fromFile: true, documentUri: childUri, tabSize });
                 const graph: INotifyTemplateGraphArgs = {
                     rootTemplateUri: templateUri.toString(),
+                    rootTemplateDocVersion: 1,
                     linkedTemplates: [
                         {
                             fullUri: childUri.toString(),

@@ -12,13 +12,13 @@ export async function simulateCompletion(
     triggerCharacter: string | undefined
 ): Promise<void> {
     let pos = editor.selection.anchor;
-    let deploymentTemplate: DeploymentTemplateDoc = new DeploymentTemplateDoc(editor.document.getText(), editor.document.uri);
+    let deploymentTemplate: DeploymentTemplateDoc = new DeploymentTemplateDoc(editor.document.getText(), editor.document.uri, editor.document.version);
     let pc = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(pos.line, pos.character, undefined, true);
 
     if (triggerCharacter) {
         // Type the trigger character
         const newContents = await typeInDocumentAndWait(editor, triggerCharacter);
-        deploymentTemplate = new DeploymentTemplateDoc(newContents, editor.document.uri);
+        deploymentTemplate = new DeploymentTemplateDoc(newContents, editor.document.uri, editor.document.version);
         pos = editor.selection.anchor;
         pc = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(pos.line, pos.character, undefined, true);
     }
@@ -30,7 +30,7 @@ export async function simulateCompletion(
         // Trigger again after entering a newline
         const newContents = await typeInDocumentAndWait(editor, '\n');
 
-        deploymentTemplate = new DeploymentTemplateDoc(newContents, editor.document.uri);
+        deploymentTemplate = new DeploymentTemplateDoc(newContents, editor.document.uri, editor.document.version);
         pos = editor.selection.anchor;
         pc = deploymentTemplate.getContextFromDocumentLineAndColumnIndexes(pos.line, pos.character, undefined, true);
 

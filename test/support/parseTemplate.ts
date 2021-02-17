@@ -64,7 +64,7 @@ export async function parseTemplateWithMarkers(
 
     const withReplacements = options?.replacements ? replaceInTemplate(template, options.replacements) : template;
     const { unmarkedText, markers } = getDocumentMarkers(withReplacements, options);
-    const dt: DeploymentTemplateDoc = new DeploymentTemplateDoc(unmarkedText, options?.documentUri ?? Uri.file("/parseTemplate template.json"));
+    const dt: DeploymentTemplateDoc = new DeploymentTemplateDoc(unmarkedText, options?.documentUri ?? Uri.file("/parseTemplate template.json"), 0);
 
     type DiagIssue = {
         line: number;
@@ -114,7 +114,7 @@ export async function parseParametersWithMarkers(
     json: string | Partial<IDeploymentParametersFile>
 ): Promise<{ dp: DeploymentParametersDoc; unmarkedText: string; markers: Markers }> {
     const { unmarkedText, markers } = getDocumentMarkers(json);
-    const dp: DeploymentParametersDoc = new DeploymentParametersDoc(unmarkedText, Uri.file("/test parameter file.json"));
+    const dp: DeploymentParametersDoc = new DeploymentParametersDoc(unmarkedText, Uri.file("/test parameter file.json"), 0);
 
     // Always run these even if not checking against expected, to verify nothing throws
     // tslint:disable-next-line:no-unused-expression

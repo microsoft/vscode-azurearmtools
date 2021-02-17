@@ -36,7 +36,7 @@ export abstract class DeploymentDocument implements IJsonDocument {
      * @param _documentText The string text of the document
      * @param _documentUri The location of the document
      */
-    constructor(private _documentText: string, private _documentUri: Uri) {
+    constructor(private _documentText: string, private _documentUri: Uri, public readonly documentVersion: number) {
         nonNullValue(_documentUri, "_documentUri");
 
         this._jsonParseResult = Json.parse(_documentText);

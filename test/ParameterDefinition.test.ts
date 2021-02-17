@@ -11,7 +11,7 @@ import { DeploymentTemplateDoc, IJsonDocument, Json, ParameterDefinition, Span }
 suite("ParameterDefinition", () => {
     suite("constructor(Json.Property)", () => {
         test("with property with no metadata", () => {
-            const doc: IJsonDocument = new DeploymentTemplateDoc("", Uri.parse('https://doc'));
+            const doc: IJsonDocument = new DeploymentTemplateDoc("", Uri.parse('https://doc'), 0);
             const parameterName = new Json.StringValue(new Span(0, 13), "'parameterName'");
             const parameterDefinition = new Json.ObjectValue(new Span(16, 2), []);
             const property = new Json.Property(parameterName.span.union(parameterDefinition.span), parameterName, parameterDefinition);

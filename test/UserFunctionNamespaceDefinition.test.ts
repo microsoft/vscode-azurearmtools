@@ -13,7 +13,7 @@ const fakeSpan = new Span(10, 20);
 
 suite("UserFunctionNamespaceDefinition", () => {
     suite("constructor(Json.Property)", () => {
-        const dt = new DeploymentTemplateDoc("", Uri.file("/doc"));
+        const dt = new DeploymentTemplateDoc("", Uri.file("/doc"), 0);
 
         test("no namespace name (not valid)", () => {
             const namespaceName = createStringProperty("namespaceMisspelled", "Contoso");

@@ -110,7 +110,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }]
                     }
                 }),
-                fakeId);
+                fakeId, 0);
             assert(!!dt.topLevelScope.getVariableDefinition('diskNames'));
         });
 
@@ -124,7 +124,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }]
                     }
                 }),
-                fakeId);
+                fakeId, 0);
 
             // Right now we still create the variable
             // CONSIDER: Instead add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)
@@ -144,7 +144,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }]
                     }
                 }),
-                fakeId);
+                fakeId, 0);
 
             // Right now we just don't create the variable
             // CONSIDER: Instead add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)
@@ -161,7 +161,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }]
                     }
                 }),
-                fakeId);
+                fakeId, 0);
 
             // Right now we just don't create the variable
             // CONSIDER: Instead add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)
@@ -183,7 +183,7 @@ suite("Variable iteration (copy blocks)", () => {
                         "var2": "hello 2",
                     }
                 }),
-                fakeId);
+                fakeId, 0);
 
             assert.deepStrictEqual(
                 dt.topLevelScope.variableDefinitions.map(v => v.nameValue.unquotedValue),
@@ -394,7 +394,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }
                     }
                 }),
-                fakeId);
+                fakeId, 0);
             assert.deepStrictEqual(Json.asObjectValue(dt2.topLevelScope.getVariableDefinition('object')!.value)!.propertyNames, ["array1"]);
         });
 
@@ -412,7 +412,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }
                     }
                 }),
-                fakeId);
+                fakeId, 0);
 
             // Right now we don't process as a copy block.  Backend does and gives an error.
             // CONSIDER: Add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)
@@ -434,7 +434,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }
                     }
                 }),
-                fakeId);
+                fakeId, 0);
 
             // Right now we just don't process as a copy block
             // CONSIDER: Instead add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)
@@ -455,7 +455,7 @@ suite("Variable iteration (copy blocks)", () => {
                         }
                     }
                 }),
-                fakeId);
+                fakeId, 0);
 
             // Right now we just don't process as a copy block
             // CONSIDER: Instead add a parse error (https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1010078)

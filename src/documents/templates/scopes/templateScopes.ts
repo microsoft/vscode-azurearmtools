@@ -39,7 +39,7 @@ export class EmptyScope extends TemplateScope {
 
     constructor(
     ) {
-        super(undefined, new DeploymentTemplateDoc('', Uri.parse('https://emptydoc', true)), undefined, undefined, "Empty Scope");
+        super(undefined, new DeploymentTemplateDoc('', Uri.parse('https://emptydoc', true), 0), undefined, undefined, "Empty Scope");
     }
 
     protected getParameterDefinitionsSource(): IParameterDefinitionsSource {

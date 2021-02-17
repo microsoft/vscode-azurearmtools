@@ -3,8 +3,17 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as os from 'os';
 import * as path from 'path';
-import { basePath } from "../extension.bundle";
+
+export const DEFAULT_TESTCASE_TIMEOUT_MS = 2 * 60 * 1000;
+
+export const isWebpack: boolean = /^(false|0)?$/i.test(process.env.AZCODE_ARM_IGNORE_BUNDLE ?? '');
+
+export const isWin32: boolean = os.platform() === 'win32';
+export const isCaseSensitiveFileSystem: boolean = !isWin32;
+
+export const basePath = path.join(__dirname, isWebpack ? "" : "..", "..");
 
 // tslint:disable-next-line: strict-boolean-expressions
 export const DISABLE_SLOW_TESTS = !!/^(true|1)$/i.test(process.env.DISABLE_SLOW_TESTS || '');

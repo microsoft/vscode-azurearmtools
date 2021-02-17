@@ -14,7 +14,7 @@ import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
 import * as path from 'path';
 import { commands, languages, Range, Selection, TextDocument, TextEditor, window, workspace } from "vscode";
 import { armTemplateLanguageId } from "../extension.bundle";
-import { diagnosticsTimeout } from "./support/diagnostics";
+import { defaultDiagnosticsTimeoutMs } from "./support/diagnostics";
 import { ensureLanguageServerAvailable } from "./support/ensureLanguageServerAvailable";
 import { getTempFilePath } from "./support/getTempFilePath";
 import { resolveInTestFolder } from "./support/resolveInTestFolder";
@@ -24,7 +24,7 @@ const formatDocumentCommand = 'editor.action.formatDocument';
 const formatRangeCommand = 'editor.action.formatSelection';
 
 suite("Format document", function (this: ISuiteCallbackContext): void {
-    this.timeout(diagnosticsTimeout);
+    this.timeout(defaultDiagnosticsTimeoutMs);
 
     function testFormat(testName: string, source: string, expected: string, range?: Range | RegExp): void {
         testWithLanguageServer(testName, async function (this: ITestCallbackContext): Promise<void> {

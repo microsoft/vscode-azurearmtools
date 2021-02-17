@@ -16,7 +16,7 @@ class EditBuilder implements TextEditorEdit {
     }
 
     public insert(location: Position, value: string): void {
-        const dt = new DeploymentTemplateDoc(this.textEditorFake.document._textBuffer, Uri.file("/template.json"));
+        const dt = new DeploymentTemplateDoc(this.textEditorFake.document._textBuffer, Uri.file("/template.json"), 0);
         const index = dt.getDocumentCharacterIndex(location.line, location.character);
         const newText =
             this.textEditorFake.document._textBuffer.slice(0, index) +

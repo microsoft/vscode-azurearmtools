@@ -6,7 +6,7 @@
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
-import { Diagnostic, Event, EventEmitter, ProgressLocation, Uri, window, workspace } from 'vscode';
+import { Event, EventEmitter, ProgressLocation, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, ITelemetryContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
 import { acquireSharedDotnetInstallation } from '../acquisition/acquireSharedDotnetInstallation';
@@ -93,6 +93,7 @@ export function startArmLanguageServerInBackground(): void {
                     let dotnetExePath: string | undefined = await getDotNetPath();
                     if (!dotnetExePath) {
                         // Acquisition failed
+                        ext.languageServerStartupError = ".dotnet acquisition returned no path";
                         ext.languageServerState = LanguageServerState.Failed;
                         return;
                     }
@@ -101,6 +102,7 @@ export function startArmLanguageServerInBackground(): void {
 
                     ext.languageServerState = LanguageServerState.Running;
                 } catch (error) {
+                    ext.languageServerStartupError = `${parseError(error).message}: ${error instanceof Error ? error.stack : 'no stack'}`;
                     ext.languageServerState = LanguageServerState.Failed;
                     throw error;
                 }
@@ -168,21 +170,6 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
             revealOutputChannelOn: RevealOutputChannelOn.Error,
             synchronize: {
                 configurationSection: configPrefix
-            },
-            middleware: {
-                handleDiagnostics: (uri: Uri, diagnostics: Diagnostic[], _next: (uri: Uri, diagnostics: Diagnostic[]) => void): void => {
-                    let a = 1;
-                    a = a;
-                    // diagnostics.push(
-                    //     {
-                    //         message: `hi from middleware for ${uri.toString()}`,
-                    //         range: new Range(new Position(0, 0), new Position(0, 0)),
-                    //         severity: 0,
-                    //         source: "source"
-                    //     }
-                    // );
-                    _next(uri, diagnostics);
-                }
             }
         };
 

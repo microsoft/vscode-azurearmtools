@@ -80,10 +80,10 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     ext.context = context;
     ext.outputChannel = createAzExtOutputChannel(outputChannelName, configPrefix);
     ext.ui = new AzureUserInput(context.globalState);
-
     if (echoOutputChannelToConsole) {
         ext.outputChannel = new ConsoleOutputChannelWrapper(ext.outputChannel);
     }
+    registerUIExtensionVariables(ext);
 
     context.subscriptions.push(ext.completionItemsSpy);
 
@@ -91,8 +91,6 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     if (!ext.snippetManager.hasValue) {
         ext.snippetManager.value = SnippetManager.createDefault();
     }
-
-    registerUIExtensionVariables(ext);
 
     await callWithTelemetryAndErrorHandling('activate', async (actionContext: IActionContext): Promise<void> => {
         actionContext.telemetry.properties.isActivationEvent = 'true';
@@ -130,7 +128,10 @@ export function deactivateInternal(): void {
 
 export class AzureRMTools implements IProvideOpenedDocuments {
     private readonly _diagnosticsCollection: vscode.DiagnosticCollection;
+    // Key is normalized URI
     private readonly _deploymentDocuments: Map<string, DeploymentDocument> = new Map<string, DeploymentDocument>();
+    // Key is normalized URI
+    private readonly _cachedTemplateGraphs: Map<string, INotifyTemplateGraphArgs> = new Map<string, INotifyTemplateGraphArgs>();
     private readonly _filesAskedToUpdateSchemaThisSession: Set<string> = new Set<string>();
     private readonly _paramsStatusBarItem: vscode.StatusBarItem;
     private _areDeploymentTemplateEventsHookedUp: boolean = false;
@@ -408,6 +409,15 @@ export class AzureRMTools implements IProvideOpenedDocuments {
 
         if (deploymentDocument) {
             this._deploymentDocuments.set(documentPathKey, deploymentDocument);
+
+            if (deploymentDocument instanceof DeploymentTemplateDoc) {
+                // Temporarily assign the cached value of the template graph to this template.  This will be overridden once the
+                // new graph is received from the language server.
+                const templateGraph = this._cachedTemplateGraphs.get(documentPathKey);
+                if (templateGraph) {
+                    assignTemplateGraphToDeploymentTemplate(templateGraph, deploymentDocument, this);
+                }
+            }
         } else {
             this._deploymentDocuments.delete(documentPathKey);
         }
@@ -475,7 +485,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             let shouldParseFile = treatAsDeploymentTemplate || mightBeDeploymentTemplate(textDocument);
             if (shouldParseFile) {
                 // Do a full parse
-                let deploymentTemplate: DeploymentTemplateDoc = new DeploymentTemplateDoc(textDocument.getText(), documentUri);
+                let deploymentTemplate: DeploymentTemplateDoc = new DeploymentTemplateDoc(textDocument.getText(), documentUri, textDocument.version);
                 if (deploymentTemplate.hasArmSchemaUri()) {
                     treatAsDeploymentTemplate = true;
                 }
@@ -527,7 +537,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 let shouldParseParameterFile = treatAsDeploymentTemplate || mightBeDeploymentParameters(textDocument);
                 if (shouldParseParameterFile) {
                     // Do a full parse
-                    let deploymentParameters: DeploymentParametersDoc = new DeploymentParametersDoc(textDocument.getText(), textDocument.uri);
+                    let deploymentParameters: DeploymentParametersDoc = new DeploymentParametersDoc(textDocument.getText(), textDocument.uri, textDocument.version);
                     if (deploymentParameters.hasParametersSchema()) {
                         treatAsDeploymentParameters = true;
                     }
@@ -826,7 +836,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         const editor = await vscode.window.showTextDocument(uri);
 
         // The document might have changed since we asked, so find the $schema again
-        const currentTemplate = new DeploymentTemplateDoc(editor.document.getText(), editor.document.uri);
+        const currentTemplate = new DeploymentTemplateDoc(editor.document.getText(), editor.document.uri, editor.document.version);
         const currentSchemaValue: Json.StringValue | undefined = currentTemplate.schemaValue;
         if (currentSchemaValue && currentSchemaValue.unquotedValue === previousSchema) {
             const range = getVSCodeRangeFromSpan(currentTemplate, currentSchemaValue.unquotedSpan);
@@ -1401,7 +1411,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
 
         // Nope, have to read it from disk
         const contents = await readUtf8FileWithBom(uri.fsPath);
-        return new DeploymentTemplateDoc(contents, uri);
+        return new DeploymentTemplateDoc(contents, uri, 0);
     }
 
     /**
@@ -1419,7 +1429,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         // Nope, have to read it from disk
         // CONSIDER: Load it instead?
         const contents = await readUtf8FileWithBom(uri.fsPath);
-        return new DeploymentParametersDoc(contents, uri);
+        return new DeploymentParametersDoc(contents, uri, 0);
     }
 
     private getDocTypeForTelemetry(doc: DeploymentDocument): string {
@@ -1743,9 +1753,12 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             const rootTemplateUri = vscode.Uri.parse(e.rootTemplateUri);
             const rootTemplate = this.getOpenedDeploymentTemplate(rootTemplateUri);
 
+            // Cache the template graph results
+            const rootTemplateKey = getNormalizedDocumentKey(vscode.Uri.parse(e.rootTemplateUri, true));
+            this._cachedTemplateGraphs.set(rootTemplateKey, e);
+
             if (rootTemplate) {
                 for (const doc of vscode.workspace.textDocuments) {
-                    const rootTemplateKey = getNormalizedDocumentKey(vscode.Uri.parse(e.rootTemplateUri, true));
                     if (getNormalizedDocumentKey(doc.uri) === rootTemplateKey) {
                         assignTemplateGraphToDeploymentTemplate(e, rootTemplate, this);
 

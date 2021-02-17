@@ -102,8 +102,8 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
      * @param _documentText The string text of the document.
      * @param _documentUri A unique identifier for this document. Usually this will be a URI to the document.
      */
-    constructor(documentText: string, documentUri: Uri) {
-        super(documentText, documentUri);
+    constructor(documentText: string, documentUri: Uri, public readonly documentVersion: number) {
+        super(documentText, documentUri, documentVersion);
     }
 
     public get topLevelScope(): TemplateScope {

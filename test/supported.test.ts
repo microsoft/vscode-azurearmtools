@@ -97,7 +97,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplateDoc(template, fakeId);
+                    let dt = new DeploymentTemplateDoc(template, fakeId, 0);
                     assert(dt.hasArmSchemaUri());
                 });
 
@@ -110,7 +110,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplateDoc(template, fakeId);
+                    let dt = new DeploymentTemplateDoc(template, fakeId, 0);
                     assert(dt.hasArmSchemaUri());
                 });
 
@@ -125,7 +125,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplateDoc(template, fakeId);
+                    let dt = new DeploymentTemplateDoc(template, fakeId, 0);
                     assert(dt.hasArmSchemaUri());
                 });
 
@@ -136,7 +136,7 @@ suite("supported", () => {
                         "contentVersion": "1.0.0.0",
                     `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplateDoc(template, fakeId);
+                    let dt = new DeploymentTemplateDoc(template, fakeId, 0);
                     assert(dt.hasArmSchemaUri());
                 });
 
@@ -151,7 +151,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplateDoc(template, fakeId);
+                    let dt = new DeploymentTemplateDoc(template, fakeId, 0);
                     assert(!dt.hasArmSchemaUri());
                 });
 
@@ -161,7 +161,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplateDoc(template, fakeId);
+                    let dt = new DeploymentTemplateDoc(template, fakeId, 0);
                     assert(!dt.hasArmSchemaUri());
 
                 });
@@ -172,7 +172,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplateDoc(template, fakeId);
+                    let dt = new DeploymentTemplateDoc(template, fakeId, 0);
                     assert(!dt.hasArmSchemaUri());
                 });
 
@@ -182,7 +182,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplateDoc(template, fakeId);
+                    let dt = new DeploymentTemplateDoc(template, fakeId, 0);
                     assert(!dt.hasArmSchemaUri());
                 });
 
@@ -194,7 +194,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplateDoc(template, fakeId);
+                    let dt = new DeploymentTemplateDoc(template, fakeId, 0);
                     assert(!dt.hasArmSchemaUri());
                 });
 
@@ -206,7 +206,7 @@ suite("supported", () => {
                     "contentVersion": "1.0.0.0",
                   `;
                     assert(containsArmSchema(template));
-                    let dt = new DeploymentTemplateDoc(template, fakeId);
+                    let dt = new DeploymentTemplateDoc(template, fakeId, 0);
                     assert(!dt.hasArmSchemaUri());
                 });
 

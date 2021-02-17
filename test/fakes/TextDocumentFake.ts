@@ -44,7 +44,7 @@ export class TextDocumentFake implements TextDocument {
     }
     public getText(range?: Range | undefined): string {
         if (range) {
-            const dt = new DeploymentTemplateDoc(this._textBuffer, this.uri);
+            const dt = new DeploymentTemplateDoc(this._textBuffer, this.uri, this.version);
             const startIndex = dt.getDocumentCharacterIndex(range.start.line, range.start.character);
             const endIndex = dt.getDocumentCharacterIndex(range.start.line, range.start.character);
 

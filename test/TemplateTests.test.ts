@@ -19,7 +19,7 @@ suite("Template tests", () => {
         function verifyTemplateHasNoErrors(template: string | object): void {
             useRealFunctionMetadata();
             try {
-                const dt = new DeploymentTemplateDoc(typeof template === "string" ? template : stringify(template), Uri.file("id"));
+                const dt = new DeploymentTemplateDoc(typeof template === "string" ? template : stringify(template), Uri.file("id"), 0);
                 const expectedErrors: string[] = [
                 ];
                 let errors = dt.getErrors(undefined);

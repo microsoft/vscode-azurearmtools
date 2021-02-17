@@ -13,7 +13,7 @@ const fakeSpan = new Span(10, 20);
 
 suite("UserFunctionParameterDefinition", () => {
     suite("constructor(Json.Property)", () => {
-        const doc: IJsonDocument = new DeploymentTemplateDoc("", Uri.parse('https://doc'));
+        const doc: IJsonDocument = new DeploymentTemplateDoc("", Uri.parse('https://doc'), 0);
 
         test("with no fields (invalid without name)", () => {
             const parameterDefinition = new Json.ObjectValue(new Span(16, 2), []);
