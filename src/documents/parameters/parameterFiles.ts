@@ -64,7 +64,7 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
 
   // Get the template file contents so we can find the top-level parameters
   const contents = editor.document.getText(undefined);
-  const template: DeploymentTemplateDoc = new DeploymentTemplateDoc(contents, templateUri);
+  const template: DeploymentTemplateDoc = new DeploymentTemplateDoc(contents, templateUri, editor.document.version);
 
   let quickPickList: IQuickPickList = await createParameterFileQuickPickList(mapping, templateUri);
   // Show the quick pick

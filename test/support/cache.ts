@@ -9,7 +9,7 @@ import * as path from 'path';
 import * as process from 'process';
 import * as rimraf from 'rimraf';
 import { parseError } from 'vscode-azureextensionui';
-import { isWin32 } from '../../extension.bundle';
+import { isWin32 } from '../testConstants';
 
 const homedir = os.homedir();
 const cacheFolder = isWin32

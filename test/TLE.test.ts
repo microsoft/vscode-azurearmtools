@@ -7,7 +7,7 @@
 
 import * as assert from "assert";
 import { Uri } from "vscode";
-import { AzureRMAssets, BuiltinFunctionMetadata, DefinitionKind, DeploymentTemplateDoc, FindReferencesVisitor, FunctionsMetadata, INamedDefinition, IncorrectArgumentsCountIssue, Issue, IssueKind, isTleExpression, nonNullValue, ReferenceList, Span, TemplatePositionContext, TemplateScope, TLE, TopLevelTemplateScope, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue } from "../extension.bundle";
+import { AzureRMAssets, BuiltinFunctionMetadata, DefinitionKind, DeploymentTemplateDoc, FindReferencesAndErrorsVisitor, FunctionsMetadata, INamedDefinition, IncorrectArgumentsCountIssue, Issue, IssueKind, isTleExpression, nonNullValue, ReferenceList, Span, TemplatePositionContext, TemplateScope, TLE, TopLevelTemplateScope, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue } from "../extension.bundle";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 
@@ -16,7 +16,7 @@ const tleSyntax = IssueKind.tleSyntax;
 const fakeId = Uri.file("https://fake-id");
 
 suite("TLE", () => {
-    const emptyScope = new TopLevelTemplateScope(new DeploymentTemplateDoc("", Uri.file("/doc")), undefined, "empty scope");
+    const emptyScope = new TopLevelTemplateScope(new DeploymentTemplateDoc("", Uri.file("/doc"), 0), undefined, "empty scope");
 
     function parseExpression(stringValue: string): TLE.TleParseResult {
         return TLE.Parser.parse(stringValue);
@@ -25,7 +25,7 @@ suite("TLE", () => {
     function getReferenceErrors(scope: TemplateScope, expression: TLE.Value | undefined): Issue[] {
         const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
         const issues: Issue[] = [];
-        FindReferencesVisitor.visit(scope, 0, expression, AzureRMAssets.getFunctionsMetadata(), referenceListsMap, issues);
+        FindReferencesAndErrorsVisitor.visit(scope, 0, expression, AzureRMAssets.getFunctionsMetadata(), referenceListsMap, issues);
         return issues;
     }
 
@@ -371,38 +371,38 @@ suite("TLE", () => {
 
         suite("getHighlightCharacterIndexes(number,TLEParseResult)", () => {
             test("with quoted string that isn't a TLE", () => {
-                let template = new DeploymentTemplateDoc("\"Hello world\"", fakeId);
+                let template = new DeploymentTemplateDoc("\"Hello world\"", fakeId, 0);
                 assert.deepStrictEqual([], getHighlights(template, 0));
                 assert.deepStrictEqual([], getHighlights(template, 5));
                 assert.deepStrictEqual([], getHighlights(template, 11));
             });
 
             test("with left square bracket", () => {
-                let template = new DeploymentTemplateDoc("\"[", fakeId);
+                let template = new DeploymentTemplateDoc("\"[", fakeId, 0);
                 assert.deepStrictEqual([], getHighlights(template, 0));
                 assert.deepStrictEqual([1], getHighlights(template, 1));
                 assert.deepStrictEqual([], getHighlights(template, 2));
             });
 
             test("with empty TLE", () => {
-                let template = new DeploymentTemplateDoc("\"[]\"", fakeId);
+                let template = new DeploymentTemplateDoc("\"[]\"", fakeId, 0);
                 assert.deepStrictEqual([1, 2], getHighlights(template, 1), "When the caret is before a TLE's left square bracket, then the left and right square brackets should be highlighted.");
                 assert.deepStrictEqual([], getHighlights(template, 2), "When the caret is to the right of a TLE's left square bracket and to the left of the right square bracket, nothing should be highlighted.");
                 assert.deepStrictEqual([1, 2], getHighlights(template, 3), "When the caret is after a TLE's right square bracket, then the left and right square brackets should be highlighted.");
             });
 
             test("with function with no parenthesis", () => {
-                let template = new DeploymentTemplateDoc("\"[concat", fakeId);
+                let template = new DeploymentTemplateDoc("\"[concat", fakeId, 0);
                 assert.deepStrictEqual([], getHighlights(template, 8));
             });
 
             test("with function with left parenthesis but no right parenthesis", () => {
-                let template = new DeploymentTemplateDoc("\"[concat(", fakeId);
+                let template = new DeploymentTemplateDoc("\"[concat(", fakeId, 0);
                 assert.deepStrictEqual([8], getHighlights(template, 8));
             });
 
             test("with function with left and right parenthesis", () => {
-                let template = new DeploymentTemplateDoc("\"[concat()", fakeId);
+                let template = new DeploymentTemplateDoc("\"[concat()", fakeId, 0);
                 assert.deepStrictEqual([8, 9], getHighlights(template, "\"[concat".length), "Both left and right parentheses should be highlighted when the caret is before the left parenthesis.");
                 assert.deepStrictEqual([], getHighlights(template, 9));
                 assert.deepStrictEqual([8, 9], getHighlights(template, "\"[concat()".length), "Both left and right parentheses should be highlighted when the caret is after the right parenthesis.");
@@ -413,7 +413,7 @@ suite("TLE", () => {
     suite("Undefined Parameters And Variables", () => {
         suite("visitString(StringValue)", () => {
             test("with empty StringValue in parameters() function", () => {
-                const dt = new DeploymentTemplateDoc("\"{}\"", fakeId);
+                const dt = new DeploymentTemplateDoc("\"{}\"", fakeId, 0);
                 const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
                 const issues: Issue[] = [];
                 const metadata = AzureRMAssets.getFunctionsMetadata();
@@ -428,7 +428,7 @@ suite("TLE", () => {
                     [stringValue],
                     undefined);
 
-                FindReferencesVisitor.visit(dt.topLevelScope, 0, stringValue.parent, metadata, referenceListsMap, issues);
+                FindReferencesAndErrorsVisitor.visit(dt.topLevelScope, 0, stringValue.parent, metadata, referenceListsMap, issues);
                 assert.deepStrictEqual(
                     issues,
                     [
@@ -438,7 +438,7 @@ suite("TLE", () => {
             });
 
             test("with empty StringValue in variables() function", () => {
-                const dt = new DeploymentTemplateDoc("\"{}\"", fakeId);
+                const dt = new DeploymentTemplateDoc("\"{}\"", fakeId, 0);
                 const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
                 const issues: Issue[] = [];
                 const metadata = AzureRMAssets.getFunctionsMetadata();
@@ -453,7 +453,7 @@ suite("TLE", () => {
                     [stringValue],
                     undefined);
 
-                FindReferencesVisitor.visit(dt.topLevelScope, 0, stringValue.parent, metadata, referenceListsMap, issues);
+                FindReferencesAndErrorsVisitor.visit(dt.topLevelScope, 0, stringValue.parent, metadata, referenceListsMap, issues);
                 assert.deepStrictEqual(
                     issues,
                     [
@@ -1942,7 +1942,7 @@ suite("TLE", () => {
                 const tleParseResult = parseExpression("'[concat()]'");
                 const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
                 const errors: Issue[] = [];
-                FindReferencesVisitor.visit(emptyScope, 0, tleParseResult.expression, functionMetadata, referenceListsMap, errors);
+                FindReferencesAndErrorsVisitor.visit(emptyScope, 0, tleParseResult.expression, functionMetadata, referenceListsMap, errors);
                 assert.deepStrictEqual([], errors);
             });
 
@@ -1950,7 +1950,7 @@ suite("TLE", () => {
                 const tleParseResult = parseExpression("'[concatenate()]'");
                 const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
                 const errors: Issue[] = [];
-                FindReferencesVisitor.visit(emptyScope, 0, tleParseResult.expression, functionMetadata, referenceListsMap, errors);
+                FindReferencesAndErrorsVisitor.visit(emptyScope, 0, tleParseResult.expression, functionMetadata, referenceListsMap, errors);
                 assert.deepStrictEqual(
                     [
                         new UnrecognizedBuiltinFunctionIssue(new Span(2, 11), "concatenate")
@@ -2116,21 +2116,21 @@ suite("TLE", () => {
     suite("UndefinedVariablePropertyVisitor", () => {
         suite("visitPropertyAccess(TLE.PropertyAccess)", () => {
             test("with child property access from undefined variable reference", () => {
-                const dt = new DeploymentTemplateDoc(`{ "a": "[variables('v1').apples]" }`, fakeId);
+                const dt = new DeploymentTemplateDoc(`{ "a": "[variables('v1').apples]" }`, fakeId, 0);
                 const context: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[variables('v1').app`.length, undefined);
                 const visitor = UndefinedVariablePropertyVisitor.visit(context.tleInfo!.tleValue, dt.topLevelScope);
                 assert.deepStrictEqual(visitor.errors, [], "No errors should be reported for a property access to an undefined variable, because the top priority error for the developer to address is the undefined variable reference.");
             });
 
             test("with grandchild property access from undefined variable reference", () => {
-                const dt = new DeploymentTemplateDoc(`{ "a": "[variables('v1').apples.bananas]" }`, fakeId);
+                const dt = new DeploymentTemplateDoc(`{ "a": "[variables('v1').apples.bananas]" }`, fakeId, 0);
                 const context: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex(`{ "a": "[variables('v1').apples.ban`.length, undefined);
                 const visitor = UndefinedVariablePropertyVisitor.visit(context.tleInfo!.tleValue, dt.topLevelScope);
                 assert.deepStrictEqual(visitor.errors, [], "No errors should be reported for a property access to an undefined variable, because the top priority error for the developer to address is the undefined variable reference.");
             });
 
             test("with child property access from variable reference to non-object variable", () => {
-                const dt = new DeploymentTemplateDoc(`{ "variables": { "v1": "blah" }, "a": "[variables('v1').apples]" }`, fakeId);
+                const dt = new DeploymentTemplateDoc(`{ "variables": { "v1": "blah" }, "a": "[variables('v1').apples]" }`, fakeId, 0);
                 const context: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex(`{ "variables": { "v1": "blah" }, "a": "[variables('v1').app`.length, undefined);
                 const visitor = UndefinedVariablePropertyVisitor.visit(context.tleInfo!.tleValue, dt.topLevelScope);
                 assert.deepStrictEqual(
@@ -2139,7 +2139,7 @@ suite("TLE", () => {
             });
 
             test("with grandchild property access from variable reference to non-object variable", () => {
-                const dt = new DeploymentTemplateDoc(`{ "variables": { "v1": "blah" }, "a": "[variables('v1').apples.bananas]" }`, fakeId);
+                const dt = new DeploymentTemplateDoc(`{ "variables": { "v1": "blah" }, "a": "[variables('v1').apples.bananas]" }`, fakeId, 0);
                 const context: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex(`{ "variables": { "v1": "blah" }, "a": "[variables('v1').apples.ban`.length, undefined);
                 const visitor = UndefinedVariablePropertyVisitor.visit(context.tleInfo!.tleValue, dt.topLevelScope);
                 assert.deepStrictEqual(
@@ -2172,7 +2172,7 @@ suite("TLE", () => {
                 const issues: Issue[] = [];
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
                 assert(param);
-                const visitor = FindReferencesVisitor.visit(dt.topLevelScope, 0, undefined, metadata, referenceListsMap, issues);
+                const visitor = FindReferencesAndErrorsVisitor.visit(dt.topLevelScope, 0, undefined, metadata, referenceListsMap, issues);
                 assert(visitor);
                 assert.deepStrictEqual(referenceListsMap.get(param), undefined);
                 assert.deepStrictEqual(issues, []);
@@ -2185,7 +2185,7 @@ suite("TLE", () => {
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
                 assert(param);
                 // tslint:disable-next-line:no-any
-                const visitor = FindReferencesVisitor.visit(dt.topLevelScope, 0, <any>undefined, metadata, referenceListsMap, issues);
+                const visitor = FindReferencesAndErrorsVisitor.visit(dt.topLevelScope, 0, <any>undefined, metadata, referenceListsMap, issues);
                 assert(visitor);
                 assert.deepStrictEqual(referenceListsMap.get(param), undefined);
                 assert.deepStrictEqual(issues, []);
@@ -2198,7 +2198,7 @@ suite("TLE", () => {
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
                 assert(param);
                 const pr: TLE.TleParseResult = parseExpression(`"[parameters('pName')]"`);
-                const visitor = FindReferencesVisitor.visit(dt.topLevelScope, 0, pr.expression, metadata, referenceListsMap, issues);
+                const visitor = FindReferencesAndErrorsVisitor.visit(dt.topLevelScope, 0, pr.expression, metadata, referenceListsMap, issues);
                 assert(visitor);
                 assert.deepStrictEqual(
                     referenceListsMap.get(param),

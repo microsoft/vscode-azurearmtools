@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "intParam": {
+            "type": "int",
+            "metadata": {
+                "description": "description"
+            }
+        },
+        "intOptionalParam": {
+            "type": "int",
+            "defaultValue": 123456
+        },
+        "stringParam": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            }
+        },
+        "stringOptionalParam": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            },
+            "defaultValue": "childStringOptionalParam def value"
+        }
+    },
+    "resources": []
+}

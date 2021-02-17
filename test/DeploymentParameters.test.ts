@@ -15,34 +15,34 @@ suite("DeploymentParameters", () => {
 
     suite("constructor(string)", () => {
         test("Empty stringValue", () => {
-            const dt = new DeploymentParametersDoc("", fakeId);
+            const dt = new DeploymentParametersDoc("", fakeId, 0);
             assert.deepStrictEqual("", dt.documentText);
             assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             assert.deepStrictEqual([], dt.parameterValueDefinitions);
         });
 
         test("Non-JSON stringValue", () => {
-            const dt = new DeploymentParametersDoc("I'm not a JSON file", fakeId);
+            const dt = new DeploymentParametersDoc("I'm not a JSON file", fakeId, 0);
             assert.deepStrictEqual("I'm not a JSON file", dt.documentText);
             assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             assert.deepStrictEqual([], dt.parameterValueDefinitions);
         });
 
         test("JSON stringValue with number parameters definition", () => {
-            const dt = new DeploymentParametersDoc("{ 'parameters': 21 }", fakeId);
+            const dt = new DeploymentParametersDoc("{ 'parameters': 21 }", fakeId, 0);
             assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             assert.deepStrictEqual([], dt.parameterValueDefinitions);
         });
 
         test("JSON stringValue with empty object parameters definition", () => {
-            const dt = new DeploymentParametersDoc("{ 'parameters': {} }", fakeId);
+            const dt = new DeploymentParametersDoc("{ 'parameters': {} }", fakeId, 0);
             assert.deepStrictEqual("{ 'parameters': {} }", dt.documentText);
             assert.deepStrictEqual(fakeId.fsPath, dt.documentUri.fsPath);
             assert.deepStrictEqual([], dt.parameterValueDefinitions);
         });
 
         test("JSON stringValue with one parameter value", () => {
-            const dt = new DeploymentParametersDoc("{ 'parameters': { 'num': { 'value': 1 } } }", fakeId);
+            const dt = new DeploymentParametersDoc("{ 'parameters': { 'num': { 'value': 1 } } }", fakeId, 0);
             const parameterValues: ParameterValueDefinition[] = dt.parameterValueDefinitions;
             assert(parameterValues);
             assert.deepStrictEqual(parameterValues.length, 1);
@@ -53,7 +53,7 @@ suite("DeploymentParameters", () => {
         });
 
         test("JSON stringValue with one parameter definition with null value", () => {
-            const dt = new DeploymentParametersDoc("{ 'parameters': { 'num': { 'value': null } } }", fakeId);
+            const dt = new DeploymentParametersDoc("{ 'parameters': { 'num': { 'value': null } } }", fakeId, 0);
             const parameterValues: ParameterValueDefinition[] = dt.parameterValueDefinitions;
             assert(parameterValues);
             assert.deepStrictEqual(parameterValues.length, 1);
@@ -63,7 +63,7 @@ suite("DeploymentParameters", () => {
         });
 
         test("JSON stringValue with one parameter definition with no value", () => {
-            const dt = new DeploymentParametersDoc("{ 'parameters': { 'num': { } } }", fakeId);
+            const dt = new DeploymentParametersDoc("{ 'parameters': { 'num': { } } }", fakeId, 0);
             const parameterValues: ParameterValueDefinition[] = dt.parameterValueDefinitions;
             assert(parameterValues);
             assert.deepStrictEqual(parameterValues.length, 1);
@@ -73,7 +73,7 @@ suite("DeploymentParameters", () => {
         });
 
         test("JSON stringValue with one parameter definition defined as a string", () => {
-            const dt = new DeploymentParametersDoc("{ 'parameters': { 'num': 'whoops' } } }", fakeId);
+            const dt = new DeploymentParametersDoc("{ 'parameters': { 'num': 'whoops' } } }", fakeId, 0);
             const parameterValues: ParameterValueDefinition[] = dt.parameterValueDefinitions;
             assert(parameterValues);
             assert.deepStrictEqual(parameterValues.length, 1);

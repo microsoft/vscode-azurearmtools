@@ -2,8 +2,31 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
-## Version 0.15.0 (2021-03-01)
+## Version 0.15.0-alpha0211
 
+### Added
+
+- Support for validation of linked templates (alpha)
+  - How to install:
+    - In VS Code, F1 -> "Extensions: Install from VSIX..." -> browse to VSIX and select -> restart VS Code
+  How to uninstall:
+    - In VS Code, View Extensions -> Find "Azure Resource Manager (ARM) Tools" extension -> click on tools icon -> Install Another Version...
+    - Or wait until the official 0.15.0 release is published, it should automatically upgrade from the alpha
+  - Currently only "relativePath" is supported in the templateLink object. "uri" support is expected soon.
+  - "parametersLink" is not supported (but "parameters" is)
+  - Known Issues:
+    - Schema for Microsoft.Resources/deployments@2020-10-01 is required to successfully deploy to Azure with
+      relativePath, but its schema hasn't been published yet, causing false warnings and degradation of Intellisense.
+      Work-around is to use version 2020-06-01 for editing and switch back to 2020-10-01 before deploying.
+  - Examples of experiences supported:
+    - Validation of linked templates up to one level
+    - Parameter validation
+    - "Light-bulb" and snippet support to fill in parameter values for a linked template
+    - CTRL-click on relativePath value or click on code lens to navigate to linked template
+  - Enter bugs/issues/suggestions: Easiest is to submit them in our [repo](https://github.com/microsoft/vscode-azurearmtools/milestone/20)
+
+### Fixed
+  - Clear notification when the extension is starting up and loading schemas
 
 ## Version 0.14.1 (2021-02-05)
 

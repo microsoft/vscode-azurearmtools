@@ -25,6 +25,7 @@ export interface IGotoParameterValueArgs {
 export interface IAddMissingParametersArgs {
     parameterDefinitionsSource: IParameterDefinitionsSource;
     parameterValuesSource: IParameterValuesSource;
+    parentParameterDefinitionsSource: IParameterDefinitionsSource | undefined;
 }
 
 export interface IGotoResourcesArgs {

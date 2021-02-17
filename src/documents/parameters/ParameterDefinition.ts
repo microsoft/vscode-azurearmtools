@@ -8,6 +8,7 @@ import * as Json from "../../language/json/JSON";
 import { Span } from "../../language/Span";
 import { IUsageInfo } from "../../vscodeIntegration/UsageInfoHoverInfo";
 import { ExpressionType, toValidExpressionType } from "../templates/ExpressionType";
+import { IJsonDocument } from "../templates/IJsonDocument";
 import { IParameterDefinition } from "./IParameterDefinition";
 
 export function isParameterDefinition(definition: INamedDefinition): definition is IParameterDefinition {
@@ -20,7 +21,7 @@ export function isParameterDefinition(definition: INamedDefinition): definition 
 export class ParameterDefinition implements IParameterDefinition {
     public readonly definitionKind: DefinitionKind = DefinitionKind.Parameter;
 
-    constructor(private readonly _property: Json.Property) {
+    constructor(public readonly document: IJsonDocument, private readonly _property: Json.Property) {
         assert(_property);
     }
 

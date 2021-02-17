@@ -1,0 +1,43 @@
+{
+    // Verify correct scope of expressions, variables, parameters
+
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+        {
+            "name": "linkedDeployment1",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-06-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "relativePath": "subfolder/child13.json"
+                },
+                "parameters": {
+                    "childIntParam": {
+                        // This is a valid value for the child - this should not cause an error
+                        "value": 0
+                    }
+                }
+            }
+        },
+        {
+            "name": "linkedDeployment2",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-06-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "relativePath": "subfolder/child13.json"
+                },
+                "parameters": {
+                    "childIntParam": {
+                        // ERROR: This index causes an out of bounds array access in the child
+                        "value": 1
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}

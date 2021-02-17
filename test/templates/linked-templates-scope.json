@@ -16,8 +16,7 @@
         "secondTemplate": "linkedTemplate2.json",
         "stringValue": "abc",
         "nestedDeployment2Name": "nestedDeployment2",
-        "mode": "Incremental",
-        "contentVersion": "1.2.3.4"
+        "mode": "Incremental"
     },
     "resources": [
         {
@@ -29,7 +28,7 @@
                 "templateLink": {
                     // THESE REFER TO THE TOP-LEVEL PARAMS/VARS
                     "uri": "[concat(parameters('linkedTemplatesLocation'), '/', variables('secondTemplate'))]",
-                    "contentVersion": "[variables('contentVersion')]"
+                    "contentVersion": "1.2.3.4"
                 },
                 "parameters": {
                     "linked2param1": {

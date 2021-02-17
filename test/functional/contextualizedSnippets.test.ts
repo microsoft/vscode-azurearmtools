@@ -43,7 +43,7 @@ suite("Contextualized snippets", () => {
                 let tempEditor: TempEditor | undefined;
 
                 try {
-                    tempFile = new TempFile(dt.documentText, `${testName}.${snippetPrefix}`, '.json');
+                    tempFile = TempFile.fromContents(dt.documentText, `${testName}.${snippetPrefix}`, '.json');
                     tempDoc = new TempDocument(tempFile);
                     await tempDoc.open();
                     tempEditor = new TempEditor(tempDoc);

@@ -132,13 +132,34 @@
         "description": "Tag Section",
         "context": "resource-body"
     },
-    "Linked Deployment": {
-        "prefix": "arm-linked-template",
+    "Linked Deployment With Relative Path": {
+        "prefix": "arm-linked-template-relative",
         "body": [
             "{",
             "\t\"name\": \"${1:linkedDeployment1}\",",
             "\t\"type\": \"Microsoft.Resources/deployments\",",
-            "\t\"apiVersion\": \"2020-06-01\",",
+            "\t\"apiVersion\": \"2020-10-01\",",
+            "\t\"properties\": {",
+            "\t\t\"mode\": \"Incremental\",",
+            "\t\t\"templateLink\": {",
+            "\t\t\t\"relativePath\": \"childTemplate.json\",",
+            "\t\t\t\"contentVersion\": \"1.0.0.0\"",
+            "\t\t},",
+            "\t\t\"parameters\": {",
+            "\t\t}",
+            "\t}",
+            "}"
+        ],
+        "description": "Linked Deployment With Relative Path",
+        "context": "resources"
+    },
+    "Linked Deployment With URI": {
+        "prefix": "arm-linked-template-uri",
+        "body": [
+            "{",
+            "\t\"name\": \"${1:linkedDeployment1}\",",
+            "\t\"type\": \"Microsoft.Resources/deployments\",",
+            "\t\"apiVersion\": \"2020-10-01\",",
             "\t\"properties\": {",
             "\t\t\"mode\": \"Incremental\",",
             "\t\t\"templateLink\": {",
@@ -150,7 +171,7 @@
             "\t}",
             "}"
         ],
-        "description": "Linked Deployment",
+        "description": "Linked Deployment With URI",
         "context": "resources"
     },
     "Nested Deployment": {
@@ -159,7 +180,7 @@
             "{",
             "\t\"name\": \"${1:nestedDeployment1}\",",
             "\t\"type\": \"Microsoft.Resources/deployments\",",
-            "\t\"apiVersion\": \"2020-06-01\",",
+            "\t\"apiVersion\": \"2020-10-01\",",
             "\t\"properties\": {",
             "\t\t\"mode\": \"Incremental\",",
             "\t\t\"template\": {",
@@ -181,7 +202,7 @@
             "{",
             "\t\"name\": \"${1:nestedDeployment1}\",",
             "\t\"type\": \"Microsoft.Resources/deployments\",",
-            "\t\"apiVersion\": \"2020-06-01\",",
+            "\t\"apiVersion\": \"2020-10-01\",",
             "\t\"properties\": {",
             "\t\t\"expressionEvaluationOptions\": {",
             "\t\t\t\"scope\": \"inner\"",

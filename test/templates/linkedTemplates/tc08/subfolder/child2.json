@@ -1,0 +1,22 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "stringParam": {
+            "type": "string",
+            "metadata": {
+                "description": "string parameter"
+            },
+            "defaultValue": "Premium"
+        },
+        "intParam": {
+            "type": "int",
+            "metadata": {
+                "description": "int parameter"
+            },
+            "defaultValue": 123
+        }
+    },
+    "resources": [
+    ]
+}

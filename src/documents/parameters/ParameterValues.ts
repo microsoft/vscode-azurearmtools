@@ -26,7 +26,8 @@ const newParameterValueSnippetLabel = `new-parameter-value`;
  */
 export function getParameterValuesCodeActions(
     parameterValuesSource: IParameterValuesSource,
-    parameterDefinitionsSource: IParameterDefinitionsSource | undefined,
+    parameterDefinitionsSource: IParameterDefinitionsSource,
+    parentParameterDefinitionsSource: IParameterDefinitionsSource | undefined,
     // This is the range currently being inspected
     range: Range | Selection,
     context: CodeActionContext
@@ -34,7 +35,7 @@ export function getParameterValuesCodeActions(
     const actions: (Command | CodeAction)[] = [];
     const parametersProperty = parameterValuesSource.parameterValuesProperty;
 
-    if (parametersProperty && parameterDefinitionsSource) {
+    if (parametersProperty) {
         // Is the parameters property in the requested range?
         const lineIndexOfParametersProperty = parameterValuesSource.document.getDocumentPosition(parametersProperty.nameValue.span.startIndex).line;
         if (lineIndexOfParametersProperty >= range.start.line && lineIndexOfParametersProperty <= range.end.line) {
@@ -50,7 +51,8 @@ export function getParameterValuesCodeActions(
                         parameterValuesSource.document.documentUri,
                         <IAddMissingParametersArgs>{
                             parameterValuesSource,
-                            parameterDefinitionsSource
+                            parameterDefinitionsSource,
+                            parentParameterDefinitionsSource
                         }
                     ]
                 };
@@ -67,7 +69,8 @@ export function getParameterValuesCodeActions(
                         parameterValuesSource.document.documentUri,
                         <IAddMissingParametersArgs>{
                             parameterValuesSource,
-                            parameterDefinitionsSource
+                            parameterDefinitionsSource,
+                            parentParameterDefinitionsSource
                         }
                     ]
                 };
@@ -89,7 +92,7 @@ export function getMissingParameters(
     onlyRequiredParameters: boolean
 ): IParameterDefinition[] {
     const results: IParameterDefinition[] = [];
-    for (let paramDef of parameterDefinitionsSource.parameterDefinitions) {
+    for (let paramDef of parameterDefinitionsSource?.parameterDefinitions ?? []) {
         const paramValue = parameterValuesSource.getParameterValue(paramDef.nameValue.unquotedValue);
         if (!paramValue) {
             results.push(paramDef);
@@ -108,6 +111,7 @@ export async function addMissingParameters(
     parameterValuesSource: IParameterValuesSource,
     // An editor for the the parameter values source document
     parameterValuesSourceEditor: TextEditor,
+    parentParameterDefinitions: IParameterDefinitionsSource | undefined,
     onlyRequiredParameters: boolean
 ): Promise<void> {
     // We don't currently handle the case where there is no "parameters" object
@@ -145,7 +149,7 @@ export async function addMissingParameters(
         // Create insertion text
         let paramsAsText: string[] = [];
         for (let param of missingParams) {
-            const paramText = createParameterFromTemplateParameter(parameterDefinitionsSource, param, defaultTabSize);
+            const paramText = createParameterFromTemplateParameter(parameterDefinitionsSource, param, parentParameterDefinitions, defaultTabSize);
             paramsAsText.push(paramText);
         }
         let newText = paramsAsText.join(`,${EOL}`);
@@ -254,6 +258,8 @@ export function getCompletionForNewParameter(
 export function getCompletionsForMissingParameters(
     parameterDefinitionsSource: IParameterDefinitionsSource,
     parameterValuesSource: IParameterValuesSource,
+    parentParameterDefinitionsSource: IParameterDefinitionsSource | undefined,
+    tabSize: number,
     documentIndex: number
 ): Completion.Item[] {
     const completions: Completion.Item[] = [];
@@ -270,7 +276,7 @@ export function getCompletionsForMissingParameters(
 
         const isRequired = !param.defaultValue;
         const label = param.nameValue.quotedValue;
-        const paramText = createParameterFromTemplateParameter(parameterDefinitionsSource, param);
+        const paramText = createParameterFromTemplateParameter(parameterDefinitionsSource, param, parentParameterDefinitionsSource, tabSize);
         let replacement = paramText;
         const documentation = `Insert a value for parameter "${param.nameValue.unquotedValue}"`;
         const detail = (isRequired ? "(required parameter)" : "(optional parameter)")
@@ -357,6 +363,8 @@ function needsCommaAfterCompletion(
 export function getPropertyValueCompletionItems(
     parameterDefinitionsSource: IParameterDefinitionsSource | undefined,
     parameterValuesSource: IParameterValuesSource,
+    parentParameterDefinitionsSource: IParameterDefinitionsSource | undefined,
+    tabSize: number,
     documentIndex: number,
     triggerCharacter: string | undefined
 ): Completion.Item[] {
@@ -364,7 +372,7 @@ export function getPropertyValueCompletionItems(
 
     if ((!triggerCharacter || triggerCharacter === '"') && canAddPropertyValueHere(parameterValuesSource, documentIndex)) {
         if (parameterDefinitionsSource) {
-            completions.push(...getCompletionsForMissingParameters(parameterDefinitionsSource, parameterValuesSource, documentIndex));
+            completions.push(...getCompletionsForMissingParameters(parameterDefinitionsSource, parameterValuesSource, parentParameterDefinitionsSource, tabSize, documentIndex));
         }
         completions.push(getCompletionForNewParameter(parameterValuesSource, documentIndex));
     }

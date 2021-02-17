@@ -95,7 +95,12 @@ export function createParameterFileContents(scope: TemplateScope, tabSize: numbe
  * Creates text for a property using information for that property in a template file
  * @param tabSize The number of spaces to indent at each level. The parameter text will start flush left
  */
-export function createParameterFromTemplateParameter(parameterDefinitionsSource: IParameterDefinitionsSource, parameter: IParameterDefinition, tabSize: number = defaultTabSize): string {
+export function createParameterFromTemplateParameter(
+    parameterDefinitionsSource: IParameterDefinitionsSource,
+    parameter: IParameterDefinition,
+    parentParameterDefinitions: IParameterDefinitionsSource | undefined,
+    tabSize: number
+): string {
     /* e.g.
 
     "parameters": {
@@ -107,14 +112,19 @@ export function createParameterFromTemplateParameter(parameterDefinitionsSource:
     */
 
     let value: string | undefined;
-    if (parameter.defaultValue) {
+    const parameterNameLC = parameter.nameValue.unquotedValue.toLowerCase();
+    const matchingParentParameter = parentParameterDefinitions?.parameterDefinitions.find(
+        def => def.nameValue.unquotedValue.toLowerCase() === parameterNameLC);
+    if (matchingParentParameter) {
+        value = `"[parameters('${matchingParentParameter.nameValue.unquotedValue}')]"`;
+    } else if (parameter.defaultValue) {
         // If the parameter has a default value that's not an expression, then use it as the
         // value in the param file
         const isExpression = parameter.defaultValue instanceof Json.StringValue &&
             isTleExpression(parameter.defaultValue.unquotedValue);
         if (!isExpression) {
             const defValueSpan = parameter.defaultValue.span;
-            const defValue: string = parameterDefinitionsSource.document.documentText.slice(defValueSpan.startIndex, defValueSpan.afterEndIndex);
+            const defValue: string = parameter.document.documentText.slice(defValueSpan.startIndex, defValueSpan.afterEndIndex);
             value = unindentMultilineString(defValue, true);
         }
     }
@@ -158,12 +168,16 @@ function getDefaultValueFromType(propType: ExpressionType | undefined, indent: n
     }
 }
 
-function createParameters(scope: TemplateScope, tabSize: number, onlyRequiredParameters: boolean): CaseInsensitiveMap<string, string> {
+function createParameters(
+    scope: TemplateScope,
+    tabSize: number,
+    onlyRequiredParameters: boolean
+): CaseInsensitiveMap<string, string> {
     let params: CaseInsensitiveMap<string, string> = new CaseInsensitiveMap<string, string>();
 
-    for (let paramDef of scope.parameterDefinitions) {
+    for (let paramDef of scope.parameterDefinitionsSource.parameterDefinitions) {
         if (!onlyRequiredParameters || !paramDef.defaultValue) {
-            params.set(paramDef.nameValue.unquotedValue, createParameterFromTemplateParameter(scope, paramDef, tabSize));
+            params.set(paramDef.nameValue.unquotedValue, createParameterFromTemplateParameter(scope.parameterDefinitionsSource, paramDef, undefined, tabSize));
         }
     }
 

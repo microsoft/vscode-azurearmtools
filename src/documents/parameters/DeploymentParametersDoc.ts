@@ -33,8 +33,8 @@ export class DeploymentParametersDoc extends DeploymentDocument {
      * @param _documentText The string text of the document.
      * @param _documentUri A unique identifier for this document. Usually this will be a URI to the document.
      */
-    constructor(documentText: string, documentUri: Uri) {
-        super(documentText, documentUri);
+    constructor(documentText: string, documentUri: Uri, public readonly documentVersion: number) {
+        super(documentText, documentUri, documentVersion);
     }
 
     public hasParametersSchema(): boolean {
@@ -116,20 +116,26 @@ export class DeploymentParametersDoc extends DeploymentDocument {
         context: CodeActionContext
     ): (Command | CodeAction)[] {
         const template = expectTemplateDocumentOrUndefined(associatedDocument);
-        return getParameterValuesCodeActions(
-            this.parameterValuesSource,
-            template?.topLevelScope,
-            range,
-            context
-        );
+        if (template) {
+            return getParameterValuesCodeActions(
+                this.parameterValuesSource,
+                template.topLevelScope.parameterDefinitionsSource,
+                undefined,
+                range,
+                context
+            );
+        }
+
+        return [];
     }
+
     public getErrorsCore(associatedDocument: DeploymentDocument | undefined): Issue[] {
         if (!associatedDocument) {
             return [];
         }
 
         const template = expectTemplateDocument(associatedDocument);
-        return getMissingParameterErrors(this.parameterValuesSource, template.topLevelScope);
+        return getMissingParameterErrors(this.parameterValuesSource, template.topLevelScope.parameterDefinitionsSource);
     }
 
     public getWarnings(): Issue[] {

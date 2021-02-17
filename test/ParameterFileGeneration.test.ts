@@ -67,7 +67,7 @@ suite("parameterFileGeneration tests", () => {
                 const foundDefinition = dt.topLevelScope.getParameterDefinition(parameterName);
                 assert(foundDefinition);
                 // tslint:disable-next-line:no-non-null-assertion
-                const param = createParameterFromTemplateParameter(dt.topLevelScope, foundDefinition!, spacesPerIndent);
+                const param = createParameterFromTemplateParameter(dt.topLevelScope, foundDefinition!, undefined, spacesPerIndent);
                 assert.equal(param, expectedContents);
             });
         }

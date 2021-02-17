@@ -8,9 +8,10 @@
 import * as assert from 'assert';
 import * as path from 'path';
 import { Uri } from "vscode";
-import { DeploymentFileMapping, isWin32, normalizePath } from "../extension.bundle";
+import { DeploymentFileMapping, normalizePath } from "../extension.bundle";
 import { TestConfiguration } from "./support/TestConfiguration";
 import { testOnWin32 } from './support/testOnPlatform';
+import { isWin32 } from './testConstants';
 
 suite("DeploymentFileMapping", () => {
     const root = isWin32 ? "c:\\" : "/";

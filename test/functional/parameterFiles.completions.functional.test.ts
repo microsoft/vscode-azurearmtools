@@ -57,9 +57,9 @@ suite("Functional parameter file completions", () => {
 
                 // Create template/params files
                 if (template) {
-                    templateFile = new TempFile(stringify(template));
+                    templateFile = TempFile.fromContents(stringify(template));
                 }
-                let paramsFile = new TempFile(unmarkedText);
+                let paramsFile = TempFile.fromContents(unmarkedText);
 
                 // Map template to params
                 if (templateFile) {

@@ -7,6 +7,7 @@
 import * as os from 'os';
 import * as path from 'path';
 
+// Extension should include the dot, e.g. ".json"
 export function getTempFilePath(baseFilename?: string, extension?: string): string {
     let randomName = '';
     extension = extension === undefined ? '.jsonc' : extension;

@@ -4,9 +4,13 @@
 
 // tslint:disable: max-classes-per-file
 
+import * as path from "path";
 import { Range, Uri } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
+import { ext } from '../../extensionVariables';
 import { Span } from '../../language/Span';
+import { LanguageServerState } from '../../languageclient/startArmLanguageServer';
+import { assertNever } from '../../util/assertNever';
 import { pathExists } from '../../util/pathExists';
 import { IGotoParameterValueArgs } from '../../vscodeIntegration/commandArguments';
 import { getVSCodeRangeFromSpan } from '../../vscodeIntegration/vscodePosition';
@@ -15,8 +19,10 @@ import { IParameterDefinition } from '../parameters/IParameterDefinition';
 import { IParameterValuesSource } from '../parameters/IParameterValuesSource';
 import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSourceProvider';
 import { getRelativeParameterFilePath } from "../parameters/parameterFilePaths";
+import { ILinkedTemplateReference } from "./linkedTemplates/ILinkedTemplateReference";
+import { LinkedFileLoadState } from "./linkedTemplates/LinkedFileLoadState";
 import { TemplateScope, TemplateScopeKind } from './scopes/TemplateScope';
-import { TopLevelTemplateScope } from './scopes/templateScopes';
+import { LinkedTemplateScope, TopLevelTemplateScope } from './scopes/templateScopes';
 
 /**
  * A code lens to indicate the current parameter file and to open it
@@ -55,7 +61,10 @@ export class SelectParameterFileCodeLens extends ResolvableCodeLens {
     public constructor(
         scope: TemplateScope,
         span: Span,
-        private parameterFileUri: Uri | undefined
+        private parameterFileUri: Uri | undefined,
+        private _options: {
+            isForLinkedTemplate?: boolean;
+        }
     ) {
         super(scope, span);
     }
@@ -65,7 +74,10 @@ export class SelectParameterFileCodeLens extends ResolvableCodeLens {
         if (this.parameterFileUri) {
             title = `Change...`;
         } else {
-            title = "Select or create a parameter file to enable full validation...";
+            title =
+                this._options.isForLinkedTemplate ?
+                    "Select or create a parameter file to enable validation of relative linked templates..." :
+                    "Select or create a parameter file to enable full validation...";
         }
 
         this.command = {
@@ -208,17 +220,135 @@ export class LinkedTemplateCodeLens extends ResolvableCodeLens {
     private constructor(
         scope: TemplateScope,
         span: Span,
-        title: string
+        title: string,
+        linkedFileUri?: Uri
     ) {
         super(scope, span);
         this.command = {
             title: title,
-            command: ''
+            command: linkedFileUri ? 'azurerm-vscode-tools.codeLens.openLinkedTemplateFile' : '',
+            arguments:
+                linkedFileUri
+                    ? [linkedFileUri]
+                    : []
         };
     }
 
-    public static create(scope: TemplateScope, span: Span): LinkedTemplateCodeLens {
-        return new LinkedTemplateCodeLens(scope, span, "Linked template");
+    public static create(
+        scope: LinkedTemplateScope,
+        span: Span,
+        linkedTemplateReferences: ILinkedTemplateReference[] | undefined,
+        topLevelParameterValuesProvider: IParameterValuesSourceProvider | undefined
+    ): LinkedTemplateCodeLens[] {
+        let title = "Linked template";
+        const isRelativePath = scope.isRelativePath;
+        const hasParameterFile = !!topLevelParameterValuesProvider?.parameterFileUri;
+
+        // Currently only dealing with the first reference at the same location (e.g. if in a copy loop, multiple
+        // instances will be at the same ilne)
+        const firstLinkedTemplateRef = linkedTemplateReferences ? linkedTemplateReferences[0] : undefined;
+
+        if (isRelativePath) {
+            title = "Relative linked template";
+            if (!hasParameterFile) {
+                title += " " + "(validation disabled)";
+            } else if (firstLinkedTemplateRef) {
+                title += " " + "(validation enabled)";
+            } else {
+                title += " " + "(waiting for language server)";
+            }
+        } else {
+            title = "Linked template  ($(warning) Validation with uri not yet supported, consider using relativePath property)";
+        }
+
+        let langServerLoadState: string | undefined;
+
+        // If language server not running yet, show language server state instead of file load state
+        langServerLoadState = LinkedTemplateCodeLens.getLoadStateFromLanguageServerStatus();
+
+        let linkedUri: Uri | undefined;
+        let linkedRelativePath: string | undefined;
+        try {
+            const templateUri = scope.document.documentUri;
+            linkedUri = firstLinkedTemplateRef?.fullUri ? Uri.parse(firstLinkedTemplateRef.fullUri) : undefined;
+            if (linkedUri && templateUri.fsPath) {
+                const templateFolder = path.dirname(templateUri.fsPath);
+                linkedRelativePath = path.relative(templateFolder, linkedUri.fsPath);
+                if (!path.isAbsolute(linkedRelativePath) && !linkedRelativePath.startsWith('.')) {
+                    linkedRelativePath = `.${ext.pathSeparator}${linkedRelativePath}`;
+                }
+            }
+        } catch (error) {
+            console.warn(parseError(error).message);
+        }
+
+        if (firstLinkedTemplateRef && !langServerLoadState) {
+            if (linkedRelativePath) {
+                title += `: "${linkedRelativePath}"`;
+            }
+
+            langServerLoadState = LinkedTemplateCodeLens.getLinkedFileLoadStateLabelSuffix(firstLinkedTemplateRef);
+        }
+
+        if (langServerLoadState) {
+            title += ` - ${langServerLoadState}`;
+        }
+
+        const lenses: LinkedTemplateCodeLens[] = [new LinkedTemplateCodeLens(scope, span, title, linkedUri)];
+
+        if (isRelativePath && !hasParameterFile) {
+            lenses.push(
+                new SelectParameterFileCodeLens(
+                    scope,
+                    span,
+                    topLevelParameterValuesProvider?.parameterFileUri,
+                    {
+                        isForLinkedTemplate: true
+                    })
+            );
+        }
+
+        return lenses;
+    }
+
+    private static getLoadStateFromLanguageServerStatus(): string | undefined {
+        switch (ext.languageServerState) {
+            case LanguageServerState.Running:
+                // Everything fine, no need for state to be displayed in label
+                return undefined;
+            case LanguageServerState.Failed:
+                return "language server failed to start";
+            case LanguageServerState.NotStarted:
+                return "language server not started";
+            case LanguageServerState.Starting:
+                return "starting up...";
+            case LanguageServerState.Stopped:
+                return "language server stopped";
+            case LanguageServerState.LoadingSchemas:
+                return "loading schemas...";
+            default:
+                assertNever(ext.languageServerState);
+        }
+    }
+
+    private static getLinkedFileLoadStateLabelSuffix(ref: ILinkedTemplateReference): string {
+        switch (ref.loadState) {
+            case LinkedFileLoadState.LoadFailed:
+                return `$(error) ${ref.loadErrorMessage ?? 'Load failed'}`;
+            case LinkedFileLoadState.Loading:
+                return "loading...";
+            case LinkedFileLoadState.NotLoaded:
+                return "not loaded";
+            case LinkedFileLoadState.NotSupported:
+            case LinkedFileLoadState.TooDeep:
+                // An error will be shown already
+                return "";
+            case LinkedFileLoadState.SuccessfullyLoaded:
+                // Don't need an extra status for successful operation
+                return "";
+            default:
+                assertNever(ref.loadState);
+        }
     }
 
     public async resolve(): Promise<boolean> {

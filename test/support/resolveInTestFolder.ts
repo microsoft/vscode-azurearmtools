@@ -7,5 +7,5 @@ import * as path from 'path';
 export const testFolder = path.join(__dirname, '..', '..', '..', 'test');
 
 export function resolveInTestFolder(relativePath: string): string {
-    return path.join(testFolder, relativePath);
+    return path.resolve(testFolder, relativePath);
 }

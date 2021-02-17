@@ -1,0 +1,100 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "intParam": {
+            "type": "int",
+            "metadata": {
+                "description": "description"
+            }
+        },
+        "intOptionalParam": {
+            "type": "int",
+            "defaultValue": 654321
+        },
+        "intOptionalParam2": {
+            "type": "int",
+            "defaultValue": 987
+        },
+        "stringParam": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            }
+        },
+        "STRINGOPTIONALPARAM": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            },
+            "defaultValue": "childStringOptionalParam def value"
+        }
+    },
+    "resources": [
+        {
+            "name": "nestedDeployment1",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "properties": {
+                "expressionEvaluationOptions": {
+                    "scope": "inner"
+                },
+                "<!bang!>parameters": {
+                    "stringParam": {
+                        "value": "exising param"
+                    }
+                },
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "intParam": {
+                            "type": "int",
+                            "metadata": {
+                                "description": "description"
+                            }
+                        },
+                        "intOptionalParam": {
+                            "type": "int",
+                            "defaultValue": 123456
+                        },
+                        "stringParam": {
+                            "type": "string",
+                            "metadata": {
+                                "description": "description"
+                            }
+                        },
+                        "stringOptionalParam": {
+                            "type": "string",
+                            "metadata": {
+                                "description": "description"
+                            },
+                            "defaultValue": "childStringOptionalParam def value"
+                        }
+                    },
+                    "resources": [
+                        {
+                            "name": "linkedDeployment1",
+                            "type": "Microsoft.Resources/deployments",
+                            "apiVersion": "2020-06-01",
+                            "properties": {
+                                "mode": "Incremental",
+                                "templateLink": {
+                                    "relativePath": "childTemplate.json",
+                                    "contentVersion": "1.0.0.0"
+                                },
+                                "parameters": {
+                                    "stringParam": {
+                                        "value": ""
+                                    },
+                                    
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

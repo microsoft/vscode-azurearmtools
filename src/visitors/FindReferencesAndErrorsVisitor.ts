@@ -18,9 +18,10 @@ import { UnrecognizedBuiltinFunctionIssue, UnrecognizedUserFunctionIssue, Unreco
 import { validateBuiltInFunctionCallArgCounts, validateUserFunctionCallArgCounts } from "./validateFunctionCallArgCounts";
 
 /**
- * Finds all references to all definitions inside a JSON string
+ * Finds all references to all definitions inside a JSON string.  While doing so, records all undefined
+ * variable and parameter errors.
  */
-export class FindReferencesVisitor extends TleVisitor {
+export class FindReferencesAndErrorsVisitor extends TleVisitor {
     constructor(
         private readonly _scope: TemplateScope,
         private readonly _jsonStringStartIndex: number,
@@ -185,8 +186,8 @@ export class FindReferencesVisitor extends TleVisitor {
         referenceListsMap: Map<INamedDefinition | undefined, Reference.ReferenceList>,
         // Discovered errors are added to this
         errors: Issue[]
-    ): FindReferencesVisitor {
-        const visitor = new FindReferencesVisitor(scope, jsonStringStartIndex, metadata, referenceListsMap, errors);
+    ): FindReferencesAndErrorsVisitor {
+        const visitor = new FindReferencesAndErrorsVisitor(scope, jsonStringStartIndex, metadata, referenceListsMap, errors);
 
         if (tleValue) {
             tleValue.accept(visitor);

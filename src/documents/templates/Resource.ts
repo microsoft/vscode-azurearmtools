@@ -32,7 +32,7 @@ export class Resource implements IResource {
 
     public get childDeployment(): TemplateScope | undefined {
         return this._childTemplate.getOrCacheValue(() => {
-            return getChildTemplateForResourceObject(this.parentScope, this.resourceObject);
+            return getChildTemplateForResourceObject(this.parentScope, this, this.resourceObject);
         });
     }
 

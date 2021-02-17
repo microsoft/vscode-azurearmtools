@@ -400,15 +400,17 @@ export class TemplatePositionContext extends PositionContext {
         return insertionContext;
     }
 
-    public async getCompletionItems(triggerCharacter: string | undefined): Promise<ICompletionItemsResult> {
+    public async getCompletionItems(triggerCharacter: string | undefined, tabSize: number): Promise<ICompletionItemsResult> {
         const tleInfo = this.tleInfo;
         const completions: Completion.Item[] = [];
 
         for (let uniqueScope of this.document.uniqueScopes) {
             if (uniqueScope.parameterValuesSource) {
                 completions.push(...getPropertyValueCompletionItems(
-                    uniqueScope,
+                    uniqueScope.parameterDefinitionsSource,
                     uniqueScope.parameterValuesSource,
+                    uniqueScope.parentWithUniqueParamsVarsAndFunctions.parameterDefinitionsSource,
+                    tabSize,
                     this.documentCharacterIndex,
                     triggerCharacter));
             }
@@ -940,7 +942,7 @@ export class TemplatePositionContext extends PositionContext {
 
         const parameterCompletions: Completion.Item[] = [];
         if (replaceSpanInfo) {
-            for (const parameterDefinition of scope.parameterDefinitions) {
+            for (const parameterDefinition of scope.parameterDefinitionsSource.parameterDefinitions) {
                 parameterCompletions.push(Completion.Item.fromParameterDefinition(parameterDefinition, replaceSpanInfo.replaceSpan, replaceSpanInfo.includeRightParenthesisInCompletion, replaceSpanInfo.includeSingleQuotesInCompletion));
             }
         }

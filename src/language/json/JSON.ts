@@ -1111,15 +1111,29 @@ export class ParseResult {
      * Get the character index from the stream's perspective from the provided
      * line and column indexes.
      */
-    public getCharacterIndex(lineIndex: number, columnIndex: number): number {
-        // tslint:disable-next-line:max-line-length
+    public getCharacterIndex(lineIndex: number, columnIndex: number, options?: { allowOutOfBounds?: boolean }): number {
         assert(0 <= lineIndex, `Cannot get a character index for a negative line index (${lineIndex}).`);
-        // tslint:disable-next-line:max-line-length
-        assert(lineIndex < this.lineLengths.length, `Cannot get a character index for a line index greater than the number of parsed lines (lineIndex: ${lineIndex}, lines parsed: ${this.lineLengths.length}).`);
-        // tslint:disable-next-line:max-line-length
+        if (lineIndex >= this.lineLengths.length) {
+            if (options?.allowOutOfBounds) {
+                lineIndex = this.lineLengths.length - 1;
+                assert(lineIndex >= 0, "lineIndex>=0");
+            } else {
+                assert.fail(
+                    options?.allowOutOfBounds,
+                    `Cannot get a character index for a line index greater than the number of parsed lines (lineIndex: ${lineIndex}, lines parsed: ${this.lineLengths.length}).`);
+            }
+        }
+
         assert(0 <= columnIndex, `Cannot get a character index for a negative columnIndex (${columnIndex}).`);
-        // tslint:disable-next-line:max-line-length
-        assert(columnIndex <= this.getMaxColumnIndex(lineIndex), `Cannot get a character index for a columnIndex (${columnIndex}) that is greater than the lineIndex's (${lineIndex}) line max column index (${this.getMaxColumnIndex(lineIndex)}).`);
+        const maxColumnIndex = this.getMaxColumnIndex(lineIndex);
+        if (columnIndex > maxColumnIndex) {
+            if (options?.allowOutOfBounds) {
+                columnIndex = Math.max(0, maxColumnIndex - 1);
+                assert(maxColumnIndex >= 0);
+            } else {
+                assert.fail(`Cannot get a character index for a columnIndex (${columnIndex}) that is greater than the lineIndex's (${lineIndex}) line max column index (${this.getMaxColumnIndex(lineIndex)}).`);
+            }
+        }
 
         let characterIndex = columnIndex;
         for (let i = 0; i < lineIndex; ++i) {
@@ -1127,7 +1141,6 @@ export class ParseResult {
         }
 
         assert(0 <= characterIndex);
-
         return characterIndex;
     }
 
@@ -1159,6 +1172,8 @@ export class ParseResult {
         return new LineColPos(line, column);
     }
 
+    // Max column returned includes the CR/LF in the line.  So it normally returns > 0 unless
+    //   there are no characters at all in the document.
     public getMaxColumnIndex(lineIndex: number): number {
         assert(0 <= lineIndex && lineIndex < this.lineLengths.length);
 

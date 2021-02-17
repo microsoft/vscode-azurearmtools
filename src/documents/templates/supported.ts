@@ -2,7 +2,9 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { Position, Range, TextDocument, workspace } from "vscode";
+import * as path from 'path';
+import { languages, Position, Range, TextDocument, workspace } from "vscode";
+import { IActionContext } from "vscode-azureextensionui";
 import { armTemplateLanguageId, configKeys, configPrefix } from "../../constants";
 import { containsArmSchema, containsParametersSchema } from "./schemas";
 
@@ -101,4 +103,13 @@ export function mightBeDeploymentParameters(textDocument: TextDocument): boolean
     }
 
     return false;
+}
+
+export function setLangIdToArm(document: TextDocument, actionContext: IActionContext): void {
+    languages.setTextDocumentLanguage(document, armTemplateLanguageId);
+
+    actionContext.telemetry.properties.switchedToArm = 'true';
+    actionContext.telemetry.properties.docLangId = document.languageId;
+    actionContext.telemetry.properties.docExtension = path.extname(document.fileName);
+    actionContext.telemetry.suppressIfSuccessful = false;
 }

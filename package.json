@@ -2,10 +2,10 @@
     "name": "azurerm-vscode-tools",
     "displayName": "Azure Resource Manager (ARM) Tools",
     "description": "Language server, editing tools and snippets for Azure Resource Manager (ARM) template files.",
-    "version": "0.14.2-alpha",
+    "version": "0.15.0-alpha1",
     "publisher": "msazurermtools",
     "config": {
-        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.21058.5"
+        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.21113.1"
     },
     "categories": [
         "Azure",
@@ -52,6 +52,8 @@
         "onCommand:azurerm-vscode-tools.selectParameterFile",
         "onCommand:azurerm-vscode-tools.openParameterFile",
         "onCommand:azurerm-vscode-tools.openTemplateFile",
+        "onCommand:azurerm-vscode-tools.codeLens.openLinkedTemplateFile",
+        "onCommand:azurerm-vscode-tools.codeLens.gotoParameterValue",
         "onCommand:azurerm-vscode-tools.codeAction.addAllMissingParameters",
         "onCommand:azurerm-vscode-tools.codeAction.addMissingRequiredParameters",
         "onCommand:azurerm-vscode-tools.codeAction.extractParameter",
@@ -194,6 +196,12 @@
                 "title": "Go to parameter value",
                 "command": "azurerm-vscode-tools.codeLens.gotoParameterValue",
                 "$comment2": "Code lens on a parameter definition - navigates to parameter value"
+            },
+            {
+                "category": "Azure Resource Manager Tools",
+                "title": "Open a linked template file",
+                "command": "azurerm-vscode-tools.codeLens.openLinkedTemplateFile",
+                "$comment2": "Code lens on a linked template - opens the linked template"
             },
             {
                 "$comment": "============= Insert Item =============",
@@ -386,6 +394,10 @@
                 },
                 {
                     "command": "azurerm-vscode-tools.openTemplateFile",
+                    "when": "never"
+                },
+                {
+                    "command": "azurerm-vscode-tools.codeLens.openLinkedTemplateFile",
                     "when": "never"
                 },
                 {

@@ -7,9 +7,9 @@ import { IJsonDocument } from "../templates/IJsonDocument";
 import { ParameterValueDefinition } from "./ParameterValueDefinition";
 
 /**
- * Represents a "parameters" JSON object in a deployment template or parameter file
- * which contains parameter values (not definitions) for a template file or
- * linked/nested template
+ * Represents a "parameters" JSON object that provides values for a set of parameter definitions.
+ * These could be defined in a parameter file, or else in the "parameters" property of a linked or
+ *   nested deployment resource.
  */
 export interface IParameterValuesSource {
     /**

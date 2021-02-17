@@ -21,5 +21,5 @@ export interface IDocument extends IDocumentLocation {
     getDocumentText(span: Span, offsetIndex?: number): string;
 
     getDocumentPosition(documentCharacterIndex: number): LineColPos;
-    getDocumentCharacterIndex(documentLineIndex: number, documentColumnIndex: number): number;
+    getDocumentCharacterIndex(documentLineIndex: number, documentColumnIndex: number, options?: { allowOutOfBounds?: boolean }): number;
 }

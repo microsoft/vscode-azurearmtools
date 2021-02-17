@@ -17,4 +17,9 @@ export class CachedValue<T> {
 
         return this._value;
     }
+
+    public clear(): void {
+        this._isCached = false;
+        this._value = <T><unknown>undefined;
+    }
 }

@@ -9,8 +9,9 @@ import * as path from 'path';
 import * as rimraf from 'rimraf';
 import * as vscode from 'vscode';
 import { armTemplateLanguageId, configKeys, configPrefix, ext, stopArmLanguageServer } from "../extension.bundle";
-import { displayCacheStatus, publishCache } from './support/cache';
+import { displayCacheStatus } from './support/cache';
 import { delay } from "./support/delay";
+import { publishVsCodeLogs } from './support/publishVsCodeLogs';
 import { createTestLog, deleteTestLog, testLog } from './support/testLog';
 import { useTestSnippets } from './support/TestSnippets';
 import { logsFolder } from './testConstants';
@@ -32,7 +33,7 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     await fse.mkdir(logsFolder);
 
     await displayCacheStatus();
-    await publishCache(path.join(logsFolder, 'pre-cache'));
+    // await publishCache(path.join(logsFolder, 'pre-cache'));
 
     // For tests, set up dotnet install path to something unusual to simulate installing with unusual usernames
     process.env.ARM_DOTNET_INSTALL_FOLDER = ".dotnet O'Hare O'Donald";
@@ -69,11 +70,11 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
     console.log('Done: global.test.ts: suiteTeardown');
 
     await displayCacheStatus();
-    await publishCache(path.join(logsFolder, 'post-cache'));
+    // await publishCache(path.join(logsFolder, 'post-cache'));
 
-    // await publishVsCodeLogs('ms-dotnettools.vscode-dotnet-runtime');
-    // await publishVsCodeLogs(path.basename(ext.context.logPath));
-    // await publishVsCodeLogs(undefined);
+    await publishVsCodeLogs('ms-dotnettools.vscode-dotnet-runtime');
+    await publishVsCodeLogs(path.basename(ext.context.logPath));
+    await publishVsCodeLogs(undefined);
 
     /* Restoring settings doesn't seem to work at this point
     console.log('Restoring settings');
@@ -96,7 +97,7 @@ setup(function (this: Mocha.IBeforeAndAfterContext): void {
 
 // Runs after each individual test
 teardown(function (this: Mocha.IBeforeAndAfterContext): void {
-    console.warn("Teardown");
+    // console.warn("Teardown");
     if (!this.currentTest.state || this.currentTest.state === 'failed') {
         console.warn(`\n========= TESTLOG =========:\n${testLog.toString()}\n`);
         deleteTestLog();

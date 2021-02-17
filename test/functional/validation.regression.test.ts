@@ -4,9 +4,9 @@
 
 // tslint:disable:object-literal-key-quotes no-http-string max-func-body-length
 
-import { isWin32 } from "../../extension.bundle";
 import { diagnosticSources, testDiagnostics, testDiagnosticsFromFile } from "../support/diagnostics";
 import { testWithLanguageServer, testWithLanguageServerAndRealFunctionMetadata } from "../support/testWithLanguageServer";
+import { isWin32 } from "../testConstants";
 
 suite("Validation regression tests", () => {
     testWithLanguageServer("Template validation error for evaluated variables (https://github.com/microsoft/vscode-azurearmtools/issues/380)", async () =>

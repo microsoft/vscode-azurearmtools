@@ -447,7 +447,7 @@ suite("Snippets functional tests", () => {
         const snippetInsertIndex: number = template.indexOf(snippetInsertComment);
         const snippetInsertLength: number = snippetInsertComment.length;
         assert(snippetInsertIndex >= 0, `Couldn't find location to insert snippet (looking for "${snippetInsertComment}")`);
-        const fakeDt = new DeploymentTemplateDoc(template, Uri.file("fake template"));
+        const fakeDt = new DeploymentTemplateDoc(template, Uri.file("fake template"), 0);
         const snippetInsertPos = getVSCodePositionFromPosition(fakeDt.getContextFromDocumentCharacterIndex(snippetInsertIndex, undefined).documentPosition);
         const snippetInsertEndPos = getVSCodePositionFromPosition(fakeDt.getContextFromDocumentCharacterIndex(snippetInsertIndex + snippetInsertLength, undefined).documentPosition);
 
