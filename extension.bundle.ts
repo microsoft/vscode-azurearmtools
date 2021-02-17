@@ -72,7 +72,7 @@ export * from "./src/language/IssueKind";
 export * from "./src/language/LineColPos";
 export * from "./src/language/ReferenceList";
 export * from "./src/language/Span";
-export * from "./src/languageclient/startArmLanguageServer";
+export { LanguageServerState, notifyTemplateGraphAvailable, stopArmLanguageServer } from "./src/languageclient/startArmLanguageServer";
 export * from './src/snippets/ISnippetManager';
 export * from './src/snippets/SnippetManager';
 export * from "./src/survey";

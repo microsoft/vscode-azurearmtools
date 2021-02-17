@@ -5,9 +5,9 @@
 // tslint:disable:object-literal-key-quotes no-http-string max-func-body-length
 
 import * as assert from "assert";
-import { Uri } from "vscode";
+import { Uri, workspace } from "vscode";
 import { parseError } from "vscode-azureextensionui";
-import { assertNever, LinkedFileLoadState, notifications, notifyTemplateGraphAvailable, startArmLanguageServerInBackground } from "../../extension.bundle";
+import { armTemplateLanguageId, assertNever, LinkedFileLoadState, notifications, notifyTemplateGraphAvailable } from "../../extension.bundle";
 import { ExpectedDiagnostics, IExpectedDiagnostic, simplifyBadTypeResourceMessage, testDiagnostics, testDiagnosticsFromUri } from "../support/diagnostics";
 import { ensureLanguageServerAvailable } from "../support/ensureLanguageServerAvailable";
 import { resolveInTestFolder } from "../support/resolveInTestFolder";
@@ -112,7 +112,11 @@ suite("Linked templates functional tests", () => {
                 assert(mainTemplatePath);
                 assert(options.mainParametersFile);
 
-                startArmLanguageServerInBackground();
+                // Make sure the language server starts up
+                workspace.openTextDocument({
+                    content: "",
+                    language: armTemplateLanguageId
+                });
                 const client = await ensureLanguageServerAvailable();
                 client.onNotification(notifications.Diagnostics.codeAnalysisStarting, async (args: notifications.Diagnostics.ICodeAnalysisStartingArgs) => {
                     //testLog.writeLine(JSON.stringify(args, null, 2));
@@ -361,7 +365,6 @@ suite("Linked templates functional tests", () => {
             ]
         }
     );
-    */
 
     createLinkedTemplateTest(
         "tc09",
@@ -384,6 +387,7 @@ suite("Linked templates functional tests", () => {
             ]
         }
     );
+    */
 
     suite("Parameter validation", () => {
 

@@ -89,7 +89,7 @@ function test(): cp.ChildProcess {
     // This is the timeout for individual tests
     env.MOCHA_timeout = String(DEFAULT_TESTCASE_TIMEOUT_MS);
     env.MOCHA_enableTimeouts = "1";
-    env.MOCHA_grep = "linked.*tc"; //asdf
+    env.MOCHA_grep = "linked.*tc0[6-9]"; //asdf
     return cp.spawn('node', ['./node_modules/vscode/bin/test'], { stdio: 'inherit', env });
 }
 
