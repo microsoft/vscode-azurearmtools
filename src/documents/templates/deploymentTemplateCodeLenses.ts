@@ -255,7 +255,7 @@ export class LinkedTemplateCodeLens extends ResolvableCodeLens {
             } else if (firstLinkedTemplateRef) {
                 title += " " + "(validation enabled)";
             } else {
-                title += " " + "(waiting for language server)";
+                title += " " + "(cannot validate - make sure all other validation errors have been fixed)";
             }
         } else {
             title = "Linked template  ($(warning) Validation with uri not yet supported, consider using relativePath property)";
