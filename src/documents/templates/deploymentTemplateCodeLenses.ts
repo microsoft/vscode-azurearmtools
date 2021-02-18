@@ -253,7 +253,7 @@ export class LinkedTemplateCodeLens extends ResolvableCodeLens {
             if (!hasParameterFile) {
                 title += " " + "(validation disabled)";
             } else if (firstLinkedTemplateRef) {
-                title += " " + "(validation enabled)";
+                // title += " " + "(validation enabled)";
             } else {
                 title += " " + "(cannot validate - make sure all other validation errors have been fixed)";
             }
