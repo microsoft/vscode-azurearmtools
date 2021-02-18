@@ -15,6 +15,13 @@ export const basePath = path.join(__dirname, isWebpack ? "" : "..", "..");
 export const assetsPath = path.join(basePath, "assets");
 export const iconsPath = path.join(basePath, "icons");
 
+export namespace documentSchemes {
+    export const file: string = 'file'; // Locally-saved files
+    export const untitled: string = 'untitled';  // unsaved files
+    export const linkedTemplate = 'linked-template'; // For our ITextDocumentContentProvider
+    export const git = 'git';
+}
+
 export const languageServerName = 'ARM Template Language Server';
 export const languageFriendlyName = 'Azure Resource Manager Template';
 export const armTemplateLanguageId = 'arm-template';

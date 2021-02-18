@@ -7,6 +7,7 @@
 import * as path from "path";
 import { Range, Uri } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
+import { documentSchemes } from "../../constants";
 import { ext } from '../../extensionVariables';
 import { Span } from '../../language/Span';
 import { LanguageServerState } from '../../languageclient/startArmLanguageServer';
@@ -137,7 +138,7 @@ export class ParameterDefinitionCodeLens extends ResolvableCodeLens {
             } else if (hasDefaultValue) {
                 title = "Using default value";
             } else {
-                title = "$(warning) No value found";
+                title = "$(warning) No value found - click here to enter a value";
             }
         }
 
@@ -240,7 +241,7 @@ export class LinkedTemplateCodeLens extends ResolvableCodeLens {
         linkedTemplateReferences: ILinkedTemplateReference[] | undefined,
         topLevelParameterValuesProvider: IParameterValuesSourceProvider | undefined
     ): LinkedTemplateCodeLens[] {
-        let title = "Linked template";
+        let title: string;
         const isRelativePath = scope.isRelativePath;
         const hasParameterFile = !!topLevelParameterValuesProvider?.parameterFileUri;
 
@@ -250,15 +251,16 @@ export class LinkedTemplateCodeLens extends ResolvableCodeLens {
 
         if (isRelativePath) {
             title = "Relative linked template";
-            if (!hasParameterFile) {
-                title += " " + "(validation disabled)";
-            } else if (firstLinkedTemplateRef) {
-                // title += " " + "(validation enabled)";
-            } else {
-                title += " " + "(cannot validate - make sure all other validation errors have been fixed)";
-            }
         } else {
-            title = "Linked template  ($(warning) Validation with uri not yet supported, consider using relativePath property)";
+            title = "Linked template";
+        }
+
+        if (!hasParameterFile) {
+            title += " " + "(validation disabled)";
+        } else if (firstLinkedTemplateRef) {
+            // title += " " + "(validation enabled)";
+        } else {
+            title += " " + "(cannot validate - make sure all other validation errors have been fixed)";
         }
 
         let langServerLoadState: string | undefined;
@@ -267,24 +269,26 @@ export class LinkedTemplateCodeLens extends ResolvableCodeLens {
         langServerLoadState = LinkedTemplateCodeLens.getLoadStateFromLanguageServerStatus();
 
         let linkedUri: Uri | undefined;
-        let linkedRelativePath: string | undefined;
+        let friendlyPath: string | undefined;
         try {
             const templateUri = scope.document.documentUri;
             linkedUri = firstLinkedTemplateRef?.fullUri ? Uri.parse(firstLinkedTemplateRef.fullUri) : undefined;
-            if (linkedUri && templateUri.fsPath) {
+            if (isRelativePath && linkedUri && templateUri.fsPath && linkedUri.scheme === documentSchemes.file) {
                 const templateFolder = path.dirname(templateUri.fsPath);
-                linkedRelativePath = path.relative(templateFolder, linkedUri.fsPath);
-                if (!path.isAbsolute(linkedRelativePath) && !linkedRelativePath.startsWith('.')) {
-                    linkedRelativePath = `.${ext.pathSeparator}${linkedRelativePath}`;
+                friendlyPath = path.relative(templateFolder, linkedUri.fsPath);
+                if (!path.isAbsolute(friendlyPath) && !friendlyPath.startsWith('.')) {
+                    friendlyPath = `.${ext.pathSeparator}${friendlyPath}`;
                 }
+            } else {
+                friendlyPath = linkedUri?.toString();
             }
         } catch (error) {
             console.warn(parseError(error).message);
         }
 
         if (firstLinkedTemplateRef && !langServerLoadState) {
-            if (linkedRelativePath) {
-                title += `: "${linkedRelativePath}"`;
+            if (friendlyPath) {
+                title += `: "${friendlyPath}"`;
             }
 
             langServerLoadState = LinkedTemplateCodeLens.getLinkedFileLoadStateLabelSuffix(firstLinkedTemplateRef);

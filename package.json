@@ -175,7 +175,8 @@
                 "aliases": [
                     "Azure Resource Manager Template"
                 ],
-                "configuration": "dist/grammars/jsonc.arm.language-configuration.json"
+                "configuration": "dist/grammars/jsonc.arm.language-configuration.json",
+                "mimetypes": []
             }
         ],
         "commands": [

@@ -27,6 +27,9 @@ const newParameterValueSnippetLabel = `new-parameter-value`;
 export function getParameterValuesCodeActions(
     parameterValuesSource: IParameterValuesSource,
     parameterDefinitionsSource: IParameterDefinitionsSource,
+    // These are the parameter definitions for the scope's parent.  It used to determine whether
+    // we should pass the value of the parent's parameters into the parameter for a nested child
+    // (linked or nested template), when the parameter value is the same.
     parentParameterDefinitionsSource: IParameterDefinitionsSource | undefined,
     // This is the range currently being inspected
     range: Range | Selection,
