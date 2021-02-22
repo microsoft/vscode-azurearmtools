@@ -74,13 +74,6 @@ const resourceTypesNotAllowedInRGDeployments: string[] = [
 ];
 const resourceTypesNotAllowedInRGDeploymentsLC: string[] = resourceTypesNotAllowedInRGDeployments.map(resType => resType.toLowerCase());
 
-export interface IDocumentLinkInternal extends DocumentLink {
-    internal?: {
-        scope?: LinkedTemplateScope;
-        fallbackTarget?: Uri;
-    };
-}
-
 /**
  * Represents a deployment template file
  */
@@ -798,47 +791,18 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         // Make a document link out of each deployment "relativePath" property value
         for (const scope of ofType(this.allScopes, LinkedTemplateScope)) {
             const templateLinkObject = scope.templateLinkObject;
-            // Use the "uri" or "relativePath" property, whichever is there
-            const linkedPropertyStringValue: Json.StringValue | undefined =
-                //asdf
-                // templateLinkObject?.getPropertyValue(templateKeys.linkedDeploymentTemplateLinkRelativePath)
-                //     ?.asStringValue ??
-                templateLinkObject?.getPropertyValue(templateKeys.linkedDeploymentTemplateLinkUri)
+            const relativePathStringValue: Json.StringValue | undefined =
+                templateLinkObject?.getPropertyValue(templateKeys.linkedDeploymentTemplateLinkRelativePath)
                     ?.asStringValue;
-            const linkedPropertyString: string | undefined = linkedPropertyStringValue?.unquotedValue;
-            if (linkedPropertyStringValue && linkedPropertyString) {
-                // Add info directly to the link that we return, it will be handled back to us to resolve
-                const link = <IDocumentLinkInternal>new DocumentLink(
-                    getVSCodeRangeFromSpan(this, linkedPropertyStringValue.unquotedSpan.extendLeft(-1).extendRight(-1))); //asdf what if empty string? //asdf only if expression
-                //asdf doc why we're using delayed resolution
-                ///link.tooltip = linkedPropertyString; //asdf
-                //asdf link.target = Uri.parse(linkedPropertyString); //asdf?
-
-                if (scope.linkedFileReferences && scope.linkedFileReferences.length > 0) {
-
-                    link.target = Uri.parse(scope.linkedFileReferences[0].fullUri);
-                } else {
-                    // If we don't have info directly from the language server right now, use the fallback
-                    // asdf only for non-expressions
-                    if (linkedPropertyStringValue.propertyName?.toLocaleUpperCase() === templateKeys.linkedDeploymentTemplateLinkRelativePath.toLocaleLowerCase()) { //asdf do better
-                        link.target = link.internal?.fallbackTarget;
-                    } else {
-                        continue;
-                    }
-                }
-                link.tooltip = link.target?.toString();
-
-                // Provide the scope in order for the resolve code to be able to pick up the
-                //   correct link dynamically
-                // The fallback target is simply calculated by appending the relative path to the
-                //   folder the template is in (which theoretically should be the same thing)  asdf will only work for relativePath
-                const fallbackTarget = Uri.file(//asdf
-                    path.resolve(path.dirname(this.documentUri.fsPath), linkedPropertyStringValue.unquotedValue)
+            const relativePathValue: string | undefined = relativePathStringValue?.unquotedValue;
+            if (relativePathStringValue && relativePathValue && !isTleExpression(relativePathValue)) {
+                const link = new DocumentLink(
+                    getVSCodeRangeFromSpan(this, relativePathStringValue.unquotedSpan));
+                // The target is simply calculated by appending the relative path to the
+                //   folder the template is in (which theoretically should be the same thing)
+                link.target = Uri.file(
+                    path.resolve(path.dirname(this.documentUri.fsPath), relativePathValue)
                 );
-                link.internal = {
-                    scope,
-                    fallbackTarget,
-                };
 
                 links.push(link);
             }

@@ -1000,11 +1000,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             const documentLinkProvider: vscode.DocumentLinkProvider = {
                 provideDocumentLinks: async (document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.DocumentLink[] | undefined> => {
                     return await this.provideDocumentLinks(document, token);
-                },
-                //asdf
-                // resolveDocumentLink: async (link: vscode.DocumentLink, token: vscode.CancellationToken): Promise<vscode.DocumentLink | undefined> => {
-                //     return await this.resolveDocumentLink(link, token);
-                // }
+                }
             };
             ext.context.subscriptions.push(
                 vscode.languages.registerDocumentLinkProvider(templateDocumentSelector, documentLinkProvider));
