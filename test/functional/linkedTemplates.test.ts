@@ -533,4 +533,31 @@ suite("Linked templates functional tests", () => {
             }
         );
     }
+
+    // tslint:disable-next-line: no-suspicious-comment
+    // TODO: Hangs on build machine?
+    if (!isWin32) {
+        createLinkedTemplateTest(
+            "tc14",
+            "Incorrect content version specified",
+            {
+                mainTemplateFile: "templates/linkedTemplates/tc14-contentVersion/<TC>.json",
+                mainParametersFile: "<TC>.parameters.json",
+                mainTemplateExpected: [
+                    // tslint:disable-next-line: no-suspicious-comment
+                    // TODO: See 1144 - line/col in the additional info location is incorrect
+                    "Error: Template validation failed: The content version contained in the template '1.2.3.4' does not match the content version found in the deployment object's TemplateLink property '1.2.3.5'. Please see https://aka.ms/arm-deploy for usage details. (arm-template (validation)) [40,27] [The error occurred in a linked template near here] [40,27]",
+                ],
+                waitForDiagnosticSubstring: "The content version", // needed?
+                linkedTemplates: [
+                    {
+                        parentTemplateFile: "templates/linkedTemplates/tc14-contentVersion/<TC>.json",
+                        linkedTemplateFile: "templates/linkedTemplates/tc14-contentVersion/subfolder/child14.json",
+                        expected: [
+                        ]
+                    }
+                ]
+            }
+        );
+    }
 });
