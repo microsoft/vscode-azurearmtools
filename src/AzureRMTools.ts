@@ -157,7 +157,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
 
     // tslint:disable-next-line: max-func-body-length
     constructor(context: vscode.ExtensionContext) {
-        ext.provideOpenedDocuments = this; //asdf?
+        ext.provideOpenedDocuments = this;
 
         const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
         ext.jsonOutlineProvider = jsonOutline;
@@ -1006,21 +1006,33 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 vscode.languages.registerDocumentLinkProvider(templateDocumentSelector, documentLinkProvider));
 
             const linkedTemplateDocumentProvider: vscode.TextDocumentContentProvider = {
-                //asdf changed?
-                provideTextDocumentContent: async (uri: vscode.Uri, _token: vscode.CancellationToken): Promise<string | undefined/*asdf?*/> => {
-                    const dt = this.getOpenedDeploymentDocument(uri);
-                    return dt?.documentText;
+                provideTextDocumentContent: async (uri: vscode.Uri, _token: vscode.CancellationToken): Promise<string | undefined> => {
+                    return this.provideContentForNonlocalUri(uri);
                 }
             };
             ext.context.subscriptions.push(
                 vscode.workspace.registerTextDocumentContentProvider(
-                    'linked-template'/*asdf constant*/,
+                    documentSchemes.linkedTemplate,
                     linkedTemplateDocumentProvider));
 
             ext.context.subscriptions.push(notifyTemplateGraphAvailable(this.onTemplateGraphAvailable, this));
             ext.context.subscriptions.push(ext.languageServerStateChanged(this.onLanguageServerStateChanged, this));
 
             startArmLanguageServerInBackground();
+        });
+    }
+
+    /**
+     * A ITextDocumentContentProvider implementation to handle retrieving content for non-local files
+     * (such as http: files for a linked document URI).  These will be encoded with the
+     * documentSchemes.linkedTemplate scheme followed by the full URI.
+     * @param uri A "linkedtemplate:"-schema URI to open, e.g.
+     * linked-template:https%3A//raw.githubusercontent.com/StephenWeatherford/template-examples/master/linkedTemplates/uri/child.json
+     */
+    private async provideContentForNonlocalUri(uri: vscode.Uri): Promise<string | undefined> {
+        return callWithTelemetryAndErrorHandlingSync('provideContentForNonlocalUris', () => {
+            const dt = this.getOpenedDeploymentDocument(uri);
+            return dt?.documentText;
         });
     }
 
@@ -1677,25 +1689,6 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         });
     }
 
-    //asdf
-    // private async resolveDocumentLink(link: vscode.DocumentLink, token: vscode.CancellationToken): Promise<vscode.DocumentLink | undefined> {
-    //     return await callWithTelemetryAndErrorHandling('resolveDocumentLink', async (actionContext) => {
-    //         actionContext.telemetry.suppressIfSuccessful = true;
-
-    //         const internalLink = <IDocumentLinkInternal>link;
-    //         const scope = internalLink.internal?.scope;
-    //         if (scope && scope.linkedFileReferences && scope.linkedFileReferences.length > 0) {
-
-    //             link.target = vscode.Uri.parse(scope.linkedFileReferences[0].fullUri);
-    //         } else {
-    //             // If we don't have info directly from the language server right now, use the fallback
-    //             link.target = internalLink.internal?.fallbackTarget;
-    //         }
-
-    //         return link;
-    //     });
-    // }
-
     private onActiveTextEditorChanged(editor: vscode.TextEditor | undefined): void {
         callWithTelemetryAndErrorHandlingSync('onActiveTextEditorChanged', (actionContext: IActionContext): void => {
             actionContext.telemetry.properties.isActivationEvent = 'true';
@@ -1769,7 +1762,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             const rootTemplateUri = vscode.Uri.parse(e.rootTemplateUri);
             const rootTemplate = this.getOpenedDeploymentTemplate(rootTemplateUri);
 
-            // tslint:disable-next-line: no-console asdf
+            // tslint:disable-next-line: no-console
             console.log(`onTemplateGraphAvailable: ${path.basename(e.rootTemplateUri)}, isComplete=${e.isComplete}:`);
             // tslint:disable-next-line: no-console
             console.log(e.linkedTemplates.map(lt => `    ${path.basename(lt.fullUri)}: ${LinkedFileLoadState[lt.loadState]} ${lt.loadErrorMessage ?? ''}`).join('\n'));

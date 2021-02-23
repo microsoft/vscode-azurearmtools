@@ -8,8 +8,6 @@ import { DeploymentDocument } from "./documents/DeploymentDocument";
 import { DeploymentTemplateDoc } from "./documents/templates/DeploymentTemplateDoc";
 
 export interface IProvideOpenedDocuments {
-    //asdf should these be different in specificity?
     getOpenedDeploymentTemplate(documentOrUri: Uri): DeploymentTemplateDoc | undefined;
-    setOpenedDeploymentDocument(documentOrUri: Uri, document: DeploymentDocument): void; //asdf?
-    setStaticDocument(documentOrUri: Uri, content: string): void; //asdf?
+    setOpenedDeploymentDocument(documentOrUri: Uri, document: DeploymentDocument): void;
 }

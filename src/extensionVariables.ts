@@ -63,7 +63,7 @@ class ExtensionVariables {
 
     public EOL: string = os.EOL;
     public pathSeparator: string = path.sep;
-    public provideOpenedDocuments: IProvideOpenedDocuments | undefined; //asdf?
+    public provideOpenedDocuments: IProvideOpenedDocuments | undefined;
 
     public readonly ignoreBundle: boolean = !isWebpack;
 

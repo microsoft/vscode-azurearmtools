@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import * as path from 'path';
-import { TextDocument, Uri, window, workspace } from "vscode";
+import { Diagnostic, TextDocument, Uri, window, workspace } from "vscode";
 import { callWithTelemetryAndErrorHandling, IActionContext, parseError, TelemetryProperties } from "vscode-azureextensionui";
 import { armTemplateLanguageId, documentSchemes } from '../../../constants';
 import { Errorish } from '../../../Errorish';
@@ -103,7 +103,7 @@ export async function onRequestOpenLinkedFile(
             const loadErrorMessage = result.loadError ? parseError(result.loadError).message : undefined;
             return { loadErrorMessage };
         } else {
-            // Something else (http etc).  Try to retrieve the content
+            // Something else (http etc).  Try to retrieve the content and return it directly
             try {
                 const content = await httpGet(requestedLinkUri.toString());
                 assert(ext.provideOpenedDocuments, "ext.provideOpenedDocuments");
@@ -111,15 +111,13 @@ export async function onRequestOpenLinkedFile(
 
                 // We need to place it into our docs immediately because our text document content provider will be queried
                 // for content before we get the document open event
-                const dt = new DeploymentTemplateDoc(content, newUri/*asdf?*/, 0);
-                ext.provideOpenedDocuments.setOpenedDeploymentDocument(newUri/*newUri/*asdf*/, dt); //asdf comment
+                const dt = new DeploymentTemplateDoc(content, newUri, 0);
+                ext.provideOpenedDocuments.setOpenedDeploymentDocument(newUri, dt);
 
-                //asdf ext.provideOpenedDocuments.setStaticDocument(newUri, content); //asdf
-
-                const doc = await workspace.openTextDocument(newUri); //asdf don't wait (actually, don't load)
+                const doc = await workspace.openTextDocument(newUri);
                 setLangIdToArm(doc, context);
 
-                return { content }; //asdf
+                return { content };
             } catch (error) {
                 return { loadErrorMessage: parseError(error).message };
             }
@@ -201,9 +199,22 @@ export function assignTemplateGraphToDeploymentTemplate(
 }
 
 export async function openLinkedTemplateFile(linkedTemplateUri: Uri, actionContext: IActionContext): Promise<void> {
-    //asdf handle create new
     const targetUri = prependLinkedTemplateScheme(linkedTemplateUri);
     const doc = await workspace.openTextDocument(targetUri);
     setLangIdToArm(doc, actionContext);
     await window.showTextDocument(doc);
+}
+
+/**
+ * Diagnostics that point to non-file URIs need to use our custom "linked-template:" schema
+ * because vscode doesn't natively support navigating to non-file URIs.
+ */
+export function convertDiagnosticUrisToLinkedTemplateSchema(diagnostic: Diagnostic): void {
+    if (diagnostic.relatedInformation) {
+        for (const ri of diagnostic.relatedInformation) {
+            if (ri.location.uri.scheme !== documentSchemes.file) {
+                ri.location.uri = prependLinkedTemplateScheme(ri.location.uri);
+            }
+        }
+    }
 }

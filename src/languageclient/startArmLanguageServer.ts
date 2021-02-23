@@ -10,14 +10,13 @@ import { Diagnostic, Event, EventEmitter, ProgressLocation, Uri, window, workspa
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, ITelemetryContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
 import { acquireSharedDotnetInstallation } from '../acquisition/acquireSharedDotnetInstallation';
-import { armTemplateLanguageId, backendValidationDiagnosticsSource, configKeys, configPrefix, documentSchemes, downloadDotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName, notifications } from '../constants';
-import { INotifyTemplateGraphArgs, IRequestOpenLinkedFileArgs, onRequestOpenLinkedFile } from '../documents/templates/linkedTemplates/linkedTemplates';
+import { armTemplateLanguageId, backendValidationDiagnosticsSource, configKeys, configPrefix, downloadDotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName, notifications } from '../constants';
+import { convertDiagnosticUrisToLinkedTemplateSchema, INotifyTemplateGraphArgs, IRequestOpenLinkedFileArgs, onRequestOpenLinkedFile } from '../documents/templates/linkedTemplates/linkedTemplates';
 import { templateDocumentSelector } from '../documents/templates/supported';
 import { ext } from '../extensionVariables';
 import { assert } from '../fixed_assert';
 import { assertNever } from '../util/assertNever';
 import { delayWhileSync } from '../util/delayWhileSync';
-import { prependLinkedTemplateScheme } from '../util/prependLinkedTemplateScheme';
 import { WrappedErrorHandler } from './WrappedErrorHandler';
 
 const languageServerDllName = 'Microsoft.ArmLanguageServer.dll';
@@ -176,13 +175,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
                 handleDiagnostics: (uri: Uri, diagnostics: Diagnostic[], next: (uri: Uri, diagnostics: Diagnostic[]) => void): void => {
                     for (const d of diagnostics) {
                         if (d.source === backendValidationDiagnosticsSource) {
-                            if (d.relatedInformation) {
-                                for (const ri of d.relatedInformation) {
-                                    if (ri.location.uri.scheme !== documentSchemes.file) { //asdf?
-                                        ri.location.uri = prependLinkedTemplateScheme(ri.location.uri);
-                                    }
-                                }
-                            }
+                            convertDiagnosticUrisToLinkedTemplateSchema(d);
                         }
                     }
                     next(uri, diagnostics);

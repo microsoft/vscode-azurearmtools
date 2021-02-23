@@ -18,7 +18,7 @@ export const iconsPath = path.join(basePath, "icons");
 export namespace documentSchemes {
     export const file: string = 'file'; // Locally-saved files
     export const untitled: string = 'untitled';  // unsaved files
-    export const linkedTemplate = 'linked-template'; // For our ITextDocumentContentProvider
+    export const linkedTemplate = 'linked-template'; // For our ITextDocumentContentProvider that serves HTTP documents
     export const git = 'git';
 }
 

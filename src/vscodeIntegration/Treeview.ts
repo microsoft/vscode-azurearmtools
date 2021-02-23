@@ -250,9 +250,11 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<IElementInfo
 
     public getTreeItem(elementInfo: IElementInfo): vscode.TreeItem {
         const activeTextEditor = vscode.window.activeTextEditor;
+        // tslint:disable-next-line: no-suspicious-comment
+        // TODO: Shouldn't be using activeTextEditor (can be null) - store in IElementInfo?
         assert(activeTextEditor);
         // tslint:disable-next-line: no-non-null-assertion // Asserted
-        const document = activeTextEditor!.document;
+        const document = activeTextEditor?.document;
         const start = document.positionAt(elementInfo.current.key.start);
         const end = elementInfo.current.value.end !== undefined ? document.positionAt(elementInfo.current.value.end) : start;
 
