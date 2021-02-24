@@ -8,7 +8,7 @@ import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, ITelemetryContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { delay } from "../test/support/delay";
-import { armTemplateLanguageId, configKeys, configPrefix, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "./constants";
+import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "./constants";
 import { DeploymentDocument, ResolvableCodeLens } from "./documents/DeploymentDocument";
 import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
 import { DeploymentParametersDoc } from "./documents/parameters/DeploymentParametersDoc";
@@ -20,7 +20,7 @@ import { considerQueryingForParameterFile, getFriendlyPathToFile, openParameterF
 import { addMissingParameters } from "./documents/parameters/ParameterValues";
 import { IReferenceSite, PositionContext } from "./documents/positionContexts/PositionContext";
 import { TemplatePositionContext } from "./documents/positionContexts/TemplatePositionContext";
-import { DeploymentTemplateDoc, IDocumentLinkInternal } from "./documents/templates/DeploymentTemplateDoc";
+import { DeploymentTemplateDoc } from "./documents/templates/DeploymentTemplateDoc";
 import { ExtractItem } from './documents/templates/ExtractItem';
 import { getNormalizedDocumentKey } from './documents/templates/getNormalizedDocumentKey';
 import { gotoResources } from './documents/templates/gotoResources';
@@ -157,6 +157,8 @@ export class AzureRMTools implements IProvideOpenedDocuments {
 
     // tslint:disable-next-line: max-func-body-length
     constructor(context: vscode.ExtensionContext) {
+        ext.provideOpenedDocuments = this;
+
         const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
         ext.jsonOutlineProvider = jsonOutline;
         context.subscriptions.push(vscode.window.registerTreeDataProvider("azurerm-vscode-tools.template-outline", jsonOutline));
@@ -213,8 +215,8 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 await openTemplateFile(this._mapping, sourceParamUri, undefined);
             });
         registerCommand(
-            "azurerm-vscode-tools.codeLens.openLinkedTemplateFile", async (_actionContext: IActionContext, linkedTemplateUri: vscode.Uri) => {
-                await openLinkedTemplateFile(linkedTemplateUri);
+            "azurerm-vscode-tools.codeLens.openLinkedTemplateFile", async (actionContext: IActionContext, linkedTemplateUri: vscode.Uri) => {
+                await openLinkedTemplateFile(linkedTemplateUri, actionContext);
             });
         registerCommand("azurerm-vscode-tools.insertItem", async (actionContext: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
             editor = editor || vscode.window.activeTextEditor;
@@ -329,6 +331,9 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             this.updateOpenedDocument(activeDocument);
         }
     }
+    public setStaticDocument(documentOrUri: vscode.Uri, content: string): void {
+        throw new Error("Method not implemented.");
+    }
 
     private getRegisteredRenameCodeActionProvider(): vscode.Disposable {
         const metaData = { providedCodeActionKinds: [vscode.CodeActionKind.RefactorRewrite] };
@@ -404,7 +409,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
     }
 
     // Add the deployment doc to our list of opened deployment docs
-    private setOpenedDeploymentDocument(documentUri: vscode.Uri, deploymentDocument: DeploymentDocument | undefined): void {
+    public setOpenedDeploymentDocument(documentUri: vscode.Uri, deploymentDocument: DeploymentDocument | undefined): void {
         assert(documentUri);
         const documentPathKey = getNormalizedDocumentKey(documentUri);
 
@@ -760,7 +765,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
     private considerQueryingForNewerSchema(editor: vscode.TextEditor, deploymentTemplate: DeploymentTemplateDoc): void {
         // Only deal with saved files, because we don't have an accurate
         //   URI that we can track for unsaved files, and it's a better user experience.
-        if (editor.document.uri.scheme !== 'file') {
+        if (editor.document.uri.scheme !== documentSchemes.file) {
             return;
         }
 
@@ -995,18 +1000,39 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             const documentLinkProvider: vscode.DocumentLinkProvider = {
                 provideDocumentLinks: async (document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.DocumentLink[] | undefined> => {
                     return await this.provideDocumentLinks(document, token);
-                },
-                resolveDocumentLink: async (link: vscode.DocumentLink, token: vscode.CancellationToken): Promise<vscode.DocumentLink | undefined> => {
-                    return await this.resolveDocumentLink(link, token);
                 }
             };
             ext.context.subscriptions.push(
                 vscode.languages.registerDocumentLinkProvider(templateDocumentSelector, documentLinkProvider));
 
+            const linkedTemplateDocumentProvider: vscode.TextDocumentContentProvider = {
+                provideTextDocumentContent: async (uri: vscode.Uri, _token: vscode.CancellationToken): Promise<string | undefined> => {
+                    return this.provideContentForNonlocalUri(uri);
+                }
+            };
+            ext.context.subscriptions.push(
+                vscode.workspace.registerTextDocumentContentProvider(
+                    documentSchemes.linkedTemplate,
+                    linkedTemplateDocumentProvider));
+
             ext.context.subscriptions.push(notifyTemplateGraphAvailable(this.onTemplateGraphAvailable, this));
             ext.context.subscriptions.push(ext.languageServerStateChanged(this.onLanguageServerStateChanged, this));
 
             startArmLanguageServerInBackground();
+        });
+    }
+
+    /**
+     * A ITextDocumentContentProvider implementation to handle retrieving content for non-local files
+     * (such as http: files for a linked document URI).  These will be encoded with the
+     * documentSchemes.linkedTemplate scheme followed by the full URI.
+     * @param uri A "linkedtemplate:"-schema URI to open, e.g.
+     * linked-template:https%3A//raw.githubusercontent.com/StephenWeatherford/template-examples/master/linkedTemplates/uri/child.json
+     */
+    private async provideContentForNonlocalUri(uri: vscode.Uri): Promise<string | undefined> {
+        return callWithTelemetryAndErrorHandlingSync('provideContentForNonlocalUris', () => {
+            const dt = this.getOpenedDeploymentDocument(uri);
+            return dt?.documentText;
         });
     }
 
@@ -1663,24 +1689,6 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         });
     }
 
-    private async resolveDocumentLink(link: vscode.DocumentLink, token: vscode.CancellationToken): Promise<vscode.DocumentLink | undefined> {
-        return await callWithTelemetryAndErrorHandling('resolveDocumentLink', async (actionContext) => {
-            actionContext.telemetry.suppressIfSuccessful = true;
-
-            const internalLink = <IDocumentLinkInternal>link;
-            const scope = internalLink.internal?.scope;
-            if (scope && scope.linkedFileReferences && scope.linkedFileReferences.length > 0) {
-
-                link.target = vscode.Uri.parse(scope.linkedFileReferences[0].fullUri);
-            } else {
-                // If we don't have info directly from the language server right now, use the fallback
-                link.target = internalLink.internal?.fallbackTarget;
-            }
-
-            return link;
-        });
-    }
-
     private onActiveTextEditorChanged(editor: vscode.TextEditor | undefined): void {
         callWithTelemetryAndErrorHandlingSync('onActiveTextEditorChanged', (actionContext: IActionContext): void => {
             actionContext.telemetry.properties.isActivationEvent = 'true';
@@ -1754,7 +1762,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             const rootTemplateUri = vscode.Uri.parse(e.rootTemplateUri);
             const rootTemplate = this.getOpenedDeploymentTemplate(rootTemplateUri);
 
-            // tslint:disable-next-line: no-console asdf
+            // tslint:disable-next-line: no-console
             console.log(`onTemplateGraphAvailable: ${path.basename(e.rootTemplateUri)}, isComplete=${e.isComplete}:`);
             // tslint:disable-next-line: no-console
             console.log(e.linkedTemplates.map(lt => `    ${path.basename(lt.fullUri)}: ${LinkedFileLoadState[lt.loadState]} ${lt.loadErrorMessage ?? ''}`).join('\n'));

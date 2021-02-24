@@ -5,8 +5,10 @@
 
 import * as vscode from "vscode";
 import { normalizePath } from "../../util/normalizePath";
+import { removeLinkedTemplateScheme } from "../../util/prependLinkedTemplateScheme";
 
 export function getNormalizedDocumentKey(documentUri: vscode.Uri): string {
     // We want a normalized file path to use as key, but also need to differentiate documents with different URI schemes
-    return `${documentUri.scheme}|${normalizePath(documentUri)}`;
+    const uri = removeLinkedTemplateScheme(documentUri);
+    return `${uri.scheme}|${normalizePath(uri)}`;
 }

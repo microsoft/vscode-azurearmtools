@@ -6,12 +6,12 @@
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
-import { Event, EventEmitter, ProgressLocation, window, workspace } from 'vscode';
+import { Diagnostic, Event, EventEmitter, ProgressLocation, Uri, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, ITelemetryContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
 import { acquireSharedDotnetInstallation } from '../acquisition/acquireSharedDotnetInstallation';
-import { armTemplateLanguageId, configKeys, configPrefix, downloadDotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName, notifications } from '../constants';
-import { INotifyTemplateGraphArgs, IRequestOpenLinkedFileArgs, onRequestOpenLinkedFile } from '../documents/templates/linkedTemplates/linkedTemplates';
+import { armTemplateLanguageId, backendValidationDiagnosticsSource, configKeys, configPrefix, downloadDotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName, notifications } from '../constants';
+import { convertDiagnosticUrisToLinkedTemplateSchema, INotifyTemplateGraphArgs, IRequestOpenLinkedFileArgs, onRequestOpenLinkedFile } from '../documents/templates/linkedTemplates/linkedTemplates';
 import { templateDocumentSelector } from '../documents/templates/supported';
 import { ext } from '../extensionVariables';
 import { assert } from '../fixed_assert';
@@ -170,6 +170,16 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
             revealOutputChannelOn: RevealOutputChannelOn.Error,
             synchronize: {
                 configurationSection: configPrefix
+            },
+            middleware: {
+                handleDiagnostics: (uri: Uri, diagnostics: Diagnostic[], next: (uri: Uri, diagnostics: Diagnostic[]) => void): void => {
+                    for (const d of diagnostics) {
+                        if (d.source === backendValidationDiagnosticsSource) {
+                            convertDiagnosticUrisToLinkedTemplateSchema(d);
+                        }
+                    }
+                    next(uri, diagnostics);
+                }
             }
         };
 

@@ -52,7 +52,6 @@ suite("Add missing parameters for nested/linked templates", () => {
                 const { dt: childDt } = await parseTemplateWithMarkers(linkedTemplate, undefined, { fromFile: true, documentUri: childUri, tabSize });
                 const graph: INotifyTemplateGraphArgs = {
                     rootTemplateUri: templateUri.toString(),
-                    rootTemplateDocVersion: 1,
                     linkedTemplates: [
                         {
                             fullUri: childUri.toString(),
@@ -66,7 +65,8 @@ suite("Add missing parameters for nested/linked templates", () => {
                         }
                     ],
                     fullValidationEnabled: true,
-                    isComplete: true
+                    isComplete: true,
+                    rootTemplateDocVersion: 0,
                 };
                 const allLoadedTemplates = new NormalizedMap<Uri, DeploymentTemplateDoc>(getNormalizedDocumentKey);
                 allLoadedTemplates.set(templateUri, dt);
@@ -74,6 +74,9 @@ suite("Add missing parameters for nested/linked templates", () => {
                 assignTemplateGraphToDeploymentTemplate(graph, dt, {
                     getOpenedDeploymentTemplate: (uri: Uri): DeploymentTemplateDoc | undefined => {
                         return allLoadedTemplates.get(uri);
+                    },
+                    setOpenedDeploymentDocument: (_uri: Uri, _doc: DeploymentTemplateDoc): void => {
+                        assert.fail("NYI");
                     }
                 });
             }

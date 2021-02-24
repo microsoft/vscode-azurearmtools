@@ -7,13 +7,12 @@ import * as fse from 'fs-extra';
 import * as path from 'path';
 import { commands, MessageItem, TextDocument, Uri, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, DialogResponses, IActionContext, IAzureQuickPickItem, UserCancelledError } from 'vscode-azureextensionui';
-import { armTemplateLanguageId, configKeys, configPrefix, globalStateKeys } from '../../constants';
+import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes, globalStateKeys } from '../../constants';
 import { ext } from '../../extensionVariables';
 import { normalizePath } from '../../util/normalizePath';
 import { pathExists } from '../../util/pathExists';
 import { DeploymentTemplateDoc } from '../templates/DeploymentTemplateDoc';
 import { containsParametersSchema } from '../templates/schemas';
-import { documentSchemes } from '../templates/supported';
 import { DeploymentFileMapping } from './DeploymentFileMapping';
 import { queryCreateParameterFile } from './parameterFileGeneration';
 import { getRelativeParameterFilePath } from './parameterFilePaths';
@@ -397,7 +396,7 @@ export function considerQueryingForParameterFile(mapping: DeploymentFileMapping,
 
   // Only deal with saved files, because we don't have an accurate
   //   URI that we can track for unsaved files, and it's a better user experience.
-  if (templateUri.scheme !== 'file') {
+  if (templateUri.scheme !== documentSchemes.file) {
     return;
   }
 

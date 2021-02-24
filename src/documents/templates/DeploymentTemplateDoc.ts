@@ -74,13 +74,6 @@ const resourceTypesNotAllowedInRGDeployments: string[] = [
 ];
 const resourceTypesNotAllowedInRGDeploymentsLC: string[] = resourceTypesNotAllowedInRGDeployments.map(resType => resType.toLowerCase());
 
-export interface IDocumentLinkInternal extends DocumentLink {
-    internal?: {
-        scope?: LinkedTemplateScope;
-        fallbackTarget?: Uri;
-    };
-}
-
 /**
  * Represents a deployment template file
  */
@@ -797,27 +790,21 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
         // Make a document link out of each deployment "relativePath" property value
         for (const scope of ofType(this.allScopes, LinkedTemplateScope)) {
-            const relativePathValue: Json.StringValue | undefined =
-                scope.templateLinkObject?.getPropertyValue(templateKeys.linkedDeploymentTemplateLinkRelativePath)
+            const templateLinkObject = scope.templateLinkObject;
+            const relativePathStringValue: Json.StringValue | undefined =
+                templateLinkObject?.getPropertyValue(templateKeys.linkedDeploymentTemplateLinkRelativePath)
                     ?.asStringValue;
-            if (relativePathValue && relativePathValue.unquotedValue) {
-                // Add info directly to the link that we return, it will be handled back to us to resolve
-                const internalLink = <IDocumentLinkInternal>new DocumentLink(
-                    getVSCodeRangeFromSpan(this, relativePathValue.unquotedSpan));
-
-                // Provide the scope in order for the resolve code to be able to pick up the
-                //   correct link dynamically
-                // The fallback target is simply the calculated by appending the relative path to the
+            const relativePathValue: string | undefined = relativePathStringValue?.unquotedValue;
+            if (relativePathStringValue && relativePathValue && !isTleExpression(relativePathValue)) {
+                const link = new DocumentLink(
+                    getVSCodeRangeFromSpan(this, relativePathStringValue.unquotedSpan));
+                // The target is simply calculated by appending the relative path to the
                 //   folder the template is in (which theoretically should be the same thing)
-                const fallbackTarget = Uri.file(
-                    path.resolve(path.dirname(this.documentUri.fsPath), relativePathValue.unquotedValue)
+                link.target = Uri.file(
+                    path.resolve(path.dirname(this.documentUri.fsPath), relativePathValue)
                 );
-                internalLink.internal = {
-                    scope,
-                    fallbackTarget,
-                };
 
-                links.push(internalLink);
+                links.push(link);
             }
         }
 

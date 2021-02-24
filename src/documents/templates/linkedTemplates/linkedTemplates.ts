@@ -3,17 +3,19 @@
 // ----------------------------------------------------------------------------
 
 import * as path from 'path';
-import { commands, DocumentLink, TextDocument, Uri, workspace } from "vscode";
+import { Diagnostic, TextDocument, Uri, window, workspace } from "vscode";
 import { callWithTelemetryAndErrorHandling, IActionContext, parseError, TelemetryProperties } from "vscode-azureextensionui";
-import { armTemplateLanguageId } from '../../../constants';
+import { armTemplateLanguageId, documentSchemes } from '../../../constants';
 import { Errorish } from '../../../Errorish';
 import { ext } from "../../../extensionVariables";
 import { assert } from '../../../fixed_assert';
 import { IProvideOpenedDocuments } from '../../../IProvideOpenedDocuments';
 import { ContainsBehavior } from "../../../language/Span";
+import { httpGet } from '../../../util/httpGet';
 import { normalizePath } from '../../../util/normalizePath';
 import { ofType } from '../../../util/ofType';
 import { pathExists } from '../../../util/pathExists';
+import { prependLinkedTemplateScheme } from '../../../util/prependLinkedTemplateScheme';
 import { DeploymentTemplateDoc } from '../../templates/DeploymentTemplateDoc';
 import { LinkedTemplateScope } from '../../templates/scopes/templateScopes';
 import { setLangIdToArm } from '../../templates/supported';
@@ -32,8 +34,9 @@ export interface IRequestOpenLinkedFileArgs {
 /**
  * Response sent back to language server from RequestOpenLinkedFile request
  */
-export interface IRequestOpenLinkedFileResult {
-    loadErrorMessage: string | undefined;
+export interface IRequestOpenLinkedFileResult { // Corresonds to OpenLinkedFileRequest.Result in language server
+    loadErrorMessage?: string;
+    content?: string;
 }
 
 enum PathType {
@@ -80,23 +83,45 @@ export async function onRequestOpenLinkedFile(
         properties.openErrorType = '';
         properties.openResult = 'Error';
 
-        const requestedLinkResolvedPathParsed: Uri = Uri.parse(requestedLinkResolvedUri, true);
+        const requestedLinkUri: Uri = Uri.parse(requestedLinkResolvedUri, true);
 
-        assert(path.isAbsolute(requestedLinkResolvedPathParsed.fsPath), "Internal error: requestedLinkUri should be an absolute path");
+        assert(path.isAbsolute(requestedLinkUri.fsPath), "Internal error: requestedLinkUri should be an absolute path");
 
-        // Strip the path of any query string, and use only the local file path
-        const localPath = requestedLinkResolvedPathParsed.fsPath;
+        if (requestedLinkUri.scheme === documentSchemes.file) {
+            // It's a local file.
+            // Strip the path of any query string, and use only the local file path
+            const localPath = requestedLinkUri.fsPath;
 
-        const result = await tryOpenLinkedFile(localPath, pathType, context);
-        if (result.document) {
-            properties.openResult = 'Loaded';
+            const result = await tryOpenLocalLinkedFile(localPath, pathType, context);
+            if (result.document) {
+                properties.openResult = 'Loaded';
+            } else {
+                const parsedError = parseError(result.loadError);
+                properties.openErrorType = parsedError.errorType;
+            }
+
+            const loadErrorMessage = result.loadError ? parseError(result.loadError).message : undefined;
+            return { loadErrorMessage };
         } else {
-            const parsedError = parseError(result.loadError);
-            properties.openErrorType = parsedError.errorType;
-        }
+            // Something else (http etc).  Try to retrieve the content and return it directly
+            try {
+                const content = await httpGet(requestedLinkUri.toString());
+                assert(ext.provideOpenedDocuments, "ext.provideOpenedDocuments");
+                const newUri = prependLinkedTemplateScheme(requestedLinkUri);
 
-        const loadErrorMessage = result.loadError ? parseError(result.loadError).message : undefined;
-        return { loadErrorMessage };
+                // We need to place it into our docs immediately because our text document content provider will be queried
+                // for content before we get the document open event
+                const dt = new DeploymentTemplateDoc(content, newUri, 0);
+                ext.provideOpenedDocuments.setOpenedDeploymentDocument(newUri, dt);
+
+                const doc = await workspace.openTextDocument(newUri);
+                setLangIdToArm(doc, context);
+
+                return { content };
+            } catch (error) {
+                return { loadErrorMessage: parseError(error).message };
+            }
+        }
     });
 }
 
@@ -105,7 +130,7 @@ export async function onRequestOpenLinkedFile(
  * it will get sent to the language server.
  * <remarks>This function should not throw
  */
-async function tryOpenLinkedFile(
+async function tryOpenLocalLinkedFile(
     localPath: string,
     pathType: PathType,
     context: IActionContext
@@ -173,9 +198,23 @@ export function assignTemplateGraphToDeploymentTemplate(
     }
 }
 
-export async function openLinkedTemplateFile(linkedTemplateUri: Uri): Promise<void> {
-    const args = <DocumentLink>{
-        target: linkedTemplateUri
-    };
-    await commands.executeCommand("editor.action.openLink", args);
+export async function openLinkedTemplateFile(linkedTemplateUri: Uri, actionContext: IActionContext): Promise<void> {
+    const targetUri = prependLinkedTemplateScheme(linkedTemplateUri);
+    const doc = await workspace.openTextDocument(targetUri);
+    setLangIdToArm(doc, actionContext);
+    await window.showTextDocument(doc);
+}
+
+/**
+ * Diagnostics that point to non-file URIs need to use our custom "linked-template:" schema
+ * because vscode doesn't natively support navigating to non-file URIs.
+ */
+export function convertDiagnosticUrisToLinkedTemplateSchema(diagnostic: Diagnostic): void {
+    if (diagnostic.relatedInformation) {
+        for (const ri of diagnostic.relatedInformation) {
+            if (ri.location.uri.scheme !== documentSchemes.file) {
+                ri.location.uri = prependLinkedTemplateScheme(ri.location.uri);
+            }
+        }
+    }
 }

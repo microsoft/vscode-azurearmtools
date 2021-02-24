@@ -10,6 +10,7 @@ import { IAzExtOutputChannel, IAzureUserInput } from "vscode-azureextensionui";
 import { LanguageClient } from "vscode-languageclient";
 import { configPrefix, isWebpack } from "./constants";
 import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
+import { IProvideOpenedDocuments } from './IProvideOpenedDocuments';
 import { LanguageServerState } from "./languageclient/startArmLanguageServer";
 import { ISnippetManager } from './snippets/ISnippetManager';
 import { CompletionsSpy } from "./util/CompletionsSpy";
@@ -24,6 +25,7 @@ import { JsonOutlineProvider } from "./vscodeIntegration/Treeview";
 // tslint:disable-next-line: class-name
 class ExtensionVariables {
     public readonly extensionId: string = "msazurermtools.azurerm-vscode-tools";
+
     private _context: InitializeBeforeUse<vscode.ExtensionContext> = new InitializeBeforeUse<vscode.ExtensionContext>();
     private _jsonOutlineProvider: InitializeBeforeUse<JsonOutlineProvider> = new InitializeBeforeUse<JsonOutlineProvider>();
     private _outputChannel: InitializeBeforeUse<IAzExtOutputChannel> = new InitializeBeforeUse<IAzExtOutputChannel>();
@@ -61,6 +63,7 @@ class ExtensionVariables {
 
     public EOL: string = os.EOL;
     public pathSeparator: string = path.sep;
+    public provideOpenedDocuments: IProvideOpenedDocuments | undefined;
 
     public readonly ignoreBundle: boolean = !isWebpack;
 

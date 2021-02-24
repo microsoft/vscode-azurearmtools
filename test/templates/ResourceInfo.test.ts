@@ -24,7 +24,7 @@ suite("ResourceInfo", () => {
                     ]
                 });
                 // tslint:disable-next-line: no-non-null-assertion
-                const info = getResourceInfo(dt.topLevelScope.rootObject!.getPropertyValue('resources')!.asArrayValue!.elements[0]!.asObjectValue!)!;
+                const info = getResourceInfo(dt.topLevelScope.rootObject!.getPropertyValue('resources')!.asArrayValue!.elements[0].asObjectValue!)!;
                 const actual = info.nameSegmentExpressions;
                 assert.deepStrictEqual(actual, expected);
 
@@ -54,8 +54,9 @@ suite("ResourceInfo", () => {
                     ]
                 });
                 // tslint:disable-next-line: no-non-null-assertion
-                const info = getResourceInfo(dt.topLevelScope.rootObject!.getPropertyValue('resources')!.asArrayValue!.elements[0]!.asObjectValue!)!;
-                const actual = info.typeSegmentExpressions;
+                const info = getResourceInfo(dt.topLevelScope.rootObject!.getPropertyValue('resources')!.asArrayValue!.elements[0].asObjectValue!);
+                // tslint:disable-next-line: no-non-null-assertion
+                const actual = info!.typeSegmentExpressions;
                 assert.deepStrictEqual(actual, expected);
 
             });
