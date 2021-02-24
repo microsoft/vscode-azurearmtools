@@ -35,7 +35,7 @@ import { ext } from "./extensionVariables";
 import { assert } from './fixed_assert';
 import { IProvideOpenedDocuments } from './IProvideOpenedDocuments';
 import * as TLE from "./language/expressions/TLE";
-import { Issue } from "./language/Issue";
+import { Issue, IssueSeverity } from "./language/Issue";
 import * as Json from "./language/json/JSON";
 import { ReferenceList } from "./language/ReferenceList";
 import { Span } from "./language/Span";
@@ -713,12 +713,19 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         const diagnostics: vscode.Diagnostic[] = [];
 
         for (const error of errors) {
+            assert(error.severity === IssueSeverity.Error, "Errors should have severity of Error");
             diagnostics.push(toVSCodeDiagnosticFromIssue(deploymentDocument, error, vscode.DiagnosticSeverity.Error));
         }
 
         const warnings = deploymentDocument.getWarnings();
         for (const warning of warnings) {
-            diagnostics.push(toVSCodeDiagnosticFromIssue(deploymentDocument, warning, vscode.DiagnosticSeverity.Warning));
+            assert(
+                warning.severity === IssueSeverity.Warning || warning.severity === IssueSeverity.Information,
+                "Warnings should have severity of Warning or Information");
+            const severity = warning.severity === IssueSeverity.Information
+                ? vscode.DiagnosticSeverity.Information :
+                vscode.DiagnosticSeverity.Warning;
+            diagnostics.push(toVSCodeDiagnosticFromIssue(deploymentDocument, warning, severity));
         }
 
         let completionDiagnostic = this.getCompletedDiagnostic();
@@ -1071,11 +1078,11 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     }
 
                     // Add message to indicate if full validation is disabled
-                    const fullValidationOn = deploymentTemplate.graphasdf?.fullValidationStatus.fullValidationEnabled ?? templateFileHasParamFile;
+                    const fullValidationOn = deploymentTemplate.templateGraph?.fullValidationStatus.fullValidationEnabled ?? templateFileHasParamFile;
                     statusBarText = fullValidationOn ?
-                        `Full template validation enabled.  ${statusBarText}` :
+                        statusBarText :
                         //asdf deploymentTemplate.graphasdf?.fullValidationStatus.allParametersHaveDefaults ?
-                        `$(warning) WARNING: Full template validation off.  ${statusBarText}`; //asdf?
+                        `$(warning) WARNING: Full template validation off. Add parameter file or default values.  ${statusBarText}`; //asdf?
 
                     //asdf tooltip
 

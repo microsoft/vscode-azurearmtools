@@ -5,9 +5,16 @@
 
 import * as assert from "assert";
 import { Uri } from "vscode";
+import { assertNever } from "../util/assertNever";
 import { nonNullValue } from "../util/nonNull";
 import { IssueKind } from "./IssueKind";
 import { Span } from "./Span";
+
+export enum IssueSeverity {
+    Error,
+    Warning,
+    Information,
+}
 
 /**
  * An issue that was detected while parsing a deployment template.
@@ -15,11 +22,52 @@ import { Span } from "./Span";
 export class Issue {
     private _relatedInformation: IssueRelatedInformation[] | undefined;
 
-    constructor(private _span: Span, private _message: string, public kind: IssueKind) {
+    public readonly severity: IssueSeverity;
+    constructor(
+        private _span: Span,
+        private _message: string,
+        public readonly kind: IssueKind
+    ) {
         nonNullValue(_span, "_span");
         assert(0 <= _span.length, "_span's length must be greater than or equal to 0.");
         nonNullValue(_message, "_message");
         assert(_message !== "", "_message must not be empty.");
+
+        switch (kind) {
+            case IssueKind.cannotValidateLinkedTemplate:
+            case IssueKind.cannotValidateNestedTemplate:
+                this.severity = IssueSeverity.Information;
+                break;
+
+            case IssueKind.inaccessibleNestedScopeMembers:
+            case IssueKind.incorrectScopeWarning:
+            case IssueKind.unusedParam:
+            case IssueKind.unusedUdf:
+            case IssueKind.unusedUdfParam:
+            case IssueKind.unusedVar:
+                this.severity = IssueSeverity.Warning;
+
+                break;
+
+            case IssueKind.badArgsCount:
+            case IssueKind.badFuncContext:
+            case IssueKind.params_missingRequiredParam:
+            case IssueKind.params_templateFileNotFound:
+            case IssueKind.referenceInVar:
+            case IssueKind.tleSyntax:
+            case IssueKind.undefinedFunc:
+            case IssueKind.undefinedNs:
+            case IssueKind.undefinedParam:
+            case IssueKind.undefinedUdf:
+            case IssueKind.undefinedVar:
+            case IssueKind.undefinedVarProp:
+            case IssueKind.varInUdf:
+                this.severity = IssueSeverity.Error;
+                break;
+
+            default:
+                assertNever(kind);
+        }
     }
 
     public get span(): Span {

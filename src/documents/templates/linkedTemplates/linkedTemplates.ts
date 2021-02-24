@@ -203,7 +203,7 @@ export function assignTemplateGraphToDeploymentTemplate(
         }
     }
 
-    dt.graphasdf = graph;
+    dt.templateGraph = graph;
 }
 
 export async function openLinkedTemplateFile(linkedTemplateUri: Uri, actionContext: IActionContext): Promise<void> {

@@ -45,7 +45,7 @@ import { isArmSchema } from './schemas';
 import { DeploymentScopeKind } from './scopes/DeploymentScopeKind';
 import { IDeploymentSchemaReference } from './scopes/IDeploymentSchemaReference';
 import { TemplateScope } from "./scopes/TemplateScope";
-import { IChildDeploymentScope, LinkedTemplateScope, NestedTemplateOuterScope, TopLevelTemplateScope } from './scopes/templateScopes';
+import { IChildDeploymentScope, LinkedTemplateScope, NestedTemplateInnerScope, NestedTemplateOuterScope, TopLevelTemplateScope } from './scopes/templateScopes';
 import { UserFunctionParameterDefinition } from './UserFunctionParameterDefinition';
 
 export interface IScopedParseResult {
@@ -90,7 +90,8 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
     private _allScopes: CachedValue<TemplateScope[]> = new CachedValue<TemplateScope[]>();
 
-    public graphasdf: INotifyTemplateGraphArgs | undefined;
+    // This is inserted post-creation
+    public templateGraph: INotifyTemplateGraphArgs | undefined;
 
     /**
      * Create a new DeploymentTemplate object.
@@ -190,8 +191,9 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         const unusedWarnings = this.getUnusedDefinitionWarnings();
         const inaccessibleScopeMembers = this.getInaccessibleScopeMemberWarnings();
         const incorrectScopeWarnings = this.getIncorrectScopeWarnings();
+        const disabledValidationInfoWarnings = this.getDisabledValidationInfoWarnings();
 
-        return unusedWarnings.concat(inaccessibleScopeMembers, incorrectScopeWarnings);
+        return unusedWarnings.concat(inaccessibleScopeMembers, incorrectScopeWarnings, disabledValidationInfoWarnings);
     }
 
     private get allReferences(): IAllReferences {
@@ -260,6 +262,26 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         }
 
         return warnings;
+    }
+
+    private getDisabledValidationInfoWarnings(): Issue[] {
+        const issues: Issue[] = [];
+
+        if (!this.templateGraph?.fullValidationStatus.fullValidationEnabled) {
+            for (const scope of this.allScopes) {
+                if (scope instanceof NestedTemplateOuterScope
+                    || scope instanceof NestedTemplateInnerScope
+                    || scope instanceof LinkedTemplateScope
+                ) {
+                    let span: Span = scope.owningDeploymentResource.nameValue?.span ?? scope.owningDeploymentResource.span;
+                    const kind = scope instanceof LinkedTemplateScope ? IssueKind.cannotValidateLinkedTemplate : IssueKind.cannotValidateNestedTemplate;
+                    const message = `${kind === IssueKind.cannotValidateLinkedTemplate ? 'Linked template' : 'Nested template'} "${scope.owningDeploymentResource.nameValue?.unquotedValue ?? 'unknown'}" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command).`;
+                    issues.push(new Issue(span, message, kind));
+                }
+            }
+        }
+
+        return issues;
     }
 
     /**
@@ -675,7 +697,6 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
      */
     public getCodeLenses(
         topLevelParameterValuesProvider: IParameterValuesSourceProvider | undefined
-        //asdf fullValidationStatus: IFullValidationStatus
     ): ResolvableCodeLens[] {
         const lenses: ResolvableCodeLens[] = [];
 
@@ -737,7 +758,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
             }
 
             // Allow user to change or select/create parameter file
-            lenses.push(new SelectParameterFileCodeLens(this.topLevelScope, parametersCodeLensSpan, parameterFileUri, { fullValidationStatus: this.graphasdf?.fullValidationStatus }));
+            lenses.push(new SelectParameterFileCodeLens(this.topLevelScope, parametersCodeLensSpan, parameterFileUri, { fullValidationStatus: this.templateGraph?.fullValidationStatus }));
         }
 
         // Code lens for each parameter definition
@@ -750,7 +771,6 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
     private getChildTemplateCodeLenses(
         topLevelParameterValuesProvider: IParameterValuesSourceProvider | undefined
-        //asdf fullValidationStatus: IFullValidationStatus,
     ): ResolvableCodeLens[] {
         const lenses: ResolvableCodeLens[] = [];
         for (let scope of this.allScopes) {
@@ -774,7 +794,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
                             lenses.push(...
                                 LinkedTemplateCodeLens.create(
-                                    this.graphasdf?.fullValidationStatus,
+                                    this.templateGraph?.fullValidationStatus,
                                     scope,
                                     span,
                                     scope.linkedFileReferences,
