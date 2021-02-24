@@ -422,6 +422,9 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 const templateGraph = this._cachedTemplateGraphs.get(documentPathKey);
                 if (templateGraph) {
                     assignTemplateGraphToDeploymentTemplate(templateGraph, deploymentDocument, this);
+
+                    // tslint:disable-next-line: no-floating-promises
+                    this.updateEditorState(); //asdf
                 }
             }
         } else {
@@ -1049,27 +1052,32 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 const deploymentTemplate = this.getOpenedDeploymentDocument(activeDocument);
                 if (deploymentTemplate instanceof DeploymentTemplateDoc) {
                     isTemplateFile = true;
-                    let fullValidationOn: boolean;
+                    //asdf let fullValidationOn: boolean;
 
                     const paramFileUri = this._mapping.getParameterFile(activeDocument.uri);
                     if (paramFileUri) {
                         templateFileHasParamFile = true;
                         const doesParamFileExist = await pathExists(paramFileUri);
                         statusBarText = `Parameter file: ${getFriendlyPathToFile(paramFileUri)}`;
-                        fullValidationOn = true;
+                        //asdf fullValidationOn = true;
                         if (!doesParamFileExist) {
                             statusBarText += " $(error) Not found";
-                            fullValidationOn = false;
+                            //asdf fullValidationOn = false;
                         }
                     } else {
-                        statusBarText = "Select/Create parameter file to enable...";
-                        fullValidationOn = false;
+                        //asdf ? statusBarText = "Select/Create parameter file to enable...";
+                        statusBarText = "Select/Create parameter file...";
+                        //asdf fullValidationOn = false;
                     }
 
                     // Add message to indicate if full validation is disabled
+                    const fullValidationOn = deploymentTemplate.graphasdf?.fullValidationStatus.fullValidationEnabled ?? templateFileHasParamFile;
                     statusBarText = fullValidationOn ?
-                        `${statusBarText}` :
-                        `$(warning) Full template validation off (parameters file or default values needed).  ${statusBarText}`;
+                        `Full template validation enabled.  ${statusBarText}` :
+                        //asdf deploymentTemplate.graphasdf?.fullValidationStatus.allParametersHaveDefaults ?
+                        `$(warning) WARNING: Full template validation off.  ${statusBarText}`; //asdf?
+
+                    //asdf tooltip
 
                     this._paramsStatusBarItem.command = "azurerm-vscode-tools.selectParameterFile";
                     this._paramsStatusBarItem.text = statusBarText;
@@ -1236,6 +1244,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     topLevelParametersProvider = new ParameterValuesSourceProviderFromParameterFile(this, dpUri);
                 }
 
+                //asdf const templateGraph = this._cachedTemplateGraphs.get(getNormalizedDocumentKey(dpUri));asdf
                 return doc.getCodeLenses(topLevelParametersProvider);
             }
         });
@@ -1776,7 +1785,11 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     if (getNormalizedDocumentKey(doc.uri) === rootTemplateKey) {
                         assignTemplateGraphToDeploymentTemplate(e, rootTemplate, this);
 
-                        // Re-validate
+                        // Re-validate and update UI
+
+                        // tslint:disable-next-line: no-floating-promises
+                        this.updateEditorState(); //asdf
+
                         // tslint:disable-next-line: no-floating-promises // Don't wait
                         this.reportDeploymentTemplateErrorsInBackground(doc, rootTemplate);
                     }

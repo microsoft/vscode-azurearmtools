@@ -106,6 +106,7 @@ export class DeploymentParametersDoc extends DeploymentDocument {
 
     public getCodeLenses(
         _parameterValuesSourceProvider: IParameterValuesSourceProvider | undefined
+        //asdf _fullValidationStatus: IFullValidationStatus
     ): ResolvableCodeLens[] {
         return [];
     }

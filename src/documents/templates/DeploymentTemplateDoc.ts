@@ -39,6 +39,7 @@ import { SynchronousParameterValuesSourceProvider } from "../parameters/Synchron
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
 import { LinkedTemplateCodeLens, NestedTemplateCodeLen, ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
 import { getResourcesInfo } from './getResourcesInfo';
+import { INotifyTemplateGraphArgs } from './linkedTemplates/linkedTemplates';
 import { getParentAndChildCodeLenses } from './ParentAndChildCodeLenses';
 import { isArmSchema } from './schemas';
 import { DeploymentScopeKind } from './scopes/DeploymentScopeKind';
@@ -88,6 +89,8 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     private _allReferences: CachedValue<IAllReferences> = new CachedValue<IAllReferences>();
 
     private _allScopes: CachedValue<TemplateScope[]> = new CachedValue<TemplateScope[]>();
+
+    public graphasdf: INotifyTemplateGraphArgs | undefined;
 
     /**
      * Create a new DeploymentTemplate object.
@@ -672,6 +675,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
      */
     public getCodeLenses(
         topLevelParameterValuesProvider: IParameterValuesSourceProvider | undefined
+        //asdf fullValidationStatus: IFullValidationStatus
     ): ResolvableCodeLens[] {
         const lenses: ResolvableCodeLens[] = [];
 
@@ -746,6 +750,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
     private getChildTemplateCodeLenses(
         topLevelParameterValuesProvider: IParameterValuesSourceProvider | undefined
+        //asdf fullValidationStatus: IFullValidationStatus,
     ): ResolvableCodeLens[] {
         const lenses: ResolvableCodeLens[] = [];
         for (let scope of this.allScopes) {
@@ -769,6 +774,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
                             lenses.push(...
                                 LinkedTemplateCodeLens.create(
+                                    this.graphasdf?.fullValidationStatus,
                                     scope,
                                     span,
                                     scope.linkedFileReferences,

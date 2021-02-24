@@ -186,6 +186,7 @@ export abstract class DeploymentDocument implements IJsonDocument {
         //   provide its URI and be able to lazily retrieve the parameter value source
         // If there is no associated parameter file, this should be undefined
         parameterValuesSourceProvider: IParameterValuesSourceProvider | undefined
+        //asdf fullValidationStatus: IFullValidationStatus
     ): ResolvableCodeLens[];
 
     // CONSIDER: Should we cache?  But that cache would depend on associatedTemplate not changing, not sure if that's

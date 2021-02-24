@@ -45,11 +45,17 @@ enum PathType {
     parametersLink = 2,
 }
 
+export interface IFullValidationStatus {
+    fullValidationEnabled: boolean;
+    allParametersHaveDefaults: boolean;
+    hasParameterFile: boolean;
+}
+
 export interface INotifyTemplateGraphArgs {
     rootTemplateUri: string;
     rootTemplateDocVersion: number;
     linkedTemplates: ILinkedTemplateReference[];
-    fullValidationEnabled: boolean;
+    fullValidationStatus: IFullValidationStatus;
     isComplete: boolean; // If there were validation errors, the graph might not be complete
 }
 
@@ -196,6 +202,8 @@ export function assignTemplateGraphToDeploymentTemplate(
             matchingScope.assignLinkedFileReferences([linkReference], provideOpenDocuments);
         }
     }
+
+    dt.graphasdf = graph;
 }
 
 export async function openLinkedTemplateFile(linkedTemplateUri: Uri, actionContext: IActionContext): Promise<void> {

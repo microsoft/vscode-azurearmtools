@@ -22,6 +22,7 @@ import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSo
 import { getRelativeParameterFilePath } from "../parameters/parameterFilePaths";
 import { ILinkedTemplateReference } from "./linkedTemplates/ILinkedTemplateReference";
 import { LinkedFileLoadState } from "./linkedTemplates/LinkedFileLoadState";
+import { IFullValidationStatus } from "./linkedTemplates/linkedTemplates";
 import { TemplateScope, TemplateScopeKind } from './scopes/TemplateScope';
 import { LinkedTemplateScope, TopLevelTemplateScope } from './scopes/templateScopes';
 
@@ -236,14 +237,21 @@ export class LinkedTemplateCodeLens extends ResolvableCodeLens {
     }
 
     public static create(
+        fullValidationStatus: IFullValidationStatus | undefined,
         scope: LinkedTemplateScope,
         span: Span,
         linkedTemplateReferences: ILinkedTemplateReference[] | undefined,
-        topLevelParameterValuesProvider: IParameterValuesSourceProvider | undefined
+        topLevelParameterValuesProvider: IParameterValuesSourceProvider/*asdf combine fullValidationStatus into this?*/ | undefined
     ): LinkedTemplateCodeLens[] {
         let title: string;
         const isRelativePath = scope.isRelativePath;
         const hasParameterFile = !!topLevelParameterValuesProvider?.parameterFileUri;
+
+        fullValidationStatus = fullValidationStatus ?? {
+            hasParameterFile,
+            allParametersHaveDefaults: false,
+            fullValidationEnabled: hasParameterFile,
+        };
 
         // Currently only dealing with the first reference at the same location (e.g. if in a copy loop, multiple
         // instances will be at the same ilne)
@@ -255,8 +263,8 @@ export class LinkedTemplateCodeLens extends ResolvableCodeLens {
             title = "Linked template";
         }
 
-        if (!hasParameterFile) {
-            title += " " + "(validation disabled)";
+        if (!fullValidationStatus.fullValidationEnabled) {
+            title += " " + "($(warning) full validation OFF)"; //asdf tooltip?
         } else if (firstLinkedTemplateRef) {
             // title += " " + "(validation enabled)";
         } else {

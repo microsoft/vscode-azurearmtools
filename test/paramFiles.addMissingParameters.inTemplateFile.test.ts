@@ -64,7 +64,11 @@ suite("Add missing parameters for nested/linked templates", () => {
                             parameterValues: {}
                         }
                     ],
-                    fullValidationEnabled: true,
+                    fullValidationStatus: {
+                        fullValidationEnabled: true,
+                        allParametersHaveDefaults: true,
+                        hasParameterFile: true,
+                    },
                     isComplete: true,
                     rootTemplateDocVersion: 0,
                 };
