@@ -2,24 +2,78 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
-## Version 0.15.0-alpha0211
+## Version 0.15.0
 
 ### Added
 
-- Support for validation of linked templates (alpha)
+- Support for validation of linked templates
   - How to install:
     - In VS Code, F1 -> "Extensions: Install from VSIX..." -> browse to VSIX and select -> restart VS Code
   How to uninstall:
     - In VS Code, View Extensions -> Find "Azure Resource Manager (ARM) Tools" extension -> click on tools icon -> Install Another Version...
     - Or wait until the official 0.15.0 release is published, it should automatically upgrade from the alpha
-  - Currently only "relativePath" is supported in the templateLink object. "uri" support is expected soon.
+  - Scenarios supported:
+    - Relative path (requires apiVersion 2020-10-01 or higher of Microsoft.Resources/deployments), e.g.:
+```json
+        {
+            "name": "linkedDeployment1",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    // Relative to current template's folder
+                    "relativePath": "child.json"
+                },
+                "parameters": {
+                }
+            }
+        }
+```
+    - Full URI, e.g.:
+```json
+        {
+            "name": "linkedDeployment1",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/StephenWeatherford/template-examples/master/linkedTemplates/uri/child.json"
+                },
+                "parameters": {
+                }
+            }
+        }
+```
+    - Relative to deployed template location
+```json
+        {
+            "name": "linkedDeployment1",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    // When the template is deployed, this will be relative to the deployed location
+                    // While editing, this will be relative to the current template's local file folder
+                    "uri": "[uri(deployment().properties.templateLink.uri, 'child.json')]"
+                },
+                "parameters": {
+                }
+            }
+        }
+```
+  - Linked template support requires either that all top-level parameters have a value, so either
+    - All top-level parameter definitions has a default value
+    - Or a parameter file is associated with the template
   - "parametersLink" is not supported (but "parameters" is)
   - Known Issues:
     - Schema for Microsoft.Resources/deployments@2020-10-01 is required to successfully deploy to Azure with
       relativePath, but its schema hasn't been published yet, causing false warnings and degradation of Intellisense.
       Work-around is to use version 2020-06-01 for editing and switch back to 2020-10-01 before deploying.
   - Examples of experiences supported:
-    - Validation of linked templates up to one level
+    - Validation of linked templates (one level deep)
     - Parameter validation
     - "Light-bulb" and snippet support to fill in parameter values for a linked template
     - CTRL-click on relativePath value or click on code lens to navigate to linked template
