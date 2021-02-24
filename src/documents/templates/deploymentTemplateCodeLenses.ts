@@ -65,6 +65,7 @@ export class SelectParameterFileCodeLens extends ResolvableCodeLens {
         span: Span,
         private parameterFileUri: Uri | undefined,
         private _options: {
+            fullValidationStatus: IFullValidationStatus | undefined;
             isForLinkedTemplate?: boolean;
         }
     ) {
@@ -76,10 +77,13 @@ export class SelectParameterFileCodeLens extends ResolvableCodeLens {
         if (this.parameterFileUri) {
             title = `Change...`;
         } else {
+            //asdf show warning here?
             title =
-                this._options.isForLinkedTemplate ?
-                    "Select or create a parameter file to enable validation of relative linked templates..." :
-                    "Select or create a parameter file to enable full validation...";
+                this._options.isForLinkedTemplate ? //asdf nested templates
+                    "Select or create a parameter file to enable validation of linked and nested templates..." : //asdf nested templates
+                    this._options.fullValidationStatus?.allParametersHaveDefaults ?
+                        "Select or create a parameter file..." :
+                        "Select or create a parameter file to enable full validation...";
         }
 
         this.command = {
@@ -308,14 +312,15 @@ export class LinkedTemplateCodeLens extends ResolvableCodeLens {
 
         const lenses: LinkedTemplateCodeLens[] = [new LinkedTemplateCodeLens(scope, span, title, linkedUri)];
 
-        if (isRelativePath && !hasParameterFile) {
+        if (!fullValidationStatus.fullValidationEnabled) {
             lenses.push(
                 new SelectParameterFileCodeLens(
                     scope,
                     span,
                     topLevelParameterValuesProvider?.parameterFileUri,
                     {
-                        isForLinkedTemplate: true
+                        isForLinkedTemplate: true,
+                        fullValidationStatus
                     })
             );
         }

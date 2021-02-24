@@ -737,7 +737,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
             }
 
             // Allow user to change or select/create parameter file
-            lenses.push(new SelectParameterFileCodeLens(this.topLevelScope, parametersCodeLensSpan, parameterFileUri, {}));
+            lenses.push(new SelectParameterFileCodeLens(this.topLevelScope, parametersCodeLensSpan, parameterFileUri, { fullValidationStatus: this.graphasdf?.fullValidationStatus }));
         }
 
         // Code lens for each parameter definition
