@@ -37,7 +37,8 @@ import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSo
 import { getMissingParameterErrors, getParameterValuesCodeActions } from '../parameters/ParameterValues';
 import { SynchronousParameterValuesSourceProvider } from "../parameters/SynchronousParameterValuesSourceProvider";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
-import { LinkedTemplateCodeLens, NestedTemplateCodeLen, ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
+import { LinkedTemplateCodeLens, NestedTemplateCodeLens } from './ChildTemplateCodeLens';
+import { ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
 import { getResourcesInfo } from './getResourcesInfo';
 import { INotifyTemplateGraphArgs } from './linkedTemplates/linkedTemplates';
 import { getParentAndChildCodeLenses } from './ParentAndChildCodeLenses';
@@ -275,7 +276,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                 ) {
                     let span: Span = scope.owningDeploymentResource.nameValue?.span ?? scope.owningDeploymentResource.span;
                     const kind = scope instanceof LinkedTemplateScope ? IssueKind.cannotValidateLinkedTemplate : IssueKind.cannotValidateNestedTemplate;
-                    const message = `${kind === IssueKind.cannotValidateLinkedTemplate ? 'Linked template' : 'Nested template'} "${scope.owningDeploymentResource.nameValue?.unquotedValue ?? 'unknown'}" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command).`;
+                    const message = `${kind === IssueKind.cannotValidateLinkedTemplate ? 'Linked template' : 'Nested template'} "${scope.owningDeploymentResource.nameValue?.unquotedValue ?? 'unknown'}" will not have validation or parameter completion. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command).`;
                     issues.push(new Issue(span, message, kind));
                 }
             }
@@ -780,10 +781,13 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                     case TemplateScopeKind.NestedDeploymentWithInnerScope:
                     case TemplateScopeKind.NestedDeploymentWithOuterScope:
                         if (scope.rootObject) {
-                            const lens = NestedTemplateCodeLen.create(scope, scope.rootObject.span);
-                            if (lens) {
-                                lenses.push(lens);
-                            }
+                            lenses.push(...
+                                NestedTemplateCodeLens.create(
+                                    this.templateGraph?.fullValidationStatus,
+                                    scope,
+                                    scope.rootObject.span,
+                                    topLevelParameterValuesProvider)
+                            );
                         }
                         break;
                     case TemplateScopeKind.LinkedDeployment:

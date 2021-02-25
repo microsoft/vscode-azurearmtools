@@ -424,7 +424,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     assignTemplateGraphToDeploymentTemplate(templateGraph, deploymentDocument, this);
 
                     // tslint:disable-next-line: no-floating-promises
-                    this.updateEditorState(); //asdf
+                    this.updateEditorState();
                 }
             }
         } else {
@@ -1047,6 +1047,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
     }
 
     private async updateEditorState(): Promise<void> {
+        let isWarning: boolean = false;
         let statusBarText: string | undefined;
         let isTemplateFile = false;
         let templateFileHasParamFile = false;
@@ -1059,32 +1060,25 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 const deploymentTemplate = this.getOpenedDeploymentDocument(activeDocument);
                 if (deploymentTemplate instanceof DeploymentTemplateDoc) {
                     isTemplateFile = true;
-                    //asdf let fullValidationOn: boolean;
 
                     const paramFileUri = this._mapping.getParameterFile(activeDocument.uri);
                     if (paramFileUri) {
                         templateFileHasParamFile = true;
                         const doesParamFileExist = await pathExists(paramFileUri);
                         statusBarText = `Parameter file: ${getFriendlyPathToFile(paramFileUri)}`;
-                        //asdf fullValidationOn = true;
                         if (!doesParamFileExist) {
                             statusBarText += " $(error) Not found";
-                            //asdf fullValidationOn = false;
                         }
                     } else {
-                        //asdf ? statusBarText = "Select/Create parameter file to enable...";
                         statusBarText = "Select/Create parameter file...";
-                        //asdf fullValidationOn = false;
                     }
 
                     // Add message to indicate if full validation is disabled
                     const fullValidationOn = deploymentTemplate.templateGraph?.fullValidationStatus.fullValidationEnabled ?? templateFileHasParamFile;
-                    statusBarText = fullValidationOn ?
-                        statusBarText :
-                        //asdf deploymentTemplate.graphasdf?.fullValidationStatus.allParametersHaveDefaults ?
-                        `$(warning) WARNING: Full template validation off. Add parameter file or default values.  ${statusBarText}`; //asdf?
-
-                    //asdf tooltip
+                    isWarning = !fullValidationOn;
+                    statusBarText = isWarning ?
+                        `$(warning) WARNING: Full template validation off. Add parameter file or top-level default values to enable.` :
+                        statusBarText;
 
                     this._paramsStatusBarItem.command = "azurerm-vscode-tools.selectParameterFile";
                     this._paramsStatusBarItem.text = statusBarText;
@@ -1107,6 +1101,8 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     this._paramsStatusBarItem.command = "azurerm-vscode-tools.openTemplateFile";
                     this._paramsStatusBarItem.text = statusBarText;
                 }
+
+                this._paramsStatusBarItem.color = isWarning ? new vscode.ThemeColor('problemsWarningIcon.foreground') : undefined;
             }
         } finally {
             if (statusBarText) {
@@ -1251,7 +1247,6 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     topLevelParametersProvider = new ParameterValuesSourceProviderFromParameterFile(this, dpUri);
                 }
 
-                //asdf const templateGraph = this._cachedTemplateGraphs.get(getNormalizedDocumentKey(dpUri));asdf
                 return doc.getCodeLenses(topLevelParametersProvider);
             }
         });
@@ -1795,7 +1790,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                         // Re-validate and update UI
 
                         // tslint:disable-next-line: no-floating-promises
-                        this.updateEditorState(); //asdf
+                        this.updateEditorState();
 
                         // tslint:disable-next-line: no-floating-promises // Don't wait
                         this.reportDeploymentTemplateErrorsInBackground(doc, rootTemplate);

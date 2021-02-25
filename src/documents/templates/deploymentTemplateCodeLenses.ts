@@ -4,14 +4,9 @@
 
 // tslint:disable: max-classes-per-file
 
-import * as path from "path";
 import { Range, Uri } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
-import { documentSchemes } from "../../constants";
-import { ext } from '../../extensionVariables';
 import { Span } from '../../language/Span';
-import { LanguageServerState } from '../../languageclient/startArmLanguageServer';
-import { assertNever } from '../../util/assertNever';
 import { pathExists } from '../../util/pathExists';
 import { IGotoParameterValueArgs } from '../../vscodeIntegration/commandArguments';
 import { getVSCodeRangeFromSpan } from '../../vscodeIntegration/vscodePosition';
@@ -20,11 +15,9 @@ import { IParameterDefinition } from '../parameters/IParameterDefinition';
 import { IParameterValuesSource } from '../parameters/IParameterValuesSource';
 import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSourceProvider';
 import { getRelativeParameterFilePath } from "../parameters/parameterFilePaths";
-import { ILinkedTemplateReference } from "./linkedTemplates/ILinkedTemplateReference";
-import { LinkedFileLoadState } from "./linkedTemplates/LinkedFileLoadState";
 import { IFullValidationStatus } from "./linkedTemplates/linkedTemplates";
-import { TemplateScope, TemplateScopeKind } from './scopes/TemplateScope';
-import { LinkedTemplateScope, TopLevelTemplateScope } from './scopes/templateScopes';
+import { TemplateScope } from './scopes/TemplateScope';
+import { TopLevelTemplateScope } from './scopes/templateScopes';
 
 /**
  * A code lens to indicate the current parameter file and to open it
@@ -66,7 +59,6 @@ export class SelectParameterFileCodeLens extends ResolvableCodeLens {
         private parameterFileUri: Uri | undefined,
         private _options: {
             fullValidationStatus: IFullValidationStatus | undefined;
-            isForLinkedTemplate?: boolean;
         }
     ) {
         super(scope, span);
@@ -77,13 +69,10 @@ export class SelectParameterFileCodeLens extends ResolvableCodeLens {
         if (this.parameterFileUri) {
             title = `Change...`;
         } else {
-            //asdf show warning here?
             title =
-                this._options.isForLinkedTemplate ? //asdf nested templates
-                    "Select or create a parameter file to enable validation of linked and nested templates..." : //asdf nested templates
-                    this._options.fullValidationStatus?.allParametersHaveDefaults ?
-                        "Select or create a parameter file..." :
-                        "Select or create a parameter file to enable full validation...";
+                this._options.fullValidationStatus?.allParametersHaveDefaults ?
+                    "Select or create a parameter file..." :
+                    "Select or create a parameter file to enable full validation...";
         }
 
         this.command = {
@@ -188,188 +177,6 @@ export class ParameterDefinitionCodeLens extends ResolvableCodeLens {
             command: "azurerm-vscode-tools.codeLens.gotoParameterValue",
             arguments: [args]
         };
-        return true;
-    }
-}
-
-export class NestedTemplateCodeLen extends ResolvableCodeLens {
-    private constructor(
-        scope: TemplateScope,
-        span: Span,
-        title: string
-    ) {
-        super(scope, span);
-        this.command = {
-            title: title,
-            command: ''
-        };
-    }
-
-    public static create(scope: TemplateScope, span: Span): NestedTemplateCodeLen | undefined {
-        switch (scope.scopeKind) {
-            case TemplateScopeKind.NestedDeploymentWithInnerScope:
-                return new NestedTemplateCodeLen(scope, span, "Nested template with inner scope");
-            case TemplateScopeKind.NestedDeploymentWithOuterScope:
-                return new NestedTemplateCodeLen(scope, span, "Nested template with outer scope");
-            default:
-                return undefined;
-        }
-    }
-
-    public async resolve(): Promise<boolean> {
-        // Nothing else to do
-        return true;
-    }
-}
-
-export class LinkedTemplateCodeLens extends ResolvableCodeLens {
-    private constructor(
-        scope: TemplateScope,
-        span: Span,
-        title: string,
-        linkedFileUri?: Uri
-    ) {
-        super(scope, span);
-        this.command = {
-            title: title,
-            command: linkedFileUri ? 'azurerm-vscode-tools.codeLens.openLinkedTemplateFile' : '',
-            arguments:
-                linkedFileUri
-                    ? [linkedFileUri]
-                    : []
-        };
-    }
-
-    public static create(
-        fullValidationStatus: IFullValidationStatus | undefined,
-        scope: LinkedTemplateScope,
-        span: Span,
-        linkedTemplateReferences: ILinkedTemplateReference[] | undefined,
-        topLevelParameterValuesProvider: IParameterValuesSourceProvider/*asdf combine fullValidationStatus into this?*/ | undefined
-    ): LinkedTemplateCodeLens[] {
-        let title: string;
-        const isRelativePath = scope.isRelativePath;
-        const hasParameterFile = !!topLevelParameterValuesProvider?.parameterFileUri;
-
-        fullValidationStatus = fullValidationStatus ?? {
-            hasParameterFile,
-            allParametersHaveDefaults: false,
-            fullValidationEnabled: hasParameterFile,
-        };
-
-        // Currently only dealing with the first reference at the same location (e.g. if in a copy loop, multiple
-        // instances will be at the same ilne)
-        const firstLinkedTemplateRef = linkedTemplateReferences ? linkedTemplateReferences[0] : undefined;
-
-        if (isRelativePath) {
-            title = "Relative linked template";
-        } else {
-            title = "Linked template";
-        }
-
-        if (!fullValidationStatus.fullValidationEnabled) {
-            title += " " + "($(warning) full validation OFF)"; //asdf tooltip?
-        } else if (firstLinkedTemplateRef) {
-            // title += " " + "(validation enabled)";
-        } else {
-            title += " " + "(cannot validate - make sure all other validation errors have been fixed)";
-        }
-
-        let langServerLoadState: string | undefined;
-
-        // If language server not running yet, show language server state instead of file load state
-        langServerLoadState = LinkedTemplateCodeLens.getLoadStateFromLanguageServerStatus();
-
-        let linkedUri: Uri | undefined;
-        let friendlyPath: string | undefined;
-        try {
-            const templateUri = scope.document.documentUri;
-            linkedUri = firstLinkedTemplateRef?.fullUri ? Uri.parse(firstLinkedTemplateRef.fullUri) : undefined;
-            if (isRelativePath && linkedUri && templateUri.fsPath && linkedUri.scheme === documentSchemes.file) {
-                const templateFolder = path.dirname(templateUri.fsPath);
-                friendlyPath = path.relative(templateFolder, linkedUri.fsPath);
-                if (!path.isAbsolute(friendlyPath) && !friendlyPath.startsWith('.')) {
-                    friendlyPath = `.${ext.pathSeparator}${friendlyPath}`;
-                }
-            } else {
-                friendlyPath = linkedUri?.toString();
-            }
-        } catch (error) {
-            console.warn(parseError(error).message);
-        }
-
-        if (firstLinkedTemplateRef && !langServerLoadState) {
-            if (friendlyPath) {
-                title += `: "${friendlyPath}"`;
-            }
-
-            langServerLoadState = LinkedTemplateCodeLens.getLinkedFileLoadStateLabelSuffix(firstLinkedTemplateRef);
-        }
-
-        if (langServerLoadState) {
-            title += ` - ${langServerLoadState}`;
-        }
-
-        const lenses: LinkedTemplateCodeLens[] = [new LinkedTemplateCodeLens(scope, span, title, linkedUri)];
-
-        if (!fullValidationStatus.fullValidationEnabled) {
-            lenses.push(
-                new SelectParameterFileCodeLens(
-                    scope,
-                    span,
-                    topLevelParameterValuesProvider?.parameterFileUri,
-                    {
-                        isForLinkedTemplate: true,
-                        fullValidationStatus
-                    })
-            );
-        }
-
-        return lenses;
-    }
-
-    private static getLoadStateFromLanguageServerStatus(): string | undefined {
-        switch (ext.languageServerState) {
-            case LanguageServerState.Running:
-                // Everything fine, no need for state to be displayed in label
-                return undefined;
-            case LanguageServerState.Failed:
-                return "language server failed to start";
-            case LanguageServerState.NotStarted:
-                return "language server not started";
-            case LanguageServerState.Starting:
-                return "starting up...";
-            case LanguageServerState.Stopped:
-                return "language server stopped";
-            case LanguageServerState.LoadingSchemas:
-                return "loading schemas...";
-            default:
-                assertNever(ext.languageServerState);
-        }
-    }
-
-    private static getLinkedFileLoadStateLabelSuffix(ref: ILinkedTemplateReference): string {
-        switch (ref.loadState) {
-            case LinkedFileLoadState.LoadFailed:
-                return `$(error) ${ref.loadErrorMessage ?? 'Load failed'}`;
-            case LinkedFileLoadState.Loading:
-                return "loading...";
-            case LinkedFileLoadState.NotLoaded:
-                return "not loaded";
-            case LinkedFileLoadState.NotSupported:
-            case LinkedFileLoadState.TooDeep:
-                // An error will be shown already
-                return "";
-            case LinkedFileLoadState.SuccessfullyLoaded:
-                // Don't need an extra status for successful operation
-                return "";
-            default:
-                assertNever(ref.loadState);
-        }
-    }
-
-    public async resolve(): Promise<boolean> {
-        // Nothing else to do
         return true;
     }
 }
