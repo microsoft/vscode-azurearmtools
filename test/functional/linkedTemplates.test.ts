@@ -198,6 +198,7 @@ suite("Linked templates functional tests", () => {
                         parentTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                         linkedTemplateFile: "templates/linkedTemplates/<TC>/subfolder/child.json",
                         expected: [
+                            "Error: Template validation failed: The template parameter 'p3string-whoops' is not found. Please see https://aka.ms/arm-template/#parameters for usage details. (arm-template (validation)) [25,20]",
                             "Error: Undefined parameter reference: 'p3string-whoops' (arm-template (expressions)) [26,38]"
                         ]
                     }
@@ -355,6 +356,7 @@ suite("Linked templates functional tests", () => {
                         parentTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                         linkedTemplateFile: "templates/linkedTemplates/<TC>/subfolder/child1.json",
                         expected: [
+                            "Error: Template validation failed: Template parameter JToken type is not valid. Expected 'Integer'. Actual 'String'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [14,27] [The error occurred in a linked template near here] [12,21]",
                             "Warning: The variable 'unusedVar' is never used. (arm-template (expressions)) [5,9]",
                         ]
                     }
@@ -440,6 +442,7 @@ suite("Linked templates functional tests", () => {
                             parentTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                             linkedTemplateFile: "templates/linkedTemplates/<TC>/subfolder/child.json",
                             expected: [
+                                'Information: Linked template "linkedDeployment1" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command). (arm-template (expressions)) [14,21-14,40]',
                                 "Warning: The parameter 'intParam' is never used. (arm-template (expressions)) [5,9-5,19]",
                                 "Warning: The parameter 'stringParam' is never used. (arm-template (expressions)) [8,9-8,22]",
                             ]
@@ -469,6 +472,7 @@ suite("Linked templates functional tests", () => {
                             parentTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                             linkedTemplateFile: "templates/linkedTemplates/<TC>/subfolder/child.json",
                             expected: [
+                                'Information: Linked template "linkedDeployment1" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command). (arm-template (expressions)) [14,21-14,40]',
                                 "Warning: The parameter 'intParam' is never used. (arm-template (expressions)) [5,9-5,19]",
                                 "Warning: The parameter 'stringParam' is never used. (arm-template (expressions)) [8,9-8,22]",
                             ]
@@ -495,6 +499,7 @@ suite("Linked templates functional tests", () => {
                             parentTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                             linkedTemplateFile: "templates/linkedTemplates/<TC>/subfolder/child.json",
                             expected: [
+                                'Information: Linked template "linkedDeployment1" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command). (arm-template (expressions)) [23,21-23,40]',
                                 "Warning: The parameter 'childIntParam' is never used. (arm-template (expressions)) [5,9-5,24]",
                                 "Warning: The parameter 'childStringParam' is never used. (arm-template (expressions)) [8,9-8,27]",
                                 "Warning: The parameter 'location' is never used. (arm-template (expressions)) [11,9-11,19]",

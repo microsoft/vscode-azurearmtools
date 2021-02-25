@@ -25,3 +25,9 @@ console.log(`DISABLE_LANGUAGE_SERVER = ${DISABLE_LANGUAGE_SERVER}`);
 
 // This folder gets published as an artifact after the pipeline runs
 export const logsFolder = path.join(basePath, 'logs');
+
+export namespace testMessages {
+    export function nestedTemplateNoValidation(templateName: string): string {
+        return `Information: Nested template "${templateName}" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command). (arm-template (expressions))`;
+    }
+}

@@ -5,6 +5,7 @@
 import * as assert from "assert";
 import { LanguageClient } from "vscode-languageclient";
 import { ext, LanguageServerState } from "../../extension.bundle";
+import { assertNever } from "../../src/util/assertNever";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { delay } from "./delay";
 import { testLog } from "./testLog";
@@ -25,6 +26,7 @@ export async function ensureLanguageServerAvailable(): Promise<LanguageClient> {
                     throw new Error(`Language server failed on start-up: ${ext.languageServerStartupError}`);
                 case LanguageServerState.NotStarted:
                 case LanguageServerState.Starting:
+                case LanguageServerState.LoadingSchemas:
                     await delay(100);
                     break;
                 case LanguageServerState.Running:
@@ -37,7 +39,7 @@ export async function ensureLanguageServerAvailable(): Promise<LanguageClient> {
                 case LanguageServerState.Stopped:
                     throw new Error('Language server stopped');
                 default:
-                    throw new Error('Unexpected languageServerState');
+                    assertNever(ext.languageServerState);
             }
         }
     }

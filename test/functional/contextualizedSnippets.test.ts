@@ -11,6 +11,8 @@ const DEBUG_BREAK_AFTER_INSERTING_SNIPPET = false;
 
 import * as assert from 'assert';
 import { Position, Selection } from "vscode";
+import { ext } from '../../src/extensionVariables';
+import { assertEx } from '../support/assertEx';
 import { delay } from '../support/delay';
 import { diagnosticSources, getDiagnosticsForDocument, IGetDiagnosticsOptions } from '../support/diagnostics';
 import { formatDocumentAndWait } from '../support/formatDocumentAndWait';
@@ -55,7 +57,7 @@ suite("Contextualized snippets", () => {
                     };
                     let diagnosticResults = await getDiagnosticsForDocument(tempDoc.realDocument, 1, diagnosticOptions);
 
-                    // Insert snippet (and wait for and verify diagnotics)
+                    // Insert snippet (and wait for and verify diagnostics)
                     const docPos = dt.getDocumentPosition(cursor.index);
                     const pos = new Position(docPos.line, docPos.line);
 
@@ -68,6 +70,16 @@ suite("Contextualized snippets", () => {
                         snippetPrefix,
                         triggerCharacter
                     );
+
+                    // Wait until the current document has template graph info assigned
+                    // tslint:disable-next-line: no-constant-condition
+                    while (true) {
+                        const openDoc = ext.provideOpenedDocuments?.getOpenedDeploymentTemplate(tempEditor.realEditor.document.uri);
+                        if (openDoc && openDoc.templateGraph) {
+                            break;
+                        }
+                        await delay(1);
+                    }
 
                     // Wait for final diagnostics but don't compare until we've compared the expected text first
                     diagnosticResults = await getDiagnosticsForDocument(tempEditor.realEditor.document, 2, diagnosticOptions, diagnosticResults);
@@ -84,7 +96,8 @@ suite("Contextualized snippets", () => {
                     assert.equal(docTextAfterInsertion, expectedTemplate);
 
                     // Compare diagnostics
-                    assert.deepEqual(messages, expectedDiagnostics);
+
+                    assertEx.arraysEqual(messages, expectedDiagnostics, {}, "Diagnostics comparison failed");
                 } finally {
                     await tempEditor?.dispose();
                     await tempDoc?.dispose();
@@ -175,7 +188,8 @@ suite("Contextualized snippets", () => {
         }
     }
 }`,
-            []
+            [
+            ]
         );
 
         suite("User functions", () => {
@@ -400,7 +414,8 @@ suite("Contextualized snippets", () => {
         }
     ]
 }`,
-                []
+                [
+                ]
             );
 
             createContextualizedSnippetTest(
@@ -579,7 +594,8 @@ suite("Contextualized snippets", () => {
         }
     ]
 }`,
-                []
+                [
+                ]
             );
 
             createContextualizedSnippetTest(

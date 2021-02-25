@@ -7,7 +7,7 @@
 import { testDiagnostics } from "../support/diagnostics";
 import { testWithLanguageServerAndRealFunctionMetadata } from "../support/testWithLanguageServer";
 
-suite("General validation tests (all diagnotic sources)", () => {
+suite("General validation tests (all diagnostic sources)", () => {
     suite("scoped deployments", () => {
         testWithLanguageServerAndRealFunctionMetadata("invalid schema", async () => {
             await testDiagnostics(
@@ -59,6 +59,7 @@ suite("General validation tests (all diagnotic sources)", () => {
                 {
                 },
                 [
+                    'Information: Nested template "storageDeployment" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command). (arm-template (expressions)) [30,21-30,40]'
                 ]);
         });
 
@@ -127,7 +128,9 @@ suite("General validation tests (all diagnotic sources)", () => {
                 {
                 },
                 [
-                    // expecting no errors
+                    'Information: Linked template "nestedDeployment1" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command). (arm-template (expressions)) [32,15-32,34]',
+                    'Information: Linked template "nestedDeployment2" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command). (arm-template (expressions)) [15,15-15,34]'
+
                 ]);
         });
     });

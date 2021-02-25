@@ -16,6 +16,7 @@ import * as path from 'path';
 import * as stripJsonComments from 'strip-json-comments';
 import { commands, Selection, Uri, window, workspace } from "vscode";
 import { DeploymentTemplateDoc, getVSCodePositionFromPosition } from '../../extension.bundle';
+import { assertEx } from '../support/assertEx';
 import { delay } from '../support/delay';
 import { diagnosticSources, getDiagnosticsForDocument, IGetDiagnosticsOptions } from '../support/diagnostics';
 import { formatDocumentAndWait } from '../support/formatDocumentAndWait';
@@ -135,7 +136,7 @@ const overrideInsertPosition: { [name: string]: string } = {
 };
 
 // Override expected errors/warnings for the snippet test - default is none
-const overrideExpectedDiagnostics: { [name: string]: string[] } = {
+const overrideExpectedDiagnostics: { [name: string]: (string | RegExp)[] } = {
     "Application Gateway": [
         // Expected (by design)
         `Value must be one of the following types: object`
@@ -150,6 +151,12 @@ const overrideExpectedDiagnostics: { [name: string]: string[] } = {
             "Template validation failed: Required property 'resources' not found in JSON. Path '', line 5, position 1."
             //"Missing required property resources"
         ],
+    "Linked Deployment With Relative Path": [
+        /Linked template file not found/i
+    ],
+    "Linked Deployment With URI": [
+        /Linked template file not found/i
+    ],
     Variable: [
         "The variable 'variable1' is never used."
     ],
@@ -171,64 +178,58 @@ const overrideExpectedDiagnostics: { [name: string]: string[] } = {
         "User-function parameter 'parameter1' is never used."
     ],
     "Automation Certificate": [
-        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
         // Full validation temporarily disabled, so we don't currently get this error
         // "Template validation failed: The template resource 'automationCertificate1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '74' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "Automation Credential": [
-        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
         // Full validation temporarily disabled, so we don't currently get this error
         // "Template validation failed: The template resource 'automationCredential' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '73' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "Automation Job Schedule": [
-        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
         // Full validation temporarily disabled, so we don't currently get this error
         // "Template validation failed: The template resource 'automationJobSchedule1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '74' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "Automation Runbook": [
-        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
         // Full validation temporarily disabled, so we don't currently get this error
         // "Template validation failed: The template resource 'automationRunbook1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '70' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "Automation Schedule": [
-        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
         // Full validation temporarily disabled, so we don't currently get this error
         // "Template validation failed: The template resource 'automationSchedule1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '71' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "Automation Variable": [
-        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
+        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
         // Full validation temporarily disabled, so we don't currently get this error
         // "Template validation failed: The template resource 'automationVariable1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '71' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "Cosmos DB Mongo Database": [
-        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
-        // Full validation temporarily disabled, so we don't currently get this error
-        // "Template validation failed: The template resource 'account-name/mongodb/database-name/collectionName' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '4' and column '74' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
+        "Template validation failed: The template resource 'account-name/mongodb/database-name/collectionName' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '4' and column '66' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "DNS Record": [
-        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
-        // Full validation temporarily disabled, so we don't currently get this error
-        // "Template validation failed: The template resource 'dnsRecord1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '50' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
+        "Template validation failed: The template resource 'dnsRecord1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '42' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "Network Security Group Rule": [
-        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
-        // Full validation temporarily disabled, so we don't currently get this error
-        // "Template validation failed: The template resource 'networkSecurityGroupRuleName' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '75' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
+        "Template validation failed: The template resource 'networkSecurityGroupRuleName' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '67' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "Route Table Route": [
-        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
-        // Full validation temporarily disabled, so we don't currently get this error
-        // "Template validation failed: The template resource 'route-name' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '58' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
+        "Template validation failed: The template resource 'route-name' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '50' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "SQL Database Import": [
-        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
-        // Full validation temporarily disabled, so we don't currently get this error
-        // "Template validation failed: The template resource 'sqlDatabase1Import1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '64' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
+        "Template validation failed: The template resource 'sqlDatabase1Import1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '56' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "Web Deploy for Web App": [
-        // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012620
-        // Full validation temporarily disabled, so we don't currently get this error
-        // "Template validation failed: The template resource 'Deploy-webApp1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '52' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
+        "Template validation failed: The template resource 'Deploy-webApp1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '44' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "Windows Virtual Machine": [
         // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012636
@@ -493,7 +494,7 @@ suite("Snippets functional tests", () => {
         validateDocumentWithSnippet();
 
         // Compare diagnostics
-        assert.deepEqual(messages, expectedDiagnostics);
+        assertEx.arraysEqual(messages, expectedDiagnostics, {}, "Diagnostics mismatch");
 
         // // Make sure formatting of the sippet is correct by formatting the document and seeing if it changes
         // await commands.executeCommand('editor.action.formatDocument');

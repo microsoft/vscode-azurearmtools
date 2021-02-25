@@ -4,6 +4,10 @@
 // ---------------------------------------------------------------------------------------------
 
 import * as assert from "assert";
+import { parseError } from "vscode-azureextensionui";
+import { stringify } from "./stringify";
+
+//tslint:disable prefer-template
 
 export namespace assertEx {
     type keyedObject = { [key: string]: unknown };
@@ -13,7 +17,7 @@ export namespace assertEx {
         ignorePropertiesNotInExpected: boolean;
     }
 
-    export function strictEqual<T>(actual: T, expected: T, options: {}, message?: string): asserts actual is T {
+    export function strictEqual<T>(actual: T, expected: T | RegExp, options: {}, message?: string): asserts actual is T {
         if (typeof actual === 'string' && typeof expected === 'string') {
             const actualNoWitespace = actual.replace(/\s+/g, ' ');
             const expectedNoWhitespace = expected.replace(/\s+/g, ' ');
@@ -24,9 +28,28 @@ export namespace assertEx {
                 assert.strictEqual(actual, expected, `${message ?? 'String match failed'}\n*** STRINGS DIFFER ONLY IN CASING ***`);
                 return;
             }
+        } else if (typeof actual === 'string' && expected instanceof RegExp) {
+            const match = expected.test(actual);
+            if (!match) {
+                assert.fail(`${message}: String failed regex match`);
+            }
+            return;
         }
 
         assert.strictEqual(actual, expected, message);
+    }
+
+    export function arraysEqual<T>(actual: T[], expected: (T | RegExp)[], options: {}, message: string): asserts actual is T[] {
+        try {
+            assert.equal(actual.length, expected.length, `${message}: Length mismatch`);
+            for (let i = 0; i < actual.length; ++i) {
+                strictEqual(actual[i], expected[i], {}, `${message}: Line ${i + 1} mismatch`);
+            }
+        } catch (error) {
+            const compare = 'EXPECTED:\n' + stringify(expected.map(s => (<{}>s).toString())) +
+                '\nACTUAL:\n' + stringify(actual);
+            throw new Error(parseError(error).message + '\n' + compare);
+        }
     }
 
     export function deepEqual<T>(actual: T, expected: T, options: IEqualExOptions): asserts actual is T {

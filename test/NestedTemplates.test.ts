@@ -158,7 +158,11 @@ suite("Nested templates", () => {
                     v1innerdef, v1innerref1, v1innerref2,
                     v2innerdef, v2innerref1
                 }
-            } = await parseTemplateWithMarkers(template, []);
+            } = await parseTemplateWithMarkers(
+                template,
+                [
+                    'Warning: Nested template "nested" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command).',
+                ]);
 
             // v1 root
             const v1rootref1pc = dt.getContextFromDocumentCharacterIndex(v1rootref1.index, undefined);
@@ -257,7 +261,8 @@ suite("Nested templates", () => {
                 dt,
                 markers: { p1rootdef, p1rootref1, p1rootref2, p1rootref3, p1innerdef, p1innerref1, p1innerref2, p1innerref3 }
             } = await parseTemplateWithMarkers(template, [
-                "Warning: The variable 'v1' is never used."
+                "Warning: The variable 'v1' is never used.",
+                'Warning: Nested template "nested" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command).',
             ]);
 
             // root p1
@@ -371,7 +376,9 @@ suite("Nested templates", () => {
             };
 
             test("no errors", async () => {
-                await parseTemplateWithMarkers(template, []);
+                await parseTemplateWithMarkers(template, [
+                    'Warning: Nested template "nested" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command).',
+                ]);
             });
 
             test("inner.func1", async () => {
@@ -448,7 +455,8 @@ suite("Nested templates", () => {
             } = await parseTemplateWithMarkers(
                 template,
                 [
-                    "Warning: Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. If you intended inner scope, set the deployment resource's properties.expressionEvaluationOptions.scope to 'inner'."
+                    "Warning: Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. If you intended inner scope, set the deployment resource's properties.expressionEvaluationOptions.scope to 'inner'.",
+                    'Warning: Nested template "nested" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command).',
                 ]
             );
 
@@ -523,6 +531,7 @@ suite("Nested templates", () => {
             } = await parseTemplateWithMarkers(
                 template,
                 [
+                    "11: Warning: Nested template \"nested\" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file (\"Select/Create Parameter File\" command).",
                     "19: Warning: Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. If you intended inner scope, set the deployment resource's properties.expressionEvaluationOptions.scope to 'inner'.",
                     "22: Warning: Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. If you intended inner scope, set the deployment resource's properties.expressionEvaluationOptions.scope to 'inner'."
                 ],
@@ -605,7 +614,11 @@ suite("Nested templates", () => {
             };
 
             test("no errors", async () => {
-                await parseTemplateWithMarkers(template, []);
+                await parseTemplateWithMarkers(
+                    template,
+                    [
+                        'Warning: Nested template "nested" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command).',
+                    ]);
             });
 
             test("root.func1", async () => {
@@ -642,6 +655,7 @@ suite("Nested templates", () => {
                 "8: Warning: The parameter 'p2' is never used.",
                 "12: Warning: The parameter 'p4' is never used.",
                 "17: Warning: The variable 'v1' is never used.",
+                "23: Warning: Nested template \"inner1\" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file (\"Select/Create Parameter File\" command).",
                 "30: Error: The following parameters do not have values: \"p1\", \"p2\"",
                 "35: Warning: The variable 'v2' is never used.",
                 "53: Error: Undefined parameter reference: 'p4'",
@@ -649,6 +663,7 @@ suite("Nested templates", () => {
                 "71: Warning: User-function parameter 'p1' is never used.",
                 "80: Warning: The user-defined function 'udf.func2' is never used.",
                 "97: Warning: The user-defined function 'udf2.func3' is never used.",
+                "112: Warning: Nested template \"outer1\" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file (\"Select/Create Parameter File\" command).",
                 "121: Warning: Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. If you intended inner scope, set the deployment resource's properties.expressionEvaluationOptions.scope to 'inner'.",
                 "125: Warning: Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. If you intended inner scope, set the deployment resource's properties.expressionEvaluationOptions.scope to 'inner'.",
                 "130: Warning: Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. If you intended inner scope, set the deployment resource's properties.expressionEvaluationOptions.scope to 'inner'.",
@@ -701,7 +716,8 @@ suite("Nested templates", () => {
             [
                 "Warning: The parameter 'p2' is never used.",
                 "Warning: The variable 'v1' is never used.",
-                "Warning: The user-defined function 'udf.notUsed' is never used."
+                "Warning: The user-defined function 'udf.notUsed' is never used.",
+                'Warning: Nested template "outer1" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command).',
             ]
         );
     });
@@ -894,7 +910,15 @@ suite("Nested templates", () => {
         };
 
         test("no errors", async () => {
-            await parseTemplateWithMarkers(deeplyNestedTemplate, []);
+            await parseTemplateWithMarkers(
+                deeplyNestedTemplate,
+                [
+                    "Warning: Nested template \"inner1\" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file (\"Select/Create Parameter File\" command).",
+                    "Warning: Nested template \"inner2\" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file (\"Select/Create Parameter File\" command).",
+                    "Warning: Nested template \"outer3\" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file (\"Select/Create Parameter File\" command).",
+                    "Warning: Nested template \"outer\" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file (\"Select/Create Parameter File\" command).",
+
+                ]);
         });
 
         test("outer3 references inner2.func1 from parent scope", async () => {
@@ -989,7 +1013,7 @@ suite("Nested templates", () => {
                     }
                 },
                 [
-                    // expect no errors
+                    'Warning: Nested template "RoleBasedAccessDeployment" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command).',
                 ]);
         });
     });
