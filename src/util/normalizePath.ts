@@ -4,18 +4,20 @@
 
 import * as path from 'path';
 import { Uri } from "vscode";
-import { isWin32 } from '../constants';
+import { documentSchemes, isWin32 } from '../constants';
 
-export function normalizePath(filePath: Uri | string): string {
-    const suffix: string = (typeof filePath === 'string' || !filePath.query)
-        ? ''
-        : `?${filePath.query}`;
-
-    const fsPath: string = typeof filePath === 'string' ? filePath : filePath.fsPath;
-    let normalizedPath = path.normalize(fsPath);
-    if (isWin32) {
-        normalizedPath = normalizedPath.toLowerCase();
+export function normalizePath(pathOrUri: Uri | string): string {
+    if (pathOrUri instanceof Uri && pathOrUri.scheme === documentSchemes.file) {
+        pathOrUri = pathOrUri.fsPath;
     }
 
-    return normalizedPath + suffix;
+    if (typeof pathOrUri === 'string') {
+        let normalizedPath = path.normalize(pathOrUri);
+        if (isWin32) {
+            normalizedPath = normalizedPath.toLowerCase();
+        }
+        pathOrUri = Uri.parse(normalizedPath);
+    }
+
+    return pathOrUri.toString();
 }

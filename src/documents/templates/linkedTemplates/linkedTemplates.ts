@@ -15,7 +15,7 @@ import { httpGet } from '../../../util/httpGet';
 import { normalizePath } from '../../../util/normalizePath';
 import { ofType } from '../../../util/ofType';
 import { pathExists } from '../../../util/pathExists';
-import { prependLinkedTemplateScheme } from '../../../util/prependLinkedTemplateScheme';
+import { prependLinkedTemplateScheme, removeLinkedTemplateScheme } from '../../../util/prependLinkedTemplateScheme';
 import { DeploymentTemplateDoc } from '../../templates/DeploymentTemplateDoc';
 import { LinkedTemplateScope } from '../../templates/scopes/templateScopes';
 import { setLangIdToArm } from '../../templates/supported';
@@ -111,24 +111,32 @@ export async function onRequestOpenLinkedFile(
         } else {
             // Something else (http etc).  Try to retrieve the content and return it directly
             try {
-                const content = await httpGet(requestedLinkUri.toString());
-                assert(ext.provideOpenedDocuments, "ext.provideOpenedDocuments");
-                const newUri = prependLinkedTemplateScheme(requestedLinkUri);
-
-                // We need to place it into our docs immediately because our text document content provider will be queried
-                // for content before we get the document open event
-                const dt = new DeploymentTemplateDoc(content, newUri, 0);
-                ext.provideOpenedDocuments.setOpenedDeploymentDocument(newUri, dt);
-
-                const doc = await workspace.openTextDocument(newUri);
-                setLangIdToArm(doc, context);
-
+                const content = await tryOpenNonLocalLinkedFile(requestedLinkUri, context, true);
                 return { content };
             } catch (error) {
                 return { loadErrorMessage: parseError(error).message };
             }
         }
     });
+}
+
+export async function tryOpenNonLocalLinkedFile(uri: Uri, context: IActionContext, open: boolean): Promise<string> {
+    uri = removeLinkedTemplateScheme(uri);
+    const content = await httpGet(uri.toString());
+    assert(ext.provideOpenedDocuments, "ext.provideOpenedDocuments");
+    const newUri = prependLinkedTemplateScheme(uri);
+
+    // We need to place it into our docs immediately because our text document content provider will be queried
+    // for content before we get the document open event
+    const dt = new DeploymentTemplateDoc(content, newUri, 0);
+    ext.provideOpenedDocuments.setOpenedDeploymentDocument(newUri, dt);
+
+    if (open) {
+        const doc = await workspace.openTextDocument(newUri);
+        setLangIdToArm(doc, context);
+    }
+
+    return content;
 }
 
 /**

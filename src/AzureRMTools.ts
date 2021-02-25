@@ -26,7 +26,7 @@ import { getNormalizedDocumentKey } from './documents/templates/getNormalizedDoc
 import { gotoResources } from './documents/templates/gotoResources';
 import { getItemTypeQuickPicks, InsertItem } from "./documents/templates/insertItem";
 import { LinkedFileLoadState } from './documents/templates/linkedTemplates/LinkedFileLoadState';
-import { assignTemplateGraphToDeploymentTemplate, INotifyTemplateGraphArgs, openLinkedTemplateFile } from './documents/templates/linkedTemplates/linkedTemplates';
+import { assignTemplateGraphToDeploymentTemplate, INotifyTemplateGraphArgs, openLinkedTemplateFile, tryOpenNonLocalLinkedFile } from './documents/templates/linkedTemplates/linkedTemplates';
 import { allSchemas, getPreferredSchema } from './documents/templates/schemas';
 import { getQuickPickItems, sortTemplate } from "./documents/templates/sortTemplate";
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, setLangIdToArm, templateDocumentSelector, templateOrParameterDocumentSelector } from "./documents/templates/supported";
@@ -1017,7 +1017,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
 
             const linkedTemplateDocumentProvider: vscode.TextDocumentContentProvider = {
                 provideTextDocumentContent: async (uri: vscode.Uri, _token: vscode.CancellationToken): Promise<string | undefined> => {
-                    return this.provideContentForNonlocalUri(uri);
+                    return await this.provideContentForNonlocalUri(uri);
                 }
             };
             ext.context.subscriptions.push(
@@ -1040,8 +1040,15 @@ export class AzureRMTools implements IProvideOpenedDocuments {
      * linked-template:https%3A//raw.githubusercontent.com/StephenWeatherford/template-examples/master/linkedTemplates/uri/child.json
      */
     private async provideContentForNonlocalUri(uri: vscode.Uri): Promise<string | undefined> {
-        return callWithTelemetryAndErrorHandlingSync('provideContentForNonlocalUris', () => {
-            const dt = this.getOpenedDeploymentDocument(uri);
+        return callWithTelemetryAndErrorHandling('provideContentForNonlocalUris', async (context: IActionContext) => {
+            context.errorHandling.rethrow = true;
+
+            let dt = this.getOpenedDeploymentDocument(uri);
+            if (!dt) {
+                await tryOpenNonLocalLinkedFile(uri, context, false); //asdf handle linked-template:
+                dt = this.getOpenedDeploymentDocument(uri);
+            }
+
             return dt?.documentText;
         });
     }
@@ -1077,7 +1084,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     const fullValidationOn = deploymentTemplate.templateGraph?.fullValidationStatus.fullValidationEnabled ?? templateFileHasParamFile;
                     isWarning = !fullValidationOn;
                     statusBarText = isWarning ?
-                        `$(warning) WARNING: Full template validation off. Add parameter file or top-level default values to enable.` :
+                        `$(warning) WARNING: Full template validation off. Add parameter file or top-level default values to parameters to enable.` :
                         statusBarText;
 
                     this._paramsStatusBarItem.command = "azurerm-vscode-tools.selectParameterFile";
