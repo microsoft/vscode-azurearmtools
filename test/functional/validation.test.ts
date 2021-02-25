@@ -6,6 +6,7 @@
 
 import { testDiagnostics } from "../support/diagnostics";
 import { testWithLanguageServerAndRealFunctionMetadata } from "../support/testWithLanguageServer";
+import { testMessages } from "../testConstants";
 
 suite("General validation tests (all diagnostic sources)", () => {
     suite("scoped deployments", () => {
@@ -59,7 +60,7 @@ suite("General validation tests (all diagnostic sources)", () => {
                 {
                 },
                 [
-                    'Information: Nested template "storageDeployment" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command). (arm-template (expressions)) [30,21-30,40]'
+                    `${testMessages.nestedTemplateNoValidation("storageDeployment")} (arm-template (expressions)) [30,21-30,40]`
                 ]);
         });
 
@@ -87,7 +88,7 @@ suite("General validation tests (all diagnostic sources)", () => {
                     },
                     resources: [
                         {
-                            name: "nestedDeployment2",
+                            name: "linkedDeployment2",
                             type: "Microsoft.Resources/deployments",
                             apiVersion: "2017-05-10",
                             properties: {
@@ -104,7 +105,7 @@ suite("General validation tests (all diagnostic sources)", () => {
                             }
                         },
                         {
-                            name: "nestedDeployment1",
+                            name: "linkedDeployment1",
                             type: "Microsoft.Resources/deployments",
                             apiVersion: "2017-05-10",
                             properties: {
@@ -128,8 +129,8 @@ suite("General validation tests (all diagnostic sources)", () => {
                 {
                 },
                 [
-                    'Information: Linked template "nestedDeployment1" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command). (arm-template (expressions)) [32,15-32,34]',
-                    'Information: Linked template "nestedDeployment2" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command). (arm-template (expressions)) [15,15-15,34]'
+                    `${testMessages.linkedTemplateNoValidation("linkedDeployment1")} (arm-template (expressions)) [32,15-32,34]`,
+                    `${testMessages.linkedTemplateNoValidation("linkedDeployment2")} (arm-template (expressions)) [15,15-15,34]`
 
                 ]);
         });

@@ -3,9 +3,9 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
+import { workspace } from "vscode";
 import { LanguageClient } from "vscode-languageclient";
-import { ext, LanguageServerState } from "../../extension.bundle";
-import { assertNever } from "../../src/util/assertNever";
+import { armTemplateLanguageId, assertNever, ext, LanguageServerState } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { delay } from "./delay";
 import { testLog } from "./testLog";
@@ -19,6 +19,13 @@ export async function ensureLanguageServerAvailable(): Promise<LanguageClient> {
 
     if (!isLanguageServerAvailable) {
         testLog.writeLine("Waiting for language server to be available");
+
+        // Open a doc to force the language server to start up
+        workspace.openTextDocument({
+            content: "",
+            language: armTemplateLanguageId
+        });
+
         // tslint:disable-next-line: no-constant-condition
         while (!isLanguageServerAvailable) {
             switch (ext.languageServerState) {

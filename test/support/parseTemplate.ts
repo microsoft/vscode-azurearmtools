@@ -77,11 +77,11 @@ export async function parseTemplateWithMarkers(
     // Always run these even if not checking against expected, to verify nothing throws
     const errors: Issue[] = dt.getErrors(undefined);
     const warnings: Issue[] = dt.getWarnings();
-    const errorMessages = errors.map(e => <DiagIssue>{ line: e.span.startIndex, msg: getMessage(e, true), kind: e.severity });
-    const warningMessages = warnings.filter(e => e.severity === IssueSeverity.Warning).map(e => <DiagIssue>{ line: e.span.startIndex, msg: getMessage(e, false), kind: e.severity });
-    const infoMessages = warnings.filter(e => e.severity !== IssueSeverity.Warning).map(e => <DiagIssue>{ line: e.span.startIndex, msg: getMessage(e, false), kind: e.severity });
-    function getMessage(d: Issue, isError: boolean): string {
-        const typeString = isError ? 'Error' : 'Warning';
+    const errorMessages = errors.map(e => <DiagIssue>{ line: e.span.startIndex, msg: getMessage(e), kind: e.severity });
+    const warningMessages = warnings.filter(e => e.severity === IssueSeverity.Warning).map(e => <DiagIssue>{ line: e.span.startIndex, msg: getMessage(e), kind: e.severity });
+    const infoMessages = warnings.filter(e => e.severity !== IssueSeverity.Warning).map(e => <DiagIssue>{ line: e.span.startIndex, msg: getMessage(e), kind: e.severity });
+    function getMessage(d: Issue): string {
+        const typeString = d.severity === IssueSeverity.Error ? 'Error' : d.severity === IssueSeverity.Warning ? 'Warning' : 'Information';
         let msg = `${typeString}: ${d.message}`;
         if (options?.includeDiagnosticLineNumbers) {
             msg = `${dt.getDocumentPosition(d.span.startIndex).line + 1}: ${msg}`;

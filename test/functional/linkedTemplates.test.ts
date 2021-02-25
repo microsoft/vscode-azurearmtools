@@ -5,15 +5,15 @@
 // tslint:disable:object-literal-key-quotes no-http-string max-func-body-length
 
 import * as assert from "assert";
-import { Uri, workspace } from "vscode";
+import { Uri } from "vscode";
 import { parseError } from "vscode-azureextensionui";
-import { armTemplateLanguageId, assertNever, LinkedFileLoadState, notifications, notifyTemplateGraphAvailable } from "../../extension.bundle";
+import { assertNever, LinkedFileLoadState, notifications, notifyTemplateGraphAvailable } from "../../extension.bundle";
 import { ExpectedDiagnostics, IExpectedDiagnostic, simplifyBadTypeResourceMessage, testDiagnostics, testDiagnosticsFromUri } from "../support/diagnostics";
 import { ensureLanguageServerAvailable } from "../support/ensureLanguageServerAvailable";
 import { resolveInTestFolder } from "../support/resolveInTestFolder";
 import { testLog } from "../support/testLog";
 import { testWithLanguageServerAndRealFunctionMetadata } from "../support/testWithLanguageServer";
-import { isWin32 } from "../testConstants";
+import { isWin32, testMessages } from "../testConstants";
 
 suite("Linked templates functional tests", () => {
     // <TC> in strings will be replaced with ${testCase}
@@ -114,10 +114,6 @@ suite("Linked templates functional tests", () => {
                 assert(options.mainParametersFile);
 
                 // Make sure the language server starts up
-                workspace.openTextDocument({
-                    content: "",
-                    language: armTemplateLanguageId
-                });
                 const client = await ensureLanguageServerAvailable();
                 client.onNotification(notifications.Diagnostics.codeAnalysisStarting, async (args: notifications.Diagnostics.ICodeAnalysisStartingArgs) => {
                     //testLog.writeLine(JSON.stringify(args, null, 2));
@@ -442,7 +438,7 @@ suite("Linked templates functional tests", () => {
                             parentTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                             linkedTemplateFile: "templates/linkedTemplates/<TC>/subfolder/child.json",
                             expected: [
-                                'Information: Linked template "linkedDeployment1" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command). (arm-template (expressions)) [14,21-14,40]',
+                                `${testMessages.linkedTemplateNoValidation("linkedDeployment1")} (arm-template (expressions)) [14,21-14,40]`,
                                 "Warning: The parameter 'intParam' is never used. (arm-template (expressions)) [5,9-5,19]",
                                 "Warning: The parameter 'stringParam' is never used. (arm-template (expressions)) [8,9-8,22]",
                             ]
@@ -472,7 +468,7 @@ suite("Linked templates functional tests", () => {
                             parentTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                             linkedTemplateFile: "templates/linkedTemplates/<TC>/subfolder/child.json",
                             expected: [
-                                'Information: Linked template "linkedDeployment1" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command). (arm-template (expressions)) [14,21-14,40]',
+                                `${testMessages.linkedTemplateNoValidation("linkedDeployment1")} (arm-template (expressions)) [14,21-14,40]`,
                                 "Warning: The parameter 'intParam' is never used. (arm-template (expressions)) [5,9-5,19]",
                                 "Warning: The parameter 'stringParam' is never used. (arm-template (expressions)) [8,9-8,22]",
                             ]
@@ -499,7 +495,7 @@ suite("Linked templates functional tests", () => {
                             parentTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                             linkedTemplateFile: "templates/linkedTemplates/<TC>/subfolder/child.json",
                             expected: [
-                                'Information: Linked template "linkedDeployment1" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command). (arm-template (expressions)) [23,21-23,40]',
+                                `${testMessages.linkedTemplateNoValidation("linkedDeployment1")} (arm-template (expressions)) [23,21-23,40]`,
                                 "Warning: The parameter 'childIntParam' is never used. (arm-template (expressions)) [5,9-5,24]",
                                 "Warning: The parameter 'childStringParam' is never used. (arm-template (expressions)) [8,9-8,27]",
                                 "Warning: The parameter 'location' is never used. (arm-template (expressions)) [11,9-11,19]",

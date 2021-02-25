@@ -59,7 +59,7 @@ suite("arm-template-language-samples", () => {
         // https://github.com/microsoft/vscode-azurearmtools/issues/484
         testSample("nested-deployment-scoping.json");
         testSample("azuredeploy.inline.json", [
-            `${testMessages.nestedTemplateNoValidation("fetchSecret")} [19,21-19,34]`
+            `${testMessages.nestedTemplateNoValidation("fetchSecret")} (arm-template (expressions)) [19,21-19,34]`
         ]);
     });
 

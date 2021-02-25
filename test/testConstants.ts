@@ -28,6 +28,10 @@ export const logsFolder = path.join(basePath, 'logs');
 
 export namespace testMessages {
     export function nestedTemplateNoValidation(templateName: string): string {
-        return `Information: Nested template "${templateName}" will not have validation or parameter completion because full validation is off. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command). (arm-template (expressions))`;
+        return `Information: Nested template "${templateName}" will not have validation or parameter completion. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command).`;
+    }
+
+    export function linkedTemplateNoValidation(templateName: string): string {
+        return `Information: Linked template "${templateName}" will not have validation or parameter completion. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command).`;
     }
 }
