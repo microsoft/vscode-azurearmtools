@@ -6,7 +6,7 @@ A JSON language extension to support Azure Resource Manager deployment templates
 ### Prerequisites
 * [Install node.js](https://nodejs.org/en) [v5.5.0 or Higher]
 
-* To **build** this extension from the command line, run `npm run build`.
+* To **build** this extension from the command line, run `npm i` and then `npm run build`.
 * To run this extension's **unit tests** from the command line, run `npm test`.
 * To create a VSCode .vsix package for this extension, run `vsce package` (after `npm install -g vsce` if needed)
 * To debug this extension, open in vscode, and run the "Launch Extension" configuration
