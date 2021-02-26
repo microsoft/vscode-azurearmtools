@@ -85,13 +85,26 @@ export async function onRequestOpenLinkedFile(
         const properties = <TelemetryProperties & {
             openResult: 'Loaded' | 'Error';
             openErrorType: string;
+            fileScheme: string;
+            hasQuery: string;
         }>context.telemetry.properties;
         properties.openErrorType = '';
         properties.openResult = 'Error';
 
-        const requestedLinkUri: Uri = Uri.parse(requestedLinkResolvedUri, true);
+        let requestedLinkUri: Uri;
+        try {
+            requestedLinkUri = Uri.parse(requestedLinkResolvedUri, true);
+        } catch (error) {
+            return { loadErrorMessage: parseError(error).message };
+        }
 
-        assert(path.isAbsolute(requestedLinkUri.fsPath), "Internal error: requestedLinkUri should be an absolute path");
+        properties.fileScheme = requestedLinkUri.scheme;
+        properties.hasQuery = String(!!requestedLinkUri.query);
+
+        if (!path.isAbsolute(requestedLinkUri.fsPath)) {
+            properties.openErrorType = 'path not absolute';
+            return { loadErrorMessage: "Link uri should be an absolute path" };
+        }
 
         if (requestedLinkUri.scheme === documentSchemes.file) {
             // It's a local file.
@@ -112,9 +125,12 @@ export async function onRequestOpenLinkedFile(
             // Something else (http etc).  Try to retrieve the content and return it directly
             try {
                 const content = await tryOpenNonLocalLinkedFile(requestedLinkUri, context, true);
+                properties.openResult = 'Loaded';
                 return { content };
             } catch (error) {
-                return { loadErrorMessage: parseError(error).message };
+                const parsedError = parseError(error);
+                properties.openErrorType = parsedError.errorType;
+                return { loadErrorMessage: parsedError.message };
             }
         }
     });
