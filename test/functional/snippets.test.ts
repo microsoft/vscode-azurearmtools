@@ -70,7 +70,9 @@ const overrideSkipTests: { [name: string]: boolean } = {
 
     "Azure Resource Manager (ARM) Parameters Template": true, // TODO: Blocked by https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1005573
 
-    "Tag Section": true // Needs comma for no errors, and not complicated, just ignore
+    "Tag Section": true, // Needs comma for no errors, and not complicated, just ignore
+    "Linked Deployment With Relative Path": true, // https://github.com/microsoft/vscode-azurearmtools/issues/1218
+    "Linked Deployment With URI": true, // https://github.com/microsoft/vscode-azurearmtools/issues/1218
 };
 
 // Override the template file text to start with before inserting the snippet - default is resourceTemplate
