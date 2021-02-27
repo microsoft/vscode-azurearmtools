@@ -19,7 +19,7 @@ suite("ParentAndChildCodeLenses", () => {
         expected: Expected[]
     ): void {
         test(name, async () => {
-            const dt = await parseTemplate(template, []);
+            const dt = await parseTemplate(template, [], { ignoreInfos: true });
             const lenses: ParentOrChildCodeLens[] = dt.getCodeLenses(undefined).filter(cl => cl instanceof ParentOrChildCodeLens) as ParentOrChildCodeLens[];
 
             const allInfos: IJsonResourceInfo[] = [];

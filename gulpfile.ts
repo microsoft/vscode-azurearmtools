@@ -355,7 +355,7 @@ async function verifyTestsReferenceOnlyExtensionBundle(testFolder: string): Prom
             const matches = contents.match(regex);
             if (matches) {
                 for (let match of matches) {
-                    if (match.includes('.shared.ts')) {
+                    if (!match.includes('.shared.ts')) {
                         errors.push(
                             os.EOL +
                             `${path.relative(__dirname, file)}: error: Test code may not import from the src folder, it should import from '../extension.bundle'${os.EOL}` +

@@ -6,7 +6,7 @@ import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import { Uri } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
-import { DeploymentParametersDoc, DeploymentTemplateDoc, Issue } from "../../extension.bundle";
+import { DeploymentParametersDoc, DeploymentTemplateDoc, Issue, IssueSeverity } from "../../extension.bundle";
 import { IDeploymentParametersFile, IPartialDeploymentTemplate } from './diagnostics';
 import { resolveInTestFolder } from './resolveInTestFolder';
 import { stringify } from "./stringify";
@@ -20,6 +20,7 @@ export async function parseTemplate(
     options?: {
         fromFile?: boolean; // if true, template is a path
         ignoreWarnings?: boolean;
+        ignoreInfos?: boolean;
         includeDiagnosticLineNumbers?: boolean;
         replacements?: { [key: string]: string | { [key: string]: unknown } };
     }
@@ -50,6 +51,7 @@ export async function parseTemplateWithMarkers(
     options?: {
         fromFile?: boolean; // if true, template is a path
         ignoreWarnings?: boolean;
+        ignoreInfos?: boolean;
         includeDiagnosticLineNumbers?: boolean;
         replacements?: { [key: string]: string | { [key: string]: unknown } };
         documentUri?: Uri;
@@ -69,17 +71,17 @@ export async function parseTemplateWithMarkers(
     type DiagIssue = {
         line: number;
         msg: string;
-        kind: 'Error' | 'Warning';
+        kind: IssueSeverity;
     };
 
     // Always run these even if not checking against expected, to verify nothing throws
     const errors: Issue[] = dt.getErrors(undefined);
     const warnings: Issue[] = dt.getWarnings();
-    const errorMessages = errors.map(e => <DiagIssue>{ line: e.span.startIndex, msg: getMessage(e, true), kind: 'Error' });
-    const warningMessages = warnings.map(e => <DiagIssue>{ line: e.span.startIndex, msg: getMessage(e, false), kind: 'Warning' });
-
-    function getMessage(d: Issue, isError: boolean): string {
-        const typeString = isError ? 'Error' : 'Warning';
+    const errorMessages = errors.map(e => <DiagIssue>{ line: e.span.startIndex, msg: getMessage(e), kind: e.severity });
+    const warningMessages = warnings.filter(e => e.severity === IssueSeverity.Warning).map(e => <DiagIssue>{ line: e.span.startIndex, msg: getMessage(e), kind: e.severity });
+    const infoMessages = warnings.filter(e => e.severity !== IssueSeverity.Warning).map(e => <DiagIssue>{ line: e.span.startIndex, msg: getMessage(e), kind: e.severity });
+    function getMessage(d: Issue): string {
+        const typeString = d.severity === IssueSeverity.Error ? 'Error' : d.severity === IssueSeverity.Warning ? 'Warning' : 'Information';
         let msg = `${typeString}: ${d.message}`;
         if (options?.includeDiagnosticLineNumbers) {
             msg = `${dt.getDocumentPosition(d.span.startIndex).line + 1}: ${msg}`;
@@ -90,9 +92,13 @@ export async function parseTemplateWithMarkers(
 
     if (expectedDiagnosticMessages) {
         let expected = errorMessages;
-        if (!options || !options.ignoreWarnings) {
+        if (!options?.ignoreWarnings) {
             expected = expected.concat(warningMessages);
         }
+        if (!options?.ignoreInfos) {
+            expected = expected.concat(infoMessages);
+        }
+
         const sortedExpectedDiag =
             expected.sort(
                 options?.includeDiagnosticLineNumbers

@@ -7,6 +7,7 @@
 import * as path from 'path';
 import { testDiagnosticsFromFile } from "./support/diagnostics";
 import { testWithLanguageServer } from './support/testWithLanguageServer';
+import { testMessages } from './testConstants';
 
 // These are from the templates at https://github.com/bmoore-msft/arm-template-language-samples which show problems with the 0.6.0 version of the extension
 
@@ -57,7 +58,9 @@ suite("arm-template-language-samples", () => {
         // Nested templates
         // https://github.com/microsoft/vscode-azurearmtools/issues/484
         testSample("nested-deployment-scoping.json");
-        testSample("azuredeploy.inline.json");
+        testSample("azuredeploy.inline.json", [
+            `${testMessages.nestedTemplateNoValidation("fetchSecret")} (arm-template (expressions)) [19,21-19,34]`
+        ]);
     });
 
     // ====== TODO: NOT PASSING YET (https://github.com/microsoft/vscode-azurearmtools/issues/687)

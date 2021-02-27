@@ -6,8 +6,9 @@
 
 import { testDiagnostics } from "../support/diagnostics";
 import { testWithLanguageServerAndRealFunctionMetadata } from "../support/testWithLanguageServer";
+import { testMessages } from "../testConstants";
 
-suite("General validation tests (all diagnotic sources)", () => {
+suite("General validation tests (all diagnostic sources)", () => {
     suite("scoped deployments", () => {
         testWithLanguageServerAndRealFunctionMetadata("invalid schema", async () => {
             await testDiagnostics(
@@ -59,6 +60,7 @@ suite("General validation tests (all diagnotic sources)", () => {
                 {
                 },
                 [
+                    `${testMessages.nestedTemplateNoValidation("storageDeployment")} (arm-template (expressions)) [30,21-30,40]`
                 ]);
         });
 
@@ -86,7 +88,7 @@ suite("General validation tests (all diagnotic sources)", () => {
                     },
                     resources: [
                         {
-                            name: "nestedDeployment2",
+                            name: "linkedDeployment2",
                             type: "Microsoft.Resources/deployments",
                             apiVersion: "2017-05-10",
                             properties: {
@@ -103,7 +105,7 @@ suite("General validation tests (all diagnotic sources)", () => {
                             }
                         },
                         {
-                            name: "nestedDeployment1",
+                            name: "linkedDeployment1",
                             type: "Microsoft.Resources/deployments",
                             apiVersion: "2017-05-10",
                             properties: {
@@ -127,7 +129,9 @@ suite("General validation tests (all diagnotic sources)", () => {
                 {
                 },
                 [
-                    // expecting no errors
+                    `${testMessages.linkedTemplateNoValidation("linkedDeployment1")} (arm-template (expressions)) [32,15-32,34]`,
+                    `${testMessages.linkedTemplateNoValidation("linkedDeployment2")} (arm-template (expressions)) [15,15-15,34]`
+
                 ]);
         });
     });

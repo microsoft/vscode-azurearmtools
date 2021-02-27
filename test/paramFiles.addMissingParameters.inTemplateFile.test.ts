@@ -8,7 +8,7 @@
 
 import * as assert from 'assert';
 import { CodeAction, Command, Uri } from 'vscode';
-import { addMissingParameters, assignTemplateGraphToDeploymentTemplate, DeploymentTemplateDoc, getNormalizedDocumentKey, getVSCodeRangeFromSpan, IAddMissingParametersArgs, INotifyTemplateGraphArgs, LinkedFileLoadState, NormalizedMap, ofType, Span } from '../extension.bundle';
+import { addMissingParameters, assignTemplateGraphToDeploymentTemplate, DeploymentTemplateDoc, getNormalizedDocumentKey, getVSCodeRangeFromSpan, IAddMissingParametersArgs, INotifyTemplateGraphArgs, isWin32, LinkedFileLoadState, NormalizedMap, ofType, Span } from '../extension.bundle';
 import { TextDocumentFake } from './fakes/TextDocumentFake';
 import { TextEditorFake } from './fakes/TextEditorFake';
 import { getCodeActionContext } from './support/getCodeActionContext';
@@ -38,8 +38,9 @@ suite("Add missing parameters for nested/linked templates", () => {
             const expectedResultText = expectedDt.documentText;
 
             // Get template
-            const templateUri = Uri.file("/mainTemplate.json");
-            const childUri = Uri.file("file:///childTemplate.json");
+            const root = isWin32 ? 'c:\\' : '/';
+            const templateUri = Uri.file(`${root}mainTemplate.json`);
+            const childUri = Uri.file(`${root}childTemplate.json`);
 
             // Get linked template
             const { dt, markers: { bang } } = await parseTemplateWithMarkers(template, undefined, { fromFile: true, documentUri: templateUri, tabSize });
@@ -64,7 +65,11 @@ suite("Add missing parameters for nested/linked templates", () => {
                             parameterValues: {}
                         }
                     ],
-                    fullValidationEnabled: true,
+                    fullValidationStatus: {
+                        fullValidationEnabled: true,
+                        allParametersHaveDefaults: true,
+                        hasParameterFile: true,
+                    },
                     isComplete: true,
                     rootTemplateDocVersion: 0,
                 };

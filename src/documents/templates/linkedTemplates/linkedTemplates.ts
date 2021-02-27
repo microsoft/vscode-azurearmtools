@@ -2,9 +2,10 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import * as fse from 'fs-extra';
 import * as path from 'path';
 import { Diagnostic, TextDocument, Uri, window, workspace } from "vscode";
-import { callWithTelemetryAndErrorHandling, IActionContext, parseError, TelemetryProperties } from "vscode-azureextensionui";
+import { callWithTelemetryAndErrorHandling, DialogResponses, IActionContext, parseError, TelemetryProperties } from "vscode-azureextensionui";
 import { armTemplateLanguageId, documentSchemes } from '../../../constants';
 import { Errorish } from '../../../Errorish';
 import { ext } from "../../../extensionVariables";
@@ -12,10 +13,10 @@ import { assert } from '../../../fixed_assert';
 import { IProvideOpenedDocuments } from '../../../IProvideOpenedDocuments';
 import { ContainsBehavior } from "../../../language/Span";
 import { httpGet } from '../../../util/httpGet';
-import { normalizePath } from '../../../util/normalizePath';
+import { normalizeUri } from '../../../util/normalizedPaths';
 import { ofType } from '../../../util/ofType';
 import { pathExists } from '../../../util/pathExists';
-import { prependLinkedTemplateScheme } from '../../../util/prependLinkedTemplateScheme';
+import { prependLinkedTemplateScheme, removeLinkedTemplateScheme } from '../../../util/prependLinkedTemplateScheme';
 import { DeploymentTemplateDoc } from '../../templates/DeploymentTemplateDoc';
 import { LinkedTemplateScope } from '../../templates/scopes/templateScopes';
 import { setLangIdToArm } from '../../templates/supported';
@@ -45,11 +46,17 @@ enum PathType {
     parametersLink = 2,
 }
 
+export interface IFullValidationStatus {
+    fullValidationEnabled: boolean;
+    allParametersHaveDefaults: boolean;
+    hasParameterFile: boolean;
+}
+
 export interface INotifyTemplateGraphArgs {
     rootTemplateUri: string;
     rootTemplateDocVersion: number;
     linkedTemplates: ILinkedTemplateReference[];
-    fullValidationEnabled: boolean;
+    fullValidationStatus: IFullValidationStatus;
     isComplete: boolean; // If there were validation errors, the graph might not be complete
 }
 
@@ -79,15 +86,29 @@ export async function onRequestOpenLinkedFile(
         const properties = <TelemetryProperties & {
             openResult: 'Loaded' | 'Error';
             openErrorType: string;
+            fileScheme: string;
+            hasQuery: string;
         }>context.telemetry.properties;
         properties.openErrorType = '';
         properties.openResult = 'Error';
 
-        const requestedLinkUri: Uri = Uri.parse(requestedLinkResolvedUri, true);
+        let requestedLinkUri: Uri;
+        try {
+            requestedLinkUri = Uri.parse(requestedLinkResolvedUri, true);
+        } catch (error) {
+            return { loadErrorMessage: parseError(error).message };
+        }
 
-        assert(path.isAbsolute(requestedLinkUri.fsPath), "Internal error: requestedLinkUri should be an absolute path");
+        properties.fileScheme = requestedLinkUri.scheme;
+        properties.hasQuery = String(!!requestedLinkUri.query);
 
-        if (requestedLinkUri.scheme === documentSchemes.file) {
+        if (requestedLinkUri.scheme === documentSchemes.untitled) {
+            properties.openErrorType = 'template not saved';
+            return { loadErrorMessage: "Template file needs to be saved" };
+        } else if (!path.isAbsolute(requestedLinkUri.fsPath)) {
+            properties.openErrorType = 'path not absolute';
+            return { loadErrorMessage: "Link uri should be an absolute path" };
+        } else if (requestedLinkUri.scheme === documentSchemes.file) {
             // It's a local file.
             // Strip the path of any query string, and use only the local file path
             const localPath = requestedLinkUri.fsPath;
@@ -105,24 +126,35 @@ export async function onRequestOpenLinkedFile(
         } else {
             // Something else (http etc).  Try to retrieve the content and return it directly
             try {
-                const content = await httpGet(requestedLinkUri.toString());
-                assert(ext.provideOpenedDocuments, "ext.provideOpenedDocuments");
-                const newUri = prependLinkedTemplateScheme(requestedLinkUri);
-
-                // We need to place it into our docs immediately because our text document content provider will be queried
-                // for content before we get the document open event
-                const dt = new DeploymentTemplateDoc(content, newUri, 0);
-                ext.provideOpenedDocuments.setOpenedDeploymentDocument(newUri, dt);
-
-                const doc = await workspace.openTextDocument(newUri);
-                setLangIdToArm(doc, context);
-
+                const content = await tryOpenNonLocalLinkedFile(requestedLinkUri, context, true);
+                properties.openResult = 'Loaded';
                 return { content };
             } catch (error) {
-                return { loadErrorMessage: parseError(error).message };
+                const parsedError = parseError(error);
+                properties.openErrorType = parsedError.errorType;
+                return { loadErrorMessage: parsedError.message };
             }
         }
     });
+}
+
+export async function tryOpenNonLocalLinkedFile(uri: Uri, context: IActionContext, open: boolean): Promise<string> {
+    uri = removeLinkedTemplateScheme(uri);
+    const content = await httpGet(uri.toString());
+    assert(ext.provideOpenedDocuments, "ext.provideOpenedDocuments");
+    const newUri = prependLinkedTemplateScheme(uri);
+
+    // We need to place it into our docs immediately because our text document content provider will be queried
+    // for content before we get the document open event
+    const dt = new DeploymentTemplateDoc(content, newUri, 0);
+    ext.provideOpenedDocuments.setOpenedDeploymentDocument(newUri, dt);
+
+    if (open) {
+        const doc = await workspace.openTextDocument(newUri);
+        setLangIdToArm(doc, context);
+    }
+
+    return content;
 }
 
 /**
@@ -174,7 +206,7 @@ export function assignTemplateGraphToDeploymentTemplate(
     dt: DeploymentTemplateDoc,
     provideOpenDocuments: IProvideOpenedDocuments
 ): void {
-    assert(normalizePath(Uri.parse(graph.rootTemplateUri)) === normalizePath(dt.documentUri));
+    assert(normalizeUri(Uri.parse(graph.rootTemplateUri)) === normalizeUri(dt.documentUri));
 
     // Clear current
     const linkedScopes = ofType(dt.allScopes, LinkedTemplateScope);
@@ -196,10 +228,68 @@ export function assignTemplateGraphToDeploymentTemplate(
             matchingScope.assignLinkedFileReferences([linkReference], provideOpenDocuments);
         }
     }
+
+    dt.templateGraph = graph;
 }
 
-export async function openLinkedTemplateFile(linkedTemplateUri: Uri, actionContext: IActionContext): Promise<void> {
-    const targetUri = prependLinkedTemplateScheme(linkedTemplateUri);
+/**
+ * This is the executed when the user clicks on a linked template code lens so open the linked file
+ */
+export async function openLinkedTemplateFileCommand(linkedTemplateUri: Uri, actionContext: IActionContext): Promise<void> {
+    let targetUri: Uri;
+    actionContext.telemetry.properties.scheme = linkedTemplateUri.scheme;
+
+    if (linkedTemplateUri.scheme === documentSchemes.file) {
+        const exists = await pathExists(linkedTemplateUri);
+        actionContext.telemetry.properties.exists = String(exists);
+        if (!exists) {
+            const fsPath = linkedTemplateUri.fsPath;
+            const response = await ext.ui.showWarningMessage(
+                `Could not find file "${fsPath}".  Do you want to create it?`,
+                DialogResponses.yes,
+                DialogResponses.cancel);
+            if (response === DialogResponses.yes) {
+                await fse.writeFile(fsPath, "", {});
+            } else {
+                return;
+            }
+        }
+
+        targetUri = linkedTemplateUri;
+    } else {
+        targetUri = prependLinkedTemplateScheme(linkedTemplateUri);
+    }
+
+    const doc = await workspace.openTextDocument(targetUri);
+    setLangIdToArm(doc, actionContext);
+    await window.showTextDocument(doc);
+}
+
+export async function reloadLinkedTemplateFileCommand(linkedTemplateUri: Uri, actionContext: IActionContext): Promise<void> {
+    let targetUri: Uri;
+    actionContext.telemetry.properties.scheme = linkedTemplateUri.scheme;
+
+    if (linkedTemplateUri.scheme === documentSchemes.file) {
+        const exists = await pathExists(linkedTemplateUri);
+        actionContext.telemetry.properties.exists = String(exists);
+        if (!exists) {
+            const fsPath = linkedTemplateUri.fsPath;
+            const response = await ext.ui.showWarningMessage(
+                `Could not find file "${fsPath}".  Do you want to create it?`,
+                DialogResponses.yes,
+                DialogResponses.cancel);
+            if (response === DialogResponses.yes) {
+                await fse.writeFile(fsPath, "", {});
+            } else {
+                return;
+            }
+        }
+
+        targetUri = linkedTemplateUri;
+    } else {
+        targetUri = prependLinkedTemplateScheme(linkedTemplateUri);
+    }
+
     const doc = await workspace.openTextDocument(targetUri);
     setLangIdToArm(doc, actionContext);
     await window.showTextDocument(doc);

@@ -22,36 +22,7 @@ suite("Linked templates regressions", () => {
         });
 
         suite('Regress #773: Regression from 0.10.0: top-level parameters not recognized in nested template properties', () => {
-            testWithLanguageServer("simple", async () => {
-                await testDiagnosticsFromFile(
-                    {
-                        "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                        "contentVersion": "1.0.0.0",
-                        "resources": [
-                            {
-                                "name": "aadLinkedTemplate",
-                                "type": "Microsoft.Resources/deployments",
-                                "apiVersion": "2019-10-01",
-                                "properties": {
-                                    "mode": "Incremental",
-                                    "templateLink": {
-                                        "uri": "https://foo"
-                                    }
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        parameters: {
-                            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-                            "contentVersion": "1.0.0.0",
-                            "parameters": {}
-                        }
-                    },
-                    [
-                        // Should be no errors
-                    ]);
-            });
+
             testWithLanguageServer("linked-templates-scope.json", async () => {
                 await testDiagnosticsFromFile(
                     'templates/linked-templates-scope.json',

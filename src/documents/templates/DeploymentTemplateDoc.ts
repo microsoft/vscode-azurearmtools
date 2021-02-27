@@ -37,14 +37,16 @@ import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSo
 import { getMissingParameterErrors, getParameterValuesCodeActions } from '../parameters/ParameterValues';
 import { SynchronousParameterValuesSourceProvider } from "../parameters/SynchronousParameterValuesSourceProvider";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
-import { LinkedTemplateCodeLens, NestedTemplateCodeLen, ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
+import { LinkedTemplateCodeLens, NestedTemplateCodeLens } from './ChildTemplateCodeLens';
+import { ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
 import { getResourcesInfo } from './getResourcesInfo';
+import { INotifyTemplateGraphArgs } from './linkedTemplates/linkedTemplates';
 import { getParentAndChildCodeLenses } from './ParentAndChildCodeLenses';
 import { isArmSchema } from './schemas';
 import { DeploymentScopeKind } from './scopes/DeploymentScopeKind';
 import { IDeploymentSchemaReference } from './scopes/IDeploymentSchemaReference';
 import { TemplateScope } from "./scopes/TemplateScope";
-import { IChildDeploymentScope, LinkedTemplateScope, NestedTemplateOuterScope, TopLevelTemplateScope } from './scopes/templateScopes';
+import { IChildDeploymentScope, LinkedTemplateScope, NestedTemplateInnerScope, NestedTemplateOuterScope, TopLevelTemplateScope } from './scopes/templateScopes';
 import { UserFunctionParameterDefinition } from './UserFunctionParameterDefinition';
 
 export interface IScopedParseResult {
@@ -88,6 +90,9 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     private _allReferences: CachedValue<IAllReferences> = new CachedValue<IAllReferences>();
 
     private _allScopes: CachedValue<TemplateScope[]> = new CachedValue<TemplateScope[]>();
+
+    // This is inserted post-creation
+    public templateGraph: INotifyTemplateGraphArgs | undefined;
 
     /**
      * Create a new DeploymentTemplate object.
@@ -187,8 +192,9 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         const unusedWarnings = this.getUnusedDefinitionWarnings();
         const inaccessibleScopeMembers = this.getInaccessibleScopeMemberWarnings();
         const incorrectScopeWarnings = this.getIncorrectScopeWarnings();
+        const disabledValidationInfoWarnings = this.getDisabledValidationInfoWarnings();
 
-        return unusedWarnings.concat(inaccessibleScopeMembers, incorrectScopeWarnings);
+        return unusedWarnings.concat(inaccessibleScopeMembers, incorrectScopeWarnings, disabledValidationInfoWarnings);
     }
 
     private get allReferences(): IAllReferences {
@@ -257,6 +263,26 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         }
 
         return warnings;
+    }
+
+    private getDisabledValidationInfoWarnings(): Issue[] {
+        const issues: Issue[] = [];
+
+        if (!this.templateGraph?.fullValidationStatus.fullValidationEnabled) {
+            for (const scope of this.allScopes) {
+                if (scope instanceof NestedTemplateOuterScope
+                    || scope instanceof NestedTemplateInnerScope
+                    || scope instanceof LinkedTemplateScope
+                ) {
+                    let span: Span = scope.owningDeploymentResource.nameValue?.span ?? scope.owningDeploymentResource.span;
+                    const kind = scope instanceof LinkedTemplateScope ? IssueKind.cannotValidateLinkedTemplate : IssueKind.cannotValidateNestedTemplate;
+                    const message = `${kind === IssueKind.cannotValidateLinkedTemplate ? 'Linked template' : 'Nested template'} "${scope.owningDeploymentResource.nameValue?.unquotedValue ?? 'unknown'}" will not have validation or parameter completion. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command).`;
+                    issues.push(new Issue(span, message, kind));
+                }
+            }
+        }
+
+        return issues;
     }
 
     /**
@@ -733,7 +759,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
             }
 
             // Allow user to change or select/create parameter file
-            lenses.push(new SelectParameterFileCodeLens(this.topLevelScope, parametersCodeLensSpan, parameterFileUri, {}));
+            lenses.push(new SelectParameterFileCodeLens(this.topLevelScope, parametersCodeLensSpan, parameterFileUri, { fullValidationStatus: this.templateGraph?.fullValidationStatus }));
         }
 
         // Code lens for each parameter definition
@@ -755,10 +781,13 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                     case TemplateScopeKind.NestedDeploymentWithInnerScope:
                     case TemplateScopeKind.NestedDeploymentWithOuterScope:
                         if (scope.rootObject) {
-                            const lens = NestedTemplateCodeLen.create(scope, scope.rootObject.span);
-                            if (lens) {
-                                lenses.push(lens);
-                            }
+                            lenses.push(...
+                                NestedTemplateCodeLens.create(
+                                    this.templateGraph?.fullValidationStatus,
+                                    scope,
+                                    scope.rootObject.span,
+                                    topLevelParameterValuesProvider)
+                            );
                         }
                         break;
                     case TemplateScopeKind.LinkedDeployment:
@@ -769,6 +798,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
                             lenses.push(...
                                 LinkedTemplateCodeLens.create(
+                                    this.templateGraph?.fullValidationStatus,
                                     scope,
                                     span,
                                     scope.linkedFileReferences,

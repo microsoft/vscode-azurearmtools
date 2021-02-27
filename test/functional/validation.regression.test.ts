@@ -318,7 +318,9 @@ suite("Validation regression tests", () => {
         }
     ]
 }`,
-                {},
+                {
+                    ignoreInfos: true,
+                },
                 [
                     "Warning: Value must be one of the following values: \"Storage\", \"StorageV2\", \"BlobStorage\", \"FileStorage\", \"BlockBlobStorage\" (arm-template (schema)) [20,29-20,35]",
                     "Warning: Value must be one of the following values: \"Storage\", \"StorageV2\", \"BlobStorage\", \"FileStorage\", \"BlockBlobStorage\" (arm-template (schema)) [35,13-35,19]",
@@ -407,7 +409,8 @@ suite("Validation regression tests", () => {
                                 "value": "paramFromOuter"
                             }
                         }
-                    }
+                    },
+                    ignoreInfos: true,
                 },
                 [
                 ]
@@ -485,7 +488,8 @@ suite("Validation regression tests", () => {
                             "value": "value"
                         }
                     }
-                }
+                },
+                ignoreInfos: true,
             },
             [
             ])

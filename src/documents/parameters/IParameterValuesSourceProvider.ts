@@ -16,7 +16,7 @@ export interface IParameterValuesSourceProvider {
     parameterFileUri: Uri | undefined;
 
     /**
-     * Retrieve the actual parameters, perhaps asynchronously (e.g. for a parameter file, where it has to be loaded)
+     * Retrieve the actual parameters, perhaps asynchronously (e.g. for a parameter file, where it has to be loaded dynamically)
      */
     getValuesSource(): Promise<IParameterValuesSource>;
 }

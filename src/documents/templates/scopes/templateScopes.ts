@@ -270,7 +270,8 @@ export class NestedTemplateInnerScope extends TemplateScopeFromObject {
         parent: TemplateScope,
         document: IJsonDocument,
         // The value of the "template" property containing the nested template itself
-        private nestedTemplateObject: Json.ObjectValue | undefined,
+        public nestedTemplateObject: Json.ObjectValue | undefined,
+        public owningDeploymentResource: IResource,
         // parameter values, not the definitions inside the template
         private parameterValuesProperty: Json.Property | undefined,
         // tslint:disable-next-line: variable-name
@@ -313,8 +314,9 @@ export class NestedTemplateOuterScope extends TemplateScope {
     public constructor(
         private readonly parentScope: TemplateScope,
         // The value of the "template" property containing the nested template itself
-        private readonly nestedTemplateObject: Json.ObjectValue | undefined,
-        // parameter values, not the definitions inside the template (note: if this exists, it's an error)
+        public readonly nestedTemplateObject: Json.ObjectValue | undefined,
+        public owningDeploymentResource: IResource,
+        // Parameter values, not the definitions inside the template (note: if this exists, it's an error)
         public parameterValuesProperty: Json.Property | undefined,
         // tslint:disable-next-line: variable-name
         __debugDisplay: string
@@ -533,6 +535,7 @@ export function getChildTemplateForResourceObject(
                     return new NestedTemplateOuterScope(
                         parentScope,
                         nestedTemplateObject,
+                        resource,
                         parameterValuesProperty,
                         `Nested template "${templateName}" with outer scope`);
                 case ExpressionScopeKind.inner:
@@ -540,6 +543,7 @@ export function getChildTemplateForResourceObject(
                         parentScope,
                         parentScope.document,
                         nestedTemplateObject,
+                        resource,
                         parameterValuesProperty,
                         `Nested template "${templateName}" with inner scope`
                     );

@@ -6,7 +6,7 @@ import * as path from 'path';
 import { isNullOrUndefined } from 'util';
 import { ConfigurationTarget, Uri } from 'vscode';
 import { configKeys } from '../../constants';
-import { normalizePath } from '../../util/normalizePath';
+import { normalizeFilePath } from '../../util/normalizedPaths';
 import { IConfiguration } from '../../vscodeIntegration/Configuration';
 import { getRelativeParameterFilePath, resolveParameterFilePath } from './parameterFilePaths';
 
@@ -54,7 +54,7 @@ export class DeploymentFileMapping {
                 const paramPath: string = <string>paramPathObject;
 
                 const resolvedTemplatePath = path.resolve(templatePath);
-                const normalizedTemplatePath: string = normalizePath(resolvedTemplatePath);
+                const normalizedTemplatePath: string = normalizeFilePath(resolvedTemplatePath);
 
                 if (path.isAbsolute(templatePath) && isFilePath(templatePath)) {
                     // Resolve parameter file relative to template file's folder
@@ -69,7 +69,7 @@ export class DeploymentFileMapping {
                             resolvedTemplate: Uri.file(resolvedTemplatePath),
                             normalizedTemplate: Uri.file(normalizedTemplatePath),
                             resolvedParams: Uri.file(resolvedParamPath),
-                            normalizedParams: Uri.file(normalizePath(resolvedParamPath))
+                            normalizedParams: Uri.file(normalizeFilePath(resolvedParamPath))
                         });
                     }
                 }
@@ -88,7 +88,7 @@ export class DeploymentFileMapping {
      */
     public getParameterFile(templateFileUri: Uri): Uri | undefined {
         this.ensureMapsCreated();
-        const normalizedTemplatePath = normalizePath(templateFileUri);
+        const normalizedTemplatePath = normalizeFilePath(templateFileUri);
         const entry = this._mapToParams?.get(normalizedTemplatePath);
         return entry?.resolvedParams;
     }
@@ -98,7 +98,7 @@ export class DeploymentFileMapping {
      */
     public getTemplateFile(parameterFileUri: Uri): Uri | undefined {
         this.ensureMapsCreated();
-        const normalizedParamPath = normalizePath(parameterFileUri);
+        const normalizedParamPath = normalizeFilePath(parameterFileUri);
         const entry = this._mapToTemplates?.get(normalizedParamPath);
         return entry?.resolvedTemplate;
     }
@@ -108,7 +108,7 @@ export class DeploymentFileMapping {
      */
     public async mapParameterFile(templateUri: Uri, paramFileUri: Uri | undefined): Promise<void> {
         const relativeParamFilePath: string | undefined = paramFileUri ? getRelativeParameterFilePath(templateUri, paramFileUri) : undefined;
-        const normalizedTemplatePath = normalizePath(templateUri.fsPath);
+        const normalizedTemplatePath = normalizeFilePath(templateUri.fsPath);
 
         // We want to adjust the collection in the user settings, ignoring anything in the workspace settings
         let map = this.configuration
@@ -124,7 +124,7 @@ export class DeploymentFileMapping {
         const newMap: { [key: string]: string | undefined } = {};
 
         for (let templatePath of Object.getOwnPropertyNames(map)) {
-            if (normalizePath(templatePath) !== normalizedTemplatePath) {
+            if (normalizeFilePath(templatePath) !== normalizedTemplatePath) {
                 newMap[templatePath] = map[templatePath];
             }
         }
