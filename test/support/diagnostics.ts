@@ -349,7 +349,7 @@ export async function getDiagnosticsForDocument(
             let filteredDiagnostics = currentDiagnostics.filter(d => filterSources.find(s => d.source === s.name));
 
             if (options.ignoreInfos) {
-                filteredDiagnostics = filteredDiagnostics.filter(d => d.severity !== DiagnosticSeverity.Information);
+                filteredDiagnostics = filteredDiagnostics.filter(d => d.message.startsWith(diagnosticsCompletePrefix) || d.severity !== DiagnosticSeverity.Information);
             }
 
             // Find completion messages
