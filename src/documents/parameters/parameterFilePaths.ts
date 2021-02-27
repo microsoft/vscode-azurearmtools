@@ -6,11 +6,11 @@
 import * as assert from "assert";
 import * as path from 'path';
 import { Uri } from 'vscode';
-import { normalizePath } from '../../util/normalizePath';
+import { normalizeFilePath } from '../../util/normalizedPaths';
 
 export function getRelativeParameterFilePath(templateUri: Uri, parameterUri: Uri): string {
-    const templatePath = normalizePath(templateUri);
-    const paramPath = normalizePath(parameterUri);
+    const templatePath = normalizeFilePath(templateUri);
+    const paramPath = normalizeFilePath(parameterUri);
 
     return path.relative(path.dirname(templatePath), paramPath);
 }

@@ -90,7 +90,7 @@ export * from "./src/util/mapJsonObjectValue";
 export * from "./src/util/multilineStrings";
 export * from "./src/util/nonNull";
 export * from "./src/util/NormalizedMap";
-export * from "./src/util/normalizePath";
+export * from "./src/util/normalizedPaths";
 export * from './src/util/ofType';
 export * from "./src/util/readUtf8FileWithBom";
 export * from "./src/util/sorting";

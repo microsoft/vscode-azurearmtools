@@ -9,7 +9,7 @@ import { commands, MessageItem, TextDocument, Uri, window, workspace } from 'vsc
 import { callWithTelemetryAndErrorHandling, DialogResponses, IActionContext, IAzureQuickPickItem, UserCancelledError } from 'vscode-azureextensionui';
 import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes, globalStateKeys } from '../../constants';
 import { ext } from '../../extensionVariables';
-import { normalizePath } from '../../util/normalizePath';
+import { normalizeFilePath } from '../../util/normalizedPaths';
 import { pathExists } from '../../util/pathExists';
 import { DeploymentTemplateDoc } from '../templates/DeploymentTemplateDoc';
 import { containsParametersSchema } from '../templates/schemas';
@@ -202,8 +202,8 @@ async function createParameterFileQuickPickList(mapping: DeploymentFileMapping, 
 
   // Find the current in that list
   const currentParamUri: Uri | undefined = mapping.getParameterFile(templateUri);
-  const currentParamPathNormalized: string | undefined = currentParamUri ? normalizePath(currentParamUri) : undefined;
-  let currentParamFile: IPossibleParameterFile | undefined = suggestions.find(pf => normalizePath(pf.uri) === currentParamPathNormalized);
+  const currentParamPathNormalized: string | undefined = currentParamUri ? normalizeFilePath(currentParamUri) : undefined;
+  let currentParamFile: IPossibleParameterFile | undefined = suggestions.find(pf => normalizeFilePath(pf.uri) === currentParamPathNormalized);
   if (currentParamUri && !currentParamFile) {
     // There is a current parameter file, but it wasn't among the list we came up with.  We must add it to the list.
     currentParamFile = { isCloseNameMatch: false, uri: currentParamUri, friendlyPath: getRelativeParameterFilePath(templateUri, currentParamUri) };
@@ -476,13 +476,13 @@ function canAsk(templateUri: Uri, actionContext: IActionContext): boolean {
 
   // CONSIDER: It would be nicer to simply place a mapping to an empty string in the user settings, instead of using global state which isn't visible to the user
   const neverAskFiles: string[] = ext.context.globalState.get<string[]>(globalStateKeys.dontAskAboutParameterFiles) ?? [];
-  const key = normalizePath(templateUri);
+  const key = normalizeFilePath(templateUri);
   if (neverAskFiles.includes(key)) {
     actionContext.telemetry.properties.isInDontAskList = 'true';
     return false;
   }
 
-  let ignoreThisSession = _filesToIgnoreThisSession.has(normalizePath(templateUri));
+  let ignoreThisSession = _filesToIgnoreThisSession.has(normalizeFilePath(templateUri));
   if (ignoreThisSession) {
     actionContext.telemetry.properties.ignoreThisSession = 'true';
     return false;
@@ -492,13 +492,13 @@ function canAsk(templateUri: Uri, actionContext: IActionContext): boolean {
 }
 
 function dontAskAgainThisSession(templateUri: Uri, actionContext: IActionContext): void {
-  _filesToIgnoreThisSession.add(normalizePath(templateUri));
+  _filesToIgnoreThisSession.add(normalizeFilePath(templateUri));
 }
 
 async function neverAskAgain(templateUri: Uri, actionContext: IActionContext): Promise<void> {
   // tslint:disable-next-line: strict-boolean-expressions
   const neverAskFiles: string[] = ext.context.globalState.get<string[]>(globalStateKeys.dontAskAboutParameterFiles) || [];
-  const key: string = normalizePath(templateUri);
+  const key: string = normalizeFilePath(templateUri);
   neverAskFiles.push(key);
   await ext.context.globalState.update(globalStateKeys.dontAskAboutParameterFiles, neverAskFiles);
 }

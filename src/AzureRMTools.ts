@@ -26,7 +26,7 @@ import { getNormalizedDocumentKey } from './documents/templates/getNormalizedDoc
 import { gotoResources } from './documents/templates/gotoResources';
 import { getItemTypeQuickPicks, InsertItem } from "./documents/templates/insertItem";
 import { LinkedFileLoadState } from './documents/templates/linkedTemplates/LinkedFileLoadState';
-import { assignTemplateGraphToDeploymentTemplate, INotifyTemplateGraphArgs, openLinkedTemplateFile, tryOpenNonLocalLinkedFile } from './documents/templates/linkedTemplates/linkedTemplates';
+import { assignTemplateGraphToDeploymentTemplate, INotifyTemplateGraphArgs, openLinkedTemplateFileCommand, tryOpenNonLocalLinkedFile } from './documents/templates/linkedTemplates/linkedTemplates';
 import { allSchemas, getPreferredSchema } from './documents/templates/schemas';
 import { getQuickPickItems, sortTemplate } from "./documents/templates/sortTemplate";
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, setLangIdToArm, templateDocumentSelector, templateOrParameterDocumentSelector } from "./documents/templates/supported";
@@ -216,7 +216,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             });
         registerCommand(
             "azurerm-vscode-tools.codeLens.openLinkedTemplateFile", async (actionContext: IActionContext, linkedTemplateUri: vscode.Uri) => {
-                await openLinkedTemplateFile(linkedTemplateUri, actionContext);
+                await openLinkedTemplateFileCommand(linkedTemplateUri, actionContext);
             });
         registerCommand("azurerm-vscode-tools.insertItem", async (actionContext: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
             editor = editor || vscode.window.activeTextEditor;

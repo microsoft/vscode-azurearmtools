@@ -152,7 +152,7 @@ export class LinkedTemplateCodeLens extends ChildTemplateCodeLens {
         try {
             const templateUri = scope.document.documentUri;
             linkedUri = firstLinkedTemplateRef?.fullUri ? Uri.parse(firstLinkedTemplateRef.fullUri) : undefined;
-            if (isRelativePath && linkedUri && templateUri.fsPath && linkedUri.scheme === documentSchemes.file) {
+            if (linkedUri && templateUri.fsPath && linkedUri.scheme === documentSchemes.file) {
                 const templateFolder = path.dirname(templateUri.fsPath);
                 friendlyPath = path.relative(templateFolder, linkedUri.fsPath);
                 if (!path.isAbsolute(friendlyPath) && !friendlyPath.startsWith('.')) {

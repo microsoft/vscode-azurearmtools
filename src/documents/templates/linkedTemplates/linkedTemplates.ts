@@ -2,9 +2,10 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import * as fse from 'fs-extra';
 import * as path from 'path';
 import { Diagnostic, TextDocument, Uri, window, workspace } from "vscode";
-import { callWithTelemetryAndErrorHandling, IActionContext, parseError, TelemetryProperties } from "vscode-azureextensionui";
+import { callWithTelemetryAndErrorHandling, DialogResponses, IActionContext, parseError, TelemetryProperties } from "vscode-azureextensionui";
 import { armTemplateLanguageId, documentSchemes } from '../../../constants';
 import { Errorish } from '../../../Errorish';
 import { ext } from "../../../extensionVariables";
@@ -12,7 +13,7 @@ import { assert } from '../../../fixed_assert';
 import { IProvideOpenedDocuments } from '../../../IProvideOpenedDocuments';
 import { ContainsBehavior } from "../../../language/Span";
 import { httpGet } from '../../../util/httpGet';
-import { normalizePath } from '../../../util/normalizePath';
+import { normalizeUri } from '../../../util/normalizedPaths';
 import { ofType } from '../../../util/ofType';
 import { pathExists } from '../../../util/pathExists';
 import { prependLinkedTemplateScheme, removeLinkedTemplateScheme } from '../../../util/prependLinkedTemplateScheme';
@@ -101,12 +102,13 @@ export async function onRequestOpenLinkedFile(
         properties.fileScheme = requestedLinkUri.scheme;
         properties.hasQuery = String(!!requestedLinkUri.query);
 
-        if (!path.isAbsolute(requestedLinkUri.fsPath)) {
+        if (requestedLinkUri.scheme === documentSchemes.untitled) {
+            properties.openErrorType = 'template not saved';
+            return { loadErrorMessage: "Template file needs to be saved" };
+        } else if (!path.isAbsolute(requestedLinkUri.fsPath)) {
             properties.openErrorType = 'path not absolute';
             return { loadErrorMessage: "Link uri should be an absolute path" };
-        }
-
-        if (requestedLinkUri.scheme === documentSchemes.file) {
+        } else if (requestedLinkUri.scheme === documentSchemes.file) {
             // It's a local file.
             // Strip the path of any query string, and use only the local file path
             const localPath = requestedLinkUri.fsPath;
@@ -204,7 +206,7 @@ export function assignTemplateGraphToDeploymentTemplate(
     dt: DeploymentTemplateDoc,
     provideOpenDocuments: IProvideOpenedDocuments
 ): void {
-    assert(normalizePath(Uri.parse(graph.rootTemplateUri)) === normalizePath(dt.documentUri));
+    assert(normalizeUri(Uri.parse(graph.rootTemplateUri)) === normalizeUri(dt.documentUri));
 
     // Clear current
     const linkedScopes = ofType(dt.allScopes, LinkedTemplateScope);
@@ -230,8 +232,34 @@ export function assignTemplateGraphToDeploymentTemplate(
     dt.templateGraph = graph;
 }
 
-export async function openLinkedTemplateFile(linkedTemplateUri: Uri, actionContext: IActionContext): Promise<void> {
-    const targetUri = prependLinkedTemplateScheme(linkedTemplateUri);
+/**
+ * This is the executed when the user clicks on a linked template code lens so open the linked file
+ */
+export async function openLinkedTemplateFileCommand(linkedTemplateUri: Uri, actionContext: IActionContext): Promise<void> {
+    let targetUri: Uri;
+    actionContext.telemetry.properties.scheme = linkedTemplateUri.scheme;
+
+    if (linkedTemplateUri.scheme === documentSchemes.file) {
+        const exists = await pathExists(linkedTemplateUri);
+        actionContext.telemetry.properties.exists = String(exists);
+        if (!exists) {
+            const fsPath = linkedTemplateUri.fsPath;
+            const response = await ext.ui.showWarningMessage(
+                `Could not find file "${fsPath}".  Do you want to create it?`,
+                DialogResponses.yes,
+                DialogResponses.cancel);
+            if (response === DialogResponses.yes) {
+                await fse.writeFile(fsPath, "", {});
+            } else {
+                return;
+            }
+        }
+
+        targetUri = linkedTemplateUri;
+    } else {
+        targetUri = prependLinkedTemplateScheme(linkedTemplateUri);
+    }
+
     const doc = await workspace.openTextDocument(targetUri);
     setLangIdToArm(doc, actionContext);
     await window.showTextDocument(doc);
