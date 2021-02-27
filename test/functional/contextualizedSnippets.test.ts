@@ -11,7 +11,7 @@ const DEBUG_BREAK_AFTER_INSERTING_SNIPPET = false;
 
 import * as assert from 'assert';
 import { Position, Selection } from "vscode";
-import { ext } from '../../src/extensionVariables';
+import { ext } from "../../extension.bundle";
 import { assertEx } from '../support/assertEx';
 import { delay } from '../support/delay';
 import { diagnosticSources, getDiagnosticsForDocument, IGetDiagnosticsOptions } from '../support/diagnostics';
@@ -21,6 +21,7 @@ import { simulateCompletion } from '../support/simulateCompletion';
 import { TempDocument, TempEditor, TempFile } from '../support/TempFile';
 import { testLog } from '../support/testLog';
 import { testWithRealSnippets } from '../support/TestSnippets';
+
 
 // This tests snippets in different locations, and also different methods of bringing up the snippet context menu (e.g. CTRL+SPACE, double quote etc)
 suite("Contextualized snippets", () => {
