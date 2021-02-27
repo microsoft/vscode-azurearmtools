@@ -35,7 +35,7 @@ suite("Linked templates regressions", () => {
                                 "properties": {
                                     "mode": "Incremental",
                                     "templateLink": {
-                                        "uri": "https://foo"
+                                        "uri": "https://foo/goo"
                                     }
                                 }
                             }
