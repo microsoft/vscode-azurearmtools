@@ -8,8 +8,7 @@
 
 import * as assert from 'assert';
 import { CodeAction, Command, Uri } from 'vscode';
-import { addMissingParameters, assignTemplateGraphToDeploymentTemplate, DeploymentTemplateDoc, getNormalizedDocumentKey, getVSCodeRangeFromSpan, IAddMissingParametersArgs, INotifyTemplateGraphArgs, LinkedFileLoadState, NormalizedMap, ofType, Span } from '../extension.bundle';
-import { isWin32 } from '../src/constants';
+import { addMissingParameters, assignTemplateGraphToDeploymentTemplate, DeploymentTemplateDoc, getNormalizedDocumentKey, getVSCodeRangeFromSpan, IAddMissingParametersArgs, INotifyTemplateGraphArgs, isWin32, LinkedFileLoadState, NormalizedMap, ofType, Span } from '../extension.bundle';
 import { TextDocumentFake } from './fakes/TextDocumentFake';
 import { TextEditorFake } from './fakes/TextEditorFake';
 import { getCodeActionContext } from './support/getCodeActionContext';
