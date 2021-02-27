@@ -248,6 +248,10 @@ export interface IGetDiagnosticsOptions {
      */
     ignoreSources?: DiagnosticSource[];
     /**
+     * Ignore informational diagnostics
+     */
+    ignoreInfos?: boolean;
+    /**
      * defaults to false - whether to include the error range in the results for comparison (if true, ignored when expected messages don't have ranges)
      */
     includeRange?: boolean;
@@ -343,6 +347,10 @@ export async function getDiagnosticsForDocument(
 
             // Filter diagnostics according to sources filter
             let filteredDiagnostics = currentDiagnostics.filter(d => filterSources.find(s => d.source === s.name));
+
+            if (options.ignoreInfos) {
+                filteredDiagnostics = filteredDiagnostics.filter(d => d.severity !== DiagnosticSeverity.Information);
+            }
 
             // Find completion messages
             for (let d of filteredDiagnostics) {

@@ -1092,7 +1092,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     const fullValidationOn = deploymentTemplate.templateGraph?.fullValidationStatus.fullValidationEnabled ?? templateFileHasParamFile;
                     isWarning = !fullValidationOn;
                     statusBarText = isWarning ?
-                        `$(warning) WARNING: Full template validation off. Add parameter file or top-level default values to parameters to enable.` :
+                        `$(warning) WARNING: Full template validation off. Add param file or top-level param defaults to enable.` :
                         statusBarText;
 
                     this._paramsStatusBarItem.command = "azurerm-vscode-tools.selectParameterFile";
