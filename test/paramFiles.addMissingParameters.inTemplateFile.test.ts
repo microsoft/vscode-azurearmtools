@@ -9,6 +9,7 @@
 import * as assert from 'assert';
 import { CodeAction, Command, Uri } from 'vscode';
 import { addMissingParameters, assignTemplateGraphToDeploymentTemplate, DeploymentTemplateDoc, getNormalizedDocumentKey, getVSCodeRangeFromSpan, IAddMissingParametersArgs, INotifyTemplateGraphArgs, LinkedFileLoadState, NormalizedMap, ofType, Span } from '../extension.bundle';
+import { isWin32 } from '../src/constants';
 import { TextDocumentFake } from './fakes/TextDocumentFake';
 import { TextEditorFake } from './fakes/TextEditorFake';
 import { getCodeActionContext } from './support/getCodeActionContext';
@@ -38,8 +39,9 @@ suite("Add missing parameters for nested/linked templates", () => {
             const expectedResultText = expectedDt.documentText;
 
             // Get template
-            const templateUri = Uri.file("/mainTemplate.json");
-            const childUri = Uri.file("file:///childTemplate.json");
+            const root = isWin32 ? 'c:\\' : '/';
+            const templateUri = Uri.file(`${root}mainTemplate.json`);
+            const childUri = Uri.file(`${root}childTemplate.json`);
 
             // Get linked template
             const { dt, markers: { bang } } = await parseTemplateWithMarkers(template, undefined, { fromFile: true, documentUri: templateUri, tabSize });
