@@ -25,7 +25,6 @@ import { ExtractItem } from './documents/templates/ExtractItem';
 import { getNormalizedDocumentKey } from './documents/templates/getNormalizedDocumentKey';
 import { gotoResources } from './documents/templates/gotoResources';
 import { getItemTypeQuickPicks, InsertItem } from "./documents/templates/insertItem";
-import { LinkedFileLoadState } from './documents/templates/linkedTemplates/LinkedFileLoadState';
 import { assignTemplateGraphToDeploymentTemplate, INotifyTemplateGraphArgs, openLinkedTemplateFileCommand, tryOpenNonLocalLinkedFile } from './documents/templates/linkedTemplates/linkedTemplates';
 import { allSchemas, getPreferredSchema } from './documents/templates/schemas';
 import { getQuickPickItems, sortTemplate } from "./documents/templates/sortTemplate";
@@ -1790,9 +1789,9 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             const rootTemplate = this.getOpenedDeploymentTemplate(rootTemplateUri);
 
             // tslint:disable-next-line: no-console
-            console.log(`onTemplateGraphAvailable: ${path.basename(e.rootTemplateUri)}, isComplete=${e.isComplete}:`);
+            // console.log(`onTemplateGraphAvailable: ${path.basename(e.rootTemplateUri)}, isComplete=${e.isComplete}:`);
             // tslint:disable-next-line: no-console
-            console.log(e.linkedTemplates.map(lt => `    ${path.basename(lt.fullUri)}: ${LinkedFileLoadState[lt.loadState]} ${lt.loadErrorMessage ?? ''}`).join('\n'));
+            // console.log(e.linkedTemplates.map(lt => `    ${path.basename(lt.fullUri)}: ${LinkedFileLoadState[lt.loadState]} ${lt.loadErrorMessage ?? ''}`).join('\n'));
 
             // Cache the template graph results
             const rootTemplateKey = getNormalizedDocumentKey(vscode.Uri.parse(e.rootTemplateUri, true));
