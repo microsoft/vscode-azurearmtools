@@ -49,6 +49,7 @@ import { expectTemplateDocument } from "./util/expectDocument";
 import { getRenameError } from "./util/getRenameError";
 import { Histogram } from "./util/Histogram";
 import { pathExists } from "./util/pathExists";
+import { prependLinkedTemplateScheme } from './util/prependLinkedTemplateScheme';
 import { readUtf8FileWithBom } from "./util/readUtf8FileWithBom";
 import { Stopwatch } from "./util/Stopwatch";
 import { Cancellation } from "./util/throwOnCancel";
@@ -139,6 +140,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
     private _diagnosticsVersion: number = 0;
     private _mapping: DeploymentFileMapping = ext.deploymentFileMapping.value;
     private _codeLensChangedEmitter: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
+    private _linkedTemplateDocProviderChangedEmitter: vscode.EventEmitter<vscode.Uri> = new vscode.EventEmitter<vscode.Uri>();
 
     // More information can be found about this definition at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
     // Several of these properties are CSS properties. More information about those can be found at https://www.w3.org/wiki/CSS/Properties
@@ -217,6 +219,11 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         registerCommand(
             "azurerm-vscode-tools.codeLens.openLinkedTemplateFile", async (actionContext: IActionContext, linkedTemplateUri: vscode.Uri) => {
                 await openLinkedTemplateFileCommand(linkedTemplateUri, actionContext);
+            });
+        registerCommand(
+            "azurerm-vscode-tools.codeLens.reloadLinkedTemplateFile", async (actionContext: IActionContext, linkedTemplateUri: vscode.Uri) => {
+                this.closeDeploymentFile(linkedTemplateUri);
+                this._linkedTemplateDocProviderChangedEmitter.fire(prependLinkedTemplateScheme(linkedTemplateUri));
             });
         registerCommand("azurerm-vscode-tools.insertItem", async (actionContext: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
             editor = editor || vscode.window.activeTextEditor;
@@ -1016,6 +1023,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 vscode.languages.registerDocumentLinkProvider(templateDocumentSelector, documentLinkProvider));
 
             const linkedTemplateDocumentProvider: vscode.TextDocumentContentProvider = {
+                onDidChange: this._linkedTemplateDocProviderChangedEmitter.event,
                 provideTextDocumentContent: async (uri: vscode.Uri, _token: vscode.CancellationToken): Promise<string | undefined> => {
                     return await this.provideContentForNonlocalUri(uri);
                 }
@@ -1045,7 +1053,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
 
             let dt = this.getOpenedDeploymentDocument(uri);
             if (!dt) {
-                await tryOpenNonLocalLinkedFile(uri, context, false); //asdf handle linked-template:
+                await tryOpenNonLocalLinkedFile(uri, context, false);
                 dt = this.getOpenedDeploymentDocument(uri);
             }
 
@@ -1208,10 +1216,11 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         return JSON.stringify(array);
     }
 
-    private closeDeploymentFile(document: vscode.TextDocument): void {
-        assert(document);
-        this._diagnosticsCollection.delete(document.uri);
-        this.setOpenedDeploymentDocument(document.uri, undefined);
+    private closeDeploymentFile(documentOrUri: vscode.TextDocument | vscode.Uri): void {
+        assert(documentOrUri);
+        const uri = documentOrUri instanceof vscode.Uri ? documentOrUri : documentOrUri.uri;
+        this._diagnosticsCollection.delete(uri);
+        this.setOpenedDeploymentDocument(uri, undefined);
     }
 
     private onProvideCodeLenses(textDocument: vscode.TextDocument, token: vscode.CancellationToken): vscode.CodeLens[] | undefined {

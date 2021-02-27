@@ -265,6 +265,36 @@ export async function openLinkedTemplateFileCommand(linkedTemplateUri: Uri, acti
     await window.showTextDocument(doc);
 }
 
+export async function reloadLinkedTemplateFileCommand(linkedTemplateUri: Uri, actionContext: IActionContext): Promise<void> {
+    let targetUri: Uri;
+    actionContext.telemetry.properties.scheme = linkedTemplateUri.scheme;
+
+    if (linkedTemplateUri.scheme === documentSchemes.file) {
+        const exists = await pathExists(linkedTemplateUri);
+        actionContext.telemetry.properties.exists = String(exists);
+        if (!exists) {
+            const fsPath = linkedTemplateUri.fsPath;
+            const response = await ext.ui.showWarningMessage(
+                `Could not find file "${fsPath}".  Do you want to create it?`,
+                DialogResponses.yes,
+                DialogResponses.cancel);
+            if (response === DialogResponses.yes) {
+                await fse.writeFile(fsPath, "", {});
+            } else {
+                return;
+            }
+        }
+
+        targetUri = linkedTemplateUri;
+    } else {
+        targetUri = prependLinkedTemplateScheme(linkedTemplateUri);
+    }
+
+    const doc = await workspace.openTextDocument(targetUri);
+    setLangIdToArm(doc, actionContext);
+    await window.showTextDocument(doc);
+}
+
 /**
  * Diagnostics that point to non-file URIs need to use our custom "linked-template:" schema
  * because vscode doesn't natively support navigating to non-file URIs.

@@ -180,6 +180,18 @@ export class LinkedTemplateCodeLens extends ChildTemplateCodeLens {
         lenses.push(new LinkedTemplateCodeLens(scope, span, title, linkedUri));
 
         addSelectParamFileLensIfNeeded(lenses, fullValidationStatus, topLevelParameterValuesProvider, scope, span);
+
+        /* asdf Need to also resend to language server
+        if (!isRelativePath && linkedUri && linkedUri?.scheme !== documentSchemes.file && linkedUri?.scheme !== documentSchemes.untitled) {
+            lenses.push(
+                new ReloadLinkedTemplateCodeLens(
+                    scope,
+                    span,
+                    linkedUri
+                ));
+        }
+        */
+
         return lenses;
     }
 
@@ -188,6 +200,22 @@ export class LinkedTemplateCodeLens extends ChildTemplateCodeLens {
         return true;
     }
 }
+
+export class ReloadLinkedTemplateCodeLens extends ResolvableCodeLens {
+    public constructor(scope: TemplateScope, span: Span, linkedFileUri: Uri) {
+        super(scope, span);
+        this.command = {
+            title: 'Reload',
+            command: 'azurerm-vscode-tools.codeLens.reloadLinkedTemplateFile',
+            arguments:
+                [linkedFileUri]
+        };
+    }
+    public async resolve(): Promise<boolean> {
+        return true;
+    }
+}
+
 function getLoadStateFromLanguageServerStatus(): string | undefined {
     switch (ext.languageServerState) {
         case LanguageServerState.Running:
