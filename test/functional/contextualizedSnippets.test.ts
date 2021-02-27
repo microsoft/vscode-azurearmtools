@@ -22,7 +22,6 @@ import { TempDocument, TempEditor, TempFile } from '../support/TempFile';
 import { testLog } from '../support/testLog';
 import { testWithRealSnippets } from '../support/TestSnippets';
 
-
 // This tests snippets in different locations, and also different methods of bringing up the snippet context menu (e.g. CTRL+SPACE, double quote etc)
 suite("Contextualized snippets", () => {
     function createContextualizedSnippetTest(
