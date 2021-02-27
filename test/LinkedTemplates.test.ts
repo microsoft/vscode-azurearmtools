@@ -49,7 +49,7 @@ suite("Linked templates regressions", () => {
                         }
                     },
                     [
-                        // Should be no errors
+                        'Error: Template validation failed: getaddrinfo ENOTFOUND foo (arm-template (validation)) [9,21-9,21]'
                     ]);
             });
             testWithLanguageServer("linked-templates-scope.json", async () => {
