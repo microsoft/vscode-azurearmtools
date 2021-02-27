@@ -14,7 +14,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "relativePath": "http:subfolder with spaces/child with spaces.json"
+                    "relativePath": "subfolder with spaces/child with spaces.json"
                 }
             }
         }
