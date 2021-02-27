@@ -8,8 +8,7 @@
 import * as assert from 'assert';
 import * as path from 'path';
 import { Uri } from "vscode";
-import { DeploymentFileMapping } from "../extension.bundle";
-import { normalizeFilePath } from '../src/util/normalizedPaths';
+import { DeploymentFileMapping, normalizeFilePath } from "../extension.bundle";
 import { TestConfiguration } from "./support/TestConfiguration";
 import { testOnWin32 } from './support/testOnPlatform';
 import { isWin32 } from './testConstants';
