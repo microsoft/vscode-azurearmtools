@@ -354,7 +354,8 @@ suite("Linked templates functional tests", () => {
                         expected: [
                             "Error: Template validation failed: Template parameter JToken type is not valid. Expected 'Integer'. Actual 'String'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [14,27] [The error occurred in a linked template near here] [12,21]",
                             "Warning: The variable 'unusedVar' is never used. (arm-template (expressions)) [5,9]",
-                        ]
+                        ],
+                        waitForDiagnosticSubstring: "Template validation failed"
                     }
                 ]
             }
