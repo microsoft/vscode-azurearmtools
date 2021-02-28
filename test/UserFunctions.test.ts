@@ -1887,7 +1887,7 @@ suite("User functions", () => {
                 // CONSIDER: Ideally this would not return a 'variables' completion at all
                 createExpressionCompletionsTestEx(userFuncsTemplate2, '<stringOutputValue>', 'variables<!cursor!>', allBuiltinsExpectedCompletions);
 
-                // No variables availabe in function scope
+                // No variables available in function scope
                 createExpressionCompletionsTestEx(userFuncsTemplate2, '<stringOutputValue>', 'variables(<!cursor!>', []);
             });
 
