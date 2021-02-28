@@ -14,6 +14,7 @@ import { parseParametersWithMarkers, parseTemplate } from "./support/parseTempla
 import { rangeToString } from "./support/rangeToString";
 import { sortBy } from "./support/sortBy";
 import { stringify } from "./support/stringify";
+import { testWithLanguageServer } from "./support/testWithLanguageServer";
 
 suite("DeploymentTemplate code lenses", () => {
     class FakeParameterValuesSourceProvider implements IParameterValuesSourceProvider {
@@ -283,7 +284,7 @@ suite("DeploymentTemplate code lenses", () => {
 
         suite("parameters for nested inner-scoped template", () => {
             function createCodeLensTest(testName: string, template: IPartialDeploymentTemplate, expected: string[]): void {
-                test(testName, async () => {
+                testWithLanguageServer(testName, async () => {
                     testName = testName;
                     const dt = await parseTemplate(template);
 
