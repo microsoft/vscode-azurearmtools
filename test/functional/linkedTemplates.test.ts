@@ -43,7 +43,7 @@ suite("Linked templates functional tests", () => {
         await new Promise<void>(resolve => {
             const disposable = notifyTemplateGraphAvailable(e => {
                 if (Uri.parse(e.rootTemplateUri).fsPath === mainTemplate) {
-                    testLog.writeLine(`Graph notification available for ${mainTemplate}... Looking for child ${childTemplate}`);
+                    testLog.writeLine(`Graph available notification for ${mainTemplate}... Looking for child in the graph: ${childTemplate}`);
                     const child = e.linkedTemplates.find(lt => Uri.parse(lt.fullUri).fsPath === childTemplate);
                     let ready: boolean;
                     if (child) {
@@ -69,7 +69,7 @@ suite("Linked templates functional tests", () => {
                         }
                     } else {
                         ready = false;
-                        testLog.writeLine(`... child not found in graph`);
+                        testLog.writeLine(`... child not found in graph yet`);
                     }
 
                     if (ready) {
@@ -77,7 +77,7 @@ suite("Linked templates functional tests", () => {
                         disposable.dispose();
                         resolve();
                     } else {
-                        testLog.writeLine(`... not ready`);
+                        testLog.writeLine(`... not ready yet`);
                     }
                 }
             });
@@ -92,7 +92,7 @@ suite("Linked templates functional tests", () => {
         options: {
             //CONSIDER: group into single object for mainTemplate
             mainTemplateFile: string;
-            mainParametersFile: string;
+            mainParametersFile?: string;
             mainTemplateExpected: ExpectedDiagnostics;
             // tslint:disable-next-line: no-suspicious-comment
             // TODO: This is a hack.  We need better way to determine when validation is completely done
@@ -115,7 +115,6 @@ suite("Linked templates functional tests", () => {
             async () => {
                 const mainTemplatePath = resolveInTestFolder(tcString(options.mainTemplateFile, testCase, testCaseFolder));
                 assert(mainTemplatePath);
-                assert(options.mainParametersFile);
 
                 // Make sure the language server starts up
                 const client = await ensureLanguageServerAvailable();
@@ -139,7 +138,7 @@ suite("Linked templates functional tests", () => {
                 await testDiagnostics(
                     mainTemplatePath,
                     {
-                        parametersFile: tcString(options.mainParametersFile, testCase, testCaseFolder),
+                        parametersFile: options.mainParametersFile ? tcString(options.mainParametersFile, testCase, testCaseFolder) : undefined,
                         waitForDiagnosticsFilter: async (results): Promise<boolean> => {
                             await waitAllForChildPromises;
                             if (options.waitForDiagnosticSubstring) {
@@ -579,4 +578,36 @@ suite("Linked templates functional tests", () => {
             }
         );
     }
+
+    suite("uri", () => {
+        suite("deployment-relative", () => {
+            // tslint:disable-next-line: no-suspicious-comment
+            // TODO: Hangs on build machine?
+            if (!isWin32) {
+                createLinkedTemplateTest(
+                    "tc15",
+                    "tc15-uri-deployment-relative",
+                    "uri property with deployment() expression to make the path relative",
+                    {
+                        mainTemplateFile: "templates/linkedTemplates/<TCF>/<TC>.json",
+                        mainTemplateExpected: [
+                            "Error: Template validation failed: Could not find member 'parameters2' on object of type 'Template'. Path 'parameters2', line 4, position 18. (arm-template (validation)) [17,27-17,27] [The error occurred in a linked template near here] [4,18-4,18]",
+                        ],
+                        linkedTemplates: [
+                            {
+                                parentTemplateFile: "templates/linkedTemplates/<TCF>/<TC>.json",
+                                linkedTemplateFile: "templates/linkedTemplates/<TCF>/subfolder/child.json",
+                                expected: [
+                                    "Error: Template validation failed: Could not find member 'parameters2' on object of type 'Template'. Path 'parameters2', line 4, position 18. (arm-template (validation)) [4,18-4,18]",
+                                    'Warning: Property name is not allowed by the schema (arm-template (schema)) [4,5-4,18]',
+                                    "Error: Undefined parameter reference: 'p1string' (arm-template (expressions)) [27,38-27,48]",
+                                    "Error: Undefined parameter reference: 'p3string-whoops' (arm-template (expressions)) [26,38-26,55]",
+                                ]
+                            }
+                        ]
+                    }
+                );
+            }
+        });
+    });
 });
