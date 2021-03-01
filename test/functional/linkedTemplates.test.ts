@@ -17,19 +17,22 @@ import { isWin32, testMessages } from "../testConstants";
 
 suite("Linked templates functional tests", () => {
     // <TC> in strings will be replaced with ${testCase}
-    function tcString(s: string, testCase: string): string {
-        return s.replace(/<TC>/g, testCase);
+    // <TCF> in strings will be replaced with ${testCaseFolder}
+    function tcString(s: string, testCase: string, testCaseFolder: string): string {
+        return s.replace(/<TC>/g, testCase)
+            .replace(/<TCF>/g, testCaseFolder);
     }
 
     // <TC> in strings will be replaced with ${testCase}
-    function tcDiagnostics(ed: ExpectedDiagnostics, testCase: string): ExpectedDiagnostics {
+    // <TCF> in strings will be replaced with ${testCaseFolder}
+    function tcDiagnostics(ed: ExpectedDiagnostics, testCase: string, testCaseFolder: string): ExpectedDiagnostics {
         if (ed.length === 0) {
             return [];
         } else if (typeof ed[0] === 'string') {
-            return (<string[]>ed).map((s: string) => tcString(<string>s, testCase));
+            return (<string[]>ed).map((s: string) => tcString(<string>s, testCase, testCaseFolder));
         } else {
             return (<IExpectedDiagnostic[]>ed).map((d: IExpectedDiagnostic) => {
-                const d2 = Object.assign({}, d, { message: tcString(d.message, testCase) });
+                const d2 = Object.assign({}, d, { message: tcString(d.message, testCase, testCaseFolder) });
                 return d2;
             });
         }
@@ -83,7 +86,8 @@ suite("Linked templates functional tests", () => {
 
     // <TC> in strings will be replaced with ${testCase}
     function createLinkedTemplateTest(
-        testCase: string,
+        testCase: string, // testcase name, e.g. "tc01", and the filename would be tc01.json
+        testCaseFolder: string, // testcase folder name, e.g. "tc01-simple-relative"
         testDescription: string,
         options: {
             //CONSIDER: group into single object for mainTemplate
@@ -109,7 +113,7 @@ suite("Linked templates functional tests", () => {
         testWithLanguageServerAndRealFunctionMetadata(
             `${testCase} ${testDescription}`,
             async () => {
-                const mainTemplatePath = resolveInTestFolder(tcString(options.mainTemplateFile, testCase));
+                const mainTemplatePath = resolveInTestFolder(tcString(options.mainTemplateFile, testCase, testCaseFolder));
                 assert(mainTemplatePath);
                 assert(options.mainParametersFile);
 
@@ -123,8 +127,8 @@ suite("Linked templates functional tests", () => {
                 let waitForChildPromises: Promise<unknown>[] = [];
                 for (const expectedLinkedTemplate of options.linkedTemplates) {
                     // Wait for child template's graph to be available
-                    const childPath = resolveInTestFolder(tcString(expectedLinkedTemplate.linkedTemplateFile, testCase));
-                    const parentPath = resolveInTestFolder(tcString(expectedLinkedTemplate.parentTemplateFile, testCase));
+                    const childPath = resolveInTestFolder(tcString(expectedLinkedTemplate.linkedTemplateFile, testCase, testCaseFolder));
+                    const parentPath = resolveInTestFolder(tcString(expectedLinkedTemplate.parentTemplateFile, testCase, testCaseFolder));
                     waitForChildPromises.push(waitForGraphAvailable(parentPath, childPath));
                 }
                 const waitAllForChildPromises = Promise.all(waitForChildPromises);
@@ -135,7 +139,7 @@ suite("Linked templates functional tests", () => {
                 await testDiagnostics(
                     mainTemplatePath,
                     {
-                        parametersFile: tcString(options.mainParametersFile, testCase),
+                        parametersFile: tcString(options.mainParametersFile, testCase, testCaseFolder),
                         waitForDiagnosticsFilter: async (results): Promise<boolean> => {
                             await waitAllForChildPromises;
                             if (options.waitForDiagnosticSubstring) {
@@ -146,14 +150,14 @@ suite("Linked templates functional tests", () => {
                         },
                         transformResults: simplifyBadTypeResourceMessage
                     },
-                    tcDiagnostics(options.mainTemplateExpected, testCase)
+                    tcDiagnostics(options.mainTemplateExpected, testCase, testCaseFolder)
                 );
 
                 testLog.writeLine("Diagnostics in main template were correct.");
 
                 // Test diagnostics (without opening them directly - that should have happened automatically) for the linked templates
                 for (const linkedTemplate of options.linkedTemplates) {
-                    const childPath = resolveInTestFolder(tcString(linkedTemplate.linkedTemplateFile, testCase));
+                    const childPath = resolveInTestFolder(tcString(linkedTemplate.linkedTemplateFile, testCase, testCaseFolder));
                     const childUri = Uri.file(childPath);
                     try {
                         testLog.writeLine(`Testing diagnostics in ${linkedTemplate.linkedTemplateFile}`);
@@ -169,7 +173,7 @@ suite("Linked templates functional tests", () => {
                                 },
                                 transformResults: simplifyBadTypeResourceMessage
                             },
-                            tcDiagnostics(linkedTemplate.expected, testCase)
+                            tcDiagnostics(linkedTemplate.expected, testCase, testCaseFolder)
                         );
                     } catch (err) {
                         throw new Error(`Diagnostics did not match expected for linked template ${childPath}: ${parseError(err).message}`);
@@ -183,6 +187,7 @@ suite("Linked templates functional tests", () => {
     if (!isWin32) {
         createLinkedTemplateTest(
             "tc01",
+            "tc01-simple-relative",
             "one level, no validation errors, child in subfolder, relative path starts with subfolder name",
             {
                 mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
@@ -214,6 +219,7 @@ suite("Linked templates functional tests", () => {
 
         createLinkedTemplateTest(
             "tc02",
+            "tc02-notfound",
             "expecting error: child not found",
             {
                 mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
@@ -233,6 +239,7 @@ suite("Linked templates functional tests", () => {
     // tslint:disable-next-line: no-suspicious-comment
     /* TODO: hangs
     createLinkedTemplateTest(
+        "tc03",
         "tc03",
         "one level, no validation errors, child in subfolder, relative path starts with ./",
         {
@@ -257,6 +264,7 @@ suite("Linked templates functional tests", () => {
     // TODO: hangs
     if (!isWin32) {
         createLinkedTemplateTest(
+            "tc04",
             "tc04",
             "one level, no validation errors, child in subfolder, folder and filename contain spaces",
             {
@@ -289,6 +297,7 @@ suite("Linked templates functional tests", () => {
     /* TODO: Can't deploy to test yet
     createLinkedTemplateTest(
         "tc05",
+        "tc05",
         "backslashes in path",
         {
             mainTemplateFile: "templates/linkedTemplates/<TC>\\<TC>.json",
@@ -311,6 +320,7 @@ suite("Linked templates functional tests", () => {
     // TODO: Hangs
     if (!isWin32) {
         createLinkedTemplateTest(
+            "tc06",
             "tc06",
             "Parameter type mismatch error",
             {
@@ -341,6 +351,7 @@ suite("Linked templates functional tests", () => {
     if (!isWin32) {
         createLinkedTemplateTest(
             "tc07",
+            "tc07",
             "2 levels deep, error in parameters to 2nd level, only top level has a parameter file - we only traverse to child1, not child2",
             {
                 mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
@@ -365,6 +376,7 @@ suite("Linked templates functional tests", () => {
     // tslint:disable-next-line: no-suspicious-comment
     /* TODO: Hangs on build machine
     createLinkedTemplateTest(
+        "tc08",
         "tc08",
         "2 levels deep, error in parameters to 2nd level, child1.json also has a parameter file - child2 gets traversed via the opened child1 (since child1 has a param file)",
         {
@@ -395,6 +407,7 @@ suite("Linked templates functional tests", () => {
 
     createLinkedTemplateTest(
         "tc09",
+        "tc09",
         "two calls to same linked template, second call has an error",
         {
             mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
@@ -422,6 +435,7 @@ suite("Linked templates functional tests", () => {
         // TODO: Hangs on build machine
         if (!isWin32) {
             createLinkedTemplateTest(
+                "tc10",
                 "tc10",
                 "missing and extra parameters (validation)",
                 {
@@ -454,6 +468,7 @@ suite("Linked templates functional tests", () => {
         if (!isWin32) {
             createLinkedTemplateTest(
                 "tc11",
+                "tc11",
                 "Missing parameters - no 'parameters' object under linked template parameters",
                 {
                     mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
@@ -483,6 +498,7 @@ suite("Linked templates functional tests", () => {
         // TODO: Hangs on build machine
         if (!isWin32) {
             createLinkedTemplateTest(
+                "tc12",
                 "tc12",
                 "Verify correct scope of expressions, variables, parameters",
                 {
@@ -514,6 +530,7 @@ suite("Linked templates functional tests", () => {
     if (!isWin32) {
         createLinkedTemplateTest(
             "tc13",
+            "tc13",
             "An array index is out of bounds in the child template due to the parameter value passed in",
             {
                 mainTemplateFile: "templates/linkedTemplates/tc13-badarrayindex-in-child/<TC>.json",
@@ -540,6 +557,7 @@ suite("Linked templates functional tests", () => {
     // TODO: Hangs on build machine?
     if (!isWin32) {
         createLinkedTemplateTest(
+            "tc14",
             "tc14",
             "Incorrect content version specified",
             {
