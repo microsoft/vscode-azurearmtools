@@ -22,7 +22,7 @@ export async function ensureLanguageServerAvailable(): Promise<LanguageClient> {
 
         // Open a doc to force the language server to start up
         workspace.openTextDocument({
-            content: "",
+            content: `{"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#","contentVersion": "1.0.0.0","resources": []}`,
             language: armTemplateLanguageId
         });
 
