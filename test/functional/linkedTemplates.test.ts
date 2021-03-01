@@ -609,27 +609,18 @@ suite("Linked templates functional tests", () => {
         */
 
         // tslint:disable-next-line: no-suspicious-comment
-        // TODO: Hangs on build machine?
         if (!isWin32) {
             createLinkedTemplateTest(
-                "uriasdf",
-                "uriasdf property to location not existing",
+                "uri-missing-params",
+                "absolute URI with missing parameters",
                 {
                     mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                     mainTemplateExpected: [
-                        "Error: Template validation failed: Could not find member 'parameters2' on object of type 'Template'. Path 'parameters2', line 4, position 18. (arm-template (validation)) [17,27-17,27] [The error occurred in a linked template near here] [4,18-4,18]",
+                        'Error: The following parameters do not have values: "p2string" (arm-template (expressions))'
                     ],
                     linkedTemplates: [
-                        {
-                            parentTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
-                            linkedTemplateFile: "templates/linkedTemplates/<TC>/subfolder/child.json",
-                            expected: [
-                                "Error: Template validation failed: Could not find member 'parameters2' on object of type 'Template'. Path 'parameters2', line 4, position 18. (arm-template (validation)) [4,18-4,18]",
-                                'Warning: Property name is not allowed by the schema (arm-template (schema)) [4,5-4,18]',
-                                "Error: Undefined parameter reference: 'p1string' (arm-template (expressions)) [27,38-27,48]",
-                                "Error: Undefined parameter reference: 'p3string-whoops' (arm-template (expressions)) [26,38-26,55]",
-                            ]
-                        }
+                        // Can't verify the child template because it doesn't go through schema/etc validation
+                        // (although we could filter only the diagnostics sources we want)
                     ]
                 }
             );
