@@ -69,7 +69,7 @@ export class NestedTemplateCodeLens extends ChildTemplateCodeLens {
         }
 
         if (!fullValidationStatus.fullValidationEnabled) {
-            title += " " + "($(warning)Full validation off)";
+            // title += " " + "($(warning)Full validation off)";
 
         }
 
