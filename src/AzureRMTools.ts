@@ -25,7 +25,7 @@ import { ExtractItem } from './documents/templates/ExtractItem';
 import { getNormalizedDocumentKey } from './documents/templates/getNormalizedDocumentKey';
 import { gotoResources } from './documents/templates/gotoResources';
 import { getItemTypeQuickPicks, InsertItem } from "./documents/templates/insertItem";
-import { assignTemplateGraphToDeploymentTemplate, INotifyTemplateGraphArgs, openLinkedTemplateFileCommand, tryOpenNonLocalLinkedFile } from './documents/templates/linkedTemplates/linkedTemplates';
+import { assignTemplateGraphToDeploymentTemplate, INotifyTemplateGraphArgs, openLinkedTemplateFileCommand, tryLoadNonLocalLinkedFile } from './documents/templates/linkedTemplates/linkedTemplates';
 import { allSchemas, getPreferredSchema } from './documents/templates/schemas';
 import { getQuickPickItems, sortTemplate } from "./documents/templates/sortTemplate";
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, setLangIdToArm, templateDocumentSelector, templateOrParameterDocumentSelector } from "./documents/templates/supported";
@@ -47,11 +47,12 @@ import { escapeNonPaths } from "./util/escapeNonPaths";
 import { expectTemplateDocument } from "./util/expectDocument";
 import { getRenameError } from "./util/getRenameError";
 import { Histogram } from "./util/Histogram";
+import { prependLinkedTemplateScheme } from './util/linkedTemplateScheme';
 import { pathExists } from "./util/pathExists";
-import { prependLinkedTemplateScheme } from './util/prependLinkedTemplateScheme';
 import { readUtf8FileWithBom } from "./util/readUtf8FileWithBom";
 import { Stopwatch } from "./util/Stopwatch";
 import { Cancellation } from "./util/throwOnCancel";
+import { parseUri } from './util/uri';
 import { IncorrectArgumentsCountIssue } from "./visitors/IncorrectArgumentsCountIssue";
 import { UnrecognizedBuiltinFunctionIssue } from "./visitors/UnrecognizedFunctionIssues";
 import { IAddMissingParametersArgs, IGotoParameterValueArgs, IGotoResourcesArgs } from "./vscodeIntegration/commandArguments";
@@ -1049,10 +1050,11 @@ export class AzureRMTools implements IProvideOpenedDocuments {
     private async provideContentForNonlocalUri(uri: vscode.Uri): Promise<string | undefined> {
         return callWithTelemetryAndErrorHandling('provideContentForNonlocalUris', async (context: IActionContext) => {
             context.errorHandling.rethrow = true;
+            context.errorHandling.suppressDisplay = true;
 
             let dt = this.getOpenedDeploymentDocument(uri);
             if (!dt) {
-                await tryOpenNonLocalLinkedFile(uri, context, false);
+                await tryLoadNonLocalLinkedFile(uri, context, false);
                 dt = this.getOpenedDeploymentDocument(uri);
             }
 
@@ -1785,7 +1787,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         callWithTelemetryAndErrorHandlingSync("onTemplateGraphAvailable", (actionContext) => {
             actionContext.telemetry.suppressIfSuccessful = true;
 
-            const rootTemplateUri = vscode.Uri.parse(e.rootTemplateUri);
+            const rootTemplateUri = parseUri(e.rootTemplateUri);
             const rootTemplate = this.getOpenedDeploymentTemplate(rootTemplateUri);
 
             // tslint:disable-next-line: no-console
@@ -1794,7 +1796,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             // console.log(e.linkedTemplates.map(lt => `    ${path.basename(lt.fullUri)}: ${LinkedFileLoadState[lt.loadState]} ${lt.loadErrorMessage ?? ''}`).join('\n'));
 
             // Cache the template graph results
-            const rootTemplateKey = getNormalizedDocumentKey(vscode.Uri.parse(e.rootTemplateUri, true));
+            const rootTemplateKey = getNormalizedDocumentKey(parseUri(e.rootTemplateUri));
             this._cachedTemplateGraphs.set(rootTemplateKey, e);
 
             if (rootTemplate) {

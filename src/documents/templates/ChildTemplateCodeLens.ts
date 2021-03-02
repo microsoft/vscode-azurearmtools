@@ -13,6 +13,7 @@ import { assert } from "../../fixed_assert";
 import { Span } from '../../language/Span';
 import { LanguageServerState } from '../../languageclient/startArmLanguageServer';
 import { assertNever } from '../../util/assertNever';
+import { parseUri, stringifyUri } from "../../util/uri";
 import { ResolvableCodeLens } from '../DeploymentDocument';
 import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSourceProvider';
 import { ILinkedTemplateReference } from "./linkedTemplates/ILinkedTemplateReference";
@@ -68,7 +69,7 @@ export class NestedTemplateCodeLens extends ChildTemplateCodeLens {
         }
 
         if (!fullValidationStatus.fullValidationEnabled) {
-            title += " " + "($(warning)Full validation off)";
+            // title += " " + "($(warning)Full validation off)";
 
         }
 
@@ -151,7 +152,7 @@ export class LinkedTemplateCodeLens extends ChildTemplateCodeLens {
         let friendlyPath: string | undefined;
         try {
             const templateUri = scope.document.documentUri;
-            linkedUri = firstLinkedTemplateRef?.fullUri ? Uri.parse(firstLinkedTemplateRef.fullUri) : undefined;
+            linkedUri = firstLinkedTemplateRef?.fullUri ? parseUri(firstLinkedTemplateRef.fullUri) : undefined;
             if (linkedUri && templateUri.fsPath && linkedUri.scheme === documentSchemes.file) {
                 const templateFolder = path.dirname(templateUri.fsPath);
                 friendlyPath = path.relative(templateFolder, linkedUri.fsPath);
@@ -159,7 +160,7 @@ export class LinkedTemplateCodeLens extends ChildTemplateCodeLens {
                     friendlyPath = `.${ext.pathSeparator}${friendlyPath}`;
                 }
             } else {
-                friendlyPath = linkedUri?.toString();
+                friendlyPath = linkedUri ? stringifyUri(linkedUri) : undefined;
             }
         } catch (error) {
             console.warn(parseError(error).message);
