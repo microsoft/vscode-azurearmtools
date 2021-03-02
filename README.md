@@ -218,13 +218,12 @@ Scenarios supported:
 ```
 
 Example for a linked template that is missing a required parameter:
-![image](https://user-images.githubusercontent.com/6855361/109719328-1db5ba00-7b6e-11eb-980a-8efaddb6bc92.png)
+![missingparam](https://user-images.githubusercontent.com/6855361/109720095-3f637100-7b6f-11eb-9ece-d896ffb8b30a.png)
 
 Additional features:
 - CTRL-click on relativePath value or click on code lens to navigate to linked template
 - ["Light-bulb" and snippet support](https://github.com/microsoft/vscode-azurearmtools/blob/mafellin/1225-linked-template-README/README.md#add-missing-parameters) to fill in parameter values for a linked template
-![linkedtemplatequickfix](https://user-images.githubusercontent.com/6855361/109719759-bcdab180-7b6e-11eb-9fcc-39a06d196b87.gif)
-
+![linkedtemplatelightbulb](https://user-images.githubusercontent.com/6855361/109719960-088d5b00-7b6f-11eb-8e91-74b363f768ff.gif)
 
 ## Template navigation
 
