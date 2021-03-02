@@ -1,0 +1,32 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters2": {
+        "p1string": {
+            "type": "string",
+            "metadata": {
+                "description": "string parameter"
+            },
+            "defaultValue": "Premium"
+        }
+    },
+    "functions": [],
+    "variables": {},
+    "resources": [
+        {
+            "name": "storageaccount1",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01",
+            "tags": {
+                "displayName": "storageaccount1"
+            },
+            "location": "[resourceGroup().location]",
+            "kind": "StorageV2",
+            "sku": {
+                "name": "[parameters('p3string-whoops')]", // ERROR: Undefined parameter
+                "tier": "[parameters('p1string')]"
+            }
+        }
+    ],
+    "outputs": {}
+}
