@@ -151,12 +151,11 @@ Select a new parameter file or create a new parameter file to update the associa
 
 ![Image showing the parameter file creation options (none, new, and browse)](./images/undo-change-mapping-two.png)
 
-### Linked template validation
-When a [linked template](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/linked-templates?tabs=azure-powershell#linked-template) is referenced, schema and parameter validations are provided (up to one level).
+## Linked Template Validation
 
-Linked template support requires either that all top-level parameters have a value, this means either:
-- All top-level parameter definitions have a default value
-- Or a parameter file is associated with the template
+When a [linked template](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/linked-templates?tabs=azure-powershell#linked-template) is referenced, schema and parameter validations are provided.
+
+Linked template support requires that all top-level parameters have a value. This means that a parameter file is associated with the template OR all top-level parameter definitions have a default value.
 
 Scenarios supported:
 - Relative path (requires apiVersion 2020-10-01 or higher of Microsoft.Resources/deployments):
@@ -212,7 +211,7 @@ Scenarios supported:
 ```
 
 Additional features:
-   - "Light-bulb" and snippet support to fill in parameter values for a linked template
+   - ["Light-bulb" and snippet support](https://github.com/microsoft/vscode-azurearmtools/blob/mafellin/1225-linked-template-README/README.md#add-missing-parameters) to fill in parameter values for a linked template
     - CTRL-click on relativePath value or click on code lens to navigate to linked template
 
 ## Template navigation
