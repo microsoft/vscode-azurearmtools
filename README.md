@@ -154,7 +154,7 @@ Select a new parameter file or create a new parameter file to update the associa
 
 ## Linked Template Support
 
-When a [linked template](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/linked-templates#linked-template) is referenced, schema and parameter validations are provided.
+When a [linked template](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/linked-templates#linked-template) is referenced, it gets validated using the parameter values that are passed in.
 
 Linked template support requires that all top-level parameters have a value. This means that a parameter file is associated with the template OR all top-level parameter definitions have a default value.
 
@@ -162,7 +162,7 @@ Scenarios supported:
 
 - Relative path (requires apiVersion 2020-10-01 or higher of Microsoft.Resources/deployments):
 
-```json
+```json5
         {
             "name": "linkedDeployment1",
             "type": "Microsoft.Resources/deployments",
@@ -181,7 +181,7 @@ Scenarios supported:
 
 - Full URI:
 
-```json
+```json5
         {
             "name": "linkedDeployment1",
             "type": "Microsoft.Resources/deployments",
@@ -189,7 +189,7 @@ Scenarios supported:
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/StephenWeatherford/template-examples/master/linkedTemplates/uri/child.json"
+                    "uri": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/101-vm-simple-windows/azuredeploy.json"
                 },
                 "parameters": {
                 }
@@ -199,7 +199,7 @@ Scenarios supported:
 
 - Relative to deployed template location
 
-```json
+```json5
         {
             "name": "linkedDeployment1",
             "type": "Microsoft.Resources/deployments",
@@ -300,17 +300,17 @@ To assist with navigating complex expressions or multi-line strings, VS Code has
 
 ### Miscellaneous Features
 
-  - [Signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
-  - [Peek](https://code.visualstudio.com/docs/editor/editingevolved#_peek) for variable and parameter definitions
-  - Find all references (Shift + F12) for variables and parameters
-  - Rename (F2) variables and parameters and their references, as well as user-defined functions or namespaces
-  - [Hover](https://code.visualstudio.com/docs/editor/editingevolved#_hover) for parameter description
-  - [TLE brace matching](https://code.visualstudio.com/docs/editor/editingevolved#_bracket-matching)
-  - User-defined template functions, see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#functions)
-  - Variable iteration ("copy blocks"), see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration)
-  - Sort template and template sections alphabetically
-  - Nested templates (with inner or outer scope)
-  - Quick fix to add missing parameter values in the parameter file or in nested templates
+- [Signature help](https://code.visualstudio.com/docs/editor/editingevolved#_parameter-hints) for TLE function parameters
+- [Peek](https://code.visualstudio.com/docs/editor/editingevolved#_peek) for variable and parameter definitions
+- Find all references (Shift + F12) for variables and parameters
+- Rename (F2) variables and parameters and their references, as well as user-defined functions or namespaces
+- [Hover](https://code.visualstudio.com/docs/editor/editingevolved#_hover) for parameter description
+- [TLE brace matching](https://code.visualstudio.com/docs/editor/editingevolved#_bracket-matching)
+- User-defined template functions, see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#functions)
+- Variable iteration ("copy blocks"), see Azure [documentation](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-multiple#variable-iteration)
+- Sort template and template sections alphabetically
+- Nested templates (with inner or outer scope)
+- Quick fix to add missing parameter values in the parameter file or in nested templates
 
 ## Extension configuration
 
@@ -386,4 +386,3 @@ VS Code collects usage data and sends it to Microsoft to help improve our produc
 The source code in our [public repository](https://github.com/Microsoft/vscode-azurearmtools) is licensed under the [MIT license](LICENSE.md) and may be locally built and used in accordance with this license.
 
 When the extension is [published](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) to the VS Code Marketplace, it is bundled with the Azure Resource Manager language service binaries. The extension as bundled and published this way is licensed under a traditional Microsoft product license.
-
