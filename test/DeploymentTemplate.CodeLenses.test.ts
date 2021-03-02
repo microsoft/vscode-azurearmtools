@@ -283,7 +283,7 @@ suite("DeploymentTemplate code lenses", () => {
         });
 
         suite("parameters for nested inner-scoped template", () => {
-            function createCodeLensTest(testName: string, template: IPartialDeploymentTemplate, expected: string[]): void {
+            function createCodeLensTest(testName: string, template: IPartialDeploymentTemplate, expected: (string | RegExp)[]): void {
                 testWithLanguageServer(testName, async () => {
                     testName = testName;
                     const dt = await parseTemplate(template);
@@ -294,6 +294,10 @@ suite("DeploymentTemplate code lenses", () => {
                     for (const lens of lenses) {
                         const result = await lens.resolve();
                         assert(result);
+
+                        if (lens.command) {
+                            lens.command.title = lens.command.title.replace(" - loading schemas...", "");
+                        }
                     }
 
                     lenses = sortBy(lenses, l => l.range);
