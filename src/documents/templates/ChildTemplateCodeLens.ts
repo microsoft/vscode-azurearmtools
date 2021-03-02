@@ -16,13 +16,14 @@ import { assertNever } from '../../util/assertNever';
 import { parseUri, stringifyUri } from "../../util/uri";
 import { ResolvableCodeLens } from '../DeploymentDocument';
 import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSourceProvider';
+import { SelectParameterFileCodeLens } from "./deploymentTemplateCodeLenses";
 import { ILinkedTemplateReference } from "./linkedTemplates/ILinkedTemplateReference";
 import { LinkedFileLoadState } from "./linkedTemplates/LinkedFileLoadState";
 import { IFullValidationStatus } from "./linkedTemplates/linkedTemplates";
 import { TemplateScope, TemplateScopeKind } from './scopes/TemplateScope';
 import { LinkedTemplateScope } from './scopes/templateScopes';
 
-const fullValidationOffMsg = "($(warning)full validation off)";
+//const fullValidationOffMsg = "($(warning)full validation off)";
 
 abstract class ChildTemplateCodeLens extends ResolvableCodeLens {
 }
@@ -138,7 +139,7 @@ export class LinkedTemplateCodeLens extends ChildTemplateCodeLens {
         }
 
         if (!fullValidationStatus.fullValidationEnabled) {
-            title += ` ${fullValidationOffMsg}`;
+            // title += ` ${fullValidationOffMsg}`;
         } else if (!firstLinkedTemplateRef) {
             title += " " + "(cannot validate - make sure all other validation errors have been fixed)";
         }
@@ -264,7 +265,6 @@ function addSelectParamFileLensIfNeeded(
     scope: TemplateScope,
     span: Span
 ): void {
-    /*
     if (!fullValidationStatus.fullValidationEnabled) {
         lenses.push(
             new SelectParameterFileCodeLens(
@@ -272,9 +272,9 @@ function addSelectParamFileLensIfNeeded(
                 span,
                 topLevelParameterValuesProvider?.parameterFileUri,
                 {
-                    isForLinkedTemplate: true,
+                    isForLinkedOrNestedTemplate: true,
                     fullValidationStatus
                 })
         );
-    */
+    }
 }
