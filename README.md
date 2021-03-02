@@ -151,6 +151,70 @@ Select a new parameter file or create a new parameter file to update the associa
 
 ![Image showing the parameter file creation options (none, new, and browse)](./images/undo-change-mapping-two.png)
 
+### Linked template validation
+When a [linked template](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/linked-templates?tabs=azure-powershell#linked-template) is referenced, schema and parameter validations are provided (up to one level).
+
+Linked template support requires either that all top-level parameters have a value, this means either:
+- All top-level parameter definitions have a default value
+- Or a parameter file is associated with the template
+
+Scenarios supported:
+- Relative path (requires apiVersion 2020-10-01 or higher of Microsoft.Resources/deployments):
+```json
+        {
+            "name": "linkedDeployment1",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    // Relative to current template's folder
+                    "relativePath": "child.json"
+                },
+                "parameters": {
+                }
+            }
+        }
+```
+- Full URI:
+```json
+        {
+            "name": "linkedDeployment1",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/StephenWeatherford/template-examples/master/linkedTemplates/uri/child.json"
+                },
+                "parameters": {
+                }
+            }
+        }
+```
+- Relative to deployed template location
+```json
+        {
+            "name": "linkedDeployment1",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    // When the template is deployed, this will be relative to the deployed location
+                    // While editing, this will be relative to the current template's local file folder
+                    "uri": "[uri(deployment().properties.templateLink.uri, 'child.json')]"
+                },
+                "parameters": {
+                }
+            }
+        }
+```
+
+Additional features:
+   - "Light-bulb" and snippet support to fill in parameter values for a linked template
+    - CTRL-click on relativePath value or click on code lens to navigate to linked template
+
 ## Template navigation
 
 The ARM tools extension for VS Code offers several features for navigating around an ARM template.
