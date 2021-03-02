@@ -218,7 +218,7 @@ Scenarios supported:
 ```
 
 Example for a linked template that is missing a required parameter:
-![missingparam](https://user-images.githubusercontent.com/6855361/109720095-3f637100-7b6f-11eb-9ece-d896ffb8b30a.png)
+![missingparam](https://user-images.githubusercontent.com/6855361/109720262-79cd0e00-7b6f-11eb-8d31-3bcc41bf3f79.png)
 
 Additional features:
 - CTRL-click on relativePath value or click on code lens to navigate to linked template
