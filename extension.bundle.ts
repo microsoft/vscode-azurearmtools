@@ -86,6 +86,7 @@ export * from "./src/util/deepClone";
 export * from './src/util/Duration';
 export * from "./src/util/Histogram";
 export * from './src/util/httpGet';
+export * from "./src/util/linkedTemplateScheme";
 export * from "./src/util/mapJsonObjectValue";
 export * from "./src/util/multilineStrings";
 export * from "./src/util/nonNull";

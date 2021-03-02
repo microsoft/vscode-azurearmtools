@@ -3,8 +3,8 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 // ---------------------------------------------------------------------------------------------
 
-import { Uri } from "vscode";
 import { IProvideOpenedDocuments } from "../../../IProvideOpenedDocuments";
+import { parseUri } from "../../../util/uri";
 import { IParameterDefinition } from "../../parameters/IParameterDefinition";
 import { DeploymentTemplateDoc } from "../DeploymentTemplateDoc";
 import { ILinkedTemplateReference } from "./ILinkedTemplateReference";
@@ -15,7 +15,7 @@ export function getParameterDefinitionsFromLinkedTemplate(
 ): IParameterDefinition[] {
     let dt: DeploymentTemplateDoc | undefined;
     try {
-        const uri = Uri.parse(linkedTemplate.fullUri, true);
+        const uri = parseUri(linkedTemplate.fullUri);
         dt = provideOpenDocuments.getOpenedDeploymentTemplate(uri);
     } catch (error) {
         // Ignore poorly-formed URIs

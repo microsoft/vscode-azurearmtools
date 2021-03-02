@@ -13,10 +13,11 @@ import { assert } from '../../../fixed_assert';
 import { IProvideOpenedDocuments } from '../../../IProvideOpenedDocuments';
 import { ContainsBehavior } from "../../../language/Span";
 import { httpGet } from '../../../util/httpGet';
+import { prependLinkedTemplateScheme, removeLinkedTemplateScheme } from '../../../util/linkedTemplateScheme';
 import { normalizeUri } from '../../../util/normalizedPaths';
 import { ofType } from '../../../util/ofType';
 import { pathExists } from '../../../util/pathExists';
-import { prependLinkedTemplateScheme, removeLinkedTemplateScheme } from '../../../util/prependLinkedTemplateScheme';
+import { parseUri, stringifyUri } from '../../../util/uri';
 import { DeploymentTemplateDoc } from '../../templates/DeploymentTemplateDoc';
 import { LinkedTemplateScope } from '../../templates/scopes/templateScopes';
 import { setLangIdToArm } from '../../templates/supported';
@@ -94,7 +95,7 @@ export async function onRequestOpenLinkedFile(
 
         let requestedLinkUri: Uri;
         try {
-            requestedLinkUri = Uri.parse(requestedLinkResolvedUri, true);
+            requestedLinkUri = parseUri(requestedLinkResolvedUri);
         } catch (error) {
             return { loadErrorMessage: parseError(error).message };
         }
@@ -126,7 +127,7 @@ export async function onRequestOpenLinkedFile(
         } else {
             // Something else (http etc).  Try to retrieve the content and return it directly
             try {
-                const content = await tryOpenNonLocalLinkedFile(requestedLinkUri, context, true);
+                const content = await tryLoadNonLocalLinkedFile(requestedLinkUri, context, true);
                 properties.openResult = 'Loaded';
                 return { content };
             } catch (error) {
@@ -138,9 +139,18 @@ export async function onRequestOpenLinkedFile(
     });
 }
 
-export async function tryOpenNonLocalLinkedFile(uri: Uri, context: IActionContext, open: boolean): Promise<string> {
+export async function tryLoadNonLocalLinkedFile(uri: Uri, context: IActionContext, open: boolean): Promise<string> {
     uri = removeLinkedTemplateScheme(uri);
-    const content = await httpGet(uri.toString());
+    let content: string;
+    try {
+        content = await httpGet(stringifyUri(uri));
+    } catch (err) {
+        // Improve the error message for downstream, UI doesn't currently know about statusMessage/statusCode
+        const error = <Errorish & { statusMessage?: string; statusCode?: number }>err;
+        error.message = String(error.message ?? error.statusMessage ?? error.statusCode);
+        throw error;
+    }
+
     assert(ext.provideOpenedDocuments, "ext.provideOpenedDocuments");
     const newUri = prependLinkedTemplateScheme(uri);
 
@@ -206,7 +216,7 @@ export function assignTemplateGraphToDeploymentTemplate(
     dt: DeploymentTemplateDoc,
     provideOpenDocuments: IProvideOpenedDocuments
 ): void {
-    assert(normalizeUri(Uri.parse(graph.rootTemplateUri)) === normalizeUri(dt.documentUri));
+    assert(normalizeUri(parseUri(graph.rootTemplateUri)) === normalizeUri(dt.documentUri));
 
     // Clear current
     const linkedScopes = ofType(dt.allScopes, LinkedTemplateScope);

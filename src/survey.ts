@@ -2,13 +2,14 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { commands, MessageItem, Uri, window, workspace } from 'vscode';
+import { commands, MessageItem, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, IActionContext } from "vscode-azureextensionui";
 import { configPrefix, globalStateKeys } from './constants';
 import { ext } from "./extensionVariables";
 import { assert } from './fixed_assert';
 import { httpGet } from "./util/httpGet";
 import { hoursToMs, minutesToMs, weeksToMs } from "./util/time";
+import { parseUri } from './util/uri';
 
 // Add the following to your settings file to put the survey into debug mode (using debugSurveyConstants):
 //
@@ -164,7 +165,7 @@ async function requestTakeSurvey(context: IActionContext): Promise<void> {
 }
 
 async function launchSurvey(context: IActionContext): Promise<void> {
-    await commands.executeCommand('vscode.open', Uri.parse(linkToSurvey));
+    await commands.executeCommand('vscode.open', parseUri(linkToSurvey));
 }
 
 function getIsUserSelected(): boolean {
