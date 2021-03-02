@@ -5,8 +5,7 @@
 // tslint:disable:no-unused-expression
 
 import * as assert from "assert";
-import { DeploymentTemplateDoc, IJsonDocument, Json, ParameterDefinition, Span } from "../extension.bundle";
-import { parseUri } from "../src/util/uri";
+import { DeploymentTemplateDoc, IJsonDocument, Json, ParameterDefinition, parseUri, Span } from "../extension.bundle";
 
 suite("ParameterDefinition", () => {
     suite("constructor(Json.Property)", () => {
