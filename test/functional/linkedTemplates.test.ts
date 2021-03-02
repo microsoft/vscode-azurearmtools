@@ -569,6 +569,7 @@ suite("Linked templates functional tests", () => {
                         mainTemplateExpected: [
                             "Error: Template validation failed: Could not find member 'parameters2' on object of type 'Template'. Path 'parameters2', line 4, position 18. (arm-template (validation)) [17,27-17,27] [The error occurred in a linked template near here] [4,18-4,18]",
                         ],
+                        waitForDiagnosticSubstring: 'Could not find member',
                         linkedTemplates: [
                             {
                                 parentTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
