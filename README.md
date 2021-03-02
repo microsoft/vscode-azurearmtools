@@ -156,6 +156,8 @@ Select a new parameter file or create a new parameter file to update the associa
 
 When a [linked template](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/linked-templates#linked-template) is referenced, it gets validated using the parameter values that are passed in.
 
+![linkedTemplateValidation](https://user-images.githubusercontent.com/6855361/109727793-9753a500-7b7a-11eb-9f5a-ddd1930c327b.png)
+
 Linked template support requires that all top-level parameters have a value. This means that a parameter file is associated with the template OR all top-level parameter definitions have a default value.
 
 Scenarios supported:
