@@ -97,6 +97,7 @@ export * from "./src/util/readUtf8FileWithBom";
 export * from "./src/util/sorting";
 export * as strings from "./src/util/strings";
 export * from './src/util/time';
+export * from "./src/util/uri";
 export { wrapError } from "./src/util/wrapError";
 export * from "./src/visitors/FindReferencesAndErrorsVisitor";
 export * from "./src/visitors/FunctionCountVisitor";

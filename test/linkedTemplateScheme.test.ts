@@ -3,8 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
-import { prependLinkedTemplateScheme, removeLinkedTemplateScheme } from "../extension.bundle";
-import { parseUri, stringifyUri } from "../src/util/uri";
+import { parseUri, prependLinkedTemplateScheme, removeLinkedTemplateScheme, stringifyUri } from "../extension.bundle";
 
 // tslint:disable:max-func-body-length no-http-string max-line-length no-null-keyword
 
