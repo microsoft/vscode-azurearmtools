@@ -11,8 +11,9 @@ The following guides detail how to use the ARM Tools extension features.
 - [Snippets](#Snippets)
 - [Azure schema integration](#Azure-schema-completion-and-validation)
 - [Parameter file support](#parameter-files)
-- [Completions](#completions)
+- [Linked template support](#linked-template-support)
 - [Template navigation](#template-navigation)
+- [Completions](#completions)
 - [Other features](#other-features)
 - [Extension configuration](#extension-configuration)
 
@@ -151,14 +152,16 @@ Select a new parameter file or create a new parameter file to update the associa
 
 ![Image showing the parameter file creation options (none, new, and browse)](./images/undo-change-mapping-two.png)
 
-## Linked Template Validation
+## Linked Template Support
 
-When a [linked template](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/linked-templates?tabs=azure-powershell#linked-template) is referenced, schema and parameter validations are provided.
+When a [linked template](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/linked-templates#linked-template) is referenced, schema and parameter validations are provided.
 
 Linked template support requires that all top-level parameters have a value. This means that a parameter file is associated with the template OR all top-level parameter definitions have a default value.
 
 Scenarios supported:
+
 - Relative path (requires apiVersion 2020-10-01 or higher of Microsoft.Resources/deployments):
+
 ```json
         {
             "name": "linkedDeployment1",
@@ -175,7 +178,9 @@ Scenarios supported:
             }
         }
 ```
+
 - Full URI:
+
 ```json
         {
             "name": "linkedDeployment1",
@@ -191,7 +196,9 @@ Scenarios supported:
             }
         }
 ```
+
 - Relative to deployed template location
+
 ```json
         {
             "name": "linkedDeployment1",
@@ -211,8 +218,9 @@ Scenarios supported:
 ```
 
 Additional features:
-   - ["Light-bulb" and snippet support](https://github.com/microsoft/vscode-azurearmtools/blob/mafellin/1225-linked-template-README/README.md#add-missing-parameters) to fill in parameter values for a linked template
-    - CTRL-click on relativePath value or click on code lens to navigate to linked template
+
+- ["Light-bulb" and snippet support](https://github.com/microsoft/vscode-azurearmtools/blob/mafellin/1225-linked-template-README/README.md#add-missing-parameters) to fill in parameter values for a linked template
+- CTRL-click on relativePath value or click on code lens to navigate to linked template
 
 ## Template navigation
 
@@ -341,8 +349,9 @@ Use the following wiki article to help troubleshoot these known issues.
 - [Azure Quickstart Templates](https://go.microsoft.com/fwlink/?LinkID=734038)
 
 ## Visualizing ARM Templates
+
 Another helpful extension for authoring ARM templates is the [ARM Viewer for VS Code extension](https://marketplace.visualstudio.com/items?itemName=bencoleman.armview). This extension displays a graphical preview of ARM templates. The view will show all resources with the official Azure icons and also linkage between the resources.
- 
+
 You can find details on its features and usage by visiting the GitHub repo here: https://github.com/benc-uk/armview-vscode#usage
 
 ## Contributing
