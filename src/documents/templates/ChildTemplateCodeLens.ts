@@ -13,15 +13,17 @@ import { assert } from "../../fixed_assert";
 import { Span } from '../../language/Span';
 import { LanguageServerState } from '../../languageclient/startArmLanguageServer';
 import { assertNever } from '../../util/assertNever';
+import { parseUri, stringifyUri } from "../../util/uri";
 import { ResolvableCodeLens } from '../DeploymentDocument';
 import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSourceProvider';
+import { SelectParameterFileCodeLens } from "./deploymentTemplateCodeLenses";
 import { ILinkedTemplateReference } from "./linkedTemplates/ILinkedTemplateReference";
 import { LinkedFileLoadState } from "./linkedTemplates/LinkedFileLoadState";
 import { IFullValidationStatus } from "./linkedTemplates/linkedTemplates";
 import { TemplateScope, TemplateScopeKind } from './scopes/TemplateScope';
 import { LinkedTemplateScope } from './scopes/templateScopes';
 
-const fullValidationOffMsg = "($(warning)full validation off)";
+//const fullValidationOffMsg = "($(warning)full validation off)";
 
 abstract class ChildTemplateCodeLens extends ResolvableCodeLens {
 }
@@ -68,7 +70,7 @@ export class NestedTemplateCodeLens extends ChildTemplateCodeLens {
         }
 
         if (!fullValidationStatus.fullValidationEnabled) {
-            title += " " + "($(warning)Full validation off)";
+            // title += " " + "($(warning)Full validation off)";
 
         }
 
@@ -137,7 +139,7 @@ export class LinkedTemplateCodeLens extends ChildTemplateCodeLens {
         }
 
         if (!fullValidationStatus.fullValidationEnabled) {
-            title += ` ${fullValidationOffMsg}`;
+            // title += ` ${fullValidationOffMsg}`;
         } else if (!firstLinkedTemplateRef) {
             title += " " + "(cannot validate - make sure all other validation errors have been fixed)";
         }
@@ -151,7 +153,7 @@ export class LinkedTemplateCodeLens extends ChildTemplateCodeLens {
         let friendlyPath: string | undefined;
         try {
             const templateUri = scope.document.documentUri;
-            linkedUri = firstLinkedTemplateRef?.fullUri ? Uri.parse(firstLinkedTemplateRef.fullUri) : undefined;
+            linkedUri = firstLinkedTemplateRef?.fullUri ? parseUri(firstLinkedTemplateRef.fullUri) : undefined;
             if (linkedUri && templateUri.fsPath && linkedUri.scheme === documentSchemes.file) {
                 const templateFolder = path.dirname(templateUri.fsPath);
                 friendlyPath = path.relative(templateFolder, linkedUri.fsPath);
@@ -159,7 +161,7 @@ export class LinkedTemplateCodeLens extends ChildTemplateCodeLens {
                     friendlyPath = `.${ext.pathSeparator}${friendlyPath}`;
                 }
             } else {
-                friendlyPath = linkedUri?.toString();
+                friendlyPath = linkedUri ? stringifyUri(linkedUri) : undefined;
             }
         } catch (error) {
             console.warn(parseError(error).message);
@@ -263,7 +265,6 @@ function addSelectParamFileLensIfNeeded(
     scope: TemplateScope,
     span: Span
 ): void {
-    /*
     if (!fullValidationStatus.fullValidationEnabled) {
         lenses.push(
             new SelectParameterFileCodeLens(
@@ -271,9 +272,9 @@ function addSelectParamFileLensIfNeeded(
                 span,
                 topLevelParameterValuesProvider?.parameterFileUri,
                 {
-                    isForLinkedTemplate: true,
+                    isForLinkedOrNestedTemplate: true,
                     fullValidationStatus
                 })
         );
-    */
+    }
 }

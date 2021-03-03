@@ -4,11 +4,11 @@
 
 // tslint:disable: max-classes-per-file
 
-import { Uri } from "vscode";
 import { deploymentsResourceTypeLC, templateKeys } from "../../../constants";
 import { IProvideOpenedDocuments } from "../../../IProvideOpenedDocuments";
 import * as Json from "../../../language/json/JSON";
 import { assertNever } from "../../../util/assertNever";
+import { parseUri } from "../../../util/uri";
 import { IParameterDefinition } from "../../parameters/IParameterDefinition";
 import { IParameterDefinitionsSource } from "../../parameters/IParameterDefinitionsSource";
 import { IParameterValuesSource } from "../../parameters/IParameterValuesSource";
@@ -39,7 +39,7 @@ export class EmptyScope extends TemplateScope {
 
     constructor(
     ) {
-        super(undefined, new DeploymentTemplateDoc('', Uri.parse('https://emptydoc', true), 0), undefined, undefined, "Empty Scope");
+        super(undefined, new DeploymentTemplateDoc('', parseUri('https://emptydoc/scope'), 0), undefined, undefined, "Empty Scope");
     }
 
     protected getParameterDefinitionsSource(): IParameterDefinitionsSource {

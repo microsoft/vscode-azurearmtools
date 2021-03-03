@@ -5,6 +5,7 @@
 
 import { Uri } from "vscode";
 import { documentSchemes } from "../constants";
+import { parseUri, stringifyUri } from "./uri";
 
 /**
  * Prepends the linked template scheme to the given URI if it's not a local file
@@ -18,14 +19,16 @@ export function prependLinkedTemplateScheme(uri: Uri): Uri {
             return uri;
 
         default:
-            const newUri = `${documentSchemes.linkedTemplate}:${uri.toString()}`;
-            return Uri.parse(newUri);
+            const newUri = `${documentSchemes.linkedTemplate}:${stringifyUri(uri)}`;
+            return parseUri(newUri);
     }
 }
 
 export function removeLinkedTemplateScheme(uri: Uri): Uri {
     if (uri.scheme === documentSchemes.linkedTemplate) {
-        return Uri.parse(uri.toString().replace(/^linked-template:/, '').replace(/%3A/, ':'));
+        return parseUri(
+            stringifyUri(uri).
+                replace(/^linked-template:/, ''));
     }
 
     return uri;

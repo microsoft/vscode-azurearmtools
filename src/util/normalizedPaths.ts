@@ -5,6 +5,7 @@
 import * as path from 'path';
 import { Uri } from "vscode";
 import { documentSchemes, isWin32 } from '../constants';
+import { stringifyUri } from './uri';
 
 /**
  * Given an (assumed local file) path or URI, returns a string file path from it that
@@ -36,8 +37,8 @@ export function normalizeUri(pathOrUri: Uri | string): string {
         if (isWin32) {
             normalizedPath = normalizedPath.toLowerCase();
         }
-        pathOrUri = Uri.parse(normalizedPath);
+        pathOrUri = Uri.file(normalizedPath);
     }
 
-    return pathOrUri.toString();
+    return stringifyUri(pathOrUri);
 }

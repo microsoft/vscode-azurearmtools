@@ -40,7 +40,7 @@ suite("Linked templates functional tests", () => {
         await new Promise<void>(resolve => {
             const disposable = notifyTemplateGraphAvailable(e => {
                 if (Uri.parse(e.rootTemplateUri).fsPath === mainTemplate) {
-                    testLog.writeLine(`Graph notification available for ${mainTemplate}... Looking for child ${childTemplate}`);
+                    testLog.writeLine(`Graph available notification for ${mainTemplate}... Looking for child in the graph: ${childTemplate}`);
                     const child = e.linkedTemplates.find(lt => Uri.parse(lt.fullUri).fsPath === childTemplate);
                     let ready: boolean;
                     if (child) {
@@ -66,7 +66,7 @@ suite("Linked templates functional tests", () => {
                         }
                     } else {
                         ready = false;
-                        testLog.writeLine(`... child not found in graph`);
+                        testLog.writeLine(`... child not found in graph yet`);
                     }
 
                     if (ready) {
@@ -74,7 +74,7 @@ suite("Linked templates functional tests", () => {
                         disposable.dispose();
                         resolve();
                     } else {
-                        testLog.writeLine(`... not ready`);
+                        testLog.writeLine(`... not ready yet`);
                     }
                 }
             });
@@ -83,12 +83,12 @@ suite("Linked templates functional tests", () => {
 
     // <TC> in strings will be replaced with ${testCase}
     function createLinkedTemplateTest(
-        testCase: string,
+        testCase: string, // testcase name, e.g. "tc01", and the filename would be tc01.json
         testDescription: string,
         options: {
             //CONSIDER: group into single object for mainTemplate
             mainTemplateFile: string;
-            mainParametersFile: string;
+            mainParametersFile?: string;
             mainTemplateExpected: ExpectedDiagnostics;
             // tslint:disable-next-line: no-suspicious-comment
             // TODO: This is a hack.  We need better way to determine when validation is completely done
@@ -111,7 +111,6 @@ suite("Linked templates functional tests", () => {
             async () => {
                 const mainTemplatePath = resolveInTestFolder(tcString(options.mainTemplateFile, testCase));
                 assert(mainTemplatePath);
-                assert(options.mainParametersFile);
 
                 // Make sure the language server starts up
                 const client = await ensureLanguageServerAvailable();
@@ -135,7 +134,7 @@ suite("Linked templates functional tests", () => {
                 await testDiagnostics(
                     mainTemplatePath,
                     {
-                        parametersFile: tcString(options.mainParametersFile, testCase),
+                        parametersFile: options.mainParametersFile ? tcString(options.mainParametersFile, testCase) : undefined,
                         waitForDiagnosticsFilter: async (results): Promise<boolean> => {
                             await waitAllForChildPromises;
                             if (options.waitForDiagnosticSubstring) {
@@ -182,11 +181,10 @@ suite("Linked templates functional tests", () => {
     //TODO: hangs
     if (!isWin32) {
         createLinkedTemplateTest(
-            "tc01",
+            "relative-simple",
             "one level, no validation errors, child in subfolder, relative path starts with subfolder name",
             {
                 mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
-                mainParametersFile: "<TC>.parameters.json",
                 mainTemplateExpected: [
                 ],
                 linkedTemplates: [
@@ -213,7 +211,7 @@ suite("Linked templates functional tests", () => {
         */
 
         createLinkedTemplateTest(
-            "tc02",
+            "relative-notfound",
             "expecting error: child not found",
             {
                 mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
@@ -233,7 +231,7 @@ suite("Linked templates functional tests", () => {
     // tslint:disable-next-line: no-suspicious-comment
     /* TODO: hangs
     createLinkedTemplateTest(
-        "tc03",
+        "relative-with-period",
         "one level, no validation errors, child in subfolder, relative path starts with ./",
         {
             mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
@@ -257,11 +255,11 @@ suite("Linked templates functional tests", () => {
     // TODO: hangs
     if (!isWin32) {
         createLinkedTemplateTest(
-            "tc04",
+            "relative with spaces",
             "one level, no validation errors, child in subfolder, folder and filename contain spaces",
             {
-                mainTemplateFile: "templates/linkedTemplates/<TC>/<TC> with spaces.json",
-                mainParametersFile: "<TC> with spaces.parameters.json",
+                mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
+                mainParametersFile: "<TC>.parameters.json",
                 mainTemplateExpected: [
                     "Error: The following parameters do not have values: \"p2string\" (arm-template (expressions)) [16,33-16,33]"
                 ],
@@ -269,7 +267,7 @@ suite("Linked templates functional tests", () => {
                 waitForDiagnosticSubstring: "The following parameters do not have values",
                 linkedTemplates: [
                     {
-                        parentTemplateFile: "templates/linkedTemplates/<TC>/<TC> with spaces.json",
+                        parentTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                         linkedTemplateFile: "templates/linkedTemplates/<TC>/subfolder with spaces/child with spaces.json",
                         expected: [
                             "Error: Undefined parameter reference: 'p3string-whoops' (arm-template (expressions)) [36,38]",
@@ -288,7 +286,7 @@ suite("Linked templates functional tests", () => {
     // tslint:disable-next-line: no-suspicious-comment
     /* TODO: Can't deploy to test yet
     createLinkedTemplateTest(
-        "tc05",
+        "relative-backslashes",
         "backslashes in path",
         {
             mainTemplateFile: "templates/linkedTemplates/<TC>\\<TC>.json",
@@ -311,11 +309,10 @@ suite("Linked templates functional tests", () => {
     // TODO: Hangs
     if (!isWin32) {
         createLinkedTemplateTest(
-            "tc06",
+            "param-type-mismatch",
             "Parameter type mismatch error",
             {
                 mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
-                mainParametersFile: "<TC>.parameters.json",
                 // waitForDiagnosticSubstring is needed because the error is given during a re-validation, not immediately, so hard to know how long
                 //   to wait
                 waitForDiagnosticSubstring: "Template parameter JToken type is not valid",
@@ -340,7 +337,7 @@ suite("Linked templates functional tests", () => {
     // TODO: Hangs
     if (!isWin32) {
         createLinkedTemplateTest(
-            "tc07",
+            "two-deep",
             "2 levels deep, error in parameters to 2nd level, only top level has a parameter file - we only traverse to child1, not child2",
             {
                 mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
@@ -365,7 +362,7 @@ suite("Linked templates functional tests", () => {
     // tslint:disable-next-line: no-suspicious-comment
     /* TODO: Hangs on build machine
     createLinkedTemplateTest(
-        "tc08",
+        "two-deep-two-param-files",
         "2 levels deep, error in parameters to 2nd level, child1.json also has a parameter file - child2 gets traversed via the opened child1 (since child1 has a param file)",
         {
             mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
@@ -394,7 +391,7 @@ suite("Linked templates functional tests", () => {
     );
 
     createLinkedTemplateTest(
-        "tc09",
+        "two-calls-same-template",
         "two calls to same linked template, second call has an error",
         {
             mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
@@ -417,16 +414,14 @@ suite("Linked templates functional tests", () => {
     */
 
     suite("Parameter validation", () => {
-
         // tslint:disable-next-line: no-suspicious-comment
         // TODO: Hangs on build machine
         if (!isWin32) {
             createLinkedTemplateTest(
-                "tc10",
+                "missing-extra-params",
                 "missing and extra parameters (validation)",
                 {
                     mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
-                    mainParametersFile: "<TC>.parameters.json",
                     mainTemplateExpected: [
                         "Error: Template validation failed: The template parameters 'extraParam' in the parameters file are not valid; they are not present in the original template and can therefore not be provided at deployment time. The only supported parameters for this template are 'intParam, stringParam'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [19,27] [The error occurred in a linked template near here] [1,1]",
                         'Error: The following parameters do not have values: "stringParam" (arm-template (expressions)) [24,17]',
@@ -453,11 +448,10 @@ suite("Linked templates functional tests", () => {
         // TODO: Hangs on build machine
         if (!isWin32) {
             createLinkedTemplateTest(
-                "tc11",
+                "missing-params-no-params-obj",
                 "Missing parameters - no 'parameters' object under linked template parameters",
                 {
                     mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
-                    mainParametersFile: "<TC>.parameters.json",
                     mainTemplateExpected: [
                         'Error: The following parameters do not have values: "intParam", "stringParam" (arm-template (expressions)) [21,33-21,33]',
                         "Warning: The variable 'v1' is never used. (arm-template (expressions)) [10,9-10,13]",
@@ -483,7 +477,7 @@ suite("Linked templates functional tests", () => {
         // TODO: Hangs on build machine
         if (!isWin32) {
             createLinkedTemplateTest(
-                "tc12",
+                "expr-scope",
                 "Verify correct scope of expressions, variables, parameters",
                 {
                     mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
@@ -513,10 +507,10 @@ suite("Linked templates functional tests", () => {
     // TODO: Hangs on build machine
     if (!isWin32) {
         createLinkedTemplateTest(
-            "tc13",
+            "bad-index-in-child",
             "An array index is out of bounds in the child template due to the parameter value passed in",
             {
-                mainTemplateFile: "templates/linkedTemplates/tc13-badarrayindex-in-child/<TC>.json",
+                mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                 mainParametersFile: "<TC>.parameters.json",
                 mainTemplateExpected: [
                     "Error: Template validation failed: The template resource '[variables('arrayVar')[parameters('childIntParam')]]' at line '15' and column '9' is not valid: The language expression property array index '1' is out of bounds.. Please see https://aka.ms/arm-template-expressions for usage details. (arm-template (validation)) [28,27] [The error occurred in a linked template near here] [15,9]",
@@ -524,8 +518,8 @@ suite("Linked templates functional tests", () => {
                 waitForDiagnosticSubstring: "property array index",
                 linkedTemplates: [
                     {
-                        parentTemplateFile: "templates/linkedTemplates/tc13-badarrayindex-in-child/<TC>.json",
-                        linkedTemplateFile: "templates/linkedTemplates/tc13-badarrayindex-in-child/subfolder/child13.json",
+                        parentTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
+                        linkedTemplateFile: "templates/linkedTemplates/<TC>/subfolder/child13.json",
                         expected: [
                             // Should be no errors in the child because it's loaded without the context of the parameters passed in
                             // from the parent.
@@ -540,11 +534,10 @@ suite("Linked templates functional tests", () => {
     // TODO: Hangs on build machine?
     if (!isWin32) {
         createLinkedTemplateTest(
-            "tc14",
+            "contentVersion",
             "Incorrect content version specified",
             {
-                mainTemplateFile: "templates/linkedTemplates/tc14-contentVersion/<TC>.json",
-                mainParametersFile: "<TC>.parameters.json",
+                mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                 mainTemplateExpected: [
                     // tslint:disable-next-line: no-suspicious-comment
                     // TODO: See 1144 - line/col in the additional info location is incorrect
@@ -553,8 +546,8 @@ suite("Linked templates functional tests", () => {
                 waitForDiagnosticSubstring: "The content version", // needed?
                 linkedTemplates: [
                     {
-                        parentTemplateFile: "templates/linkedTemplates/tc14-contentVersion/<TC>.json",
-                        linkedTemplateFile: "templates/linkedTemplates/tc14-contentVersion/subfolder/child14.json",
+                        parentTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
+                        linkedTemplateFile: "templates/linkedTemplates/<TC>/subfolder/child14.json",
                         expected: [
                         ]
                     }
@@ -562,4 +555,79 @@ suite("Linked templates functional tests", () => {
             }
         );
     }
+
+    suite("uri", () => {
+        suite("relative to deployment() function", () => {
+            // tslint:disable-next-line: no-suspicious-comment
+            // TODO: Hangs on build machine?
+            if (!isWin32) {
+                createLinkedTemplateTest(
+                    "uri-deployment-relative",
+                    "uri property with deployment() expression to make the path relative",
+                    {
+                        mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
+                        mainTemplateExpected: [
+                            "Error: Template validation failed: Could not find member 'parameters2' on object of type 'Template'. Path 'parameters2', line 4, position 18. (arm-template (validation)) [17,27-17,27] [The error occurred in a linked template near here] [4,18-4,18]",
+                        ],
+                        waitForDiagnosticSubstring: 'Could not find member',
+                        linkedTemplates: [
+                            {
+                                parentTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
+                                linkedTemplateFile: "templates/linkedTemplates/<TC>/subfolder/child.json",
+                                expected: [
+                                    "Error: Template validation failed: Could not find member 'parameters2' on object of type 'Template'. Path 'parameters2', line 4, position 18. (arm-template (validation)) [4,18-4,18]",
+                                    'Warning: Property name is not allowed by the schema (arm-template (schema)) [4,5-4,18]',
+                                    "Error: Undefined parameter reference: 'p1string' (arm-template (expressions)) [27,38-27,48]",
+                                    "Error: Undefined parameter reference: 'p3string-whoops' (arm-template (expressions)) [26,38-26,55]",
+                                ]
+                            }
+                        ]
+                    }
+                );
+            }
+        });
+
+        // tslint:disable-next-line: no-suspicious-comment
+        // TODO: Hangs
+        /*
+            createLinkedTemplateTest(
+                "uri-not-found",
+                "uri property to location not existing",
+                {
+                    mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
+                    mainTemplateExpected: [
+                    ],
+                    linkedTemplates: [
+                        {
+                            parentTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
+                            linkedTemplateFile: "templates/linkedTemplates/<TC>/subfolder/child.json",
+                            expected: [
+                            ]
+                        }
+                    ]
+                }
+            );
+        */
+
+        // tslint:disable-next-line: no-suspicious-comment
+        // TODO: not consistently working
+        /*
+        if (!isWin32) {
+            createLinkedTemplateTest(
+                "uri-missing-params",
+                "absolute URI with missing parameters",
+                {
+                    mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
+                    mainTemplateExpected: [
+                        'Error: The following parameters do not have values: "p2string" (arm-template (expressions))'
+                    ],
+                    linkedTemplates: [
+                        // Can't verify the child template because it doesn't go through schema/etc validation
+                        // (although we could filter only the diagnostics sources we want)
+                    ]
+                }
+            );
+        }*/
+
+    });
 });
