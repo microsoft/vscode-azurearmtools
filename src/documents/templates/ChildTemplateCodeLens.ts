@@ -265,16 +265,18 @@ function addSelectParamFileLensIfNeeded(
     scope: TemplateScope,
     span: Span
 ): void {
-    if (!fullValidationStatus.fullValidationEnabled) {
-        lenses.push(
-            new SelectParameterFileCodeLens(
-                scope,
-                span,
-                topLevelParameterValuesProvider?.parameterFileUri,
-                {
-                    isForLinkedOrNestedTemplate: true,
-                    fullValidationStatus
-                })
-        );
+    if (ext.languageServerState === LanguageServerState.Running) {
+        if (!fullValidationStatus.fullValidationEnabled) {
+            lenses.push(
+                new SelectParameterFileCodeLens(
+                    scope,
+                    span,
+                    topLevelParameterValuesProvider?.parameterFileUri,
+                    {
+                        isForLinkedOrNestedTemplate: true,
+                        fullValidationStatus
+                    })
+            );
+        }
     }
 }
