@@ -268,7 +268,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     private getDisabledValidationInfoWarnings(): Issue[] {
         const issues: Issue[] = [];
 
-        if (!this.templateGraph?.fullValidationStatus.fullValidationEnabled) {
+        if (this.templateGraph && !this.templateGraph.fullValidationStatus.fullValidationEnabled) {
             for (const scope of this.allScopes) {
                 if (scope instanceof NestedTemplateOuterScope
                     || scope instanceof NestedTemplateInnerScope

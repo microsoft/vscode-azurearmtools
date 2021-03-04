@@ -100,7 +100,9 @@ export function startArmLanguageServerInBackground(): void {
 
                     await startLanguageClient(serverDllPath, dotnetExePath);
 
-                    ext.languageServerState = LanguageServerState.Running;
+                    ext.languageServerState = haveFirstSchemasFinishedLoading ?
+                        LanguageServerState.Running :
+                        LanguageServerState.LoadingSchemas;
                 } catch (error) {
                     ext.languageServerStartupError = `${parseError(error).message}: ${error instanceof Error ? error.stack : 'no stack'}`;
                     ext.languageServerState = LanguageServerState.Failed;
