@@ -107,7 +107,7 @@ suite("Linked templates functional tests", () => {
         }
     ): void {
         testWithLanguageServerAndRealFunctionMetadata(
-            `${testCase} ${testDescription}`,
+            `${testCase}/${testDescription}`,
             async () => {
                 const mainTemplatePath = resolveInTestFolder(tcString(options.mainTemplateFile, testCase));
                 assert(mainTemplatePath);
@@ -205,8 +205,8 @@ suite("Linked templates functional tests", () => {
         // tslint:disable-next-line: no-suspicious-comment
         /* TODO: Fix case sensitivity on win32:
             [
-            +   'Error: Template validation failed: Linked template file not found: "d:\\a\\1\\s\\test\\templates\\linkedTemplates\\tc02\\subfolder\\child.json" (arm-template (validation)) [12,27]'
-            -   'Error: Template validation failed: Linked template file not found: "D:\\a\\1\\s\\test\\templates\\linkedTemplates\\tc02\\subfolder\\child.json" (arm-template (validation)) [12,27]'
+            +   'Error: Template validation failed: Linked template file not found: "d:\\a\\1\\s\\test\\templates\\linkedTemplates\\tc02\\subfolder\\child.json" (arm-template (validation)) [12,13]'
+            -   'Error: Template validation failed: Linked template file not found: "D:\\a\\1\\s\\test\\templates\\linkedTemplates\\tc02\\subfolder\\child.json" (arm-template (validation)) [12,13]'
             ]
         */
 
@@ -317,7 +317,7 @@ suite("Linked templates functional tests", () => {
                 //   to wait
                 waitForDiagnosticSubstring: "Template parameter JToken type is not valid",
                 mainTemplateExpected: [
-                    "Error: Template validation failed: Template parameter JToken type is not valid. Expected 'Integer'. Actual 'String'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [15,27] [The error occurred in a linked template near here] [12,21]"
+                    "Error: Template validation failed: Template parameter JToken type is not valid. Expected 'Integer'. Actual 'String'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [15,13] [The error occurred in a linked template near here] [12,21]"
                 ],
                 linkedTemplates: [
                     {
@@ -349,7 +349,7 @@ suite("Linked templates functional tests", () => {
                         parentTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                         linkedTemplateFile: "templates/linkedTemplates/<TC>/subfolder/child1.json",
                         expected: [
-                            "Error: Template validation failed: Template parameter JToken type is not valid. Expected 'Integer'. Actual 'String'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [14,27] [The error occurred in a linked template near here] [12,21]",
+                            "Error: Template validation failed: Template parameter JToken type is not valid. Expected 'Integer'. Actual 'String'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [14,13] [The error occurred in a linked template near here] [12,21]",
                             "Warning: The variable 'unusedVar' is never used. (arm-template (expressions)) [5,9]",
                         ],
                         waitForDiagnosticSubstring: "Template validation failed"
@@ -375,7 +375,7 @@ suite("Linked templates functional tests", () => {
                     linkedTemplateFile: "templates/linkedTemplates/<TC>/subfolder/child1.json",
                     expected: [
                         "Warning: The variable 'unusedVar' is never used. (arm-template (expressions)) [5,9]",
-                        "Error: Template validation failed: Template parameter JToken type is not valid. Expected 'Integer'. Actual 'String'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [14,27] [The error occurred in a linked template near here] [12,21]",
+                        "Error: Template validation failed: Template parameter JToken type is not valid. Expected 'Integer'. Actual 'String'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [14,13] [The error occurred in a linked template near here] [12,21]",
                     ]
                 },
                 {
@@ -397,7 +397,7 @@ suite("Linked templates functional tests", () => {
             mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
             mainParametersFile: "<TC>.parameters.json",
             mainTemplateExpected: [
-                "Error: Template validation failed: Template parameter JToken type is not valid. Expected 'Integer'. Actual 'String'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [31,27] [The error occurred in a linked template near here] [5,21]",
+                "Error: Template validation failed: Template parameter JToken type is not valid. Expected 'Integer'. Actual 'String'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [31,13] [The error occurred in a linked template near here] [5,21]",
             ],
             waitForDiagnosticSubstring: "Template validation failed",
             linkedTemplates: [
@@ -423,7 +423,7 @@ suite("Linked templates functional tests", () => {
                 {
                     mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                     mainTemplateExpected: [
-                        "Error: Template validation failed: The template parameters 'extraParam' in the parameters file are not valid; they are not present in the original template and can therefore not be provided at deployment time. The only supported parameters for this template are 'intParam, stringParam'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [19,27] [The error occurred in a linked template near here] [1,1]",
+                        "Error: Template validation failed: The template parameters 'extraParam' in the parameters file are not valid; they are not present in the original template and can therefore not be provided at deployment time. The only supported parameters for this template are 'intParam, stringParam'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [19,13] [The error occurred in a linked template near here] [1,1]",
                         'Error: The following parameters do not have values: "stringParam" (arm-template (expressions)) [24,17]',
 
                         "Warning: The variable 'v3' is never used. (arm-template (expressions)) [12,9]",
@@ -513,7 +513,7 @@ suite("Linked templates functional tests", () => {
                 mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                 mainParametersFile: "<TC>.parameters.json",
                 mainTemplateExpected: [
-                    "Error: Template validation failed: The template resource '[variables('arrayVar')[parameters('childIntParam')]]' at line '15' and column '9' is not valid: The language expression property array index '1' is out of bounds.. Please see https://aka.ms/arm-template-expressions for usage details. (arm-template (validation)) [28,27] [The error occurred in a linked template near here] [15,9]",
+                    "Error: Template validation failed: The template resource '[variables('arrayVar')[parameters('childIntParam')]]' at line '15' and column '9' is not valid: The language expression property array index '1' is out of bounds.. Please see https://aka.ms/arm-template-expressions for usage details. (arm-template (validation)) [28,13] [The error occurred in a linked template near here] [15,9]",
                 ],
                 waitForDiagnosticSubstring: "property array index",
                 linkedTemplates: [
@@ -541,7 +541,7 @@ suite("Linked templates functional tests", () => {
                 mainTemplateExpected: [
                     // tslint:disable-next-line: no-suspicious-comment
                     // TODO: See 1144 - line/col in the additional info location is incorrect
-                    "Error: Template validation failed: The content version contained in the template '1.2.3.4' does not match the content version found in the deployment object's TemplateLink property '1.2.3.5'. Please see https://aka.ms/arm-deploy for usage details. (arm-template (validation)) [40,27] [The error occurred in a linked template near here] [40,27]",
+                    "Error: Template validation failed: The content version contained in the template '1.2.3.4' does not match the content version found in the deployment object's TemplateLink property '1.2.3.5'. Please see https://aka.ms/arm-deploy for usage details. (arm-template (validation)) [40,13] [The error occurred in a linked template near here] [40,27]",
                 ],
                 waitForDiagnosticSubstring: "The content version", // needed?
                 linkedTemplates: [
@@ -567,7 +567,7 @@ suite("Linked templates functional tests", () => {
                     {
                         mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                         mainTemplateExpected: [
-                            "Error: Template validation failed: Could not find member 'parameters2' on object of type 'Template'. Path 'parameters2', line 4, position 18. (arm-template (validation)) [17,27-17,27] [The error occurred in a linked template near here] [4,18-4,18]",
+                            "Error: Template validation failed: Could not find member 'parameters2' on object of type 'Template'. Path 'parameters2', line 4, position 18. (arm-template (validation)) [17,13-17,28] [The error occurred in a linked template near here] [4,18-4,18]",
                         ],
                         waitForDiagnosticSubstring: 'Could not find member',
                         linkedTemplates: [
