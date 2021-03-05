@@ -423,7 +423,7 @@ suite("Linked templates functional tests", () => {
                 {
                     mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                     mainTemplateExpected: [
-                        "Error: Template validation failed: The template parameters 'extraParam' in the parameters file are not valid; they are not present in the original template and can therefore not be provided at deployment time. The only supported parameters for this template are 'intParam, stringParam'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [19,13] [The error occurred in a linked template near here] [1,1]",
+                        "Error: Template validation failed: The template parameters 'extraParam' are not valid; they are not present in the original template and can therefore not be provided at deployment time. The only supported parameters for this template are 'intParam, stringParam'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [19,13] [The error occurred in a linked template near here] [1,1]",
                         'Error: The following parameters do not have values: "stringParam" (arm-template (expressions)) [24,17]',
 
                         "Warning: The variable 'v3' is never used. (arm-template (expressions)) [12,9]",
@@ -541,7 +541,7 @@ suite("Linked templates functional tests", () => {
                 mainTemplateExpected: [
                     // tslint:disable-next-line: no-suspicious-comment
                     // TODO: See 1144 - line/col in the additional info location is incorrect
-                    "Error: Template validation failed: The content version contained in the template '1.2.3.4' does not match the content version found in the deployment object's TemplateLink property '1.2.3.5'. Please see https://aka.ms/arm-deploy for usage details. (arm-template (validation)) [40,13] [The error occurred in a linked template near here] [40,27]",
+                    "Error: Template validation failed: The content version contained in the template '1.2.3.4' does not match the content version found in the deployment object's TemplateLink property '1.2.3.5'. Please see https://aka.ms/arm-deploy for usage details. (arm-template (validation)) [40,13] [The error occurred in a linked template near here] [3,31]",
                 ],
                 waitForDiagnosticSubstring: "The content version", // needed?
                 linkedTemplates: [
