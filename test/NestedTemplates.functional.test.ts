@@ -56,7 +56,7 @@ suite("Nested templates functional tests", () => {
             },
             {},
             [
-                "Error: Template validation failed: Template parameter JToken type is not valid. Expected 'Integer'. Actual 'String'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [12,21-12,21] [The error occurred in a nested template near here] [26,19-26,19]",
+                "Error: Template validation failed: Template parameter JToken type is not valid. Expected 'Integer'. Actual 'String'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [12,7-12,22] [The error occurred in a nested template near here] [26,19-26,19]",
                 "Warning: The parameter 'intParam' is never used. (arm-template (expressions)) [26,13-26,23]",
             ]);
     });
