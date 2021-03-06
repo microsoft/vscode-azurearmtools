@@ -453,7 +453,6 @@ suite("Linked templates functional tests", () => {
                 {
                     mainTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                     mainTemplateExpected: [
-                        'Error: RelativePath for deployment requires an apiVersion of 2020-10-01 or higher (arm-template (expressions)) [17,27-17,39]',
                         'Error: The following parameters do not have values: "intParam", "stringParam" (arm-template (expressions)) [21,33-21,33]',
                         "Warning: The variable 'v1' is never used. (arm-template (expressions)) [10,9-10,13]",
                         "Warning: The variable 'v2' is never used. (arm-template (expressions)) [11,9-11,13]"
@@ -464,7 +463,6 @@ suite("Linked templates functional tests", () => {
                             parentTemplateFile: "templates/linkedTemplates/<TC>/<TC>.json",
                             linkedTemplateFile: "templates/linkedTemplates/<TC>/subfolder/child.json",
                             expected: [
-                                'Error: RelativePath for deployment requires an apiVersion of 2020-10-01 or higher (arm-template (expressions)) [16,27-16,39]',
                                 `${testMessages.linkedTemplateNoValidation("linkedDeployment1")} (arm-template (expressions)) [14,21-14,40]`,
                                 "Warning: The parameter 'intParam' is never used. (arm-template (expressions)) [5,9-5,19]",
                                 "Warning: The parameter 'stringParam' is never used. (arm-template (expressions)) [8,9-8,22]",
