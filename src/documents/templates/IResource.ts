@@ -26,4 +26,9 @@ export interface IResource {
      * The typeValue of the resource object in the JSON
      */
     resourceTypeValue: Json.StringValue | undefined;
+
+    /**
+     * The JSON object representing this resource
+     */
+    resourceObject: Json.ObjectValue;
 }

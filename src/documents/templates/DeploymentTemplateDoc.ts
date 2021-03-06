@@ -37,6 +37,7 @@ import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSo
 import { getMissingParameterErrors, getParameterValuesCodeActions } from '../parameters/ParameterValues';
 import { SynchronousParameterValuesSourceProvider } from "../parameters/SynchronousParameterValuesSourceProvider";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
+import { analyzeResources } from './analyzeResources';
 import { LinkedTemplateCodeLens, NestedTemplateCodeLens } from './ChildTemplateCodeLens';
 import { ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
 import { getResourcesInfo } from './getResourcesInfo';
@@ -185,6 +186,8 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         }
 
         errors.push(...this.getMissingParameterErrors());
+        errors.push(...this.getResourceErrors());
+
         return errors;
     }
 
@@ -383,6 +386,17 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         }
 
         return errors;
+    }
+
+    private getResourceErrors(): Issue[] {
+        const errors: Issue[] = [];
+
+        for (const scope of this.uniqueScopes) {
+            errors.push(...analyzeResources(scope));
+        }
+
+        return errors;
+
     }
 
     //#region Telemetry

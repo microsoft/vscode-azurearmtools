@@ -28,5 +28,8 @@ export enum IssueKind {
 
     // Parameter file issues
     params_templateFileNotFound = "params_templateFileNotFound",
-    params_missingRequiredParam = "params_missingRequiredParam"
+    params_missingRequiredParam = "params_missingRequiredParam",
+
+    // Resource issues
+    errResRelativePathApiVersion = 'errResRelativePathApiVersion'
 }

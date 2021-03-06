@@ -34,11 +34,13 @@ export class Issue {
         assert(_message !== "", "_message must not be empty.");
 
         switch (kind) {
+            // Information
             case IssueKind.cannotValidateLinkedTemplate:
             case IssueKind.cannotValidateNestedTemplate:
                 this.severity = IssueSeverity.Information;
                 break;
 
+            // Warnings
             case IssueKind.inaccessibleNestedScopeMembers:
             case IssueKind.incorrectScopeWarning:
             case IssueKind.unusedParam:
@@ -46,9 +48,9 @@ export class Issue {
             case IssueKind.unusedUdfParam:
             case IssueKind.unusedVar:
                 this.severity = IssueSeverity.Warning;
-
                 break;
 
+            // Errors
             case IssueKind.badArgsCount:
             case IssueKind.badFuncContext:
             case IssueKind.params_missingRequiredParam:
@@ -62,6 +64,7 @@ export class Issue {
             case IssueKind.undefinedVar:
             case IssueKind.undefinedVarProp:
             case IssueKind.varInUdf:
+            case IssueKind.errResRelativePathApiVersion:
                 this.severity = IssueSeverity.Error;
                 break;
 

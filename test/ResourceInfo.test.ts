@@ -6,9 +6,9 @@
 // tslint:disable: max-func-body-length object-literal-key-quotes
 
 import * as assert from "assert";
-import { getResourceInfo, getResourcesInfo, ResourceInfo } from "../../extension.bundle";
-import { IPartialDeploymentTemplate } from "../support/diagnostics";
-import { parseTemplate } from "../support/parseTemplate";
+import { getResourceInfo, getResourcesInfo, ResourceInfo } from "../extension.bundle";
+import { IPartialDeploymentTemplate } from "./support/diagnostics";
+import { parseTemplate } from "./support/parseTemplate";
 
 suite("ResourceInfo", () => {
 
