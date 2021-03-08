@@ -9,8 +9,10 @@ import * as path from 'path';
 import { Diagnostic, Event, EventEmitter, ProgressLocation, Uri, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, ITelemetryContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
+import { diagnosticSources } from '../../test/support/diagnostics';
 import { acquireSharedDotnetInstallation } from '../acquisition/acquireSharedDotnetInstallation';
 import { armTemplateLanguageId, backendValidationDiagnosticsSource, configKeys, configPrefix, downloadDotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName, notifications } from '../constants';
+import { getNormalizedDocumentKey } from '../documents/templates/getNormalizedDocumentKey';
 import { convertDiagnosticUrisToLinkedTemplateSchema, INotifyTemplateGraphArgs, IRequestOpenLinkedFileArgs, onRequestOpenLinkedFile } from '../documents/templates/linkedTemplates/linkedTemplates';
 import { templateDocumentSelector } from '../documents/templates/supported';
 import { ext } from '../extensionVariables';
@@ -22,6 +24,10 @@ import { WrappedErrorHandler } from './WrappedErrorHandler';
 const languageServerDllName = 'Microsoft.ArmLanguageServer.dll';
 const defaultTraceLevel = 'Warning';
 const _notifyTemplateGraphAvailableEmitter: EventEmitter<INotifyTemplateGraphArgs & ITelemetryContext> = new EventEmitter<INotifyTemplateGraphArgs & ITelemetryContext>();
+
+//asdf
+const firstSchemaValidationCompletedForUri: Set<string> = new Set<string>();
+const diagnosticsForTelemetryHandledForUri: Set<string> = new Set<string>();
 
 let haveFirstSchemasStartedLoading: boolean = false;
 let haveFirstSchemasFinishedLoading: boolean = false;
@@ -180,6 +186,8 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
                             convertDiagnosticUrisToLinkedTemplateSchema(d);
                         }
                     }
+
+                    handleTelemetryForDiagnostics(uri, diagnostics);
                     next(uri, diagnostics);
                 }
             }
@@ -366,6 +374,15 @@ function onSchemaValidationNotication(args: notifications.ISchemaValidationNotif
     if (newState === LanguageServerState.LoadingSchemas) {
         showLoadingSchemasProgress();
     }
+
+    if (args.completed) {
+        try {
+            const uri = Uri.parse(args.uri);
+            firstSchemaValidationCompletedForUri.add(getNormalizedDocumentKey(uri));
+        } catch (err) {
+            // Ignore
+        }
+    }
 }
 
 function showLoadingSchemasProgress(): void {
@@ -380,5 +397,26 @@ function showLoadingSchemasProgress(): void {
         ).then(() => {
             isShowingLoadingSchemasProgress = false;
         });
+    }
+}
+
+function handleTelemetryForDiagnostics(uri: Uri, diagnostics: Diagnostic[]): void {
+    const key = getNormalizedDocumentKey(uri);
+    if (!firstSchemaValidationCompletedForUri.has(key)) {
+        return;
+    }
+
+    if (!diagnosticsForTelemetryHandledForUri.has(key)) {
+        diagnosticsForTelemetryHandledForUri.add(key);
+
+        for (const d of diagnostics) {
+            if (d.source === diagnosticSources.schema.name) {
+                if (d.message.match(/must be one of.*Microsoft\./)) {
+                    callWithTelemetryAndErrorHandlingSync('asdf', (context: IActionContext) => {
+                        context.telemetry.properties.asdf = 'asdf';
+                    });
+                }
+            }
+        }
     }
 }
