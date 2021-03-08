@@ -41,7 +41,7 @@ suite("Linked templates regressions", () => {
         });
     });
 
-    suite("Error location inside linked and nested templates", async () => {
+    suite("Error location inside linked and `nested tem`plates", async () => {
         // tslint:disable-next-line: no-suspicious-comment
         // TODO: For some reason, these two tests are failing consistently in the
         // Windows build pipeline, but not locally or on other platforms.
@@ -90,7 +90,7 @@ suite("Linked templates regressions", () => {
                         }
                     },
                     [
-                        "Error: Template validation failed: Template parameter JToken type is not valid. Expected 'String, Uri'. Actual 'Integer'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [9,21-9,21] [The error occurred in a nested template near here] [23,21-23,21]",
+                        "Error: Template validation failed: Template parameter JToken type is not valid. Expected 'String, Uri'. Actual 'Integer'. Please see https://aka.ms/arm-deploy/#parameter-file for usage details. (arm-template (validation)) [9,7-9,22] [The error occurred in a nested template near here] [23,21-23,21]",
                         "Warning: The parameter 'parameter1' is never used. (arm-template (expressions)) [23,13-23,25]"
                     ]
                 );
