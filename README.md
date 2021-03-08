@@ -162,7 +162,7 @@ Linked template support requires that all top-level parameters have a value. Thi
 
 Scenarios supported:
 
-- Relative path (requires apiVersion 2020-10-01 or higher of Microsoft.Resources/deployments):
+- Relative path (requires Microsoft.Resources/deployments apiVersion 2020-06-01 or higher for use in template specs and 2020-10-01 for use in direct deployments):
 
 ```json5
         {
@@ -188,10 +188,13 @@ Scenarios supported:
             "name": "linkedDeployment1",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2020-10-01",
+            "variables": {
+                "templateUri": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/101-vm-simple-windows/azuredeploy.json"
+            },
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/101-vm-simple-windows/azuredeploy.json"
+                    "uri": "[variables('templateUri)]"
                 },
                 "parameters": {
                 }
@@ -209,8 +212,9 @@ Scenarios supported:
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    // When the template is deployed, this will be relative to the deployed location
-                    // While editing, this will be relative to the current template's local file folder
+                    // When the template is deployed from a staging location, the URI be relative to the deployed
+                    // location.
+                    // While editing, this will be relative to the current template's local file folder.
                     "uri": "[uri(deployment().properties.templateLink.uri, 'child.json')]"
                 },
                 "parameters": {
