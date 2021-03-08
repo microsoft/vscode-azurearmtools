@@ -259,6 +259,7 @@ export async function openLinkedTemplateFileCommand(linkedTemplateUri: Uri, acti
                 DialogResponses.yes,
                 DialogResponses.cancel);
             if (response === DialogResponses.yes) {
+                await fse.mkdirs(path.dirname(fsPath));
                 await fse.writeFile(fsPath, "", {});
             } else {
                 return;
