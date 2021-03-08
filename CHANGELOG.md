@@ -6,81 +6,28 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 
 ### Added
 
-- Support for validation of linked templates
-  - How to install:
-    - In VS Code, F1 -> "Extensions: Install from VSIX..." -> browse to VSIX and select -> restart VS Code
-  How to uninstall:
-    - In VS Code, View Extensions -> Find "Azure Resource Manager (ARM) Tools" extension -> click on tools icon -> Install Another Version...
-    - Or wait until the official 0.15.0 release is published, it should automatically upgrade from the alpha
-  - Scenarios supported:
-    - Relative path (requires apiVersion 2020-10-01 or higher of Microsoft.Resources/deployments), e.g.:
-```json
-        {
-            "name": "linkedDeployment1",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2020-10-01",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    // Relative to current template's folder
-                    "relativePath": "child.json"
-                },
-                "parameters": {
-                }
-            }
-        }
-```
-    - Full URI, e.g.:
-```json
-        {
-            "name": "linkedDeployment1",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2020-10-01",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/StephenWeatherford/template-examples/master/linkedTemplates/uri/child.json"
-                },
-                "parameters": {
-                }
-            }
-        }
-```
-    - Relative to deployed template location
-```json
-        {
-            "name": "linkedDeployment1",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2020-10-01",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    // When the template is deployed, this will be relative to the deployed location
-                    // While editing, this will be relative to the current template's local file folder
-                    "uri": "[uri(deployment().properties.templateLink.uri, 'child.json')]"
-                },
-                "parameters": {
-                }
-            }
-        }
-```
-  - Linked template support requires either that all top-level parameters have a value, so either
-    - All top-level parameter definitions has a default value
-    - Or a parameter file is associated with the template
-  - "parametersLink" is not supported (but "parameters" is)
-  - Known Issues:
-    - Schema for Microsoft.Resources/deployments@2020-10-01 is required to successfully deploy to Azure with
-      relativePath, but its schema hasn't been published yet, causing false warnings and degradation of Intellisense.
-      Work-around is to use version 2020-06-01 for editing and switch back to 2020-10-01 before deploying.
-  - Examples of experiences supported:
-    - Validation of linked templates (one level deep)
-    - Parameter validation
+- Support for linked templates validation and parameter completion
+  - `templateLink.relativePath` (requires apiVersion 2020-06-01 or higher of Microsoft.Resources/deployments for template specs, 2020-10-01 for direct deployment)
+  - `templateLink.uri`
+  - `deployment().properties.templateLink.uri`
+  - See README.md for more information
+  - `"parametersLink"` is not supported (but `"parameters"` is)
+  - Experiences include:
+    - Validation of linked templates using the value of parameter values supplied to the template
+    - Parameter validation (missing, extra, type mismatch)
     - "Light-bulb" and snippet support to fill in parameter values for a linked template
     - CTRL-click on relativePath value or click on code lens to navigate to linked template
-  - Enter bugs/issues/suggestions: Easiest is to submit them in our [repo](https://github.com/microsoft/vscode-azurearmtools/milestone/20)
+    - Can navigate to URI-based linked templates
+  - Requires full template validation to be enabled (either all top-level parameters have a default value or else a parameter file is selected)
+- Enable full template validation if all top-level parameters have default values, even if no parameter file has been specified [#1217](https://github.com/microsoft/vscode-azurearmtools/issues/1217)
+- Show warning notification when the azureResourceManagerTools.languageServer.dotnetExePath setting is in use [#1181](https://github.com/microsoft/vscode-azurearmtools/issues/1181), [#1180](https://github.com/microsoft/vscode-azurearmtools/issues/1180)
+- Schemas updated
 
 ### Fixed
-  - Clear notification when the extension is starting up and loading schemas
+  - Clearer notification when the extension is starting up and loading schemas [#463](https://github.com/microsoft/vscode-azurearmtools/issues/463)
+  - Intellisense for AutoScaleSettings recommends "statistics" when it should be "statistic" [#1141](https://github.com/microsoft/vscode-azurearmtools/issues/1141)
+  - Incorrect validation errors in user-defined functions when using recently added builtin functions (createObject etc.) [#1153](https://github.com/microsoft/vscode-azurearmtools/issues/1153)
+
 
 ## Version 0.14.1 (2021-02-05)
 
