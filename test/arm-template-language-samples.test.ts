@@ -39,9 +39,6 @@ suite("arm-template-language-samples", () => {
                 `Warning: Please use https for the schema URL (arm-template (schema))`
             ]);
         testSample("subscription-level.json", [
-            // TODO: top-level metadata
-            // https://github.com/microsoft/vscode-azurearmtools/issues/677
-            `Warning: Property name is not allowed by the schema (arm-template (schema))`
         ]);
         testSample("udf-xmas-tree.json", [
             `Error: Template validation failed: The template function 'storageUri' at line '15' and column '21' is not valid. These function calls are not supported in a function definition: 'reference'. Please see https://aka.ms/arm-template/#functions for usage details. (arm-template (validation))`
