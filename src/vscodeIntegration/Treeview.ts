@@ -109,6 +109,7 @@ const resourceIcons: [string, string][] = [
     ["Microsoft.Network/trafficManagerProfiles", "trafficmanagerprofiles.svg"],
     ["Microsoft.Network/virtualNetworkGateways", "virtualnetworkgateways.svg"],
     ["Microsoft.Network/virtualNetworks", "virtualnetworks.svg"],
+    ["Microsoft.ServiceFabric/clusters", "servicefabric.svg"],
     ["Microsoft.Sql/instancePools", "sqlservers.svg"],
     ["Microsoft.Sql/locations/instanceFailoverGroups", "sqlservers.svg"],
     ["Microsoft.Sql/managedInstances", "sqlservers.svg"],

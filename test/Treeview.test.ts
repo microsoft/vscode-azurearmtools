@@ -746,6 +746,7 @@ suite("TreeView", async (): Promise<void> => {
                         getIconObject("publicip.svg", undefined),
                         getIconObject("publicip.svg", undefined),
                         getIconObject("routetables.svg", undefined),
+                        getIconObject("servicefabric.svg", undefined),
                         getIconObject("trafficmanagerprofiles.svg", undefined),
                         getIconObject("virtualnetworkgateways.svg", undefined),
                         getIconObject("virtualnetworks.svg", undefined),
