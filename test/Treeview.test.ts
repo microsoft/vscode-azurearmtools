@@ -437,6 +437,9 @@ suite("TreeView", async (): Promise<void> => {
                             "type": "Microsoft.Network/virtualNetworks"
                         },
                         {
+                            "type": "Microsoft.ServiceFabric/clusters"
+                        },
+                        {
                             "type": "Microsoft.Sql/instancePools"
                         },
                         {
