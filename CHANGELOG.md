@@ -2,6 +2,12 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.16.0 (2021--)
+
+### Added
+
+- Svg icons for loadbalancer, virtual machine scaleset, and service fabric resources.
+
 ## Version 0.15.0 (2021-03-08)
 
 ### Added
