@@ -62,6 +62,7 @@ const resourceIcons: [string, string][] = [
     ["Microsoft.Automation/automationAccounts/webhooks", "automation.svg"],
     ["Microsoft.Cdn/profiles", "cdnprofiles.svg"],
     ["Microsoft.Compute/virtualMachines", "virtualmachines.svg"],
+    ["Microsoft.Compute/virtualMachineScaleSets", "virtualmachinescalesets.svg"],
     ["Microsoft.Compute/virtualMachines/extensions", "extensions.svg"],
     ["Microsoft.ContainerInstance/containerGroups", "containerinstances.svg"],
     ["Microsoft.DocumentDB/databaseAccounts", "cosmosdb.svg"],

@@ -708,6 +708,7 @@ suite("TreeView", async (): Promise<void> => {
                         getIconObject("automation.svg", undefined),
                         getIconObject("cdnprofiles.svg", undefined),
                         getIconObject("virtualmachines.svg", undefined),
+                        getIconObject("virtualmachinescalesets.svg", undefined),
                         getIconObject("extensions.svg", undefined),
                         getIconObject("containerinstances.svg", undefined),
                         getIconObject("cosmosdb.svg", undefined),
