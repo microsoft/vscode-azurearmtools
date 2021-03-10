@@ -1787,6 +1787,8 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         callWithTelemetryAndErrorHandlingSync("onTemplateGraphAvailable", (actionContext) => {
             actionContext.telemetry.suppressIfSuccessful = true;
 
+            assert(e.fullValidationStatus, "onTemplateGraphAvailable: fullValidationStatus should never be undefined");
+
             const rootTemplateUri = parseUri(e.rootTemplateUri);
             const rootTemplate = this.getOpenedDeploymentTemplate(rootTemplateUri);
 
