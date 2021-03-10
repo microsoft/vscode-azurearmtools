@@ -100,6 +100,7 @@ const resourceIcons: [string, string][] = [
     ["Microsoft.KeyVault/vaults/secrets", "keyvaults.svg"],
     ["Microsoft.Media/mediaServices", "mediaservices.svg"],
     ["Microsoft.Network/azureFirewalls", "firewall.svg"],
+    ["Microsoft.Network/loadBalancers", "loadbalancers.svg"],
     ["Microsoft.Network/networkInterfaces", "nic.svg"],
     ["Microsoft.Network/networkSecurityGroups", "nsg.svg"],
     ["Microsoft.Network/networkSecurityGroups/securityRules", "nsg.svg"],

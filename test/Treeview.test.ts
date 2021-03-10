@@ -410,6 +410,9 @@ suite("TreeView", async (): Promise<void> => {
                             "type": "Microsoft.Network/azureFirewalls"
                         },
                         {
+                            "type": "Microsoft.Network/loadBalancers"
+                        },
+                        {
                             "type": "Microsoft.Network/networkInterfaces"
                         },
                         {
@@ -741,6 +744,7 @@ suite("TreeView", async (): Promise<void> => {
                         getIconObject("applicationinsights.svg", undefined),
                         getIconObject("keyvaults.svg", undefined),
                         getIconObject("keyvaults.svg", undefined),
+                        getIconObject("loadbalancers.svg", undefined),
                         getIconObject("mediaservices.svg", undefined),
                         getIconObject("firewall.svg", undefined),
                         getIconObject("nic.svg", undefined),
