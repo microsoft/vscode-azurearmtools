@@ -9,6 +9,7 @@ import * as assert from "assert";
 import { randomBytes } from "crypto";
 import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
 import { Uri } from "vscode";
+import { parseError } from "vscode-azureextensionui";
 import { DefinitionKind, DeploymentTemplateDoc, getVSCodeRangeFromSpan, Histogram, INamedDefinition, IncorrectArgumentsCountIssue, IParameterDefinition, Issue, IssueKind, IVariableDefinition, Json, LineColPos, ReferenceInVariableDefinitionsVisitor, ReferenceList, Span, TemplateScope, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "../extension.bundle";
 import { diagnosticSources, IDeploymentTemplate, testDiagnostics } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
@@ -1247,7 +1248,8 @@ ${err}`);
             // Just make sure nothing throws
             let modifiedTemplate: string = template;
 
-            for (let i = 0; i < 1000; ++i) {
+            for (let i = 0; i < 100000; ++i) {
+                const previousTemplate = modifiedTemplate;
                 if (modifiedTemplate.length > 0 && Math.random() < 0.5) {
                     // Delete some characters
                     let position = Math.random() * (modifiedTemplate.length - 1);
@@ -1261,7 +1263,21 @@ ${err}`);
                     modifiedTemplate = modifiedTemplate.slice(0, position) + s + modifiedTemplate.slice(position);
                 }
 
-                let dt = await parseTemplate(modifiedTemplate);
+                let dt: DeploymentTemplateDoc;
+                try {
+                    dt = await parseTemplate(modifiedTemplate);
+                } catch (err) {
+                    if (parseError(err).message.includes('Malformed marker')) {
+                        // We messed up the markers in the template (testcase issue).  Revert this modification and try again
+                        // next loop
+                        modifiedTemplate = previousTemplate;
+                        dt = await parseTemplate(modifiedTemplate);
+                    } else {
+                        // Valid failure
+                        throw err;
+                    }
+                }
+
                 findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
                 findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
                 dt.getFunctionCounts();
