@@ -1248,7 +1248,7 @@ ${err}`);
             // Just make sure nothing throws
             let modifiedTemplate: string = template;
 
-            for (let i = 0; i < 100000; ++i) {
+            for (let i = 0; i < 5000; ++i) {
                 const previousTemplate = modifiedTemplate;
                 if (modifiedTemplate.length > 0 && Math.random() < 0.5) {
                     // Delete some characters
