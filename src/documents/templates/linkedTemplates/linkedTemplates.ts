@@ -217,6 +217,8 @@ export function assignTemplateGraphToDeploymentTemplate(
     provideOpenDocuments: IProvideOpenedDocuments
 ): void {
     assert(normalizeUri(parseUri(graph.rootTemplateUri)) === normalizeUri(dt.documentUri));
+    // tslint:disable-next-line: strict-boolean-expressions
+    assert(!!graph.fullValidationStatus, "assignTemplateGraphToDeploymentTemplate: graph.fullValidationStatus should never be undefined");
 
     // Clear current
     const linkedScopes = ofType(dt.allScopes, LinkedTemplateScope);
