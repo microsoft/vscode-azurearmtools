@@ -299,6 +299,9 @@ suite("TreeView", async (): Promise<void> => {
                             "type": "Microsoft.Compute/virtualMachines/extensions"
                         },
                         {
+                            "type": "Microsoft.Compute/virtualMachineScaleSets"
+                        },
+                        {
                             "type": "Microsoft.ContainerInstance/containerGroups"
                         },
                         {
@@ -708,8 +711,8 @@ suite("TreeView", async (): Promise<void> => {
                         getIconObject("automation.svg", undefined),
                         getIconObject("cdnprofiles.svg", undefined),
                         getIconObject("virtualmachines.svg", undefined),
-                        getIconObject("virtualmachinescalesets.svg", undefined),
                         getIconObject("extensions.svg", undefined),
+                        getIconObject("virtualmachinescalesets.svg", undefined),
                         getIconObject("containerinstances.svg", undefined),
                         getIconObject("cosmosdb.svg", undefined),
                         getIconObject("cosmosdb.svg", undefined),
@@ -745,19 +748,19 @@ suite("TreeView", async (): Promise<void> => {
                         getIconObject("applicationinsights.svg", undefined),
                         getIconObject("keyvaults.svg", undefined),
                         getIconObject("keyvaults.svg", undefined),
-                        getIconObject("loadbalancers.svg", undefined),
                         getIconObject("mediaservices.svg", undefined),
                         getIconObject("firewall.svg", undefined),
+                        getIconObject("loadbalancers.svg", undefined),
                         getIconObject("nic.svg", undefined),
                         getIconObject("nsg.svg", undefined),
                         getIconObject("nsg.svg", undefined),
                         getIconObject("publicip.svg", undefined),
                         getIconObject("publicip.svg", undefined),
                         getIconObject("routetables.svg", undefined),
-                        getIconObject("servicefabric.svg", undefined),
                         getIconObject("trafficmanagerprofiles.svg", undefined),
                         getIconObject("virtualnetworkgateways.svg", undefined),
                         getIconObject("virtualnetworks.svg", undefined),
+                        getIconObject("servicefabric.svg", undefined),
                         getIconObject("sqlservers.svg", undefined),
                         getIconObject("sqlservers.svg", undefined),
                         getIconObject("sqlservers.svg", undefined),
