@@ -299,6 +299,9 @@ suite("TreeView", async (): Promise<void> => {
                             "type": "Microsoft.Compute/virtualMachines/extensions"
                         },
                         {
+                            "type": "Microsoft.Compute/virtualMachineScaleSets"
+                        },
+                        {
                             "type": "Microsoft.ContainerInstance/containerGroups"
                         },
                         {
@@ -410,6 +413,9 @@ suite("TreeView", async (): Promise<void> => {
                             "type": "Microsoft.Network/azureFirewalls"
                         },
                         {
+                            "type": "Microsoft.Network/loadBalancers"
+                        },
+                        {
                             "type": "Microsoft.Network/networkInterfaces"
                         },
                         {
@@ -435,6 +441,9 @@ suite("TreeView", async (): Promise<void> => {
                         },
                         {
                             "type": "Microsoft.Network/virtualNetworks"
+                        },
+                        {
+                            "type": "Microsoft.ServiceFabric/clusters"
                         },
                         {
                             "type": "Microsoft.Sql/instancePools"
@@ -703,6 +712,7 @@ suite("TreeView", async (): Promise<void> => {
                         getIconObject("cdnprofiles.svg", undefined),
                         getIconObject("virtualmachines.svg", undefined),
                         getIconObject("extensions.svg", undefined),
+                        getIconObject("virtualmachinescalesets.svg", undefined),
                         getIconObject("containerinstances.svg", undefined),
                         getIconObject("cosmosdb.svg", undefined),
                         getIconObject("cosmosdb.svg", undefined),
@@ -740,6 +750,7 @@ suite("TreeView", async (): Promise<void> => {
                         getIconObject("keyvaults.svg", undefined),
                         getIconObject("mediaservices.svg", undefined),
                         getIconObject("firewall.svg", undefined),
+                        getIconObject("loadbalancers.svg", undefined),
                         getIconObject("nic.svg", undefined),
                         getIconObject("nsg.svg", undefined),
                         getIconObject("nsg.svg", undefined),
@@ -749,6 +760,7 @@ suite("TreeView", async (): Promise<void> => {
                         getIconObject("trafficmanagerprofiles.svg", undefined),
                         getIconObject("virtualnetworkgateways.svg", undefined),
                         getIconObject("virtualnetworks.svg", undefined),
+                        getIconObject("servicefabric.svg", undefined),
                         getIconObject("sqlservers.svg", undefined),
                         getIconObject("sqlservers.svg", undefined),
                         getIconObject("sqlservers.svg", undefined),
