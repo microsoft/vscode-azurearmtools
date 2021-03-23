@@ -580,7 +580,7 @@ suite("TemplatePositionContext.completions", () => {
             suite("Variable value with array nested in object", () => {
                 test("variables('v1').a.b.c", async () => {
                     // Shouldn't throw - see https://github.com/microsoft/vscode-azurearmtools/issues/441
-                    await parseTemplate(
+                    parseTemplate(
                         {
                             "variables": {
                                 "v1": {
@@ -625,7 +625,7 @@ suite("TemplatePositionContext.completions", () => {
 
                         templateWithReplacement = stringify(templateWithReplacement);
                         const template = templateWithReplacement.replace(/TESTEXPRESSION/, expression);
-                        const { dt, markers: { cursor, replstart } } = await parseTemplateWithMarkers(template);
+                        const { dt, markers: { cursor, replstart } } = parseTemplateWithMarkers(template);
                         // tslint:disable-next-line: strict-boolean-expressions
                         assert(!!replstart!, "Didn't find <!replstart!> in test expression");
                         // tslint:disable-next-line: strict-boolean-expressions

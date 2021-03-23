@@ -28,7 +28,7 @@ suite("parameterFileGeneration tests", () => {
                     ],
                     parameters: <{ [key: string]: IDeploymentParameterDefinition }>parameters
                 };
-                const dt = await parseTemplate(template);
+                const dt = parseTemplate(template);
                 const paramFile = createParameterFileContents(dt.topLevelScope, 4, onlyRequiredParams);
                 assert.equal(paramFile, expectedContents);
             });
@@ -63,7 +63,7 @@ suite("parameterFileGeneration tests", () => {
                 template.parameters![parameterName] = <IDeploymentParameterDefinition>parameterDefinition;
 
                 const templateStringIndent4 = JSON.stringify(template, null, 4);
-                const dt = await parseTemplate(templateStringIndent4);
+                const dt = parseTemplate(templateStringIndent4);
                 const foundDefinition = dt.topLevelScope.getParameterDefinition(parameterName);
                 assert(foundDefinition);
                 // tslint:disable-next-line:no-non-null-assertion

@@ -25,7 +25,7 @@ suite("dependsOn completions", () => {
         }
     ): void {
         test(testName, async () => {
-            const { dt, markers: { cursor, replaceStart } } = await parseTemplateWithMarkers(options.template);
+            const { dt, markers: { cursor, replaceStart } } = parseTemplateWithMarkers(options.template);
             assert(cursor, "Missing <!cursor!> in testcase template");
             const pc = dt.getContextFromDocumentCharacterIndex(cursor.index, undefined);
             const { items: completions } = await pc.getCompletionItems(options.triggerCharacter, 4);

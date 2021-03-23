@@ -123,7 +123,7 @@ suite("User functions", () => {
                 ]
             };
 
-            const dt = await parseTemplate(template, [
+            const dt = parseTemplate(template, [
                 "Error: Undefined parameter reference: 'number'"
             ]);
             assert.equal(0, dt.topLevelScope.namespaceDefinitions.length);
@@ -153,7 +153,7 @@ suite("User functions", () => {
                 }
             ]`;
 
-            const dt = await parseTemplate(template, [
+            const dt = parseTemplate(template, [
             ]);
             assert.equal(0, dt.topLevelScope.namespaceDefinitions.length);
         });
@@ -188,7 +188,7 @@ suite("User functions", () => {
                 }]
             };
 
-            await parseTemplate(template, [
+            parseTemplate(template, [
                 "Warning: The parameter 'param1' is never used.",
                 'Warning: The user-defined function \'udf.(none)\' is never used.'
             ]);
@@ -218,7 +218,7 @@ suite("User functions", () => {
                 "resources": []
             };
 
-            await parseTemplate(template, [
+            parseTemplate(template, [
                 'Warning: The user-defined function \'(none).odd\' is never used.'
             ]);
         });
@@ -252,7 +252,7 @@ suite("User functions", () => {
                 }]
             };
 
-            await parseTemplate(template, [
+            parseTemplate(template, [
                 "Warning: The parameter 'param1' is never used.",
                 'Warning: The user-defined function \'(none).odd\' is never used.'
             ]);
@@ -283,7 +283,7 @@ suite("User functions", () => {
             }];
 
             // tslint:disable-next-line:no-any
-            const dt = await parseTemplate(<any>template, [
+            const dt = parseTemplate(<any>template, [
             ]);
             assert.equal(0, dt.topLevelScope.namespaceDefinitions.length);
         });
@@ -312,7 +312,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, []);
+            parseTemplate(template, []);
         });
 
         test("function definition with local parameter reference in output", async () => {
@@ -340,7 +340,7 @@ suite("User functions", () => {
                 ]
             };
 
-            await parseTemplate(template, [
+            parseTemplate(template, [
                 'Warning: The user-defined function \'udf.odd\' is never used.'
             ]);
         });
@@ -372,7 +372,7 @@ suite("User functions", () => {
                 ]
             };
 
-            const dt = await parseTemplate(template);
+            const dt = parseTemplate(template);
             assert.equal(dt.topLevelScope.parameterDefinitions.length, 0);
             assert(!dt.topLevelScope.getParameterDefinition('notfound'));
             assert.equal(dt.topLevelScope.namespaceDefinitions.length, 1);
@@ -406,7 +406,7 @@ suite("User functions", () => {
                 }]
             };
 
-            await parseTemplate(template, [
+            parseTemplate(template, [
                 'Warning: The user-defined function \'udf.odd\' is never used.'
             ]);
         });
@@ -440,7 +440,7 @@ suite("User functions", () => {
                 }]
             };
 
-            await parseTemplate(
+            parseTemplate(
                 template,
                 [
                     "Error: Undefined parameter reference: 'outerParam'"
@@ -477,7 +477,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(
+            parseTemplate(
                 template,
                 [
                     "Error: User functions cannot reference variables"
@@ -516,7 +516,7 @@ suite("User functions", () => {
                 }]
             };
 
-            await parseTemplate(
+            parseTemplate(
                 template,
                 [
                     "Error: Undefined parameter reference: 'outerParam'"
@@ -549,7 +549,7 @@ suite("User functions", () => {
                 }]
             };
 
-            await parseTemplate(template, [
+            parseTemplate(template, [
                 'Warning: The user-defined function \'udf.odd\' is never used.'
             ]);
         });
@@ -584,7 +584,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, []);
+            parseTemplate(template, []);
         });
 
         test("Calling function with no parameters", async () => {
@@ -613,7 +613,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, []);
+            parseTemplate(template, []);
         });
 
         test("Calling function with no parameters, with extra arg", async () => {
@@ -642,7 +642,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, [
+            parseTemplate(template, [
                 'Error: The function \'udf.nothing\' takes 0 arguments.'
             ]);
         });
@@ -669,7 +669,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, [
+            parseTemplate(template, [
                 'Error: Unrecognized function name \'boo\' in user-defined namespace \'udf\'.',
                 'Warning: The user-defined function \'udf.hoo\' is never used.'
             ]);
@@ -697,7 +697,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, [
+            parseTemplate(template, [
                 'Error: Unrecognized user-defined function namespace \'ufo\'.',
                 'Warning: The user-defined function \'udf.boo\' is never used.'
             ]);
@@ -725,7 +725,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, [
+            parseTemplate(template, [
                 'Error: Missing function argument list.'
             ]);
         });
@@ -752,7 +752,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, [
+            parseTemplate(template, [
                 'Error: Unrecognized user-defined function namespace \'ufo\'.',
                 'Error: Expected a right parenthesis (\')\').',
                 'Warning: The user-defined function \'udf.boo\' is never used.'
@@ -809,7 +809,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, []);
+            parseTemplate(template, []);
         });
 
         test("Calling function with one parameter", async () => {
@@ -844,7 +844,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, []);
+            parseTemplate(template, []);
         });
 
         test("Calling function with one parameter, only giving one argument", async () => {
@@ -879,7 +879,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, [
+            parseTemplate(template, [
                 "Error: The function 'udf.odd' takes 1 argument."
             ]);
         });
@@ -916,7 +916,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, [
+            parseTemplate(template, [
                 "Error: The function 'udf.odd' takes 1 argument."
             ]);
         });
@@ -954,7 +954,7 @@ suite("User functions", () => {
                 }]
             };
 
-            await parseTemplate(template, []);
+            parseTemplate(template, []);
         });
 
         test("Calling function with two parameters", async () => {
@@ -990,7 +990,7 @@ suite("User functions", () => {
                 }]
             };
 
-            await parseTemplate(template, []);
+            parseTemplate(template, []);
         });
 
         test("Namespaces are case insensitive", async () => {
@@ -1015,7 +1015,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, []);
+            parseTemplate(template, []);
         });
 
         test("Function names are case insensitive", async () => {
@@ -1040,7 +1040,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, []);
+            parseTemplate(template, []);
         });
 
         // CONSIDER: Give better error message.  Right now we get this (from backend validation):
@@ -1078,7 +1078,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, [
+            parseTemplate(template, [
                 'Error: Unrecognized user-defined function namespace \'udf\'.'
             ]);
         });
@@ -1105,7 +1105,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, []);
+            parseTemplate(template, []);
         });
 
         test("Calling user function with namespace name same as built-in function", async () => {
@@ -1130,7 +1130,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, []);
+            parseTemplate(template, []);
 
         });
 
@@ -1156,7 +1156,7 @@ suite("User functions", () => {
                 }
             };
 
-            await parseTemplate(template, []);
+            parseTemplate(template, []);
         });
 
     });
@@ -1166,131 +1166,131 @@ suite("User functions", () => {
 
         suite("Find parameter references", () => {
             test("At reference to top-level parameter", async () => {
-                const { dt, markers: { apiVersionDef, apiVersionReference } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+                const { dt, markers: { apiVersionDef, apiVersionReference } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "apiVersion" inside resources
-                await testGetReferences(dt, apiVersionReference.index, [apiVersionReference.index, apiVersionDef.index]);
+                await testGetReferences(dt, apiVersionReference.index, undefined, [apiVersionReference.index, apiVersionDef.index]);
             });
 
             test("At definition of top-level parameter", async () => {
-                const { dt, markers: { apiVersionDef, apiVersionReference } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+                const { dt, markers: { apiVersionDef, apiVersionReference } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition of "apiVersion" parameter
-                await testGetReferences(dt, apiVersionDef.index, [apiVersionDef.index, apiVersionReference.index]);
+                await testGetReferences(dt, apiVersionDef.index, undefined, [apiVersionDef.index, apiVersionReference.index]);
             });
 
             test("At reference to user function parameter", async () => {
-                const { dt, markers: { udfyearReference, udfyearDefinition } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+                const { dt, markers: { udfyearReference, udfyearDefinition } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "year" inside user function output
-                await testGetReferences(dt, udfyearReference.index, [udfyearReference.index, udfyearDefinition.index]);
+                await testGetReferences(dt, udfyearReference.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
             });
 
             test("At definition of user function parameter", async () => {
-                const { dt, markers: { udfyearReference, udfyearDefinition } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+                const { dt, markers: { udfyearReference, udfyearDefinition } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition of "year" inside user function
-                await testGetReferences(dt, udfyearDefinition.index, [udfyearReference.index, udfyearDefinition.index]);
+                await testGetReferences(dt, udfyearDefinition.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
             });
 
             test("At reference to parameter in user function only finds UDF scope parameter, not top-level param", async () => {
-                const { dt, markers: { udfyearReference, udfyearDefinition } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+                const { dt, markers: { udfyearReference, udfyearDefinition } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "year" inside user function output
-                await testGetReferences(dt, udfyearReference.index, [udfyearReference.index, udfyearDefinition.index]);
+                await testGetReferences(dt, udfyearReference.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
             });
 
             test("At definition to parameter in user function only finds UDF scope parameter, not top-level param", async () => {
-                const { dt, markers: { udfyearReference, udfyearDefinition } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+                const { dt, markers: { udfyearReference, udfyearDefinition } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition of "year" inside user function
-                await testGetReferences(dt, udfyearDefinition.index, [udfyearReference.index, udfyearDefinition.index]);
+                await testGetReferences(dt, udfyearDefinition.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
             });
 
             test("At reference to top-level parameter only finds top-level parameter definition, not param in user function", async () => {
-                const { dt, markers: { udfyearReference, udfyearDefinition } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+                const { dt, markers: { udfyearReference, udfyearDefinition } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "year" inside user function output
-                await testGetReferences(dt, udfyearReference.index, [udfyearReference.index, udfyearDefinition.index]);
+                await testGetReferences(dt, udfyearReference.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
             });
         });
 
         suite("UDF Find variable references", () => {
             test("At reference to variable", async () => {
-                const { dt, markers: { var1Definition, var1Reference1, var1Reference2 } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+                const { dt, markers: { var1Definition, var1Reference1, var1Reference2 } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "var1" inside var2
-                await testGetReferences(dt, var1Reference1.index, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
+                await testGetReferences(dt, var1Reference1.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
 
                 // Cursor at reference to "var1" inside outputs2
-                await testGetReferences(dt, var1Reference2.index, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
+                await testGetReferences(dt, var1Reference2.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
             });
 
             test("Deeply nested", async () => {
-                const { dt, markers: { var1Definition, var1Reference1, var1Reference2 } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+                const { dt, markers: { var1Definition, var1Reference1, var1Reference2 } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "var1" inside var2
-                await testGetReferences(dt, var1Reference1.index, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
+                await testGetReferences(dt, var1Reference1.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
 
                 // Cursor at reference to "var1" inside outputs2
-                await testGetReferences(dt, var1Reference2.index, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
+                await testGetReferences(dt, var1Reference2.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
             });
 
             test("At definition of variable", async () => {
-                const { dt, markers: { var1Definition, var1Reference1, var1Reference2 } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+                const { dt, markers: { var1Definition, var1Reference1, var1Reference2 } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition to "var1" variable
-                await testGetReferences(dt, var1Definition.index, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
+                await testGetReferences(dt, var1Definition.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
             });
         });
 
         suite("UDF Find user function references", () => {
             // tslint:disable-next-line: no-suspicious-comment
             test("At reference to user-defined function, cursor inside the namespace portion", async () => {
-                const { dt, markers: { udfDef, udfReferenceAtNamespace } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+                const { dt, markers: { udfDef, udfReferenceAtNamespace } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "udf.string" inside the namespace
-                await testGetReferences(dt, udfReferenceAtNamespace.index, [udfDef.index, udfReferenceAtNamespace.index]);
+                await testGetReferences(dt, udfReferenceAtNamespace.index, undefined, [udfDef.index, udfReferenceAtNamespace.index]);
             });
 
             test("At reference to user-defined function, cursor inside the name portion", async () => {
-                const { dt, markers: { udfStringDefinition, udfReferenceAtName } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+                const { dt, markers: { udfStringDefinition, udfReferenceAtName } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "udf.string" inside the name
-                await testGetReferences(dt, udfReferenceAtName.index, [udfStringDefinition.index, udfReferenceAtName.index]);
+                await testGetReferences(dt, udfReferenceAtName.index, undefined, [udfStringDefinition.index, udfReferenceAtName.index]);
             });
 
             test("At definition of user-defined function", async () => {
-                const { dt, markers: { udfStringDefinition, udfReferenceAtName } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+                const { dt, markers: { udfStringDefinition, udfReferenceAtName } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition of "udf.string"
-                await testGetReferences(dt, udfStringDefinition.index, [udfStringDefinition.index, udfReferenceAtName.index]);
+                await testGetReferences(dt, udfStringDefinition.index, undefined, [udfStringDefinition.index, udfReferenceAtName.index]);
             });
 
             test("At definition of user-defined namespace", async () => {
-                const { dt, markers: { udfDef, udfReferenceAtNamespace } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+                const { dt, markers: { udfDef, udfReferenceAtNamespace } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition of "udf.string"
-                await testGetReferences(dt, udfDef.index, [udfDef.index, udfReferenceAtNamespace.index]);
+                await testGetReferences(dt, udfDef.index, undefined, [udfDef.index, udfReferenceAtNamespace.index]);
             });
 
             test("Reference to built-in function with same name as UDF function doesn't find UDF function call", async () => {
-                const { dt, markers: { stringRef1, stringRef2, stringRef3, stringRef4 } } = await parseTemplateWithMarkers(userFuncsTemplate1);
-                await testGetReferences(dt, stringRef4.index, [stringRef1.index, stringRef2.index, stringRef3.index, stringRef4.index]);
+                const { dt, markers: { stringRef1, stringRef2, stringRef3, stringRef4 } } = parseTemplateWithMarkers(userFuncsTemplate1);
+                await testGetReferences(dt, stringRef4.index, undefined, [stringRef1.index, stringRef2.index, stringRef3.index, stringRef4.index]);
             });
 
             test("Reference to built-in function in outer scope finds it in all scopes", async () => {
-                const { dt, markers: { addReferenceInUdfString, addReferenceInOutput4 } } = await parseTemplateWithMarkers(userFuncsTemplate1);
+                const { dt, markers: { addReferenceInUdfString, addReferenceInOutput4 } } = parseTemplateWithMarkers(userFuncsTemplate1);
 
                 // Cursor at "add" in output4
-                await testGetReferences(dt, addReferenceInOutput4.index, [addReferenceInOutput4.index, addReferenceInUdfString.index]);
+                await testGetReferences(dt, addReferenceInOutput4.index, undefined, [addReferenceInOutput4.index, addReferenceInUdfString.index]);
             });
 
             test("Reference to built-in function in function scope finds it in all scopes", async () => {
-                const { dt, markers: { addReferenceInUdfString, addReferenceInOutput4 } } = await parseTemplateWithMarkers(userFuncsTemplate1);
+                const { dt, markers: { addReferenceInUdfString, addReferenceInOutput4 } } = parseTemplateWithMarkers(userFuncsTemplate1);
 
                 // Cursor at "add" in udf 'string's output
-                await testGetReferences(dt, addReferenceInUdfString.index, [addReferenceInOutput4.index, addReferenceInUdfString.index]);
+                await testGetReferences(dt, addReferenceInUdfString.index, undefined, [addReferenceInOutput4.index, addReferenceInUdfString.index]);
             });
         });
 
@@ -1318,32 +1318,32 @@ suite("User functions", () => {
         }
 
         test("Hover over top-level parameter reference", async () => {
-            const { dt, markers: { yearReference } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+            const { dt, markers: { yearReference } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
             await testHover(dt, yearReference.index, `**year**${os.EOL}*(parameter)*`);
         });
 
         test("Hover over UDF parameter reference", async () => {
-            const { dt, markers: { udfyearReference } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+            const { dt, markers: { udfyearReference } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
             await testHover(dt, udfyearReference.index, `**year**${os.EOL}*(function parameter)*`);
         });
 
         test("Hover over top-level variable reference", async () => {
-            const { dt, markers: { var1Reference1 } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+            const { dt, markers: { var1Reference1 } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
             await testHover(dt, var1Reference1.index, `**var1**${os.EOL}*(variable)*`);
         });
 
         test("Hover over built-in function reference", async () => {
-            const { dt, markers: { stringRef4 } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+            const { dt, markers: { stringRef4 } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
             await testHover(dt, stringRef4.index, `**string(valueToConvert)**${os.EOL}*(function)*${os.EOL}${os.EOL}Converts the specified value to String.`);
         });
 
         test("Hover over user-defined function reference's name", async () => {
-            const { dt, markers: { udfReferenceAtName } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+            const { dt, markers: { udfReferenceAtName } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
             await testHover(dt, udfReferenceAtName.index, `**udf.string(year [int], month, day [int]) [string]**${os.EOL}*(user-defined function)*`);
         });
 
         test("Hover over user-defined function reference's namespace", async () => {
-            const { dt, markers: { udfReferenceAtNamespace } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+            const { dt, markers: { udfReferenceAtNamespace } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
             await testHover(
                 dt,
                 udfReferenceAtNamespace.index,
@@ -1367,21 +1367,21 @@ suite("User functions", () => {
         }
 
         test("Top-level parameter", async () => {
-            const { dt, markers: { apiVersionDef, apiVersionReference } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+            const { dt, markers: { apiVersionDef, apiVersionReference } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
             // Cursor at reference to "apiVersion" inside resources
             // -1 because go to definition currently goes to the quote at the start of the string
             await testGoToDefinition(dt, apiVersionReference.index, DefinitionKind.Parameter, apiVersionDef.index - 1);
         });
         test("User function parameter", async () => {
-            const { dt, markers: { udfyearReference, udfyearDefinition } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+            const { dt, markers: { udfyearReference, udfyearDefinition } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
             // Cursor at reference to "year" inside user function output
             await testGoToDefinition(dt, udfyearReference.index, DefinitionKind.Parameter, udfyearDefinition.index - 1);
         });
 
         test("Variable reference", async () => {
-            const { dt, markers: { var1Definition, var1Reference1, var1Reference2 } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+            const { dt, markers: { var1Definition, var1Reference1, var1Reference2 } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
             // Cursor at reference to "var1" inside var2
             await testGoToDefinition(dt, var1Reference1.index, DefinitionKind.Variable, var1Definition.index - 1);
@@ -1391,14 +1391,14 @@ suite("User functions", () => {
         });
 
         test("User-defined function, cursor inside the namespace portion", async () => {
-            const { dt, markers: { udfDef, udfReferenceAtNamespace } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+            const { dt, markers: { udfDef, udfReferenceAtNamespace } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
             // Cursor at reference to "udf.string" inside the namespace -> goes to namespace definition
             await testGoToDefinition(dt, udfReferenceAtNamespace.index, DefinitionKind.Namespace, udfDef.index - 1);
         });
 
         test("User-defined function, cursor inside the name portion", async () => {
-            const { dt, markers: { udfStringDefinition, udfReferenceAtName } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+            const { dt, markers: { udfStringDefinition, udfReferenceAtName } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
             // Cursor at reference to "udf.string" inside the name
             await testGoToDefinition(dt, udfReferenceAtName.index, DefinitionKind.UserFunction, udfStringDefinition.index - 1);
@@ -1419,7 +1419,7 @@ suite("User functions", () => {
                     }
                 };
 
-                await parseTemplate(template, [
+                parseTemplate(template, [
                     "Warning: The parameter 'param1' is never used."
                 ]);
             });
@@ -1453,7 +1453,7 @@ suite("User functions", () => {
                     }]
                 };
 
-                await parseTemplate(template, [
+                parseTemplate(template, [
                     "Warning: The parameter 'param1' is never used.",
                     "Warning: The user-defined function 'udf.odd' is never used."
                 ]);
@@ -1482,7 +1482,7 @@ suite("User functions", () => {
                     }]
                 };
 
-                await parseTemplate(template, [
+                parseTemplate(template, [
                     "Warning: The user-defined function 'udf.odd' is never used.",
                     "Warning: User-function parameter 'param1' is never used.",
                 ]);
@@ -1523,7 +1523,7 @@ suite("User functions", () => {
                     }
                 };
 
-                await parseTemplate(template, [
+                parseTemplate(template, [
                     "Warning: The user-defined function 'udf.odd' is never used.",
                     "Warning: User-function parameter 'param1' is never used.",
                 ]);
@@ -1558,7 +1558,7 @@ suite("User functions", () => {
                     }]
                 };
 
-                await parseTemplate(template, [
+                parseTemplate(template, [
                     "Warning: The parameter 'param1' is never used.",
                     'Warning: The user-defined function \'udf.odd\' is never used.',
                     "Warning: User-function parameter 'param1' is never used.",
@@ -1592,7 +1592,7 @@ suite("User functions", () => {
 
                 };
 
-                await parseTemplate(template, [
+                parseTemplate(template, [
                     "Warning: The user-defined function 'myNamespace.unused' is never used."
                 ]);
             });
@@ -1629,7 +1629,7 @@ suite("User functions", () => {
             //         }
             //     };
 
-            //     await parseTemplate(template, [
+            //      parseTemplate(template, [
             //         "Warning: The user-defined namespace 'unusedNamespace1' is never used.",
             //         "Warning: The user-defined namespace 'unusedNamespace2' is never used."
             //     ]);

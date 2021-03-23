@@ -18,7 +18,7 @@ suite("getFriendlyNameForResource", () => {
             let keepTestNameInClosure = testName;
             keepTestNameInClosure = keepTestNameInClosure;
 
-            const dt = await parseTemplate({
+            const dt = parseTemplate({
                 resources: [
                     resource
                 ]
@@ -32,7 +32,7 @@ suite("getFriendlyNameForResource", () => {
             let keepTestNameInClosure = testName;
             keepTestNameInClosure = keepTestNameInClosure;
 
-            const dt = await parseTemplate({
+            const dt = parseTemplate({
                 resources: [
                     resource
                 ]

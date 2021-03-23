@@ -37,7 +37,7 @@ suite("Contextualized snippets", () => {
             // tslint:disable-next-line: prefer-template
             const name = `${testName}, triggered by ${triggerCharacter ? ("'" + triggerCharacter + "'") : 'CTRL+SPACE'}`;
             testWithRealSnippets(name, async () => {
-                const { dt, markers: { cursor } } = await parseTemplateWithMarkers(templateWithCursorMarker);
+                const { dt, markers: { cursor } } = parseTemplateWithMarkers(templateWithCursorMarker);
                 assert(cursor !== undefined, "<!curso!> not found in template");
 
                 let tempFile: TempFile | undefined;

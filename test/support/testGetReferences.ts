@@ -4,6 +4,7 @@
 
 import * as assert from 'assert';
 import { DeploymentTemplateDoc, ReferenceList } from '../../extension.bundle';
+import { DeploymentParametersDoc } from '../../src/documents/parameters/DeploymentParametersDoc';
 
 /**
  * Given a deployment template and a character index into it, verify that getReferences on the template
@@ -12,12 +13,12 @@ import { DeploymentTemplateDoc, ReferenceList } from '../../extension.bundle';
  * Usually parseTemplateWithMarkers will be used to parse the document and find the indices of a set of locations
  * Example:
  *
- *      const { dt, markers: { apiVersionDef, apiVersionReference } } = await parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
+ *      const { dt, markers: { apiVersionDef, apiVersionReference } } =  parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
  *      // Cursor at reference to "apiVersion" inside resources
  *      await testFindReferences(dt, apiVersionReference.index, [apiVersionReference.index, apiVersionDef.index]);
  */
-export async function testGetReferences(dt: DeploymentTemplateDoc, cursorIndex: number, expectedReferenceIndices: number[]): Promise<void> {
-    const pc = dt.getContextFromDocumentCharacterIndex(cursorIndex, undefined);
+export async function testGetReferences(dt: DeploymentTemplateDoc, cursorIndexInTemplate: number, dp: DeploymentParametersDoc | undefined, expectedReferenceIndices: number[]): Promise<void> {
+    const pc = dt.getContextFromDocumentCharacterIndex(cursorIndexInTemplate, undefined);
     // tslint:disable-next-line: no-non-null-assertion
     const references: ReferenceList = pc.getReferences()!;
     assert(references, "Expected non-empty list of references");

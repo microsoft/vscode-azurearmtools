@@ -17,7 +17,7 @@ suite("Hover.UserNamespaceInfo", () => {
 
         test("no members", async () => {
             // tslint:disable-next-line:no-any
-            const dt = await parseTemplate(<IDeploymentTemplate><any>{
+            const dt = parseTemplate(<IDeploymentTemplate><any>{
                 $schema: "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 contentVersion: "1.0.0.0",
                 functions: [
@@ -35,7 +35,7 @@ suite("Hover.UserNamespaceInfo", () => {
     });
 
     test("one member, no params", async () => {
-        const dt = await parseTemplate({
+        const dt = parseTemplate({
             $schema: "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
             contentVersion: "1.0.0.0",
             functions: [
@@ -57,7 +57,7 @@ suite("Hover.UserNamespaceInfo", () => {
 
     test("one member, one param, no type", async () => {
         // tslint:disable-next-line:no-any
-        const dt = await parseTemplate(<IDeploymentTemplate><any>{
+        const dt = parseTemplate(<IDeploymentTemplate><any>{
             $schema: "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
             contentVersion: "1.0.0.0",
             functions: [
@@ -81,7 +81,7 @@ suite("Hover.UserNamespaceInfo", () => {
     });
 
     test("one member, one param", async () => {
-        const dt = await parseTemplate({
+        const dt = parseTemplate({
             $schema: "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
             contentVersion: "1.0.0.0",
             functions: [
@@ -108,7 +108,7 @@ suite("Hover.UserNamespaceInfo", () => {
     });
 
     test("one member, two params", async () => {
-        const dt = await parseTemplate({
+        const dt = parseTemplate({
             $schema: "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
             contentVersion: "1.0.0.0",
             functions: [
@@ -139,7 +139,7 @@ suite("Hover.UserNamespaceInfo", () => {
     });
 
     test("two members", async () => {
-        const dt = await parseTemplate({
+        const dt = parseTemplate({
             $schema: "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
             contentVersion: "1.0.0.0",
             functions: [

@@ -15,7 +15,7 @@ suite("ResourceInfo", () => {
     suite("split names", () => {
         function createSplitNameTest(nameAsJsonString: string, expected: string[]): void {
             test(nameAsJsonString, async () => {
-                const dt = await parseTemplate({
+                const dt = parseTemplate({
                     resources: [
                         {
                             name: nameAsJsonString,
@@ -45,7 +45,7 @@ suite("ResourceInfo", () => {
     suite("split types", () => {
         function createSplitTypeTest(typeAsJsonString: string, expected: string[]): void {
             test(typeAsJsonString, async () => {
-                const dt = await parseTemplate({
+                const dt = parseTemplate({
                     resources: [
                         {
                             name: "name",
@@ -549,7 +549,7 @@ suite("ResourceInfo", () => {
                 ]
             };
 
-            const dt = await parseTemplate(template);
+            const dt = parseTemplate(template);
             const infos = getResourcesInfo({ scope: dt.topLevelScope, recognizeDecoupledChildren: false });
 
             const actual = infos.map(info => ({

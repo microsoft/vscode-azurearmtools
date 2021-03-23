@@ -22,7 +22,7 @@ suite("areDecoupledChildAndParent", () => {
             expectedReverse: boolean
         ): void {
             test(`${name ? name + ':' : ''}child=${childNameExpression}, parent=${parentNameExpression}`, async () => {
-                const dt = await parseTemplate(template, []);
+                const dt = parseTemplate(template, []);
                 const infos = getResourcesInfo({ scope: dt.topLevelScope, recognizeDecoupledChildren: false });
                 testLog.writeLine(`Resource Infos found:\n` + infos.map(i => `${i.getFullNameExpression()} (${i.getFullTypeExpression()})`).join('\n'));
 
@@ -51,7 +51,7 @@ suite("areDecoupledChildAndParent", () => {
                         parent
                     ]
                 };
-                const dt = await parseTemplate(template);
+                const dt = parseTemplate(template);
                 const infos = getResourcesInfo({ scope: dt.topLevelScope, recognizeDecoupledChildren: true });
                 testLog.writeLine(`Resource Infos found:\n` + infos.map(i => `${i.getFullNameExpression()} (${i.getFullTypeExpression()})`).join('\n'));
 

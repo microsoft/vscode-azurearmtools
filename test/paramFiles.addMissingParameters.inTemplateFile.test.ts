@@ -34,7 +34,7 @@ suite("Add missing parameters for nested/linked templates", () => {
         testWithLanguageServer(testName, async () => {
             const tabSize = 4;
             //const expectedResultText = stringify(expectedResult, tabSize);
-            const { dt: expectedDt } = await parseTemplateWithMarkers(expectedResult, undefined, { fromFile: true });
+            const { dt: expectedDt } = parseTemplateWithMarkers(expectedResult, undefined, { fromFile: true });
             const expectedResultText = expectedDt.documentText;
 
             // Get template
@@ -43,14 +43,14 @@ suite("Add missing parameters for nested/linked templates", () => {
             const childUri = Uri.file(`${root}childTemplate.json`);
 
             // Get linked template
-            const { dt, markers: { bang } } = await parseTemplateWithMarkers(template, undefined, { fromFile: true, documentUri: templateUri, tabSize });
+            const { dt, markers: { bang } } = parseTemplateWithMarkers(template, undefined, { fromFile: true, documentUri: templateUri, tabSize });
             assert(bang, "Didn't find bang marker");
             const span = new Span(bang.index, 0);
             const range = getVSCodeRangeFromSpan(dt, span);
 
             // Set up template with linked file information
             if (linkedTemplate) {
-                const { dt: childDt } = await parseTemplateWithMarkers(linkedTemplate, undefined, { fromFile: true, documentUri: childUri, tabSize });
+                const { dt: childDt } = parseTemplateWithMarkers(linkedTemplate, undefined, { fromFile: true, documentUri: childUri, tabSize });
                 const graph: INotifyTemplateGraphArgs = {
                     rootTemplateUri: templateUri.toString(),
                     linkedTemplates: [

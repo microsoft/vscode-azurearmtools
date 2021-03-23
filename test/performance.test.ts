@@ -17,7 +17,7 @@ suite("Performance tests", () => {
 
             const sourcePath = resolveInTestFolder('templates/performance/50params5000vars5refs.json');
             const templateContents = (await fse.readFile(sourcePath)).toString();
-            const dt = await parseTemplate(templateContents);
+            const dt = parseTemplate(templateContents);
             const warnings = dt.getWarnings();
 
             // Results to large for assert.equal to handle directly
