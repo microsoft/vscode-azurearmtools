@@ -47,7 +47,7 @@ suite("Nested templates", () => {
                             ]
                         };
 
-                const dt = await parseTemplate(template);
+                const dt = parseTemplate(template);
                 const child = dt.topLevelScope.resources[0].childDeployment;
                 const actualScopeKind =
                     child?.scopeKind === TemplateScopeKind.NestedDeploymentWithInnerScope
@@ -158,7 +158,7 @@ suite("Nested templates", () => {
                     v1innerdef, v1innerref1, v1innerref2,
                     v2innerdef, v2innerref1
                 }
-            } = await parseTemplateWithMarkers(
+            } = parseTemplateWithMarkers(
                 template,
                 [
                     // testMessages.nestedTemplateNoValidation("nested"),
@@ -260,7 +260,7 @@ suite("Nested templates", () => {
             const {
                 dt,
                 markers: { p1rootdef, p1rootref1, p1rootref2, p1rootref3, p1innerdef, p1innerref1, p1innerref2, p1innerref3 }
-            } = await parseTemplateWithMarkers(template, [
+            } = parseTemplateWithMarkers(template, [
                 "Warning: The variable 'v1' is never used.",
                 // testMessages.nestedTemplateNoValidation("nested"),
             ]);
@@ -376,13 +376,13 @@ suite("Nested templates", () => {
             };
 
             test("no errors", async () => {
-                await parseTemplateWithMarkers(template, [
+                parseTemplateWithMarkers(template, [
                     // testMessages.nestedTemplateNoValidation("nested"),
                 ]);
             });
 
             test("inner.func1", async () => {
-                const { dt, markers: { innerfunc1def, innerfunc1ref1 } } = await parseTemplateWithMarkers(template);
+                const { dt, markers: { innerfunc1def, innerfunc1ref1 } } = parseTemplateWithMarkers(template);
                 const innerfunc1defpc = dt.getContextFromDocumentCharacterIndex(innerfunc1def.index, undefined);
                 const innerfunc1defRefs = innerfunc1defpc.getReferences();
                 assert.deepEqual(
@@ -395,7 +395,7 @@ suite("Nested templates", () => {
             test("inner.func1.innerp1", async () => {
                 const {
                     dt, markers: { innerp1def, innerp1ref }
-                } = await parseTemplateWithMarkers(template);
+                } = parseTemplateWithMarkers(template);
                 const pc = dt.getContextFromDocumentCharacterIndex(innerp1def.index, undefined);
                 const refs = pc.getReferences();
                 assert.deepEqual(
@@ -452,7 +452,7 @@ suite("Nested templates", () => {
             const {
                 dt,
                 markers: { v1def, v1ref1, v1ref2, v1ref3, v1ref4, v2def, v2ref1 }
-            } = await parseTemplateWithMarkers(
+            } = parseTemplateWithMarkers(
                 template,
                 [
                     "Warning: Variables, parameters and user functions of an outer-scoped nested template are inaccessible to any expressions. If you intended inner scope, set the deployment resource's properties.expressionEvaluationOptions.scope to 'inner'.",
@@ -528,7 +528,7 @@ suite("Nested templates", () => {
             const {
                 dt,
                 markers: { p1def, p1ref1, p1ref2, p1ref3, p1ref4, p1ref5 }
-            } = await parseTemplateWithMarkers(
+            } = parseTemplateWithMarkers(
                 template,
                 [
                     // `11: ${testMessages.nestedTemplateNoValidation("nested")}`,
@@ -614,7 +614,7 @@ suite("Nested templates", () => {
             };
 
             test("no errors", async () => {
-                await parseTemplateWithMarkers(
+                parseTemplateWithMarkers(
                     template,
                     [
                         // testMessages.nestedTemplateNoValidation("nested"),
@@ -622,7 +622,7 @@ suite("Nested templates", () => {
             });
 
             test("root.func1", async () => {
-                const { dt, markers: { rootfunc1def, rootfunc1ref1, rootfunc1ref2 } } = await parseTemplateWithMarkers(template);
+                const { dt, markers: { rootfunc1def, rootfunc1ref1, rootfunc1ref2 } } = parseTemplateWithMarkers(template);
                 const pc = dt.getContextFromDocumentCharacterIndex(rootfunc1def.index, undefined);
                 const refs = pc.getReferences();
                 assert.deepEqual(
@@ -636,7 +636,7 @@ suite("Nested templates", () => {
             test("root.func1.rootp1", async () => {
                 const {
                     dt, markers: { rootp1def, rootp1ref }
-                } = await parseTemplateWithMarkers(template);
+                } = parseTemplateWithMarkers(template);
                 const pc = dt.getContextFromDocumentCharacterIndex(rootp1ref.index, undefined);
                 const refs = pc.getReferences();
                 assert.deepEqual(
@@ -649,7 +649,7 @@ suite("Nested templates", () => {
     });
 
     test("errors/warnings", async () => {
-        await parseTemplate(
+        parseTemplate(
             'templates/nestedTemplateScopesErrorsAndWarnings.json',
             [
                 "8: Warning: The parameter 'p2' is never used.",
@@ -675,7 +675,7 @@ suite("Nested templates", () => {
             });
     });
     test("No duplicate warnings from outer scoped nested template using same scope as parent", async () => {
-        await parseTemplate(
+        parseTemplate(
             {
                 "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -910,7 +910,7 @@ suite("Nested templates", () => {
         };
 
         test("no errors", async () => {
-            await parseTemplateWithMarkers(
+            parseTemplateWithMarkers(
                 deeplyNestedTemplate,
                 [
                     // testMessages.nestedTemplateNoValidation("inner1"),
@@ -921,7 +921,7 @@ suite("Nested templates", () => {
         });
 
         test("outer3 references inner2.func1 from parent scope", async () => {
-            const { dt, markers: { inner2func1def, inner2func1ref1, inner2func1ref2 } } = await parseTemplateWithMarkers(deeplyNestedTemplate);
+            const { dt, markers: { inner2func1def, inner2func1ref1, inner2func1ref2 } } = parseTemplateWithMarkers(deeplyNestedTemplate);
             const pc = dt.getContextFromDocumentCharacterIndex(inner2func1def.index, undefined);
             const refs = pc.getReferences();
             assert.deepEqual(
@@ -933,7 +933,7 @@ suite("Nested templates", () => {
         });
 
         test("inner2.innerp2", async () => {
-            const { dt, markers: { inner2func1innerp2def, inner2func1innerp2ref1 } } = await parseTemplateWithMarkers(deeplyNestedTemplate);
+            const { dt, markers: { inner2func1innerp2def, inner2func1innerp2ref1 } } = parseTemplateWithMarkers(deeplyNestedTemplate);
             const pc = dt.getContextFromDocumentCharacterIndex(inner2func1innerp2def.index, undefined);
             const refs = pc.getReferences();
             assert.deepEqual(
@@ -946,7 +946,7 @@ suite("Nested templates", () => {
 
     suite("real examples", () => {
         testWithRealFunctionMetadata("https://github.com/Azure/azure-resource-manager-schemas/issues/994", async () => {
-            await parseTemplate(
+            parseTemplate(
                 {
                     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",

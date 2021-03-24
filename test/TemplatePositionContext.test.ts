@@ -23,7 +23,7 @@ suite("TemplatePositionContext", () => {
         test("documentColumnIndex cannot be greater than the line's maximum index", async () => {
             const line = 200;
             const col = 11;
-            const dt = await parseTemplate(template);
+            const dt = parseTemplate(template);
             const pc = dt.getContextFromDocumentLineAndColumnIndexes(line, col, undefined, true);
             assert(pc);
             assert.equal(pc.documentLineIndex, 11);
@@ -33,7 +33,7 @@ suite("TemplatePositionContext", () => {
         test("documentLineIndex cannot be greater than or equal to the deployment template's line count", async () => {
             const line = 7;
             const col = 11;
-            const dt = await parseTemplate(template);
+            const dt = parseTemplate(template);
             const pc = dt.getContextFromDocumentLineAndColumnIndexes(line, col, undefined, true);
             assert(pc);
             assert.equal(pc.documentLineIndex, 7);
@@ -41,7 +41,7 @@ suite("TemplatePositionContext", () => {
         });
 
         test("documentCharacterIndex cannot be greater than the maximum character index", async () => {
-            const dt = await parseTemplate(template);
+            const dt = parseTemplate(template);
             const pc = dt.getContextFromDocumentCharacterIndex(10000, undefined, true);
             assert(pc);
             assert.equal(pc.documentLineIndex, 11);
@@ -199,7 +199,7 @@ suite("TemplatePositionContext", () => {
         }
 
         test("hyphens and exclamation points", async () => {
-            const dt = await parseTemplate("{ arm-keyvault!hello }");
+            const dt = parseTemplate("{ arm-keyvault!hello }");
 
             assert.equal(getTextAtReplacementSpan(dt, 0), undefined); // {
             assert.equal(getTextAtReplacementSpan(dt, 1), undefined);
@@ -711,7 +711,7 @@ suite("TemplatePositionContext", () => {
             async function testUdfSignatureHelp(expressionWithCursorMarker: string, expected: TLE.FunctionSignatureHelp | undefined): Promise<void> {
                 const templateString = stringify(udfTemplate).replace('<o1value>', expressionWithCursorMarker);
 
-                const { dt, markers: { cursor } } = await parseTemplateWithMarkers(templateString);
+                const { dt, markers: { cursor } } = parseTemplateWithMarkers(templateString);
                 assert(cursor, "You must place a '<!cursor!>' cursor in the expression string to indicate position");
                 const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex(cursor.index, undefined);
                 const functionSignatureHelp: TLE.FunctionSignatureHelp | undefined = pc.getSignatureHelp();
@@ -979,7 +979,7 @@ suite("TemplatePositionContext", () => {
 
         suite("Templates", () => {
             test("Parameter reference", async () => {
-                const { dt, markers: { param1ref } } = await parseTemplateWithMarkers(template1);
+                const { dt, markers: { param1ref } } = parseTemplateWithMarkers(template1);
                 const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, param1ref.index, undefined);
                 const site = pc.getReferenceSiteInfo(false);
                 assert.notEqual(site, undefined);
@@ -991,7 +991,7 @@ suite("TemplatePositionContext", () => {
             });
 
             test("Parameter definition", async () => {
-                const { dt, markers: { param1def } } = await parseTemplateWithMarkers(template1);
+                const { dt, markers: { param1def } } = parseTemplateWithMarkers(template1);
                 const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, param1def.index, undefined);
                 const site = pc.getReferenceSiteInfo(true);
                 assert.notEqual(site, undefined);
@@ -1004,7 +1004,7 @@ suite("TemplatePositionContext", () => {
             });
 
             test("Variable reference", async () => {
-                const { dt, markers: { var1ref } } = await parseTemplateWithMarkers(template1);
+                const { dt, markers: { var1ref } } = parseTemplateWithMarkers(template1);
                 const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, var1ref.index, undefined);
                 const site = pc.getReferenceSiteInfo(false);
                 assert.notEqual(site, undefined);
@@ -1016,7 +1016,7 @@ suite("TemplatePositionContext", () => {
             });
 
             test("Variable definition", async () => {
-                const { dt, markers: { var1def } } = await parseTemplateWithMarkers(template1);
+                const { dt, markers: { var1def } } = parseTemplateWithMarkers(template1);
                 const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, var1def.index, undefined);
                 const site = pc.getReferenceSiteInfo(true);
                 assert.notEqual(site, undefined);
@@ -1029,7 +1029,7 @@ suite("TemplatePositionContext", () => {
             });
 
             test("namespace definition", async () => {
-                const { dt, markers: { ns1def } } = await parseTemplateWithMarkers(template1);
+                const { dt, markers: { ns1def } } = parseTemplateWithMarkers(template1);
                 const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, ns1def.index, undefined);
                 const site = pc.getReferenceSiteInfo(true);
                 assert.notEqual(site, undefined);
@@ -1042,7 +1042,7 @@ suite("TemplatePositionContext", () => {
             });
 
             test("namespace reference", async () => {
-                const { dt, markers: { ns1ref } } = await parseTemplateWithMarkers(template1);
+                const { dt, markers: { ns1ref } } = parseTemplateWithMarkers(template1);
                 const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, ns1ref.index, undefined);
                 const site = pc.getReferenceSiteInfo(true);
                 assert.notEqual(site, undefined);
@@ -1054,7 +1054,7 @@ suite("TemplatePositionContext", () => {
             });
 
             test("user function definition", async () => {
-                const { dt, markers: { func1def } } = await parseTemplateWithMarkers(template1);
+                const { dt, markers: { func1def } } = parseTemplateWithMarkers(template1);
                 const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, func1def.index, undefined);
                 const site = pc.getReferenceSiteInfo(true);
                 assert.notEqual(site, undefined);
@@ -1067,7 +1067,7 @@ suite("TemplatePositionContext", () => {
             });
 
             test("user function reference", async () => {
-                const { dt, markers: { func1ref } } = await parseTemplateWithMarkers(template1);
+                const { dt, markers: { func1ref } } = parseTemplateWithMarkers(template1);
                 const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, func1ref.index, undefined);
                 const site = pc.getReferenceSiteInfo(true);
                 assert.notEqual(site, undefined);
@@ -1079,7 +1079,7 @@ suite("TemplatePositionContext", () => {
             });
 
             test("built-in function reference", async () => {
-                const { dt, markers: { builtinref } } = await parseTemplateWithMarkers(template1);
+                const { dt, markers: { builtinref } } = parseTemplateWithMarkers(template1);
                 const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, builtinref.index, undefined);
                 const site = pc.getReferenceSiteInfo(true);
                 assert.notEqual(site, undefined);
@@ -1093,7 +1093,7 @@ suite("TemplatePositionContext", () => {
 
         suite("Parameter files", () => {
             test("Deployment parameter file parameter definition", async () => {
-                const { dt } = await parseTemplateWithMarkers(template1);
+                const { dt } = parseTemplateWithMarkers(template1);
                 const { dp, markers: { param1def } } = await parseParametersWithMarkers(params1);
                 const ppc = ParametersPositionContext.fromDocumentCharacterIndex(dp, param1def.index, dt);
                 const site = ppc.getReferenceSiteInfo(true);

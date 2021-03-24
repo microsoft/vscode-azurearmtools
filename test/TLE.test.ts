@@ -2167,7 +2167,7 @@ suite("TLE", () => {
 
         suite("visit(tle.Value,string,string)", () => {
             test("with undefined TLE", async () => {
-                const dt = await parseTemplate(template);
+                const dt = parseTemplate(template);
                 const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
                 const issues: Issue[] = [];
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
@@ -2179,7 +2179,7 @@ suite("TLE", () => {
             });
 
             test("with undefined TLE", async () => {
-                const dt = await parseTemplate(template);
+                const dt = parseTemplate(template);
                 const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
                 const issues: Issue[] = [];
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
@@ -2192,7 +2192,7 @@ suite("TLE", () => {
             });
 
             test("with TLE", async () => {
-                const dt = await parseTemplate(template);
+                const dt = parseTemplate(template);
                 const referenceListsMap = new Map<INamedDefinition, ReferenceList>();
                 const issues: Issue[] = [];
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;

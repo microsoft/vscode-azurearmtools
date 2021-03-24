@@ -297,7 +297,7 @@ suite("DeploymentTemplate", () => {
         });
 
         test("with one user function where function name matches a built-in function name", async () => {
-            await parseTemplate(
+            parseTemplate(
                 // tslint:disable-next-line:no-any
                 <IDeploymentTemplate><any>{
                     "name": "[contoso.reference()]", // This is not a call to the built-in "reference" function
@@ -413,7 +413,7 @@ suite("DeploymentTemplate", () => {
                     }
                 };
 
-            await parseTemplate(template, []);
+            parseTemplate(template, []);
         });
 
         test("with reference() call inside a different expression in a variable definition", () => {
@@ -1118,7 +1118,7 @@ ${err}`);
         test("https://github.com/Microsoft/vscode-azurearmtools/issues/193", async () => {
             // Just make sure nothing throws
             let modifiedTemplate = template.replace('"type": "string"', '"type": string');
-            let dt = await parseTemplate(modifiedTemplate);
+            let dt = parseTemplate(modifiedTemplate);
             findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
             findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
             dt.getFunctionCounts();
@@ -1126,7 +1126,7 @@ ${err}`);
 
         test("Unended string", async () => {
             const json = "{ \"";
-            let dt = await parseTemplate(json);
+            let dt = parseTemplate(json);
             findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
             findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
             dt.getFunctionCounts();
@@ -1134,7 +1134,7 @@ ${err}`);
 
         test("No top-level object", async () => {
             const json = "\"hello\"";
-            let dt = await parseTemplate(json);
+            let dt = parseTemplate(json);
             findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
             findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
             dt.getFunctionCounts();
@@ -1151,7 +1151,7 @@ ${err}`);
                 "subnetRef": "[concat(variables('vne2tId'), '/subnets/', parameters('subnetName'))]"
             }
         }`;
-            let dt = await parseTemplate(json);
+            let dt = parseTemplate(json);
             findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
             findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
             dt.getFunctionCounts();
@@ -1168,7 +1168,7 @@ ${err}`);
                 "subnetRef": "[concat(variables('vne2tId'), '/subnets/', parameters('subnetName'))]"
             }
         }`;
-            let dt = await parseTemplate(json);
+            let dt = parseTemplate(json);
             findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
             findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
             dt.getFunctionCounts();
@@ -1183,7 +1183,7 @@ ${err}`);
             // Just make sure nothing throws
             for (let i = 0; i < template.length; ++i) {
                 let partialTemplate = template.slice(0, i);
-                let dt = await parseTemplate(partialTemplate);
+                let dt = parseTemplate(partialTemplate);
                 findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
                 findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
                 dt.getFunctionCounts();
@@ -1201,7 +1201,7 @@ ${err}`);
             // Just make sure nothing throws
             for (let i = 0; i < template.length; ++i) {
                 let partialTemplate = template.slice(i);
-                let dt = await parseTemplate(partialTemplate);
+                let dt = parseTemplate(partialTemplate);
                 findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
                 findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
                 dt.getFunctionCounts();
@@ -1220,7 +1220,7 @@ ${err}`);
             for (let i = 0; i < template.length; ++i) {
                 // Remove the single character at position i
                 let partialTemplate = template.slice(0, i) + template.slice(i + 1);
-                let dt = await parseTemplate(partialTemplate);
+                let dt = parseTemplate(partialTemplate);
                 findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
                 findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
                 dt.getFunctionCounts();
@@ -1265,13 +1265,13 @@ ${err}`);
 
                 let dt: DeploymentTemplateDoc;
                 try {
-                    dt = await parseTemplate(modifiedTemplate);
+                    dt = parseTemplate(modifiedTemplate);
                 } catch (err) {
                     if (parseError(err).message.includes('Malformed marker')) {
                         // We messed up the markers in the template (testcase issue).  Revert this modification and try again
                         // next loop
                         modifiedTemplate = previousTemplate;
-                        dt = await parseTemplate(modifiedTemplate);
+                        dt = parseTemplate(modifiedTemplate);
                     } else {
                         // Valid failure
                         throw err;
@@ -1289,7 +1289,7 @@ ${err}`);
 
     suite("getMultilineStringCount", () => {
         test("TLE strings", async () => {
-            const dt = await parseTemplate(`{
+            const dt = parseTemplate(`{
                 "abc": "[abc
                 def]",
                 "xyz": "[xyz
@@ -1299,7 +1299,7 @@ ${err}`);
         });
 
         test("JSON strings", async () => {
-            const dt = await parseTemplate(`{
+            const dt = parseTemplate(`{
                 "abc": "abc
                 def"
             }`);
@@ -1307,7 +1307,7 @@ ${err}`);
         });
 
         test("don't count escaped \\n, \\r", async () => {
-            const dt = await parseTemplate(`{
+            const dt = parseTemplate(`{
                 "abc": "abc\\r\\ndef"
             }`);
             assert.equal(dt.getMultilineStringCount(), 0);
@@ -1317,7 +1317,7 @@ ${err}`);
 
     suite("getMaxLineLength", () => {
         test("getMaxLineLength", async () => {
-            const dt = await parseTemplate(`{
+            const dt = parseTemplate(`{
 //345678
 //345678901234567890
 //345
@@ -1333,7 +1333,7 @@ ${err}`);
     suite("getCommentsCount()", () => {
         test("no comments", async () => {
             // tslint:disable-next-line:no-any
-            const dt = await parseTemplate(<any>{
+            const dt = parseTemplate(<any>{
                 "$schema": "foo",
                 "contentVersion": "1.2.3 /*not a comment*/",
                 "whoever": "1.2.3 //not a comment"
@@ -1344,7 +1344,7 @@ ${err}`);
 
         test("block comments", async () => {
             // tslint:disable-next-line:no-any
-            const dt = await parseTemplate(`{
+            const dt = parseTemplate(`{
                 "$schema": "foo",
                 /* This is
                     a comment */
@@ -1357,7 +1357,7 @@ ${err}`);
 
         test("single-line comments", async () => {
             // tslint:disable-next-line:no-any
-            const dt = await parseTemplate(`{
+            const dt = parseTemplate(`{
                 "$schema": "foo", // This is a comment
                 "contentVersion": "1.2.3", // Another comment
                 "whoever": "1.2.3" // This is a comment
@@ -1369,14 +1369,14 @@ ${err}`);
 
     suite("apiProfile", () => {
         test("no apiProfile", async () => {
-            const dt = await parseTemplate({
+            const dt = parseTemplate({
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
             });
             assert.equal(dt.apiProfile, undefined);
         });
 
         test("empty apiProfile", async () => {
-            const dt = await parseTemplate({
+            const dt = parseTemplate({
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 apiProfile: ""
             });
@@ -1386,7 +1386,7 @@ ${err}`);
 
         test("non-string apiProfile", async () => {
             // tslint:disable-next-line: no-any
-            const dt = await parseTemplate(<IDeploymentTemplate><any>{
+            const dt = parseTemplate(<IDeploymentTemplate><any>{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 apiProfile: false
             });
@@ -1395,7 +1395,7 @@ ${err}`);
         });
 
         test("valid apiProfile", async () => {
-            const dt = await parseTemplate({
+            const dt = parseTemplate({
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "apiProfile": "2018–03-01-hybrid"
             });
@@ -1407,7 +1407,7 @@ ${err}`);
     suite("getDocumentPosition", () => {
         function createGetDocumentPositionTest(json: string, index: number, expectedPosition: LineColPos): void {
             test(`${JSON.stringify(json)}, index=${index}`, async () => {
-                const dt = await parseTemplate(json);
+                const dt = parseTemplate(json);
                 const pos: LineColPos = dt.getDocumentPosition(index);
                 assert.deepEqual(pos, expectedPosition);
             });

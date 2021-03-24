@@ -14,7 +14,7 @@ suite("ResourceUsage (schema.stats telemetry)", () => {
 
     async function testGetResourceUsage(template: Partial<IDeploymentTemplate>, expectedResourceUsage: { [key: string]: number }): Promise<void> {
         // tslint:disable-next-line:no-any
-        const dt = await parseTemplate(template);
+        const dt = parseTemplate(template);
         const resourceUsage: Histogram = dt.getResourceUsage();
         const expected = new Histogram();
         for (let propName of Object.getOwnPropertyNames(expectedResourceUsage)) {

@@ -124,13 +124,13 @@ suite("DeploymentTemplate code lenses", () => {
     suite("parameters section code lens", () => {
         suite("if no parameter file then", () => {
             test("expect only a single parameters section code lens", async () => {
-                const dt = await parseTemplate(template1);
+                const dt = parseTemplate(template1);
                 const lenses = dt.getCodeLenses(undefined);
                 assert.equal(lenses.length, 1, "Expecting only a code lens for the parameters section itself");
             });
 
             test("code lens should show command to select/create one", async () => {
-                const dt = await parseTemplate(template1);
+                const dt = parseTemplate(template1);
                 const lenses = dt.getCodeLenses(undefined);
                 for (const lens of lenses) {
                     const result = await lens.resolve();
@@ -147,7 +147,7 @@ suite("DeploymentTemplate code lenses", () => {
 
         suite("if there is a parameter file then", () => {
             test("parameter section code lens should show command to open current parameter file and one to change the selection", async () => {
-                const dt = await parseTemplate(template1);
+                const dt = parseTemplate(template1);
                 const { dp } = await parseParametersWithMarkers({});
                 const lenses = dt.getCodeLenses(new FakeParameterValuesSourceProvider(dp.documentUri, dp.parameterValuesSource));
                 assert.equal(lenses.length, 2 + dt.topLevelScope.parameterDefinitions.length);
@@ -185,7 +185,7 @@ suite("DeploymentTemplate code lenses", () => {
                 test(testName, async () => {
                     let a = testName;
                     a = a;
-                    const dt = await parseTemplate(template1);
+                    const dt = parseTemplate(template1);
                     const param = dt.topLevelScope.getParameterDefinition(topLevelParamName);
                     assert(!!param);
                     const { dp } = await parseParametersWithMarkers(
@@ -286,7 +286,7 @@ suite("DeploymentTemplate code lenses", () => {
             function createCodeLensTest(testName: string, template: IPartialDeploymentTemplate, expected: (string | RegExp)[]): void {
                 testWithLanguageServer(testName, async () => {
                     testName = testName;
-                    const dt = await parseTemplate(template);
+                    const dt = parseTemplate(template);
 
                     await ensureLanguageServerAvailable();
 

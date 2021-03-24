@@ -14,7 +14,7 @@ import { stringify } from "./stringify";
 /**
  * Given a deployment template (string or object), parses it, optionally verifying expected diagnostic messages
  */
-export async function parseTemplate(
+export function parseTemplate(
     template: string | IPartialDeploymentTemplate,
     expectedDiagnosticMessages?: string[],
     options?: {
@@ -24,9 +24,9 @@ export async function parseTemplate(
         includeDiagnosticLineNumbers?: boolean;
         replacements?: { [key: string]: string | { [key: string]: unknown } };
     }
-): Promise<DeploymentTemplateDoc> {
+): DeploymentTemplateDoc {
     // Go ahead and allow markers in the document to be removed, we just won't mark them (makes it easier to share the same template in multiple places)
-    const { dt } = await parseTemplateWithMarkers(template, expectedDiagnosticMessages, options);
+    const { dt } = parseTemplateWithMarkers(template, expectedDiagnosticMessages, options);
     return dt;
 }
 
@@ -45,7 +45,7 @@ interface Markers {
 // tslint:disable-next-line: no-suspicious-comment
 // TODO: Make synchronous
 // tslint:disable-next-line: no-suspicious-comment
-export async function parseTemplateWithMarkers(
+export function parseTemplateWithMarkers(
     template: string | IPartialDeploymentTemplate,
     expectedDiagnosticMessages?: string[],
     options?: {
@@ -57,7 +57,7 @@ export async function parseTemplateWithMarkers(
         documentUri?: Uri;
         tabSize?: number;
     }
-): Promise<{ dt: DeploymentTemplateDoc; markers: Markers }> {
+): { dt: DeploymentTemplateDoc; markers: Markers } {
     if (options?.fromFile) {
         const absPath = resolveInTestFolder(<string>template);
         const contents: string = fse.readFileSync(absPath).toString();
