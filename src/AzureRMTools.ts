@@ -1511,7 +1511,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 actionContext.errorHandling.suppressDisplay = true;
                 properties.docType = this.getDocTypeForTelemetry(pc.document);
 
-                const refInfo = pc.getReferenceSiteInfo(false);
+                const refInfo = pc.getReferenceSiteInfo(true); //asdf
                 if (refInfo && refInfo.definition.nameValue) {
                     properties.definitionType = refInfo.definition.definitionKind;
 

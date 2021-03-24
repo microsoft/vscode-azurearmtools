@@ -163,7 +163,7 @@ export abstract class DeploymentDocument implements IJsonDocument {
     /**
      * Find all references in this document to the given named definition (which may or may not be in this document)
      */
-    public abstract findReferencesToDefinition(definition: INamedDefinition): ReferenceList;
+    public abstract findReferencesToDefinition(definition: INamedDefinition, associatedDocument: DeploymentDocument | undefined): ReferenceList;
 
     /**
      * Provide commands for the given document and range.

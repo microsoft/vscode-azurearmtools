@@ -98,7 +98,7 @@ suite("User functions", () => {
 
     // #region
     suite("UDF Malformed", () => {
-        test("missing namespace name", async () => {
+        test("missing namespace name", () => {
             // tslint:disable-next-line:no-any
             const template = <IDeploymentTemplate><any>{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
@@ -129,7 +129,7 @@ suite("User functions", () => {
             assert.equal(0, dt.topLevelScope.namespaceDefinitions.length);
         });
 
-        test("missing function name", async () => {
+        test("missing function name", () => {
             const template =
                 `"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
             "contentVersion": "1.0.0.0",
@@ -158,7 +158,7 @@ suite("User functions", () => {
             assert.equal(0, dt.topLevelScope.namespaceDefinitions.length);
         });
 
-        test("Empty function name", async () => {
+        test("Empty function name", () => {
             // tslint:disable-next-line:no-any
             const template = <IDeploymentTemplate><any>{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
@@ -194,7 +194,7 @@ suite("User functions", () => {
             ]);
         });
 
-        test("Empty namespace name", async () => {
+        test("Empty namespace name", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -223,7 +223,7 @@ suite("User functions", () => {
             ]);
         });
 
-        test("Empty namespace name with unused top-level parameter", async () => {
+        test("Empty namespace name with unused top-level parameter", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -258,7 +258,7 @@ suite("User functions", () => {
             ]);
         });
 
-        test("No top-level object value", async () => {
+        test("No top-level object value", () => {
             const template = [{
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -293,7 +293,7 @@ suite("User functions", () => {
 
     // #region
     suite("UDF Function definitions", () => {
-        test("simple function definition", async () => {
+        test("simple function definition", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -315,7 +315,7 @@ suite("User functions", () => {
             parseTemplate(template, []);
         });
 
-        test("function definition with local parameter reference in output", async () => {
+        test("function definition with local parameter reference in output", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -345,7 +345,7 @@ suite("User functions", () => {
             ]);
         });
 
-        test("Case insensitive keys in definition", async () => {
+        test("Case insensitive keys in definition", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -383,7 +383,7 @@ suite("User functions", () => {
             assert.equal(dt.topLevelScope.namespaceDefinitions[0].members[0].parameterDefinitions.length, 1);
         });
 
-        test("function definition with local parameter reference in output", async () => {
+        test("function definition with local parameter reference in output", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -411,7 +411,7 @@ suite("User functions", () => {
             ]);
         });
 
-        test("function definition can't access parameter from outer scope", async () => {
+        test("function definition can't access parameter from outer scope", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -454,7 +454,7 @@ suite("User functions", () => {
         // Right now we get:
         //   Template validation failed: The template function 'a' at line '11' and column '22' is not valid. These function calls are not supported in a function definition: 'variables'. Please see https://aka.ms/arm-template/#functions for usage details.
         //   Undefined variable reference: 'var1'
-        test("function definition can't access variables", async () => {
+        test("function definition can't access variables", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -487,7 +487,7 @@ suite("User functions", () => {
                 });
         });
 
-        test("function can't access parameter from outer scope", async () => {
+        test("function can't access parameter from outer scope", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -526,7 +526,7 @@ suite("User functions", () => {
                 });
         });
 
-        test("function parameter names are case insensitive", async () => {
+        test("function parameter names are case insensitive", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -562,7 +562,7 @@ suite("User functions", () => {
 
     suite("UDF Calling user functions", () => {
 
-        test("Calling function with no parameters and no output", async () => {
+        test("Calling function with no parameters and no output", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -587,7 +587,7 @@ suite("User functions", () => {
             parseTemplate(template, []);
         });
 
-        test("Calling function with no parameters", async () => {
+        test("Calling function with no parameters", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -616,7 +616,7 @@ suite("User functions", () => {
             parseTemplate(template, []);
         });
 
-        test("Calling function with no parameters, with extra arg", async () => {
+        test("Calling function with no parameters, with extra arg", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -647,7 +647,7 @@ suite("User functions", () => {
             ]);
         });
 
-        test("Unrecognized function name", async () => {
+        test("Unrecognized function name", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -675,7 +675,7 @@ suite("User functions", () => {
             ]);
         });
 
-        test("Unrecognized namespace", async () => {
+        test("Unrecognized namespace", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -703,7 +703,7 @@ suite("User functions", () => {
             ]);
         });
 
-        test("Missing function argument list 1", async () => {
+        test("Missing function argument list 1", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -730,7 +730,7 @@ suite("User functions", () => {
             ]);
         });
 
-        test("Missing function argument list 2", async () => {
+        test("Missing function argument list 2", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -759,7 +759,7 @@ suite("User functions", () => {
             ]);
         });
 
-        test("Calling functions from two namespaces", async () => {
+        test("Calling functions from two namespaces", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -812,7 +812,7 @@ suite("User functions", () => {
             parseTemplate(template, []);
         });
 
-        test("Calling function with one parameter", async () => {
+        test("Calling function with one parameter", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -847,7 +847,7 @@ suite("User functions", () => {
             parseTemplate(template, []);
         });
 
-        test("Calling function with one parameter, only giving one argument", async () => {
+        test("Calling function with one parameter, only giving one argument", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -884,7 +884,7 @@ suite("User functions", () => {
             ]);
         });
 
-        test("Calling function with one parameter, giving an extra argument", async () => {
+        test("Calling function with one parameter, giving an extra argument", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -921,7 +921,7 @@ suite("User functions", () => {
             ]);
         });
 
-        test("Calling function with two parameters", async () => {
+        test("Calling function with two parameters", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -957,7 +957,7 @@ suite("User functions", () => {
             parseTemplate(template, []);
         });
 
-        test("Calling function with two parameters", async () => {
+        test("Calling function with two parameters", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -993,7 +993,7 @@ suite("User functions", () => {
             parseTemplate(template, []);
         });
 
-        test("Namespaces are case insensitive", async () => {
+        test("Namespaces are case insensitive", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -1018,7 +1018,7 @@ suite("User functions", () => {
             parseTemplate(template, []);
         });
 
-        test("Function names are case insensitive", async () => {
+        test("Function names are case insensitive", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -1045,7 +1045,7 @@ suite("User functions", () => {
 
         // CONSIDER: Give better error message.  Right now we get this (from backend validation):
         //  Template validation failed: The template function 'b' at line '15' and column '22' is not valid. These function calls are not supported in a function definition: 'udf.a'. Please see https://aka.ms/arm-template/#functions for usage details.
-        test("User function can't call another user function", async () => {
+        test("User function can't call another user function", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -1083,7 +1083,7 @@ suite("User functions", () => {
             ]);
         });
 
-        test("Calling user function with same name as built-in function", async () => {
+        test("Calling user function with same name as built-in function", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -1108,7 +1108,7 @@ suite("User functions", () => {
             parseTemplate(template, []);
         });
 
-        test("Calling user function with namespace name same as built-in function", async () => {
+        test("Calling user function with namespace name same as built-in function", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -1134,7 +1134,7 @@ suite("User functions", () => {
 
         });
 
-        test("Function names are case insensitive", async () => {
+        test("Function names are case insensitive", () => {
             const template = {
                 "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
@@ -1165,132 +1165,132 @@ suite("User functions", () => {
     suite("UDF Find References", () => {
 
         suite("Find parameter references", () => {
-            test("At reference to top-level parameter", async () => {
+            test("At reference to top-level parameter", () => {
                 const { dt, markers: { apiVersionDef, apiVersionReference } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "apiVersion" inside resources
-                await testGetReferences(dt, apiVersionReference.index, undefined, [apiVersionReference.index, apiVersionDef.index]);
+                testGetReferences(dt, apiVersionReference.index, undefined, [apiVersionReference.index, apiVersionDef.index]);
             });
 
-            test("At definition of top-level parameter", async () => {
+            test("At definition of top-level parameter", () => {
                 const { dt, markers: { apiVersionDef, apiVersionReference } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition of "apiVersion" parameter
-                await testGetReferences(dt, apiVersionDef.index, undefined, [apiVersionDef.index, apiVersionReference.index]);
+                testGetReferences(dt, apiVersionDef.index, undefined, [apiVersionDef.index, apiVersionReference.index]);
             });
 
-            test("At reference to user function parameter", async () => {
+            test("At reference to user function parameter", () => {
                 const { dt, markers: { udfyearReference, udfyearDefinition } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "year" inside user function output
-                await testGetReferences(dt, udfyearReference.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
+                testGetReferences(dt, udfyearReference.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
             });
 
-            test("At definition of user function parameter", async () => {
+            test("At definition of user function parameter", () => {
                 const { dt, markers: { udfyearReference, udfyearDefinition } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition of "year" inside user function
-                await testGetReferences(dt, udfyearDefinition.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
+                testGetReferences(dt, udfyearDefinition.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
             });
 
-            test("At reference to parameter in user function only finds UDF scope parameter, not top-level param", async () => {
+            test("At reference to parameter in user function only finds UDF scope parameter, not top-level param", () => {
                 const { dt, markers: { udfyearReference, udfyearDefinition } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "year" inside user function output
-                await testGetReferences(dt, udfyearReference.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
+                testGetReferences(dt, udfyearReference.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
             });
 
-            test("At definition to parameter in user function only finds UDF scope parameter, not top-level param", async () => {
+            test("At definition to parameter in user function only finds UDF scope parameter, not top-level param", () => {
                 const { dt, markers: { udfyearReference, udfyearDefinition } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition of "year" inside user function
-                await testGetReferences(dt, udfyearDefinition.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
+                testGetReferences(dt, udfyearDefinition.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
             });
 
-            test("At reference to top-level parameter only finds top-level parameter definition, not param in user function", async () => {
+            test("At reference to top-level parameter only finds top-level parameter definition, not param in user function", () => {
                 const { dt, markers: { udfyearReference, udfyearDefinition } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "year" inside user function output
-                await testGetReferences(dt, udfyearReference.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
+                testGetReferences(dt, udfyearReference.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
             });
         });
 
         suite("UDF Find variable references", () => {
-            test("At reference to variable", async () => {
+            test("At reference to variable", () => {
                 const { dt, markers: { var1Definition, var1Reference1, var1Reference2 } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "var1" inside var2
-                await testGetReferences(dt, var1Reference1.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
+                testGetReferences(dt, var1Reference1.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
 
                 // Cursor at reference to "var1" inside outputs2
-                await testGetReferences(dt, var1Reference2.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
+                testGetReferences(dt, var1Reference2.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
             });
 
-            test("Deeply nested", async () => {
+            test("Deeply nested", () => {
                 const { dt, markers: { var1Definition, var1Reference1, var1Reference2 } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "var1" inside var2
-                await testGetReferences(dt, var1Reference1.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
+                testGetReferences(dt, var1Reference1.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
 
                 // Cursor at reference to "var1" inside outputs2
-                await testGetReferences(dt, var1Reference2.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
+                testGetReferences(dt, var1Reference2.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
             });
 
-            test("At definition of variable", async () => {
+            test("At definition of variable", () => {
                 const { dt, markers: { var1Definition, var1Reference1, var1Reference2 } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition to "var1" variable
-                await testGetReferences(dt, var1Definition.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
+                testGetReferences(dt, var1Definition.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
             });
         });
 
         suite("UDF Find user function references", () => {
             // tslint:disable-next-line: no-suspicious-comment
-            test("At reference to user-defined function, cursor inside the namespace portion", async () => {
+            test("At reference to user-defined function, cursor inside the namespace portion", () => {
                 const { dt, markers: { udfDef, udfReferenceAtNamespace } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "udf.string" inside the namespace
-                await testGetReferences(dt, udfReferenceAtNamespace.index, undefined, [udfDef.index, udfReferenceAtNamespace.index]);
+                testGetReferences(dt, udfReferenceAtNamespace.index, undefined, [udfDef.index, udfReferenceAtNamespace.index]);
             });
 
-            test("At reference to user-defined function, cursor inside the name portion", async () => {
+            test("At reference to user-defined function, cursor inside the name portion", () => {
                 const { dt, markers: { udfStringDefinition, udfReferenceAtName } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "udf.string" inside the name
-                await testGetReferences(dt, udfReferenceAtName.index, undefined, [udfStringDefinition.index, udfReferenceAtName.index]);
+                testGetReferences(dt, udfReferenceAtName.index, undefined, [udfStringDefinition.index, udfReferenceAtName.index]);
             });
 
-            test("At definition of user-defined function", async () => {
+            test("At definition of user-defined function", () => {
                 const { dt, markers: { udfStringDefinition, udfReferenceAtName } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition of "udf.string"
-                await testGetReferences(dt, udfStringDefinition.index, undefined, [udfStringDefinition.index, udfReferenceAtName.index]);
+                testGetReferences(dt, udfStringDefinition.index, undefined, [udfStringDefinition.index, udfReferenceAtName.index]);
             });
 
-            test("At definition of user-defined namespace", async () => {
+            test("At definition of user-defined namespace", () => {
                 const { dt, markers: { udfDef, udfReferenceAtNamespace } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition of "udf.string"
-                await testGetReferences(dt, udfDef.index, undefined, [udfDef.index, udfReferenceAtNamespace.index]);
+                testGetReferences(dt, udfDef.index, undefined, [udfDef.index, udfReferenceAtNamespace.index]);
             });
 
-            test("Reference to built-in function with same name as UDF function doesn't find UDF function call", async () => {
+            test("Reference to built-in function with same name as UDF function doesn't find UDF function call", () => {
                 const { dt, markers: { stringRef1, stringRef2, stringRef3, stringRef4 } } = parseTemplateWithMarkers(userFuncsTemplate1);
-                await testGetReferences(dt, stringRef4.index, undefined, [stringRef1.index, stringRef2.index, stringRef3.index, stringRef4.index]);
+                testGetReferences(dt, stringRef4.index, undefined, [stringRef1.index, stringRef2.index, stringRef3.index, stringRef4.index]);
             });
 
-            test("Reference to built-in function in outer scope finds it in all scopes", async () => {
+            test("Reference to built-in function in outer scope finds it in all scopes", () => {
                 const { dt, markers: { addReferenceInUdfString, addReferenceInOutput4 } } = parseTemplateWithMarkers(userFuncsTemplate1);
 
                 // Cursor at "add" in output4
-                await testGetReferences(dt, addReferenceInOutput4.index, undefined, [addReferenceInOutput4.index, addReferenceInUdfString.index]);
+                testGetReferences(dt, addReferenceInOutput4.index, undefined, [addReferenceInOutput4.index, addReferenceInUdfString.index]);
             });
 
-            test("Reference to built-in function in function scope finds it in all scopes", async () => {
+            test("Reference to built-in function in function scope finds it in all scopes", () => {
                 const { dt, markers: { addReferenceInUdfString, addReferenceInOutput4 } } = parseTemplateWithMarkers(userFuncsTemplate1);
 
                 // Cursor at "add" in udf 'string's output
-                await testGetReferences(dt, addReferenceInUdfString.index, undefined, [addReferenceInOutput4.index, addReferenceInUdfString.index]);
+                testGetReferences(dt, addReferenceInUdfString.index, undefined, [addReferenceInOutput4.index, addReferenceInUdfString.index]);
             });
         });
 
@@ -1351,7 +1351,7 @@ suite("User functions", () => {
         });
     }); // suite UDF Hover Info
 
-    suite("UDF Go To Definition", async () => {
+    suite("UDF Go To Definition", () => {
         async function testGoToDefinition(
             dt: DeploymentTemplateDoc,
             cursorIndex: number,
@@ -1407,7 +1407,7 @@ suite("User functions", () => {
 
     suite("Warnings", () => {
         suite("Unused parameters", () => {
-            test("Unused top-level parameter", async () => {
+            test("Unused top-level parameter", () => {
                 const template = {
                     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
@@ -1424,7 +1424,7 @@ suite("User functions", () => {
                 ]);
             });
 
-            test("Unused top-level parameter when UDF param has same name", async () => {
+            test("Unused top-level parameter when UDF param has same name", () => {
                 const template = {
                     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
@@ -1459,7 +1459,7 @@ suite("User functions", () => {
                 ]);
             });
 
-            test("Unused UDF parameter", async () => {
+            test("Unused UDF parameter", () => {
                 const template = {
                     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
@@ -1488,7 +1488,7 @@ suite("User functions", () => {
                 ]);
             });
 
-            test("Unused UDF parameter when top-level param has same name", async () => {
+            test("Unused UDF parameter when top-level param has same name", () => {
                 const template = {
                     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
@@ -1529,7 +1529,7 @@ suite("User functions", () => {
                 ]);
             });
 
-            test("Unused top-level and unused UDF parameter", async () => {
+            test("Unused top-level and unused UDF parameter", () => {
                 const template = {
                     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
@@ -1567,7 +1567,7 @@ suite("User functions", () => {
         });
 
         suite("Unused UDFs", () => {
-            test("Unused function", async () => {
+            test("Unused function", () => {
                 const template = {
                     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
@@ -1597,7 +1597,7 @@ suite("User functions", () => {
                 ]);
             });
 
-            // test("Unused namespace", async () => {
+            // test("Unused namespace",() => {
             //     const template = {
             //         "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
             //         "contentVersion": "1.0.0.0",
@@ -1637,7 +1637,7 @@ suite("User functions", () => {
         });
     }); // suite Warnings
 
-    suite("UDF Completions", async () => {
+    suite("UDF Completions", () => {
         const userFuncsTemplate2: IDeploymentTemplate = {
             "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
             "contentVersion": "1.0.0.0",

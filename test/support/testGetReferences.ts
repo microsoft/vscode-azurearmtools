@@ -16,8 +16,8 @@ import { DeploymentParametersDoc, DeploymentTemplateDoc, ReferenceList } from '.
  *      // Cursor at reference to "apiVersion" inside resources
  *      await testFindReferences(dt, apiVersionReference.index, [apiVersionReference.index, apiVersionDef.index]);
  */
-export async function testGetReferences(dt: DeploymentTemplateDoc, cursorIndexInTemplate: number, dp: DeploymentParametersDoc | undefined, expectedReferenceIndices: number[]): Promise<void> {
-    const pc = dt.getContextFromDocumentCharacterIndex(cursorIndexInTemplate, undefined);
+export function testGetReferences(dt: DeploymentTemplateDoc, cursorIndexInTemplate: number, dp: DeploymentParametersDoc | undefined, expectedReferenceIndices: number[]): void {
+    const pc = dt.getContextFromDocumentCharacterIndex(cursorIndexInTemplate, dp);
     // tslint:disable-next-line: no-non-null-assertion
     const references: ReferenceList = pc.getReferences()!;
     assert(references, "Expected non-empty list of references");

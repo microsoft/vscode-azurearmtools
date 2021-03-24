@@ -75,7 +75,7 @@ export class ParametersPositionContext extends PositionContext {
      */
     protected getReferencesCore(): ReferenceList | undefined {
         const refInfo = this.getReferenceSiteInfo(false);
-        return refInfo ? this.document.findReferencesToDefinition(refInfo.definition) : undefined;
+        return refInfo ? this.document.findReferencesToDefinition(refInfo.definition, undefined) : undefined;
     }
 
     public async getCompletionItems(triggerCharacter: string | undefined, tabSize: number): Promise<ICompletionItemsResult> {

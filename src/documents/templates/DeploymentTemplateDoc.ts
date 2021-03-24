@@ -510,7 +510,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         return scopedResult;
     }
 
-    public findReferencesToDefinition(definition: INamedDefinition): ReferenceList {
+    public findReferencesToDefinition(definition: INamedDefinition, associatedDocument: DeploymentDocument | undefined): ReferenceList {
         const result: ReferenceList = new ReferenceList(definition.definitionKind);
 
         const referencesList = this.allReferences.referenceListsMap.get(definition);

@@ -229,7 +229,7 @@ export abstract class PositionContext {
             // References/definitions in the associated document
             const refInfo = this.getReferenceSiteInfo(true);
             if (refInfo) {
-                const templateReferences = this._associatedDocument.findReferencesToDefinition(refInfo.definition);
+                const templateReferences = this._associatedDocument.findReferencesToDefinition(refInfo.definition, this.document);
                 references.addAll(templateReferences);
             }
         }

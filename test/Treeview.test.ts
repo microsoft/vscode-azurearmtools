@@ -3731,13 +3731,13 @@ suite("TreeView", async (): Promise<void> => {
         test("getChildren: Errors: Missing end quote", async () => {
             await testTree(`{
                 {
-                    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                     "true: false
                 }
             }`,
                 [
                     {
-                        label: "$schema: https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                        label: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                         collapsibleState: 0,
                         icon: "label.svg"
                     }

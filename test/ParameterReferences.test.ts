@@ -14,10 +14,10 @@ suite("Find References for parameters", () => {
         $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
         contentVersion: "1.0.0.0",
         parameters: {
-            "!<topLevelParameter1Definition!>parameter1": { // TOP-LEVEL Parameter1 definition
+            "<!topLevelParameter1Definition!>parameter1": { // TOP-LEVEL Parameter1 definition
                 type: "string",
                 metadata: {
-                    description: "description"
+                    description: "top-level parameter1 definition"
                 }
             }
         },
@@ -43,7 +43,7 @@ suite("Find References for parameters", () => {
                             "<!nestedParameter1Definition!>parameter1": { // NESTED Parameter1 definition (different from top-level parameter1)
                                 type: "string",
                                 metadata: {
-                                    description: "description"
+                                    description: "nested template parameter1 definition"
                                 }
                             }
                         },
@@ -66,13 +66,13 @@ suite("Find References for parameters", () => {
         $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
         contentVersion: "1.0.0.0",
         parameters: {
-            parameter1: {
-                value: "parameter 1 value"
+            "<!topLevelParameter1Value!>parameter1": {
+                value: "Top-level parameter 1 value in parameter file"
             }
         }
     };
 
-    suite("asdf", async () => {
+    suite("#1237 Don't mix up params in param file with params with same name in a nested template", () => {
         const {
             dt,
             markers: {
@@ -83,33 +83,38 @@ suite("Find References for parameters", () => {
                 nestedParameter1Value
             }
         } = parseTemplateWithMarkers(template1, [], { ignoreWarnings: true });
-        const { dp, markers: { topLevelParameter1Value } } = await parseParametersWithMarkers(paramsFile1);
+        const {
+            dp,
+            markers: {
+                topLevelParameter1Value
+            }
+        } = parseParametersWithMarkers(paramsFile1);
 
-        suite("Top-level parameter1", async () => {
-            test("Cursor at definition", async () => {
-                await testGetReferences(dt, topLevelParameter1Definition.index, dp, [topLevelParameter1Definition.index, topLevelParameter1Usage.index, topLevelParameter1Value.index]);
+        suite("Top-level parameter1", () => {
+            test("Cursor at definition", () => {
+                testGetReferences(dt, topLevelParameter1Definition.index, dp, [topLevelParameter1Definition.index, topLevelParameter1Usage.index, topLevelParameter1Value.index]);
             });
 
-            test("Cursor at usage", async () => {
-                await testGetReferences(dt, topLevelParameter1Definition.index, dp, [topLevelParameter1Definition.index, topLevelParameter1Usage.index, topLevelParameter1Value.index]);
+            test("Cursor at usage", () => {
+                testGetReferences(dt, topLevelParameter1Usage.index, dp, [topLevelParameter1Definition.index, topLevelParameter1Usage.index, topLevelParameter1Value.index]);
             });
 
-            test("Cursor at value in parameters file", async () => {
-                await testGetReferences(dt, topLevelParameter1Definition.index, dp, [topLevelParameter1Definition.index, topLevelParameter1Usage.index, topLevelParameter1Value.index]);
+            test("Cursor at value in parameters file", () => {
+                testGetReferences(dt, topLevelParameter1Value.index, dp, [topLevelParameter1Definition.index, topLevelParameter1Usage.index, topLevelParameter1Value.index]);
             });
         });
 
-        suite("Parameter1 in nested template", async () => {
-            test("Cursor at definition", async () => {
-                await testGetReferences(dt, topLevelParameter1Definition.index, dp, [topLevelParameter1Definition.index, topLevelParameter1Usage.index, topLevelParameter1Value.index]);
+        suite("Parameter1 in nested template", () => {
+            test("Cursor at definition", () => {
+                testGetReferences(dt, nestedParameter1Definition.index, dp, [nestedParameter1Definition.index, nestedParameter1Usage.index, nestedParameter1Value.index]);
             });
 
-            test("Cursor at usage", async () => {
-                await testGetReferences(dt, topLevelParameter1Definition.index, dp, [topLevelParameter1Definition.index, topLevelParameter1Usage.index, topLevelParameter1Value.index]);
+            test("Cursor at usage", () => {
+                testGetReferences(dt, nestedParameter1Usage.index, dp, [nestedParameter1Definition.index, nestedParameter1Usage.index, nestedParameter1Value.index]);
             });
 
-            test("Cursor at value in parameters file", async () => {
-                await testGetReferences(dt, topLevelParameter1Definition.index, dp, [topLevelParameter1Definition.index, topLevelParameter1Usage.index, topLevelParameter1Value.index]);
+            test("Cursor at value in parameters file", () => {
+                testGetReferences(dt, nestedParameter1Value.index, dp, [nestedParameter1Definition.index, nestedParameter1Usage.index, nestedParameter1Value.index]);
             });
         });
     });

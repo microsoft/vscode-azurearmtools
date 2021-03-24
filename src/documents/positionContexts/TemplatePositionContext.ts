@@ -784,7 +784,7 @@ export class TemplatePositionContext extends PositionContext {
         if (tleInfo) { // If we're inside a string (whether an expression or not)
             const refInfo = this.getReferenceSiteInfo(true);
             if (refInfo) {
-                return this.document.findReferencesToDefinition(refInfo.definition);
+                return this.document.findReferencesToDefinition(refInfo.definition, this.document);
             }
         }
 
