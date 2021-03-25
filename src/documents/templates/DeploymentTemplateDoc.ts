@@ -511,10 +511,10 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         return scopedResult;
     }
 
-    public findReferencesToDefinition(definition: INamedDefinition, parameterValuesSource: IParameterValuesSource | undefined): ReferenceList {
+    public findReferencesToDefinition(definition: INamedDefinition, parameterValuesSource/*asdf not needed?*/: IParameterValuesSource | undefined): ReferenceList {
         const result: ReferenceList = new ReferenceList(definition.definitionKind);
 
-        const referencesList = this.allReferences.referenceListsMap.get(definition);
+        const referencesList = this.allReferences.referenceListsMap.get(definition);//asdf move down
 
         // Add the definition of whatever's being referenced to the list
         if (definition.nameValue) {

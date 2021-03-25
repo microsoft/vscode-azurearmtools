@@ -4,11 +4,10 @@
 
 import * as TLE from '../../language/expressions/TLE';
 import { ReferenceList } from "../../language/ReferenceList";
-import { ContainsBehavior } from '../../language/Span';
 import { DeploymentParametersDoc } from "../parameters/DeploymentParametersDoc";
-import { getPropertyValueCompletionItems } from "../parameters/ParameterValues";
+import { getPropertyValueCompletionItems, getReferenceSiteInfoForParameterValue } from "../parameters/ParameterValues";
 import { DeploymentTemplateDoc } from "../templates/DeploymentTemplateDoc";
-import { ICompletionItemsResult, IReferenceSite, PositionContext, ReferenceSiteKind } from "./PositionContext";
+import { ICompletionItemsResult, IReferenceSite, PositionContext } from "./PositionContext";
 
 /**
  * Represents a position inside the snapshot of a deployment parameter file, plus all related information
@@ -47,26 +46,34 @@ export class ParametersPositionContext extends PositionContext {
             return undefined;
         }
 
-        for (let paramValue of this.document.parameterValueDefinitions) {
-            // Are we inside the name of a parameter?
-            if (paramValue.nameValue.span.contains(this.documentCharacterIndex, ContainsBehavior.extended)) {
-                // Does it have an associated parameter definition in the template?
-                const paramDef = this._associatedTemplate?.topLevelScope.getParameterDefinition(paramValue.nameValue.unquotedValue);
-                if (paramDef) {
-                    return {
-                        referenceKind: ReferenceSiteKind.reference,
-                        unquotedReferenceSpan: paramValue.nameValue.unquotedSpan,
-                        referenceDocument: this.document,
-                        definition: paramDef,
-                        definitionDocument: this._associatedTemplate
-                    };
-                }
+        return getReferenceSiteInfoForParameterValue(
+            this._associatedTemplate,
+            this._associatedTemplate.topLevelScope.parameterDefinitionsSource,
+            this._associatedTemplate.topLevelScope,
+            this.document.topLevelParameterValuesSource,
+            this.documentCharacterIndex);
 
-                break;
-            }
-        }
+        //asdf
+        // for (let paramValue of this.document.parameterValueDefinitions) {
+        //     // Are we inside the name of a parameter?
+        //     if (paramValue.nameValue.span.contains(this.documentCharacterIndex, ContainsBehavior.extended)) {
+        //         // Does it have an associated parameter definition in the template?
+        //         const paramDef = this._associatedTemplate?.topLevelScope.getParameterDefinition(paramValue.nameValue.unquotedValue);
+        //         if (paramDef) {
+        //             return {
+        //                 referenceKind: ReferenceSiteKind.reference,
+        //                 unquotedReferenceSpan: paramValue.nameValue.unquotedSpan,
+        //                 referenceDocument: this.document,
+        //                 definition: paramDef,
+        //                 definitionDocument: this._associatedTemplate
+        //             };
+        //         }
 
-        return undefined;
+        //         break;
+        //     }
+        // }
+
+        // return undefined;
     }
 
     /**
@@ -75,7 +82,18 @@ export class ParametersPositionContext extends PositionContext {
      */
     protected getReferencesCore(): ReferenceList | undefined {
         const refInfo = this.getReferenceSiteInfo(false);
-        return refInfo ? this.document.findReferencesToDefinition(refInfo.definition, undefined) : undefined;
+        if (refInfo) {
+            const references = this.document.findReferencesToDefinition(refInfo.definition, undefined);
+
+            if (this.associatedDocument) {
+                const associatedDocRefs = this.associatedDocument.findReferencesToDefinition(refInfo.definition, undefined);
+                references.addAll(associatedDocRefs);
+            }
+
+            return references;
+        }
+
+        return undefined;
     }
 
     public async getCompletionItems(triggerCharacter: string | undefined, tabSize: number): Promise<ICompletionItemsResult> {

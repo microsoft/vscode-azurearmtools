@@ -14,6 +14,9 @@ import { ContainsBehavior, Span } from "../../language/Span";
 import { indentMultilineString } from "../../util/multilineStrings";
 import { IAddMissingParametersArgs } from "../../vscodeIntegration/commandArguments";
 import { getVSCodePositionFromPosition, getVSCodeRangeFromSpan } from "../../vscodeIntegration/vscodePosition";
+import { IReferenceSite, ReferenceSiteKind } from "../positionContexts/PositionContext";
+import { IJsonDocument } from "../templates/IJsonDocument";
+import { TemplateScope } from "../templates/scopes/TemplateScope";
 import { IParameterDefinition } from "./IParameterDefinition";
 import { IParameterDefinitionsSource } from "./IParameterDefinitionsSource";
 import { IParameterValuesSource } from "./IParameterValuesSource";
@@ -448,4 +451,38 @@ export function findReferencesToDefinitionInParameterValues(values: IParameterVa
     }
 
     return results;
+}
+
+/**
+ * If this position is inside a parameter value (params file, nested deployment, etc) then
+ * return an object with information about this reference and the corresponding definition
+ */
+export function getReferenceSiteInfoForParameterValue(
+    definitionsDoc: IJsonDocument,
+    definitions: IParameterDefinitionsSource,
+    scope: TemplateScope,
+    values: IParameterValuesSource,
+    documentCharacterIndex: number
+): IReferenceSite | undefined {
+    for (let paramValue of values.parameterValueDefinitions) {
+        // Are we inside the name of a parameter?
+        if (paramValue.nameValue.span.contains(documentCharacterIndex, ContainsBehavior.extended)) {
+            // Does it have an associated parameter definition in our list?
+            const paramDef = definitions.parameterDefinitions.find(d => d.nameValue.unquotedValue.toLowerCase() === paramValue.nameValue.unquotedValue.toLocaleLowerCase());
+            if (paramDef) {
+                return {
+                    referenceKind: ReferenceSiteKind.reference,
+                    unquotedReferenceSpan: paramValue.nameValue.unquotedSpan,
+                    referenceDocument: values.document,
+                    definition: paramDef,
+                    definitionDocument: definitionsDoc,
+                    definitionScope: scope
+                };
+            }
+
+            break;
+        }
+    }
+
+    return undefined;
 }

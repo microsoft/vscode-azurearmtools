@@ -32,8 +32,8 @@ suite("Find References for parameters", () => {
                     },
                     mode: "Incremental",
                     parameters: {
-                        parameter1: {
-                            value: "<!nestedParameter1Value!>nested template param1 value" // NESTED parameter1 value
+                        "<!nestedParameter1Value!>parameter1": {  // NESTED parameter1 value
+                            value: "nested template param1 value"
                         }
                     },
                     template: {

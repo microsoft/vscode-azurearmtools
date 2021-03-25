@@ -19,6 +19,8 @@ import * as Completion from "../../vscodeIntegration/Completion";
 import { IHoverInfo } from '../../vscodeIntegration/IHoverInfo';
 import { UsageInfoHoverInfo } from "../../vscodeIntegration/UsageInfoHoverInfo";
 import { DeploymentDocument as DeploymentDocument } from "../DeploymentDocument";
+import { IJsonDocument } from '../templates/IJsonDocument';
+import { TemplateScope } from '../templates/scopes/TemplateScope';
 
 export enum ReferenceSiteKind {
     definition = "definition",
@@ -45,17 +47,18 @@ export interface IReferenceSite {
     /**
      * The document that contains the reference
      */
-    referenceDocument: DeploymentDocument;
+    referenceDocument: IJsonDocument;
 
     /**
      * The definition that the reference refers to
      */
     definition: INamedDefinition;
+    definitionScope: TemplateScope | undefined;
 
     /**
      * The document that contains the definition
      */
-    definitionDocument: DeploymentDocument;
+    definitionDocument: IJsonDocument;
 }
 
 /**
@@ -222,32 +225,56 @@ export abstract class PositionContext {
      * @returns undefined if references are not supported at this location, or empty list if supported but none found
      */
     public getReferences(): ReferenceList | undefined { //asdf
+        // References in the template
+        //asf const dt = this._document instanceof DeploymentTemplateDoc ? this._document : this._associatedDocument;
+
         return this.getReferencesCore();
-//        return undefined; //asdf remove this method?
-        // // Find what's at the cursor position
-        // // References in this document
-        // const references: ReferenceList | undefined = this.getReferencesCore();
-        // if (!references) {
-        //     return undefined;
-        // }
 
-        // let parameterValuesSource: IParameterValuesSource | undefined;
-        // if (this._associatedDocument instanceof DeploymentParametersDoc/*asdf*/) {
-        //     // References/definitions in the associated document
-        //     parameterValuesSource = this._associatedDocument.topLevelParameterValuesSource;
-        // } else {
-        //     //asdf need scope
-        // }
-
-        // if (parameterValuesSource) {
+        //asdf
+        // const tleInfo = this.tleInfo;
+        // if (tleInfo) { // If we're inside a string (whether an expression or not)
         //     const refInfo = this.getReferenceSiteInfo(true);
         //     if (refInfo) {
-        //         const templateReferences = findReferencesToDefinitionInParameterValues(parameterValuesSource, refInfo.definition);
-        //         references.addAll(templateReferences);
-        //     }
-        // }
 
-        // return references;
+
+        //         const references = new ReferenceList()
+        //         return this.getReferencesCore();
+
+        //         // References in the parameters file or parameter values of a nested/linked template
+        //         let parameterValuesSource: IParameterValuesSource | undefined = this.getParameterValuesSource();
+        //         if (parameterValuesSource) {
+        //             const refInfo = this.getReferenceSiteInfo(true);
+        //             if (refInfo) {
+        //                 const templateReferences = findReferencesToDefinitionInParameterValues(parameterValuesSource, refInfo.definition);
+        //                 references.addAll(templateReferences);
+        //             }
+        //         }
+
+        //         //        return undefined; //asdf remove this method?
+        //         // // Find what's at the cursor position
+        //         // // References in this document
+        //         // const references: ReferenceList | undefined = this.getReferencesCore();
+        //         // if (!references) {
+        //         //     return undefined;
+        //         // }
+
+        //         // let parameterValuesSource: IParameterValuesSource | undefined;
+        //         // if (this._associatedDocument instanceof DeploymentParametersDoc/*asdf*/) {
+        //         //     // References/definitions in the associated document
+        //         //     parameterValuesSource = this._associatedDocument.topLevelParameterValuesSource;
+        //         // } else {
+        //         //     //asdf need scope
+        //         // }
+
+        //         // if (parameterValuesSource) {
+        //         //     const refInfo = this.getReferenceSiteInfo(true);
+        //         //     if (refInfo) {
+        //         //         const templateReferences = findReferencesToDefinitionInParameterValues(parameterValuesSource, refInfo.definition);
+        //         //         references.addAll(templateReferences);
+        //         //     }
+        //         // }
+
+        //         // return references;
     }
 
     /**

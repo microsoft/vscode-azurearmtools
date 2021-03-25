@@ -23,7 +23,7 @@ import { DeploymentDocument } from "../DeploymentDocument";
 import { DeploymentParametersDoc } from "../parameters/DeploymentParametersDoc";
 import { IParameterDefinition } from "../parameters/IParameterDefinition";
 import { IParameterValuesSource } from "../parameters/IParameterValuesSource";
-import { findReferencesToDefinitionInParameterValues, getPropertyValueCompletionItems } from "../parameters/ParameterValues";
+import { findReferencesToDefinitionInParameterValues, getPropertyValueCompletionItems, getReferenceSiteInfoForParameterValue } from "../parameters/ParameterValues";
 import { DeploymentTemplateDoc } from "../templates/DeploymentTemplateDoc";
 import { getDependsOnCompletions } from "../templates/getDependsOnCompletions";
 import { getResourceIdCompletions } from "../templates/getResourceIdCompletions";
@@ -110,7 +110,7 @@ export class TemplatePositionContext extends PositionContext {
     //  that we get hover over the definition of a param/var/etc and not just at references.
     //  Any bad side effects?
     // tslint:disable-next-line: cyclomatic-complexity // CONSIDER: refactor
-    public getReferenceSiteInfo(includeDefinition: boolean): IReferenceSite | undefined {
+    public getReferenceSiteInfo(considerDefinition: boolean): IReferenceSite | undefined {
         const tleInfo = this.tleInfo;
         if (tleInfo) {
             const scope = tleInfo.scope;
@@ -126,7 +126,7 @@ export class TemplatePositionContext extends PositionContext {
                     const nsDefinition = scope.getFunctionNamespaceDefinition(ns);
                     if (nsDefinition) {
                         const unquotedReferenceSpan: Span = tleFuncCall.namespaceToken.span.translate(this.jsonTokenStartIndex);
-                        return { referenceKind: ReferenceSiteKind.reference, referenceDocument, definition: nsDefinition, unquotedReferenceSpan, definitionDocument };
+                        return { referenceKind: ReferenceSiteKind.reference, referenceDocument, definition: nsDefinition, definitionScope: scope, unquotedReferenceSpan, definitionDocument };
                     }
                 } else if (tleFuncCall.nameToken) {
                     const unquotedReferenceSpan: Span = tleFuncCall.nameToken.span.translate(this.jsonTokenStartIndex);
@@ -140,7 +140,7 @@ export class TemplatePositionContext extends PositionContext {
                             const nsDefinition = scope.getFunctionNamespaceDefinition(ns);
                             const userFunctiondefinition = scope.getUserFunctionDefinition(ns, name);
                             if (nsDefinition && userFunctiondefinition) {
-                                return { referenceKind, referenceDocument, definition: userFunctiondefinition, unquotedReferenceSpan, definitionDocument };
+                                return { referenceKind, referenceDocument, definition: userFunctiondefinition, definitionScope: scope, unquotedReferenceSpan, definitionDocument };
                             }
                         } else {
                             // Inside a reference to a built-in function
@@ -168,7 +168,7 @@ export class TemplatePositionContext extends PositionContext {
                             }
                             const functionMetadata: BuiltinFunctionMetadata | undefined = AzureRMAssets.getFunctionMetadataFromName(tleFuncCall.nameToken.stringValue);
                             if (functionMetadata) {
-                                return { referenceKind, referenceDocument, definition: functionMetadata, unquotedReferenceSpan, definitionDocument };
+                                return { referenceKind, referenceDocument, definition: functionMetadata, definitionScope: undefined, unquotedReferenceSpan, definitionDocument };
                             }
 
                         }
@@ -193,22 +193,38 @@ export class TemplatePositionContext extends PositionContext {
                     }
                 }
             }
-        }
 
-        if (includeDefinition) {
-            const definition = this.getDefinitionAtSite();
-            if (definition && definition.nameValue) {
-                return {
-                    referenceKind: ReferenceSiteKind.definition,
-                    definition: definition,
-                    referenceDocument: this.document,
-                    definitionDocument: this.document,
-                    unquotedReferenceSpan: definition.nameValue?.unquotedSpan
-                };
+            // Is it a parameter value for a nested or linked template?  asdf doc childScope usage
+            for (const childScope of scope.childScopes) {
+                if (childScope.parameterValuesSource) {
+                    const infoAsParamValue = getReferenceSiteInfoForParameterValue(
+                        this.document,
+                        childScope.parameterDefinitionsSource,
+                        childScope,
+                        childScope.parameterValuesSource,
+                        this.documentCharacterIndex);
+                    if (infoAsParamValue) {
+                        return infoAsParamValue;
+                    }
+                }
             }
-        }
 
-        return undefined;
+            if (considerDefinition) {
+                const definition = this.getDefinitionAtSite();
+                if (definition && definition.nameValue) {
+                    return {
+                        referenceKind: ReferenceSiteKind.definition,
+                        definition: definition,
+                        referenceDocument: this.document,
+                        definitionDocument: this.document,
+                        definitionScope: tleInfo.scope,
+                        unquotedReferenceSpan: definition.nameValue?.unquotedSpan
+                    };
+                }
+            }
+
+            return undefined;
+        }
     }
 
     public getHoverInfo(): IHoverInfo[] {
@@ -250,7 +266,8 @@ export class TemplatePositionContext extends PositionContext {
                 referenceDocument,
                 definition: parameterDefinition,
                 unquotedReferenceSpan,
-                definitionDocument
+                definitionDocument,
+                definitionScope: scope
             };
         }
     }
@@ -263,6 +280,7 @@ export class TemplatePositionContext extends PositionContext {
                 referenceKind,
                 referenceDocument,
                 definition: variableDefinition,
+                definitionScope: scope,
                 unquotedReferenceSpan,
                 definitionDocument
             };
@@ -781,16 +799,15 @@ export class TemplatePositionContext extends PositionContext {
      * @returns undefined if references are not supported at this location, or empty list if supported but none found
      */
     protected getReferencesCore(): ReferenceList | undefined {
-
         const tleInfo = this.tleInfo;
         if (tleInfo) { // If we're inside a string (whether an expression or not)
             const refInfo = this.getReferenceSiteInfo(true);
             if (refInfo) {
                 // References in this document
-                const references: ReferenceList= this.document.findReferencesToDefinition(refInfo.definition, undefined/*asdf this.document*/);
+                const references: ReferenceList = this.document.findReferencesToDefinition(refInfo.definition, undefined/*asdf this.document*/);
 
                 // References in the parameters file or parameter values of a nested/linked template
-                let parameterValuesSource: IParameterValuesSource | undefined = this.getParameterValuesSource();
+                let parameterValuesSource: IParameterValuesSource | undefined = refInfo.definitionScope && this.getParameterValuesSource(refInfo.definitionScope); //asdfasdf
                 if (parameterValuesSource) {
                     const refInfo = this.getReferenceSiteInfo(true);
                     if (refInfo) {
@@ -806,8 +823,7 @@ export class TemplatePositionContext extends PositionContext {
         return undefined;
     }
 
-    protected getParameterValuesSource(): IParameterValuesSource |undefined{
-        const scope = this.getScope();
+    protected getParameterValuesSource(scope: TemplateScope): IParameterValuesSource | undefined {
         //asdf this shouldn't be necessary
         if (scope instanceof TopLevelTemplateScope) {
             if (this._associatedDocument instanceof DeploymentParametersDoc/*asdf*/) {
