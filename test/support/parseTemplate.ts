@@ -120,7 +120,7 @@ export function parseParametersWithMarkers(
     json: string | Partial<IDeploymentParametersFile>
 ): { dp: DeploymentParametersDoc; unmarkedText: string; markers: Markers } {
     const { unmarkedText, markers } = getDocumentMarkers(json);
-    const dp: DeploymentParametersDoc = new DeploymentParametersDoc(unmarkedText, Uri.file("/test-parameter-file.json"), 0);
+    const dp: DeploymentParametersDoc = new DeploymentParametersDoc(unmarkedText, Uri.file("/test parameter file.json"), 0);
 
     // Always run these even if not checking against expected, to verify nothing throws
     // tslint:disable-next-line:no-unused-expression
