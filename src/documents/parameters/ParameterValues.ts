@@ -5,10 +5,11 @@
 import * as assert from "assert";
 import { CodeAction, CodeActionContext, CodeActionKind, Range, Selection, TextEditor } from "vscode";
 import { Command } from "vscode-languageclient";
-import { Completion, Json } from "../../../extension.bundle";
+import { Completion, INamedDefinition, Json } from "../../../extension.bundle";
 import { ext } from "../../extensionVariables";
 import { Issue } from "../../language/Issue";
 import { IssueKind } from "../../language/IssueKind";
+import { ReferenceList } from "../../language/ReferenceList";
 import { ContainsBehavior, Span } from "../../language/Span";
 import { indentMultilineString } from "../../util/multilineStrings";
 import { IAddMissingParametersArgs } from "../../vscodeIntegration/commandArguments";
@@ -432,4 +433,19 @@ export function getMissingParameterErrors(parameterValues: IParameterValuesSourc
         ?? (parameterValues.deploymentRootObject ? new Span(parameterValues.deploymentRootObject?.startIndex, 0) : undefined)
         ?? new Span(0, 0);
     return [new Issue(span, message, IssueKind.params_missingRequiredParam)];
+}
+
+export function findReferencesToDefinitionInParameterValues(values: IParameterValuesSource, definition: INamedDefinition): ReferenceList {
+    const results: ReferenceList = new ReferenceList(definition.definitionKind);
+
+    // The only reference possible in the parameter file is the parameter's value definition, but that
+    //   would only be a match if the definition is from the top-level scope of the template document  asdf update
+    if (definition.nameValue) {
+        const paramValue = values.getParameterValue(definition.nameValue.unquotedValue);
+        if (paramValue) {
+            results.add({ document: values.document, span: paramValue.nameValue.unquotedSpan });
+        }
+    }
+
+    return results;
 }

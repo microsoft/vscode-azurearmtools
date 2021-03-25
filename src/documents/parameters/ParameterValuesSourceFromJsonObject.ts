@@ -32,7 +32,6 @@ export class ParameterValuesSourceFromJsonObject implements IParameterValuesSour
         public readonly deploymentRootObject: Json.ObjectValue | undefined
     ) {
     }
-
     public getParameterValue(parameterName: string): ParameterValueDefinition | undefined {
         const parameterProperty = this.parameterValuesProperty?.value?.asObjectValue?.getProperty(parameterName);
         return parameterProperty
@@ -46,4 +45,9 @@ export class ParameterValuesSourceFromJsonObject implements IParameterValuesSour
             ? parameterProperties.map(p => new ParameterValueDefinition(p))
             : [];
     }
+
+    //asdf
+    // public findReferencesToDefinition(definition: INamedDefinition): ReferenceList {
+    //     throw new Error("Method not implemented.");
+    // }
 }

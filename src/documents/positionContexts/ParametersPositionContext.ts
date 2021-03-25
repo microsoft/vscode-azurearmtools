@@ -82,7 +82,7 @@ export class ParametersPositionContext extends PositionContext {
         return {
             items: getPropertyValueCompletionItems(
                 this._associatedTemplate?.topLevelScope.parameterDefinitionsSource,
-                this.document.parameterValuesSource,
+                this.document.topLevelParameterValuesSource,
                 undefined,
                 tabSize,
                 this.documentCharacterIndex,

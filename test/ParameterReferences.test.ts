@@ -100,7 +100,7 @@ suite("Find References for parameters", () => {
             });
 
             test("Cursor at value in parameters file", () => {
-                testGetReferences(dt, topLevelParameter1Value.index, dp, [topLevelParameter1Definition.index, topLevelParameter1Usage.index, topLevelParameter1Value.index]);
+                testGetReferences(dp, topLevelParameter1Value.index, dt, [topLevelParameter1Definition.index, topLevelParameter1Usage.index, topLevelParameter1Value.index]);
             });
         });
 

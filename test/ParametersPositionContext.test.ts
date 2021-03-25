@@ -39,7 +39,7 @@ suite("ParametersPositionContext", () => {
                     (text: string, index: number) => {
                         const dp = new DeploymentParametersDoc(text, Uri.file("test parameter file"), 0);
                         const pc = dp.getContextFromDocumentCharacterIndex(index, undefined);
-                        const canAddHere = canAddPropertyValueHere(pc.document.parameterValuesSource, pc.documentCharacterIndex);
+                        const canAddHere = canAddPropertyValueHere(pc.document.topLevelParameterValuesSource, pc.documentCharacterIndex);
                         return canAddHere;
                     }
                 );

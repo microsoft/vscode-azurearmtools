@@ -22,13 +22,14 @@ import { IHoverInfo } from "../../vscodeIntegration/IHoverInfo";
 import { DeploymentDocument } from "../DeploymentDocument";
 import { DeploymentParametersDoc } from "../parameters/DeploymentParametersDoc";
 import { IParameterDefinition } from "../parameters/IParameterDefinition";
-import { getPropertyValueCompletionItems } from "../parameters/ParameterValues";
+import { IParameterValuesSource } from "../parameters/IParameterValuesSource";
+import { findReferencesToDefinitionInParameterValues, getPropertyValueCompletionItems } from "../parameters/ParameterValues";
 import { DeploymentTemplateDoc } from "../templates/DeploymentTemplateDoc";
 import { getDependsOnCompletions } from "../templates/getDependsOnCompletions";
 import { getResourceIdCompletions } from "../templates/getResourceIdCompletions";
 import { IFunctionMetadata, IFunctionParameterMetadata } from "../templates/IFunctionMetadata";
 import { TemplateScope } from "../templates/scopes/TemplateScope";
-import { isDeploymentResource } from "../templates/scopes/templateScopes";
+import { isDeploymentResource, TopLevelTemplateScope } from "../templates/scopes/templateScopes";
 import { UserFunctionDefinition } from "../templates/UserFunctionDefinition";
 import { UserFunctionMetadata } from "../templates/UserFunctionMetadata";
 import { UserFunctionNamespaceDefinition } from "../templates/UserFunctionNamespaceDefinition";
@@ -780,16 +781,43 @@ export class TemplatePositionContext extends PositionContext {
      * @returns undefined if references are not supported at this location, or empty list if supported but none found
      */
     protected getReferencesCore(): ReferenceList | undefined {
+
         const tleInfo = this.tleInfo;
         if (tleInfo) { // If we're inside a string (whether an expression or not)
             const refInfo = this.getReferenceSiteInfo(true);
             if (refInfo) {
-                return this.document.findReferencesToDefinition(refInfo.definition, this.document);
+                // References in this document
+                const references: ReferenceList= this.document.findReferencesToDefinition(refInfo.definition, undefined/*asdf this.document*/);
+
+                // References in the parameters file or parameter values of a nested/linked template
+                let parameterValuesSource: IParameterValuesSource | undefined = this.getParameterValuesSource();
+                if (parameterValuesSource) {
+                    const refInfo = this.getReferenceSiteInfo(true);
+                    if (refInfo) {
+                        const templateReferences = findReferencesToDefinitionInParameterValues(parameterValuesSource, refInfo.definition);
+                        references.addAll(templateReferences);
+                    }
+                }
+
+                return references;
             }
         }
 
         return undefined;
     }
+
+    protected getParameterValuesSource(): IParameterValuesSource |undefined{
+        const scope = this.getScope();
+        //asdf this shouldn't be necessary
+        if (scope instanceof TopLevelTemplateScope) {
+            if (this._associatedDocument instanceof DeploymentParametersDoc/*asdf*/) {
+                return this._associatedDocument.topLevelParameterValuesSource;
+            }
+        }
+
+        return scope.parameterValuesSource;
+    }
+
 
     /**
      * Returns the definition at the current position, if the current position represents

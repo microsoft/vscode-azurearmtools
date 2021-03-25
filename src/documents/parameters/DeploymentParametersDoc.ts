@@ -12,11 +12,9 @@ import { CachedValue } from '../../util/CachedValue';
 import { expectTemplateDocument, expectTemplateDocumentOrUndefined } from '../../util/expectDocument';
 import { DeploymentDocument, ResolvableCodeLens } from "../DeploymentDocument";
 import { ParametersPositionContext } from "../positionContexts/ParametersPositionContext";
-import { DeploymentTemplateDoc } from "../templates/DeploymentTemplateDoc";
 import { isParametersSchema } from "../templates/schemas";
 import { IParameterValuesSource } from './IParameterValuesSource';
 import { IParameterValuesSourceProvider } from './IParameterValuesSourceProvider';
-import { ParameterDefinition } from "./ParameterDefinition";
 import { ParameterValueDefinition } from "./ParameterValueDefinition";
 import { getMissingParameterErrors, getParameterValuesCodeActions } from "./ParameterValues";
 import { ParameterValuesSourceFromJsonObject } from "./ParameterValuesSourceFromJsonObject";
@@ -43,7 +41,7 @@ export class DeploymentParametersDoc extends DeploymentDocument {
         return isParametersSchema(this.schemaUri);
     }
 
-    public get parameterValuesSource(): IParameterValuesSource {
+    public get topLevelParameterValuesSource(): IParameterValuesSource {
         return this._parameterValuesSource.getOrCacheValue(() => {
             return new ParameterValuesSourceFromJsonObject(this, this.parametersProperty, this.topLevelValue);
         });
@@ -93,18 +91,14 @@ export class DeploymentParametersDoc extends DeploymentDocument {
         return ParametersPositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex, expectTemplateDocumentOrUndefined(associatedDocument));
     }
 
-    public findReferencesToDefinition(definition: INamedDefinition, associatedDocument: DeploymentDocument | undefined): ReferenceList {
+    public findReferencesToDefinition(definition: INamedDefinition, parameterValuesSource: IParameterValuesSource | undefined): ReferenceList {
         const results: ReferenceList = new ReferenceList(definition.definitionKind);
 
-        // The only reference possible in the parameter file is the parameter's value definition, but that
-        //   would only be a match if the definition is from the top-level scope of the template document
-        if (definition.nameValue && definition instanceof ParameterDefinition && associatedDocument instanceof DeploymentTemplateDoc) {
+        // The only reference possible in the parameter file is the parameter's value definition
+        if (definition.nameValue) {
             const paramValue = this.getParameterValue(definition.nameValue.unquotedValue);
             if (paramValue) {
-                // But it's only a match if it refers to a top-level parameter in the template
-                if (associatedDocument.topLevelScope.parameterDefinitions.includes(definition)) {
-                    results.add({ document: this, span: paramValue.nameValue.unquotedSpan });
-                }
+                results.add({ document: this, span: paramValue.nameValue.unquotedSpan });
             }
         }
         return results;
@@ -124,7 +118,7 @@ export class DeploymentParametersDoc extends DeploymentDocument {
         const template = expectTemplateDocumentOrUndefined(associatedDocument);
         if (template) {
             return getParameterValuesCodeActions(
-                this.parameterValuesSource,
+                this.topLevelParameterValuesSource,
                 template.topLevelScope.parameterDefinitionsSource,
                 undefined,
                 range,
@@ -141,7 +135,7 @@ export class DeploymentParametersDoc extends DeploymentDocument {
         }
 
         const template = expectTemplateDocument(associatedDocument);
-        return getMissingParameterErrors(this.parameterValuesSource, template.topLevelScope.parameterDefinitionsSource);
+        return getMissingParameterErrors(this.topLevelParameterValuesSource, template.topLevelScope.parameterDefinitionsSource);
     }
 
     public getWarnings(): Issue[] {

@@ -33,6 +33,7 @@ import * as UndefinedVariablePropertyVisitor from "../../visitors/UndefinedVaria
 import { getVSCodeRangeFromSpan } from '../../vscodeIntegration/vscodePosition';
 import { DeploymentDocument, ResolvableCodeLens } from "../DeploymentDocument";
 import { IParameterDefinitionsSource } from '../parameters/IParameterDefinitionsSource';
+import { IParameterValuesSource } from '../parameters/IParameterValuesSource';
 import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSourceProvider';
 import { getMissingParameterErrors, getParameterValuesCodeActions } from '../parameters/ParameterValues';
 import { SynchronousParameterValuesSourceProvider } from "../parameters/SynchronousParameterValuesSourceProvider";
@@ -510,7 +511,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         return scopedResult;
     }
 
-    public findReferencesToDefinition(definition: INamedDefinition, associatedDocument: DeploymentDocument | undefined): ReferenceList {
+    public findReferencesToDefinition(definition: INamedDefinition, parameterValuesSource: IParameterValuesSource | undefined): ReferenceList {
         const result: ReferenceList = new ReferenceList(definition.definitionKind);
 
         const referencesList = this.allReferences.referenceListsMap.get(definition);
@@ -728,6 +729,19 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
 
         return lenses;
     }
+
+    //asdf?
+    // private getParameterValuesSource(scope: TemplateScope): IParameterValuesSourceProvider | undefined {
+    //     let paramValuesSourceProvider: IParameterValuesSourceProvider | undefined;
+
+    //     if (scope instanceof TopLevelTemplateScope) {
+    //         return
+    //     } else {
+    //         // For anything other than the top level, we already have the parameter values source, no need to resolve lazily
+    //         const parameterValuesSource = scope.parameterValuesSource;
+    //         return parameterValuesSource ? new SynchronousParameterValuesSourceProvider(parameterValuesSource) : undefined;
+    //     }
+    // }
 
     private getParameterCodeLenses(
         uniqueScope: TemplateScope,

@@ -68,7 +68,7 @@ export abstract class PositionContext {
     private _jsonToken: CachedValue<Json.Token | undefined> = new CachedValue<Json.Token>();
     private _jsonValue: CachedValue<Json.Value | undefined> = new CachedValue<Json.Value | undefined>();
 
-    protected constructor(private _document: DeploymentDocument, private _associatedDocument: DeploymentDocument | undefined) {
+    protected constructor(private _document: DeploymentDocument, protected _associatedDocument: DeploymentDocument | undefined) {
         nonNullValue(this._document, "document");
     }
 
@@ -105,6 +105,10 @@ export abstract class PositionContext {
 
     public get document(): DeploymentDocument {
         return this._document;
+    }
+
+    protected get associatedDocument(): DeploymentDocument | undefined {
+        return this._associatedDocument;
     }
 
     /**
@@ -217,23 +221,33 @@ export abstract class PositionContext {
      * it may be a reference to an item defined elsewhere (like a variables('xxx') call).
      * @returns undefined if references are not supported at this location, or empty list if supported but none found
      */
-    public getReferences(): ReferenceList | undefined {
-        // Find what's at the cursor position
-        // References in this document
-        const references: ReferenceList | undefined = this.getReferencesCore();
-        if (!references) {
-            return undefined;
-        }
+    public getReferences(): ReferenceList | undefined { //asdf
+        return this.getReferencesCore();
+//        return undefined; //asdf remove this method?
+        // // Find what's at the cursor position
+        // // References in this document
+        // const references: ReferenceList | undefined = this.getReferencesCore();
+        // if (!references) {
+        //     return undefined;
+        // }
 
-        if (this._associatedDocument) {
-            // References/definitions in the associated document
-            const refInfo = this.getReferenceSiteInfo(true);
-            if (refInfo) {
-                const templateReferences = this._associatedDocument.findReferencesToDefinition(refInfo.definition, this.document);
-                references.addAll(templateReferences);
-            }
-        }
-        return references;
+        // let parameterValuesSource: IParameterValuesSource | undefined;
+        // if (this._associatedDocument instanceof DeploymentParametersDoc/*asdf*/) {
+        //     // References/definitions in the associated document
+        //     parameterValuesSource = this._associatedDocument.topLevelParameterValuesSource;
+        // } else {
+        //     //asdf need scope
+        // }
+
+        // if (parameterValuesSource) {
+        //     const refInfo = this.getReferenceSiteInfo(true);
+        //     if (refInfo) {
+        //         const templateReferences = findReferencesToDefinitionInParameterValues(parameterValuesSource, refInfo.definition);
+        //         references.addAll(templateReferences);
+        //     }
+        // }
+
+        // return references;
     }
 
     /**

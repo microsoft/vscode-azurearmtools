@@ -149,7 +149,7 @@ suite("DeploymentTemplate code lenses", () => {
             test("parameter section code lens should show command to open current parameter file and one to change the selection", async () => {
                 const dt = parseTemplate(template1);
                 const { dp } = await parseParametersWithMarkers({});
-                const lenses = dt.getCodeLenses(new FakeParameterValuesSourceProvider(dp.documentUri, dp.parameterValuesSource));
+                const lenses = dt.getCodeLenses(new FakeParameterValuesSourceProvider(dp.documentUri, dp.topLevelParameterValuesSource));
                 assert.equal(lenses.length, 2 + dt.topLevelScope.parameterDefinitions.length);
                 for (const lens of lenses) {
                     const result = await lens.resolve();
@@ -204,7 +204,7 @@ suite("DeploymentTemplate code lenses", () => {
                                 }
                             }
                         }`);
-                    const lenses = dt.getCodeLenses(new FakeParameterValuesSourceProvider(dp.documentUri, dp.parameterValuesSource))
+                    const lenses = dt.getCodeLenses(new FakeParameterValuesSourceProvider(dp.documentUri, dp.topLevelParameterValuesSource))
                         .filter(l => l instanceof ParameterDefinitionCodeLens)
                         .map(l => <ParameterDefinitionCodeLens>l);
                     assert.equal(lenses.length, dt.topLevelScope.parameterDefinitions.length);
