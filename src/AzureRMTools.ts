@@ -369,11 +369,12 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 //   for parameter value sources in the template file
                 let { doc, associatedDoc: template } = await this.getDeploymentDocAndAssociatedDoc(editor.document, Cancellation.cantCancel);
                 if (doc instanceof DeploymentParametersDoc) {
-                    parameterValues = doc.topLevelParameterValuesSource; //asdf
+                    // Do completions for top-level parameters
+                    parameterValues = doc.topLevelParameterValuesSource;
                     parameterDefinitions = expectTemplateDocument(template).topLevelScope.parameterDefinitionsSource;
                 }
             } else {
-                // Called from a code action, we should already have the parameter sources in the arguments asdf
+                // Called from a code action, we should already have the parameter sources in the arguments
                 parameterValues = args.parameterValuesSource;
                 parameterDefinitions = args.parameterDefinitionsSource;
                 parentParameterDefinitions = args.parentParameterDefinitionsSource;
@@ -1525,7 +1526,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 actionContext.errorHandling.suppressDisplay = true;
                 properties.docType = this.getDocTypeForTelemetry(pc.document);
 
-                const refInfo = pc.getReferenceSiteInfo(true); //asdf
+                const refInfo = pc.getReferenceSiteInfo(true);
                 if (refInfo && refInfo.definition.nameValue) {
                     properties.definitionType = refInfo.definition.definitionKind;
 
@@ -1545,7 +1546,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             const cancel = new Cancellation(token, actionContext);
             const results: vscode.Location[] = [];
             const pc: PositionContext | undefined = await this.getPositionContext(textDocument, position, cancel);
-            if (pc) { //asdf
+            if (pc) {
                 const references: ReferenceList | undefined = pc.getReferences();
                 if (references && references.length > 0) {
                     actionContext.telemetry.properties.referenceType = references.kind;

@@ -29,7 +29,4 @@ export interface IParameterValuesSource {
     // case-insensitive
     getParameterValue(parameterName: string): ParameterValueDefinition | undefined;
     parameterValueDefinitions: ParameterValueDefinition[];
-
-    // //asdf
-    // findReferencesToDefinition(definition: INamedDefinition): ReferenceList;
 }

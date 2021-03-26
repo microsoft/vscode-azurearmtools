@@ -13,7 +13,6 @@ import { CachedValue } from "../util/CachedValue";
 import { __debugMarkPositionInString, __debugMarkRangeInString } from "../util/debugMarkStrings";
 import { nonNullValue } from "../util/nonNull";
 import { getVSCodeRangeFromSpan } from "../vscodeIntegration/vscodePosition";
-import { IParameterValuesSource } from "./parameters/IParameterValuesSource";
 import { IParameterValuesSourceProvider } from "./parameters/IParameterValuesSourceProvider";
 import { PositionContext } from "./positionContexts/PositionContext";
 import { IJsonDocument } from "./templates/IJsonDocument";
@@ -164,7 +163,7 @@ export abstract class DeploymentDocument implements IJsonDocument {
     /**
      * Find all references in this document to the given named definition (which may or may not be in this document)
      */
-    public abstract findReferencesToDefinition(definition: INamedDefinition, parameterValuesSource: IParameterValuesSource | undefined): ReferenceList;
+    public abstract findReferencesToDefinition(definition: INamedDefinition): ReferenceList;
 
     /**
      * Provide commands for the given document and range.

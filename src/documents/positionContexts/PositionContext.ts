@@ -224,64 +224,7 @@ export abstract class PositionContext {
      * it may be a reference to an item defined elsewhere (like a variables('xxx') call).
      * @returns undefined if references are not supported at this location, or empty list if supported but none found
      */
-    public getReferences(): ReferenceList | undefined { //asdf
-        // References in the template
-        //asf const dt = this._document instanceof DeploymentTemplateDoc ? this._document : this._associatedDocument;
-
-        return this.getReferencesCore();
-
-        //asdf
-        // const tleInfo = this.tleInfo;
-        // if (tleInfo) { // If we're inside a string (whether an expression or not)
-        //     const refInfo = this.getReferenceSiteInfo(true);
-        //     if (refInfo) {
-
-
-        //         const references = new ReferenceList()
-        //         return this.getReferencesCore();
-
-        //         // References in the parameters file or parameter values of a nested/linked template
-        //         let parameterValuesSource: IParameterValuesSource | undefined = this.getParameterValuesSource();
-        //         if (parameterValuesSource) {
-        //             const refInfo = this.getReferenceSiteInfo(true);
-        //             if (refInfo) {
-        //                 const templateReferences = findReferencesToDefinitionInParameterValues(parameterValuesSource, refInfo.definition);
-        //                 references.addAll(templateReferences);
-        //             }
-        //         }
-
-        //         //        return undefined; //asdf remove this method?
-        //         // // Find what's at the cursor position
-        //         // // References in this document
-        //         // const references: ReferenceList | undefined = this.getReferencesCore();
-        //         // if (!references) {
-        //         //     return undefined;
-        //         // }
-
-        //         // let parameterValuesSource: IParameterValuesSource | undefined;
-        //         // if (this._associatedDocument instanceof DeploymentParametersDoc/*asdf*/) {
-        //         //     // References/definitions in the associated document
-        //         //     parameterValuesSource = this._associatedDocument.topLevelParameterValuesSource;
-        //         // } else {
-        //         //     //asdf need scope
-        //         // }
-
-        //         // if (parameterValuesSource) {
-        //         //     const refInfo = this.getReferenceSiteInfo(true);
-        //         //     if (refInfo) {
-        //         //         const templateReferences = findReferencesToDefinitionInParameterValues(parameterValuesSource, refInfo.definition);
-        //         //         references.addAll(templateReferences);
-        //         //     }
-        //         // }
-
-        //         // return references;
-    }
-
-    /**
-     * Return all references to the given reference site info in this document
-     * @returns undefined if references are not supported at this location, or empty list if supported but none found
-     */
-    protected abstract getReferencesCore(): ReferenceList | undefined;
+    public abstract getReferences(): ReferenceList | undefined;
 
     public getHoverInfo(): IHoverInfo[] {
         const infos: IHoverInfo[] = [];

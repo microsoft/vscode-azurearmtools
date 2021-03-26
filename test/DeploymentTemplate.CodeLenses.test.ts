@@ -148,7 +148,7 @@ suite("DeploymentTemplate code lenses", () => {
         suite("if there is a parameter file then", () => {
             test("parameter section code lens should show command to open current parameter file and one to change the selection", async () => {
                 const dt = parseTemplate(template1);
-                const { dp } = await parseParametersWithMarkers({});
+                const { dp } = parseParametersWithMarkers({});
                 const lenses = dt.getCodeLenses(new FakeParameterValuesSourceProvider(dp.documentUri, dp.topLevelParameterValuesSource));
                 assert.equal(lenses.length, 2 + dt.topLevelScope.parameterDefinitions.length);
                 for (const lens of lenses) {
@@ -182,13 +182,13 @@ suite("DeploymentTemplate code lenses", () => {
                 const testName = valueInParamFile === undefined ?
                     `${topLevelParamName} with no value in param file` :
                     `${topLevelParamName} with value ${JSON.stringify(valueInParamFile).replace(/\r\n|\n/g, ' ')}`;
-                test(testName, async () => {
+                test(testName, () => {
                     let a = testName;
                     a = a;
                     const dt = parseTemplate(template1);
                     const param = dt.topLevelScope.getParameterDefinition(topLevelParamName);
                     assert(!!param);
-                    const { dp } = await parseParametersWithMarkers(
+                    const { dp } = parseParametersWithMarkers(
                         valueInParamFile === undefined ? {
                             "parameters": {}
                         } : valueInParamFile.value ? `{

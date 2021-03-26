@@ -52,41 +52,19 @@ export class ParametersPositionContext extends PositionContext {
             this._associatedTemplate.topLevelScope,
             this.document.topLevelParameterValuesSource,
             this.documentCharacterIndex);
-
-        //asdf
-        // for (let paramValue of this.document.parameterValueDefinitions) {
-        //     // Are we inside the name of a parameter?
-        //     if (paramValue.nameValue.span.contains(this.documentCharacterIndex, ContainsBehavior.extended)) {
-        //         // Does it have an associated parameter definition in the template?
-        //         const paramDef = this._associatedTemplate?.topLevelScope.getParameterDefinition(paramValue.nameValue.unquotedValue);
-        //         if (paramDef) {
-        //             return {
-        //                 referenceKind: ReferenceSiteKind.reference,
-        //                 unquotedReferenceSpan: paramValue.nameValue.unquotedSpan,
-        //                 referenceDocument: this.document,
-        //                 definition: paramDef,
-        //                 definitionDocument: this._associatedTemplate
-        //             };
-        //         }
-
-        //         break;
-        //     }
-        // }
-
-        // return undefined;
     }
 
     /**
      * Return all references to the given reference site info in this document
      * @returns undefined if references are not supported at this location, or empty list if supported but none found
      */
-    protected getReferencesCore(): ReferenceList | undefined {
+    public getReferences(): ReferenceList | undefined {
         const refInfo = this.getReferenceSiteInfo(false);
         if (refInfo) {
-            const references = this.document.findReferencesToDefinition(refInfo.definition, undefined);
+            const references = this.document.findReferencesToDefinition(refInfo.definition);
 
             if (this.associatedDocument) {
-                const associatedDocRefs = this.associatedDocument.findReferencesToDefinition(refInfo.definition, undefined);
+                const associatedDocRefs = this.associatedDocument.findReferencesToDefinition(refInfo.definition);
                 references.addAll(associatedDocRefs);
             }
 

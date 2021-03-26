@@ -29,7 +29,7 @@ import { getDependsOnCompletions } from "../templates/getDependsOnCompletions";
 import { getResourceIdCompletions } from "../templates/getResourceIdCompletions";
 import { IFunctionMetadata, IFunctionParameterMetadata } from "../templates/IFunctionMetadata";
 import { TemplateScope } from "../templates/scopes/TemplateScope";
-import { isDeploymentResource, TopLevelTemplateScope } from "../templates/scopes/templateScopes";
+import { isDeploymentResource } from "../templates/scopes/templateScopes";
 import { UserFunctionDefinition } from "../templates/UserFunctionDefinition";
 import { UserFunctionMetadata } from "../templates/UserFunctionMetadata";
 import { UserFunctionNamespaceDefinition } from "../templates/UserFunctionNamespaceDefinition";
@@ -109,7 +109,7 @@ export class TemplatePositionContext extends PositionContext {
     // CONSIDER: should includeDefinition should always be true?  For instance, it would mean
     //  that we get hover over the definition of a param/var/etc and not just at references.
     //  Any bad side effects?
-    // tslint:disable-next-line: cyclomatic-complexity // CONSIDER: refactor
+    // tslint:disable-next-line: max-func-body-length cyclomatic-complexity // CONSIDER: refactor
     public getReferenceSiteInfo(considerDefinition: boolean): IReferenceSite | undefined {
         const tleInfo = this.tleInfo;
         if (tleInfo) {
@@ -798,22 +798,19 @@ export class TemplatePositionContext extends PositionContext {
      * Return all references to the given reference site info in this document
      * @returns undefined if references are not supported at this location, or empty list if supported but none found
      */
-    protected getReferencesCore(): ReferenceList | undefined {
+    public getReferences(): ReferenceList | undefined {
         const tleInfo = this.tleInfo;
         if (tleInfo) { // If we're inside a string (whether an expression or not)
             const refInfo = this.getReferenceSiteInfo(true);
             if (refInfo) {
                 // References in this document
-                const references: ReferenceList = this.document.findReferencesToDefinition(refInfo.definition, undefined/*asdf this.document*/);
+                const references: ReferenceList = this.document.findReferencesToDefinition(refInfo.definition);
 
                 // References in the parameters file or parameter values of a nested/linked template
                 let parameterValuesSource: IParameterValuesSource | undefined = refInfo.definitionScope && this.getParameterValuesSource(refInfo.definitionScope); //asdfasdf
                 if (parameterValuesSource) {
-                    const refInfo = this.getReferenceSiteInfo(true);
-                    if (refInfo) {
-                        const templateReferences = findReferencesToDefinitionInParameterValues(parameterValuesSource, refInfo.definition);
-                        references.addAll(templateReferences);
-                    }
+                    const templateReferences = findReferencesToDefinitionInParameterValues(parameterValuesSource, refInfo.definition);
+                    references.addAll(templateReferences);
                 }
 
                 return references;
@@ -824,16 +821,9 @@ export class TemplatePositionContext extends PositionContext {
     }
 
     protected getParameterValuesSource(scope: TemplateScope): IParameterValuesSource | undefined {
-        //asdf this shouldn't be necessary
-        if (scope instanceof TopLevelTemplateScope) {
-            if (this._associatedDocument instanceof DeploymentParametersDoc/*asdf*/) {
-                return this._associatedDocument.topLevelParameterValuesSource;
-            }
-        }
 
         return scope.parameterValuesSource;
     }
-
 
     /**
      * Returns the definition at the current position, if the current position represents

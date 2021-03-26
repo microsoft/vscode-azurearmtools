@@ -45,9 +45,4 @@ export class ParameterValuesSourceFromJsonObject implements IParameterValuesSour
             ? parameterProperties.map(p => new ParameterValueDefinition(p))
             : [];
     }
-
-    //asdf
-    // public findReferencesToDefinition(definition: INamedDefinition): ReferenceList {
-    //     throw new Error("Method not implemented.");
-    // }
 }

@@ -48,7 +48,7 @@ suite("DeploymentTemplate", () => {
             return new ReferenceList(definitionKind, []);
         }
 
-        return dt.findReferencesToDefinition(definition!, undefined);
+        return dt.findReferencesToDefinition(definition!);
     }
 
     suite("constructor(string)", () => {

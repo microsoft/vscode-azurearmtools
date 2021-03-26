@@ -1092,9 +1092,9 @@ suite("TemplatePositionContext", () => {
         });
 
         suite("Parameter files", () => {
-            test("Deployment parameter file parameter definition", async () => {
+            test("Deployment parameter file parameter definition", () => {
                 const { dt } = parseTemplateWithMarkers(template1);
-                const { dp, markers: { param1def } } = await parseParametersWithMarkers(params1);
+                const { dp, markers: { param1def } } = parseParametersWithMarkers(params1);
                 const ppc = ParametersPositionContext.fromDocumentCharacterIndex(dp, param1def.index, dt);
                 const site = ppc.getReferenceSiteInfo(true);
                 assert.notEqual(site, undefined);

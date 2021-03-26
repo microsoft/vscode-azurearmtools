@@ -91,7 +91,7 @@ export class DeploymentParametersDoc extends DeploymentDocument {
         return ParametersPositionContext.fromDocumentCharacterIndex(this, documentCharacterIndex, expectTemplateDocumentOrUndefined(associatedDocument));
     }
 
-    public findReferencesToDefinition(definition: INamedDefinition, parameterValuesSource/*asdf not needed?*/: IParameterValuesSource | undefined): ReferenceList {
+    public findReferencesToDefinition(definition: INamedDefinition): ReferenceList {
         const results: ReferenceList = new ReferenceList(definition.definitionKind);
 
         // The only reference possible in the parameter file is the parameter's value definition

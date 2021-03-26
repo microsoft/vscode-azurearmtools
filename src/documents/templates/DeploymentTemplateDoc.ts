@@ -33,7 +33,6 @@ import * as UndefinedVariablePropertyVisitor from "../../visitors/UndefinedVaria
 import { getVSCodeRangeFromSpan } from '../../vscodeIntegration/vscodePosition';
 import { DeploymentDocument, ResolvableCodeLens } from "../DeploymentDocument";
 import { IParameterDefinitionsSource } from '../parameters/IParameterDefinitionsSource';
-import { IParameterValuesSource } from '../parameters/IParameterValuesSource';
 import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSourceProvider';
 import { getMissingParameterErrors, getParameterValuesCodeActions } from '../parameters/ParameterValues';
 import { SynchronousParameterValuesSourceProvider } from "../parameters/SynchronousParameterValuesSourceProvider";
@@ -511,16 +510,15 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         return scopedResult;
     }
 
-    public findReferencesToDefinition(definition: INamedDefinition, parameterValuesSource/*asdf not needed?*/: IParameterValuesSource | undefined): ReferenceList {
+    public findReferencesToDefinition(definition: INamedDefinition): ReferenceList {
         const result: ReferenceList = new ReferenceList(definition.definitionKind);
-
-        const referencesList = this.allReferences.referenceListsMap.get(definition);//asdf move down
 
         // Add the definition of whatever's being referenced to the list
         if (definition.nameValue) {
             result.add({ document: this, span: definition.nameValue.unquotedSpan });
         }
 
+        const referencesList = this.allReferences.referenceListsMap.get(definition);
         if (referencesList) {
             result.addAll(referencesList);
         }
