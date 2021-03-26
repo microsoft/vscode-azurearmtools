@@ -25,6 +25,16 @@
                 "expressionEvaluationOptions": {
                     "scope": "inner"
                 },
+                "parameters": {
+                    "secretValue": {
+                        "reference": {
+                            "keyVault": {
+                                "id": "[resourceId(subscription().subscriptionId,  parameters('vaultResourceGroupName'), 'Microsoft.KeyVault/vaults', parameters('vaultName'))]"
+                            },
+                            "secretName": "[parameters('secretName')]"
+                        }
+                    }
+                },
                 "template": {
                     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
@@ -38,16 +48,6 @@
                         "secretValueOutput": {
                             "type": "secureString",
                             "value": "[parameters('secretValue')]"
-                        }
-                    }
-                },
-                "parameters": {
-                    "secretValue": {
-                        "reference": {
-                            "keyVault": {
-                                "id": "[resourceId(subscription().subscriptionId,  parameters('vaultResourceGroupName'), 'Microsoft.KeyVault/vaults', parameters('vaultName'))]"
-                            },
-                            "secretName": "[parameters('secretName')]"
                         }
                     }
                 }

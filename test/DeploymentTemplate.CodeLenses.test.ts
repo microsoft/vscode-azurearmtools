@@ -177,12 +177,12 @@ suite("DeploymentTemplate code lenses", () => {
 
     suite("parameter definition code lenses", () => {
 
-        suite("with top-level parameter definitions and values in a parameter file", () => {
+        suite("with top-level parameter definitions and values in a parameter file", async () => {
             function createParamLensTest(topLevelParamName: string, valueInParamFile: { value?: string; reference?: string } | undefined, expectedTitle: string): void {
                 const testName = valueInParamFile === undefined ?
                     `${topLevelParamName} with no value in param file` :
                     `${topLevelParamName} with value ${JSON.stringify(valueInParamFile).replace(/\r\n|\n/g, ' ')}`;
-                test(testName, () => {
+                test(testName, async () => {
                     let a = testName;
                     a = a;
                     const dt = parseTemplate(template1);
