@@ -441,8 +441,7 @@ export function getMissingParameterErrors(parameterValues: IParameterValuesSourc
 export function findReferencesToDefinitionInParameterValues(values: IParameterValuesSource, definition: INamedDefinition): ReferenceList {
     const results: ReferenceList = new ReferenceList(definition.definitionKind);
 
-    // The only reference possible in the parameter file is the parameter's value definition, but that
-    //   would only be a match if the definition is from the top-level scope of the template document  asdf update
+    // The only reference possible in the parameter file is the parameter's value definition
     if (definition.nameValue) {
         const paramValue = values.getParameterValue(definition.nameValue.unquotedValue);
         if (paramValue) {

@@ -110,7 +110,7 @@ export class TemplatePositionContext extends PositionContext {
     //  that we get hover over the definition of a param/var/etc and not just at references.
     //  Any bad side effects?
     // tslint:disable-next-line: max-func-body-length cyclomatic-complexity // CONSIDER: refactor
-    public getReferenceSiteInfo(considerDefinition: boolean): IReferenceSite | undefined {
+    public getReferenceSiteInfo(considerDefinitionItself: boolean): IReferenceSite | undefined {
         const tleInfo = this.tleInfo;
         if (tleInfo) {
             const scope = tleInfo.scope;
@@ -194,7 +194,32 @@ export class TemplatePositionContext extends PositionContext {
                 }
             }
 
-            // Is it a parameter value for a nested or linked template?  asdf doc childScope usage
+            // Is it a parameter value for a nested or linked template?
+            // Note that the scope of a parameter value doesn't (currently) match the scope
+            // of the template that the parameter is defined in, e.g.:
+            /*
+
+                "resources": [
+                {
+                    "type": "Microsoft.Resources/deployments",
+                    "properties": {
+                        "parameters": {  <<<<<<<< Parameter value definition
+                            "nestedParameter1": {
+                                "value": "[parameters('topLevelParameter2')]"
+                            }
+                        },
+                        "template": {
+                            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                            "contentVersion": "1.0.0.0",
+                            "parameters": {
+                                "nestedParameter1": {  <<<<<<<< Parameter definition
+                                    "type": "string"
+                                }
+                            }
+            */
+            // Note that the value of nestedParameter1 is inside the top-level scope (in order to interpret
+            //   expressions correctly in that scope).  So nestedParameter1 will have its definition inside
+            //   the child deployment's scope, and we need to check there as well as the current scope.
             for (const childScope of scope.childScopes) {
                 if (childScope.parameterValuesSource) {
                     const infoAsParamValue = getReferenceSiteInfoForParameterValue(
@@ -209,7 +234,7 @@ export class TemplatePositionContext extends PositionContext {
                 }
             }
 
-            if (considerDefinition) {
+            if (considerDefinitionItself) {
                 const definition = this.getDefinitionAtSite();
                 if (definition && definition.nameValue) {
                     return {
@@ -807,7 +832,7 @@ export class TemplatePositionContext extends PositionContext {
                 const references: ReferenceList = this.document.findReferencesToDefinition(refInfo.definition);
 
                 // References in the parameters file or parameter values of a nested/linked template
-                let parameterValuesSource: IParameterValuesSource | undefined = refInfo.definitionScope && this.getParameterValuesSource(refInfo.definitionScope); //asdfasdf
+                let parameterValuesSource: IParameterValuesSource | undefined = refInfo.definitionScope && this.getParameterValuesSource(refInfo.definitionScope);
                 if (parameterValuesSource) {
                     const templateReferences = findReferencesToDefinitionInParameterValues(parameterValuesSource, refInfo.definition);
                     references.addAll(templateReferences);

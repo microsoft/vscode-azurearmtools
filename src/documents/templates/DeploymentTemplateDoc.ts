@@ -728,19 +728,6 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         return lenses;
     }
 
-    //asdf?
-    // private getParameterValuesSource(scope: TemplateScope): IParameterValuesSourceProvider | undefined {
-    //     let paramValuesSourceProvider: IParameterValuesSourceProvider | undefined;
-
-    //     if (scope instanceof TopLevelTemplateScope) {
-    //         return
-    //     } else {
-    //         // For anything other than the top level, we already have the parameter values source, no need to resolve lazily
-    //         const parameterValuesSource = scope.parameterValuesSource;
-    //         return parameterValuesSource ? new SynchronousParameterValuesSourceProvider(parameterValuesSource) : undefined;
-    //     }
-    // }
-
     private getParameterCodeLenses(
         uniqueScope: TemplateScope,
         parameterValuesSourceProvider: IParameterValuesSourceProvider | undefined
