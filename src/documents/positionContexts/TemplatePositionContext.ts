@@ -29,7 +29,7 @@ import { getDependsOnCompletions } from "../templates/getDependsOnCompletions";
 import { getResourceIdCompletions } from "../templates/getResourceIdCompletions";
 import { IFunctionMetadata, IFunctionParameterMetadata } from "../templates/IFunctionMetadata";
 import { TemplateScope } from "../templates/scopes/TemplateScope";
-import { isDeploymentResource } from "../templates/scopes/templateScopes";
+import { isDeploymentResource, TopLevelTemplateScope } from "../templates/scopes/templateScopes";
 import { UserFunctionDefinition } from "../templates/UserFunctionDefinition";
 import { UserFunctionMetadata } from "../templates/UserFunctionMetadata";
 import { UserFunctionNamespaceDefinition } from "../templates/UserFunctionNamespaceDefinition";
@@ -846,6 +846,14 @@ export class TemplatePositionContext extends PositionContext {
     }
 
     protected getParameterValuesSource(scope: TemplateScope): IParameterValuesSource | undefined {
+        // tslint:disable-next-line: no-suspicious-comment
+        // TODO: This shouldn't be necessary - a TopLevelTemplateScope should be able to return its own
+        // parameterValuesSource.
+        if (scope instanceof TopLevelTemplateScope) {
+            if (this._associatedDocument instanceof DeploymentParametersDoc) {
+                return this._associatedDocument.topLevelParameterValuesSource;
+            }
+        }
 
         return scope.parameterValuesSource;
     }
