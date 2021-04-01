@@ -3737,7 +3737,7 @@ suite("TreeView", async (): Promise<void> => {
             }`,
                 [
                     {
-                        label: "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                        label: "$schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                         collapsibleState: 0,
                         icon: "label.svg"
                     }
