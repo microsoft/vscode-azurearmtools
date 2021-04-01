@@ -116,13 +116,13 @@ suite("Find References for parameters", () => {
                         topLevelParameter1Value.index,
                         [topLevelParameter1Definition.index, topLevelParameter1Usage.index, topLevelParameter1Value.index],
                         {
-                            associatedDoc: dp
+                            associatedDoc: dt
                         }
                     );
                 });
             });
 
-            suite("Parameter1 in linked template", () => {
+            suite("Parameter1 in nested template", () => {
                 test("Cursor at definition", () => {
                     testGetReferences(
                         dt,
@@ -145,7 +145,7 @@ suite("Find References for parameters", () => {
                     );
                 });
 
-                test("Cursor at value in parameters file", () => {
+                test("Cursor at value (in template file, in nested param values)", () => {
                     testGetReferences(
                         dt,
                         nestedParameter1Value.index,
@@ -160,108 +160,98 @@ suite("Find References for parameters", () => {
 
     });
 
-    suite("Linked template", () => {
-        const templateWithLinkedTemplate: IPartialDeploymentTemplate = {
-            parameters: {
-                "<!topLevelParameter1Definition!>parameter1": { // TOP-LEVEL Parameter1 definition
-                    type: "string",
-                    metadata: {
-                        description: "description"
-                    }
+    // tslint:disable-next-line: no-suspicious-comment
+    /* TODO Functionality not yet implemented
+suite("Linked template", () => {
+    const templateWithLinkedTemplate: IPartialDeploymentTemplate = {
+        parameters: {
+            "<!topLevelParameter1Definition!>parameter1": { // TOP-LEVEL Parameter1 definition
+                type: "string",
+                metadata: {
+                    description: "description"
                 }
-            },
-            resources: [
-                {
-                    name: "linkedDeployment1",
-                    type: "Microsoft.Resources/deployments",
-                    apiVersion: "2020-10-01",
-                    properties: {
-                        mode: "Incremental",
-                        templateLink: {
-                            relativePath: "childTemplate.json",
-                            contentVersion: "1.0.0.0"
-                        },
-                        parameters: {
-                            "<!linkedParameter1Value!>parameter1": { // LINKED TEMPLATE Parameter1 value
-                                value: "[parameters('<!topLevelParameter1Usage!>parameter1')]" // TOP-LEVEL Parameter1 usage
-                            }
+            }
+        },
+        resources: [
+            {
+                name: "linkedDeployment1",
+                type: "Microsoft.Resources/deployments",
+                apiVersion: "2020-10-01",
+                properties: {
+                    mode: "Incremental",
+                    templateLink: {
+                        relativePath: "childTemplate.json",
+                        contentVersion: "1.0.0.0"
+                    },
+                    parameters: {
+                        "<!linkedParameter1Value!>parameter1": { // LINKED TEMPLATE Parameter1 value
+                            value: "[parameters('<!topLevelParameter1Usage!>parameter1')]" // TOP-LEVEL Parameter1 usage
                         }
                     }
                 }
-            ]
-        };
+            }
+        ]
+    };
 
-        // const linkedTemplate: IPartialDeploymentTemplate = {
-        //     parameters: {
-        //         parameter1: { // LINKED TEMPLATE Parameter1 definition (in child template)
-        //             type: "string",
-        //             metadata: {
-        //                 description: "parameter1 definition in linked template"
-        //             }
-        //         }
-        //     },
-        //     variables: {
-        //         variable1: "[parameters('parameter1')]" // LINKED TEMPLATE Parameter1 usage (in child template)
-        //     },
-        // };
+    // const linkedTemplate: IPartialDeploymentTemplate = {
+    //     parameters: {
+    //         parameter1: { // LINKED TEMPLATE Parameter1 definition (in child template)
+    //             type: "string",
+    //             metadata: {
+    //                 description: "parameter1 definition in linked template"
+    //             }
+    //         }
+    //     },
+    //     variables: {
+    //         variable1: "[parameters('parameter1')]" // LINKED TEMPLATE Parameter1 usage (in child template)
+    //     },
+    // };
 
-        const paramsFile1: IDeploymentParametersFile = {
-            $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-            contentVersion: "1.0.0.0",
-            parameters: {
-                "<!topLevelParameter1Value!>parameter1": {
-                    value: "Top-level parameter 1 value in parameter file"
+    const paramsFile1: IDeploymentParametersFile = {
+        $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+        contentVersion: "1.0.0.0",
+        parameters: {
+            "<!topLevelParameter1Value!>parameter1": {
+                value: "Top-level parameter 1 value in parameter file"
+            }
+        }
+    };
+
+    const {
+        dt,
+        markers: {
+            topLevelParameter1Definition,
+            topLevelParameter1Usage,
+            linkedParameter1Value,
+        }
+    } = parseTemplateWithMarkers(templateWithLinkedTemplate, [], { ignoreWarnings: true });
+    // const {
+    //     dtChild,
+    //     markers: {
+    //         linkedParameter1Definition,
+    //     }
+    // } = parseTemplateWithMarkers(linkedTemplate, [], { ignoreWarnings: true });
+    const {
+        dp,
+        markers: {
+            topLevelParameter1Value
+        }
+    } = parseParametersWithMarkers(paramsFile1);
+
+    suite("Top-level parameter1", () => {
+        test("Cursor at definition", () => {
+            testGetReferences(
+                dt,
+                topLevelParameter1Definition.index,
+                [topLevelParameter1Definition.index, topLevelParameter1Usage.index, topLevelParameter1Value.index],
+                {
+                    associatedDoc: dp
                 }
-            }
-        };
-
-        const {
-            dt,
-            markers: {
-                topLevelParameter1Definition,
-                topLevelParameter1Usage,
-                linkedParameter1Value,
-            }
-        } = parseTemplateWithMarkers(templateWithLinkedTemplate, [], { ignoreWarnings: true });
-        // const {
-        //     dtChild,
-        //     markers: {
-        //         linkedParameter1Definition,
-        //     }
-        // } = parseTemplateWithMarkers(linkedTemplate, [], { ignoreWarnings: true });
-        const {
-            dp,
-            markers: {
-                topLevelParameter1Value
-            }
-        } = parseParametersWithMarkers(paramsFile1);
-
-        suite("Top-level parameter1", () => {
-            test("Cursor at definition", () => {
+            );
+            test("Cursor at usage", () => {
                 testGetReferences(
                     dt,
-                    topLevelParameter1Definition.index,
-                    [topLevelParameter1Definition.index, topLevelParameter1Usage.index, topLevelParameter1Value.index],
-                    {
-                        associatedDoc: dp
-                    }
-                );
-                test("Cursor at usage", () => {
-                    testGetReferences(
-                        dt,
-                        topLevelParameter1Usage.index,
-                        [topLevelParameter1Definition.index, topLevelParameter1Usage.index, topLevelParameter1Value.index],
-                        {
-                            associatedDoc: dp
-                        }
-                    );
-                });
-            });
-
-            test("Cursor at value in parameters file", () => {
-                testGetReferences(
-                    dp,
-                    topLevelParameter1Value.index,
+                    topLevelParameter1Usage.index,
                     [topLevelParameter1Definition.index, topLevelParameter1Usage.index, topLevelParameter1Value.index],
                     {
                         associatedDoc: dp
@@ -270,29 +260,41 @@ suite("Find References for parameters", () => {
             });
         });
 
-        suite("Parameter1 in linked template", () => {
-            test("Cursor at value (in main template)", () => {
-                testGetReferences(
-                    dt,
-                    linkedParameter1Value.index,
-                    [linkedParameter1Value.index],
-                    {
-                        associatedDoc: dp
-                    }
-                );
-            });
-
-            // test("Cursor at definition (in linked template) asdf", () => {
-            //     testGetReferences(
-            //         dt,
-            //         linkedParameter1Definition.index,
-            //         [nestedParameter1Definition.index, nestedParameter1Usage.index, nestedParameter1Value.index],
-            //         {
-            //             associatedDoc: dp
-            //         }
-            //     );
-            // });
+        test("Cursor at value in parameters file", () => {
+            testGetReferences(
+                dp,
+                topLevelParameter1Value.index,
+                [topLevelParameter1Definition.index, topLevelParameter1Usage.index, topLevelParameter1Value.index],
+                {
+                    associatedDoc: dt
+                }
+            );
         });
     });
 
+    suite("Parameter1 in linked template", () => {
+        test("Cursor at value (in main template)", () => {
+            testGetReferences(
+                dt,
+                linkedParameter1Value.index,
+                [linkedParameter1Value.index],
+                {
+                    associatedDoc: dp
+                }
+            );
+        });
+
+        // test("Cursor at definition (in linked template) asdf", () => {
+        //     testGetReferences(
+        //         dt,
+        //         linkedParameter1Definition.index,
+        //         [nestedParameter1Definition.index, nestedParameter1Usage.index, nestedParameter1Value.index],
+        //         {
+        //             associatedDoc: dp
+        //         }
+        //     );
+        // });
+    });
+});
+*/
 });
