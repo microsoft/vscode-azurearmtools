@@ -16,8 +16,14 @@ import { DeploymentDocument, ReferenceList } from '../../extension.bundle';
  *      // Cursor at reference to "apiVersion" inside resources
  *      await testFindReferences(dt, apiVersionReference.index, [apiVersionReference.index, apiVersionDef.index]);
  */
-export function testGetReferences(dt: DeploymentDocument, cursorIndexInTemplate: number, associatedDoc: DeploymentDocument | undefined, expectedReferenceIndices: number[]): void {
-    const pc = dt.getContextFromDocumentCharacterIndex(cursorIndexInTemplate, associatedDoc);
+export function testGetReferences(
+    dt: DeploymentDocument,
+    cursorIndexInTemplate: number,
+    expectedReferenceIndices: number[],
+    options?: {
+        associatedDoc?: DeploymentDocument;
+    }): void {
+    const pc = dt.getContextFromDocumentCharacterIndex(cursorIndexInTemplate, options?.associatedDoc);
     // tslint:disable-next-line: no-non-null-assertion
     const references: ReferenceList = pc.getReferences()!;
     assert(references, "Expected non-empty list of references");

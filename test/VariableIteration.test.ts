@@ -95,7 +95,7 @@ suite("Variable iteration (copy blocks)", () => {
                 [],
                 { ignoreWarnings: true });
 
-            testGetReferences(dt, diskNamesRef.index, undefined, [diskNamesRef.index, diskNamesDefName.index]);
+            testGetReferences(dt, diskNamesRef.index, [diskNamesRef.index, diskNamesDefName.index]);
 
         });
 

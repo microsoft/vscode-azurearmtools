@@ -1169,49 +1169,49 @@ suite("User functions", () => {
                 const { dt, markers: { apiVersionDef, apiVersionReference } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "apiVersion" inside resources
-                testGetReferences(dt, apiVersionReference.index, undefined, [apiVersionReference.index, apiVersionDef.index]);
+                testGetReferences(dt, apiVersionReference.index, [apiVersionReference.index, apiVersionDef.index]);
             });
 
             test("At definition of top-level parameter", () => {
                 const { dt, markers: { apiVersionDef, apiVersionReference } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition of "apiVersion" parameter
-                testGetReferences(dt, apiVersionDef.index, undefined, [apiVersionDef.index, apiVersionReference.index]);
+                testGetReferences(dt, apiVersionDef.index, [apiVersionDef.index, apiVersionReference.index]);
             });
 
             test("At reference to user function parameter", () => {
                 const { dt, markers: { udfyearReference, udfyearDefinition } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "year" inside user function output
-                testGetReferences(dt, udfyearReference.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
+                testGetReferences(dt, udfyearReference.index, [udfyearReference.index, udfyearDefinition.index]);
             });
 
             test("At definition of user function parameter", () => {
                 const { dt, markers: { udfyearReference, udfyearDefinition } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition of "year" inside user function
-                testGetReferences(dt, udfyearDefinition.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
+                testGetReferences(dt, udfyearDefinition.index, [udfyearReference.index, udfyearDefinition.index]);
             });
 
             test("At reference to parameter in user function only finds UDF scope parameter, not top-level param", () => {
                 const { dt, markers: { udfyearReference, udfyearDefinition } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "year" inside user function output
-                testGetReferences(dt, udfyearReference.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
+                testGetReferences(dt, udfyearReference.index, [udfyearReference.index, udfyearDefinition.index]);
             });
 
             test("At definition to parameter in user function only finds UDF scope parameter, not top-level param", () => {
                 const { dt, markers: { udfyearReference, udfyearDefinition } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition of "year" inside user function
-                testGetReferences(dt, udfyearDefinition.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
+                testGetReferences(dt, udfyearDefinition.index, [udfyearReference.index, udfyearDefinition.index]);
             });
 
             test("At reference to top-level parameter only finds top-level parameter definition, not param in user function", () => {
                 const { dt, markers: { udfyearReference, udfyearDefinition } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "year" inside user function output
-                testGetReferences(dt, udfyearReference.index, undefined, [udfyearReference.index, udfyearDefinition.index]);
+                testGetReferences(dt, udfyearReference.index, [udfyearReference.index, udfyearDefinition.index]);
             });
         });
 
@@ -1220,27 +1220,27 @@ suite("User functions", () => {
                 const { dt, markers: { var1Definition, var1Reference1, var1Reference2 } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "var1" inside var2
-                testGetReferences(dt, var1Reference1.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
+                testGetReferences(dt, var1Reference1.index, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
 
                 // Cursor at reference to "var1" inside outputs2
-                testGetReferences(dt, var1Reference2.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
+                testGetReferences(dt, var1Reference2.index, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
             });
 
             test("Deeply nested", () => {
                 const { dt, markers: { var1Definition, var1Reference1, var1Reference2 } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "var1" inside var2
-                testGetReferences(dt, var1Reference1.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
+                testGetReferences(dt, var1Reference1.index, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
 
                 // Cursor at reference to "var1" inside outputs2
-                testGetReferences(dt, var1Reference2.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
+                testGetReferences(dt, var1Reference2.index, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
             });
 
             test("At definition of variable", () => {
                 const { dt, markers: { var1Definition, var1Reference1, var1Reference2 } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition to "var1" variable
-                testGetReferences(dt, var1Definition.index, undefined, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
+                testGetReferences(dt, var1Definition.index, [var1Definition.index, var1Reference1.index, var1Reference2.index]);
             });
         });
 
@@ -1250,47 +1250,47 @@ suite("User functions", () => {
                 const { dt, markers: { udfDef, udfReferenceAtNamespace } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "udf.string" inside the namespace
-                testGetReferences(dt, udfReferenceAtNamespace.index, undefined, [udfDef.index, udfReferenceAtNamespace.index]);
+                testGetReferences(dt, udfReferenceAtNamespace.index, [udfDef.index, udfReferenceAtNamespace.index]);
             });
 
             test("At reference to user-defined function, cursor inside the name portion", () => {
                 const { dt, markers: { udfStringDefinition, udfReferenceAtName } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at reference to "udf.string" inside the name
-                testGetReferences(dt, udfReferenceAtName.index, undefined, [udfStringDefinition.index, udfReferenceAtName.index]);
+                testGetReferences(dt, udfReferenceAtName.index, [udfStringDefinition.index, udfReferenceAtName.index]);
             });
 
             test("At definition of user-defined function", () => {
                 const { dt, markers: { udfStringDefinition, udfReferenceAtName } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition of "udf.string"
-                testGetReferences(dt, udfStringDefinition.index, undefined, [udfStringDefinition.index, udfReferenceAtName.index]);
+                testGetReferences(dt, udfStringDefinition.index, [udfStringDefinition.index, udfReferenceAtName.index]);
             });
 
             test("At definition of user-defined namespace", () => {
                 const { dt, markers: { udfDef, udfReferenceAtNamespace } } = parseTemplateWithMarkers(userFuncsTemplate1, [], { ignoreWarnings: true });
 
                 // Cursor at definition of "udf.string"
-                testGetReferences(dt, udfDef.index, undefined, [udfDef.index, udfReferenceAtNamespace.index]);
+                testGetReferences(dt, udfDef.index, [udfDef.index, udfReferenceAtNamespace.index]);
             });
 
             test("Reference to built-in function with same name as UDF function doesn't find UDF function call", () => {
                 const { dt, markers: { stringRef1, stringRef2, stringRef3, stringRef4 } } = parseTemplateWithMarkers(userFuncsTemplate1);
-                testGetReferences(dt, stringRef4.index, undefined, [stringRef1.index, stringRef2.index, stringRef3.index, stringRef4.index]);
+                testGetReferences(dt, stringRef4.index, [stringRef1.index, stringRef2.index, stringRef3.index, stringRef4.index]);
             });
 
             test("Reference to built-in function in outer scope finds it in all scopes", () => {
                 const { dt, markers: { addReferenceInUdfString, addReferenceInOutput4 } } = parseTemplateWithMarkers(userFuncsTemplate1);
 
                 // Cursor at "add" in output4
-                testGetReferences(dt, addReferenceInOutput4.index, undefined, [addReferenceInOutput4.index, addReferenceInUdfString.index]);
+                testGetReferences(dt, addReferenceInOutput4.index, [addReferenceInOutput4.index, addReferenceInUdfString.index]);
             });
 
             test("Reference to built-in function in function scope finds it in all scopes", () => {
                 const { dt, markers: { addReferenceInUdfString, addReferenceInOutput4 } } = parseTemplateWithMarkers(userFuncsTemplate1);
 
                 // Cursor at "add" in udf 'string's output
-                testGetReferences(dt, addReferenceInUdfString.index, undefined, [addReferenceInOutput4.index, addReferenceInUdfString.index]);
+                testGetReferences(dt, addReferenceInUdfString.index, [addReferenceInOutput4.index, addReferenceInUdfString.index]);
             });
         });
 
