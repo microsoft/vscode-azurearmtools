@@ -3,8 +3,8 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 // ---------------------------------------------------------------------------------------------
 
+import { getAvailableResourceTypesAndVersions } from "../../extension.bundle";
 import { assert } from "../../src/fixed_assert";
-import { getAvailableResourceTypesAndVersions } from "../../src/languageclient/getAvailableResourceTypesAndVersions";
 import { ensureLanguageServerAvailable } from "../support/ensureLanguageServerAvailable";
 import { testWithLanguageServer } from "../support/testWithLanguageServer";
 
