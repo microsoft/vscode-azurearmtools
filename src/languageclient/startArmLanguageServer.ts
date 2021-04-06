@@ -216,6 +216,8 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
         });
 
         try {
+            // client.trace = Trace.Messages;
+
             let disposable = client.start();
             ext.context.subscriptions.push(disposable);
 
