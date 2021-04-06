@@ -518,7 +518,7 @@ export async function getDiagnosticsForTemplate(
         // Parameter file
         if (options.parameters || options.parametersFile) {
             if (options.parameters) {
-                const { unmarkedText: unmarkedParams } = await parseParametersWithMarkers(options.parameters);
+                const { unmarkedText: unmarkedParams } = parseParametersWithMarkers(options.parameters);
                 paramsFile = TempFile.fromContents(unmarkedParams);
             } else {
                 assert(options.parametersFile);

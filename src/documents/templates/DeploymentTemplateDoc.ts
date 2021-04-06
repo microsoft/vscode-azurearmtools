@@ -513,13 +513,12 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     public findReferencesToDefinition(definition: INamedDefinition): ReferenceList {
         const result: ReferenceList = new ReferenceList(definition.definitionKind);
 
-        const referencesList = this.allReferences.referenceListsMap.get(definition);
-
         // Add the definition of whatever's being referenced to the list
         if (definition.nameValue) {
             result.add({ document: this, span: definition.nameValue.unquotedSpan });
         }
 
+        const referencesList = this.allReferences.referenceListsMap.get(definition);
         if (referencesList) {
             result.addAll(referencesList);
         }

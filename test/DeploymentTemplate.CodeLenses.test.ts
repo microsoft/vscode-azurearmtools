@@ -148,8 +148,8 @@ suite("DeploymentTemplate code lenses", () => {
         suite("if there is a parameter file then", () => {
             test("parameter section code lens should show command to open current parameter file and one to change the selection", async () => {
                 const dt = parseTemplate(template1);
-                const { dp } = await parseParametersWithMarkers({});
-                const lenses = dt.getCodeLenses(new FakeParameterValuesSourceProvider(dp.documentUri, dp.parameterValuesSource));
+                const { dp } = parseParametersWithMarkers({});
+                const lenses = dt.getCodeLenses(new FakeParameterValuesSourceProvider(dp.documentUri, dp.topLevelParameterValuesSource));
                 assert.equal(lenses.length, 2 + dt.topLevelScope.parameterDefinitions.length);
                 for (const lens of lenses) {
                     const result = await lens.resolve();
@@ -177,7 +177,7 @@ suite("DeploymentTemplate code lenses", () => {
 
     suite("parameter definition code lenses", () => {
 
-        suite("with top-level parameter definitions and values in a parameter file", () => {
+        suite("with top-level parameter definitions and values in a parameter file", async () => {
             function createParamLensTest(topLevelParamName: string, valueInParamFile: { value?: string; reference?: string } | undefined, expectedTitle: string): void {
                 const testName = valueInParamFile === undefined ?
                     `${topLevelParamName} with no value in param file` :
@@ -188,7 +188,7 @@ suite("DeploymentTemplate code lenses", () => {
                     const dt = parseTemplate(template1);
                     const param = dt.topLevelScope.getParameterDefinition(topLevelParamName);
                     assert(!!param);
-                    const { dp } = await parseParametersWithMarkers(
+                    const { dp } = parseParametersWithMarkers(
                         valueInParamFile === undefined ? {
                             "parameters": {}
                         } : valueInParamFile.value ? `{
@@ -204,7 +204,7 @@ suite("DeploymentTemplate code lenses", () => {
                                 }
                             }
                         }`);
-                    const lenses = dt.getCodeLenses(new FakeParameterValuesSourceProvider(dp.documentUri, dp.parameterValuesSource))
+                    const lenses = dt.getCodeLenses(new FakeParameterValuesSourceProvider(dp.documentUri, dp.topLevelParameterValuesSource))
                         .filter(l => l instanceof ParameterDefinitionCodeLens)
                         .map(l => <ParameterDefinitionCodeLens>l);
                     assert.equal(lenses.length, dt.topLevelScope.parameterDefinitions.length);

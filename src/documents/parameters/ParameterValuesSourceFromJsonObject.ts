@@ -32,7 +32,6 @@ export class ParameterValuesSourceFromJsonObject implements IParameterValuesSour
         public readonly deploymentRootObject: Json.ObjectValue | undefined
     ) {
     }
-
     public getParameterValue(parameterName: string): ParameterValueDefinition | undefined {
         const parameterProperty = this.parameterValuesProperty?.value?.asObjectValue?.getProperty(parameterName);
         return parameterProperty

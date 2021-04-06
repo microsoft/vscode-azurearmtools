@@ -259,7 +259,7 @@ suite("Nested templates", () => {
 
             const {
                 dt,
-                markers: { p1rootdef, p1rootref1, p1rootref2, p1rootref3, p1innerdef, p1innerref1, p1innerref2, p1innerref3 }
+                markers: { p1rootdef, p1rootref1, p1rootref2, p1rootref3, p1innerdef, p1innerref1, p1innerref2, p1innerref3, p1innerref4 }
             } = parseTemplateWithMarkers(template, [
                 "Warning: The variable 'v1' is never used.",
                 // testMessages.nestedTemplateNoValidation("nested"),
@@ -286,10 +286,8 @@ suite("Nested templates", () => {
                     p1innerdef.index,
                     p1innerref1.index,
                     p1innerref2.index,
-                    p1innerref3.index
-                    // tslint:disable-next-line: no-suspicious-comment
-                    // TODO: Recognize values specified for parameters for an inner-scoped nested template
-                    // p1innerref4.index
+                    p1innerref3.index,
+                    p1innerref4.index
                 ]);
         });
 

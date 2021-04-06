@@ -22,6 +22,7 @@ import * as Completion from './src/vscodeIntegration/Completion';
 
 export { activateInternal, deactivateInternal } from './src/AzureRMTools'; // Export activate/deactivate for main.js
 export * from "./src/constants";
+export * from "./src/documents/DeploymentDocument";
 export * from "./src/documents/parameters/DeploymentFileMapping";
 export * from "./src/documents/parameters/DeploymentParametersDoc";
 export * from "./src/documents/parameters/IParameterDefinition";

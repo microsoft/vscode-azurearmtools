@@ -369,7 +369,8 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 //   for parameter value sources in the template file
                 let { doc, associatedDoc: template } = await this.getDeploymentDocAndAssociatedDoc(editor.document, Cancellation.cantCancel);
                 if (doc instanceof DeploymentParametersDoc) {
-                    parameterValues = doc.parameterValuesSource;
+                    // Do completions for top-level parameters
+                    parameterValues = doc.topLevelParameterValuesSource;
                     parameterDefinitions = expectTemplateDocument(template).topLevelScope.parameterDefinitionsSource;
                 }
             } else {
@@ -1229,9 +1230,26 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             return undefined;
         }
 
+        return callWithTelemetryAndErrorHandlingSync('ProvideCodeLenses', (actionContext: IActionContext): vscode.CodeLens[] | undefined => {
+            actionContext.errorHandling.suppressDisplay = true;
+            actionContext.telemetry.suppressIfSuccessful = true;
+            const doc = this.getOpenedDeploymentDocument(textDocument.uri);
+
+            if (doc instanceof DeploymentTemplateDoc) {
+                let topLevelParametersProvider = this.getTopLevelParameterValuesSourceProvider(doc);
+                return doc.getCodeLenses(topLevelParametersProvider);
+            }
+        });
+    }
+
+    /**
+     * Retrieves parameter values for the parameters defined at the top level of the template (i.e. those
+     * in the parameter value, if any)
+     */
+    private getTopLevelParameterValuesSourceProvider(doc: DeploymentTemplateDoc): IParameterValuesSourceProvider | undefined {
         /**
          * A parameter value source provider using a parameter file. This is here just for convenient access to the
-         * getOrReadTemplateParameters function.
+         * getOrReadParametersFiles function.
          */
         class ParameterValuesSourceProviderFromParameterFile implements IParameterValuesSourceProvider {
             private _parameterValuesSource: CachedPromise<IParameterValuesSource> = new CachedPromise<IParameterValuesSource>();
@@ -1245,28 +1263,21 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             public async getValuesSource(): Promise<IParameterValuesSource> {
                 return this._parameterValuesSource.getOrCachePromise(async () => {
                     const dp = await this.parent.getOrReadParametersFile(this.parameterFileUri);
-                    return dp?.parameterValuesSource;
+                    return dp?.topLevelParameterValuesSource;
                 });
             }
         }
 
-        return callWithTelemetryAndErrorHandlingSync('ProvideCodeLenses', (actionContext: IActionContext): vscode.CodeLens[] | undefined => {
-            actionContext.errorHandling.suppressDisplay = true;
-            actionContext.telemetry.suppressIfSuccessful = true;
-            const doc = this.getOpenedDeploymentDocument(textDocument.uri);
+        const dpUri = this._mapping.getParameterFile(doc.documentUri);
+        let topLevelParametersProvider: ParameterValuesSourceProviderFromParameterFile | undefined;
+        if (dpUri) {
+            // There is a parameter file, but we don't want to retrieve until we resolve
+            // the code lens because onProvideCodeLenses is supposed to return as quickly as possible.
+            topLevelParametersProvider = new ParameterValuesSourceProviderFromParameterFile(this, dpUri);
+        }
 
-            if (doc) {
-                const dpUri = this._mapping.getParameterFile(doc.documentUri);
-                let topLevelParametersProvider: ParameterValuesSourceProviderFromParameterFile | undefined;
-                if (dpUri) {
-                    // There is a parameter file, but we don't want to retrieve until we resolve
-                    // the code lens because onProvideCodeLenses is supposed to return as quickly as possible.
-                    topLevelParametersProvider = new ParameterValuesSourceProviderFromParameterFile(this, dpUri);
-                }
+        return topLevelParametersProvider;
 
-                return doc.getCodeLenses(topLevelParametersProvider);
-            }
-        });
     }
 
     private async onResolveCodeLens(codeLens: vscode.CodeLens, token: vscode.CancellationToken): Promise<vscode.CodeLens | undefined> {
@@ -1365,7 +1376,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         const doc: DeploymentDocument | undefined = this.getOpenedDeploymentDocument(uri);
         let range: vscode.Range | undefined;
         if (args.inParameterFile && doc instanceof DeploymentParametersDoc) {
-            const parameterValues = doc.parameterValuesSource;
+            const parameterValues = doc.topLevelParameterValuesSource;
             // If the parameter doesn't have a value to navigate to, then show the
             // properties section or beginning of the param file/nested template.
             const parameterName = args.inParameterFile.parameterName;
@@ -1440,7 +1451,11 @@ export class AzureRMTools implements IProvideOpenedDocuments {
      * Given a document, get a DeploymentTemplate or DeploymentParameters instance from it, and then
      * create the appropriate context for it from the given position
      */
-    private async getPositionContext(textDocument: vscode.TextDocument, position: vscode.Position, cancel: Cancellation): Promise<PositionContext | undefined> {
+    private async getPositionContext(
+        textDocument: vscode.TextDocument,
+        position: vscode.Position,
+        cancel: Cancellation
+    ): Promise<PositionContext | undefined> {
         cancel.throwIfCancelled();
 
         const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(textDocument, cancel);
@@ -1511,7 +1526,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 actionContext.errorHandling.suppressDisplay = true;
                 properties.docType = this.getDocTypeForTelemetry(pc.document);
 
-                const refInfo = pc.getReferenceSiteInfo(false);
+                const refInfo = pc.getReferenceSiteInfo(true);
                 if (refInfo && refInfo.definition.nameValue) {
                     properties.definitionType = refInfo.definition.definitionKind;
 

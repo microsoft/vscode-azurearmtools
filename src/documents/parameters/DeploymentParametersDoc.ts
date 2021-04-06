@@ -41,7 +41,7 @@ export class DeploymentParametersDoc extends DeploymentDocument {
         return isParametersSchema(this.schemaUri);
     }
 
-    public get parameterValuesSource(): IParameterValuesSource {
+    public get topLevelParameterValuesSource(): IParameterValuesSource {
         return this._parameterValuesSource.getOrCacheValue(() => {
             return new ParameterValuesSourceFromJsonObject(this, this.parametersProperty, this.topLevelValue);
         });
@@ -118,7 +118,7 @@ export class DeploymentParametersDoc extends DeploymentDocument {
         const template = expectTemplateDocumentOrUndefined(associatedDocument);
         if (template) {
             return getParameterValuesCodeActions(
-                this.parameterValuesSource,
+                this.topLevelParameterValuesSource,
                 template.topLevelScope.parameterDefinitionsSource,
                 undefined,
                 range,
@@ -135,7 +135,7 @@ export class DeploymentParametersDoc extends DeploymentDocument {
         }
 
         const template = expectTemplateDocument(associatedDocument);
-        return getMissingParameterErrors(this.parameterValuesSource, template.topLevelScope.parameterDefinitionsSource);
+        return getMissingParameterErrors(this.topLevelParameterValuesSource, template.topLevelScope.parameterDefinitionsSource);
     }
 
     public getWarnings(): Issue[] {

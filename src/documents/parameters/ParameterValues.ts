@@ -5,14 +5,18 @@
 import * as assert from "assert";
 import { CodeAction, CodeActionContext, CodeActionKind, Range, Selection, TextEditor } from "vscode";
 import { Command } from "vscode-languageclient";
-import { Completion, Json } from "../../../extension.bundle";
+import { Completion, INamedDefinition, Json } from "../../../extension.bundle";
 import { ext } from "../../extensionVariables";
 import { Issue } from "../../language/Issue";
 import { IssueKind } from "../../language/IssueKind";
+import { ReferenceList } from "../../language/ReferenceList";
 import { ContainsBehavior, Span } from "../../language/Span";
 import { indentMultilineString } from "../../util/multilineStrings";
 import { IAddMissingParametersArgs } from "../../vscodeIntegration/commandArguments";
 import { getVSCodePositionFromPosition, getVSCodeRangeFromSpan } from "../../vscodeIntegration/vscodePosition";
+import { IReferenceSite, ReferenceSiteKind } from "../positionContexts/PositionContext";
+import { IJsonDocument } from "../templates/IJsonDocument";
+import { TemplateScope } from "../templates/scopes/TemplateScope";
 import { IParameterDefinition } from "./IParameterDefinition";
 import { IParameterDefinitionsSource } from "./IParameterDefinitionsSource";
 import { IParameterValuesSource } from "./IParameterValuesSource";
@@ -432,4 +436,52 @@ export function getMissingParameterErrors(parameterValues: IParameterValuesSourc
         ?? (parameterValues.deploymentRootObject ? new Span(parameterValues.deploymentRootObject?.startIndex, 0) : undefined)
         ?? new Span(0, 0);
     return [new Issue(span, message, IssueKind.params_missingRequiredParam)];
+}
+
+export function findReferencesToDefinitionInParameterValues(values: IParameterValuesSource, definition: INamedDefinition): ReferenceList {
+    const results: ReferenceList = new ReferenceList(definition.definitionKind);
+
+    // The only reference possible in the parameter file is the parameter's value definition
+    if (definition.nameValue) {
+        const paramValue = values.getParameterValue(definition.nameValue.unquotedValue);
+        if (paramValue) {
+            results.add({ document: values.document, span: paramValue.nameValue.unquotedSpan });
+        }
+    }
+
+    return results;
+}
+
+/**
+ * If this position is inside a parameter value (params file, nested deployment, etc) then
+ * return an object with information about this reference and the corresponding definition
+ */
+export function getReferenceSiteInfoForParameterValue(
+    definitionsDoc: IJsonDocument,
+    definitions: IParameterDefinitionsSource,
+    scope: TemplateScope,
+    values: IParameterValuesSource,
+    documentCharacterIndex: number
+): IReferenceSite | undefined {
+    for (let paramValue of values.parameterValueDefinitions) {
+        // Are we inside the name of a parameter?
+        if (paramValue.nameValue.span.contains(documentCharacterIndex, ContainsBehavior.extended)) {
+            // Does it have an associated parameter definition in our list?
+            const paramDef = definitions.parameterDefinitions.find(d => d.nameValue.unquotedValue.toLowerCase() === paramValue.nameValue.unquotedValue.toLocaleLowerCase());
+            if (paramDef) {
+                return {
+                    referenceKind: ReferenceSiteKind.reference,
+                    unquotedReferenceSpan: paramValue.nameValue.unquotedSpan,
+                    referenceDocument: values.document,
+                    definition: paramDef,
+                    definitionDocument: definitionsDoc,
+                    definitionScope: scope
+                };
+            }
+
+            break;
+        }
+    }
+
+    return undefined;
 }

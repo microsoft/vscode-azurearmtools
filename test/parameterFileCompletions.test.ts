@@ -36,7 +36,7 @@ suite("Parameter file completions", () => {
         test(fullName, async () => {
             let dt: DeploymentTemplateDoc | undefined = template ? parseTemplate(template) : undefined;
 
-            const { dp, markers: { cursor } } = await parseParametersWithMarkers(params);
+            const { dp, markers: { cursor } } = parseParametersWithMarkers(params);
             // tslint:disable-next-line: strict-boolean-expressions
             const cursorIndex = !isNullOrUndefined(options.cursorIndex) ? options.cursorIndex : cursor?.index;
             if (isNullOrUndefined(cursorIndex)) {

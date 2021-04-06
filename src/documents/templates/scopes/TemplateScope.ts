@@ -102,7 +102,8 @@ export abstract class TemplateScope implements IParameterDefinitionsSourceProvid
 
     // NOTE: This returns undefined for top-level scopes, since that would need to
     //   come from a parameter file loaded later
-    // CONSIDER: Return IParameterValuesSourceProvider instead
+    // CONSIDER: Return IParameterValuesSourceProvider instead. It's not good that getParameterValuesSource
+    //   returns an invalid value (undefined) for the top level.
     protected getParameterValuesSource(): IParameterValuesSource | undefined {
         return undefined;
     }

@@ -2,7 +2,9 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import * as vscode from "vscode";
 import * as Json from "../../language/json/JSON";
+import { Span } from "../../language/Span";
 import { IDocument } from "./IDocument";
 
 /**
@@ -20,4 +22,7 @@ export interface IJsonDocument extends IDocument {
     topLevelValue: Json.ObjectValue | undefined;
 
     getJSONTokenAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Token | undefined;
+
+    // tslint:disable-next-line:function-name
+    _debugShowTextAt(positionOrRange: number | Span | vscode.Range | vscode.Position): string;
 }
