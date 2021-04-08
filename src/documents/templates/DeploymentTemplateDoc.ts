@@ -21,6 +21,7 @@ import * as Json from "../../language/json/JSON";
 import { ReferenceList } from "../../language/ReferenceList";
 import { ContainsBehavior, Span } from "../../language/Span";
 import { CachedValue } from '../../util/CachedValue';
+import { CaseInsensitiveMap } from '../../util/CaseInsensitiveMap';
 import { expectParameterDocumentOrUndefined } from '../../util/expectDocument';
 import { Histogram } from '../../util/Histogram';
 import { nonNullValue } from '../../util/nonNull';
@@ -409,8 +410,13 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     /**
      * Gets info about schema usage, useful for telemetry
      */
-    public getResourceUsage(): Histogram {
+    public getResourceUsage(
+        availableResourceTypesAndVersions: CaseInsensitiveMap<string, string[]>
+    ): [Histogram, Histogram, Histogram] {
         const resourceCounts = new Histogram();
+        const invalidResourceCounts = new Histogram();
+        const invalidVersionCounts = new Histogram();
+
         // tslint:disable-next-line: strict-boolean-expressions
         const apiProfileString = `(profile=${this.apiProfile || 'none'})`.toLowerCase();
 
@@ -418,9 +424,42 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         const resources: Json.ArrayValue | undefined = this.topLevelValue ? Json.asArrayValue(this.topLevelValue.getPropertyValue(templateKeys.resources)) : undefined;
         if (resources) {
             traverseResources(resources, undefined);
+
+            if (availableResourceTypesAndVersions.size > 0) {
+                for (const key of resourceCounts.keys) {
+                    if (key) {
+                        const count = resourceCounts.getCount(key);
+
+                        let apiVersionsForType: string[] | undefined;
+                        let apiVersion: string;
+                        let resourceType: string;
+
+                        const match = key.match(/([a-z./0-9-]+)@([a-z0-9-]+)/);
+                        if (match) {
+                            resourceType = match[1];
+                            apiVersion = match[2];
+                            apiVersionsForType = availableResourceTypesAndVersions.get(resourceType);
+                        } else {
+                            resourceType = key;
+                            apiVersion = "";
+                        }
+
+                        if (apiVersionsForType) {
+                            // The resource type is valid.  Is the apiVersion valid?
+                            if (!apiVersionsForType.includes(apiVersion)) {
+                                // Invalid apiVersion
+                                invalidVersionCounts.add(key, count);
+                            }
+                        } else {
+                            // The resource type is not in the list
+                            invalidResourceCounts.add(key, count);
+                        }
+                    }
+                }
+            }
         }
 
-        return resourceCounts;
+        return [resourceCounts, invalidResourceCounts, invalidVersionCounts];
 
         function traverseResources(resourcesObject: Json.ArrayValue, parentKey: string | undefined): void {
             for (let resource of resourcesObject.elements) {

@@ -9,6 +9,7 @@ import * as path from 'path';
 import { Diagnostic, Event, EventEmitter, ProgressLocation, Uri, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, ITelemetryContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
+import { delay } from '../../test/support/delay';
 import { acquireSharedDotnetInstallation } from '../acquisition/acquireSharedDotnetInstallation';
 import { armTemplateLanguageId, backendValidationDiagnosticsSource, configKeys, configPrefix, downloadDotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName, notifications } from '../constants';
 import { convertDiagnosticUrisToLinkedTemplateSchema, INotifyTemplateGraphArgs, IRequestOpenLinkedFileArgs, onRequestOpenLinkedFile } from '../documents/templates/linkedTemplates/linkedTemplates';
@@ -28,12 +29,12 @@ let haveFirstSchemasFinishedLoading: boolean = false;
 let isShowingLoadingSchemasProgress: boolean = false;
 
 export enum LanguageServerState {
-    NotStarted,
-    Starting,
-    Failed,
-    Running,
-    Stopped,
-    LoadingSchemas,
+    NotStarted, // 0
+    Starting, // 1
+    Failed, // 2
+    Running, // 3
+    Stopped, // 4
+    LoadingSchemas, // 5
 }
 
 /**
@@ -77,6 +78,8 @@ export function startArmLanguageServerInBackground(): void {
             assertNever(ext.languageServerState);
     }
 
+    ext.languageServerState = LanguageServerState.Starting;
+
     window.withProgress(
         {
             location: ProgressLocation.Notification,
@@ -86,7 +89,6 @@ export function startArmLanguageServerInBackground(): void {
             await callWithTelemetryAndErrorHandling('startArmLanguageServer', async (actionContext: IActionContext) => {
                 actionContext.telemetry.suppressIfSuccessful = true;
 
-                ext.languageServerState = LanguageServerState.Starting;
                 try {
                     // The server is implemented in .NET Core. We run it by calling 'dotnet' with the dll as an argument
                     let serverDllPath: string = findLanguageServer();
@@ -123,7 +125,7 @@ async function getLangServerVersion(): Promise<string | undefined> {
     });
 }
 
-export async function startLanguageClient(serverDllPath: string, dotnetExePath: string): Promise<void> {
+async function startLanguageClient(serverDllPath: string, dotnetExePath: string): Promise<void> {
     // tslint:disable-next-line: no-suspicious-comment
     // tslint:disable-next-line: max-func-body-length // TODO: Refactor function
     await callWithTelemetryAndErrorHandling('startArmLanguageClient', async (actionContext: IActionContext) => {
@@ -382,5 +384,50 @@ function showLoadingSchemasProgress(): void {
         ).then(() => {
             isShowingLoadingSchemasProgress = false;
         });
+    }
+}
+
+export async function waitForLanguageServerAvailable(): Promise<void> {
+    const currentState = ext.languageServerState;
+    switch (currentState) {
+        case LanguageServerState.Stopped:
+        case LanguageServerState.NotStarted:
+        case LanguageServerState.Failed:
+            startArmLanguageServerInBackground();
+            break;
+
+        case LanguageServerState.Running:
+            return;
+
+        case LanguageServerState.LoadingSchemas:
+        case LanguageServerState.Starting:
+            break;
+
+        default:
+            assertNever(currentState);
+    }
+
+    // tslint:disable-next-line: no-constant-condition
+    while (true) {
+        switch (ext.languageServerState) {
+            case LanguageServerState.Failed:
+                throw new Error(`Language server failed on start-up: ${ext.languageServerStartupError}`);
+            case LanguageServerState.NotStarted:
+            case LanguageServerState.Starting:
+            case LanguageServerState.LoadingSchemas:
+                await delay(100);
+                break;
+            case LanguageServerState.Running:
+                await delay(1000); // Give vscode time to notice the new formatter available (I don't know of a way to detect this)
+
+                ext.outputChannel.appendLine("Language server is ready.");
+                assert(ext.languageServerClient);
+                return;
+
+            case LanguageServerState.Stopped:
+                throw new Error('Language server has stopped');
+            default:
+                assertNever(ext.languageServerState);
+        }
     }
 }
