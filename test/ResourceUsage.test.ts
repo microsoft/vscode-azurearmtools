@@ -6,27 +6,49 @@
 // tslint:disable:no-non-null-assertion object-literal-key-quotes variable-name
 
 import * as assert from "assert";
-import { Histogram } from "../extension.bundle";
-import { IDeploymentTemplate } from "./support/diagnostics";
+import { CaseInsensitiveMap, Histogram } from "../extension.bundle";
+import { IPartialDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 
 suite("ResourceUsage (schema.stats telemetry)", () => {
 
-    async function testGetResourceUsage(template: Partial<IDeploymentTemplate>, expectedResourceUsage: { [key: string]: number }): Promise<void> {
-        // tslint:disable-next-line:no-any
+    async function testGetResourceUsage(
+        template: IPartialDeploymentTemplate | string,
+        expectedResourceCounts: { [key: string]: number },
+        expectedInvalidResourceCounts?: { [key: string]: number },
+        expectedInvalidVersionCounts?: { [key: string]: number }
+    ): Promise<void> {
         const dt = parseTemplate(template);
-        const resourceUsage: Histogram = dt.getResourceUsage();
-        const expected = new Histogram();
-        for (let propName of Object.getOwnPropertyNames(expectedResourceUsage)) {
-            expected.add(propName, expectedResourceUsage[propName]);
+        const availableResourceTypesAndVersions = new CaseInsensitiveMap<string, string[]>();
+        availableResourceTypesAndVersions.set("Microsoft.Network/virtualNetworks", ["2016-08-01", "2018-10-01", "2019-08-01"]);
+        availableResourceTypesAndVersions.set("Microsoft.Resources/deployments", ["2020-10-01"]);
+        const [resourceUsage, invalidResourceCounts, invalidVersionCounts] = dt.getResourceUsage(availableResourceTypesAndVersions);
+
+        const expectedResourceCountsHistogram = new Histogram();
+        for (let propName of Object.getOwnPropertyNames(expectedResourceCounts)) {
+            expectedResourceCountsHistogram.add(propName, expectedResourceCounts[propName]);
+        }
+        assert.deepStrictEqual(resourceUsage, expectedResourceCountsHistogram);
+
+        if (expectedInvalidResourceCounts) {
+            const expectedInvalidResourceCountsHistogram = new Histogram();
+            for (let propName of Object.getOwnPropertyNames(expectedInvalidResourceCounts)) {
+                expectedInvalidResourceCountsHistogram.add(propName, expectedInvalidResourceCounts[propName]);
+            }
+            assert.deepStrictEqual(invalidResourceCounts, expectedInvalidResourceCountsHistogram);
+        }
+        if (expectedInvalidVersionCounts) {
+            const expectedInvalidVersionCountsHistogram = new Histogram();
+            for (let propName of Object.getOwnPropertyNames(expectedInvalidVersionCounts)) {
+                expectedInvalidVersionCountsHistogram.add(propName, expectedInvalidVersionCounts[propName]);
+            }
+            assert.deepStrictEqual(invalidVersionCounts, expectedInvalidVersionCountsHistogram);
         }
 
-        assert.deepStrictEqual(resourceUsage, expected);
     }
 
     test("Simple resources", async () => {
-        // tslint:disable-next-line:no-any
-        const template = <IDeploymentTemplate><any>{
+        const template: IPartialDeploymentTemplate = {
             resources: [
                 {
                     "name": "[parameters('virtualMachineName')]",
@@ -58,8 +80,7 @@ suite("ResourceUsage (schema.stats telemetry)", () => {
     });
 
     test("Multiple uses of resources, same version", async () => {
-        // tslint:disable-next-line:no-any
-        const template = <IDeploymentTemplate><any>{
+        const template: IPartialDeploymentTemplate = {
             resources: [
                 {
                     "name": "[parameters('virtualMachineName')]",
@@ -86,8 +107,7 @@ suite("ResourceUsage (schema.stats telemetry)", () => {
     });
 
     test("Multiple uses of resources, case insensitive", async () => {
-        // tslint:disable-next-line:no-any
-        const template = <IDeploymentTemplate><any>{
+        const template: IPartialDeploymentTemplate = {
             resources: [
                 {
                     "name": "[parameters('virtualMachineName')]",
@@ -114,8 +134,7 @@ suite("ResourceUsage (schema.stats telemetry)", () => {
     });
 
     test("case insensitive keys", async () => {
-        // tslint:disable-next-line:no-any
-        const template = {
+        const template: IPartialDeploymentTemplate = {
             resources: [
                 {
                     "name": "[parameters('virtualMachineName')]",
@@ -125,15 +144,13 @@ suite("ResourceUsage (schema.stats telemetry)", () => {
             ]
         };
 
-        // tslint:disable-next-line:no-any
-        await testGetResourceUsage(<any>template, {
+        await testGetResourceUsage(template, {
             "microsoft.compute/virtualmachines@2016-04-30-preview": 1
         });
     });
 
     test("Multiple uses of resources, different version", async () => {
-        // tslint:disable-next-line:no-any
-        const template = <IDeploymentTemplate><any>{
+        const template: IPartialDeploymentTemplate = {
             resources: [
                 {
                     "name": "[parameters('virtualMachineName')]",
@@ -161,8 +178,7 @@ suite("ResourceUsage (schema.stats telemetry)", () => {
     });
 
     test("Child resources", async () => {
-        // tslint:disable-next-line:no-any
-        const template = <IDeploymentTemplate><any>{
+        const template: IPartialDeploymentTemplate = {
             resources: [
                 {
                     "apiVersion": "2018-10-01",
@@ -201,8 +217,7 @@ suite("ResourceUsage (schema.stats telemetry)", () => {
     });
 
     test("Deep child resources", async () => {
-        // tslint:disable-next-line:no-any
-        const template = <IDeploymentTemplate><any>{
+        const template: IPartialDeploymentTemplate = {
             resources: [
                 {
                     "apiVersion": "2018-10-01",
@@ -265,8 +280,7 @@ suite("ResourceUsage (schema.stats telemetry)", () => {
     });
 
     test("resource type is expression", async () => {
-        // tslint:disable-next-line:no-any
-        const template = {
+        const template: IPartialDeploymentTemplate = {
             resources: [
                 {
                     "name": "[parameters('virtualMachineName')]",
@@ -276,15 +290,13 @@ suite("ResourceUsage (schema.stats telemetry)", () => {
             ]
         };
 
-        // tslint:disable-next-line:no-any
-        await testGetResourceUsage(<any>template, {
+        await testGetResourceUsage(template, {
             "[expression]@2016-04-30-preview": 1
         });
     });
 
     test("apiVersion is expression", async () => {
-        // tslint:disable-next-line:no-any
-        const template = {
+        const template: IPartialDeploymentTemplate = {
             resources: [
                 {
                     "apiVersion": "[concat(variables('apiVersion),'-preview')]",
@@ -293,14 +305,12 @@ suite("ResourceUsage (schema.stats telemetry)", () => {
             ]
         };
 
-        // tslint:disable-next-line:no-any
-        await testGetResourceUsage(<any>template, {
+        await testGetResourceUsage(template, {
             "microsoft.network/virtualnetworks@[expression]": 1
         });
     });
 
     test("apiVersion is multi-line expression", async () => {
-        // tslint:disable-next-line:no-any
         const template = `{
             "resources": [
                 {
@@ -311,15 +321,13 @@ suite("ResourceUsage (schema.stats telemetry)", () => {
             ]
         }`;
 
-        // tslint:disable-next-line:no-any
-        await testGetResourceUsage(<any>template, {
+        await testGetResourceUsage(template, {
             "microsoft.network/virtualnetworks@[expression]": 1
         });
     });
 
     test("apiVersion is missing, no apiProfile specified)", async () => {
-        // tslint:disable-next-line:no-any
-        const template = {
+        const template: IPartialDeploymentTemplate = {
             resources: [
                 {
                     "type": "Microsoft.Network/virtualNetworks"
@@ -327,15 +335,13 @@ suite("ResourceUsage (schema.stats telemetry)", () => {
             ]
         };
 
-        // tslint:disable-next-line:no-any
-        await testGetResourceUsage(<any>template, {
+        await testGetResourceUsage(template, {
             "microsoft.network/virtualnetworks@(profile=none)": 1
         });
     });
 
     test("apiVersion is missing, apiProfile specified)", async () => {
-        // tslint:disable-next-line:no-any
-        const template = {
+        const template: IPartialDeploymentTemplate = {
             apiProfile: "myProfile",
             resources: [
                 {
@@ -344,9 +350,64 @@ suite("ResourceUsage (schema.stats telemetry)", () => {
             ]
         };
 
-        // tslint:disable-next-line:no-any
-        await testGetResourceUsage(<any>template, {
+        await testGetResourceUsage(template, {
             "microsoft.network/virtualnetworks@(profile=myprofile)": 1
         });
     });
+
+    test("Invalid resource types and apiVersions)", async () => {
+        const template: IPartialDeploymentTemplate = {
+            resources: [
+                {
+                    "apiVersion": "2018-10-01",
+                    "type": "Microsoft.Network/virtualNetworks",
+                },
+                {
+                    "apiVersion": "2018-10-01",
+                    "type": "Microsoft.Network/virtualNetworks",
+                },
+
+                // Invalid api version
+                {
+                    "apiVersion": "2018-10-99",
+                    "type": "Microsoft.Network/virtualNetworks"
+                },
+                {
+                    "apiVersion": "2018-10-99",
+                    "type": "Microsoft.Network/virtualNetworks"
+                },
+
+                // Invalid type
+                {
+                    "apiVersion": "2018-10-01",
+                    "type": "Microsoft.Network/virtualNetworkies",
+                },
+                {
+                    "apiVersion": "2018-10-01",
+                    "type": "Microsoft.Network/virtualNetworkies",
+                },
+                {
+                    "apiVersion": "2018-10-01",
+                    "type": "Microsoft.Network/virtualNetworkies",
+                }
+
+            ]
+        };
+
+        await testGetResourceUsage(
+            template,
+            {
+                "microsoft.network/virtualnetworks@2018-10-01": 2,
+                "microsoft.network/virtualnetworkies@2018-10-01": 3,
+                "microsoft.network/virtualnetworks@2018-10-99": 2,
+            },
+            {
+                "microsoft.network/virtualnetworkies@2018-10-01": 3
+            },
+            {
+                "microsoft.network/virtualnetworks@2018-10-99": 2
+            }
+        );
+    });
+
 });

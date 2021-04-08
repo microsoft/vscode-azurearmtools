@@ -38,7 +38,8 @@ import { Issue, IssueSeverity } from "./language/Issue";
 import * as Json from "./language/json/JSON";
 import { ReferenceList } from "./language/ReferenceList";
 import { Span } from "./language/Span";
-import { notifyTemplateGraphAvailable, startArmLanguageServerInBackground } from "./languageclient/startArmLanguageServer";
+import { getAvailableResourceTypesAndVersions } from './languageclient/getAvailableResourceTypesAndVersions';
+import { notifyTemplateGraphAvailable, startArmLanguageServerInBackground, waitForLanguageServerAvailable } from "./languageclient/startArmLanguageServer";
 import { showInsertionContext } from "./snippets/showInsertionContext";
 import { SnippetManager } from "./snippets/SnippetManager";
 import { survey } from "./survey";
@@ -1193,8 +1194,12 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 resourceCounts?: string;
             } & TelemetryProperties = actionContext.telemetry.properties;
 
-            const resourceCounts: Histogram = deploymentTemplate.getResourceUsage();
+            await waitForLanguageServerAvailable();
+            const availableResourceTypesAndVersions = await getAvailableResourceTypesAndVersions(deploymentTemplate.schemaUri ?? '');
+            const [resourceCounts, invalidResourceCounts, invalidVersionCounts] = deploymentTemplate.getResourceUsage(availableResourceTypesAndVersions);
             properties.resourceCounts = escapeNonPaths(this.histogramToTelemetryString(resourceCounts));
+            properties.invalidResources = escapeNonPaths(this.histogramToTelemetryString(invalidResourceCounts));
+            properties.invalidVersions = escapeNonPaths(this.histogramToTelemetryString(invalidVersionCounts));
         });
     }
 

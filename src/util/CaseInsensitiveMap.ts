@@ -34,6 +34,10 @@ export class CaseInsensitiveMap<TKey extends string, TValue> {
         return casePreservedKeys.values();
     }
 
+    public entries(): [TKey, TValue][] {
+        return <[TKey, TValue][]>Object.entries(this.map);
+    }
+
     public map<TReturn>(callbackfn: (key: TKey, value: TValue) => TReturn): TReturn[] {
         const array: TReturn[] = [];
         this._map.forEach((entry: [TKey, TValue]) => {
