@@ -6,7 +6,7 @@
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
-import { Diagnostic, Event, EventEmitter, ProgressLocation, Uri, window, workspace } from 'vscode';
+import { CancellationToken, CompletionContext, CompletionItem, CompletionList, Diagnostic, Event, EventEmitter, Position, ProgressLocation, TextDocument, Uri, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, ITelemetryContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
 import { delay } from '../../test/support/delay';
@@ -183,7 +183,36 @@ async function startLanguageClient(serverDllPath: string, dotnetExePath: string)
                         }
                     }
                     next(uri, diagnostics);
-                }
+                },
+                provideCompletionItem: async (document: TextDocument, position: Position, context: CompletionContext, token: CancellationToken, next: (document: TextDocument, position: Position, context: CompletionContext, token: CancellationToken) => undefined | null | CompletionItem[] | CompletionList | Thenable<undefined | null | CompletionItem[] | CompletionList>): Promise<undefined | null | CompletionItem[] | CompletionList> => {
+                    let result: CompletionItem[] | CompletionList | undefined | null = await next(document, position, context, token);
+
+                    if (result) {
+                        let items: CompletionList | CompletionItem[] = result;
+                        let isIncomplete: boolean = false;
+                        if (items instanceof CompletionList) {
+                            isIncomplete = items.isIncomplete ?? false;
+                            items = items.items;
+                        }
+
+                        if (items.every(item => isApiVersion(item.label))) {
+                            // It's a list of apiVersion completions
+                            // Show them in reverse order so the newest is at the top of the list
+                            const countItems = items.length;
+                            items = items.map((ci, index) => {
+                                if (!ci.sortText) {
+                                    let sortText = (countItems - index).toString(10);
+                                    sortText = sortText.padStart(10 - sortText.length, '0');
+                                    ci.sortText = sortText;
+                                }
+                                return ci;
+                            });
+                            result = new CompletionList(items, isIncomplete);
+                        }
+                    }
+
+                    return result;
+                },
             }
         };
 
@@ -430,4 +459,8 @@ export async function waitForLanguageServerAvailable(): Promise<void> {
                 assertNever(ext.languageServerState);
         }
     }
+}
+
+function isApiVersion(s: string): boolean {
+    return /^[0-9]{4}-[0-9]{2}-[0-9]{2}(-[0-9a-zA-Z]+)?$/.test(s);
 }
