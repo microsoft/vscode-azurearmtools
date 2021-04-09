@@ -12,10 +12,10 @@ import { ext } from "../../../extensionVariables";
 import { assert } from '../../../fixed_assert';
 import { IProvideOpenedDocuments } from '../../../IProvideOpenedDocuments';
 import { ContainsBehavior } from "../../../language/Span";
+import { filterByType } from '../../../util/filterByType';
 import { httpGet } from '../../../util/httpGet';
 import { prependLinkedTemplateScheme, removeLinkedTemplateScheme } from '../../../util/linkedTemplateScheme';
 import { normalizeUri } from '../../../util/normalizedPaths';
-import { ofType } from '../../../util/ofType';
 import { pathExists } from '../../../util/pathExists';
 import { parseUri, stringifyUri } from '../../../util/uri';
 import { DeploymentTemplateDoc } from '../../templates/DeploymentTemplateDoc';
@@ -221,7 +221,7 @@ export function assignTemplateGraphToDeploymentTemplate(
     assert(!!graph.fullValidationStatus, "assignTemplateGraphToDeploymentTemplate: graph.fullValidationStatus should never be undefined");
 
     // Clear current
-    const linkedScopes = ofType(dt.allScopes, LinkedTemplateScope);
+    const linkedScopes = filterByType(dt.allScopes, LinkedTemplateScope);
     for (const linkReference of graph.linkedTemplates) {
         const linkPositionInTemplate = dt.getDocumentCharacterIndex(
             linkReference.lineNumberInParent,

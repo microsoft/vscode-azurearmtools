@@ -23,9 +23,10 @@ import { ContainsBehavior, Span } from "../../language/Span";
 import { CachedValue } from '../../util/CachedValue';
 import { CaseInsensitiveMap } from '../../util/CaseInsensitiveMap';
 import { expectParameterDocumentOrUndefined } from '../../util/expectDocument';
+import { filterByType } from '../../util/filterByType';
+import { filterNotUndefined } from '../../util/filterNotUndefined';
 import { Histogram } from '../../util/Histogram';
 import { nonNullValue } from '../../util/nonNull';
-import { ofType } from '../../util/ofType';
 import { FindReferencesAndErrorsVisitor } from "../../visitors/FindReferencesAndErrorsVisitor";
 import { FunctionCountVisitor } from "../../visitors/FunctionCountVisitor";
 import { GenericStringVisitor } from "../../visitors/GenericStringVisitor";
@@ -512,12 +513,20 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         nestedOuterCount: number;
         nestedInnerCount: number;
         linkedTemplatesCount: number;
+        linkedTemplatesUriCount: number;
+        linkedTemplatesRelativePathCount: number;
     } {
         const scopes = this.allScopes;
+        const linkedTemplateScopes = filterByType(scopes, LinkedTemplateScope);
+        const templateLinkObjects = filterNotUndefined(
+            linkedTemplateScopes.map(lts => lts.templateLinkObject));
+
         return {
             nestedOuterCount: scopes.filter(s => s.scopeKind === TemplateScopeKind.NestedDeploymentWithOuterScope).length,
             nestedInnerCount: scopes.filter(s => s.scopeKind === TemplateScopeKind.NestedDeploymentWithInnerScope).length,
-            linkedTemplatesCount: scopes.filter(s => s.scopeKind === TemplateScopeKind.LinkedDeployment).length
+            linkedTemplatesCount: linkedTemplateScopes.length,
+            linkedTemplatesUriCount: templateLinkObjects.filter(tl => tl.getPropertyValue(templateKeys.linkedDeploymentTemplateLinkUri)?.asStringValue).length,
+            linkedTemplatesRelativePathCount: templateLinkObjects.filter(tl => tl.getPropertyValue(templateKeys.linkedDeploymentTemplateLinkRelativePath)?.asStringValue).length
         };
     }
 
@@ -857,7 +866,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         const links: DocumentLink[] = [];
 
         // Make a document link out of each deployment "relativePath" property value
-        for (const scope of ofType(this.allScopes, LinkedTemplateScope)) {
+        for (const scope of filterByType(this.allScopes, LinkedTemplateScope)) {
             const templateLinkObject = scope.templateLinkObject;
             const relativePathStringValue: Json.StringValue | undefined =
                 templateLinkObject?.getPropertyValue(templateKeys.linkedDeploymentTemplateLinkRelativePath)

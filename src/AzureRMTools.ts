@@ -648,6 +648,8 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             measurements.lineCount = deploymentTemplate.lineCount;
             measurements.maxLineLength = deploymentTemplate.getMaxLineLength();
             measurements.paramsCount = deploymentTemplate.topLevelScope.parameterDefinitionsSource?.parameterDefinitions.length;
+            measurements.paramsWithDefaultCount = deploymentTemplate.topLevelScope.parameterDefinitionsSource?.parameterDefinitions
+                .filter(pd => pd.defaultValue).length;
             measurements.varsCount = deploymentTemplate.topLevelScope.variableDefinitions.length;
             measurements.namespacesCount = deploymentTemplate.topLevelScope.namespaceDefinitions.length;
             measurements.userFunctionsCount = totalUserFunctionsCount;
@@ -659,6 +661,9 @@ export class AzureRMTools implements IProvideOpenedDocuments {
 
             const getChildTemplatesInfo = deploymentTemplate.getChildTemplatesInfo();
             measurements.linkedTemplatesCount = getChildTemplatesInfo.linkedTemplatesCount;
+            measurements.linkedTemplatesUriCount = getChildTemplatesInfo.linkedTemplatesUriCount;
+            measurements.linkedTemplatesRelativePathCount = getChildTemplatesInfo.linkedTemplatesRelativePathCount;
+
             measurements.nestedInnerCount = getChildTemplatesInfo.nestedInnerCount;
             measurements.nestedOuterCount = getChildTemplatesInfo.nestedOuterCount;
         });
