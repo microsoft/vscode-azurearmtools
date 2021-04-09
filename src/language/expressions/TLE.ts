@@ -9,6 +9,7 @@
 import { templateKeys } from "../../constants";
 import { TemplatePositionContext } from "../../documents/positionContexts/TemplatePositionContext";
 import { IFunctionMetadata } from "../../documents/templates/IFunctionMetadata";
+import { ext } from "../../extensionVariables";
 import { assert } from "../../fixed_assert";
 import { __debugMarkRangeInString } from "../../util/debugMarkStrings";
 import { Iterator } from "../../util/Iterator";
@@ -923,73 +924,170 @@ export class FunctionSignatureHelp {
  *   the top-level expression returned will only be a StringValue if there is in fact no expression.
  */
 export class Parser {
+    // tslint:disable-next-line: cyclomatic-complexity max-func-body-length //asdf
     public static parse(quotedStringValue: string): TleParseResult {
         // Handles any JSON string, not just those that are actually TLE expressions beginning with bracket
         assert(quotedStringValue, "TLE strings cannot be undefined.");
         assert(1 <= quotedStringValue.length, "TLE strings must be at least 1 character.");
-        assert(Utilities.isQuoteCharacter(quotedStringValue[0]), "The first character in the TLE string to parse must be a quote character.");
+        assert(quotedStringValue[0] === '"', "The first character in the TLE string to parse must be a double quote character.");
 
         let leftSquareBracketToken: Token | undefined;
         let expression: Value | undefined;
         let rightSquareBracketToken: Token | undefined;
         let errors: Issue[] = [];
 
-        if (3 <= quotedStringValue.length && quotedStringValue.substr(1, 2) === "[[") {
-            expression = new StringValue(Token.createQuotedString(0, quotedStringValue));
-        } else {
-            let tokenizer = Tokenizer.fromString(quotedStringValue);
-            tokenizer.next();
+        const fix: string = ext.configuration.get<string>('expressions.fix') ?? 'None';
 
-            if (!tokenizer.current || tokenizer.current.getType() !== TokenType.LeftSquareBracket) {
-                // This is just a plain old string (no brackets). Mark its expression as being
-                // the string value.
+        if (fix === 'Fix1Strict') {
+            // To be an expression, it must start and end with '[' and ']' (with no characters before '[' and no characters after '], other
+            // than the double quotes).  Note that the string might be incomplete and not yet end with a double quote
+            if (
+                quotedStringValue[1] !== '['
+                ||
+                (!quotedStringValue.endsWith(']') && !quotedStringValue.endsWith(']"'))
+            ) {
+                expression = new StringValue(Token.createQuotedString(0, quotedStringValue));
+            } else if (quotedStringValue.length >= 3 && quotedStringValue.substr(1, 2) === "[[") {
+                // If it starts with "[[", it's a string
                 expression = new StringValue(Token.createQuotedString(0, quotedStringValue));
             } else {
-                leftSquareBracketToken = tokenizer.current;
+                let tokenizer = Tokenizer.fromString(quotedStringValue);
                 tokenizer.next();
 
-                while (
-                    <Token | undefined>tokenizer.current
-                    && tokenizer.current.getType() !== TokenType.Literal
-                    && tokenizer.current.getType() !== TokenType.RightSquareBracket
-                ) {
-                    errors.push(new Issue(tokenizer.current.span, "Expected a literal value.", IssueKind.tleSyntax));
-                    tokenizer.next();
-                }
-
-                expression = Parser.parseExpression(tokenizer, errors);
-
-                while (<Token | undefined>tokenizer.current) {
-                    if (tokenizer.current.getType() === TokenType.RightSquareBracket) {
-                        rightSquareBracketToken = tokenizer.current;
-                        tokenizer.next();
-                        break;
-                    } else {
-                        errors.push(new Issue(tokenizer.current.span, "Expected the end of the string.", IssueKind.tleSyntax));
-                        tokenizer.next();
-                    }
-                }
-
-                if (!!rightSquareBracketToken) {
-                    while (<Token | undefined>tokenizer.current) {
-                        errors.push(new Issue(tokenizer.current.span, "Nothing should exist after the closing ']' except for whitespace.", IssueKind.tleSyntax));
-                        tokenizer.next();
-                    }
+                if (!tokenizer.current || tokenizer.current.getType() !== TokenType.LeftSquareBracket) {
+                    // This is just a plain old string (no brackets). Mark its expression as being
+                    // the string value.
+                    expression = new StringValue(Token.createQuotedString(0, quotedStringValue));
                 } else {
-                    errors.push(new Issue(new Span(quotedStringValue.length - 1, 1), "Expected a right square bracket (']').", IssueKind.tleSyntax));
-                }
+                    leftSquareBracketToken = tokenizer.current;
+                    tokenizer.next();
 
-                if (!expression) {
-                    let errorSpan: Span = leftSquareBracketToken.span;
-                    if (!!rightSquareBracketToken) {
-                        errorSpan = errorSpan.union(rightSquareBracketToken.span);
+                    while (
+                        <Token | undefined>tokenizer.current
+                        && tokenizer.current.getType() !== TokenType.Literal
+                        && tokenizer.current.getType() !== TokenType.RightSquareBracket
+                    ) {
+                        errors.push(new Issue(tokenizer.current.span, "Expected a literal value.", IssueKind.tleSyntax));
+                        tokenizer.next();
                     }
-                    errors.push(new Issue(errorSpan, "Expected a function or property expression.", IssueKind.tleSyntax));
+
+                    expression = Parser.parseExpression(tokenizer, errors);
+
+                    while (<Token | undefined>tokenizer.current) {
+                        if (tokenizer.current.getType() === TokenType.RightSquareBracket) {
+                            rightSquareBracketToken = tokenizer.current;
+                            tokenizer.next();
+                            break;
+                        } else {
+                            errors.push(new Issue(tokenizer.current.span, "Expected the end of the string.", IssueKind.tleSyntax));
+                            tokenizer.next();
+                        }
+                    }
+
+                    if (!!rightSquareBracketToken) {
+                        while (<Token | undefined>tokenizer.current) {
+                            errors.push(new Issue(tokenizer.current.span, "Nothing should exist after the closing ']' except for whitespace.", IssueKind.tleSyntax));
+                            tokenizer.next();
+                        }
+                    } else {
+                        errors.push(new Issue(new Span(quotedStringValue.length - 1, 1), "Expected a right square bracket (']').", IssueKind.tleSyntax));
+                    }
+
+                    if (!expression) {
+                        let errorSpan: Span = leftSquareBracketToken.span;
+                        if (!!rightSquareBracketToken) {
+                            errorSpan = errorSpan.union(rightSquareBracketToken.span);
+                        }
+                        errors.push(new Issue(errorSpan, "Expected a function or property expression.", IssueKind.tleSyntax));
+                    }
+                }
+            }
+
+            return new TleParseResult(leftSquareBracketToken, expression, rightSquareBracketToken, errors, false);
+        }
+
+        let isAString = false;
+
+        // To be an expression, it must start and end with '[' and ']' (with no characters before '[' and no characters after '], other
+        // than the double quotes).  Note that the string might be incomplete and not yet end with a double quote
+        let startsWithBracket = quotedStringValue[1] === '[';
+        if (
+            quotedStringValue[1] !== '['
+            ||
+            (!quotedStringValue.endsWith(']') && !quotedStringValue.endsWith(']"'))
+        ) {
+            isAString = true;
+            if (!startsWithBracket) {
+                expression = new StringValue(Token.createQuotedString(0, quotedStringValue));
+            }
+        } else if (quotedStringValue.length >= 3 && quotedStringValue.substr(1, 2) === "[[") {
+            // If it starts with "[[", it's a string
+            isAString = true;
+            expression = new StringValue(Token.createQuotedString(0, quotedStringValue));
+        }
+
+        if (!expression || fix === 'None') {
+            if (3 <= quotedStringValue.length && quotedStringValue.substr(1, 2) === "[[") {
+                expression = new StringValue(Token.createQuotedString(0, quotedStringValue));
+            } else {
+                let tokenizer = Tokenizer.fromString(quotedStringValue);
+                tokenizer.next();
+
+                if (!tokenizer.current || tokenizer.current.getType() !== TokenType.LeftSquareBracket) {
+                    // This is just a plain old string (no brackets). Mark its expression as being
+                    // the string value.
+                    expression = new StringValue(Token.createQuotedString(0, quotedStringValue));
+                } else {
+                    leftSquareBracketToken = tokenizer.current;
+                    tokenizer.next();
+
+                    while (
+                        <Token | undefined>tokenizer.current
+                        && tokenizer.current.getType() !== TokenType.Literal
+                        && tokenizer.current.getType() !== TokenType.RightSquareBracket
+                    ) {
+                        errors.push(new Issue(tokenizer.current.span, "Expected a literal value.", IssueKind.tleSyntax));
+                        tokenizer.next();
+                    }
+
+                    expression = Parser.parseExpression(tokenizer, errors);
+
+                    while (<Token | undefined>tokenizer.current) {
+                        if (tokenizer.current.getType() === TokenType.RightSquareBracket) {
+                            rightSquareBracketToken = tokenizer.current;
+                            tokenizer.next();
+                            break;
+                        } else {
+                            errors.push(new Issue(tokenizer.current.span, "Expected the end of the string.", IssueKind.tleSyntax));
+                            tokenizer.next();
+                        }
+                    }
+
+                    if (!!rightSquareBracketToken) {
+                        while (<Token | undefined>tokenizer.current) {
+                            errors.push(new Issue(tokenizer.current.span, "Nothing should exist after the closing ']' except for whitespace.", IssueKind.tleSyntax));
+                            tokenizer.next();
+                        }
+                    } else {
+                        errors.push(new Issue(new Span(quotedStringValue.length - 1, 1), "Expected a right square bracket (']').", IssueKind.tleSyntax));
+                    }
+
+                    if (!expression) {
+                        let errorSpan: Span = leftSquareBracketToken.span;
+                        if (!!rightSquareBracketToken) {
+                            errorSpan = errorSpan.union(rightSquareBracketToken.span);
+                        }
+                        errors.push(new Issue(errorSpan, "Expected a function or property expression.", IssueKind.tleSyntax));
+                    }
                 }
             }
         }
 
-        return new TleParseResult(leftSquareBracketToken, expression, rightSquareBracketToken, errors);
+        if (fix === 'Fix2Hybrid') {
+            errors = [];
+        }
+
+        return new TleParseResult(leftSquareBracketToken, expression, rightSquareBracketToken, errors, isAString);
     }
 
     private static parseExpression(tokenizer: Tokenizer, errors: Issue[]): Value | undefined {
@@ -1244,7 +1342,8 @@ export class TleParseResult {
         private _leftSquareBracketToken: Token | undefined,
         private _expression: Value | undefined,
         private _rightSquareBracketToken: Token | undefined,
-        private _errors: Issue[]
+        private _errors: Issue[],
+        public isActuallyAString: boolean
     ) {
         assert(_errors);
     }
@@ -1559,16 +1658,16 @@ export class Token {
  * The different types of tokens that can be produced from a TLE string.
  */
 export enum TokenType {
-    LeftSquareBracket,
-    RightSquareBracket,
-    LeftParenthesis,
-    RightParenthesis,
-    QuotedString,
-    Comma,
-    Whitespace,
-    Literal,
-    Period,
-    Number,
+    LeftSquareBracket, // 0
+    RightSquareBracket, // 1
+    LeftParenthesis, // 2
+    RightParenthesis, // 3
+    QuotedString, // 4
+    Comma, // 5
+    Whitespace, // 6
+    Literal, // 7
+    Period, // 8
+    Number, // 9
 }
 
 /**

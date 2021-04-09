@@ -211,7 +211,9 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                 if (tleParseResult.parseResult.expression) {
                     // tslint:disable-next-line:no-non-null-assertion // Guaranteed by if
                     const scope = tleParseResult.scope;
-                    FindReferencesAndErrorsVisitor.visit(scope, jsonStringValue.startIndex, tleParseResult.parseResult.expression, functions, referenceListsMap, issues);
+                    if (!tleParseResult.parseResult.isActuallyAString) {
+                        FindReferencesAndErrorsVisitor.visit(scope, jsonStringValue.startIndex, tleParseResult.parseResult.expression, functions, referenceListsMap, issues);
+                    }
                 }
             });
 

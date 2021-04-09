@@ -114,50 +114,44 @@ suite("Expressions functional tests", () => {
             ]);
     });
 
-    suite("Plain strings vs expressions", () => {
-        // Inferred rules by experimenting with deployments
-        // See https://github.com/microsoft/vscode-azurearmtools/issues/250
+    suite("Plain strings vs expressions, #250, #1203", () => {
+        // Inferred full rules by experimenting with deployments
+        // See https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-expressions#escape-characters
+        // and https://github.com/microsoft/vscode-azurearmtools/issues/250
+        // and https://github.com/microsoft/vscode-azurearmtools/issues/1203
 
-        suite("1: Starts with [ but doesn't end with ] -> consider a string, don't change", () => {
-            /* TODO: Needs to be fixed: https://github.com/microsoft/vscode-azurearmtools/issues/250
-            // "[one]two" // -> string: "[one]two"
-            testExpression("[abc]withsuffix", []);
-            */
-
-            /* TODO: Needs to be fixed: https://github.com/microsoft/vscode-azurearmtools/issues/250
-            // testExpression("[abc", []);
-            */
-
-            // -> string: "[[one]two"
-            testExpression("", "[[one]two", []);
+        suite("1: Starts with [ but doesn't end with ] -> it is an unchanged string", () => {
+            testExpression("1a", "[one]two", []); // -> string: "[one]two"
+            testExpression("1b", "[one]two", []); // -> string: "[one]two"
+            testExpression("1c", "[abc]withsuffix", []); // -> string: "[abc]withsuffix"
+            testExpression("1d", "[Preview]: Audit VMs with insecure password security settings", []); // -> string: "[Preview]: Audit VMs with insecure password security settings"
+            testExpression("1e", "[abc", []); // -> string: "[abc"
+            testExpression("1f", "[[one]two", []); // -> string: "[[one]two"
+        });
+        suite("2: Starts with [[ but doesn't end with ] -> it is an (unchanged) string", () => {
+            testExpression("2a", "[[abc", []); // -> string: "[[abc"
+            testExpression("2b", "[[[abc", []); // -> string:  "[[[abc"
         });
 
-        suite("2: Starts with [[ -> replace first [[ with [, consider a string", () => {
-            // "[[one]" // -> string: "[one]"
-            testExpression("", "[[one]", []);
-            // "[[one]two]" // -> string: "[one]two]"
-            testExpression("", "[[one]two]", []);
-            // "[[[one]two]" // -> string: "[[one]two]"
-            testExpression("", "[[[one]two]", []);
-            testExpression("", "[[abc", []);
-            testExpression("", "[[[abc", []);
+        suite("3: Starts with [[ and ends with ] -> replace the first [, it is a string", () => {
+            testExpression("3a", "[[one]", []); // -> string: "[one]"
+            testExpression("3b", "[[one]two]", []); // -> string: "[one]two]"
+            testExpression("3c", "[[[one]two]", []); // -> string: "[[one]two]"
+            testExpression("3d", "[[[abc]", []); // -> string:  "[[abc]"
         });
 
-        suite("3: Starts with [ (and ends with ]) -> expression", () => {
-            // "one" // -> string: "one"
-            testExpression("", "[concat('')]", []);
+        suite("4: Starts with [ and ends with ] with no whitespace before or after -> it is an expression", () => {
+            testExpression("4a", "[concat('')]", []); // -> expression: ""
         });
 
-        suite("4: Anything else is a string", () => {
-            /* TODO: Needs to be fixed: https://github.com/microsoft/vscode-azurearmtools/issues/250
-            // " [one]" // -> string
-            testExpression("Starts with whitespace", " [one]", []);
-            */
+        suite("5: Anything else is a string", () => {
+            testExpression("5a", " [one]", []); // Starts with whitespace -> string: " [one]"
+            testExpression("5b", "[one] ", []); // Ends with whitespace -> string: "[one] "}
+        });
 
-            /* TODO: Needs to be fixed: https://github.com/microsoft/vscode-azurearmtools/issues/250
-            // "[one] " // -> string
-            testExpression("Ends with whitespace", "[one] ", []);
-            */
+        suite("Examples from https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-expressions#escape-characters", () => {
+            testExpression(`"demoVar1": "[[test value]" -> resolves to "[test value]"`, "[[test value]", []);
+            testExpression(`"demoVar2": "[test] value" -> resolves to "[test] value"`, "[test] value", []);
         });
 
         testExpression("", "]", []);

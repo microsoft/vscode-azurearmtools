@@ -158,6 +158,15 @@
                     "type": "boolean",
                     "description": "Enables Code Lens that displays the parent and children of each resource",
                     "default": true
+                },
+                "azureResourceManagerTools.expressions.fix": {
+                    "type": "string",
+                    "enum": [
+                        "None",
+                        "Fix1Strict",
+                        "Fix2Hybrid"
+                    ],
+                    "default": "None"
                 }
             }
         },
