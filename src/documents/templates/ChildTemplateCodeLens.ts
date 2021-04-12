@@ -13,7 +13,7 @@ import { assert } from "../../fixed_assert";
 import { Span } from '../../language/Span';
 import { LanguageServerState } from '../../languageclient/startArmLanguageServer';
 import { assertNever } from '../../util/assertNever';
-import { parseUri, stringifyUri } from "../../util/uri";
+import { parseUri } from "../../util/uri";
 import { ResolvableCodeLens } from '../DeploymentDocument';
 import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSourceProvider';
 import { SelectParameterFileCodeLens } from "./deploymentTemplateCodeLenses";
@@ -161,7 +161,14 @@ export class LinkedTemplateCodeLens extends ChildTemplateCodeLens {
                     friendlyPath = `.${ext.pathSeparator}${friendlyPath}`;
                 }
             } else {
-                friendlyPath = linkedUri ? stringifyUri(linkedUri) : undefined;
+                const maxQueryLength = 40;
+                let shortenedUri = linkedUri;
+                if (linkedUri && linkedUri?.query.length > maxQueryLength) {
+                    shortenedUri = shortenedUri?.with({
+                        query: `${linkedUri.query.slice(0, maxQueryLength)}...`
+                    });
+                }
+                friendlyPath = shortenedUri ? shortenedUri.toString(true) : undefined;
             }
         } catch (error) {
             console.warn(parseError(error).message);
