@@ -8,7 +8,7 @@
 
 import * as assert from 'assert';
 import { CodeAction, Command, Uri } from 'vscode';
-import { addMissingParameters, assignTemplateGraphToDeploymentTemplate, DeploymentTemplateDoc, getNormalizedDocumentKey, getVSCodeRangeFromSpan, IAddMissingParametersArgs, INotifyTemplateGraphArgs, isWin32, LinkedFileLoadState, NormalizedMap, ofType, Span } from '../extension.bundle';
+import { addMissingParameters, assignTemplateGraphToDeploymentTemplate, DeploymentTemplateDoc, filterByType, getNormalizedDocumentKey, getVSCodeRangeFromSpan, IAddMissingParametersArgs, INotifyTemplateGraphArgs, isWin32, LinkedFileLoadState, NormalizedMap, Span } from '../extension.bundle';
 import { TextDocumentFake } from './fakes/TextDocumentFake';
 import { TextEditorFake } from './fakes/TextEditorFake';
 import { getCodeActionContext } from './support/getCodeActionContext';
@@ -92,7 +92,7 @@ suite("Add missing parameters for nested/linked templates", () => {
             // Select the correct code action
             assert.equal(codeActions.length, 2, "Expecting a 2 add missing params code actions");
             const expectedName = whichParams === Params.all ? "Add all missing parameters" : "Add missing required parameters";
-            const codeAction: CodeAction | undefined = ofType(codeActions, CodeAction).find(ca => ca.title === expectedName);
+            const codeAction: CodeAction | undefined = filterByType(codeActions, CodeAction).find(ca => ca.title === expectedName);
             const args: IAddMissingParametersArgs = <IAddMissingParametersArgs>codeAction!.command!.arguments![1];
 
             const doc: TextDocumentFake = new TextDocumentFake(dt.documentText, templateUri);
