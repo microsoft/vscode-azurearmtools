@@ -14,7 +14,7 @@ import { IProvideOpenedDocuments } from '../../../IProvideOpenedDocuments';
 import { ContainsBehavior } from "../../../language/Span";
 import { filterByType } from '../../../util/filterByType';
 import { httpGet } from '../../../util/httpGet';
-import { prependLinkedTemplateScheme, removeLinkedTemplateScheme } from '../../../util/linkedTemplateScheme';
+import { decodeLinkedTemplateScheme, prependLinkedTemplateScheme } from '../../../util/linkedTemplateScheme';
 import { normalizeUri } from '../../../util/normalizedPaths';
 import { pathExists } from '../../../util/pathExists';
 import { parseUri, stringifyUri } from '../../../util/uri';
@@ -89,6 +89,7 @@ export async function onRequestOpenLinkedFile(
             openErrorType: string;
             fileScheme: string;
             hasQuery: string;
+            hasSas: string;
         }>context.telemetry.properties;
         properties.openErrorType = '';
         properties.openResult = 'Error';
@@ -102,6 +103,7 @@ export async function onRequestOpenLinkedFile(
 
         properties.fileScheme = requestedLinkUri.scheme;
         properties.hasQuery = String(!!requestedLinkUri.query);
+        properties.uriHasSas = String(!!requestedLinkUri.query.match('[&?]sig='));
 
         if (requestedLinkUri.scheme === documentSchemes.untitled) {
             properties.openErrorType = 'template not saved';
@@ -140,7 +142,7 @@ export async function onRequestOpenLinkedFile(
 }
 
 export async function tryLoadNonLocalLinkedFile(uri: Uri, context: IActionContext, open: boolean): Promise<string> {
-    uri = removeLinkedTemplateScheme(uri);
+    uri = decodeLinkedTemplateScheme(uri);
     let content: string;
     try {
         content = await httpGet(stringifyUri(uri));
@@ -250,6 +252,8 @@ export function assignTemplateGraphToDeploymentTemplate(
 export async function openLinkedTemplateFileCommand(linkedTemplateUri: Uri, actionContext: IActionContext): Promise<void> {
     let targetUri: Uri;
     actionContext.telemetry.properties.scheme = linkedTemplateUri.scheme;
+    actionContext.telemetry.properties.uriHasQuery = String(!!linkedTemplateUri.query);
+    actionContext.telemetry.properties.uriHasSas = String(!!linkedTemplateUri.query.match('[&?]sig='));
 
     if (linkedTemplateUri.scheme === documentSchemes.file) {
         const exists = await pathExists(linkedTemplateUri);
