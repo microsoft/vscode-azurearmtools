@@ -284,7 +284,7 @@ suite("Linked template", () => {
             );
         });
 
-        // test("Cursor at definition (in linked template) asdf", () => {
+        // test("Cursor at definition (in linked template)", () => {
         //     testGetReferences(
         //         dt,
         //         linkedParameter1Definition.index,

@@ -190,7 +190,8 @@ export class LinkedTemplateCodeLens extends ChildTemplateCodeLens {
 
         addSelectParamFileLensIfNeeded(lenses, fullValidationStatus, topLevelParameterValuesProvider, scope, span);
 
-        /* asdf Need to also resend to language server
+        // tslint:disable-next-line: no-suspicious-comment
+        /* TODO: Need to also resend to language server
         if (!isRelativePath && linkedUri && linkedUri?.scheme !== documentSchemes.file && linkedUri?.scheme !== documentSchemes.untitled) {
             lenses.push(
                 new ReloadLinkedTemplateCodeLens(
