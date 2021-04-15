@@ -13,7 +13,6 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 
 - Find references for a nested template parameter incorrectly finds matches in the parameter file [#1269](https://github.com/microsoft/vscode-azurearmtools/issues/1269)
 - Show apiVersions in reverse chronological order [#1279](https://github.com/microsoft/vscode-azurearmtools/issues/1279)
-- Some SAS tokens causes cause issues with linked templates [#1281](https://github.com/microsoft/vscode-azurearmtools/issues/1281)
 - Clicking F12 while on a parameter definition should show all refs but instead says "no definition found" [#1267](https://github.com/microsoft/vscode-azurearmtools/issues/1267)
 
 ### Maintenance
