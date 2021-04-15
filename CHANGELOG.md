@@ -2,11 +2,23 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
-## Version 0.16.0 (2021--)
+## Version 0.15.1
 
 ### Added
 
-- Svg icons for loadbalancer, virtual machine scaleset, and service fabric resources.
+- Added icons for loadbalancer, virtual machine scaleset, and service fabric resources (thanks Jason Gilbertson @jagilber!) [#1255](https://github.com/microsoft/vscode-azuraissues/1255)
+- Understand new top-level "scope" property [#967](https://github.com/microsoft/vscode-azurearmtools/issues/967)
+
+### Fixed
+
+- Find references for a nested template parameter incorrectly finds matches in the parameter file [#1269](https://github.com/microsoft/vscode-azurearmtools/issues/1269)
+- Show apiVersions in reverse chronological order [#1279](https://github.com/microsoft/vscode-azurearmtools/issues/1279)
+- Some SAS tokens causes cause issues with linked templates [#1281](https://github.com/microsoft/vscode-azurearmtools/issues/1281)
+- Clicking F12 while on a parameter definition should show all refs but instead says "no definition found" [#1267](https://github.com/microsoft/vscode-azurearmtools/issues/1267)
+
+### Maintenance
+- Telemetry to better understand which resource types and apiVersions do not have schemas [#1250](https://github.com/microsoft/vscode-azurearmtools/issues/1250)
+- Retrieve list of valid schemas and apiVersions from the language server for future features [#1258](https://github.com/microsoft/vscode-azurearmtools/issues/1258)
 
 ## Version 0.15.0 (2021-03-08)
 
