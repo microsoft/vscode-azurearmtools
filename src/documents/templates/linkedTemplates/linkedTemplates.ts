@@ -89,7 +89,7 @@ export async function onRequestOpenLinkedFile(
             openErrorType: string;
             fileScheme: string;
             hasQuery: string;
-            hasSas: string;
+            uriHasSas: string;
         }>context.telemetry.properties;
         properties.openErrorType = '';
         properties.openResult = 'Error';
