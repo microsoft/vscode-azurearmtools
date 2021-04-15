@@ -10,6 +10,6 @@ export function parseUri(uri: string): Uri {
 }
 
 export function stringifyUri(uri: Uri): string {
-    // can't use true argument, seems to create invalid SAS tokens (or at least Azure storage doesn't like them)
-    return uri.toString(false);
+    // true: skips the aggressive encoding
+    return uri.toString(true);
 }

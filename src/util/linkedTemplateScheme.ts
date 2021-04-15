@@ -24,10 +24,11 @@ export function prependLinkedTemplateScheme(uri: Uri): Uri {
     }
 }
 
-export function decodeLinkedTemplateScheme(uri: Uri): Uri {
+export function removeLinkedTemplateScheme(uri: Uri): Uri {
     if (uri.scheme === documentSchemes.linkedTemplate) {
-        const extractedUri = uri.toString(true).replace(/^linked-template:/, '');
-        return parseUri(extractedUri);
+        return parseUri(
+            stringifyUri(uri).
+                replace(/^linked-template:/, ''));
     }
 
     return uri;

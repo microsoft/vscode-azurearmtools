@@ -99,12 +99,7 @@ setup(function (this: Mocha.IBeforeAndAfterContext): void {
 teardown(function (this: Mocha.IBeforeAndAfterContext): void {
     // console.warn("Teardown");
     if (!this.currentTest.state || this.currentTest.state === 'failed') {
-        if (testLog.toString()) {
-            console.warn("Failed");
-            console.warn(`Failed.  TEST LOG:\n${testLog.toString()}\n`);
-        } else {
-            console.warn("Failed (test log is empty)");
-        }
+        console.warn(`\n========= TESTLOG =========:\n${testLog.toString()}\n`);
         deleteTestLog();
     }
 });
