@@ -13,7 +13,7 @@ import { assert } from "../../fixed_assert";
 import { Span } from '../../language/Span';
 import { LanguageServerState } from '../../languageclient/startArmLanguageServer';
 import { assertNever } from '../../util/assertNever';
-import { parseUri, stringifyUri } from "../../util/uri";
+import { parseUri } from "../../util/uri";
 import { ResolvableCodeLens } from '../DeploymentDocument';
 import { IParameterValuesSourceProvider } from '../parameters/IParameterValuesSourceProvider';
 import { SelectParameterFileCodeLens } from "./deploymentTemplateCodeLenses";
@@ -37,8 +37,7 @@ export class NestedTemplateCodeLens extends ChildTemplateCodeLens {
         super(scope, span);
         this.command = {
             title: title,
-            command: '',
-            tooltip: "TOOLTIP"
+            command: ''
         };
     }
 
@@ -97,12 +96,14 @@ export class LinkedTemplateCodeLens extends ChildTemplateCodeLens {
         scope: TemplateScope,
         span: Span,
         title: string,
-        linkedFileUri?: Uri
+        linkedFileUri?: Uri,
+        tooltip?: string
     ) {
         super(scope, span);
         this.command = {
             title: title,
             command: linkedFileUri ? 'azurerm-vscode-tools.codeLens.openLinkedTemplateFile' : '',
+            tooltip,
             arguments:
                 linkedFileUri
                     ? [linkedFileUri]
@@ -151,17 +152,27 @@ export class LinkedTemplateCodeLens extends ChildTemplateCodeLens {
 
         let linkedUri: Uri | undefined;
         let friendlyPath: string | undefined;
+        let fullPath: string | undefined;
         try {
             const templateUri = scope.document.documentUri;
             linkedUri = firstLinkedTemplateRef?.fullUri ? parseUri(firstLinkedTemplateRef.fullUri) : undefined;
             if (linkedUri && templateUri.fsPath && linkedUri.scheme === documentSchemes.file) {
                 const templateFolder = path.dirname(templateUri.fsPath);
                 friendlyPath = path.relative(templateFolder, linkedUri.fsPath);
+                fullPath = linkedUri.fsPath;
                 if (!path.isAbsolute(friendlyPath) && !friendlyPath.startsWith('.')) {
                     friendlyPath = `.${ext.pathSeparator}${friendlyPath}`;
                 }
             } else {
-                friendlyPath = linkedUri ? stringifyUri(linkedUri) : undefined;
+                const maxQueryLength = 40;
+                let shortenedUri = linkedUri;
+                fullPath = linkedUri?.toString(true);
+                if (linkedUri && linkedUri?.query.length > maxQueryLength) {
+                    shortenedUri = shortenedUri?.with({
+                        query: `${linkedUri.query.slice(0, maxQueryLength)}...`
+                    });
+                }
+                friendlyPath = shortenedUri ? shortenedUri.toString(true) : undefined;
             }
         } catch (error) {
             console.warn(parseError(error).message);
@@ -179,7 +190,7 @@ export class LinkedTemplateCodeLens extends ChildTemplateCodeLens {
             title += ` - ${langServerLoadState}`;
         }
 
-        lenses.push(new LinkedTemplateCodeLens(scope, span, title, linkedUri));
+        lenses.push(new LinkedTemplateCodeLens(scope, span, title, linkedUri, fullPath));
 
         addSelectParamFileLensIfNeeded(lenses, fullValidationStatus, topLevelParameterValuesProvider, scope, span);
 
