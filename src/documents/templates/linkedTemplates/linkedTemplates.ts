@@ -89,6 +89,7 @@ export async function onRequestOpenLinkedFile(
             openErrorType: string;
             fileScheme: string;
             hasQuery: string;
+            uriHasSas: string;
         }>context.telemetry.properties;
         properties.openErrorType = '';
         properties.openResult = 'Error';
@@ -102,6 +103,7 @@ export async function onRequestOpenLinkedFile(
 
         properties.fileScheme = requestedLinkUri.scheme;
         properties.hasQuery = String(!!requestedLinkUri.query);
+        properties.uriHasSas = String(!!requestedLinkUri.query.match('[&?]sig='));
 
         if (requestedLinkUri.scheme === documentSchemes.untitled) {
             properties.openErrorType = 'template not saved';
@@ -250,6 +252,8 @@ export function assignTemplateGraphToDeploymentTemplate(
 export async function openLinkedTemplateFileCommand(linkedTemplateUri: Uri, actionContext: IActionContext): Promise<void> {
     let targetUri: Uri;
     actionContext.telemetry.properties.scheme = linkedTemplateUri.scheme;
+    actionContext.telemetry.properties.uriHasQuery = String(!!linkedTemplateUri.query);
+    actionContext.telemetry.properties.uriHasSas = String(!!linkedTemplateUri.query.match('[&?]sig='));
 
     if (linkedTemplateUri.scheme === documentSchemes.file) {
         const exists = await pathExists(linkedTemplateUri);
