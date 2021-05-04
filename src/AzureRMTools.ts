@@ -832,7 +832,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 const neverForThisFile: vscode.MessageItem = { title: "Never for this file" };
 
                 const response = await ext.ui.showWarningMessage(
-                    `Warning: You are using a deprecrated schema version that is no longer maintained.  Would you like us to update "${path.basename(document.uri.path)}" to use the newest schema?`,
+                    `Warning: You are using a deprecated schema version that is no longer maintained.  Would you like us to update "${path.basename(document.uri.path)}" to use the newest schema?`,
                     {
                         learnMoreLink: "https://aka.ms/vscode-azurearmtools-updateschema"
                     },
