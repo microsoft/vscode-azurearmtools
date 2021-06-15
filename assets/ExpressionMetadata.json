@@ -81,7 +81,7 @@
         {
             "name": "createArray",
             "expectedUsage": "createArray(arg1, arg2, arg3, ...)",
-            "description": "Creates an array from the parameters.",
+            "description": "Creates an array from the parameters. If no parameters specified, creates an empty array.",
             "minimumArguments": 0,
             "maximumArguments": null
         },
@@ -340,7 +340,8 @@
             "name": "list",
             "expectedUsage": "list(resourceName\/resourceIdentifier, apiVersion)",
             "description": "Performs a GET call to a REST API on the given resource. The function arguments and the returned data depend on the resource type. See https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#valid-uses.",
-            "minimumArguments": 2
+            "minimumArguments": 2,
+            "maximumArguments": null
         },
         {
             "name": "listAccountSas",
