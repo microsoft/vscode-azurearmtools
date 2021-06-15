@@ -502,11 +502,7 @@
             "description": "Returns the keys of a storage account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primary (key[0]) and secondary key (key[1]).",
             "minimumArguments": 2,
             "maximumArguments": 2,
-            "returnValueMembers": [
-                {
-                    "name": "keys"
-                }
-            ]
+            "$comment": "There are more than 20 possible return members, depending on the RP that's being queried.  This causes incorrect Intellisense and false positives for validation (in VS), so turning this off by not specifying returnValueMembers at all. VSCode doesn't show the same validation errors, but intelisense still won't show correct values, and it's easier to keep vscode and vs in sync, so doing it there, too."
         },
         {
             "name": "listKeyValue",
