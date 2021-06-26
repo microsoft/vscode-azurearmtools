@@ -48,7 +48,7 @@ suite("HttpClient", () => {
                     }
 
                     assert.deepStrictEqual(reason.code, "ENOTFOUND");
-                    assert.deepStrictEqual(reason.errno, "ENOTFOUND");
+                    assert(<string><unknown>reason.errno === "ENOTFOUND" || reason.errno === -3008);
                     assert.deepStrictEqual(reason.hostname, "i.dont.exist.com");
                     assert.deepStrictEqual(reason.syscall, "getaddrinfo");
                 });
