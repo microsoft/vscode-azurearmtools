@@ -617,6 +617,7 @@ suite("Validation regression tests", () => {
                 'templates/regression/1060-rg.json',
                 {
                     parametersFile: 'templates/regression/1060-rg.parameters.json',
+                    // Schema errors are expected
                     ignoreSources: [diagnosticSources.schema],
                 },
                 [

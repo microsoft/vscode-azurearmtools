@@ -161,6 +161,8 @@ suite("Backend validation deployment scope", () => {
         await testDiagnostics(
             'templates/scopes/1055-tenant.json',
             {
+                // Schema errors are expected
+                ignoreSources: [diagnosticSources.schema]
             },
             [
             ]);
