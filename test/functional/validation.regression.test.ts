@@ -617,6 +617,7 @@ suite("Validation regression tests", () => {
                 'templates/regression/1060-rg.json',
                 {
                     parametersFile: 'templates/regression/1060-rg.parameters.json',
+                    ignoreSources: [diagnosticSources.schema],
                 },
                 [
                     `Error: Template validation failed: The template resource 'mgname-test' at line '14' and column '9' is not valid: The language expression property 'location' doesn't exist, available properties are 'name, properties'.. Please see https://aka.ms/arm-template-expressions for usage details. (arm-template (validation))`
@@ -628,7 +629,7 @@ suite("Validation regression tests", () => {
         await testDiagnostics(
             'templates/regression/1060-mg.json',
             {
-                parametersFile: 'templates/regression/1060-mg.parameters.json',
+                parametersFile: 'templates/regression/1060-mg.parameters.json'
             },
             [
             ]);
