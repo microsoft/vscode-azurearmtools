@@ -81,7 +81,7 @@
         {
             "name": "createArray",
             "expectedUsage": "createArray(arg1, arg2, arg3, ...)",
-            "description": "Creates an array from the parameters.",
+            "description": "Creates an array from the parameters. If no parameters specified, creates an empty array.",
             "minimumArguments": 0,
             "maximumArguments": null
         },
@@ -340,7 +340,8 @@
             "name": "list",
             "expectedUsage": "list(resourceName\/resourceIdentifier, apiVersion)",
             "description": "Performs a GET call to a REST API on the given resource. The function arguments and the returned data depend on the resource type. See https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#valid-uses.",
-            "minimumArguments": 2
+            "minimumArguments": 2,
+            "maximumArguments": null
         },
         {
             "name": "listAccountSas",
@@ -501,11 +502,7 @@
             "description": "Returns the keys of a storage account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primary (key[0]) and secondary key (key[1]).",
             "minimumArguments": 2,
             "maximumArguments": 2,
-            "returnValueMembers": [
-                {
-                    "name": "keys"
-                }
-            ]
+            "$comment": "There are more than 20 possible return members, depending on the RP that's being queried.  This causes incorrect Intellisense and false positives for validation (in VS), so turning this off by not specifying returnValueMembers at all. VSCode doesn't show the same validation errors, but intelisense still won't show correct values, and it's easier to keep vscode and vs in sync, so doing it there, too."
         },
         {
             "name": "listKeyValue",
