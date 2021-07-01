@@ -4,7 +4,7 @@ jobs:
       vmImage: windows-latest
     steps:
       - template: common/build.yml
-      - template: common/test-without-langserver.yml
+      #- template: common/test-without-langserver.yml
       - template: common/lint.yml
       - template: common/test.yml
       - template: common/publish-logs.yml
@@ -15,7 +15,7 @@ jobs:
     steps:
       - template: common/build.yml
       - template: common/publish-vsix.yml # Only publish vsix from linux build since we use this to release and want to stay consistent
-      - template: common/test-without-langserver.yml
+      #- template: common/test-without-langserver.yml
       - template: common/lint.yml
       - template: common/test.yml
       - template: common/publish-logs.yml
@@ -25,7 +25,7 @@ jobs:
       vmImage: macOS-latest
     steps:
       - template: common/build.yml
-      - template: common/test-without-langserver.yml
+      #- template: common/test-without-langserver.yml
       - template: common/lint.yml
       - template: common/test.yml
       - template: common/publish-logs.yml
