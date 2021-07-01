@@ -38,8 +38,6 @@ suite("arm-template-language-samples", () => {
             [
                 `Warning: Please use https for the schema URL (arm-template (schema))`
             ]);
-        testSample("subscription-level.json", [
-        ]);
         testSample("udf-xmas-tree.json", [
             `Error: Template validation failed: The template function 'storageUri' at line '15' and column '21' is not valid. These function calls are not supported in a function definition: 'reference'. Please see https://aka.ms/arm-template/#functions for usage details. (arm-template (validation))`
         ]);
