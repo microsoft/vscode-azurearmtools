@@ -24,12 +24,14 @@ import { DeploymentTemplateDoc } from "./documents/templates/DeploymentTemplateD
 import { ExtractItem } from './documents/templates/ExtractItem';
 import { getNormalizedDocumentKey } from './documents/templates/getNormalizedDocumentKey';
 import { gotoResources } from './documents/templates/gotoResources';
+import { IJsonDocument } from './documents/templates/IJsonDocument';
 import { getItemTypeQuickPicks, InsertItem } from "./documents/templates/insertItem";
 import { assignTemplateGraphToDeploymentTemplate, INotifyTemplateGraphArgs, openLinkedTemplateFileCommand, tryLoadNonLocalLinkedFile } from './documents/templates/linkedTemplates/linkedTemplates';
 import { allSchemas, getPreferredSchema } from './documents/templates/schemas';
 import { getQuickPickItems, sortTemplate } from "./documents/templates/sortTemplate";
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, setLangIdToArm, templateDocumentSelector, templateOrParameterDocumentSelector } from "./documents/templates/supported";
 import { TemplateSectionType } from "./documents/templates/TemplateSectionType";
+import { UnsupportedJsonDocument } from './documents/UnsupportedJsonDocument';
 import { ext } from "./extensionVariables";
 import { assert } from './fixed_assert';
 import { IProvideOpenedDocuments } from './IProvideOpenedDocuments';
@@ -40,6 +42,8 @@ import { ReferenceList } from "./language/ReferenceList";
 import { Span } from "./language/Span";
 import { getAvailableResourceTypesAndVersions } from './languageclient/getAvailableResourceTypesAndVersions';
 import { notifyTemplateGraphAvailable, startArmLanguageServerInBackground, waitForLanguageServerAvailable } from "./languageclient/startArmLanguageServer";
+import { InsertionContext } from './snippets/InsertionContext';
+import { KnownContexts } from './snippets/KnownContexts';
 import { showInsertionContext } from "./snippets/showInsertionContext";
 import { SnippetManager } from "./snippets/SnippetManager";
 import { survey } from "./survey";
@@ -57,6 +61,7 @@ import { parseUri } from './util/uri';
 import { IncorrectArgumentsCountIssue } from "./visitors/IncorrectArgumentsCountIssue";
 import { UnrecognizedBuiltinFunctionIssue } from "./visitors/UnrecognizedFunctionIssues";
 import { IAddMissingParametersArgs, IGotoParameterValueArgs, IGotoResourcesArgs } from "./vscodeIntegration/commandArguments";
+import { Item } from './vscodeIntegration/Completion';
 import { ConsoleOutputChannelWrapper } from "./vscodeIntegration/ConsoleOutputChannelWrapper";
 import { IHoverInfo } from './vscodeIntegration/IHoverInfo';
 import { RenameCodeActionProvider } from "./vscodeIntegration/RenameCodeActionProvider";
@@ -332,6 +337,34 @@ export class AzureRMTools implements IProvideOpenedDocuments {
 
         this._diagnosticsCollection = vscode.languages.createDiagnosticCollection("azurerm-tools-expressions");
         context.subscriptions.push(this._diagnosticsCollection);
+
+        // Hook up completion provider immediately because it also handles unsupported JSON files (for non-template JSON files)
+        const completionProvider: vscode.CompletionItemProvider = {
+            provideCompletionItems: async (
+                document: vscode.TextDocument,
+                position: vscode.Position,
+                token: vscode.CancellationToken,
+                context: vscode.CompletionContext
+            ): Promise<vscode.CompletionList | undefined> => {
+                return await this.onProvideCompletions(document, position, token, context);
+            },
+            resolveCompletionItem: (item: vscode.CompletionItem, token: vscode.CancellationToken): vscode.CompletionItem => {
+                return this.onResolveCompletionItem(item, token);
+            }
+        };
+        ext.context.subscriptions.push(
+            vscode.languages.registerCompletionItemProvider(
+                templateOrParameterDocumentSelector,
+                completionProvider,
+                "'",
+                "[",
+                ".",
+                '"',
+                '(',
+                ',',
+                ' ',
+                '{'
+            ));
 
         const activeEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
         if (activeEditor) {
@@ -959,34 +992,6 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 ));
 
             // tslint:disable-next-line:no-suspicious-comment
-            const completionProvider: vscode.CompletionItemProvider = {
-                provideCompletionItems: async (
-                    document: vscode.TextDocument,
-                    position: vscode.Position,
-                    token: vscode.CancellationToken,
-                    context: vscode.CompletionContext
-                ): Promise<vscode.CompletionList | undefined> => {
-                    return await this.onProvideCompletions(document, position, token, context);
-                },
-                resolveCompletionItem: (item: vscode.CompletionItem, token: vscode.CancellationToken): vscode.CompletionItem => {
-                    return this.onResolveCompletionItem(item, token);
-                }
-            };
-            ext.context.subscriptions.push(
-                vscode.languages.registerCompletionItemProvider(
-                    templateOrParameterDocumentSelector,
-                    completionProvider,
-                    "'",
-                    "[",
-                    ".",
-                    '"',
-                    '(',
-                    ',',
-                    ' ',
-                    '{'
-                ));
-
-            // tslint:disable-next-line:no-suspicious-comment
             const definitionProvider: vscode.DefinitionProvider = {
                 provideDefinition: async (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Definition | undefined> => {
                     return await this.onProvideDefinition(document, position, token);
@@ -1342,15 +1347,20 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         return await callWithTelemetryAndErrorHandling('provideCompletionItems', async (actionContext: IActionContext): Promise<vscode.CompletionList | undefined> => {
             actionContext.telemetry.suppressIfSuccessful = true;
             actionContext.errorHandling.suppressDisplay = true;
+            actionContext.telemetry.properties.langId = document.languageId;
 
             const cancel = new Cancellation(token, actionContext);
 
             const pc: PositionContext | undefined = await this.getPositionContext(document, position, cancel);
+            let jsonDocument: IJsonDocument | undefined;
+            let items: Item[] | undefined;
             if (pc) {
+                jsonDocument = pc.document;
                 const triggerCharacter = context.triggerKind === vscode.CompletionTriggerKind.TriggerCharacter
                     ? context.triggerCharacter
                     : undefined;
-                const { items, triggerSuggest } = await pc.getCompletionItems(triggerCharacter, defaultTabSize);
+                let triggerSuggest: boolean | undefined;
+                ({ items, triggerSuggest } = await pc.getCompletionItems(triggerCharacter, defaultTabSize));
                 if (triggerSuggest) {
                     // The user typed the beginning of a parent object, open up the completions context menu because it's
                     // likely they want to use a snippet immediately
@@ -1361,13 +1371,50 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                         vscode.commands.executeCommand('editor.action.triggerSuggest');
                     });
                     return undefined;
-                } else {
-                    const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c, position));
-                    ext.completionItemsSpy.postCompletionItemsResult(pc.document, items, vsCodeItems);
-                    return new vscode.CompletionList(vsCodeItems, true);
                 }
+            } else {
+                const result = await this.getUnsupportedJsonSnippets(actionContext, document, position);
+                jsonDocument = result.jsonDocument;
+                items = result.items;
+            }
+
+            if (jsonDocument && items) {
+                const vsCodeItems = items.map(c => toVsCodeCompletionItem(jsonDocument!, c, position));
+                ext.completionItemsSpy.postCompletionItemsResult(jsonDocument, items, vsCodeItems);
+                return new vscode.CompletionList(vsCodeItems, true);
             }
         });
+    }
+
+    /**
+     * Retrieve snippets for a JSON file that is not a deployment or parameters file
+     * @param actionContext Re
+     * @param document
+     * @param position
+     */
+    private async getUnsupportedJsonSnippets(
+        actionContext: IActionContext,
+        document: vscode.TextDocument,
+        position: vscode.Position
+    ): Promise<{ jsonDocument?: IJsonDocument, items?: Item[] }> {
+        const text = document.getText();
+        if (text.length > 100 /*limit size of strings we trim*/ || text.trim() !== '') {
+            return {};
+        }
+
+        // It's an empty (or whitespace) document, so we can try with the empty-document context
+        actionContext.telemetry.properties.isEmptyDoc = 'true';
+        const insertionContext: InsertionContext = {
+            context: KnownContexts.emptyDocument,
+            parents: []
+        };
+        const jsonDocument: IJsonDocument = new UnsupportedJsonDocument(document.getText(), document.uri);
+
+        const index = jsonDocument.getDocumentCharacterIndex(position.line, position.character);
+        const span = new Span(index, 0);
+        const items: Item[] = await ext.snippetManager.value.getSnippetsAsCompletionItems(insertionContext, span);
+
+        return { jsonDocument, items };
     }
 
     private onResolveCompletionItem(item: vscode.CompletionItem, _token: vscode.CancellationToken): vscode.CompletionItem {

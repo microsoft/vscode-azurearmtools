@@ -80,16 +80,6 @@
                 "path": "dist/grammars/arm-expression-string.tmLanguage.json"
             }
         ],
-        "snippets": [
-            {
-                "language": "json",
-                "path": "./assets/jsonsnippets.jsonc"
-            },
-            {
-                "language": "jsonc",
-                "path": "./assets/jsonsnippets.jsonc"
-            }
-        ],
         "configuration": {
             "type": "object",
             "title": "Azure Resource Manager Tools",

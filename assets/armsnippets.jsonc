@@ -2,13 +2,13 @@
     /*
         Known contexts (see KnownContexts.ts)
 
-        empty-document
+        empty-document (also works for plain JSON files)
         parameter-definitions
         parameter-values
         userfunc-parameter-definitions
         resource-body
 
-        If a location in a template document does not match ones of the above, then it will
+        If a location in a template document does not match one of the above, then it will
         be set to the name of the property containing the current array or object (e.g. "resources" or "outputs"),
         if any.
     */

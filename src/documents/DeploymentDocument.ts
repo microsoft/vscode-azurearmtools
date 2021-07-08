@@ -5,42 +5,27 @@
 import { CodeAction, CodeActionContext, CodeLens, Command, Position, Range, Selection, Uri } from "vscode";
 import { INamedDefinition } from "../language/INamedDefinition";
 import { Issue } from "../language/Issue";
-import * as Json from "../language/json/JSON";
-import { LineColPos } from "../language/LineColPos";
 import { ReferenceList } from "../language/ReferenceList";
-import { ContainsBehavior, Span } from "../language/Span";
-import { CachedValue } from "../util/CachedValue";
+import { Span } from "../language/Span";
 import { __debugMarkPositionInString, __debugMarkRangeInString } from "../util/debugMarkStrings";
-import { nonNullValue } from "../util/nonNull";
 import { getVSCodeRangeFromSpan } from "../vscodeIntegration/vscodePosition";
+import { JsonDocument } from "./JsonDocument";
 import { IParameterValuesSourceProvider } from "./parameters/IParameterValuesSourceProvider";
 import { PositionContext } from "./positionContexts/PositionContext";
-import { IJsonDocument } from "./templates/IJsonDocument";
 import { TemplateScope } from "./templates/scopes/TemplateScope";
 
 /**
  * Represents a deployment-related JSON file
  */
-export abstract class DeploymentDocument implements IJsonDocument {
-    // Parse result for the template JSON document as a whole
-    private _jsonParseResult: Json.ParseResult;
-
-    // The JSON node for the top-level JSON object (if the JSON is not empty or malformed)
-    private _topLevelValue: Json.ObjectValue | undefined;
-
-    private _schema: CachedValue<Json.StringValue | undefined> = new CachedValue<Json.StringValue | undefined>();
-
+export abstract class DeploymentDocument extends JsonDocument {
     /**
      * Constructor
      *
      * @param _documentText The string text of the document
      * @param _documentUri The location of the document
      */
-    constructor(private _documentText: string, private _documentUri: Uri, public readonly documentVersion: number) {
-        nonNullValue(_documentUri, "_documentUri");
-
-        this._jsonParseResult = Json.parse(_documentText);
-        this._topLevelValue = Json.asObjectValue(this._jsonParseResult.value);
+    constructor(documentText: string, documentUri: Uri, public readonly documentVersion: number) {
+        super(documentText, documentUri);
     }
 
     // tslint:disable-next-line:function-name
@@ -59,106 +44,9 @@ export abstract class DeploymentDocument implements IJsonDocument {
         }
     }
 
-    /**
-     * Get the document text as a string.
-     */
-    public get documentText(): string {
-        return this._documentText;
-    }
-
-    /**
-     * Retrieves a section of the document text
-     */
-    public getDocumentText(span: Span, offsetIndex?: number): string {
-        return span.getText(this.documentText, offsetIndex);
-    }
-
-    /**
-     * The unique identifier for this deployment template, which indicates its location
-     */
-    public get documentUri(): Uri {
-        return this._documentUri;
-    }
-
-    // Parse result for the template JSON document as a whole
-    public get jsonParseResult(): Json.ParseResult {
-        return this._jsonParseResult;
-    }
-
-    // The JSON node for the top-level JSON object (if the JSON is not empty or malformed)
-    public get topLevelValue(): Json.ObjectValue | undefined {
-        return this._topLevelValue;
-    }
-
-    public get schemaUri(): string | undefined {
-        const schema = this.schemaValue;
-        return schema ? schema.unquotedValue : undefined;
-    }
-
-    public get schemaValue(): Json.StringValue | undefined {
-        return this._schema.getOrCacheValue(() => {
-            return this.topLevelValue?.getPropertyValue("$schema")?.asStringValue;
-        });
-    }
-
-    public getMaxLineLength(): number {
-        let max = 0;
-        for (let len of this.jsonParseResult.lineLengths) {
-            if (len > max) {
-                max = len;
-            }
-        }
-
-        return max;
-    }
-
-    public getCommentCount(): number {
-        return this.jsonParseResult.commentCount;
-    }
-
-    /**
-     * Get the number of lines that are in the file.
-     */
-    public get lineCount(): number {
-        return this._jsonParseResult.lineLengths.length;
-    }
-
-    /**
-     * Get the maximum column index for the provided line. For the last line in the file,
-     * the maximum column index is equal to the line length. For every other line in the file,
-     * the maximum column index is less than the line length (because line length includes
-     * the CR/LF terminating characters, but the last line doesn't).
-     */
-    public getMaxColumnIndex(lineIndex: number): number {
-        return this._jsonParseResult.getMaxColumnIndex(lineIndex);
-    }
-
-    /**
-     * Get the maximum document character index for this deployment template.
-     */
-    public get maxCharacterIndex(): number {
-        return this._jsonParseResult.maxCharacterIndex;
-    }
-
     public abstract getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentDocument | undefined): PositionContext;
 
     public abstract getContextFromDocumentCharacterIndex(documentCharacterIndex: number, associatedTemplate: DeploymentDocument | undefined): PositionContext;
-
-    public getDocumentCharacterIndex(documentLineIndex: number, documentColumnIndex: number, options?: { allowOutOfBounds?: boolean }): number {
-        return this._jsonParseResult.getCharacterIndex(documentLineIndex, documentColumnIndex, options);
-    }
-
-    public getDocumentPosition(documentCharacterIndex: number): LineColPos {
-        return this._jsonParseResult.getPositionFromCharacterIndex(documentCharacterIndex);
-    }
-
-    public getJSONTokenAtDocumentCharacterIndex(documentCharacterIndex: number): Json.Token | undefined {
-        return this._jsonParseResult.getTokenAtCharacterIndex(documentCharacterIndex);
-    }
-
-    public getJSONValueAtDocumentCharacterIndex(documentCharacterIndex: number, containsBehavior: ContainsBehavior): Json.Value | undefined {
-        return this._jsonParseResult.getValueAtCharacterIndex(documentCharacterIndex, containsBehavior);
-    }
 
     /**
      * Find all references in this document to the given named definition (which may or may not be in this document)
@@ -201,7 +89,7 @@ export abstract class DeploymentDocument implements IJsonDocument {
     public abstract getWarnings(): Issue[];
 }
 
-export abstract class ResolvableCodeLens extends CodeLens {
+export abstract class ResolvableCodeLens extends CodeLens { //asdf move
     public constructor(
         public readonly scope: TemplateScope,
         public readonly span: Span

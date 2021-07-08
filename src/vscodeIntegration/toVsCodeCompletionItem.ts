@@ -5,14 +5,14 @@
 
 import * as vscode from 'vscode';
 import { IActionContext } from 'vscode-azureextensionui';
-import { DeploymentDocument } from '../documents/DeploymentDocument';
+import { IJsonDocument } from '../documents/templates/IJsonDocument';
 import { assert } from '../fixed_assert';
 import { assertNever } from '../util/assertNever';
 import * as Completion from './Completion';
 import { getVSCodeRangeFromSpan } from './vscodePosition';
 
-export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item: Completion.Item, cursorPosition: vscode.Position): vscode.CompletionItem {
-    const range: vscode.Range = getVSCodeRangeFromSpan(deploymentFile, item.span);
+export function toVsCodeCompletionItem(jsonDocument: IJsonDocument, item: Completion.Item, cursorPosition: vscode.Position): vscode.CompletionItem {
+    const range: vscode.Range = getVSCodeRangeFromSpan(jsonDocument, item.span);
 
     const vscodeItem = new vscode.CompletionItem(item.label);
     vscodeItem.range = range;
@@ -46,7 +46,7 @@ export function toVsCodeCompletionItem(deploymentFile: DeploymentDocument, item:
     if (item.additionalEdits) {
         vscodeItem.additionalTextEdits = item.additionalEdits.map(
             e => new vscode.TextEdit(
-                getVSCodeRangeFromSpan(deploymentFile, e.span),
+                getVSCodeRangeFromSpan(jsonDocument, e.span),
                 e.insertText
             )
         );

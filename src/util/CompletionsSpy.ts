@@ -4,10 +4,10 @@
 
 import { CompletionItem, Event, EventEmitter } from "vscode";
 import { Completion } from "../../extension.bundle";
-import { DeploymentDocument } from "../documents/DeploymentDocument";
+import { IJsonDocument } from "../documents/templates/IJsonDocument";
 
 export interface ICompletionsSpyResult {
-    document: DeploymentDocument;
+    document: IJsonDocument;
     completionItems: Completion.Item[];
     vsCodeCompletionItems: CompletionItem[];
 }
@@ -20,7 +20,7 @@ export class CompletionsSpy {
     public readonly onCompletionItemResolved: Event<CompletionItem> = this._resolveEmitter.event;
 
     public postCompletionItemsResult(
-        document: DeploymentDocument,
+        document: IJsonDocument,
         completionItems: Completion.Item[],
         vsCodeCompletionItems: CompletionItem[]
     ): void {
