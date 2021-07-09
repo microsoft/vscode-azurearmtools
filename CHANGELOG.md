@@ -6,7 +6,11 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 
 ### Changed
 
-Updated schemas
+- Updated schemas
+
+### Fixed
+
+- Correct minor typo for `deprecrated` (thanks Jack Blower @ElvenSpellmaker!) [#1301](https://github.com/microsoft/vscode-azurearmtools/issues/1301)
 ## Version 0.15.1
 
 ### Added
