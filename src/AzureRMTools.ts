@@ -344,9 +344,9 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 document: vscode.TextDocument,
                 position: vscode.Position,
                 token: vscode.CancellationToken,
-                context: vscode.CompletionContext
+                ctx: vscode.CompletionContext
             ): Promise<vscode.CompletionList | undefined> => {
-                return await this.onProvideCompletions(document, position, token, context);
+                return await this.onProvideCompletions(document, position, token, ctx);
             },
             resolveCompletionItem: (item: vscode.CompletionItem, token: vscode.CancellationToken): vscode.CompletionItem => {
                 return this.onResolveCompletionItem(item, token);
@@ -1379,6 +1379,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             }
 
             if (jsonDocument && items) {
+                // tslint:disable-next-line:no-non-null-assertion // Guarded with if
                 const vsCodeItems = items.map(c => toVsCodeCompletionItem(jsonDocument!, c, position));
                 ext.completionItemsSpy.postCompletionItemsResult(jsonDocument, items, vsCodeItems);
                 return new vscode.CompletionList(vsCodeItems, true);
@@ -1388,15 +1389,12 @@ export class AzureRMTools implements IProvideOpenedDocuments {
 
     /**
      * Retrieve snippets for a JSON file that is not a deployment or parameters file
-     * @param actionContext Re
-     * @param document
-     * @param position
      */
     private async getUnsupportedJsonSnippets(
         actionContext: IActionContext,
         document: vscode.TextDocument,
         position: vscode.Position
-    ): Promise<{ jsonDocument?: IJsonDocument, items?: Item[] }> {
+    ): Promise<{ jsonDocument?: IJsonDocument; items?: Item[] }> {
         const text = document.getText();
         if (text.length > 100 /*limit size of strings we trim*/ || text.trim() !== '') {
             return {};
