@@ -4,9 +4,10 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 
 ## Version 0.15.2
 
-### Changed
+### Updated
 
 - Updated schemas
+- Updated function metadata [#1311](https://github.com/microsoft/vscode-azurearmtools/issues/1311)
 
 ### Fixed
 
