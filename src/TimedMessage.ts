@@ -75,7 +75,7 @@ export class TimedMessage {
             context.telemetry.properties.response = String(response.title);
 
             // No matter the response, neve show again
-            await ext.context.globalState.update(this._postponeUntilTimeKey, -1);
+            this.neverShowAgain()
 
             if (response === moreInfo) {
                 await commands.executeCommand('vscode.open', this._learnMoreUri);
@@ -83,6 +83,11 @@ export class TimedMessage {
                 assert(response === neverAskAgain);
             }
         });
+    }
+
+    public async neverShowAgain(): Promise<void> {
+        this._alreadyCheckedThisSession = true;
+        await ext.context.globalState.update(this._postponeUntilTimeKey, -1);
     }
 
     private async _checkForDebugMode(): Promise<void> {

@@ -345,6 +345,12 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             const activeDocument = activeEditor.document;
             this.updateOpenedDocument(activeDocument);
         }
+
+        // If the bicep extension is installed, don't ever show the "try bicep" message
+        if (vscode.extensions.getExtension('ms-azuretools.vscode-bicep')) {
+            // tslint:disable-next-line: no-floating-promises
+            this._bicepMessage.neverShowAgain();
+        }
     }
     public setStaticDocument(documentOrUri: vscode.Uri, content: string): void {
         throw new Error("Method not implemented.");
