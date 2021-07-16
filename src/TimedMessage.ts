@@ -16,7 +16,7 @@ const defaultSettings: ISettings = {
     delayBetweenAttempts: weeksToMs(1),
 };
 const debugSettings: ISettings = {
-    delayBetweenAttempts: minutesToMs(2),
+    delayBetweenAttempts: minutesToMs(1),
 };
 
 export class TimedMessage {
@@ -48,9 +48,6 @@ export class TimedMessage {
 
             await this._checkForDebugMode();
 
-            // In case the user never responds, go ahead and set up postment until next delay
-            await ext.context.globalState.update(this._postponeUntilTimeKey, this._settings.delayBetweenAttempts);
-
             const postponeUntilTime: number = ext.context.globalState.get<number>(this._postponeUntilTimeKey) ?? 0;
             if (postponeUntilTime < 0) {
                 // This means never show again
@@ -58,26 +55,33 @@ export class TimedMessage {
                 return;
             } else if (Date.now() < postponeUntilTime) {
                 context.telemetry.properties.status = "TooEarly";
+                return;
             } else if (postponeUntilTime === 0) {
                 // First time - set up initial delay
-                await ext.context.globalState.update(this._postponeUntilTimeKey, this._settings.delayBetweenAttempts);
+                this._postpone();
                 context.telemetry.properties.status = "FirstDelay";
                 return;
             }
 
+            // Time to show message
+
+            // In case the user never responds, go ahead and set up postment until next delay
+            this._postpone();
+
             const neverAskAgain: MessageItem = { title: "Never ask again" };
             const moreInfo: MessageItem = { title: "More Info" };
 
-            const response = await window.showInformationMessage(this._message, neverAskAgain, moreInfo) ?? neverAskAgain;
+            const response = await window.showInformationMessage(this._message, moreInfo, neverAskAgain) ?? neverAskAgain;
             context.telemetry.properties.response = String(response.title);
 
-            if (response !== moreInfo) {
-                assert(response === neverAskAgain);
-                await ext.context.globalState.update(this._postponeUntilTimeKey, -1);
-                return;
-            }
+            // No matter the response, neve show again
+            await ext.context.globalState.update(this._postponeUntilTimeKey, -1);
 
-            await commands.executeCommand('vscode.open', this._learnMoreUri);
+            if (response === moreInfo) {
+                await commands.executeCommand('vscode.open', this._learnMoreUri);
+            } else {
+                assert(response === neverAskAgain);
+            }
         });
     }
 
@@ -85,5 +89,9 @@ export class TimedMessage {
         if (ext.configuration.get<boolean>(this._debugSettingKey)) {
             this._settings = debugSettings;
         }
+    }
+
+    private async _postpone(): Promise<void> {
+        await ext.context.globalState.update(this._postponeUntilTimeKey, Date.now() + this._settings.delayBetweenAttempts);
     }
 }

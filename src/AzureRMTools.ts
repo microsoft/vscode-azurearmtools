@@ -144,9 +144,9 @@ export class AzureRMTools implements IProvideOpenedDocuments {
     private _codeLensChangedEmitter: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
     private _linkedTemplateDocProviderChangedEmitter: vscode.EventEmitter<vscode.Uri> = new vscode.EventEmitter<vscode.Uri>();
     private _bicepMessage: TimedMessage = new TimedMessage(
-        "bicepMessagePostponeUntilTime",
+        globalStateKeys.messages.bicepMessagePostponedUntilTime,
         "debugBicepMessage",
-        "Try Azure Bicep, the next generation of ARM templates",
+        "Try Azure Bicep, the next generation of ARM templates, in VS Code",
         parseUri("https://aka.ms/bicep-install")
     );
 
