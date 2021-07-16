@@ -91,6 +91,10 @@ export namespace globalStateKeys {
         export const neverShowSurvey = 'neverShowSurvey';
         export const surveyPostponedUntilTime = 'surveyPostponedUntilTime';
     }
+
+    export namespace messages {
+        export const bicepMessagePostponedUntilTime = 'bicepMessagePostponedUntilTime';
+    }
 }
 
 // For testing: We create a diagnostic with this message during testing to indicate when all (expression) diagnostics have been calculated

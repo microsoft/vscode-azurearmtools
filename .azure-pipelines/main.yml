@@ -5,7 +5,7 @@ jobs:
     steps:
       - template: common/build.yml
       #- template: common/test-without-langserver.yml
-      - template: common/lint.yml
+      #- template: common/lint.yml
       - template: common/test.yml
       - template: common/publish-logs.yml
 
@@ -26,6 +26,6 @@ jobs:
     steps:
       - template: common/build.yml
       #- template: common/test-without-langserver.yml
-      - template: common/lint.yml
+      #- template: common/lint.yml
       - template: common/test.yml
       - template: common/publish-logs.yml

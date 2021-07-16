@@ -2,9 +2,9 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { commands, MessageItem, window, workspace } from 'vscode';
+import { commands, MessageItem, window } from 'vscode';
 import { callWithTelemetryAndErrorHandling, IActionContext } from "vscode-azureextensionui";
-import { configPrefix, globalStateKeys } from './constants';
+import { globalStateKeys } from './constants';
 import { ext } from "./extensionVariables";
 import { assert } from './fixed_assert';
 import { httpGet } from "./util/httpGet";
@@ -126,7 +126,7 @@ export namespace survey {
 
 async function checkForDebugMode(context: IActionContext): Promise<void> {
     if (!isDebugMode) {
-        if (workspace.getConfiguration(configPrefix).get<boolean>('debugSurvey')) {
+        if (ext.configuration.get<boolean>('debugSurvey')) {
             isDebugMode = true;
             surveyConstants = debugSurveyConstants;
 
