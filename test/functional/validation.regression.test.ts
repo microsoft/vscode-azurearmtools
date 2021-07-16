@@ -660,6 +660,18 @@ suite("Validation regression tests", () => {
             ]);
     });
 
+    // https://github.com/microsoft/vscode-azurearmtools/issues/967
+    testWithLanguageServer(`#967 Validation needs to recognize new top-level "scope" property `, async () => {
+        await testDiagnostics(
+            'templates/regression/967-nested-with-scope-property.json',
+            {
+                parametersFile: 'templates/regression/967-nested-with-scope-property.parameters.json',
+                includeSources: [diagnosticSources.backendValidation]
+            },
+            [
+            ]);
+    });
+
     // tslint:disable-next-line: no-suspicious-comment
     /* TODO: #708
     testWithLanguageServer(`Null ref exception in validation with empty doc or doc containing only a comment #708`, async () => {
