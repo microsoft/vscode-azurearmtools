@@ -43,6 +43,7 @@ import { notifyTemplateGraphAvailable, startArmLanguageServerInBackground, waitF
 import { showInsertionContext } from "./snippets/showInsertionContext";
 import { SnippetManager } from "./snippets/SnippetManager";
 import { survey } from "./survey";
+import { TimedMessage } from './TimedMessage';
 import { CachedPromise } from "./util/CachedPromise";
 import { escapeNonPaths } from "./util/escapeNonPaths";
 import { expectTemplateDocument } from "./util/expectDocument";
@@ -142,6 +143,12 @@ export class AzureRMTools implements IProvideOpenedDocuments {
     private _mapping: DeploymentFileMapping = ext.deploymentFileMapping.value;
     private _codeLensChangedEmitter: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
     private _linkedTemplateDocProviderChangedEmitter: vscode.EventEmitter<vscode.Uri> = new vscode.EventEmitter<vscode.Uri>();
+    private _bicepMessage: TimedMessage = new TimedMessage(
+        "bicepMessagePostponeUntilTime",
+        "debugBicepMessage",
+        "Try Azure Bicep, the next generation of ARM templates",
+        parseUri("https://aka.ms/bicep-install")
+    );
 
     // More information can be found about this definition at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
     // Several of these properties are CSS properties. More information about those can be found at https://www.w3.org/wiki/CSS/Properties
@@ -513,7 +520,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     this.ensureDeploymentDocumentEventsHookedUp();
 
                     this.setOpenedDeploymentDocument(documentUri, deploymentTemplate);
-                    survey.registerActiveUse();
+                    this.registerActiveUse();
 
                     if (isNewlyOpened) {
                         // A deployment template has been opened (as opposed to having been tabbed to)
@@ -566,7 +573,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     if (treatAsDeploymentParameters) {
                         this.ensureDeploymentDocumentEventsHookedUp();
                         this.setOpenedDeploymentDocument(documentUri, deploymentParameters);
-                        survey.registerActiveUse();
+                        this.registerActiveUse();
 
                         // tslint:disable-next-line: no-floating-promises
                         this.reportDeploymentParametersErrorsInBackground(textDocument, deploymentParameters).then(async (errorsWarnings) => {
@@ -1851,4 +1858,8 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         this._codeLensChangedEmitter.fire();
     }
 
+    private registerActiveUse(): void {
+        survey.registerActiveUse();
+        this._bicepMessage.registerActiveUse();
+    }
 }

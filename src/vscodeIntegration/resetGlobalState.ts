@@ -18,6 +18,7 @@ export async function resetGlobalState(actionContext: IActionContext): Promise<v
         ext.context.globalState.update(globalStateKeys.dontAskAboutParameterFiles, undefined);
         ext.context.globalState.update(globalStateKeys.survey.neverShowSurvey, undefined);
         ext.context.globalState.update(globalStateKeys.survey.surveyPostponedUntilTime, undefined);
+        ext.context.globalState.update(globalStateKeys.messages.bicepMessagePostponedUntilTime, undefined);
 
         const reload = "Reload Now";
         if (reload === await window.showInformationMessage(`Global state for ${extensionName} has been reset.`, reload)) {
