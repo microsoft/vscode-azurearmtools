@@ -46,7 +46,7 @@ export class TimedMessage {
             context.errorHandling.suppressDisplay = true;
             context.telemetry.properties.message = this._message;
 
-            await this._checkForDebugMode();
+            await this.checkForDebugMode();
 
             const postponeUntilTime: number = ext.context.globalState.get<number>(this._postponeUntilTimeKey) ?? 0;
             if (postponeUntilTime < 0) {
@@ -58,15 +58,15 @@ export class TimedMessage {
                 return;
             } else if (postponeUntilTime === 0) {
                 // First time - set up initial delay
-                this._postpone();
+                await this.postpone();
                 context.telemetry.properties.status = "FirstDelay";
                 return;
             }
 
             // Time to show message
 
-            // In case the user never responds, go ahead and set up postment until next delay
-            this._postpone();
+            // In case the user never responds, go ahead and set up postponement until next delay
+            await this.postpone();
 
             const neverAskAgain: MessageItem = { title: "Never ask again" };
             const moreInfo: MessageItem = { title: "More Info" };
@@ -75,7 +75,7 @@ export class TimedMessage {
             context.telemetry.properties.response = String(response.title);
 
             // No matter the response, neve show again
-            this.neverShowAgain()
+            await this.neverShowAgain();
 
             if (response === moreInfo) {
                 await commands.executeCommand('vscode.open', this._learnMoreUri);
@@ -85,18 +85,18 @@ export class TimedMessage {
         });
     }
 
-    public async neverShowAgain(): Promise<void> {
-        this._alreadyCheckedThisSession = true;
-        await ext.context.globalState.update(this._postponeUntilTimeKey, -1);
-    }
-
-    private async _checkForDebugMode(): Promise<void> {
+    private async checkForDebugMode(): Promise<void> {
         if (ext.configuration.get<boolean>(this._debugSettingKey)) {
             this._settings = debugSettings;
         }
     }
 
-    private async _postpone(): Promise<void> {
+    public async neverShowAgain(): Promise<void> {
+        this._alreadyCheckedThisSession = true;
+        await ext.context.globalState.update(this._postponeUntilTimeKey, -1);
+    }
+
+    private async postpone(): Promise<void> {
         await ext.context.globalState.update(this._postponeUntilTimeKey, Date.now() + this._settings.delayBetweenAttempts);
     }
 }
