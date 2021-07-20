@@ -63,7 +63,7 @@ export function createExpressionCompletionsTestEx(
     expressionWithCursorMarker: string,
     // Can either be an array of completion names, or an array of
     //   [completion name, insert text] tuples
-    expectedCompletions: ([string, string][]) | (string[]),
+    expectedCompletions: (string | [string, string])[],
     options?: {
         name?: string;
         preps?: ITestPreparation[];
@@ -94,9 +94,18 @@ export function createExpressionCompletionsTestEx(
 
             const completionInserts = completionItems.map(c => c.insertText).sort();
 
-            const expectedNames = (<unknown[]>expectedCompletions).map(e => Array.isArray(e) ? <string>e[0] : <string>e).sort();
-            // tslint:disable-next-line: no-any
-            const expectedInsertTexts = expectedCompletions.every((e: any) => Array.isArray(e)) ? (<[string, string][]>expectedCompletions).map(e => e[1]).sort() : undefined;
+            let expectedNames = (<unknown[]>expectedCompletions).map(e => Array.isArray(e) ? <string>e[0] : <string>e);
+            expectedNames = expectedNames.sort();
+            let expectedInsertTexts: string[] = expectedCompletions.map(e => {
+                if (Array.isArray(e)) {
+                    // tuple
+                    const a = e[1];
+                    return a;
+                } else {
+                    return e;
+                }
+            });
+            expectedInsertTexts = expectedInsertTexts.sort();
 
             assert.deepStrictEqual(completionNames, expectedNames);
             if (expectedInsertTexts !== undefined) {
