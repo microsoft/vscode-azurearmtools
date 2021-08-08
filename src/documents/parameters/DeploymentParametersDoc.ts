@@ -2,7 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
+import path = require("path");
+import { CodeAction, CodeActionContext, Command, Range, Selection, Uri, workspace } from "vscode";
 import { templateKeys } from "../../constants";
 import { INamedDefinition } from '../../language/INamedDefinition';
 import { Issue } from '../../language/Issue';
@@ -81,6 +82,24 @@ export class DeploymentParametersDoc extends DeploymentDocument {
 
     public get parametersObjectValue(): Json.ObjectValue | undefined {
         return Json.asObjectValue(this.parametersProperty?.value);
+    }
+
+    public get metadataTemplateUri(): Uri | undefined {
+        const templateValue = this.topLevelValue?.getPropertyValue("metadata")?.asObjectValue?.getPropertyValue("template")?.asStringValue;
+        if (!templateValue || !this.documentUri.path)
+            return undefined;
+
+        // Handle relative to parameter file
+        if (templateValue.unquotedValue.startsWith("./")) {
+            const trimmedPath = templateValue.unquotedValue.substr(2);
+            const relativePath = path.resolve(path.dirname(this.documentUri.fsPath), trimmedPath);
+            return Uri.file(relativePath);
+        }
+
+        // Handle relative to workspace root
+        const workspaceUri = workspace.getWorkspaceFolder(this.documentUri)?.uri;
+        const toRoot = workspaceUri?.with({ path: workspaceUri.path + "/" + templateValue.unquotedValue });
+        return toRoot;
     }
 
     public getContextFromDocumentLineAndColumnIndexes(documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentDocument | undefined): ParametersPositionContext {
