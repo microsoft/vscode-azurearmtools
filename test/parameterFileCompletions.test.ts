@@ -30,7 +30,7 @@ suite("Parameter file completions", () => {
         },
         // Can either be an array of completion names, or an array of
         //   [completion name, insert text] tuples
-        expectedNamesAndInsertTexts: ([string, string][]) | (string[])
+        expectedNamesAndInsertTexts: ([string, string] | string)[]
     ): void {
         const fullName = isNullOrUndefined(options.cursorIndex) ? testName : `${testName}, index=${options.cursorIndex}`;
         test(fullName, async () => {
@@ -50,7 +50,10 @@ suite("Parameter file completions", () => {
             const completionInserts = completions.items.map(c => c.insertText).sort();
 
             const expectedNames = (<unknown[]>expectedNamesAndInsertTexts).map(e => Array.isArray(e) ? <string>e[0] : <string>e).sort();
-            const expectedInsertTexts:string[] = []; //asdf expectedNamesAndInsertTexts.every((e: unknown) => Array.isArray(e)) ? (<[string, string][]>expectedNamesAndInsertTexts).map(e => e[1]).sort() : undefined;
+            let expectedInsertTexts: string[] | undefined;
+            if (expectedNamesAndInsertTexts.every((e: [string, string] | string) => Array.isArray(e))) {
+                expectedNamesAndInsertTexts = (<[string, string][]>expectedNamesAndInsertTexts).map(e => e[1]).sort();
+            }
 
             assert.deepStrictEqual(completionNames, expectedNames, "Completion names didn't match");
             if (expectedInsertTexts !== undefined) {
