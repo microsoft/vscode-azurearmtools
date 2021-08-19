@@ -96,16 +96,10 @@ export function createExpressionCompletionsTestEx(
 
             let expectedNames = (<unknown[]>expectedCompletions).map(e => Array.isArray(e) ? <string>e[0] : <string>e);
             expectedNames = expectedNames.sort();
-            let expectedInsertTexts: string[] = expectedCompletions.map(e => {
-                if (Array.isArray(e)) {
-                    // tuple
-                    const a = e[1];
-                    return a;
-                } else {
-                    return e;
-                }
-            });
-            expectedInsertTexts = expectedInsertTexts.sort();
+            let expectedInsertTexts: string[] | undefined;
+            if (expectedCompletions.every(e => Array.isArray(e))) {
+                expectedInsertTexts = (<[string, string][]>expectedCompletions).map(e => e[1]).sort();
+            }
 
             assert.deepStrictEqual(completionNames, expectedNames);
             if (expectedInsertTexts !== undefined) {
