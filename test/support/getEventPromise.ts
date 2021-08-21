@@ -14,14 +14,13 @@ const defaultTimeout: number = 30 * 1000;
 
 export function getEventPromise<T>(
     eventName: string,
-    executor: (resolve: (value?: T | PromiseLike<T>) => void, reject: (reason?: unknown) => void) => void,
+    executor: (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: unknown) => void) => void,
     timeout: number = defaultTimeout): Promise<T> {
-    // tslint:disable-next-line:promise-must-complete
     return new Promise<T>(
-        async (resolve: (value?: T | PromiseLike<T>) => void, reject: (reason?: unknown) => void): Promise<void> => {
+        async (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: unknown) => void): Promise<void> => {
             let completed = false;
             executor(
-                (value?: T | PromiseLike<T>) => {
+                (value: T | PromiseLike<T>) => {
                     completed = true;
                     resolve(value);
                 },
