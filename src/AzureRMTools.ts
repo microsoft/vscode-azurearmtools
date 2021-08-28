@@ -1167,8 +1167,9 @@ export class AzureRMTools implements IProvideOpenedDocuments {
      */
     private async tryMapFromMetadata(parametersDoc: DeploymentParametersDoc): Promise<vscode.Uri | undefined> {
         const templateFileUri = parametersDoc.metadataTemplateUri;
-        if (!templateFileUri || !await pathExists(templateFileUri))
+        if (!templateFileUri || !await pathExists(templateFileUri)) {
             return Promise.resolve(undefined);
+        }
 
         return this._mapping.mapParameterFile(templateFileUri, parametersDoc.documentUri).then(() => {
             return templateFileUri;

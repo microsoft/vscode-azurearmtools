@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import path = require("path");
+import * as path from 'path';
 import { CodeAction, CodeActionContext, Command, Range, Selection, Uri, workspace } from "vscode";
 import { templateKeys } from "../../constants";
 import { INamedDefinition } from '../../language/INamedDefinition';
@@ -86,8 +86,9 @@ export class DeploymentParametersDoc extends DeploymentDocument {
 
     public get metadataTemplateUri(): Uri | undefined {
         const templateValue = this.topLevelValue?.getPropertyValue("metadata")?.asObjectValue?.getPropertyValue("template")?.asStringValue;
-        if (!templateValue || !this.documentUri.path)
+        if (!templateValue || !this.documentUri.path) {
             return undefined;
+        }
 
         // Handle relative to parameter file
         if (templateValue.unquotedValue.startsWith("./")) {
@@ -98,7 +99,7 @@ export class DeploymentParametersDoc extends DeploymentDocument {
 
         // Handle relative to workspace root
         const workspaceUri = workspace.getWorkspaceFolder(this.documentUri)?.uri;
-        const toRoot = workspaceUri?.with({ path: workspaceUri.path + "/" + templateValue.unquotedValue });
+        const toRoot = workspaceUri?.with({ path: `${workspaceUri.path}/${templateValue.unquotedValue}` });
         return toRoot;
     }
 
