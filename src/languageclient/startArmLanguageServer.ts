@@ -244,7 +244,7 @@ async function startLanguageClient(serverDllPath: string, dotnetExePath: string)
             callWithTelemetryAndErrorHandlingSync(`langserver/${eventName}`, telemetryActionContext => {
                 telemetryActionContext.errorHandling.suppressDisplay = true;
 
-                for (var prop of Object.getOwnPropertyNames(telemetryData.properties)) {
+                for (let prop of Object.getOwnPropertyNames(telemetryData.properties)) {
                     const value = telemetryData.properties[prop];
                     prop = prop.replace(/^\./g, ""); // Remove starting period
                     telemetryActionContext.telemetry.properties[prop] = String(value);
