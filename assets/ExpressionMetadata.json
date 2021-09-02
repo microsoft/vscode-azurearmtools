@@ -646,7 +646,7 @@
         {
             "name": "providers",
             "expectedUsage": "providers(providerNamespace, [resourceType])",
-            "description": "Return information about a resource provider and its supported resource types. If not type is provided, all of the supported types are returned.",
+            "description": "The providers function has been deprecated. We no longer recommend using it. If you used this function to get an API version for the resource provider, we recommend that you provide a specific API version in your template. Using a dynamically returned API version can break your template if the properties change between versions.",
             "minimumArguments": 1,
             "maximumArguments": 2
         },
