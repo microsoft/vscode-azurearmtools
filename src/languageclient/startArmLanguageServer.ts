@@ -240,9 +240,19 @@ async function startLanguageClient(serverDllPath: string, dotnetExePath: string)
         }
 
         client.onTelemetry((telemetryData: { eventName: string; properties: { [key: string]: string | undefined } }) => {
-            callWithTelemetryAndErrorHandlingSync(telemetryData.eventName, telemetryActionContext => {
+            const eventName = telemetryData.eventName.replace(/^\/|\/$/g, ""); // Remove slashes at beginning or end
+            callWithTelemetryAndErrorHandlingSync(`langserver/${eventName}`, telemetryActionContext => {
                 telemetryActionContext.errorHandling.suppressDisplay = true;
-                telemetryActionContext.telemetry.properties = telemetryData.properties;
+
+                for (let prop of Object.getOwnPropertyNames(telemetryData.properties)) {
+                    const value = telemetryData.properties[prop];
+                    prop = prop.replace(/^\./g, ""); // Remove starting period
+                    telemetryActionContext.telemetry.properties[prop] = String(value);
+                }
+
+                if (telemetryActionContext.telemetry.properties.error) {
+                    telemetryActionContext.telemetry.properties.result = 'Failed';
+                }
             });
         });
 
