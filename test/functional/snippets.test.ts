@@ -63,7 +63,6 @@ let emptyTemplate: string = `
 
 // Snippets marked with true will have their test skipped
 const overrideSkipTests: { [name: string]: boolean } = {
-    // "Azure Resource Manager (ARM) Parameters Template": true, // TODO: Blocked by https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1005573
 };
 
 // Override the template file text to start with before inserting the snippet - default is resourceTemplate
