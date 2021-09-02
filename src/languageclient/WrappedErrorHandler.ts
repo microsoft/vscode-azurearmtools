@@ -50,7 +50,7 @@ export class WrappedErrorHandler implements ErrorHandler {
      * The connection to the server got closed.
      */
     public closed(): CloseAction {
-        // Use our shared error handling code to notification telemetry and user of the error
+        // Use our shared error handling code to notify telemetry and user of the error
         // in a standard way
         callWithTelemetryAndErrorHandlingSync(languageServerErrorTelemId, (context: IActionContext) => {
             context.telemetry.measurements.secondsSinceStart = (Date.now() - this._serverStartTime) / 1000;
