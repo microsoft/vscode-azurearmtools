@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 // tslint:disable:no-unused-expression max-func-body-length promise-function-async max-line-length no-http-string no-suspicious-comment
-// tslint:disable:no-non-null-assertion
+// tslint:disable:no-non-null-assertion object-literal-key-quotes
 
 // WARNING: At the breakpoint, the extension will be in an inactivate state (i.e., if you make changes in the editor, diagnostics,
 //   formatting, etc. will not be updated until you F5 again)
@@ -327,10 +327,9 @@ suite("Snippets functional tests", () => {
         }
 
         fse.mkdirpSync(resultsFolder);
-        const outputPath = path.join(resultsFolder, snippetName + ".json");
+        const outputPath = path.join(resultsFolder, `${snippetName}.json`);
 
         fse.writeFileSync(outputPath, docTextAfterInsertion);
-
 
         validateDocumentWithSnippet();
 
@@ -342,7 +341,7 @@ suite("Snippets functional tests", () => {
         // const docTextAfterFormatting = window.activeTextEditor!.document.getText();
         // assert.deepStrictEqual(docTextAfterInsertion, docTextAfterFormatting, "Snippet is incorrectly formatted. Make sure to use \\t instead of spaces, and make sure the tabbing/indentations are correctly structured");
 
-        const expected: string = fse.readFileSync(path.join(expectedFolder, snippetName + ".json")).toString();
+        const expected: string = fse.readFileSync(path.join(expectedFolder, `${snippetName}.json`)).toString();
         // Compare text without spaces by converting to/from JSON
         const expectedNormalized = stringify(JSON.parse(removeComments(expected)));
         const actualNormalized = stringify(JSON.parse(removeComments(docTextAfterInsertion)));
