@@ -1,0 +1,35 @@
+{
+	"resources": [
+		//Insert here: resource
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				"functionname": {
+					"parameters": [
+						{
+							"name": "parametername",
+							"type": "string"
+						}
+					],
+					"output": {
+						"value": "function-return-value",
+						"type": "string"
+					}
+				}
+			}
+		}
+	]
+}

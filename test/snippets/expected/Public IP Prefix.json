@@ -1,0 +1,38 @@
+{
+	"resources": [
+		{
+			"name": "publicIPPrefix1",
+			"type": "Microsoft.Network/publicIPPrefixes",
+			"apiVersion": "2019-11-01",
+			"location": "[resourceGroup().location]",
+			"tags": {
+			},
+			"sku": {
+				"name": "Standard"
+			},
+			"properties": {
+				"publicIPAddressVersion": "IPv4",
+				"prefixLength": 28
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

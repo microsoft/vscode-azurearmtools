@@ -1,0 +1,41 @@
+{
+	"resources": [
+		{
+			"name": "sqlServer1/sqlDatabase1",
+			"type": "Microsoft.Sql/servers/databases",
+			"apiVersion": "2014-04-01",
+			"location": "[resourceGroup().location]",
+			"tags": {
+				"displayName": "sqlDatabase1"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Sql/servers', 'sqlServer1')]"
+			],
+			"properties": {
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"edition": "Basic",
+				"maxSizeBytes": "1073741824",
+				"requestedServiceObjectiveName": "Basic"
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

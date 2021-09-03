@@ -1,0 +1,146 @@
+{
+	"resources": [
+		{
+			"type": "Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies",
+			"apiVersion": "2019-11-01",
+			"name": "applicationGatewayFirewallName",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+			],
+			"properties": {
+				"policySettings": {
+					"requestBodyCheck": true,
+					"maxRequestBodySizeInKb": 128,
+					"fileUploadLimitInMb": 100,
+					"state": "Enabled",
+					"mode": "Detection"
+				},
+				"managedRules": {
+					"managedRuleSets": [
+						{
+							"ruleSetType": "OWASP",
+							"ruleSetVersion": "3.0"
+						}
+					]
+				}
+			}
+		},
+		{
+			"type": "Microsoft.Network/applicationGateways",
+			"apiVersion": "2019-11-01",
+			"name": "applicationGatewayName",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/virtualNetworks', 'virtualNetwork1')]",
+				"[resourceId('Microsoft.Network/publicIPAddresses', 'publicIPAddress1')]",
+				"[resourceId('Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies','applicationGatewayFirewallName')]"
+			],
+			"properties": {
+				"sku": {
+					"name": "WAF_v2",
+					"tier": "WAF_v2",
+					"capacity": 2
+				},
+				"gatewayIPConfigurations": [
+					{
+						"name": "appGatewayIpConfig",
+						"properties": {
+							"subnet": {
+								"id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'virtualNetwork1', 'Subnet-1')]"
+							}
+						}
+					}
+				],
+				"frontendIPConfigurations": [
+					{
+						"name": "appGatewayFrontendIP",
+						"properties": {
+							"PublicIPAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses', 'publicIPAddress1')]"
+							}
+						}
+					}
+				],
+				"frontendPorts": [
+					{
+						"name": "appGatewayFrontendPort",
+						"properties": {
+							"Port": 80
+						}
+					}
+				],
+				"backendAddressPools": [
+					{
+						"name": "appGatewayBackendPool",
+						"properties": {
+						}
+					}
+				],
+				"backendHttpSettingsCollection": [
+					{
+						"name": "appGatewayBackendHttpSettings",
+						"properties": {
+							"Port": 80,
+							"Protocol": "Http",
+							"CookieBasedAffinity": "Disabled"
+						}
+					}
+				],
+				"httpListeners": [
+					{
+						"name": "appGatewayHttpListener",
+						"properties": {
+							"FrontendIPConfiguration": {
+								"Id": "[resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', 'applicationGatewayName', 'appGatewayFrontendIP')]"
+							},
+							"FrontendPort": {
+								"Id": "[resourceId('Microsoft.Network/applicationGateways/frontendPorts',  'applicationGatewayName', 'appGatewayFrontendPort')]"
+							},
+							"Protocol": "Http",
+							"SslCertificate": null
+						}
+					}
+				],
+				"requestRoutingRules": [
+					{
+						"Name": "ruleName",
+						"properties": {
+							"RuleType": "Basic",
+							"httpListener": {
+								"id": "[resourceId('Microsoft.Network/applicationGateways/httpListeners', 'applicationGatewayName', 'appGatewayHttpListener')]"
+							},
+							"backendAddressPool": {
+								"id": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools', 'applicationGatewayName', 'appGatewayBackendPool')]"
+							},
+							"backendHttpSettings": {
+								"id": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', 'applicationGatewayName', 'appGatewayBackendHttpSettings')]"
+							}
+						}
+					}
+				],
+				"firewallPolicy": {
+					"id": "[resourceId('Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies','applicationGatewayFirewallName')]"
+				}
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

@@ -1,0 +1,60 @@
+{
+	"resources": [
+		{
+			"name": "containerGroup1",
+			"type": "Microsoft.ContainerInstance/containerGroups",
+			"apiVersion": "2018-10-01",
+			"location": "[resourceGroup().location]",
+			"properties": {
+				"containers": [
+					{
+						"name": "containerName",
+						"properties": {
+							"image": "containerImage",
+							"ports": [
+								{
+									"port": 80
+								}
+							],
+							"resources": {
+								"requests": {
+									"cpu": 1,
+									"memoryInGB": 4
+								}
+							}
+						}
+					}
+				],
+				"osType": "Linux",
+				"ipAddress": {
+					"type": "Public",
+					"ports": [
+						{
+							"protocol": "TCP",
+							"port": 80
+						}
+					]
+				}
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

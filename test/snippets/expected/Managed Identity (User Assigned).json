@@ -1,0 +1,29 @@
+{
+	"resources": [
+		{
+			"name": "managedIdentity1",
+			"type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+			"apiVersion": "2018-11-30",
+			"location": "[resourceGroup().location]"
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

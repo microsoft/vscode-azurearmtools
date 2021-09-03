@@ -8,6 +8,7 @@
 // WARNING: At the breakpoint, the extension will be in an inactivate state (i.e., if you make changes in the editor, diagnostics,
 //   formatting, etc. will not be updated until you F5 again)
 const DEBUG_BREAK_AFTER_INSERTING_SNIPPET = false;
+const LOG_DOC_TEXT_BEFORE_AND_AFTER_SNIPPET_INSERTION = false;
 
 import * as assert from 'assert';
 import * as fse from 'fs-extra';
@@ -21,12 +22,17 @@ import { delay } from '../support/delay';
 import { diagnosticSources, getDiagnosticsForDocument, IGetDiagnosticsOptions } from '../support/diagnostics';
 import { formatDocumentAndWait } from '../support/formatDocumentAndWait';
 import { getTempFilePath } from "../support/getTempFilePath";
+import { removeComments } from '../support/removeComments';
 import { resolveInTestFolder } from '../support/resolveInTestFolder';
 import { simulateCompletion } from '../support/simulateCompletion';
+import { stringify } from '../support/stringify';
 import { testLog } from '../support/testLog';
 import { UseRealSnippets } from '../support/TestSnippets';
 import { RequiresLanguageServer } from '../support/testWithLanguageServer';
 import { testWithPrep } from '../support/testWithPrep';
+
+const resultsFolder = path.join(__dirname, '..', '..', '..', 'test', 'snippets', 'results');
+const expectedFolder = path.join(__dirname, '..', '..', '..', 'test', 'snippets', 'expected');
 
 let resourceTemplate: string = `{
 \t"resources": [
@@ -174,32 +180,12 @@ const overrideExpectedDiagnostics: { [name: string]: (string | RegExp)[] } = {
         "The user-defined function 'udf.func1' is never used.",
         "User-function parameter 'parameter1' is never used."
     ],
-    "Automation Certificate": [
-        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
-        // Full validation temporarily disabled, so we don't currently get this error
-        // "Template validation failed: The template resource 'automationCertificate1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '74' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
-    ],
-    "Automation Credential": [
-        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
-        // Full validation temporarily disabled, so we don't currently get this error
-        // "Template validation failed: The template resource 'automationCredential' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '73' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
-    ],
     "Automation Job Schedule": [
         "Value must match the regular expression ^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$"
-    ],
-    "Automation Runbook": [
-        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
-        // Full validation temporarily disabled, so we don't currently get this error
-        // "Template validation failed: The template resource 'automationRunbook1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '70' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "Automation Schedule": [
         "Value must be a valid ISO 8601 datetime",
         "Value must be one of the following types: object"
-    ],
-    "Automation Variable": [
-        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
-        // Full validation temporarily disabled, so we don't currently get this error
-        // "Template validation failed: The template resource 'automationVariable1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '71' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "Cosmos DB Mongo Database": [
         // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
@@ -209,6 +195,13 @@ const overrideExpectedDiagnostics: { [name: string]: (string | RegExp)[] } = {
         // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
         "Template validation failed: The template resource 'dnsRecord1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '42' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
+    "Keyvault": [
+        "Value must match the regular expression ^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$",
+        "Value must match the regular expression ^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$"
+    ],
+    "Keyvault Secret": [
+        "Value must match the regular expression ^[a-zA-Z0-9-]{1,127}$"
+    ],
     "Network Security Group Rule": [
         // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
         "Template validation failed: The template resource 'networkSecurityGroupRuleName' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '67' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
@@ -216,14 +209,6 @@ const overrideExpectedDiagnostics: { [name: string]: (string | RegExp)[] } = {
     "Route Table Route": [
         // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
         "Template validation failed: The template resource 'route-name' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '50' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
-    ],
-    "SQL Database Import": [
-        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
-        "Template validation failed: The template resource 'sqlDatabase1Import1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '56' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
-    ],
-    "Web Deploy for Web App": [
-        // TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1209
-        "Template validation failed: The template resource 'Deploy-webApp1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '44' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "Windows Virtual Machine": [
         // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1012636
@@ -237,6 +222,8 @@ const overrideExpectedDiagnostics: { [name: string]: (string | RegExp)[] } = {
 // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/104239
 // TODO: https://dev.azure.com/devdiv/DevDiv/_workitems/edit/1042393
 const overrideIgnoreSchemaValidation: { [name: string]: boolean } = {
+    //asdf remove
+
     // /* TODO
     //  'Missing required property "kind"',
     //  'Value must be one of the following values: "2014-04-01"'
@@ -330,10 +317,10 @@ const overrideIgnoreSchemaValidation: { [name: string]: boolean } = {
     // */
     // "Kubernetes Service Cluster": true,
 
-    // /* TODO:
-    //  +   'Missing required property "protectedSettings"'
-    //  */
-    // "Linux VM Custom Script": true,
+    /* TODO:
+     +   'Missing required property "protectedSettings"'
+     */
+    "Linux VM Custom Script": true,
 
     // /* TODO:
     // +   'OneOf (Require 1 match, following 2 not matched):\r\n    Value must match the regular expression ^[a-z0-9]{3,26}$\r\n    Value must match the regular expression ^\\[([^\\[].*)?\\]$'
@@ -464,7 +451,9 @@ suite("Snippets functional tests", () => {
 
         // Insert snippet
         const docTextBeforeInsertion = doc.getText();
-        testLog.writeLine(`Document before inserting snippet:\n${docTextBeforeInsertion}`);
+        if (LOG_DOC_TEXT_BEFORE_AND_AFTER_SNIPPET_INSERTION) {
+            testLog.writeLine(`Document before inserting snippet:\n${docTextBeforeInsertion}`);
+        }
         await simulateCompletion(
             editor,
             snippet.prefix,
@@ -481,16 +470,31 @@ suite("Snippets functional tests", () => {
 
         // Format (vscode seems to be inconsistent about this in these scenarios)
         const docTextAfterInsertion = await formatDocumentAndWait(doc);
-        testLog.writeLine(`Document after inserting snippet:\n${docTextAfterInsertion}`);
+        if (LOG_DOC_TEXT_BEFORE_AND_AFTER_SNIPPET_INSERTION) {
+            testLog.writeLine(`Document after inserting snippet:\n${docTextAfterInsertion}`);
+        }
+
+        fse.mkdirpSync(resultsFolder);
+        const outputPath = path.join(resultsFolder, snippetName + ".json");
+
+        fse.writeFileSync(outputPath, docTextAfterInsertion);
+
+
         validateDocumentWithSnippet();
 
         // Compare diagnostics
         assertEx.arraysEqual(messages, expectedDiagnostics, {}, "Diagnostics mismatch");
 
-        // // Make sure formatting of the sippet is correct by formatting the document and seeing if it changes
+        // Make sure formatting of the sippet is correct by formatting the document and seeing if it changes
         // await commands.executeCommand('editor.action.formatDocument');
         // const docTextAfterFormatting = window.activeTextEditor!.document.getText();
         // assert.deepStrictEqual(docTextAfterInsertion, docTextAfterFormatting, "Snippet is incorrectly formatted. Make sure to use \\t instead of spaces, and make sure the tabbing/indentations are correctly structured");
+
+        const expected: string = fse.readFileSync(path.join(expectedFolder, snippetName + ".json")).toString();
+        // Compare text without spaces by converting to/from JSON
+        const expectedNormalized = stringify(JSON.parse(removeComments(expected)));
+        const actualNormalized = stringify(JSON.parse(removeComments(docTextAfterInsertion)));
+        assertEx.strictEqual(expectedNormalized, actualNormalized, {}, "Actual snippet text did not match expected");
 
         // NOTE: Even though we request the editor to be closed,
         // there's no way to request the document actually be closed,

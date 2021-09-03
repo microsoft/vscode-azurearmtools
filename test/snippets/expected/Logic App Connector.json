@@ -1,0 +1,43 @@
+{
+	"resources": [
+		{
+			"name": "logicAppConnector1",
+			"type": "Microsoft.Web/connections",
+			"apiVersion": "2016-06-01",
+			"location": "[resourceGroup().location]",
+			"tags": {
+			},
+			"properties": {
+				"displayName": "logicAppConnector1",
+				"parameterValues": {
+				},
+				"customParameterValues": {
+				},
+				"nonSecretParameterValues": {
+				},
+				"api": {
+					"id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/logicAppConnectorApi1')]"
+				}
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

@@ -1,0 +1,42 @@
+{
+	"resources": [
+		{
+			"name": "sqlServer1/sqlDatabase1/import",
+			"type": "Microsoft.Sql/servers/databases/extensions",
+			"apiVersion": "2014-04-01",
+			"dependsOn": [
+				"[resourceId('Microsoft.Sql/servers/databases', 'sqlServer1', 'sqlDatabase1')]"
+			],
+			"tags": {
+				"displayName": "SQL Database Import for sqlDatabase1"
+			},
+			"properties": {
+				"storageKeyType": "StorageAccessKey",
+				"storageKey": "storageKey",
+				"storageUri": "bacpacUri",
+				"administratorLogin": "adminUsername",
+				"administratorLoginPassword": "adminPassword",
+				"operationMode": "Import"
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

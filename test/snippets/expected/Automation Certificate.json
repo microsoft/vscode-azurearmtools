@@ -1,0 +1,37 @@
+{
+	"resources": [
+		{
+			"name": "parent/automationCertificate1",
+			"type": "Microsoft.Automation/automationAccounts/certificates",
+			"apiVersion": "2015-10-31",
+			"dependsOn": [
+				"[resourceId('Microsoft.Automation/automationAccounts', 'automationAccount1')]"
+			],
+			"properties": {
+				"base64Value": "base64Value",
+				"description": "description",
+				"thumbprint": "thumbprint",
+				"isExportable": true
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

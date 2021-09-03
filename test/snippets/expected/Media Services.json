@@ -1,0 +1,40 @@
+{
+	"resources": [
+		{
+			"name": "mediaServices1",
+			"type": "Microsoft.Media/mediaServices",
+			"apiVersion": "2018-07-01",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Storage/storageAccounts', 'mediaServiceStorageAccount1')]"
+			],
+			"properties": {
+				"storageAccounts": [
+					{
+						"id": "[resourceId('Microsoft.Storage/storageAccounts', 'mediaServiceStorageAccount1')]",
+						"type": "Primary"
+					}
+				]
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}
