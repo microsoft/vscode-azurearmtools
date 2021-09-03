@@ -63,16 +63,7 @@ let emptyTemplate: string = `
 
 // Snippets marked with true will have their test skipped
 const overrideSkipTests: { [name: string]: boolean } = {
-    "Azure Resource Manager (ARM) Template": true, // TODO: Blocked by https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1005573
-    "Azure Resource Manager (ARM) Template Subscription": true, // TODO: Blocked by https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1005573
-    "Azure Resource Manager (ARM) Template Management Group": true, // TODO: Blocked by https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1005573
-    "Azure Resource Manager (ARM) Template Tenant": true, // TODO: Blocked by https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1005573
-
-    "Azure Resource Manager (ARM) Parameters Template": true, // TODO: Blocked by https://dev.azure.com/devdiv/DevDiv/_boards/board/t/ARM%20Template%20Authoring/Stories/?workitem=1005573
-
-    "Tag Section": true, // Needs comma for no errors, and not complicated, just ignore
-    "Linked Deployment With Relative Path": true, // https://github.com/microsoft/vscode-azurearmtools/issues/1218
-    "Linked Deployment With URI": true, // https://github.com/microsoft/vscode-azurearmtools/issues/1218
+    "Tag Section": true, // Needs comma for no errors, and not worth fixing, just ignore
 };
 
 // Override the template file text to start with before inserting the snippet - default is resourceTemplate
@@ -129,6 +120,10 @@ const overrideTemplateForSnippet: { [name: string]: string } = {
 const overrideInsertPosition: { [name: string]: string } = {
     "Azure Resource Manager (ARM) Template": "//Insert here: empty",
     "Azure Resource Manager (ARM) Parameters Template": "//Insert here: empty",
+    "Azure Resource Manager (ARM) Template Subscription": "//Insert here: empty",
+    "Azure Resource Manager (ARM) Template Management Group": "//Insert here: empty",
+    "Azure Resource Manager (ARM) Template Tenant": "//Insert here: empty",
+
     Variable: "//Insert here: variable",
     Parameter: "//Insert here: parameter",
     Output: "//Insert here: output",
@@ -150,8 +145,8 @@ const overrideExpectedDiagnostics: { [name: string]: (string | RegExp)[] } = {
 
     "Azure Resource Manager (ARM) Parameters Template":
         [
-            "Template validation failed: Required property 'resources' not found in JSON. Path '', line 5, position 1."
-            //"Missing required property resources"
+            "Template validation failed: Required property 'resources' not found in JSON. Path '', line 7, position 2.",
+            "Unknown schema: https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
         ],
     "Linked Deployment With Relative Path": [
         /Linked template file not found/i
