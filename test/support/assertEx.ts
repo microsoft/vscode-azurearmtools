@@ -14,7 +14,7 @@ export namespace assertEx {
 
     export interface IEqualExOptions {
         /** If true, will only match against the properties in the expected object */
-        ignorePropertiesNotInExpected: boolean;
+        ignorePropertiesNotInExpected?: boolean;
     }
 
     export function strictEqual<T>(actual: T, expected: T | RegExp, options: {}, message?: string): asserts actual is T {

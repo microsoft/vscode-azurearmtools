@@ -329,7 +329,7 @@ suite("Snippets functional tests", () => {
         }
 
         fse.mkdirpSync(resultsFolder);
-        const outputPath = path.join(resultsFolder, `${snippetName}.json`);
+        const outputPath = path.join(resultsFolder, `${snippetName}.snippetresult.json`);
 
         fse.writeFileSync(outputPath, docTextAfterInsertion);
 
