@@ -84,12 +84,12 @@ interface IExpressionMetadata {
 }
 
 function test(): cp.ChildProcess {
-    env.DEBUGTELEMETRY = '';
+    env.DEBUGTELEMETRY = 'verbose';
     env.CODE_TESTS_PATH = path.join(__dirname, 'dist/test');
     // This is the timeout for individual tests
     env.MOCHA_timeout = String(DEFAULT_TESTCASE_TIMEOUT_MS);
     env.MOCHA_enableTimeouts = "1";
-    env.MOCHA_grep = "snippets func";
+    env.MOCHA_grep = "";
     env.ALWAYS_ECHO_TEST_LOG = "1";
     return cp.spawn('node', ['./node_modules/vscode/bin/test'], { stdio: 'inherit', env });
 }
