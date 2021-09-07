@@ -84,7 +84,7 @@ interface IExpressionMetadata {
 }
 
 function test(): cp.ChildProcess {
-    env.DEBUGTELEMETRY = 'verbose';
+    env.DEBUGTELEMETRY = '';
     env.CODE_TESTS_PATH = path.join(__dirname, 'dist/test');
     // This is the timeout for individual tests
     env.MOCHA_timeout = String(DEFAULT_TESTCASE_TIMEOUT_MS);

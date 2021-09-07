@@ -70,6 +70,8 @@ let emptyTemplate: string = `
 // Snippets marked with true will have their test skipped
 const overrideSkipTests: { [name: string]: boolean } = {
     "Tag Section": true, // Needs comma for no errors, and not worth fixing, just ignore
+    "Linked Deployment With Relative Path": true, // TODO
+    "Linked Deployment With URI": true, // TODO
 };
 
 // Override the template file text to start with before inserting the snippet - default is resourceTemplate
