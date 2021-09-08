@@ -1,0 +1,158 @@
+{
+	"resources": [
+		{
+			"name": "firewall1",
+			"type": "Microsoft.Network/azureFirewalls",
+			"apiVersion": "2019-11-01",
+			"location": "[resourceGroup().location]",
+			"tags": {
+			},
+			"properties": {
+				"applicationRuleCollections": [
+					{
+						"name": "appCollectionName1",
+						"properties": {
+							"priority": 100,
+							"action": {
+								"type": "Allow"
+							},
+							"rules": [
+								{
+									"name": "appRuleName1",
+									"description": "appRuleDescription",
+									"sourceAddresses": [
+										"10.0.0.4"
+									],
+									"protocols": [
+										{
+											"protocolType": "Http",
+											"port": 80
+										}
+									],
+									"targetFqdns": [
+										"www.microsoft.com"
+									],
+									"fqdnTags": [
+									]
+								}
+							]
+						}
+					}
+				],
+				"natRuleCollections": [
+					{
+						"name": "natCollectionName1",
+						"properties": {
+							"priority": 100,
+							"action": {
+								"type": "Dnat"
+							},
+							"rules": [
+								{
+									"name": "natRuleName1",
+									"description": "natRuleDescription",
+									"sourceAddresses": [
+										"10.0.0.4"
+									],
+									"destinationAddresses": [
+										"[reference(resourceId('Microsoft.Network/publicIPAddresses', 'publicIPAddress1')).ipAddress]"
+									],
+									"destinationPorts": [
+										"3389"
+									],
+									"protocols": [
+										"TCP"
+									],
+									"translatedAddress": "10.0.0.254",
+									"translatedPort": "2500"
+								}
+							]
+						}
+					}
+				],
+				"networkRuleCollections": [
+					{
+						"name": "networkCollectionName",
+						"properties": {
+							"priority": 100,
+							"action": {
+								"type": "Deny"
+							},
+							"rules": [
+								{
+									"name": "networkRuleName",
+									"description": "networkRuleDescription",
+									"sourceAddresses": [
+										"10.0.0.4"
+									],
+									"destinationAddresses": [
+										"10.0.1.4"
+									],
+									"destinationPorts": [
+										"1"
+									],
+									"protocols": [
+										"TCP"
+									]
+								}
+							]
+						}
+					}
+				],
+				"ipConfigurations": [
+					{
+						"name": "ipConfigName",
+						"properties": {
+							"subnet": {
+								"id": "[resourceId('virtualNetworkResourceGroup', 'Microsoft.Network/virtualNetworks/subnets', 'virtualNetworkName', 'AzureFirewallSubnet')]"
+							},
+							"publicIPAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses', 'publicIPAddress1')]"
+							}
+						}
+					}
+				]
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/publicIPAddresses', 'publicIPAddress1')]"
+			]
+		},
+		{
+			"name": "publicIPAddress1",
+			"type": "Microsoft.Network/publicIPAddresses",
+			"apiVersion": "2019-11-01",
+			"location": "[resourceGroup().location]",
+			"sku": {
+				"name": "standard"
+			},
+			"tags": {
+				"createdFor": "firewall1"
+			},
+			"properties": {
+				"publicIPAllocationMethod": "Static",
+				"dnsSettings": {
+					"domainNameLabel": "[concat('firewall1', uniqueString(resourceGroup().id))]"
+				}
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

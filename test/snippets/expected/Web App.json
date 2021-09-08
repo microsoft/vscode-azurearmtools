@@ -1,0 +1,40 @@
+{
+	"resources": [
+		{
+			"name": "webApp1",
+			"type": "Microsoft.Web/sites",
+			"apiVersion": "2018-11-01",
+			"location": "[resourceGroup().location]",
+			"tags": {
+				"[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/appServicePlan1')]": "Resource",
+				"displayName": "webApp1"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/serverfarms', 'appServicePlan1')]"
+			],
+			"properties": {
+				"name": "webApp1",
+				"serverFarmId": "[resourceId('Microsoft.Web/serverfarms', 'appServicePlan1')]"
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

@@ -1,0 +1,69 @@
+{
+	"resources": [
+		{
+			"name": "functionName",
+			"type": "Microsoft.Web/sites",
+			"apiVersion": "2018-11-01",
+			"location": "[resourceGroup().location]",
+			"kind": "functionapp",
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/serverfarms', 'serverFarmName')]",
+				"[resourceId('Microsoft.Storage/storageAccounts', 'storageAccountName')]"
+			],
+			"properties": {
+				"serverFarmId": "[resourceId('Microsoft.Web/serverfarms', 'serverFarmName')]",
+				"siteConfig": {
+					"appSettings": [
+						{
+							"name": "AzureWebJobsDashboard",
+							"value": "[concat('DefaultEndpointsProtocol=https;AccountName=', 'storageAccountName', ';AccountKey=', listKeys('storageAccountID','2015-05-01-preview').key1)]"
+						},
+						{
+							"name": "AzureWebJobsStorage",
+							"value": "[concat('DefaultEndpointsProtocol=https;AccountName=', 'storageAccountName', ';AccountKey=', listKeys('storageAccountID','2015-05-01-preview').key1)]"
+						},
+						{
+							"name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+							"value": "[concat('DefaultEndpointsProtocol=https;AccountName=', 'storageAccountName', ';AccountKey=', listKeys('storageAccountID','2015-05-01-preview').key1)]"
+						},
+						{
+							"name": "WEBSITE_CONTENTSHARE",
+							"value": "[toLower('functionName')]"
+						},
+						{
+							"name": "FUNCTIONS_EXTENSION_VERSION",
+							"value": "~2"
+						},
+						{
+							"name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+							"value": "[reference(resourceId('microsoft.insights/components/', 'applicationInsightsName'), '2015-05-01').InstrumentationKey]"
+						},
+						{
+							"name": "FUNCTIONS_WORKER_RUNTIME",
+							"value": "dotnet"
+						}
+					]
+				}
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

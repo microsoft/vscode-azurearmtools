@@ -1,0 +1,25 @@
+{
+	"resources": [
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"functions": [
+		{
+			"namespace": "namespacename",
+			"members": {
+				"functionname": {
+					"parameters": [
+						{
+							"name": "parametername",
+							"type": "string"
+						}
+					],
+					"output": {
+						"value": "function-return-value",
+						"type": "string"
+					}
+				}
+			}
+		}
+	]
+}

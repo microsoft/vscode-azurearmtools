@@ -1,0 +1,51 @@
+{
+	"resources": [
+		{
+			"name": "sqlServer1",
+			"type": "Microsoft.Sql/servers",
+			"apiVersion": "2014-04-01",
+			"location": "[resourceGroup().location]",
+			"tags": {
+				"displayName": "sqlServer1"
+			},
+			"properties": {
+				"administratorLogin": "adminUsername",
+				"administratorLoginPassword": "adminPassword"
+			},
+			"resources": [
+				{
+					"type": "firewallRules",
+					"apiVersion": "2014-04-01",
+					"dependsOn": [
+						"[resourceId('Microsoft.Sql/servers', 'sqlServer1')]"
+					],
+					"location": "[resourceGroup().location]",
+					"name": "AllowAllWindowsAzureIps",
+					"properties": {
+						"startIpAddress": "0.0.0.0",
+						"endIpAddress": "0.0.0.0"
+					}
+				}
+			]
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

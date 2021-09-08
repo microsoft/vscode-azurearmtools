@@ -41,7 +41,7 @@ export namespace assertEx {
 
     export function arraysEqual<T>(actual: T[], expected: (T | RegExp)[], options: {}, message: string): asserts actual is T[] {
         try {
-            assert.equal(actual.length, expected.length, `${message}: Length mismatch`);
+            assert.equal(actual.length, expected.length, `${message}: Number of diagnostics does not match expected`);
             for (let i = 0; i < actual.length; ++i) {
                 strictEqual(actual[i], expected[i], {}, `${message}: Line ${i + 1} mismatch`);
             }

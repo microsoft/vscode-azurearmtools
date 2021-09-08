@@ -1178,7 +1178,7 @@
             "\t\t\t\"id\": \"${2:database-name}\"",
             "\t\t},",
             "\t\t\"options\": {",
-            "\t\t\t\"throughput\": ${3:400}",
+            "\t\t\t\"throughput\": \"${3:400}\"",
             "\t\t}",
             "\t}",
             "}"
@@ -1198,7 +1198,7 @@
             "\t],",
             "\t\"properties\": {",
             "\t\t\"resource\": {",
-            "\t\t\t\"throughput\": ${4:400},",
+            "\t\t\t\"throughput\": \"${4:400}\",",
             "\t\t\t\"id\": \"${5:database-id}\"",
             "\t\t},",
             "\t\t\"options\": {",
@@ -1224,7 +1224,7 @@
             "\t\t\t\"id\": \"${2:database-name}\"",
             "\t\t},",
             "\t\t\"options\": {",
-            "\t\t\t\"throughput\": ${3:400}",
+            "\t\t\t\"throughput\": \"${3:400}\"",
             "\t\t}",
             "\t}",
             "}"
@@ -1247,7 +1247,7 @@
             "\t\t\t\"id\": \"${3:keyspace}\"",
             "\t\t},",
             "\t\t\"options\": {",
-            "\t\t\t\"throughput\": ${4:400}",
+            "\t\t\t\"throughput\": \"${4:400}\"",
             "\t\t}",
             "\t}",
             "}"
@@ -1394,7 +1394,7 @@
             "\t\t\t\"id\": \"${3:table-name}\"",
             "\t\t},",
             "\t\t\"options\": {",
-            "\t\t\t\"throughput\": ${4:400}",
+            "\t\t\t\"throughput\": \"${4:400}\"",
             "\t\t}",
             "\t}",
             "}"
@@ -2225,7 +2225,7 @@
         "prefix": "arm-sql-db-import",
         "body": [
             "{",
-            "\t\"name\": \"${1:sqlDatabase1}Import1\",",
+            "\t\"name\": \"${2:sqlServer1}/${1:sqlDatabase1}/import\",",
             "\t\"type\": \"Microsoft.Sql/servers/databases/extensions\",",
             "\t\"apiVersion\": \"2014-04-01\",",
             "\t\"dependsOn\": [",
@@ -2718,7 +2718,7 @@
         "prefix": "arm-web-app-deploy",
         "body": [
             "{",
-            "\t\"name\": \"Deploy-${1:webApp1}\",",
+            "\t\"name\": \"${1:webApp1}/MSDeploy\",",
             "\t\"type\": \"Microsoft.Web/sites/extensions\",",
             "\t\"apiVersion\": \"2018-11-01\",",
             "\t\"location\": \"[resourceGroup().location]\",",

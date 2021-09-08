@@ -1,0 +1,33 @@
+{
+	"resources": [
+		{
+			"name": "applicationSecurityGroup1",
+			"type": "Microsoft.Network/applicationSecurityGroups",
+			"apiVersion": "2019-11-01",
+			"location": "[resourceGroup().location]",
+			"tags": {
+			},
+			"properties": {
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

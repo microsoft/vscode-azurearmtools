@@ -299,6 +299,9 @@ test-results.xml
 test/**/*.actual
 test/**/*.full-scope-result.txt
 
+# Snippet results
+test/snippets/results
+
 # Nuget package downloads
 pkgs/**
 

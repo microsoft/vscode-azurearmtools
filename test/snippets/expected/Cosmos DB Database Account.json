@@ -1,0 +1,53 @@
+{
+	"resources": [
+		{
+			"name": "cosmosDbAccount1",
+			"type": "Microsoft.DocumentDB/databaseAccounts",
+			"apiVersion": "2019-12-12",
+			"location": "[resourceGroup().location]",
+			"tags": {
+			},
+			"kind": "GlobalDocumentDB",
+			"properties": {
+				"consistencyPolicy": {
+					"defaultConsistencyLevel": "Eventual",
+					"maxStalenessPrefix": 1,
+					"maxIntervalInSeconds": 5
+				},
+				"locations": [
+					{
+						"locationName": "location1",
+						"failoverPriority": 0
+					}
+				],
+				"databaseAccountOfferType": "Standard",
+				"ipRangeFilter": "ipRangeFilter",
+				"enableAutomaticFailover": true,
+				"capabilities": [
+					{
+						"name": "EnableTable"
+					}
+				]
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

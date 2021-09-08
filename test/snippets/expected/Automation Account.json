@@ -1,0 +1,36 @@
+{
+	"resources": [
+		{
+			"name": "automationAccount1",
+			"type": "Microsoft.Automation/automationAccounts",
+			"apiVersion": "2015-10-31",
+			"location": "[resourceGroup().location]",
+			"tags": {
+			},
+			"properties": {
+				"sku": {
+					"name": "Free"
+				}
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

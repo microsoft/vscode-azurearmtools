@@ -1,0 +1,57 @@
+{
+	"resources": [
+		{
+			"name": "trafficManagerProfile1",
+			"type": "Microsoft.Network/trafficManagerProfiles",
+			"apiVersion": "2018-04-01",
+			"tags": {
+			},
+			"location": "global",
+			"properties": {
+				"profileStatus": "Enabled",
+				"trafficRoutingMethod": "Performance",
+				"dnsConfig": {
+					"relativeName": "dnsConfig",
+					"ttl": 30
+				},
+				"monitorConfig": {
+					"protocol": "HTTP",
+					"port": 80,
+					"path": "path",
+					"intervalInSeconds": 30,
+					"timeoutInSeconds": 5,
+					"toleratedNumberOfFailures": 3
+				},
+				"endpoints": [
+					{
+						"properties": {
+							"targetResourceId": "targetId",
+							"endpointStatus": "Enabled",
+							"weight": 100,
+							"priority": 1
+						}
+					}
+				]
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

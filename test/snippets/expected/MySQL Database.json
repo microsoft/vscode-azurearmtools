@@ -1,0 +1,34 @@
+{
+	"resources": [
+		{
+			"name": "MySQLdb1",
+			"type": "Microsoft.DBforMySQL/servers",
+			"apiVersion": "2017-12-01",
+			"location": "[resourceGroup().location]",
+			"properties": {
+				"administratorLogin": "adminUsername",
+				"administratorLoginPassword": "adminPassword",
+				"createMode": "Default"
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

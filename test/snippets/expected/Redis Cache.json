@@ -1,0 +1,39 @@
+{
+	"resources": [
+		{
+			"name": "redisCache1",
+			"type": "Microsoft.Cache/Redis",
+			"apiVersion": "2019-07-01",
+			"location": "[resourceGroup().location]",
+			"tags": {
+				"displayName": "redisCache1"
+			},
+			"properties": {
+				"sku": {
+					"name": "Basic",
+					"family": "C",
+					"capacity": 0
+				}
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

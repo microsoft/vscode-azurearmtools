@@ -1,0 +1,245 @@
+{
+	"resources": [
+		{
+			"name": "appInsights1-appServicePlan1-AutoScaleSettings",
+			"type": "Microsoft.Insights/autoscalesettings",
+			"apiVersion": "2014-04-01",
+			"location": "East US",
+			"tags": {
+				"[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/appServicePlan1')]": "Resource",
+				"displayName": "appInsights1 AutoScale Settings for appServicePlan1"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/serverfarms', 'appServicePlan1')]"
+			],
+			"properties": {
+				"name": "appInsights1-appServicePlan1-AutoScaleSettings",
+				"profiles": [
+					{
+						"name": "Default",
+						"capacity": {
+							"minimum": 1,
+							"maximum": 2,
+							"default": 1
+						},
+						"rules": [
+							{
+								"metricTrigger": {
+									"metricName": "CpuPercentage",
+									"metricResourceUri": "[concat(resourceGroup().id, '/providers/Microsoft.Web/serverfarms/appServicePlan1')]",
+									"timeGrain": "PT1M",
+									"statistic": "Average",
+									"timeWindow": "PT10M",
+									"timeAggregation": "Average",
+									"operator": "GreaterThan",
+									"threshold": 80.0
+								},
+								"scaleAction": {
+									"direction": "Increase",
+									"type": "ChangeCount",
+									"value": 1,
+									"cooldown": "PT10M"
+								}
+							},
+							{
+								"metricTrigger": {
+									"metricName": "CpuPercentage",
+									"metricResourceUri": "[concat(resourceGroup().id, '/providers/Microsoft.Web/serverfarms/appServicePlan1')]",
+									"timeGrain": "PT1M",
+									"statistic": "Average",
+									"timeWindow": "PT1H",
+									"timeAggregation": "Average",
+									"operator": "LessThan",
+									"threshold": 60.0
+								},
+								"scaleAction": {
+									"direction": "Decrease",
+									"type": "ChangeCount",
+									"value": 1,
+									"cooldown": "PT1H"
+								}
+							}
+						]
+					}
+				],
+				"enabled": false,
+				"targetResourceUri": "[concat(resourceGroup().id, '/providers/Microsoft.Web/serverfarms/appServicePlan1')]"
+			}
+		},
+		{
+			"name": "appInsights1-CPUHigh-appServicePlan1",
+			"type": "Microsoft.Insights/alertrules",
+			"apiVersion": "2016-03-01",
+			"location": "East US",
+			"tags": {
+				"[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/appServicePlan1')]": "Resource",
+				"displayName": "appInsights1 CPUHigh rule for appServicePlan1"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/serverfarms', 'appServicePlan1')]"
+			],
+			"properties": {
+				"name": "appInsights1-CPUHigh-appServicePlan1",
+				"description": "The average CPU is high across all the instances of appServicePlan1",
+				"isEnabled": false,
+				"condition": {
+					"odata.type": "Microsoft.Azure.Management.Insights.Models.ThresholdRuleCondition",
+					"dataSource": {
+						"odata.type": "Microsoft.Azure.Management.Insights.Models.RuleMetricDataSource",
+						"resourceUri": "[concat(resourceGroup().id, '/providers/Microsoft.Web/serverfarms/appServicePlan1')]",
+						"metricName": "CpuPercentage"
+					},
+					"operator": "GreaterThan",
+					"threshold": 90,
+					"windowSize": "PT15M"
+				},
+				"action": {
+					"odata.type": "Microsoft.Azure.Management.Insights.Models.RuleEmailAction",
+					"sendToServiceOwners": true,
+					"customEmails": [
+					]
+				}
+			}
+		},
+		{
+			"name": "appInsights1-LongHttpQueue-appServicePlan1",
+			"type": "Microsoft.Insights/alertrules",
+			"apiVersion": "2016-03-01",
+			"location": "East US",
+			"tags": {
+				"[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/appServicePlan1')]": "Resource",
+				"displayName": "appInsights1 LongHttpQueue rule for appServicePlan1"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/serverfarms', 'appServicePlan1')]"
+			],
+			"properties": {
+				"name": "appInsights1-LongHttpQueue-appServicePlan1",
+				"description": "The HTTP queue for the instances of appServicePlan1 has a large number of pending requests.",
+				"isEnabled": false,
+				"condition": {
+					"odata.type": "Microsoft.Azure.Management.Insights.Models.ThresholdRuleCondition",
+					"dataSource": {
+						"odata.type": "Microsoft.Azure.Management.Insights.Models.RuleMetricDataSource",
+						"resourceUri": "[concat(resourceGroup().id, '/providers/Microsoft.Web/serverfarms/appServicePlan1')]",
+						"metricName": "HttpQueueLength"
+					},
+					"operator": "GreaterThan",
+					"threshold": 100.0,
+					"windowSize": "PT5M"
+				},
+				"action": {
+					"odata.type": "Microsoft.Azure.Management.Insights.Models.RuleEmailAction",
+					"sendToServiceOwners": true,
+					"customEmails": [
+					]
+				}
+			}
+		},
+		{
+			"name": "appInsights1-ServerErrors-webApp1",
+			"type": "Microsoft.Insights/alertrules",
+			"apiVersion": "2016-03-01",
+			"location": "East US",
+			"tags": {
+				"[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/webApp1')]": "Resource",
+				"displayName": "appInsights1 ServerErrors rule for webApp1"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/sites', 'webApp1')]"
+			],
+			"properties": {
+				"name": "appInsights1-ServerErrors-webApp1",
+				"description": "webApp1 has some server errors, status code 5xx.",
+				"isEnabled": false,
+				"condition": {
+					"odata.type": "Microsoft.Azure.Management.Insights.Models.ThresholdRuleCondition",
+					"dataSource": {
+						"odata.type": "Microsoft.Azure.Management.Insights.Models.RuleMetricDataSource",
+						"resourceUri": "[concat(resourceGroup().id, '/providers/Microsoft.Web/sites/webApp1')]",
+						"metricName": "Http5xx"
+					},
+					"operator": "GreaterThan",
+					"threshold": 0.0,
+					"windowSize": "PT5M"
+				},
+				"action": {
+					"odata.type": "Microsoft.Azure.Management.Insights.Models.RuleEmailAction",
+					"sendToServiceOwners": true,
+					"customEmails": [
+					]
+				}
+			}
+		},
+		{
+			"name": "appInsights1-ForbiddenRequests-webApp1",
+			"type": "Microsoft.Insights/alertrules",
+			"apiVersion": "2016-03-01",
+			"location": "East US",
+			"tags": {
+				"displayName": "appInsights1 ForbiddenRequests rule for webApp1"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/sites', 'webApp1')]"
+			],
+			"properties": {
+				"name": "appInsights1-ForbiddenRequests-webApp1",
+				"description": "webApp1 has some requests that are forbidden, status code 403.",
+				"isEnabled": false,
+				"condition": {
+					"odata.type": "Microsoft.Azure.Management.Insights.Models.ThresholdRuleCondition",
+					"dataSource": {
+						"odata.type": "Microsoft.Azure.Management.Insights.Models.RuleMetricDataSource",
+						"resourceUri": "[concat(resourceGroup().id, '/providers/Microsoft.Web/sites/webApp1')]",
+						"metricName": "Http403"
+					},
+					"operator": "GreaterThan",
+					"threshold": 0,
+					"windowSize": "PT5M"
+				},
+				"action": {
+					"odata.type": "Microsoft.Azure.Management.Insights.Models.RuleEmailAction",
+					"sendToServiceOwners": true,
+					"customEmails": [
+					]
+				}
+			}
+		},
+		{
+			"name": "appInsights1",
+			"type": "Microsoft.Insights/components",
+			"apiVersion": "2015-05-01",
+			"location": "Central US",
+			"kind": "web",
+			"tags": {
+				"displayName": "appInsights1 Component for webApp1"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Web/sites', 'webApp1')]"
+			],
+			"properties": {
+				"applicationId": "webApp1",
+				"application_Type": "web"
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

@@ -1,0 +1,71 @@
+{
+	"resources": [
+		{
+			"name": "keyVault1",
+			"type": "Microsoft.KeyVault/vaults",
+			"apiVersion": "2016-10-01",
+			"location": "[resourceGroup().location]",
+			"tags": {
+				"displayName": "keyVault1"
+			},
+			"properties": {
+				"enabledForDeployment": true,
+				"enabledForTemplateDeployment": true,
+				"enabledForDiskEncryption": true,
+				"tenantId": "tenantId",
+				"accessPolicies": [
+					{
+						"tenantId": "tenantId",
+						"objectId": "objectId",
+						"permissions": {
+							"keys": [
+								"Get"
+							],
+							"secrets": [
+								"List",
+								"Get",
+								"Set"
+							]
+						}
+					}
+				],
+				"sku": {
+					"name": "standard",
+					"family": "A"
+				}
+			},
+			"resources": [
+				{
+					"type": "secrets",
+					"name": "keyVaultSecret1",
+					"apiVersion": "2016-10-01",
+					"dependsOn": [
+						"[resourceId('Microsoft.KeyVault/vaults', 'keyVault1')]"
+					],
+					"properties": {
+						"value": "secretValue"
+					}
+				}
+			]
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

@@ -1,0 +1,56 @@
+{
+	"resources": [
+		{
+			"name": "virtualNetworkGateway1",
+			"type": "Microsoft.Network/virtualNetworkGateways",
+			"apiVersion": "2019-11-01",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/publicIPAddresses', 'publicIPAddress1')]",
+				"[resourceId('Microsoft.Network/virtualNetworks', 'virtualNetwork1')]"
+			],
+			"properties": {
+				"ipConfigurations": [
+					{
+						"name": "vnetGatewayConfig",
+						"properties": {
+							"privateIPAllocationMethod": "Dynamic",
+							"subnet": {
+								"id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'virtualNetwork1', 'subnet1')]"
+							},
+							"publicIPAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses', 'publicIPAddress1')]"
+							}
+						}
+					}
+				],
+				"sku": {
+					"name": "Basic",
+					"tier": "Basic"
+				},
+				"gatewayType": "Vpn",
+				"vpnType": "PolicyBased",
+				"enableBgp": true
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

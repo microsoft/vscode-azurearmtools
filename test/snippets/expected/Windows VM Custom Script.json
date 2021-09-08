@@ -1,0 +1,49 @@
+{
+	"resources": [
+		{
+			"name": "windowsVM1/customScript1",
+			"type": "Microsoft.Compute/virtualMachines/extensions",
+			"apiVersion": "2019-07-01",
+			"location": "[resourceGroup().location]",
+			"tags": {
+				"displayName": "customScript1 for Windows VM"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Compute/virtualMachines', 'windowsVM1')]"
+			],
+			"properties": {
+				"publisher": "Microsoft.Compute",
+				"type": "CustomScriptExtension",
+				"typeHandlerVersion": "1.10",
+				"autoUpgradeMinorVersion": true,
+				"settings": {
+					"fileUris": [
+						"[concat('artifactsLocation', '/scripts/customScript.ps1', 'artifactsLocationSasToken')]"
+					]
+				},
+				"protectedSettings": {
+					"commandToExecute": "powershell -ExecutionPolicy Bypass -file customScript.ps1"
+				}
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

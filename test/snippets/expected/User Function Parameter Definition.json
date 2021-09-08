@@ -1,0 +1,21 @@
+{
+    "functions": [
+        {
+            "namespace": "udf",
+            "members": {
+                "func1": {
+                    "parameters": [
+                        {
+                            "name": "parameter1",
+                            "type": "string"
+                        }
+                    ],
+                    "output": {
+                        "type": "string",
+                        "value": "myvalue"
+                    }
+                }
+            }
+        }
+    ]
+}
