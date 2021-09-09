@@ -180,23 +180,23 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<IElementInfo
 
     public readonly onDidChangeTreeDataEmitter: vscode.EventEmitter<IElementInfo | undefined> =
         new vscode.EventEmitter<IElementInfo | undefined>();
-    public readonly onDidChangeTreeData: vscode.Event<IElementInfo | undefined> = this.onDidChangeTreeDataEmitter.event;
+    //public readonly onDidChangeTreeData: vscode.Event<IElementInfo | undefined> = this.onDidChangeTreeDataEmitter.event;
 
     constructor(context: vscode.ExtensionContext) {
         context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(() => this.updateTreeState()));
         context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(() => this.updateTreeState()));
         context.subscriptions.push(vscode.workspace.onDidOpenTextDocument(() => this.updateTreeState()));
 
-        setTimeout(
-            () => {
-                // In case there is already a document opened before the extension gets loaded.
-                this.updateTreeState();
-            },
-            500);
+        // setTimeout(
+        //     () => {
+        //         // In case there is already a document opened before the extension gets loaded.
+        //         this.updateTreeState();
+        //     },
+        //     500);
     }
 
     public refresh(): void {
-        this.onDidChangeTreeDataEmitter.fire(undefined);
+        //this.onDidChangeTreeDataEmitter.fire(undefined);
     }
 
     public getChildren(elementInfo?: IElementInfo): IElementInfo[] {

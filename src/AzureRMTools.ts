@@ -3,57 +3,40 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 // tslint:disable:promise-function-async max-line-length // Grandfathered in
-// CONSIDER: Refactor this file
+
+const COMPLETION_ITEM_PROVIDER = true
+
 import * as path from 'path';
 import * as vscode from "vscode";
-import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, ITelemetryContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
+import { AzureUserInput, callWithTelemetryAndErrorHandling as callWithTelemetryAndErrorHandlingOld, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { delay } from "../test/support/delay";
 import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "./constants";
-import { DeploymentDocument, ResolvableCodeLens } from "./documents/DeploymentDocument";
+import { DeploymentDocument } from "./documents/DeploymentDocument";
 import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
 import { DeploymentParametersDoc } from "./documents/parameters/DeploymentParametersDoc";
-import { IParameterDefinitionsSource } from "./documents/parameters/IParameterDefinitionsSource";
-import { IParameterValuesSource } from "./documents/parameters/IParameterValuesSource";
-import { IParameterValuesSourceProvider } from "./documents/parameters/IParameterValuesSourceProvider";
 import { defaultTabSize } from './documents/parameters/parameterFileGeneration';
-import { considerQueryingForParameterFile, getFriendlyPathToFile, openParameterFile, openTemplateFile, selectParameterFile } from "./documents/parameters/parameterFiles";
-import { addMissingParameters } from "./documents/parameters/ParameterValues";
-import { IReferenceSite, PositionContext } from "./documents/positionContexts/PositionContext";
+import { considerQueryingForParameterFile } from "./documents/parameters/parameterFiles";
+import { PositionContext } from "./documents/positionContexts/PositionContext";
 import { TemplatePositionContext } from "./documents/positionContexts/TemplatePositionContext";
 import { DeploymentTemplateDoc } from "./documents/templates/DeploymentTemplateDoc";
-import { ExtractItem } from './documents/templates/ExtractItem';
 import { getNormalizedDocumentKey } from './documents/templates/getNormalizedDocumentKey';
-import { gotoResources } from './documents/templates/gotoResources';
 import { IJsonDocument } from './documents/templates/IJsonDocument';
-import { getItemTypeQuickPicks, InsertItem } from "./documents/templates/insertItem";
-import { assignTemplateGraphToDeploymentTemplate, INotifyTemplateGraphArgs, openLinkedTemplateFileCommand, tryLoadNonLocalLinkedFile } from './documents/templates/linkedTemplates/linkedTemplates';
+import { assignTemplateGraphToDeploymentTemplate, INotifyTemplateGraphArgs } from './documents/templates/linkedTemplates/linkedTemplates';
 import { allSchemas, getPreferredSchema } from './documents/templates/schemas';
-import { getQuickPickItems, sortTemplate } from "./documents/templates/sortTemplate";
-import { mightBeDeploymentParameters, mightBeDeploymentTemplate, setLangIdToArm, templateDocumentSelector, templateOrParameterDocumentSelector } from "./documents/templates/supported";
-import { TemplateSectionType } from "./documents/templates/TemplateSectionType";
-import { UnsupportedJsonDocument } from './documents/UnsupportedJsonDocument';
+import { mightBeDeploymentParameters, mightBeDeploymentTemplate, setLangIdToArm, templateOrParameterDocumentSelector } from "./documents/templates/supported";
 import { ext } from "./extensionVariables";
 import { assert } from './fixed_assert';
 import { IProvideOpenedDocuments } from './IProvideOpenedDocuments';
 import * as TLE from "./language/expressions/TLE";
 import { Issue, IssueSeverity } from "./language/Issue";
 import * as Json from "./language/json/JSON";
-import { ReferenceList } from "./language/ReferenceList";
 import { Span } from "./language/Span";
 import { getAvailableResourceTypesAndVersions } from './languageclient/getAvailableResourceTypesAndVersions';
-import { notifyTemplateGraphAvailable, startArmLanguageServerInBackground, waitForLanguageServerAvailable } from "./languageclient/startArmLanguageServer";
-import { InsertionContext } from './snippets/InsertionContext';
-import { KnownContexts } from './snippets/KnownContexts';
-import { showInsertionContext } from "./snippets/showInsertionContext";
+import { waitForLanguageServerAvailable } from "./languageclient/startArmLanguageServer";
 import { SnippetManager } from "./snippets/SnippetManager";
-import { survey } from "./survey";
 import { TimedMessage } from './TimedMessage';
-import { CachedPromise } from "./util/CachedPromise";
 import { escapeNonPaths } from "./util/escapeNonPaths";
-import { expectTemplateDocument } from "./util/expectDocument";
-import { getRenameError } from "./util/getRenameError";
 import { Histogram } from "./util/Histogram";
-import { prependLinkedTemplateScheme } from './util/linkedTemplateScheme';
 import { pathExists } from "./util/pathExists";
 import { readUtf8FileWithBom } from "./util/readUtf8FileWithBom";
 import { Stopwatch } from "./util/Stopwatch";
@@ -61,25 +44,22 @@ import { Cancellation } from "./util/throwOnCancel";
 import { parseUri } from './util/uri';
 import { IncorrectArgumentsCountIssue } from "./visitors/IncorrectArgumentsCountIssue";
 import { UnrecognizedBuiltinFunctionIssue } from "./visitors/UnrecognizedFunctionIssues";
-import { IAddMissingParametersArgs, IGotoParameterValueArgs, IGotoResourcesArgs } from "./vscodeIntegration/commandArguments";
 import { Item } from './vscodeIntegration/Completion';
 import { ConsoleOutputChannelWrapper } from "./vscodeIntegration/ConsoleOutputChannelWrapper";
-import { IHoverInfo } from './vscodeIntegration/IHoverInfo';
-import { RenameCodeActionProvider } from "./vscodeIntegration/RenameCodeActionProvider";
-import { resetGlobalState } from "./vscodeIntegration/resetGlobalState";
-import { setContext } from "./vscodeIntegration/setContext";
-import { getFunctionParamUsage } from "./vscodeIntegration/signatureFormatting";
-import { onCompletionActivated, toVsCodeCompletionItem } from "./vscodeIntegration/toVsCodeCompletionItem";
+import { toVsCodeCompletionItem } from "./vscodeIntegration/toVsCodeCompletionItem";
 import { toVSCodeDiagnosticFromIssue } from './vscodeIntegration/toVSCodeDiagnosticFromIssue';
 import { JsonOutlineProvider } from "./vscodeIntegration/Treeview";
 import { getVSCodeRangeFromSpan } from "./vscodeIntegration/vscodePosition";
+
+async function callWithTelemetryAndErrorHandling<T>(callbackId: string, callback: (context: IActionContext) => T | PromiseLike<T>): Promise<T | undefined> {
+    console.log(callbackId);
+    return await callWithTelemetryAndErrorHandlingOld(callbackId, callback);
+}
 
 interface IErrorsAndWarnings {
     errors: Issue[];
     warnings: Issue[];
 }
-
-const invalidRenameError = "Only parameters, variables, user namespaces and user functions can be renamed.";
 
 const echoOutputChannelToConsole: boolean = /^(true|1)?$/i.test(process.env.ECHO_OUTPUT_CHANNEL_TO_CONSOLE ?? '');
 
@@ -94,7 +74,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     }
     registerUIExtensionVariables(ext);
 
-    context.subscriptions.push(ext.completionItemsSpy);
+    //context.subscriptions.push(ext.completionItemsSpy);
 
     ext.deploymentFileMapping.value = new DeploymentFileMapping(ext.configuration);
     if (!ext.snippetManager.hasValue) {
@@ -147,7 +127,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
     private _diagnosticsVersion: number = 0;
     private _mapping: DeploymentFileMapping = ext.deploymentFileMapping.value;
     private _codeLensChangedEmitter: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
-    private _linkedTemplateDocProviderChangedEmitter: vscode.EventEmitter<vscode.Uri> = new vscode.EventEmitter<vscode.Uri>();
+    //private _linkedTemplateDocProviderChangedEmitter: vscode.EventEmitter<vscode.Uri> = new vscode.EventEmitter<vscode.Uri>();
     private _bicepMessage: TimedMessage = new TimedMessage(
         globalStateKeys.messages.bicepMessagePostponedUntilTime,
         "debugBicepMessage",
@@ -177,153 +157,6 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
         ext.jsonOutlineProvider = jsonOutline;
         context.subscriptions.push(vscode.window.registerTreeDataProvider("azurerm-vscode-tools.template-outline", jsonOutline));
-        context.subscriptions.push(this.getRegisteredRenameCodeActionProvider());
-        // For telemetry
-        registerCommand("azurerm-vscode-tools.completion-activated", (actionContext: IActionContext, args: object) => {
-            onCompletionActivated(actionContext, <{ [key: string]: string }>args);
-        });
-        registerCommand("azurerm-vscode-tools.treeview.goto", (_actionContext: IActionContext, range: vscode.Range) => {
-            jsonOutline.revealRangeInEditor(range);
-        });
-        registerCommand("azurerm-vscode-tools.sortTemplate", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
-            editor = editor || vscode.window.activeTextEditor;
-            uri = uri || vscode.window.activeTextEditor?.document.uri;
-            // If "Sort template..." was called from the context menu for ARM template outline
-            if (typeof uri === "string") {
-                uri = vscode.window.activeTextEditor?.document.uri;
-            }
-            if (uri && editor) {
-                const sectionType = await ext.ui.showQuickPick(getQuickPickItems(), { placeHolder: 'What do you want to sort?' });
-                await this.sortTemplate(sectionType.value, uri, editor);
-            }
-        });
-        registerCommand("azurerm-vscode-tools.sortFunctions", async () => {
-            await this.sortTemplate(TemplateSectionType.Functions);
-        });
-        registerCommand("azurerm-vscode-tools.sortOutputs", async () => {
-            await this.sortTemplate(TemplateSectionType.Outputs);
-        });
-        registerCommand("azurerm-vscode-tools.sortParameters", async () => {
-            await this.sortTemplate(TemplateSectionType.Parameters);
-        });
-        registerCommand("azurerm-vscode-tools.sortResources", async () => {
-            await this.sortTemplate(TemplateSectionType.Resources);
-        });
-        registerCommand("azurerm-vscode-tools.sortVariables", async () => {
-            await this.sortTemplate(TemplateSectionType.Variables);
-        });
-        registerCommand("azurerm-vscode-tools.sortTopLevel", async () => {
-            await this.sortTemplate(TemplateSectionType.TopLevel);
-        });
-        registerCommand(
-            "azurerm-vscode-tools.selectParameterFile", async (actionContext: IActionContext, sourceTemplateUri?: vscode.Uri) => {
-                await selectParameterFile(actionContext, this._mapping, sourceTemplateUri);
-            });
-        registerCommand(
-            "azurerm-vscode-tools.openParameterFile", async (_actionContext: IActionContext, sourceTemplateUri?: vscode.Uri) => {
-                sourceTemplateUri = sourceTemplateUri ?? vscode.window.activeTextEditor?.document.uri;
-                await openParameterFile(this._mapping, sourceTemplateUri, undefined);
-            });
-        registerCommand(
-            "azurerm-vscode-tools.openTemplateFile", async (_actionContext: IActionContext, sourceParamUri?: vscode.Uri) => {
-                sourceParamUri = sourceParamUri ?? vscode.window.activeTextEditor?.document.uri;
-                await openTemplateFile(this._mapping, sourceParamUri, undefined);
-            });
-        registerCommand(
-            "azurerm-vscode-tools.codeLens.openLinkedTemplateFile", async (actionContext: IActionContext, linkedTemplateUri: vscode.Uri) => {
-                await openLinkedTemplateFileCommand(linkedTemplateUri, actionContext);
-            });
-        registerCommand(
-            "azurerm-vscode-tools.codeLens.reloadLinkedTemplateFile", async (actionContext: IActionContext, linkedTemplateUri: vscode.Uri) => {
-                this.closeDeploymentFile(linkedTemplateUri);
-                this._linkedTemplateDocProviderChangedEmitter.fire(prependLinkedTemplateScheme(linkedTemplateUri));
-            });
-        registerCommand("azurerm-vscode-tools.insertItem", async (actionContext: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
-            editor = editor || vscode.window.activeTextEditor;
-            uri = uri || vscode.window.activeTextEditor?.document.uri;
-            // If "Sort template..." was called from the context menu for ARM template outline
-            if (typeof uri === "string") {
-                uri = vscode.window.activeTextEditor?.document.uri;
-            }
-            if (uri && editor) {
-                const sectionType = await ext.ui.showQuickPick(getItemTypeQuickPicks(), { placeHolder: 'What do you want to insert?' });
-                await this.insertItem(sectionType.value, actionContext, uri, editor);
-            }
-        });
-        registerCommand("azurerm-vscode-tools.insertParameter", async (actionContext: IActionContext) => {
-            await this.insertItem(TemplateSectionType.Parameters, actionContext);
-        });
-        registerCommand("azurerm-vscode-tools.insertVariable", async (actionContext: IActionContext) => {
-            await this.insertItem(TemplateSectionType.Variables, actionContext);
-        });
-        registerCommand("azurerm-vscode-tools.insertOutput", async (actionContext: IActionContext) => {
-            await this.insertItem(TemplateSectionType.Outputs, actionContext);
-        });
-        registerCommand("azurerm-vscode-tools.insertFunction", async (actionContext: IActionContext) => {
-            await this.insertItem(TemplateSectionType.Functions, actionContext);
-        });
-        registerCommand("azurerm-vscode-tools.insertResource", async (actionContext: IActionContext) => {
-            await this.insertItem(TemplateSectionType.Resources, actionContext);
-        });
-
-        // Code action commands
-        registerCommand("azurerm-vscode-tools.codeAction.addAllMissingParameters", async (actionContext: IActionContext, source?: vscode.Uri, args?: IAddMissingParametersArgs) => {
-            await this.addMissingParameters(actionContext, source, args, false);
-        });
-        registerCommand("azurerm-vscode-tools.codeAction.addMissingRequiredParameters", async (actionContext: IActionContext, source?: vscode.Uri, args?: IAddMissingParametersArgs) => {
-            await this.addMissingParameters(actionContext, source, args, true);
-        });
-        registerCommand("azurerm-vscode-tools.codeAction.extractParameter", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
-            editor = editor || vscode.window.activeTextEditor;
-            uri = uri || vscode.window.activeTextEditor?.document.uri;
-            if (editor) {
-                let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
-                if (!deploymentTemplate) {
-                    return;
-                }
-                await new ExtractItem(ext.ui).extractParameter(editor, deploymentTemplate, _context);
-            }
-        });
-        registerCommand("azurerm-vscode-tools.codeAction.extractVariable", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
-            editor = editor || vscode.window.activeTextEditor;
-            uri = uri || vscode.window.activeTextEditor?.document.uri;
-            if (editor) {
-                let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
-                if (!deploymentTemplate) {
-                    return;
-                }
-                await new ExtractItem(ext.ui).extractVariable(editor, deploymentTemplate, _context);
-            }
-        });
-
-        // Code lens commands
-        registerCommand(
-            // Executed when the user clicks on a code lens for a parameter value
-            "azurerm-vscode-tools.codeLens.gotoParameterValue",
-            async (actionContext: IActionContext, args: IGotoParameterValueArgs) => {
-                await this.onGotoParameterValue(actionContext, args);
-            });
-        registerCommand(
-            // Executed when the user clicks on a code lens that shows the children or parent of a resource
-            "azurerm-vscode-tools.codeLens.gotoResources",
-            async (actionContext: IActionContext, args: IGotoResourcesArgs) => {
-                await gotoResources(actionContext, args);
-            });
-
-        // Developer commands
-        registerCommand("azurerm-vscode-tools.developer.resetGlobalState", resetGlobalState);
-        registerCommand(
-            "azurerm-vscode-tools.developer.showInsertionContext",
-            async (actionContext: IActionContext) => {
-                let editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-                if (editor) {
-                    let position = editor.selection.anchor;
-                    let pc: PositionContext | undefined = await this.getPositionContext(editor.document, position, Cancellation.cantCancel);
-                    if (pc) {
-                        showInsertionContext(pc);
-                    }
-                }
-            });
 
         this._paramsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
         ext.context.subscriptions.push(this._paramsStatusBarItem);
@@ -346,32 +179,35 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         context.subscriptions.push(this._diagnosticsCollection);
 
         // Hook up completion provider immediately because it also handles unsupported JSON files (for non-template JSON files)
-        const completionProvider: vscode.CompletionItemProvider = {
-            provideCompletionItems: async (
-                document: vscode.TextDocument,
-                position: vscode.Position,
-                token: vscode.CancellationToken,
-                ctx: vscode.CompletionContext
-            ): Promise<vscode.CompletionList | undefined> => {
-                return await this.onProvideCompletions(document, position, token, ctx);
-            },
-            resolveCompletionItem: (item: vscode.CompletionItem, token: vscode.CancellationToken): vscode.CompletionItem => {
-                return this.onResolveCompletionItem(item, token);
-            }
-        };
-        ext.context.subscriptions.push(
-            vscode.languages.registerCompletionItemProvider(
-                templateOrParameterDocumentSelector,
-                completionProvider,
-                "'",
-                "[",
-                ".",
-                '"',
-                '(',
-                ',',
-                ' ',
-                '{'
-            ));
+        if (COMPLETION_ITEM_PROVIDER) {
+            const completionProvider: vscode.CompletionItemProvider = {
+                provideCompletionItems: async (
+                    document: vscode.TextDocument,
+                    position: vscode.Position,
+                    token: vscode.CancellationToken,
+                    ctx: vscode.CompletionContext
+                ): Promise<vscode.CompletionList | undefined> => {
+                    console.log("completionProvider");
+                    return await this.onProvideCompletions(document, position, token, ctx);
+                },
+                resolveCompletionItem: (item: vscode.CompletionItem, token: vscode.CancellationToken): vscode.CompletionItem => {
+                    return this.onResolveCompletionItem(item, token);
+                }
+            };
+            ext.context.subscriptions.push(
+                vscode.languages.registerCompletionItemProvider(
+                    templateOrParameterDocumentSelector,
+                    completionProvider,
+                    "'",
+                    "[",
+                    ".",
+                    '"',
+                    '(',
+                    ',',
+                    ' ',
+                    '{'
+                ));
+        }
 
         const activeEditor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
         if (activeEditor) {
@@ -387,73 +223,6 @@ export class AzureRMTools implements IProvideOpenedDocuments {
     }
     public setStaticDocument(documentOrUri: vscode.Uri, content: string): void {
         throw new Error("Method not implemented.");
-    }
-
-    private getRegisteredRenameCodeActionProvider(): vscode.Disposable {
-        const metaData = { providedCodeActionKinds: [vscode.CodeActionKind.RefactorRewrite] };
-        const renameCodeActionProvider = new RenameCodeActionProvider(async (document, position): Promise<PositionContext | undefined> => await this.getPositionContext(document, position, Cancellation.cantCancel));
-        return vscode.languages.registerCodeActionsProvider(templateOrParameterDocumentSelector, renameCodeActionProvider, metaData);
-    }
-
-    private async addMissingParameters(
-        actionContext: IActionContext,
-        // URI of the document containing the parameter *values* (if no args, this is the parameter file)
-        source: vscode.Uri | undefined,
-        args: IAddMissingParametersArgs | undefined,
-        onlyRequiredParameters: boolean
-    ): Promise<void> {
-        source = source || vscode.window.activeTextEditor?.document.uri;
-        const editor = vscode.window.activeTextEditor;
-        const uri = source || editor?.document.uri;
-
-        if (editor && uri && editor.document.uri.fsPath === uri.fsPath) {
-            let parameterValues: IParameterValuesSource | undefined;
-            let parameterDefinitions: IParameterDefinitionsSource | undefined;
-            let parentParameterDefinitions: IParameterDefinitionsSource | undefined;
-
-            if (!args) {
-                // Called from edit context menu, source is the parameter file, since we don't have a context menu for it
-                //   for parameter value sources in the template file
-                let { doc, associatedDoc: template } = await this.getDeploymentDocAndAssociatedDoc(editor.document, Cancellation.cantCancel);
-                if (doc instanceof DeploymentParametersDoc) {
-                    // Do completions for top-level parameters
-                    parameterValues = doc.topLevelParameterValuesSource;
-                    parameterDefinitions = expectTemplateDocument(template).topLevelScope.parameterDefinitionsSource;
-                }
-            } else {
-                // Called from a code action, we should already have the parameter sources in the arguments
-                parameterValues = args.parameterValuesSource;
-                parameterDefinitions = args.parameterDefinitionsSource;
-                parentParameterDefinitions = args.parentParameterDefinitionsSource;
-            }
-
-            if (parameterValues && parameterDefinitions) {
-                await addMissingParameters(
-                    parameterDefinitions,
-                    parameterValues,
-                    editor,
-                    parentParameterDefinitions,
-                    onlyRequiredParameters);
-            }
-        }
-    }
-
-    private async sortTemplate(sectionType: TemplateSectionType, documentUri?: vscode.Uri, editor?: vscode.TextEditor): Promise<void> {
-        editor = editor || vscode.window.activeTextEditor;
-        documentUri = documentUri || editor?.document.uri;
-        if (editor && documentUri && editor.document.uri.fsPath === documentUri.fsPath) {
-            let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
-            await sortTemplate(deploymentTemplate, sectionType, editor);
-        }
-    }
-
-    private async insertItem(sectionType: TemplateSectionType, context: IActionContext, documentUri?: vscode.Uri, editor?: vscode.TextEditor): Promise<void> {
-        editor = editor || vscode.window.activeTextEditor;
-        documentUri = documentUri || editor?.document.uri;
-        if (editor && documentUri && editor.document.uri.fsPath === documentUri.fsPath) {
-            let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
-            await new InsertItem(ext.ui).insertItem(deploymentTemplate, sectionType, editor, context);
-        }
     }
 
     public dispose(): void {
@@ -559,7 +328,6 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     this.ensureDeploymentDocumentEventsHookedUp();
 
                     this.setOpenedDeploymentDocument(documentUri, deploymentTemplate);
-                    this.registerActiveUse();
 
                     if (isNewlyOpened) {
                         // A deployment template has been opened (as opposed to having been tabbed to)
@@ -612,7 +380,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     if (treatAsDeploymentParameters) {
                         this.ensureDeploymentDocumentEventsHookedUp();
                         this.setOpenedDeploymentDocument(documentUri, deploymentParameters);
-                        this.registerActiveUse();
+                        //this.registerActiveUse();
 
                         // tslint:disable-next-line: no-floating-promises
                         this.reportDeploymentParametersErrorsInBackground(textDocument, deploymentParameters).then(async (errorsWarnings) => {
@@ -802,13 +570,14 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         textDocument: vscode.TextDocument,
         deploymentTemplate: DeploymentTemplateDoc
     ): Promise<IErrorsAndWarnings | undefined> {
-        return await callWithTelemetryAndErrorHandling('reportDeploymentTemplateErrors', async (actionContext: IActionContext): Promise<IErrorsAndWarnings> => {
-            actionContext.telemetry.suppressIfSuccessful = true;
+        return undefined;
+        // return await callWithTelemetryAndErrorHandling('reportDeploymentTemplateErrors', async (actionContext: IActionContext): Promise<IErrorsAndWarnings> => {
+        //     actionContext.telemetry.suppressIfSuccessful = true;
 
-            // Note: Associated parameters? Not currently used by getErrors
-            const associatedParameters: DeploymentParametersDoc | undefined = undefined;
-            return this.reportDeploymentDocumentErrors(textDocument, deploymentTemplate, associatedParameters);
-        });
+        //     // Note: Associated parameters? Not currently used by getErrors
+        //     const associatedParameters: DeploymentParametersDoc | undefined = undefined;
+        //     return this.reportDeploymentDocumentErrors(textDocument, deploymentTemplate, associatedParameters);
+        // });
     }
 
     private async reportDeploymentParametersErrorsInBackground(
@@ -963,203 +732,83 @@ export class AzureRMTools implements IProvideOpenedDocuments {
 
             vscode.window.onDidChangeTextEditorSelection(this.onTextSelectionChanged, this, ext.context.subscriptions);
 
-            const hoverProvider: vscode.HoverProvider = {
-                provideHover: async (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover | undefined> => {
-                    return await this.onProvideHover(document, position, token);
-                }
-            };
-            ext.context.subscriptions.push(vscode.languages.registerHoverProvider(templateDocumentSelector, hoverProvider));
-
-            const codeLensProvider: vscode.CodeLensProvider = {
-                onDidChangeCodeLenses: this._codeLensChangedEmitter.event,
-                provideCodeLenses: (document: vscode.TextDocument, token: vscode.CancellationToken): vscode.CodeLens[] | undefined => {
-                    return this.onProvideCodeLenses(document, token);
-                },
-                resolveCodeLens: async (codeLens: vscode.CodeLens, token: vscode.CancellationToken): Promise<vscode.CodeLens | undefined> => {
-                    return await this.onResolveCodeLens(codeLens, token);
-                }
-            };
-            ext.context.subscriptions.push(vscode.languages.registerCodeLensProvider(templateDocumentSelector, codeLensProvider));
-
-            // Code actions provider
-            const codeActionProvider: vscode.CodeActionProvider = {
-                provideCodeActions: async (
-                    textDocument: vscode.TextDocument,
-                    range: vscode.Range | vscode.Selection,
-                    context: vscode.CodeActionContext,
-                    token: vscode.CancellationToken
-                ): Promise<(vscode.Command | vscode.CodeAction)[] | undefined> => {
-                    return await this.onProvideCodeActions(textDocument, range, context, token);
-                }
-            };
-            ext.context.subscriptions.push(
-                vscode.languages.registerCodeActionsProvider(
-                    templateOrParameterDocumentSelector,
-                    codeActionProvider,
-                    {
-                        providedCodeActionKinds: [
-                            vscode.CodeActionKind.QuickFix,
-                            vscode.CodeActionKind.RefactorExtract
-                        ]
-                    }
-                ));
-
-            // tslint:disable-next-line:no-suspicious-comment
-            const definitionProvider: vscode.DefinitionProvider = {
-                provideDefinition: async (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Definition | undefined> => {
-                    return await this.onProvideDefinition(document, position, token);
-                }
-            };
-            ext.context.subscriptions.push(
-                vscode.languages.registerDefinitionProvider(
-                    templateOrParameterDocumentSelector,
-                    definitionProvider));
-
-            const referenceProvider: vscode.ReferenceProvider = {
-                provideReferences: async (document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): Promise<vscode.Location[] | undefined> => {
-                    return this.onProvideReferences(document, position, context, token);
-                }
-            };
-            ext.context.subscriptions.push(vscode.languages.registerReferenceProvider(templateOrParameterDocumentSelector, referenceProvider));
-
-            const signatureHelpProvider: vscode.SignatureHelpProvider = {
-                provideSignatureHelp: async (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp | undefined> => {
-                    return await this.onProvideSignatureHelp(document, position, token);
-                }
-            };
-            ext.context.subscriptions.push(vscode.languages.registerSignatureHelpProvider(templateDocumentSelector, signatureHelpProvider, ",", "(", "\n"));
-
-            const renameProvider: vscode.RenameProvider = {
-                provideRenameEdits: async (document: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): Promise<vscode.WorkspaceEdit | undefined> => {
-                    return await this.onProvideRename(document, position, newName, token);
-                },
-                prepareRename: async (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Range | { range: vscode.Range; placeholder: string } | undefined> => {
-                    return await this.prepareRename(document, position, token);
-                }
-            };
-            ext.context.subscriptions.push(vscode.languages.registerRenameProvider(templateOrParameterDocumentSelector, renameProvider));
-
-            const documentLinkProvider: vscode.DocumentLinkProvider = {
-                provideDocumentLinks: async (document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.DocumentLink[] | undefined> => {
-                    return await this.provideDocumentLinks(document, token);
-                }
-            };
-            ext.context.subscriptions.push(
-                vscode.languages.registerDocumentLinkProvider(templateDocumentSelector, documentLinkProvider));
-
-            const linkedTemplateDocumentProvider: vscode.TextDocumentContentProvider = {
-                onDidChange: this._linkedTemplateDocProviderChangedEmitter.event,
-                provideTextDocumentContent: async (uri: vscode.Uri, _token: vscode.CancellationToken): Promise<string | undefined> => {
-                    return await this.provideContentForNonlocalUri(uri);
-                }
-            };
-            ext.context.subscriptions.push(
-                vscode.workspace.registerTextDocumentContentProvider(
-                    documentSchemes.linkedTemplate,
-                    linkedTemplateDocumentProvider));
-
-            ext.context.subscriptions.push(notifyTemplateGraphAvailable(this.onTemplateGraphAvailable, this));
-            ext.context.subscriptions.push(ext.languageServerStateChanged(this.onLanguageServerStateChanged, this));
-
-            startArmLanguageServerInBackground();
-        });
-    }
-
-    /**
-     * A ITextDocumentContentProvider implementation to handle retrieving content for non-local files
-     * (such as http: files for a linked document URI).  These will be encoded with the
-     * documentSchemes.linkedTemplate scheme followed by the full URI.
-     * @param uri A "linkedtemplate:"-schema URI to open, e.g.
-     * linked-template:https%3A//raw.githubusercontent.com/StephenWeatherford/template-examples/master/linkedTemplates/uri/child.json
-     */
-    private async provideContentForNonlocalUri(uri: vscode.Uri): Promise<string | undefined> {
-        return callWithTelemetryAndErrorHandling('provideContentForNonlocalUris', async (context: IActionContext) => {
-            context.errorHandling.rethrow = true;
-            context.errorHandling.suppressDisplay = true;
-
-            let dt = this.getOpenedDeploymentDocument(uri);
-            if (!dt) {
-                await tryLoadNonLocalLinkedFile(uri, context, false);
-                dt = this.getOpenedDeploymentDocument(uri);
-            }
-
-            return dt?.documentText;
+            //startArmLanguageServerInBackground();
         });
     }
 
     private async updateEditorState(): Promise<void> {
-        let isWarning: boolean = false;
-        let statusBarText: string | undefined;
-        let isTemplateFile = false;
-        let templateFileHasParamFile = false;
-        let isParamFile = false;
-        let paramFileHasTemplateFile = false;
+        // let isWarning: boolean = false;
+        // let statusBarText: string | undefined;
+        // let isTemplateFile = false;
+        // let templateFileHasParamFile = false;
+        // let isParamFile = false;
+        // let paramFileHasTemplateFile = false;
 
-        try {
-            const activeDocument = vscode.window.activeTextEditor?.document;
-            if (activeDocument) {
-                const deploymentTemplate = this.getOpenedDeploymentDocument(activeDocument);
-                if (deploymentTemplate instanceof DeploymentTemplateDoc) {
-                    isTemplateFile = true;
+        // try {
+        //     const activeDocument = vscode.window.activeTextEditor?.document;
+        //     if (activeDocument) {
+        //         const deploymentTemplate = this.getOpenedDeploymentDocument(activeDocument);
+        //         if (deploymentTemplate instanceof DeploymentTemplateDoc) {
+        //             isTemplateFile = true;
 
-                    const paramFileUri = this._mapping.getParameterFile(activeDocument.uri);
-                    if (paramFileUri) {
-                        templateFileHasParamFile = true;
-                        const doesParamFileExist = await pathExists(paramFileUri);
-                        statusBarText = `Parameter file: ${getFriendlyPathToFile(paramFileUri)}`;
-                        if (!doesParamFileExist) {
-                            statusBarText += " $(error) Not found";
-                        }
-                    } else {
-                        statusBarText = "Select/Create parameter file...";
-                    }
+        //             const paramFileUri = this._mapping.getParameterFile(activeDocument.uri);
+        //             if (paramFileUri) {
+        //                 templateFileHasParamFile = true;
+        //                 const doesParamFileExist = await pathExists(paramFileUri);
+        //                 statusBarText = `Parameter file: ${getFriendlyPathToFile(paramFileUri)}`;
+        //                 if (!doesParamFileExist) {
+        //                     statusBarText += " $(error) Not found";
+        //                 }
+        //             } else {
+        //                 statusBarText = "Select/Create parameter file...";
+        //             }
 
-                    // Add message to indicate if full validation is disabled
-                    const fullValidationOn = deploymentTemplate.templateGraph?.fullValidationStatus.fullValidationEnabled ?? templateFileHasParamFile;
-                    isWarning = !fullValidationOn;
-                    statusBarText = isWarning ?
-                        `$(warning) WARNING: Full template validation off. Add param file or top-level param defaults to enable.` :
-                        statusBarText;
+        //             // Add message to indicate if full validation is disabled
+        //             const fullValidationOn = deploymentTemplate.templateGraph?.fullValidationStatus.fullValidationEnabled ?? templateFileHasParamFile;
+        //             isWarning = !fullValidationOn;
+        //             statusBarText = isWarning ?
+        //                 `$(warning) WARNING: Full template validation off. Add param file or top-level param defaults to enable.` :
+        //                 statusBarText;
 
-                    this._paramsStatusBarItem.command = "azurerm-vscode-tools.selectParameterFile";
-                    this._paramsStatusBarItem.text = statusBarText;
-                } else if (deploymentTemplate instanceof DeploymentParametersDoc) {
-                    // Current file is a parameter file
-                    isParamFile = true;
+        //             this._paramsStatusBarItem.command = "azurerm-vscode-tools.selectParameterFile";
+        //             this._paramsStatusBarItem.text = statusBarText;
+        //         } else if (deploymentTemplate instanceof DeploymentParametersDoc) {
+        //             // Current file is a parameter file
+        //             isParamFile = true;
 
-                    const templateFileUri = this._mapping.getTemplateFile(activeDocument.uri);
-                    if (templateFileUri) {
-                        paramFileHasTemplateFile = true;
-                        const doesTemplateFileExist = await pathExists(templateFileUri);
-                        statusBarText = `Template file: ${getFriendlyPathToFile(templateFileUri)}`;
-                        if (!doesTemplateFileExist) {
-                            statusBarText += " $(error) Not found";
-                        }
-                    } else {
-                        statusBarText = "No template file selected";
-                    }
+        //             const templateFileUri = this._mapping.getTemplateFile(activeDocument.uri);
+        //             if (templateFileUri) {
+        //                 paramFileHasTemplateFile = true;
+        //                 const doesTemplateFileExist = await pathExists(templateFileUri);
+        //                 statusBarText = `Template file: ${getFriendlyPathToFile(templateFileUri)}`;
+        //                 if (!doesTemplateFileExist) {
+        //                     statusBarText += " $(error) Not found";
+        //                 }
+        //             } else {
+        //                 statusBarText = "No template file selected";
+        //             }
 
-                    this._paramsStatusBarItem.command = "azurerm-vscode-tools.openTemplateFile";
-                    this._paramsStatusBarItem.text = statusBarText;
-                }
+        //             this._paramsStatusBarItem.command = "azurerm-vscode-tools.openTemplateFile";
+        //             this._paramsStatusBarItem.text = statusBarText;
+        //         }
 
-                this._paramsStatusBarItem.color = isWarning ? new vscode.ThemeColor('problemsWarningIcon.foreground') : undefined;
-            }
-        } finally {
-            if (statusBarText) {
-                this._paramsStatusBarItem.show();
-            } else {
-                this._paramsStatusBarItem.hide();
-            }
+        //         this._paramsStatusBarItem.color = isWarning ? new vscode.ThemeColor('problemsWarningIcon.foreground') : undefined;
+        //     }
+        // } finally {
+        //     if (statusBarText) {
+        //         this._paramsStatusBarItem.show();
+        //     } else {
+        //         this._paramsStatusBarItem.hide();
+        //     }
 
-            // tslint:disable-next-line: no-floating-promises
-            setContext({
-                isTemplateFile,
-                hasParamFile: templateFileHasParamFile,
-                isParamFile: isParamFile,
-                hasTemplateFile: paramFileHasTemplateFile
-            });
-        }
+        //     // tslint:disable-next-line: no-floating-promises
+        //     setContext({
+        //         isTemplateFile,
+        //         hasParamFile: templateFileHasParamFile,
+        //         isParamFile: isParamFile,
+        //         hasTemplateFile: paramFileHasTemplateFile
+        //     });
+        // }
     }
 
     /**
@@ -1253,104 +902,6 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         this.setOpenedDeploymentDocument(uri, undefined);
     }
 
-    private onProvideCodeLenses(textDocument: vscode.TextDocument, token: vscode.CancellationToken): vscode.CodeLens[] | undefined {
-        if (!ext.configuration.get<boolean>(configKeys.enableCodeLens)) {
-            return undefined;
-        }
-
-        return callWithTelemetryAndErrorHandlingSync('ProvideCodeLenses', (actionContext: IActionContext): vscode.CodeLens[] | undefined => {
-            actionContext.errorHandling.suppressDisplay = true;
-            actionContext.telemetry.suppressIfSuccessful = true;
-            const doc = this.getOpenedDeploymentDocument(textDocument.uri);
-
-            if (doc instanceof DeploymentTemplateDoc) {
-                let topLevelParametersProvider = this.getTopLevelParameterValuesSourceProvider(doc);
-                return doc.getCodeLenses(topLevelParametersProvider);
-            }
-        });
-    }
-
-    /**
-     * Retrieves parameter values for the parameters defined at the top level of the template (i.e. those
-     * in the parameter value, if any)
-     */
-    private getTopLevelParameterValuesSourceProvider(doc: DeploymentTemplateDoc): IParameterValuesSourceProvider | undefined {
-        /**
-         * A parameter value source provider using a parameter file. This is here just for convenient access to the
-         * getOrReadParametersFiles function.
-         */
-        class ParameterValuesSourceProviderFromParameterFile implements IParameterValuesSourceProvider {
-            private _parameterValuesSource: CachedPromise<IParameterValuesSource> = new CachedPromise<IParameterValuesSource>();
-
-            public constructor(
-                private readonly parent: AzureRMTools,
-                public readonly parameterFileUri: vscode.Uri) {
-            }
-
-            // Load parameter file asynchronously and expose its parameter values
-            public async getValuesSource(): Promise<IParameterValuesSource> {
-                return this._parameterValuesSource.getOrCachePromise(async () => {
-                    const dp = await this.parent.getOrReadParametersFile(this.parameterFileUri);
-                    return dp?.topLevelParameterValuesSource;
-                });
-            }
-        }
-
-        const dpUri = this._mapping.getParameterFile(doc.documentUri);
-        let topLevelParametersProvider: ParameterValuesSourceProviderFromParameterFile | undefined;
-        if (dpUri) {
-            // There is a parameter file, but we don't want to retrieve until we resolve
-            // the code lens because onProvideCodeLenses is supposed to return as quickly as possible.
-            topLevelParametersProvider = new ParameterValuesSourceProviderFromParameterFile(this, dpUri);
-        }
-
-        return topLevelParametersProvider;
-
-    }
-
-    private async onResolveCodeLens(codeLens: vscode.CodeLens, token: vscode.CancellationToken): Promise<vscode.CodeLens | undefined> {
-        return await callWithTelemetryAndErrorHandling('ResolveCodeLens', async (actionContext: IActionContext): Promise<vscode.CodeLens | undefined> => {
-            actionContext.telemetry.suppressIfSuccessful = true;
-
-            if (codeLens instanceof ResolvableCodeLens) {
-                if (await codeLens.resolve()) {
-                    assert(codeLens.command?.title, "CodeLens wasn't resolved");
-                    return codeLens;
-                }
-            } else {
-                assert.fail('Expected ResolvableCodeLens instance');
-            }
-
-            codeLens.command = {
-                title: '',
-                command: ''
-            };
-            return codeLens;
-        });
-    }
-
-    private async onProvideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover | undefined> {
-        return await callWithTelemetryAndErrorHandling('Hover', async (actionContext: IActionContext): Promise<vscode.Hover | undefined> => {
-            actionContext.errorHandling.suppressDisplay = true;
-            actionContext.telemetry.suppressIfSuccessful = true;
-            const properties = <TelemetryProperties & { hoverType?: string; tleFunctionName: string }>actionContext.telemetry.properties;
-
-            const cancel = new Cancellation(token, actionContext);
-            const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(document, cancel);
-            if (doc) {
-                const context = doc.getContextFromDocumentLineAndColumnIndexes(position.line, position.character, associatedDoc);
-                const hoverInfos: IHoverInfo[] = context.getHoverInfo();
-                if (hoverInfos.length > 0) {
-                    properties.hoverTypes = hoverInfos.map(i => i.hoverType).join(',');
-                    const markdownStrings = hoverInfos.map(hi => hi.getHoverText());
-                    return new vscode.Hover(markdownStrings);
-                }
-            }
-
-            return undefined;
-        });
-    }
-
     private async onProvideCompletions(
         document: vscode.TextDocument,
         position: vscode.Position,
@@ -1386,9 +937,9 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     return undefined;
                 }
             } else {
-                const result = await this.getUnsupportedJsonSnippets(actionContext, document, position);
-                jsonDocument = result.jsonDocument;
-                items = result.items;
+                // const result = await this.getUnsupportedJsonSnippets(actionContext, document, position);
+                // jsonDocument = result.jsonDocument;
+                // items = result.items;
             }
 
             if (jsonDocument && items) {
@@ -1400,70 +951,11 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         });
     }
 
-    /**
-     * Retrieve snippets for a JSON file that is not a deployment or parameters file
-     */
-    private async getUnsupportedJsonSnippets(
-        actionContext: IActionContext,
-        document: vscode.TextDocument,
-        position: vscode.Position
-    ): Promise<{ jsonDocument?: IJsonDocument; items?: Item[] }> {
-        const text = document.getText();
-        if (text.length > 100 /*limit size of strings we trim*/ || text.trim() !== '') {
-            return {};
-        }
-
-        // It's an empty (or whitespace) document, so we can try with the empty-document context
-        actionContext.telemetry.properties.isEmptyDoc = 'true';
-        const insertionContext: InsertionContext = {
-            context: KnownContexts.emptyDocument,
-            parents: []
-        };
-        const jsonDocument: IJsonDocument = new UnsupportedJsonDocument(document.getText(), document.uri);
-
-        const index = jsonDocument.getDocumentCharacterIndex(position.line, position.character);
-        const span = new Span(index, 0);
-        const items: Item[] = await ext.snippetManager.value.getSnippetsAsCompletionItems(insertionContext, span);
-
-        return { jsonDocument, items };
-    }
 
     private onResolveCompletionItem(item: vscode.CompletionItem, _token: vscode.CancellationToken): vscode.CompletionItem {
+        console.log("onResolveCompletionItem");
         ext.completionItemsSpy.postCompletionItemResolution(item);
         return item;
-    }
-
-    private async onGotoParameterValue(actionContext: IActionContext, args: IGotoParameterValueArgs): Promise<void> {
-        // Open the correct document
-        const uri = args.inParameterFile?.parameterFileUri ?? args.inTemplateFile?.documentUri;
-        assert(uri);
-        let textDocument: vscode.TextDocument = await vscode.workspace.openTextDocument(uri);
-        const editor = await vscode.window.showTextDocument(textDocument);
-
-        // Navigate to the correct range, if any
-        const doc: DeploymentDocument | undefined = this.getOpenedDeploymentDocument(uri);
-        let range: vscode.Range | undefined;
-        if (args.inParameterFile && doc instanceof DeploymentParametersDoc) {
-            const parameterValues = doc.topLevelParameterValuesSource;
-            // If the parameter doesn't have a value to navigate to, then show the
-            // properties section or beginning of the param file/nested template.
-            const parameterName = args.inParameterFile.parameterName;
-            const span =
-                // First choice: Directly to the parameter's value
-                (parameterName ? parameterValues.getParameterValue(parameterName)?.value?.span : undefined)
-                // Second choice: To the "properties" section
-                ?? parameterValues.parameterValuesProperty?.nameValue.span
-                // Third choice: top of the file
-                ?? new Span(0, 0);
-            range = getVSCodeRangeFromSpan(doc, span);
-        } else if (args.inTemplateFile && doc instanceof DeploymentTemplateDoc) {
-            range = args.inTemplateFile.range;
-        }
-
-        if (range) {
-            editor.selection = new vscode.Selection(range.start, range.end);
-            editor.revealRange(range);
-        }
     }
 
     // CONSIDER: Cache when we have to read from disk, or better, load into text
@@ -1570,236 +1062,6 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         return new DeploymentParametersDoc(contents, uri, 0);
     }
 
-    private getDocTypeForTelemetry(doc: DeploymentDocument): string {
-        if (doc instanceof DeploymentTemplateDoc) {
-            return "template";
-        } else if (doc instanceof DeploymentParametersDoc) {
-            return "parameters";
-        } else {
-            assert.fail("Unexpected doc type");
-        }
-    }
-
-    private async onProvideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Location | undefined> {
-        return await callWithTelemetryAndErrorHandling('Go To Definition', async (actionContext: IActionContext): Promise<vscode.Location | undefined> => {
-            const cancel = new Cancellation(token, actionContext);
-            const pc: PositionContext | undefined = await this.getPositionContext(document, position, cancel);
-
-            if (pc) {
-                let properties = <TelemetryProperties &
-                {
-                    definitionType?: string;
-                    docType?: string;
-                }>actionContext.telemetry.properties;
-                actionContext.errorHandling.suppressDisplay = true;
-                properties.docType = this.getDocTypeForTelemetry(pc.document);
-
-                const refInfo = pc.getReferenceSiteInfo(true);
-                if (refInfo && refInfo.definition.nameValue) {
-                    properties.definitionType = refInfo.definition.definitionKind;
-
-                    return new vscode.Location(
-                        refInfo.definitionDocument.documentUri,
-                        getVSCodeRangeFromSpan(refInfo.definitionDocument, refInfo.definition.nameValue.span)
-                    );
-                }
-
-                return undefined;
-            }
-        });
-    }
-
-    private async onProvideReferences(textDocument: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): Promise<vscode.Location[] | undefined> {
-        return await callWithTelemetryAndErrorHandling('Find References', async (actionContext: IActionContext): Promise<vscode.Location[]> => {
-            const cancel = new Cancellation(token, actionContext);
-            const results: vscode.Location[] = [];
-            const pc: PositionContext | undefined = await this.getPositionContext(textDocument, position, cancel);
-            if (pc) {
-                const references: ReferenceList | undefined = pc.getReferences();
-                if (references && references.length > 0) {
-                    actionContext.telemetry.properties.referenceType = references.kind;
-
-                    for (const ref of references.references) {
-                        const locationUri: vscode.Uri = ref.document.documentUri;
-                        const referenceRange: vscode.Range = getVSCodeRangeFromSpan(ref.document, ref.span);
-                        results.push(new vscode.Location(locationUri, referenceRange));
-                    }
-                }
-            }
-
-            return results;
-        });
-    }
-
-    /**
-     * Provide commands for the given document and range.
-     *
-     * @param textDocument The document in which the command was invoked.
-     * @param range The selector or range for which the command was invoked. This will always be a selection if
-     * there is a currently active editor.
-     * @param context Context carrying additional information.
-     * @param token A cancellation token.
-     * @return An array of commands, quick fixes, or refactorings or a thenable of such. The lack of a result can be
-     * signaled by returning `undefined`, `null`, or an empty array.
-     */
-    private async onProvideCodeActions(
-        textDocument: vscode.TextDocument,
-        range: vscode.Range | vscode.Selection,
-        context: vscode.CodeActionContext,
-        token: vscode.CancellationToken
-    ): Promise<(vscode.Command | vscode.CodeAction)[] | undefined> {
-        return await callWithTelemetryAndErrorHandling('Provide code actions', async (actionContext: IActionContext): Promise<(vscode.Command | vscode.CodeAction)[]> => {
-            actionContext.errorHandling.suppressDisplay = true;
-            actionContext.telemetry.suppressIfSuccessful = true;
-            const cancel = new Cancellation(token, actionContext);
-
-            const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(textDocument, cancel);
-            if (doc) {
-                return doc.getCodeActions(associatedDoc, range, context);
-            }
-
-            return [];
-        });
-    }
-
-    private async onProvideSignatureHelp(textDocument: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp | undefined> {
-        return await callWithTelemetryAndErrorHandling('provideSignatureHelp', async (actionContext: IActionContext): Promise<vscode.SignatureHelp | undefined> => {
-            actionContext.errorHandling.suppressDisplay = true;
-            actionContext.telemetry.suppressIfSuccessful = true;
-
-            const cancel = new Cancellation(token, actionContext);
-            const pc: PositionContext | undefined = await this.getPositionContext(textDocument, position, cancel);
-            if (pc) {
-                let functionSignatureHelp: TLE.FunctionSignatureHelp | undefined = pc.getSignatureHelp();
-                let signatureHelp: vscode.SignatureHelp | undefined;
-
-                if (functionSignatureHelp) {
-                    const signatureInformation = new vscode.SignatureInformation(functionSignatureHelp.functionMetadata.usage, functionSignatureHelp.functionMetadata.description);
-                    signatureInformation.parameters = [];
-                    for (const param of functionSignatureHelp.functionMetadata.parameters) {
-                        // Parameter label needs to be in the exact same format as in the function usage (including type, if you want it to get highlighted with the parameter name)
-                        const paramUsage = getFunctionParamUsage(param.name, param.type);
-                        const paramDocumentation = "";
-                        signatureInformation.parameters.push(new vscode.ParameterInformation(paramUsage, paramDocumentation));
-                    }
-
-                    signatureHelp = new vscode.SignatureHelp();
-                    signatureHelp.activeParameter = functionSignatureHelp.activeParameterIndex;
-                    signatureHelp.activeSignature = 0;
-                    signatureHelp.signatures = [signatureInformation];
-                }
-
-                return signatureHelp;
-            }
-
-            return undefined;
-        });
-    }
-
-    /**
-     * Optional function for resolving and validating a position *before* running rename. The result can
-     * be a range or a range and a placeholder text. The placeholder text should be the identifier of the symbol
-     * which is being renamed - when omitted the text in the returned range is used.
-     *
-     * *Note: * This function should throw an error or return a rejected thenable when the provided location
-     * doesn't allow for a rename.
-     *
-     * @param textDocument The document in which rename will be invoked.
-     * @param position The position at which rename will be invoked.
-     * @param token A cancellation token.
-     * @return The range or range and placeholder text of the identifier that is to be renamed. The lack of a result can signaled by returning `undefined` or `null`.
-     */
-    private async prepareRename(textDocument: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Range | { range: vscode.Range; placeholder: string } | undefined> {
-        return await callWithTelemetryAndErrorHandling('PrepareRename', async (actionContext) => {
-            actionContext.errorHandling.rethrow = true;
-
-            const cancel = new Cancellation(token, actionContext);
-            const pc: PositionContext | undefined = await this.getPositionContext(textDocument, position, cancel);
-            if (!token.isCancellationRequested && pc) {
-                // Make sure the kind of item being renamed is valid
-                const referenceSiteInfo: IReferenceSite | undefined = pc.getReferenceSiteInfo(true);
-                let renameError = referenceSiteInfo && getRenameError(referenceSiteInfo);
-                if (renameError) {
-                    actionContext.errorHandling.suppressDisplay = true;
-                    throw new Error(renameError);
-                }
-
-                if (referenceSiteInfo) {
-                    // Get the correct span to replace, without any quotes
-                    return getVSCodeRangeFromSpan(pc.document, referenceSiteInfo.unquotedReferenceSpan);
-                }
-
-                actionContext.errorHandling.suppressDisplay = true;
-                throw new Error(invalidRenameError);
-            }
-
-            return undefined;
-        });
-    }
-
-    private async onProvideRename(textDocument: vscode.TextDocument, position: vscode.Position, newName: string, token: vscode.CancellationToken): Promise<vscode.WorkspaceEdit | undefined> {
-        return await callWithTelemetryAndErrorHandling('Rename', async (actionContext) => {
-            actionContext.errorHandling.rethrow = true;
-
-            const cancel = new Cancellation(token, actionContext);
-            const pc: PositionContext | undefined = await this.getPositionContext(textDocument, position, cancel);
-            if (!token.isCancellationRequested && pc) {
-                // Make sure the kind of item being renamed is valid
-                const result: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
-                const referenceSiteInfo: IReferenceSite | undefined = pc.getReferenceSiteInfo(true);
-                let renameError = referenceSiteInfo && getRenameError(referenceSiteInfo);
-                if (renameError) {
-                    throw new Error(renameError);
-                }
-
-                const referenceList: ReferenceList | undefined = pc.getReferences();
-                if (referenceList) {
-                    // When trying to rename a parameter or variable reference inside of a TLE, the
-                    // textbox that pops up when you press F2 contains more than just the variable
-                    // or parameter name. This next section of code parses out just the variable or
-                    // parameter name.
-                    // For instance, it might provide the textbox with the value "[parameters('location')]"
-                    // We need to pull out the parameter name "location" (no quotes) from that
-                    const firstSingleQuoteIndex: number = newName.indexOf("'");
-                    if (firstSingleQuoteIndex >= 0) {
-                        const secondSingleQuoteIndex: number = newName.indexOf("'", firstSingleQuoteIndex + 1);
-                        if (secondSingleQuoteIndex >= 0) {
-                            newName = newName.substring(firstSingleQuoteIndex + 1, secondSingleQuoteIndex);
-                        } else {
-                            newName = newName.substring(firstSingleQuoteIndex + 1);
-                        }
-                    }
-
-                    // When trying to rename a parameter or variable definition, the textbox provided by vscode to
-                    // the user is contained in double quotes.  Remove those.
-                    newName = newName.replace(/^"(.*)"$/, '$1');
-
-                    for (const ref of referenceList.references) {
-                        const referenceRange: vscode.Range = getVSCodeRangeFromSpan(ref.document, ref.span);
-                        result.replace(ref.document.documentUri, referenceRange, newName);
-                    }
-                } else {
-                    throw new Error(invalidRenameError);
-                }
-
-                return result;
-            }
-        });
-    }
-
-    private async provideDocumentLinks(textDocument: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.DocumentLink[] | undefined> {
-        return await callWithTelemetryAndErrorHandling('provideDocumentLinks', async (actionContext) => {
-            actionContext.errorHandling.rethrow = true;
-
-            const dt = this.getOpenedDeploymentTemplate(textDocument);
-            if (dt) {
-                return dt.getDocumentLinks(actionContext);
-            }
-
-            return undefined;
-        });
-    }
-
     private onActiveTextEditorChanged(editor: vscode.TextEditor | undefined): void {
         callWithTelemetryAndErrorHandlingSync('onActiveTextEditorChanged', (actionContext: IActionContext): void => {
             actionContext.telemetry.properties.isActivationEvent = 'true';
@@ -1860,57 +1122,5 @@ export class AzureRMTools implements IProvideOpenedDocuments {
 
             this.closeDeploymentFile(closedDocument);
         });
-    }
-
-    /**
-     * This event is fired when validation on a template finishes, and informs us of the the
-     * linked templates referenced by that template
-     */
-    private onTemplateGraphAvailable(e: INotifyTemplateGraphArgs & ITelemetryContext): void {
-        callWithTelemetryAndErrorHandlingSync("onTemplateGraphAvailable", (actionContext) => {
-            actionContext.telemetry.suppressIfSuccessful = true;
-
-            assert(e.fullValidationStatus, "onTemplateGraphAvailable: fullValidationStatus should never be undefined");
-
-            const rootTemplateUri = parseUri(e.rootTemplateUri);
-            const rootTemplate = this.getOpenedDeploymentTemplate(rootTemplateUri);
-
-            // tslint:disable-next-line: no-console
-            // console.log(`onTemplateGraphAvailable: ${path.basename(e.rootTemplateUri)}, isComplete=${e.isComplete}:`);
-            // tslint:disable-next-line: no-console
-            // console.log(e.linkedTemplates.map(lt => `    ${path.basename(lt.fullUri)}: ${LinkedFileLoadState[lt.loadState]} ${lt.loadErrorMessage ?? ''}`).join('\n'));
-
-            // Cache the template graph results
-            const rootTemplateKey = getNormalizedDocumentKey(parseUri(e.rootTemplateUri));
-            this._cachedTemplateGraphs.set(rootTemplateKey, e);
-
-            if (rootTemplate) {
-                for (const doc of vscode.workspace.textDocuments) {
-                    if (getNormalizedDocumentKey(doc.uri) === rootTemplateKey) {
-                        assignTemplateGraphToDeploymentTemplate(e, rootTemplate, this);
-
-                        // Re-validate and update UI
-
-                        // tslint:disable-next-line: no-floating-promises
-                        this.updateEditorState();
-
-                        // tslint:disable-next-line: no-floating-promises // Don't wait
-                        this.reportDeploymentTemplateErrorsInBackground(doc, rootTemplate);
-                    }
-                }
-
-                // Cause code lenses to be re-calculated
-                this._codeLensChangedEmitter.fire();
-            }
-        });
-    }
-
-    private onLanguageServerStateChanged(): void {
-        this._codeLensChangedEmitter.fire();
-    }
-
-    private registerActiveUse(): void {
-        survey.registerActiveUse();
-        this._bicepMessage.registerActiveUse();
     }
 }
