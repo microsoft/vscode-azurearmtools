@@ -148,7 +148,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 this._mapping.resetCache();
                 // tslint:disable-next-line: no-floating-promises
                 //this.updateEditorState();
-                this._codeLensChangedEmitter.fire();//asdf?
+                //this._codeLensChangedEmitter.fire();//asdf?
             },
             this,
             context.subscriptions);
