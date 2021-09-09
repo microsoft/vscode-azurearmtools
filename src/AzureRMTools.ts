@@ -8,7 +8,7 @@ const COMPLETION_ITEM_PROVIDER = true
 
 import * as path from 'path';
 import * as vscode from "vscode";
-import { AzureUserInput, callWithTelemetryAndErrorHandling as callWithTelemetryAndErrorHandlingOld, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
+import { AzureUserInput, callWithTelemetryAndErrorHandling as callWithTelemetryAndErrorHandlingOld, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, registerUIExtensionVariables } from "vscode-azureextensionui";
 import { delay } from "../test/support/delay";
 import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "./constants";
 import { DeploymentDocument } from "./documents/DeploymentDocument";
@@ -17,7 +17,6 @@ import { DeploymentParametersDoc } from "./documents/parameters/DeploymentParame
 import { defaultTabSize } from './documents/parameters/parameterFileGeneration';
 import { considerQueryingForParameterFile } from "./documents/parameters/parameterFiles";
 import { PositionContext } from "./documents/positionContexts/PositionContext";
-import { TemplatePositionContext } from "./documents/positionContexts/TemplatePositionContext";
 import { DeploymentTemplateDoc } from "./documents/templates/DeploymentTemplateDoc";
 import { getNormalizedDocumentKey } from './documents/templates/getNormalizedDocumentKey';
 import { IJsonDocument } from './documents/templates/IJsonDocument';
@@ -27,12 +26,8 @@ import { mightBeDeploymentParameters, mightBeDeploymentTemplate, setLangIdToArm,
 import { ext } from "./extensionVariables";
 import { assert } from './fixed_assert';
 import { IProvideOpenedDocuments } from './IProvideOpenedDocuments';
-import * as TLE from "./language/expressions/TLE";
 import { Issue, IssueSeverity } from "./language/Issue";
 import * as Json from "./language/json/JSON";
-import { Span } from "./language/Span";
-import { getAvailableResourceTypesAndVersions } from './languageclient/getAvailableResourceTypesAndVersions';
-import { waitForLanguageServerAvailable } from "./languageclient/startArmLanguageServer";
 import { SnippetManager } from "./snippets/SnippetManager";
 import { TimedMessage } from './TimedMessage';
 import { escapeNonPaths } from "./util/escapeNonPaths";
@@ -42,8 +37,6 @@ import { readUtf8FileWithBom } from "./util/readUtf8FileWithBom";
 import { Stopwatch } from "./util/Stopwatch";
 import { Cancellation } from "./util/throwOnCancel";
 import { parseUri } from './util/uri';
-import { IncorrectArgumentsCountIssue } from "./visitors/IncorrectArgumentsCountIssue";
-import { UnrecognizedBuiltinFunctionIssue } from "./visitors/UnrecognizedFunctionIssues";
 import { Item } from './vscodeIntegration/Completion';
 import { ConsoleOutputChannelWrapper } from "./vscodeIntegration/ConsoleOutputChannelWrapper";
 import { toVsCodeCompletionItem } from "./vscodeIntegration/toVsCodeCompletionItem";
@@ -135,21 +128,6 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         parseUri("https://aka.ms/bicep-install")
     );
 
-    // More information can be found about this definition at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
-    // Several of these properties are CSS properties. More information about those can be found at https://www.w3.org/wiki/CSS/Properties
-    private readonly _braceHighlightDecorationType: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
-        borderWidth: "1px",
-        borderStyle: "solid",
-        light: {
-            borderColor: "rgba(0, 0, 0, 0.2)",
-            backgroundColor: "rgba(0, 0, 0, 0.05)"
-        },
-        dark: {
-            borderColor: "rgba(128, 128, 128, 0.5)",
-            backgroundColor: "rgba(128, 128, 128, 0.1)"
-        }
-    });
-
     // tslint:disable-next-line: max-func-body-length
     constructor(context: vscode.ExtensionContext) {
         ext.provideOpenedDocuments = this;
@@ -169,8 +147,8 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             async () => {
                 this._mapping.resetCache();
                 // tslint:disable-next-line: no-floating-promises
-                this.updateEditorState();
-                this._codeLensChangedEmitter.fire();
+                //this.updateEditorState();
+                this._codeLensChangedEmitter.fire();//asdf?
             },
             this,
             context.subscriptions);
@@ -248,7 +226,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     assignTemplateGraphToDeploymentTemplate(templateGraph, deploymentDocument, this);
 
                     // tslint:disable-next-line: no-floating-promises
-                    this.updateEditorState();
+                    //this.updateEditorState();
                 }
             }
         } else {
@@ -408,7 +386,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             }
 
             // tslint:disable-next-line: no-floating-promises
-            this.updateEditorState();
+            //this.updateEditorState();
         });
     }
 
@@ -454,7 +432,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             props.schemaScheme = restrictToAllowedListLC((schemaUri?.match(/^https?/) ?? [])[0], ['http', 'https']);
 
             props.apiProfile = deploymentTemplate.apiProfile ?? "";
-            props.issues = this.histogramToTelemetryString(issuesHistograph);
+            //props.issues = this.histogramToTelemetryString(issuesHistograph);
 
             const measurements = actionContext.telemetry.measurements;
             measurements.documentSizeInCharacters = document.getText().length;
@@ -482,8 +460,8 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             measurements.nestedOuterCount = getChildTemplatesInfo.nestedOuterCount;
         });
 
-        this.logFunctionCounts(deploymentTemplate);
-        this.logResourceUsage(deploymentTemplate);
+        // this.logFunctionCounts(deploymentTemplate);
+        // this.logResourceUsage(deploymentTemplate);
 
         function restrictToAllowedListLC<T extends string>(s: string | undefined, allowedList: T[]): T | string {
             allowedList = allowedList.map(s2 => <T>s2.toLowerCase());
@@ -729,170 +707,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         // tslint:disable-next-line: max-func-body-length // TODO: Refactor
         callWithTelemetryAndErrorHandlingSync("ensureDeploymentTemplateEventsHookedUp", (actionContext: IActionContext) => {
             actionContext.telemetry.suppressIfSuccessful = true;
-
-            vscode.window.onDidChangeTextEditorSelection(this.onTextSelectionChanged, this, ext.context.subscriptions);
-
-            //startArmLanguageServerInBackground();
         });
-    }
-
-    private async updateEditorState(): Promise<void> {
-        // let isWarning: boolean = false;
-        // let statusBarText: string | undefined;
-        // let isTemplateFile = false;
-        // let templateFileHasParamFile = false;
-        // let isParamFile = false;
-        // let paramFileHasTemplateFile = false;
-
-        // try {
-        //     const activeDocument = vscode.window.activeTextEditor?.document;
-        //     if (activeDocument) {
-        //         const deploymentTemplate = this.getOpenedDeploymentDocument(activeDocument);
-        //         if (deploymentTemplate instanceof DeploymentTemplateDoc) {
-        //             isTemplateFile = true;
-
-        //             const paramFileUri = this._mapping.getParameterFile(activeDocument.uri);
-        //             if (paramFileUri) {
-        //                 templateFileHasParamFile = true;
-        //                 const doesParamFileExist = await pathExists(paramFileUri);
-        //                 statusBarText = `Parameter file: ${getFriendlyPathToFile(paramFileUri)}`;
-        //                 if (!doesParamFileExist) {
-        //                     statusBarText += " $(error) Not found";
-        //                 }
-        //             } else {
-        //                 statusBarText = "Select/Create parameter file...";
-        //             }
-
-        //             // Add message to indicate if full validation is disabled
-        //             const fullValidationOn = deploymentTemplate.templateGraph?.fullValidationStatus.fullValidationEnabled ?? templateFileHasParamFile;
-        //             isWarning = !fullValidationOn;
-        //             statusBarText = isWarning ?
-        //                 `$(warning) WARNING: Full template validation off. Add param file or top-level param defaults to enable.` :
-        //                 statusBarText;
-
-        //             this._paramsStatusBarItem.command = "azurerm-vscode-tools.selectParameterFile";
-        //             this._paramsStatusBarItem.text = statusBarText;
-        //         } else if (deploymentTemplate instanceof DeploymentParametersDoc) {
-        //             // Current file is a parameter file
-        //             isParamFile = true;
-
-        //             const templateFileUri = this._mapping.getTemplateFile(activeDocument.uri);
-        //             if (templateFileUri) {
-        //                 paramFileHasTemplateFile = true;
-        //                 const doesTemplateFileExist = await pathExists(templateFileUri);
-        //                 statusBarText = `Template file: ${getFriendlyPathToFile(templateFileUri)}`;
-        //                 if (!doesTemplateFileExist) {
-        //                     statusBarText += " $(error) Not found";
-        //                 }
-        //             } else {
-        //                 statusBarText = "No template file selected";
-        //             }
-
-        //             this._paramsStatusBarItem.command = "azurerm-vscode-tools.openTemplateFile";
-        //             this._paramsStatusBarItem.text = statusBarText;
-        //         }
-
-        //         this._paramsStatusBarItem.color = isWarning ? new vscode.ThemeColor('problemsWarningIcon.foreground') : undefined;
-        //     }
-        // } finally {
-        //     if (statusBarText) {
-        //         this._paramsStatusBarItem.show();
-        //     } else {
-        //         this._paramsStatusBarItem.hide();
-        //     }
-
-        //     // tslint:disable-next-line: no-floating-promises
-        //     setContext({
-        //         isTemplateFile,
-        //         hasParamFile: templateFileHasParamFile,
-        //         isParamFile: isParamFile,
-        //         hasTemplateFile: paramFileHasTemplateFile
-        //     });
-        // }
-    }
-
-    /**
-     * Logs telemetry with information about the functions used in a template. Only meaningful if called
-     * in a relatively stable state, such as after first opening
-     */
-    private logFunctionCounts(deploymentTemplate: DeploymentTemplateDoc): void {
-        // Don't wait for promise
-        // tslint:disable-next-line: no-floating-promises
-        callWithTelemetryAndErrorHandling("tle.stats", async (actionContext: IActionContext): Promise<void> => {
-            actionContext.errorHandling.suppressDisplay = true;
-            let properties: {
-                functionCounts?: string;
-                unrecognized?: string;
-                incorrectArgs?: string;
-            } & TelemetryProperties = actionContext.telemetry.properties;
-
-            let issues: Issue[] = deploymentTemplate.getErrors(undefined);
-
-            // Full function counts
-            const functionCounts: Histogram = deploymentTemplate.getFunctionCounts();
-            const functionsData: { [key: string]: number } = {};
-            for (const functionName of functionCounts.keys) {
-                functionsData[<string>functionName] = functionCounts.getCount(functionName);
-            }
-            properties.functionCounts = JSON.stringify(functionsData);
-
-            // Missing function names and functions with incorrect number of arguments (useful for knowing
-            //   if our expressionMetadata.json file is up to date)
-            let unrecognized = new Set<string>();
-            let incorrectArgCounts = new Set<string>();
-            for (const issue of issues) {
-                if (issue instanceof UnrecognizedBuiltinFunctionIssue) {
-                    unrecognized.add(issue.functionName);
-                } else if (issue instanceof IncorrectArgumentsCountIssue) {
-                    // Encode function name as "funcname(<actual-args>)[<min-expected>..<max-expected>]"
-                    let encodedName = `${issue.functionName}(${issue.actual})[${issue.minExpected}..${issue.maxExpected}]`;
-                    incorrectArgCounts.add(encodedName);
-                }
-            }
-            properties.unrecognized = AzureRMTools.convertSetToJson(unrecognized);
-            properties.incorrectArgs = AzureRMTools.convertSetToJson(incorrectArgCounts);
-        });
-    }
-
-    /**
-     * Log information about which resource types and apiVersions are being used
-     */
-    private logResourceUsage(deploymentTemplate: DeploymentTemplateDoc): void {
-        // Don't wait for promise
-        // tslint:disable-next-line: no-floating-promises
-        callWithTelemetryAndErrorHandling("schema.stats", async (actionContext: IActionContext): Promise<void> => {
-            actionContext.errorHandling.suppressDisplay = true;
-            let properties: {
-                resourceCounts?: string;
-            } & TelemetryProperties = actionContext.telemetry.properties;
-
-            await waitForLanguageServerAvailable();
-            const availableResourceTypesAndVersions = await getAvailableResourceTypesAndVersions(deploymentTemplate.schemaUri ?? '');
-            const [resourceCounts, invalidResourceCounts, invalidVersionCounts] = deploymentTemplate.getResourceUsage(availableResourceTypesAndVersions);
-            properties.resourceCounts = escapeNonPaths(this.histogramToTelemetryString(resourceCounts));
-            properties.invalidResources = escapeNonPaths(this.histogramToTelemetryString(invalidResourceCounts));
-            properties.invalidVersions = escapeNonPaths(this.histogramToTelemetryString(invalidVersionCounts));
-        });
-    }
-
-    private histogramToTelemetryString(histogram: Histogram): string {
-        const data: { [key: string]: number } = {};
-        for (const key of histogram.keys) {
-            data[<string>key] = histogram.getCount(key);
-        }
-        return JSON.stringify(data);
-    }
-
-    private static convertSetToJson(s: Set<string>): string {
-        // tslint:disable-next-line: strict-boolean-expressions
-        if (!s.size) {
-            return "";
-        }
-        let array: string[] = [];
-        for (let item of s) {
-            array.push(item);
-        }
-        return JSON.stringify(array);
     }
 
     private closeDeploymentFile(documentOrUri: vscode.TextDocument | vscode.Uri): void {
@@ -1063,48 +878,48 @@ export class AzureRMTools implements IProvideOpenedDocuments {
     }
 
     private onActiveTextEditorChanged(editor: vscode.TextEditor | undefined): void {
-        callWithTelemetryAndErrorHandlingSync('onActiveTextEditorChanged', (actionContext: IActionContext): void => {
-            actionContext.telemetry.properties.isActivationEvent = 'true';
-            actionContext.errorHandling.suppressDisplay = true;
-            actionContext.telemetry.suppressIfSuccessful = true;
+        // callWithTelemetryAndErrorHandlingSync('onActiveTextEditorChanged', (actionContext: IActionContext): void => {
+        //     // actionContext.telemetry.properties.isActivationEvent = 'true';
+        //     // actionContext.errorHandling.suppressDisplay = true;
+        //     // actionContext.telemetry.suppressIfSuccessful = true;
 
-            let activeDocument: vscode.TextDocument | undefined = editor?.document;
-            if (activeDocument) {
-                if (!this.getOpenedDeploymentDocument(activeDocument)) {
-                    this.updateOpenedDocument(activeDocument);
-                }
-            }
+        //     // let activeDocument: vscode.TextDocument | undefined = editor?.document;
+        //     // if (activeDocument) {
+        //     //     if (!this.getOpenedDeploymentDocument(activeDocument)) {
+        //     //         this.updateOpenedDocument(activeDocument);
+        //     //     }
+        //     // }
 
-            // tslint:disable-next-line: no-floating-promises
-            this.updateEditorState();
-        });
+        //     // // tslint:disable-next-line: no-floating-promises
+        //     // this.updateEditorState();
+        // });
     }
 
-    private async onTextSelectionChanged(): Promise<void> {
-        await callWithTelemetryAndErrorHandling('onTextSelectionChanged', async (actionContext: IActionContext): Promise<void> => {
-            actionContext.telemetry.properties.isActivationEvent = 'true';
-            actionContext.errorHandling.suppressDisplay = true;
-            actionContext.telemetry.suppressIfSuccessful = true;
+    // private async onTextSelectionChanged(): Promise<void> {
+    //     await callWithTelemetryAndErrorHandling('onTextSelectionChanged', async (actionContext: IActionContext): Promise<void> => {
+    //         // actionContext.telemetry.properties.isActivationEvent = 'true';
+    //         // actionContext.errorHandling.suppressDisplay = true;
+    //         // actionContext.telemetry.suppressIfSuccessful = true;
 
-            let editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
-            if (editor) {
-                let position = editor.selection.anchor;
-                let pc: PositionContext | undefined =
-                    await this.getPositionContext(editor.document, position, Cancellation.cantCancel);
-                if (pc && pc instanceof TemplatePositionContext) {
-                    let tleBraceHighlightIndexes: number[] = TLE.BraceHighlighter.getHighlightCharacterIndexes(pc);
+    //         // let editor: vscode.TextEditor | undefined = vscode.window.activeTextEditor;
+    //         // if (editor) {
+    //         //     let position = editor.selection.anchor;
+    //         //     let pc: PositionContext | undefined =
+    //         //         await this.getPositionContext(editor.document, position, Cancellation.cantCancel);
+    //         //     if (pc && pc instanceof TemplatePositionContext) {
+    //         //         let tleBraceHighlightIndexes: number[] = TLE.BraceHighlighter.getHighlightCharacterIndexes(pc);
 
-                    let braceHighlightRanges: vscode.Range[] = [];
-                    for (let tleHighlightIndex of tleBraceHighlightIndexes) {
-                        const highlightSpan = new Span(tleHighlightIndex + pc.jsonTokenStartIndex, 1);
-                        braceHighlightRanges.push(getVSCodeRangeFromSpan(pc.document, highlightSpan));
-                    }
+    //         //         let braceHighlightRanges: vscode.Range[] = [];
+    //         //         for (let tleHighlightIndex of tleBraceHighlightIndexes) {
+    //         //             const highlightSpan = new Span(tleHighlightIndex + pc.jsonTokenStartIndex, 1);
+    //         //             braceHighlightRanges.push(getVSCodeRangeFromSpan(pc.document, highlightSpan));
+    //         //         }
 
-                    editor.setDecorations(this._braceHighlightDecorationType, braceHighlightRanges);
-                }
-            }
-        });
-    }
+    //         //         editor.setDecorations(this._braceHighlightDecorationType, braceHighlightRanges);
+    //         //     }
+    //         // }
+    //     });
+    // }
 
     private onDocumentChanged(event: vscode.TextDocumentChangeEvent): void {
         this.updateOpenedDocument(event.document);
