@@ -5,6 +5,7 @@
 // tslint:disable:promise-function-async max-line-length // Grandfathered in
 
 const COMPLETION_ITEM_PROVIDER = true
+const JSON_OUTLINE_PROVIDER = false
 
 import * as path from 'path';
 import * as vscode from "vscode";
@@ -132,9 +133,11 @@ export class AzureRMTools implements IProvideOpenedDocuments {
     constructor(context: vscode.ExtensionContext) {
         ext.provideOpenedDocuments = this;
 
-        const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
-        ext.jsonOutlineProvider = jsonOutline;
-        context.subscriptions.push(vscode.window.registerTreeDataProvider("azurerm-vscode-tools.template-outline", jsonOutline));
+        if (JSON_OUTLINE_PROVIDER) {
+            const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
+            ext.jsonOutlineProvider = jsonOutline;
+            context.subscriptions.push(vscode.window.registerTreeDataProvider("azurerm-vscode-tools.template-outline", jsonOutline));
+        }
 
         this._paramsStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
         ext.context.subscriptions.push(this._paramsStatusBarItem);
@@ -168,9 +171,6 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     console.log("completionProvider");
                     return await this.onProvideCompletions(document, position, token, ctx);
                 },
-                resolveCompletionItem: (item: vscode.CompletionItem, token: vscode.CancellationToken): vscode.CompletionItem => {
-                    return this.onResolveCompletionItem(item, token);
-                }
             };
             ext.context.subscriptions.push(
                 vscode.languages.registerCompletionItemProvider(
@@ -766,12 +766,6 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         });
     }
 
-
-    private onResolveCompletionItem(item: vscode.CompletionItem, _token: vscode.CancellationToken): vscode.CompletionItem {
-        console.log("onResolveCompletionItem");
-        ext.completionItemsSpy.postCompletionItemResolution(item);
-        return item;
-    }
 
     // CONSIDER: Cache when we have to read from disk, or better, load into text
     //   buffer instead
