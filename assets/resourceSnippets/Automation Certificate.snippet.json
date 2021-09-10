@@ -1,9 +1,11 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-    "parameters": {},
-    "functions": [],
-    "variables": {},
+    "metadata": {
+        "prefix": "arm-automation-cert",
+        "description": "Automation Certificate"
+    },
+
     "resources": [
         {
             "name": "${1:parent/automationCertificate1}",
@@ -19,6 +21,5 @@
                 "isExportable": /*${6|true,false|}*/ false
             }
         }
-    ],
-    "outputs": {}
+    ]
 }
