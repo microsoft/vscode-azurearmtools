@@ -43,7 +43,7 @@
 			],
 			"properties": {
 				"sku": {
-					"name": /*${12|WAF_v2,WAF_Large|}*/ "WAF_v2",
+					"name": /*${12|WAF_v2,WAF_Medium,WAF_Large|}*/ "WAF_v2",
 					"tier": /*${13|WAF_v2,WAF|}*/ "WAF_v2",
 					"capacity": 2
 				},

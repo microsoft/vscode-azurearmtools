@@ -31,8 +31,8 @@
 					}
 				],
 				"sku": {
-					"name": /*${5|Basic,ErGw3AZ|}*/ "Basic",
-					"tier": /*${6|Basic,ErGw3AZ|}*/ "Basic"
+					"name": /*${5|Basic,HighPerformance,Standard,UltraPerformance,VpnGw1,VpnGw2,VpnGw3,VpnGw1AZ,VpnGw2AZ,VpnGw3AZ,ErGw1AZ,ErGw2AZ,ErGw3AZ|}*/ "Basic",
+					"tier": /*${6|Basic,HighPerformance,Standard,UltraPerformance,VpnGw1,VpnGw2,VpnGw3,VpnGw1AZ,VpnGw2AZ,VpnGw3AZ,ErGw1AZ,ErGw2AZ,ErGw3AZ|}*/ "Basic"
 				},
 				"gatewayType": /*${7|Vpn,ExpressRoute|}*/ "Vpn",
 				"vpnType": /*${8|PolicyBased,RouteBased|}*/ "PolicyBased",

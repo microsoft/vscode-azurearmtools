@@ -11,7 +11,8 @@
 			"type": "Microsoft.Network/azureFirewalls",
 			"apiVersion": "2019-11-01",
 			"location": "[resourceGroup().location]",
-			"tags": {},
+			"tags": {
+			},
 			"properties": {
 				"applicationRuleCollections": [
 					{
@@ -30,14 +31,15 @@
 									],
 									"protocols": [
 										{
-											"protocolType": /*${8|Http,Mssql|}*/ "Http",
+											"protocolType": /*${8|Http,Https,Mssql|}*/ "Http",
 											"port": /*${9|80,1433|}*/ 80
 										}
 									],
 									"targetFqdns": [
 										"${10:www.microsoft.com}"
 									],
-									"fqdnTags": []
+									"fqdnTags": [
+									]
 								}
 							]
 						}
@@ -65,7 +67,7 @@
 										"${18:3389}"
 									],
 									"protocols": [
-										/*${19|TCP,ICMP|}*/ "TCP"
+										/*${19|TCP,UDP,Any,ICMP|}*/ "TCP"
 									],
 									"translatedAddress": "${20:10.0.0.254}",
 									"translatedPort": "${21:2500}"
@@ -96,7 +98,7 @@
 										"${29:1}"
 									],
 									"protocols": [
-										/*${30|TCP,ICMP|}*/ "TCP"
+										/*${30|TCP,UDP,Any,ICMP|}*/ "TCP"
 									]
 								}
 							]

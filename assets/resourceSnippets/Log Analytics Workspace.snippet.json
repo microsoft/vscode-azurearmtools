@@ -13,7 +13,7 @@
 			"location": "[resourceGroup().location]",
 			"properties": {
 				"sku": {
-					"name": /*${2|Free,Standalone|}*/ "Free"
+					"name": /*${2|Free,Standard,Premium,Unlimited,PerNode,PerGB2018,Standalone|}*/ "Free"
 				},
 				"features": {
 					"searchVersion": 1

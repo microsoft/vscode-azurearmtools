@@ -1,12 +1,12 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "metadata": {
-        "prefix": "arm-vm-script-windows",
-        "description": "Custom script extension for a Windows Virtual Machine"
-    },
-    "resources": [
-{
+        "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+        "contentVersion": "1.0.0.0",
+        "metadata": {
+            "prefix": "arm-vm-script-windows",
+            "description": "Custom script extension for a Windows Virtual Machine"
+        },
+        "resources": [
+    {
 	"name": "${1:windowsVM1}/${2:customScript1}",
 	"type": "Microsoft.Compute/virtualMachines/extensions",
 	"apiVersion": "2019-07-01",
@@ -32,5 +32,5 @@
 		}
 	}
 }
-    ]
-}
+        ]
+    }

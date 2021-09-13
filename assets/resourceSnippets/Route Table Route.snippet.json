@@ -12,7 +12,7 @@
             "apiVersion": "2019-11-01",
             "properties": {
                 "addressPrefix": "${2:address-prefix}",
-                "nextHopType": /*${3|VirtualNetworkGateway,None|}*/ "VirtualNetworkGateway",
+                "nextHopType": /*${3|VirtualNetworkGateway,VnetLocal,Internet,VirtualAppliance,None|}*/ "VirtualNetworkGateway",
                 "nextHopIpAddress": "${4:next-hop-ip}"
             }
         }

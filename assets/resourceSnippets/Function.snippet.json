@@ -46,7 +46,7 @@
 						},
 						{
 							"name": "FUNCTIONS_WORKER_RUNTIME",
-							"value": /*${6|dotnet,java|}*/ "dotnet"
+							"value": /*${6|dotnet,node,java|}*/ "dotnet"
 						}
 					]
 				}

@@ -22,7 +22,7 @@
 				"localNetworkGateway2": {
 					"id": "[resourceId('Microsoft.Network/localNetworkGateways', '${3:localGateway1}')]"
 				},
-				"connectionType": /*${4|IPsec,VPNClient|}*/ "IPsec",
+				"connectionType": /*${4|IPsec,Vnet2Vnet,ExpressRoute,VPNClient|}*/ "IPsec",
 				"routingWeight": /*${5:0}*/ 0,
 				"sharedKey": "${6:sharedkey}"
 			}

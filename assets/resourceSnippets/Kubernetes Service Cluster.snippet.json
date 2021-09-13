@@ -18,13 +18,13 @@
 					{
 						"name": "agentpool",
 						"count": /*${4:2}*/ 2,
-						"vmSize": /*"${5:Standard_A1}"*/ "Standard_A1",
+						"vmSize": /*${5:Standard_A1}*/ "Standard_A1",
 						"osType": "Linux",
 						"storageProfile": /*${6|ManagedDisks,StorageAccount|}*/ "ManagedDisks"
 					}
 				],
 				"linuxProfile": {
-					"adminUsername": /*"${7:adminUserName}"*/ "password",
+					"adminUsername": /*${7:adminUserName}*/ "password",
 					"ssh": {
 						"publicKeys": [
 							{

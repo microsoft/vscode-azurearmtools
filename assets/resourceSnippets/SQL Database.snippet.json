@@ -1,28 +1,28 @@
 {
-	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-	"contentVersion": "1.0.0.0",
-	"metadata": {
-		"prefix": "arm-sql-db",
-		"description": "SQL Database"
+        "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+        "contentVersion": "1.0.0.0",
+        "metadata": {
+            "prefix": "arm-sql-db",
+            "description": "SQL Database"
+        },
+        "resources": [
+    {
+	"name": "${1:sqlServer1}/${2:sqlDatabase1}",
+	"type": "Microsoft.Sql/servers/databases",
+	"apiVersion": "2014-04-01",
+	"location": "[resourceGroup().location]",
+	"tags": {
+		"displayName": "${2:sqlDatabase1}"
 	},
-	"resources": [
-		{
-			"name": "${1:sqlServer1}/${2:sqlDatabase1}",
-			"type": "Microsoft.Sql/servers/databases",
-			"apiVersion": "2014-04-01",
-			"location": "[resourceGroup().location]",
-			"tags": {
-				"displayName": "${2:sqlDatabase1}"
-			},
-			"dependsOn": [
-				"[resourceId('Microsoft.Sql/servers', '${1:sqlServer1}')]"
-			],
-			"properties": {
-				"collation": "SQL_Latin1_General_CP1_CI_AS",
-				"edition": "Basic",
-				"maxSizeBytes": "1073741824",
-				"requestedServiceObjectiveName": "Basic"
-			}
-		}
-	]
+	"dependsOn": [
+		"[resourceId('Microsoft.Sql/servers', '${1:sqlServer1}')]"
+	],
+	"properties": {
+		"collation": "SQL_Latin1_General_CP1_CI_AS",
+		"edition": "Basic",
+		"maxSizeBytes": "1073741824",
+		"requestedServiceObjectiveName": "Basic"
+	}
 }
+        ]
+    }

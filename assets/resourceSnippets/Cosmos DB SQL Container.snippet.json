@@ -23,14 +23,14 @@
 						"kind": /*${4|hash,range|}*/ "hash"
 					},
 					"indexingPolicy": {
-						"indexingMode": /*${5|consistent,none|}*/ "consistent",
+						"indexingMode": /*${5|consistent,lazy,none|}*/ "consistent",
 						"includedPaths": [
 							{
 								"path": "/*",
 								"indexes": [
 									{
-										"kind": /*${6|Hash,Spatial|}*/ "Hash",
-										"dataType": /*${7|String,MultiPolygon|}*/ "String",
+										"kind": /*${6|Hash,Range,Spatial|}*/ "Hash",
+										"dataType": /*${7|String,Number,Point,Polygon,LineString,MultiPolygon|}*/ "String",
 										"precision": -1
 									}
 								]
@@ -43,7 +43,8 @@
 						]
 					}
 				},
-				"options": {}
+				"options": {
+				}
 			}
 		}
 	]
