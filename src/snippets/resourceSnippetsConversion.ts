@@ -64,7 +64,7 @@ export function createResourceSnippetFromFile(snippetName: string, snippetFileCo
     const description = metadata.description;
     const prefix = metadata.prefix;
 
-    assert(description, `Resource snippet "${snippetName}" is missing metadata.description`);
+    assert(description !== undefined, `Resource snippet "${snippetName}" is missing metadata.description`);
     assert(prefix, `Resource snippet "${snippetName}" is missing metadata.prefix`);
 
     return {

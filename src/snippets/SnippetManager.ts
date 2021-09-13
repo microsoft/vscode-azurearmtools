@@ -73,6 +73,7 @@ export class SnippetManager implements ISnippetManager {
             const snippetFromFile = snippets[name];
             const snippet = convertToInternalSnippet(name, snippetFromFile);
             validateSnippet(snippet);
+            assert(snippet.context !== KnownContexts.resources, `Resource snippet "${snippet.name}" should be placed in the resourceSnippets folder instead of "${filePath}"`);
             map.set(name, snippet);
         }
 
@@ -88,7 +89,9 @@ export class SnippetManager implements ISnippetManager {
             assert(snippetName !== relativePath, `Incorrectly formed resource snippet file name ${relativePath}`)
             const content: string = await readUtf8FileWithBom(path.join(folderPath, relativePath));
             const snippet = createResourceSnippetFromFile(snippetName, content);
-            map.set(snippetName, convertToInternalSnippet(snippetName, snippet));
+            const internalSnippet = convertToInternalSnippet(snippetName, snippet);
+            validateSnippet(internalSnippet);
+            map.set(snippetName, internalSnippet);
         }
 
         return map;
