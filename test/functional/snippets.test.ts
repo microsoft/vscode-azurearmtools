@@ -382,20 +382,20 @@ suite("Snippets functional tests", () => {
         }
     }
 
-    //     test("convert main file into individual resource snippets", async () => {
+    // test("convert main file into individual resource snippets", async () => {
 
-    //         function convertToResourceSnippetJsonFile(snippet: ISnippet): string {
-    //             const lines = snippet.insertText.split(/\n|\r|\r\n/);
-    //             let resources = lines.join('\n');
-    //             const constChars = '[a-zA-Z0-9_]';
-    //             // e.g. "state": "${5|enabled,disabled|}",
-    //             resources = resources.replace(new RegExp(`\\"\\\${([0-9]+)\\|(${constChars}+)(,${constChars}+)*\\|}\\"`, 'g'), '/*{$$$1|$2$3|}*/"$2"')
-    //             // e.g. "\t\t\t\"requestBodyCheck\": ${2|true,false|},",
-    //             resources = resources.replace(new RegExp(`\\\${([0-9]+)\\|(${constChars}+)(,${constChars}+)*\\|}`, 'g'), "/*{$$$1|$2$3|}*/$2")
-    //             // e.g. "Port": ${17:80}
-    //             resources = resources.replace(new RegExp(`: \\\${([0-9]+):(${constChars}+)}`, 'g'), ": /*{$$$1:$2}*/$2")
+    //     function convertToResourceSnippetJsonFile(snippet: ISnippet): string {
+    //         const lines = snippet.insertText.split(/\n|\r|\r\n/);
+    //         let resources = lines.join('\n');
+    //         const constChars = '[a-zA-Z0-9_]';
+    //         // e.g. "state": "${5|enabled,disabled|}",
+    //         resources = resources.replace(new RegExp(`\\"\\\${([0-9]+)\\|(${constChars}+)(,${constChars}+)*\\|}\\"`, 'g'), '/*$${$1|$2$3|}*/"$2"')
+    //         // e.g. "\t\t\t\"requestBodyCheck\": ${2|true,false|},",
+    //         resources = resources.replace(new RegExp(`\\\${([0-9]+)\\|(${constChars}+)(,${constChars}+)*\\|}`, 'g'), "/*$${$1|$2$3|}*/$2")
+    //         // e.g. "Port": ${17:80}
+    //         resources = resources.replace(new RegExp(`: \\\${([0-9]+):(${constChars}+)}`, 'g'), ": /*$${$1:$2}*/$2")
 
-    //             const json = `{
+    //         const json = `{
     //     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     //     "contentVersion": "1.0.0.0",
     //     "metadata": {
@@ -406,21 +406,21 @@ suite("Snippets functional tests", () => {
     // ${resources}
     //     ]
     // }`;
-    //             return json;
-    //         }
+    //         return json;
+    //     }
 
-    //         const resourceSnippetsFolderPath = resolveInTestFolder(path.join('..', 'assets', 'resourceSnippets'));
-    //         for (const file of fse.readdirSync(resourceSnippetsFolderPath)) {
-    //             fse.rmSync(path.join(resourceSnippetsFolderPath, file));
-    //         }
-    //         const manager = SnippetManager.createDefault();
-    //         const resourceSnippets = await manager.getSnippets(KnownContexts.resources);
-    //         for (const snippet of resourceSnippets) {
-    //             console.log(snippet.name);
-    //             const snippetFileContent = convertToResourceSnippetJsonFile(snippet);
-    //             const snippetPath = path.join(resourceSnippetsFolderPath, `${snippet.name}.snippet.json`);
-    //             fse.writeFileSync(snippetPath, snippetFileContent);
-    //         }
-    //     });
+    //     const resourceSnippetsFolderPath = resolveInTestFolder(path.join('..', 'assets', 'resourceSnippets'));
+    //     for (const file of fse.readdirSync(resourceSnippetsFolderPath)) {
+    //         fse.rmSync(path.join(resourceSnippetsFolderPath, file));
+    //     }
+    //     const manager = SnippetManager.createDefault();
+    //     const resourceSnippets = await manager.getSnippets(KnownContexts.resources);
+    //     for (const snippet of resourceSnippets) {
+    //         console.log(snippet.name);
+    //         const snippetFileContent = convertToResourceSnippetJsonFile(snippet);
+    //         const snippetPath = path.join(resourceSnippetsFolderPath, `${snippet.name}.snippet.json`);
+    //         fse.writeFileSync(snippetPath, snippetFileContent);
+    //     }
+    // });
 
 });
