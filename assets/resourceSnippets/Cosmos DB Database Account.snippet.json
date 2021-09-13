@@ -31,7 +31,7 @@
 				"enableAutomaticFailover": /*{$9|true,false|}*/ true,
 				"capabilities": [
 					{
-						"name": /*{$10|EnableTable,EnableGremlin|}*/ "EnableTable"
+						"name": /*${10|EnableTable,EnableGremlin|}*/ "EnableTable"
 					}
 				]
 			}

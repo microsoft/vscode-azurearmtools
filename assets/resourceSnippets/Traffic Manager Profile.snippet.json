@@ -15,26 +15,26 @@
 			"location": "global",
 			"properties": {
 				"profileStatus": "Enabled",
-				"trafficRoutingMethod": /*{$2|Performance,Geographic|}*/ "Performance",
+				"trafficRoutingMethod": /*${2|Performance,Geographic|}*/ "Performance",
 				"dnsConfig": {
 					"relativeName": "${3:dnsConfig}",
 					"ttl": 30
 				},
 				"monitorConfig": {
-					"protocol": /*{$4|HTTP,TCP|}*/ "HTTP",
-					"port": /*{$5:80}*/ 80,
+					"protocol": /*${4|HTTP,TCP|}*/ "HTTP",
+					"port": /*${5:80}*/ 80,
 					"path": "${6:path}",
-					"intervalInSeconds": /*{$7:30}*/ 30,
-					"timeoutInSeconds": /*{$8:5}*/ 5,
+					"intervalInSeconds": /*${7:30}*/ 30,
+					"timeoutInSeconds": /*${8:5}*/ 5,
 					"toleratedNumberOfFailures": /*{$9:3}*/ 3
 				},
 				"endpoints": [
 					{
 						"properties": {
 							"targetResourceId": "${10:targetId}",
-							"endpointStatus": /*{$11|Enabled,Disabled|}*/ "Enabled",
-							"weight": /*{$12:100}*/ 100,
-							"priority": /*{$13:1}*/ 1
+							"endpointStatus": /*${11|Enabled,Disabled|}*/ "Enabled",
+							"weight": /*${12:100}*/ 100,
+							"priority": /*${13:1}*/ 1
 						}
 					}
 				]

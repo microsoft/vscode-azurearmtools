@@ -60,8 +60,8 @@
 					{
 						"name": "${13:appGatewayBackendHttpSettings}",
 						"properties": {
-							"Port": /*{$14:80}*/ 80,
-							"Protocol": /*{$15|Http,Https|}*/ "Http",
+							"Port": /*${14:80}*/ 80,
+							"Protocol": /*${15|Http,Https|}*/ "Http",
 							"CookieBasedAffinity": "Disabled"
 						}
 					}
@@ -76,7 +76,7 @@
 							"FrontendPort": {
 								"Id": "[resourceId('Microsoft.Network/applicationGateways/frontendPorts',  '${1:applicationGatewayName}', '${8:appGatewayFrontendPort}')]"
 							},
-							"Protocol": /*{$17|Http,Https|}*/ "Http",
+							"Protocol": /*${17|Http,Https|}*/ "Http",
 							"SslCertificate": null
 						}
 					}
@@ -85,7 +85,7 @@
 					{
 						"Name": "${18:ruleName}",
 						"properties": {
-							"RuleType": /*{$19|Basic,PathBasedRouting|}*/ "Basic",
+							"RuleType": /*${19|Basic,PathBasedRouting|}*/ "Basic",
 							"httpListener": {
 								"id": "[resourceId('Microsoft.Network/applicationGateways/httpListeners', '${1:applicationGatewayName}', '${16:appGatewayHttpListener}')]"
 							},
