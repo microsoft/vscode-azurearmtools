@@ -111,10 +111,14 @@ function getBodyFromResourceSnippetJson(json: { [key: string]: unknown }): strin
             - 1; // Remove the indentation of the '[]' that we removed
 
         const lineWithTabs = line.replace(/^ */, '\t'.repeat(tabs));
-        let lineWithCorrectPlaceholders = lineWithTabs.replace(/EMBEDDEDSTRING!/, '${').replace(/!EMBEDDEDSTRING/, '}');
-        lineWithCorrectPlaceholders = lineWithCorrectPlaceholders.replace(/\"NOTASTRING!/, '${').replace(/!NOTASTRING\"/, '}');
 
-        const lineNormalized = lineWithCorrectPlaceholders.replace(/"/g, '\"');
+        let text = lineWithTabs.replace(/EMBEDDEDSTRING!/, '${').replace(/!EMBEDDEDSTRING/, '}');
+        text = text.replace(/\"NOTASTRING!/, '${').replace(/!NOTASTRING\"/, '}');
+
+        // $ -> \$
+        text = text.replace(/\$/g, '\\$');
+
+        const lineNormalized = text.replace(/"/g, '\"');
 
         body.push(lineNormalized);
     }

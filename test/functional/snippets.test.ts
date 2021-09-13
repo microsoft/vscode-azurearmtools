@@ -352,7 +352,7 @@ suite("Snippets functional tests", () => {
         // Compare text without spaces by converting to/from JSON
         const expectedNormalized = stringify(JSON.parse(removeComments(expected)));
         const actualNormalized = stringify(JSON.parse(removeComments(docTextAfterInsertion)));
-        assertEx.strictEqual(expectedNormalized, actualNormalized, {}, `Actual result from ${outputPath} did not match expected result in `);
+        assertEx.strictEqual(actualNormalized, expectedNormalized, {}, `Actual result from ${outputPath} did not match expected result in ${expectedPath}`);
 
         // NOTE: Even though we request the editor to be closed,
         // there's no way to request the document actually be closed,

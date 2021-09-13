@@ -121,5 +121,22 @@ suite("resourceSnippetsConversion", () => {
             assertEx.deepEqual(actual, expected, {});
         });
 
+        test("Handle $schema property", () => {
+            const input = `{
+            "resources": [
+                {
+                    "$schema": "https://schema.management.azure.com/schemas/2016-06-01/Microsoft.Logic.json"
+                }
+            ]
+        }`;
+            const expected: string[] = [
+                "{",
+                "\t\"\\$schema\": \"https://schema.management.azure.com/schemas/2016-06-01/Microsoft.Logic.json\"",
+                "}"
+            ];
+
+            const actual = getBodyFromResourceSnippetFile('snippet name', input);
+            assertEx.deepEqual(actual, expected, {});
+        });
     });
 });
