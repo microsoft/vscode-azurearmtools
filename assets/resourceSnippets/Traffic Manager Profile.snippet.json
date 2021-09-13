@@ -10,8 +10,7 @@
 			"name": "${1:trafficManagerProfile1}",
 			"type": "Microsoft.Network/trafficManagerProfiles",
 			"apiVersion": "2018-04-01",
-			"tags": {
-			},
+			"tags": {},
 			"location": "global",
 			"properties": {
 				"profileStatus": "Enabled",
@@ -26,7 +25,7 @@
 					"path": "${6:path}",
 					"intervalInSeconds": /*${7:30}*/ 30,
 					"timeoutInSeconds": /*${8:5}*/ 5,
-					"toleratedNumberOfFailures": /*{$9:3}*/ 3
+					"toleratedNumberOfFailures": /*${9:3}*/ 3
 				},
 				"endpoints": [
 					{

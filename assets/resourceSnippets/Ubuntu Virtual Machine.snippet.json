@@ -15,9 +15,9 @@
 				"displayName": "${1:ubuntuVM1} Storage Account"
 			},
 			"sku": {
-				"name": /*"${2:Standard_LRS}"*/ "Standard_LRS"
+				"name": /*${2:Standard_LRS}*/ "Standard_LRS"
 			},
-			"kind": /*{$3|Storage,StorageV2|}*/ "Storage"
+			"kind": /*${3|Storage,StorageV2|}*/ "Storage"
 		},
 		{
 			"name": "${1:ubuntuVM1}-PublicIP",
@@ -45,7 +45,7 @@
 						"name": "${4:nsgRule1}",
 						"properties": {
 							"description": "${5:description}",
-							"protocol": /*"${6|Tcp,Udp,*|}"*/ "Tcp",
+							"protocol": /*${6|Tcp,Udp,*|}*/ "Tcp",
 							"sourcePortRange": "${7:*}",
 							"destinationPortRange": "${8:22}",
 							"sourceAddressPrefix": "${9:*}",

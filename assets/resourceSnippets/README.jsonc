@@ -1,6 +1,6 @@
 {
     "examples of commented placeholder syntax": {
-        "one": /*"${5|Enabled,Disabled|}"*/ "Enabled", // -> interpreted in snippet as: "${5|Enabled,Disabled|}"
+        "one": /*${5|Enabled,Disabled|}*/ "Enabled", // -> interpreted in snippet as: "${5|Enabled,Disabled|}"
         "two": /*${5|true|false|}*/ true, // -> interpreted in snippet as: ${5|true|false|}
         "maxRequestBodySizeInKb": /*${3:128}*/ 128 // -> interpreted in snippet as: ${3:128}
     }

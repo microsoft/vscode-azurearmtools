@@ -11,20 +11,19 @@
 			"type": "Microsoft.Network/routeTables",
 			"apiVersion": "2019-11-01",
 			"location": "[resourceGroup().location]",
-			"tags": {
-			},
+			"tags": {},
 			"properties": {
 				"routes": [
 					{
 						"name": "${2:route1}",
 						"properties": {
 							"addressPrefix": "${3:destinationCIDR}",
-							"nextHopType": /*{$4|VirtualNetworkGateway,None|}*/ "VirtualNetworkGateway",
+							"nextHopType": /*${4|VirtualNetworkGateway,None|}*/ "VirtualNetworkGateway",
 							"nextHopIpAddress": "${5:0.0.0.0}"
 						}
 					}
 				],
-				"disableBgpRoutePropagation": /*{$6|true,false|}*/ true
+				"disableBgpRoutePropagation": /*${6|true,false|}*/ true
 			}
 		}
 	]

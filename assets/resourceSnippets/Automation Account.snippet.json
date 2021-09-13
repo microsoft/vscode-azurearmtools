@@ -15,7 +15,7 @@
 			},
 			"properties": {
 				"sku": {
-					"name": /*{$2|Free,Basic|}*/ "Free"
+					"name": /*${2|Free,Basic|}*/ "Free"
 				}
 			}
 		}

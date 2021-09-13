@@ -20,17 +20,17 @@
 						"paths": [
 							"/{2:partition-key}"
 						],
-						"kind": /*{$4|hash,range|}*/ "hash"
+						"kind": /*${4|hash,range|}*/ "hash"
 					},
 					"indexingPolicy": {
-						"indexingMode": /*{$5|consistent,none|}*/ "consistent",
+						"indexingMode": /*${5|consistent,none|}*/ "consistent",
 						"includedPaths": [
 							{
 								"path": "/*",
 								"indexes": [
 									{
-										"kind": /*{$6|Hash,Spatial|}*/ "Hash",
-										"dataType": /*{$7|String,MultiPolygon|}*/ "String",
+										"kind": /*${6|Hash,Spatial|}*/ "Hash",
+										"dataType": /*${7|String,MultiPolygon|}*/ "String",
 										"precision": -1
 									}
 								]
@@ -43,8 +43,7 @@
 						]
 					}
 				},
-				"options": {
-				}
+				"options": {}
 			}
 		}
 	]

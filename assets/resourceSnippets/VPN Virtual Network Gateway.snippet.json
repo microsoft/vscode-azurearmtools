@@ -31,12 +31,12 @@
 					}
 				],
 				"sku": {
-					"name": /*{$5|Basic,ErGw3AZ|}*/ "Basic",
-					"tier": /*{$6|Basic,ErGw3AZ|}*/ "Basic"
+					"name": /*${5|Basic,ErGw3AZ|}*/ "Basic",
+					"tier": /*${6|Basic,ErGw3AZ|}*/ "Basic"
 				},
-				"gatewayType": /*{$7|Vpn,ExpressRoute|}*/ "Vpn",
-				"vpnType": /*{$8|PolicyBased,RouteBased|}*/ "PolicyBased",
-				"enableBgp": /*{$9|true,false|}*/ true
+				"gatewayType": /*${7|Vpn,ExpressRoute|}*/ "Vpn",
+				"vpnType": /*${8|PolicyBased,RouteBased|}*/ "PolicyBased",
+				"enableBgp": /*${9|true,false|}*/ true
 			}
 		}
 	]

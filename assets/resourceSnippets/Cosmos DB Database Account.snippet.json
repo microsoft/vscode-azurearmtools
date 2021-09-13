@@ -13,22 +13,22 @@
 			"location": "[resourceGroup().location]",
 			"tags": {
 			},
-			"kind": /*{$2|GlobalDocumentDB,Parse|}*/ "GlobalDocumentDB",
+			"kind": /*${2|GlobalDocumentDB,Parse|}*/ "GlobalDocumentDB",
 			"properties": {
 				"consistencyPolicy": {
-					"defaultConsistencyLevel": /*{$3|Eventual,ConsistentPrefix|}*/ "Eventual",
-					"maxStalenessPrefix": /*{$4:1}*/ 1,
-					"maxIntervalInSeconds": /*{$5:5}*/ 5
+					"defaultConsistencyLevel": /*${3|Eventual,ConsistentPrefix|}*/ "Eventual",
+					"maxStalenessPrefix": /*${4:1}*/ 1,
+					"maxIntervalInSeconds": /*${5:5}*/ 5
 				},
 				"locations": [
 					{
 						"locationName": "${6:location1}",
-						"failoverPriority": /*{$7:0}*/ 0
+						"failoverPriority": /*${7:0}*/ 0
 					}
 				],
 				"databaseAccountOfferType": "Standard",
 				"ipRangeFilter": "${8:ipRangeFilter}",
-				"enableAutomaticFailover": /*{$9|true,false|}*/ true,
+				"enableAutomaticFailover": /*${9|true,false|}*/ true,
 				"capabilities": [
 					{
 						"name": /*${10|EnableTable,EnableGremlin|}*/ "EnableTable"

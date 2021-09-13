@@ -11,16 +11,15 @@
 			"type": "Microsoft.Network/azureFirewalls",
 			"apiVersion": "2019-11-01",
 			"location": "[resourceGroup().location]",
-			"tags": {
-			},
+			"tags": {},
 			"properties": {
 				"applicationRuleCollections": [
 					{
 						"name": "${2:appCollectionName1}",
 						"properties": {
-							"priority": /*{$3:100}*/ 100,
+							"priority": /*${3:100}*/ 100,
 							"action": {
-								"type": /*{$4|Allow,Deny|}*/ "Allow"
+								"type": /*${4|Allow,Deny|}*/ "Allow"
 							},
 							"rules": [
 								{
@@ -31,15 +30,14 @@
 									],
 									"protocols": [
 										{
-											"protocolType": /*{$8|Http,Mssql|}*/ "Http",
-											"port": /*{$9|80,1433|}*/ 80
+											"protocolType": /*${8|Http,Mssql|}*/ "Http",
+											"port": /*${9|80,1433|}*/ 80
 										}
 									],
 									"targetFqdns": [
 										"${10:www.microsoft.com}"
 									],
-									"fqdnTags": [
-									]
+									"fqdnTags": []
 								}
 							]
 						}
@@ -49,7 +47,7 @@
 					{
 						"name": "${11:natCollectionName1}",
 						"properties": {
-							"priority": /*{$12:100}*/ 100,
+							"priority": /*${12:100}*/ 100,
 							"action": {
 								"type": "${13|Dnat, Snat|}"
 							},
@@ -67,7 +65,7 @@
 										"${18:3389}"
 									],
 									"protocols": [
-										/*{$19|TCP,ICMP|}*/ "TCP"
+										/*${19|TCP,ICMP|}*/ "TCP"
 									],
 									"translatedAddress": "${20:10.0.0.254}",
 									"translatedPort": "${21:2500}"
@@ -80,9 +78,9 @@
 					{
 						"name": "${22:networkCollectionName}",
 						"properties": {
-							"priority": /*{$23:100}*/ 100,
+							"priority": /*${23:100}*/ 100,
 							"action": {
-								"type": /*{$24|Deny,Allow|}*/ "Deny"
+								"type": /*${24|Deny,Allow|}*/ "Deny"
 							},
 							"rules": [
 								{
@@ -98,7 +96,7 @@
 										"${29:1}"
 									],
 									"protocols": [
-										/*{$30|TCP,ICMP|}*/ "TCP"
+										/*${30|TCP,ICMP|}*/ "TCP"
 									]
 								}
 							]

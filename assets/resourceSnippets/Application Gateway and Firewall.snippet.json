@@ -15,11 +15,11 @@
 			],
 			"properties": {
 				"policySettings": {
-					"requestBodyCheck": /*{$2|true,false|}*/ true,
-					"maxRequestBodySizeInKb": /*{$3:128}*/ 128,
-					"fileUploadLimitInMb": /*{$4:100}*/ 100,
-					"state": /*{$5|Enabled,Disabled|}*/ "Enabled",
-					"mode": /*{$6|Detection,Prevention|}*/ "Detection"
+					"requestBodyCheck": /*${2|true,false|}*/ true,
+					"maxRequestBodySizeInKb": /*${3:128}*/ 128,
+					"fileUploadLimitInMb": /*${4:100}*/ 100,
+					"state": /*${5|Enabled,Disabled|}*/ "Enabled",
+					"mode": /*${6|Detection,Prevention|}*/ "Detection"
 				},
 				"managedRules": {
 					"managedRuleSets": [
@@ -102,8 +102,8 @@
 							"FrontendPort": {
 								"Id": "[resourceId('Microsoft.Network/applicationGateways/frontendPorts',  '${9:applicationGatewayName}', '${16:appGatewayFrontendPort}')]"
 							},
-							"Protocol": /*{$23|Http,Https|}*/ "Http",
-							"SslCertificate": /*{$24:null}*/ null
+							"Protocol": /*${23|Http,Https|}*/ "Http",
+							"SslCertificate": /*${24:null}*/ null
 						}
 					}
 				],
@@ -111,7 +111,7 @@
 					{
 						"Name": "${25:ruleName}",
 						"properties": {
-							"RuleType": /*{$26|Basic,PathBasedRouting|}*/ "Basic",
+							"RuleType": /*${26|Basic,PathBasedRouting|}*/ "Basic",
 							"httpListener": {
 								"id": "[resourceId('Microsoft.Network/applicationGateways/httpListeners', '${9:applicationGatewayName}', '${22:appGatewayHttpListener}')]"
 							},

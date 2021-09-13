@@ -37,9 +37,9 @@
 							"frontendIPConfiguration": {
 								"id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '${1:loadBalancerExternal1}', 'loadBalancerFrontEnd1')]"
 							},
-							"protocol": /*{$3|Tcp,All|}*/ "Tcp",
-							"frontendPort": /*{$4:50001}*/ 50001,
-							"backendPort": /*{$5:3389}*/ 3389,
+							"protocol": /*${3|Tcp,All|}*/ "Tcp",
+							"frontendPort": /*${4:50001}*/ 50001,
+							"backendPort": /*${5:3389}*/ 3389,
 							"enableFloatingIP": false
 						}
 					}
@@ -54,9 +54,9 @@
 							"backendAddressPool": {
 								"id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', '${1:loadBalancerExternal1}', 'loadBalancerBackEndPool1')]"
 							},
-							"protocol": /*{$3|Tcp,All|}*/ "Tcp",
-							"frontendPort": /*{$6:80}*/ 80,
-							"backendPort": /*{$7:80}*/ 80,
+							"protocol": /*${3|Tcp,All|}*/ "Tcp",
+							"frontendPort": /*${6:80}*/ 80,
+							"backendPort": /*${7:80}*/ 80,
 							"enableFloatingIP": false,
 							"idleTimeoutInMinutes": 5,
 							"probe": {
@@ -69,8 +69,8 @@
 					{
 						"name": "tcpProbe1",
 						"properties": {
-							"protocol": /*{$3|Tcp,All|}*/ "Tcp",
-							"port": /*{$7:80}*/ 80,
+							"protocol": /*${3|Tcp,All|}*/ "Tcp",
+							"port": /*${7:80}*/ 80,
 							"intervalInSeconds": 5,
 							"numberOfProbes": 2
 						}

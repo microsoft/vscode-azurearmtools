@@ -17,8 +17,8 @@
 			],
 			"properties": {
 				"sku": {
-					"name": /*{$4|Standard_Small,WAF_v2|}*/ "Standard_Small",
-					"tier": /*{$5|Standard,WAF_v2|}*/ "Standard",
+					"name": /*${4|Standard_Small,WAF_v2|}*/ "Standard_Small",
+					"tier": /*${5|Standard,WAF_v2|}*/ "Standard",
 					"capacity": 2
 				},
 				"gatewayIPConfigurations": [

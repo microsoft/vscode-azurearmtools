@@ -42,9 +42,9 @@
 							"backendAddressPool": {
 								"id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', '${1:loadBalancerInternal1}', 'loadBalancerBackEndPool1')]"
 							},
-							"protocol": /*{$5|Tcp,All|}*/ "Tcp",
-							"frontendPort": /*{$6:80}*/ 80,
-							"backendPort": /*{$7:80}*/ 80,
+							"protocol": /*${5|Tcp,All|}*/ "Tcp",
+							"frontendPort": /*${6:80}*/ 80,
+							"backendPort": /*${7:80}*/ 80,
 							"enableFloatingIP": false,
 							"idleTimeoutInMinutes": 5,
 							"probe": {
@@ -57,8 +57,8 @@
 					{
 						"name": "tcpProbe1",
 						"properties": {
-							"protocol": /*{$5|Tcp,All|}*/ "Tcp",
-							"port": /*{$7:80}*/ 80,
+							"protocol": /*${5|Tcp,All|}*/ "Tcp",
+							"port": /*${7:80}*/ 80,
 							"intervalInSeconds": 5,
 							"numberOfProbes": 2
 						}

@@ -17,7 +17,7 @@
 						"name": "${2:nsgRule1}",
 						"properties": {
 							"description": "${3:description}",
-							"protocol": /*"${4|Tcp,Udp,*|}"*/ "Tcp",
+							"protocol": /*${4|Tcp,Udp,*|}*/ "Tcp",
 							"sourcePortRange": "${5:*}",
 							"destinationPortRange": "${6:*}",
 							"sourceAddressPrefix": "${7:*}",

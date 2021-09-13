@@ -12,7 +12,7 @@
 			"apiVersion": "2018-01-10",
 			"location": "[resourceGroup().location]",
 			"sku": {
-				"name": /*{$2|RS0,Standard|}*/ "RS0",
+				"name": /*${2|RS0,Standard|}*/ "RS0",
 				"tier": "Standard"
 			},
 			"properties": {

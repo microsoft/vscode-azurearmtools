@@ -18,10 +18,10 @@
 				"enabledForDeployment": true,
 				"enabledForTemplateDeployment": true,
 				"enabledForDiskEncryption": true,
-				"tenantId": /*"${2:tenantId}"*/ "00000000-0000-0000-0000-000000000000",
+				"tenantId": /*${2:tenantId}*/ "00000000-0000-0000-0000-000000000000",
 				"accessPolicies": [
 					{
-						"tenantId": /*"${2:tenantId}"*/ "00000000-0000-0000-0000-000000000000",
+						"tenantId": /*${2:tenantId}*/ "00000000-0000-0000-0000-000000000000",
 						"objectId": "${3:objectId}",
 						"permissions": {
 							"keys": [

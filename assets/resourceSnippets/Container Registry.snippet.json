@@ -12,10 +12,10 @@
 			"apiVersion": "2019-05-01",
 			"location": "[resourceGroup().location]",
 			"sku": {
-				"name": /*{$2|Classic,Premium|}*/ "Classic"
+				"name": /*${2|Classic,Premium|}*/ "Classic"
 			},
 			"properties": {
-				"adminUserEnabled": /*{$3|true,false|}*/ true
+				"adminUserEnabled": /*${3|true,false|}*/ true
 			}
 		}
 	]

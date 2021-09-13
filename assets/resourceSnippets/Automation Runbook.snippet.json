@@ -11,15 +11,14 @@
 			"type": "Microsoft.Automation/automationAccounts/runbooks",
 			"apiVersion": "2018-06-30",
 			"location": "[resourceGroup().location]",
-			"tags": {
-			},
+			"tags": {},
 			"dependsOn": [
 				"[resourceId('Microsoft.Automation/automationAccounts', '${2:automationAccount1}')]"
 			],
 			"properties": {
-				"logVerbose": /*{$3|true,false|}*/ true,
-				"logProgress": /*{$4|true,false|}*/ true,
-				"runbookType": /*{$5|Script,GraphPowerShell|}*/ "Script",
+				"logVerbose": /*${3|true,false|}*/ true,
+				"logProgress": /*${4|true,false|}*/ true,
+				"runbookType": /*${5|Script,GraphPowerShell|}*/ "Script",
 				"publishContentLink": {
 					"uri": "${6:uri}",
 					"version": "${7:1.0.0.0}"

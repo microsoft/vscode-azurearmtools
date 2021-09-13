@@ -17,7 +17,7 @@
 				"displayName": "SQL Database Import for ${1:sqlDatabase1}"
 			},
 			"properties": {
-				"storageKeyType": /*{$3|StorageAccessKey,SharedAccessKey|}*/ "StorageAccessKey",
+				"storageKeyType": /*${3|StorageAccessKey,SharedAccessKey|}*/ "StorageAccessKey",
 				"storageKey": "${4:storageKey}",
 				"storageUri": "${5:bacpacUri}",
 				"administratorLogin": "${6:adminUsername}",

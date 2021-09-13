@@ -10,9 +10,9 @@ import { ISnippetDefinitionFromFile } from "./SnippetManager";
 
 // Similar to Bicep snippet placeholder format
 const StringSnippetPlaceholderCommentPatternRegex = new RegExp(
-    `\\/\\*"\\\${` + // start: /*"{
+    `\\/\\*\\\${` + // start: /*"{
     `(?<snippetPlaceholder>(.*?))` +
-    `}"\\*\\/` + // end: }"*/
+    `}\\*\\/` + // end: }"*/
     `\\s?` + // allow space after placeholder (see above)
     `(` + // placeholder value, either:
     // /**/ `'(.*?)'` + // single-quoted value asdf

@@ -14,10 +14,10 @@
 				"displayName": "${1:storageaccount1}"
 			},
 			"location": "[resourceGroup().location]",
-			"kind": /*{$2|StorageV2,FileStorage|}*/ "StorageV2",
+			"kind": /*${2|StorageV2,FileStorage|}*/ "StorageV2",
 			"sku": {
-				"name": /*"${3:Premium_LRS}"*/"Premium_LRS",
-				"tier": /*{$4|Premium,Standard|}*/ "Premium"
+				"name": /*${3:Premium_LRS}*/ "Premium_LRS",
+				"tier": /*${4|Premium,Standard|}*/ "Premium"
 			}
 		}
 	]

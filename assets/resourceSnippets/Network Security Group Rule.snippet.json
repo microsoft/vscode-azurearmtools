@@ -12,7 +12,7 @@
 			"apiVersion": "2019-11-01",
 			"properties": {
 				"description": "${2:nsgRuleDescription}",
-				"protocol": /*"${3|*,Ah,Esp,Icmp,Tcp,Udb|}"*/ "*",
+				"protocol": /*${3|*,Ah,Esp,Icmp,Tcp,Udb|}*/ "*",
 				"sourcePortRange": "${4:nsgRuleSourcePortRange}",
 				"destinationPortRange": "${5:nsgRuleDestinationPortRange}",
 				"sourceAddressPrefix": "${6:nsgRuleSourceAddressPrefix}",

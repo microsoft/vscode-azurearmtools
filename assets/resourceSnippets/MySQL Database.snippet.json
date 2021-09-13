@@ -14,7 +14,7 @@
 			"properties": {
 				"administratorLogin": "${2:adminUsername}",
 				"administratorLoginPassword": "${3:adminPassword}",
-				"createMode": /*{$4|Default,Replica|}*/ "Default"
+				"createMode": /*${4|Default,Replica|}*/ "Default"
 			}
 		}
 	]

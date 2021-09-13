@@ -73,12 +73,12 @@ suite("resourceSnippetsConversion", () => {
             assertEx.deepEqual(actual, expected, {});
         });
 
-        test("String comment placeholder with quoted default", () => {
+        test("String comment placeholder", () => {
             const input = `{
             "resources": [
                 {
-                    "state": /*"\${5|Enabled,Disabled|}"*/"Enabled",
-                    "stateWithSpace": /*"\${5|Enabled,Disabled|}"*/ "Disabled"
+                    "state": /*\${5|Enabled,Disabled|}*/"Enabled",
+                    "stateWithSpace": /*\${5|Enabled,Disabled|}*/ "Disabled"
                 }
             ]
         }`;

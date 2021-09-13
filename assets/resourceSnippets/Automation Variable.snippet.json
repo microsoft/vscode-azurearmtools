@@ -16,7 +16,7 @@
 			"properties": {
 				"value": "${3:value}",
 				"description": "${4:description}",
-				"isEncryptede": /*{$5|true,false|}*/ true
+				"isEncryptede": /*${5|true,false|}*/ true
 			}
 		}
 	]

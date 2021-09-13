@@ -19,25 +19,25 @@
 							"image": "${3:containerImage}",
 							"ports": [
 								{
-									"port": /*{$4:80}*/ 80
+									"port": /*${4:80}*/ 80
 								}
 							],
 							"resources": {
 								"requests": {
-									"cpu": /*{$5:1}*/ 1,
-									"memoryInGB": /*{$6:4}*/ 4
+									"cpu": /*${5:1}*/ 1,
+									"memoryInGB": /*${6:4}*/ 4
 								}
 							}
 						}
 					}
 				],
-				"osType": /*{$7|Linux,Windows|}*/ "Linux",
+				"osType": /*${7|Linux,Windows|}*/ "Linux",
 				"ipAddress": {
 					"type": "Public",
 					"ports": [
 						{
-							"protocol": /*{$8|TCP,UDP|}*/ "TCP",
-							"port": /*{$9:80}*/ 80
+							"protocol": /*${8|TCP,UDP|}*/ "TCP",
+							"port": /*${9:80}*/ 80
 						}
 					]
 				}
