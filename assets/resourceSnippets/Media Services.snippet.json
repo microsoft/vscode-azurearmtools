@@ -1,0 +1,27 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"prefix": "arm-media",
+		"description": "Media Services account"
+	},
+	"resources": [
+		{
+			"name": "${1:mediaServices1}",
+			"type": "Microsoft.Media/mediaServices",
+			"apiVersion": "2018-07-01",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Storage/storageAccounts', '${2:mediaServiceStorageAccount1}')]"
+			],
+			"properties": {
+				"storageAccounts": [
+					{
+						"id": "[resourceId('Microsoft.Storage/storageAccounts', '${2:mediaServiceStorageAccount1}')]",
+						"type": /*{$3|Primary,Secondary|}*/ "Primary"
+					}
+				]
+			}
+		}
+	]
+}

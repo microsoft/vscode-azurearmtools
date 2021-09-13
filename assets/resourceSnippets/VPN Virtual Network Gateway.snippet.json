@@ -1,0 +1,43 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"prefix": "arm-vpn-vnet-gateway",
+		"description": "VPN Virtual Network Gateway"
+	},
+	"resources": [
+		{
+			"name": "${1:virtualNetworkGateway1}",
+			"type": "Microsoft.Network/virtualNetworkGateways",
+			"apiVersion": "2019-11-01",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/publicIPAddresses', '${2:publicIPAddress1}')]",
+				"[resourceId('Microsoft.Network/virtualNetworks', '${3:virtualNetwork1}')]"
+			],
+			"properties": {
+				"ipConfigurations": [
+					{
+						"name": "vnetGatewayConfig",
+						"properties": {
+							"privateIPAllocationMethod": "Dynamic",
+							"subnet": {
+								"id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', '${3:virtualNetwork1}', '${4:subnet1}')]"
+							},
+							"publicIPAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses', '${2:publicIPAddress1}')]"
+							}
+						}
+					}
+				],
+				"sku": {
+					"name": /*{$5|Basic,ErGw3AZ|}*/ "Basic",
+					"tier": /*{$6|Basic,ErGw3AZ|}*/ "Basic"
+				},
+				"gatewayType": /*{$7|Vpn,ExpressRoute|}*/ "Vpn",
+				"vpnType": /*{$8|PolicyBased,RouteBased|}*/ "PolicyBased",
+				"enableBgp": /*{$9|true,false|}*/ true
+			}
+		}
+	]
+}

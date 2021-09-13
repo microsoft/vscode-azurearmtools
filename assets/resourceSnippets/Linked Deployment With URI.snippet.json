@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"prefix": "arm-linked-template-uri",
+		"description": "Linked Deployment With URI"
+	},
+	"resources": [
+		{
+			"name": "${1:linkedDeployment1}",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2020-10-01",
+			"properties": {
+				"mode": "Incremental",
+				"templateLink": {
+					"uri": "[concat('${2:artifactsLocation}', '/${3:linkedTemplates}/${4:linkedTemplate.json}', '${5:artifactsLocationSasToken}')]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+				}
+			}
+		}
+	]
+}

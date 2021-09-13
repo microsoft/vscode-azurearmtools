@@ -1,0 +1,21 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"prefix": "arm-mysql",
+		"description": "MySQL Database"
+	},
+	"resources": [
+		{
+			"name": "${1:MySQLdb1}",
+			"type": "Microsoft.DBforMySQL/servers",
+			"apiVersion": "2017-12-01",
+			"location": "[resourceGroup().location]",
+			"properties": {
+				"administratorLogin": "${2:adminUsername}",
+				"administratorLoginPassword": "${3:adminPassword}",
+				"createMode": /*{$4|Default,Replica|}*/ "Default"
+			}
+		}
+	]
+}

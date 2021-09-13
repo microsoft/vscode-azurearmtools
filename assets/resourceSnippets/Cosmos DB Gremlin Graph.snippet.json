@@ -1,0 +1,51 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"prefix": "arm-cosmos-gremlin-graph",
+		"description": ""
+	},
+	"resources": [
+		{
+			"type": "Microsoft.DocumentDb/databaseAccounts/apis/databases/graphs",
+			"name": "[concat('${1:account-name}', '/gremlin/', '${2:database-name}', '/', '${3:graph-name}')]",
+			"apiVersion": "2016-03-31",
+			"dependsOn": [
+				"[resourceId('Microsoft.DocumentDB/databaseAccounts/apis/databases', '${1:account-name}', 'gremlin', '${2:database-name}')]"
+			],
+			"properties": {
+				"resource": {
+					"id": "${3:graph-name}",
+					"partitionKey": {
+						"paths": [
+							"/{4:partition-key}"
+						],
+						"kind": /*{$5|hash,range|}*/ "hash"
+					},
+					"indexingPolicy": {
+						"indexingMode": /*{$6|consistent,none|}*/ "consistent",
+						"includedPaths": [
+							{
+								"path": "/*",
+								"indexes": [
+									{
+										"kind": /*{$7|Hash,Spatial|}*/ "Hash",
+										"dataType": /*{$8|String,MultiPolygon|}*/ "String",
+										"precision": -1
+									}
+								]
+							}
+						],
+						"excludedPaths": [
+							{
+								"path": "/${9:PathToNotIndex}/*"
+							}
+						]
+					}
+				},
+				"options": {
+				}
+			}
+		}
+	]
+}

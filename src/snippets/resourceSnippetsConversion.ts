@@ -5,6 +5,7 @@
 
 import { parseError } from "vscode-azureextensionui";
 import { assert } from "../fixed_assert";
+import { ISnippet } from "./ISnippet";
 import { KnownContexts } from "./KnownContexts";
 import { ISnippetDefinitionFromFile } from "./SnippetManager";
 
@@ -83,4 +84,29 @@ function getBodyFromResourceSnippetJson(json: { [key: string]: unknown }): strin
     }
 
     return body;
+}
+
+export function convertToResourceSnippetJsonFile(snippet: ISnippet): string {
+    const lines = snippet.insertText.split(/\n|\r|\r\n/);
+    let resources = lines.join('\n');
+    const constChars = '[a-zA-Z0-9_]';
+    // e.g. "state": "${5|enabled,disabled|}",
+    resources = resources.replace(new RegExp(`\\"\\\${([0-9]+)\\|(${constChars}+)(,${constChars}+)*\\|}\\"`, 'g'), '/*{$$$1|$2$3|}*/"$2"')
+    // e.g. "\t\t\t\"requestBodyCheck\": ${2|true,false|},",
+    resources = resources.replace(new RegExp(`\\\${([0-9]+)\\|(${constChars}+)(,${constChars}+)*\\|}`, 'g'), "/*{$$$1|$2$3|}*/$2")
+    // e.g. "Port": ${17:80}
+    resources = resources.replace(new RegExp(`: \\\${([0-9]+):(${constChars}+)}`, 'g'), ": /*{$$$1:$2}*/$2")
+
+    const json = `{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "metadata": {
+        "prefix": "${snippet.prefix}",
+        "description": "${snippet.description}"
+    },
+    "resources": [
+${resources}
+    ]
+}`;
+    return json;
 }

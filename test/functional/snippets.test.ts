@@ -17,6 +17,8 @@ import * as path from 'path';
 import * as stripJsonComments from 'strip-json-comments';
 import { commands, Selection, Uri, window, workspace } from "vscode";
 import { DeploymentTemplateDoc, getVSCodePositionFromPosition, ISnippet, SnippetManager } from '../../extension.bundle';
+import { KnownContexts } from '../../src/snippets/KnownContexts';
+import { convertToResourceSnippetJsonFile } from '../../src/snippets/resourceSnippetsConversion';
 import { assertEx } from '../support/assertEx';
 import { delay } from '../support/delay';
 import { diagnosticSources, getDiagnosticsForDocument, IGetDiagnosticsOptions } from '../support/diagnostics';
@@ -381,4 +383,19 @@ suite("Snippets functional tests", () => {
             }
         }
     }
+
+    test("convert main file into individual resource snippets", async () => {
+        const resourceSnippetsFolderPath = resolveInTestFolder(path.join('..', 'assets', 'resourceSnippets'));
+        for (const file of fse.readdirSync(resourceSnippetsFolderPath)) {
+            fse.rmSync(path.join(resourceSnippetsFolderPath, file));
+        }
+        const manager = SnippetManager.createDefault();
+        const resourceSnippets = await manager.getSnippets(KnownContexts.resources);
+        for (const snippet of resourceSnippets) {
+            console.log(snippet.name);
+            const snippetFileContent = convertToResourceSnippetJsonFile(snippet);
+            const snippetPath = path.join(resourceSnippetsFolderPath, `${snippet.name}.snippet.json`);
+            fse.writeFileSync(snippetPath, snippetFileContent);
+        }
+    });
 });
