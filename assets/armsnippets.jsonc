@@ -744,27 +744,6 @@
         "description": "Automation Account",
         "context": "resources"
     },
-    "Automation Certificate": {
-        "prefix": "arm-automation-cert",
-        "body": [
-            "{",
-            "\t\"name\": \"${1:parent/automationCertificate1}\",",
-            "\t\"type\": \"Microsoft.Automation/automationAccounts/certificates\",",
-            "\t\"apiVersion\": \"2015-10-31\",",
-            "\t\"dependsOn\": [",
-            "\t\t\"[resourceId('Microsoft.Automation/automationAccounts', '${2:automationAccount1}')]\"",
-            "\t],",
-            "\t\"properties\": {",
-            "\t\t\"base64Value\": \"${3:base64Value}\",",
-            "\t\t\"description\": \"${4:description}\",",
-            "\t\t\"thumbprint\": \"${5:thumbprint}\",",
-            "\t\t\"isExportable\": ${6|true,false|}",
-            "\t}",
-            "}"
-        ],
-        "description": "Automation Certificate",
-        "context": "resources"
-    },
     "Automation Credential": {
         "prefix": "arm-automation-cred",
         "body": [

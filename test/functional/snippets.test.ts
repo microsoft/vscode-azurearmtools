@@ -16,7 +16,7 @@ import { ITestCallbackContext } from 'mocha';
 import * as path from 'path';
 import * as stripJsonComments from 'strip-json-comments';
 import { commands, Selection, Uri, window, workspace } from "vscode";
-import { DeploymentTemplateDoc, getVSCodePositionFromPosition } from '../../extension.bundle';
+import { DeploymentTemplateDoc, getVSCodePositionFromPosition, ISnippet, SnippetManager } from '../../extension.bundle';
 import { assertEx } from '../support/assertEx';
 import { delay } from '../support/delay';
 import { diagnosticSources, getDiagnosticsForDocument, IGetDiagnosticsOptions } from '../support/diagnostics';
@@ -233,12 +233,6 @@ const overrideIgnoreSchemaValidation: { [name: string]: boolean } = {
     "Linux VM Custom Script": true,
 };
 
-interface ISnippet {
-    prefix: string;
-    body: string[];
-    description?: string;
-}
-
 suite("Snippets functional tests", () => {
     suite("all snippets", () => {
         createSnippetTests("armsnippets.jsonc");
@@ -246,17 +240,26 @@ suite("Snippets functional tests", () => {
 
     function createSnippetTests(snippetsFile: string): void {
         suite(snippetsFile, () => {
-            const snippetsPath = resolveInTestFolder(path.join('..', 'assets', snippetsFile));
-            const snippets = <{ [name: string]: ISnippet }>JSON.parse(stripJsonComments(fse.readFileSync(snippetsPath).toString()));
-            // tslint:disable-next-line:no-for-in forin
-            for (let snippetName in snippets) {
+            const snippetsFilePath = resolveInTestFolder(path.join('..', 'assets', snippetsFile));
+            const resourceSnippetsFolderPath = resolveInTestFolder(path.join('..', 'assets', 'resourceSnippets'));
+            const snippetsFromMainFile = <{ [name: string]: ISnippet }>JSON.parse(stripJsonComments(fse.readFileSync(snippetsFilePath).toString()));
+            const resourceSnippets = fse.readdirSync(resourceSnippetsFolderPath).map(file => file.replace(/(.*)\.snippet\.json$/, '$1'));
+            const snippetExpectedResultsNames = fse.readdirSync(resolveInTestFolder('snippets/expected')).map(file => file.replace(/\.json$/, ''));
+            let snippetNames = Object.getOwnPropertyNames(snippetsFromMainFile).concat(resourceSnippets).concat(snippetExpectedResultsNames);
+            snippetNames = [...new Set(snippetNames)]; // dedupe
+
+            const manager = SnippetManager.createDefault();
+            for (let snippetName of snippetNames) {
                 if (!snippetName.startsWith('$')) {
                     for (let i = 0; i < 1; ++i) {
                         testWithPrep(
                             `snippet: ${snippetName}`,
                             [RequiresLanguageServer.instance, UseRealSnippets.instance],
                             async function (this: ITestCallbackContext): Promise<void> {
-                                await testSnippet(this, snippetsPath, snippetName, snippets[snippetName]);
+                                const snippets = (await manager.getAllSnippets());
+                                const snippet = snippets.find(s => s.name === snippetName);
+                                assert(snippet !== undefined, `Couldn't find snippet ${snippetName}`);
+                                await testSnippet(this, snippetsFilePath, snippetName, snippet!);
                             });
                     }
                 }
@@ -343,11 +346,13 @@ suite("Snippets functional tests", () => {
         // const docTextAfterFormatting = window.activeTextEditor!.document.getText();
         // assert.deepStrictEqual(docTextAfterInsertion, docTextAfterFormatting, "Snippet is incorrectly formatted. Make sure to use \\t instead of spaces, and make sure the tabbing/indentations are correctly structured");
 
-        const expected: string = fse.readFileSync(path.join(expectedFolder, `${snippetName}.json`)).toString();
+        // Compare with result files under snippets/expected
+        const expectedPath = path.join(expectedFolder, `${snippetName}.json`);
+        const expected: string = fse.readFileSync(expectedPath).toString();
         // Compare text without spaces by converting to/from JSON
         const expectedNormalized = stringify(JSON.parse(removeComments(expected)));
         const actualNormalized = stringify(JSON.parse(removeComments(docTextAfterInsertion)));
-        assertEx.strictEqual(expectedNormalized, actualNormalized, {}, "Actual snippet text did not match expected");
+        assertEx.strictEqual(expectedNormalized, actualNormalized, {}, `Actual result from ${outputPath} did not match expected result in `);
 
         // NOTE: Even though we request the editor to be closed,
         // there's no way to request the document actually be closed,

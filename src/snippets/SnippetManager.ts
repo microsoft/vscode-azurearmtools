@@ -95,13 +95,18 @@ export class SnippetManager implements ISnippetManager {
     }
 
     /**
-     * Retrieve all snippets
+     * Retrieve all snippets that support a given context
      */
-    public async getSnippets(context: Context): Promise<ISnippet[]> {
+    public async getSnippets(context: Context | undefined): Promise<ISnippet[]> {
         const map = await this.createSnippetsMap();
         return Array.from(map.values())
             .filter(s => doesSnippetSupportContext(s, context))
             .map(convertToSnippet);
+    }
+
+    public async getAllSnippets(): Promise<ISnippet[]> {
+        const map = await this.createSnippetsMap();
+        return Array.from(map.values()).map(convertToSnippet);
     }
 
     /**
