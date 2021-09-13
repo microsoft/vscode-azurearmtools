@@ -389,11 +389,11 @@ suite("Snippets functional tests", () => {
     //         let resources = lines.join('\n');
     //         const constChars = '[a-zA-Z0-9_]';
     //         // e.g. "state": "${5|enabled,disabled|}",
-    //         resources = resources.replace(new RegExp(`\\"\\\${([0-9]+)\\|(${constChars}+)(,${constChars}+)*\\|}\\"`, 'g'), '/*$${$1|$2$3|}*/"$2"')
-    //         // e.g. "\t\t\t\"requestBodyCheck\": ${2|true,false|},",
-    //         resources = resources.replace(new RegExp(`\\\${([0-9]+)\\|(${constChars}+)(,${constChars}+)*\\|}`, 'g'), "/*$${$1|$2$3|}*/$2")
+    //         resources = resources.replace(new RegExp(`\\"\\\${([0-9]+)\\|(${constChars}+)((,${constChars}+)*)\\|}\\"`, 'g'), '/*$${$1|$2$3|}*/"$2"');
+    //         // // e.g. "\t\t\t\"requestBodyCheck\": ${2|true,false|},",
+    //         // resources = resources.replace(new RegExp(`\\\${([0-9]+)\\|(${constChars}+)((,${constChars}+)*)\\|}`, 'g'), "/*$${$1|$2$3|}*/$2");
     //         // e.g. "Port": ${17:80}
-    //         resources = resources.replace(new RegExp(`: \\\${([0-9]+):(${constChars}+)}`, 'g'), ": /*$${$1:$2}*/$2")
+    //         resources = resources.replace(new RegExp(`: \\\${([0-9]+):(${constChars}+)}`, 'g'), ": /*$${$1:$2}*/$2");
 
     //         const json = `{
     //     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
