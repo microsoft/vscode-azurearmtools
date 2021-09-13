@@ -8,9 +8,36 @@ import { assert } from "../fixed_assert";
 import { KnownContexts } from "./KnownContexts";
 import { ISnippetDefinitionFromFile } from "./SnippetManager";
 
-// Note: The '\s?' was added to the bicep version because JSON formatting automatically adds a space after the
-//   comment, turning the below into "isExportable": /*${6|true,false|}*/[SPACE]false
-const SnippetPlaceholderCommentPatternRegex = /\/\*(?<snippetPlaceholder>(.*?))\*\/\s?('(.*?)'|\w+|-\d+|.*?)/g;
+// Similar to Bicep snippet placeholder format
+const StringSnippetPlaceholderCommentPatternRegex = new RegExp(
+    `\\/\\*"\\\${` + // start: /*"{
+    `(?<snippetPlaceholder>(.*?))` +
+    `}"\\*\\/` + // end: }"*/
+    `\\s?` + // allow space after placeholder (see above)
+    `(` + // placeholder value, either:
+    // /**/ `'(.*?)'` + // single-quoted value
+    /**/ `"(.*?)"` + // double-quoted value
+    ///**/ `|\\w+` + // or word
+    // /**/ `|-\\d+` + // or integer value
+    ///**/ `|.*?` + // or any other string of characters
+    `)`,
+    'g'
+);
+
+const NonStringSnippetPlaceholderCommentPatternRegex = new RegExp(
+    `\\/\\*\\\${` + // start: /*{
+    `(?<snippetPlaceholder>(.*?))` +
+    `}\\*\\/` + // end: }*/
+    `\\s?` + // allow space after placeholder (see above)
+    `(` + // placeholder value, either:
+    // /**/ `'(.*?)'` + // single-quoted value
+    ///**/ `"(.*?)"` + // double-quoted value
+    /**/ `\\w+` + // word
+    // /**/ `|-\\d+` + // or integer value
+    ///**/ `|.*?` + // or any other string of characters
+    `)`,
+    'g'
+);
 
 ////////////////////////////////////
 //
@@ -21,6 +48,8 @@ const SnippetPlaceholderCommentPatternRegex = /\/\*(?<snippetPlaceholder>(.*?))\
 //    Example:
 //
 //      "isExportable": /*${6|true,false|}*/false
+//        or
+//      "isExportable": /*${6|true,false|}*/ false
 //
 //    will be converted to the following in the snippet:
 //
@@ -53,11 +82,18 @@ export function getBodyFromResourceSnippetFile(snippetName: string, snippetFileC
 }
 
 function getJsonFromResourceSnippetFile(snippetName: string, snippetFileContent: string): { [key: string]: unknown } {
-    const snippetNoPlaceholders = snippetFileContent.replace(SnippetPlaceholderCommentPatternRegex, "\"REMOVESTRING!$1!REMOVESTRING\"");
+    // e.g.  /*"{$5|Enabled,Disabled|}"*/"Enabled"  ->   "EMBEDDEDSTRING!"{$5|Enabled,Disabled|}"!EMBEDDEDSTRING"
+    // e.g. /*${6|true,false|}*/false -> /*${6|true,false|}*/false
+    let snippetNoPlaceholders = snippetFileContent.replace(StringSnippetPlaceholderCommentPatternRegex, "\"EMBEDDEDSTRING!$1!EMBEDDEDSTRING\"");
+
+    // e.g.  /*"{$5|Enabled,Disabled|}"*/"Enabled"  ->   "EMBEDDEDSTRING!"{$5|Enabled,Disabled|}"!EMBEDDEDSTRING"
+    // e.g. /*${6|true,false|}*/false -> /*${6|true,false|}*/false
+    snippetNoPlaceholders = snippetNoPlaceholders.replace(NonStringSnippetPlaceholderCommentPatternRegex, "\"NOTASTRING!$1!NOTASTRING\"");
+
     try {
         return JSON.parse(snippetNoPlaceholders);
     } catch (ex) {
-        throw new Error(`Error processing resource snippet ${snippetName}: ${parseError(ex).message}`);
+        throw new Error(`Error processing resource snippet '${snippetName}': ${parseError(ex).message}`);
     }
 }
 
@@ -75,7 +111,8 @@ function getBodyFromResourceSnippetJson(json: { [key: string]: unknown }): strin
             - 1; // Remove the indentation of the '[]' that we removed
 
         const lineWithTabs = line.replace(/^ */, '\t'.repeat(tabs));
-        const lineWithCorrectPlaceholders = lineWithTabs.replace(/\"REMOVESTRING!/, '').replace(/!REMOVESTRING\"/, '');
+        let lineWithCorrectPlaceholders = lineWithTabs.replace(/EMBEDDEDSTRING!/, '${').replace(/!EMBEDDEDSTRING/, '}');
+        lineWithCorrectPlaceholders = lineWithCorrectPlaceholders.replace(/\"NOTASTRING!/, '${').replace(/!NOTASTRING\"/, '}');
 
         const lineNormalized = lineWithCorrectPlaceholders.replace(/"/g, '\"');
 
