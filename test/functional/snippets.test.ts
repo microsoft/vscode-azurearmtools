@@ -243,7 +243,9 @@ suite("Snippets functional tests", () => {
             const snippetsFilePath = resolveInTestFolder(path.join('..', 'assets', snippetsFile));
             const resourceSnippetsFolderPath = resolveInTestFolder(path.join('..', 'assets', 'resourceSnippets'));
             const snippetsFromMainFile = <{ [name: string]: ISnippet }>JSON.parse(stripJsonComments(fse.readFileSync(snippetsFilePath).toString()));
-            const resourceSnippets = fse.readdirSync(resourceSnippetsFolderPath).map(file => file.replace(/(.*)\.snippet\.json$/, '$1'));
+            const resourceSnippets = fse.readdirSync(resourceSnippetsFolderPath)
+                .filter(f => f !== 'README.jsonc')
+                .map(file => file.replace(/(.*)\.snippet\.json$/, '$1'));
             const snippetExpectedResultsNames = fse.readdirSync(resolveInTestFolder('snippets/expected')).map(file => file.replace(/\.json$/, ''));
             let snippetNames = Object.getOwnPropertyNames(snippetsFromMainFile).concat(resourceSnippets).concat(snippetExpectedResultsNames);
             snippetNames = [...new Set(snippetNames)]; // dedupe
@@ -381,46 +383,4 @@ suite("Snippets functional tests", () => {
             }
         }
     }
-
-    // test("convert main file into individual resource snippets", async () => {
-
-    //     function convertToResourceSnippetJsonFile(snippet: ISnippet): string {
-    //         const lines = snippet.insertText.split(/\n|\r|\r\n/);
-    //         let resources = lines.join('\n');
-    //         const constChars = '[a-zA-Z0-9_]';
-    //         // e.g. "state": "${5|enabled,disabled|}",
-    //         resources = resources.replace(new RegExp(`\\"\\\${([0-9]+)\\|(${constChars}+)((,${constChars}+)*)\\|}\\"`, 'g'), '/*$${$1|$2$3|}*/"$2"');
-    //         // // e.g. "\t\t\t\"requestBodyCheck\": ${2|true,false|},",
-    //         // resources = resources.replace(new RegExp(`\\\${([0-9]+)\\|(${constChars}+)((,${constChars}+)*)\\|}`, 'g'), "/*$${$1|$2$3|}*/$2");
-    //         // e.g. "Port": ${17:80}
-    //         resources = resources.replace(new RegExp(`: \\\${([0-9]+):(${constChars}+)}`, 'g'), ": /*$${$1:$2}*/$2");
-
-    //         const json = `{
-    //     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    //     "contentVersion": "1.0.0.0",
-    //     "metadata": {
-    //         "prefix": "${snippet.prefix}",
-    //         "description": "${snippet.description}"
-    //     },
-    //     "resources": [
-    // ${resources}
-    //     ]
-    // }`;
-    //         return json;
-    //     }
-
-    //     const resourceSnippetsFolderPath = resolveInTestFolder(path.join('..', 'assets', 'resourceSnippets'));
-    //     for (const file of fse.readdirSync(resourceSnippetsFolderPath)) {
-    //         fse.rmSync(path.join(resourceSnippetsFolderPath, file));
-    //     }
-    //     const manager = SnippetManager.createDefault();
-    //     const resourceSnippets = await manager.getSnippets(KnownContexts.resources);
-    //     for (const snippet of resourceSnippets) {
-    //         console.log(snippet.name);
-    //         const snippetFileContent = convertToResourceSnippetJsonFile(snippet);
-    //         const snippetPath = path.join(resourceSnippetsFolderPath, `${snippet.name}.snippet.json`);
-    //         fse.writeFileSync(snippetPath, snippetFileContent);
-    //     }
-    // });
-
 });

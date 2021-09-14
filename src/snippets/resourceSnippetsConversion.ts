@@ -115,8 +115,8 @@ function getBodyFromResourceSnippetJson(json: { [key: string]: unknown }): strin
         let text = lineWithTabs.replace(/EMBEDDEDSTRING!/, '${').replace(/!EMBEDDEDSTRING/, '}');
         text = text.replace(/\"NOTASTRING!/, '${').replace(/!NOTASTRING\"/, '}');
 
-        // $ -> \$
-        text = text.replace(/\$/g, '\\$');
+        // $schema -> \$
+        text = text.replace(/\$schema/g, '\\$schema');
 
         const lineNormalized = text.replace(/"/g, '\"');
 

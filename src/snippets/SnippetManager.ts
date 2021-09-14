@@ -45,7 +45,7 @@ export class SnippetManager implements ISnippetManager {
     /**
      * Read snippets from file
      */
-    private async createSnippetsMap(): Promise<Map<string, ISnippetInternal>> {
+    private async getSnippetMap(): Promise<Map<string, ISnippetInternal>> {
         return this._snippetMap.getOrCachePromise(async () => {
             const map = await SnippetManager.readSnippetFile(this._snippetFilePath);
 
@@ -101,14 +101,14 @@ export class SnippetManager implements ISnippetManager {
      * Retrieve all snippets that support a given context
      */
     public async getSnippets(context: Context | undefined): Promise<ISnippet[]> {
-        const map = await this.createSnippetsMap();
+        const map = await this.getSnippetMap();
         return Array.from(map.values())
             .filter(s => doesSnippetSupportContext(s, context))
             .map(convertToSnippet);
     }
 
     public async getAllSnippets(): Promise<ISnippet[]> {
-        const map = await this.createSnippetsMap();
+        const map = await this.getSnippetMap();
         return Array.from(map.values()).map(convertToSnippet);
     }
 
@@ -119,7 +119,7 @@ export class SnippetManager implements ISnippetManager {
         return await callWithTelemetryAndErrorHandling('getSnippetsAsCompletionItems', async (actionContext: IActionContext) => {
             actionContext.telemetry.suppressIfSuccessful = true;
 
-            const map = await this.createSnippetsMap();
+            const map = await this.getSnippetMap();
 
             const items: Completion.Item[] = [];
             for (const entry of map.entries()) {
