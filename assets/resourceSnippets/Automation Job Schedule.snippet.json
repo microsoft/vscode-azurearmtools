@@ -1,0 +1,29 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"prefix": "arm-automation-job-schedule",
+		"description": "Automation Job Schedule"
+	},
+	"resources": [
+		{
+			"name": "${1:parent/automationJobSchedule1}",
+			"type": "Microsoft.Automation/automationAccounts/jobSchedules",
+			"apiVersion": "2015-10-31",
+			"location": "[resourceGroup().location]",
+			"tags": {
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Automation/automationAccounts', '${2:automationAccount1}')]"
+			],
+			"properties": {
+				"schedule": {
+					"name": "${3:automationSchedule1}"
+				},
+				"runbook": {
+					"name": "${4:automationRunbook1}"
+				}
+			}
+		}
+	]
+}

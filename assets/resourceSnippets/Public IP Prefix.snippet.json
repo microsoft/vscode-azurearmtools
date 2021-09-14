@@ -1,0 +1,25 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"prefix": "arm-ip-prefix",
+		"description": "Public IP Prefix"
+	},
+	"resources": [
+		{
+			"name": "${1:publicIPPrefix1}",
+			"type": "Microsoft.Network/publicIPPrefixes",
+			"apiVersion": "2019-11-01",
+			"location": "[resourceGroup().location]",
+			"tags": {
+			},
+			"sku": {
+				"name": "Standard"
+			},
+			"properties": {
+				"publicIPAddressVersion": "IPv4",
+				"prefixLength": /*${2:28}*/ 28
+			}
+		}
+	]
+}

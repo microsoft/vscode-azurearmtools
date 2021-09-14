@@ -3,11 +3,13 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as stripJsonComments from "strip-json-comments";
 import { window } from 'vscode';
 import { callWithTelemetryAndErrorHandling, IActionContext } from 'vscode-azureextensionui';
 import { assetsPath, extensionName } from '../constants';
+import { assert } from '../fixed_assert';
 import { Span } from '../language/Span';
 import { CachedPromise } from '../util/CachedPromise';
 import { readUtf8FileWithBom } from '../util/readUtf8FileWithBom';
@@ -16,8 +18,9 @@ import { InsertionContext } from "./InsertionContext";
 import { ISnippet } from "./ISnippet";
 import { ISnippetManager } from "./ISnippetManager";
 import { Context, KnownContexts } from './KnownContexts';
+import { createResourceSnippetFromFile } from './resourceSnippetsConversion';
 
-interface ISnippetDefinitionFromFile {
+export interface ISnippetDefinitionFromFile {
     prefix: string; // e.g. "arm!"
     body: string[];
     description: string; // e.g. "Resource Group Template"
@@ -32,42 +35,81 @@ interface ISnippetInternal extends ISnippetDefinitionFromFile {
 export class SnippetManager implements ISnippetManager {
     private _snippetMap: CachedPromise<Map<string, ISnippetInternal>> = new CachedPromise<Map<string, ISnippetInternal>>();
 
-    public constructor(private readonly _snippetPath: string) {
+    public constructor(private readonly _snippetFilePath: string, private readonly _resourceSnippetsFolderPath: string | undefined) {
     }
 
     public static createDefault(): ISnippetManager {
-        return new SnippetManager(path.join(assetsPath, "armsnippets.jsonc"));
+        return new SnippetManager(path.join(assetsPath, "armsnippets.jsonc"), path.join(assetsPath, "resourceSnippets"));
     }
 
     /**
      * Read snippets from file
      */
-    private async getMap(): Promise<Map<string, ISnippetInternal>> {
-        return await this._snippetMap.getOrCachePromise(async () => {
-            const content: string = await readUtf8FileWithBom(this._snippetPath);
-            const preprocessed = stripJsonComments(content);
-            const snippets = <{ [key: string]: ISnippetDefinitionFromFile }>JSON.parse(preprocessed);
-            const map = new Map<string, ISnippetInternal>();
+    private async getSnippetMap(): Promise<Map<string, ISnippetInternal>> {
+        return this._snippetMap.getOrCachePromise(async () => {
+            const map = await SnippetManager.readSnippetFile(this._snippetFilePath);
 
-            for (const name of Object.getOwnPropertyNames(snippets).filter(n => !n.startsWith('$'))) {
-                const snippetFromFile = snippets[name];
-                const snippet = convertToInternalSnippet(name, snippetFromFile);
-                validateSnippet(snippet);
-                map.set(name, snippet);
+            if (this._resourceSnippetsFolderPath) {
+                const resourceSnippets = await SnippetManager.readResourceSnippetsFromFolder(this._resourceSnippetsFolderPath);
+                for (const snippet of resourceSnippets.entries()) {
+                    const key = snippet[0];
+                    const value = snippet[1];
+                    assert(!map.has(key), `Resource snippet ${key} already has an entry in the main snippet file`);
+                    map.set(key, value);
+                }
             }
 
             return map;
         });
     }
 
+    private static async readSnippetFile(filePath: string): Promise<Map<string, ISnippetInternal>> {
+        const content: string = await readUtf8FileWithBom(filePath);
+        const preprocessed = stripJsonComments(content);
+        const snippets = <{ [key: string]: ISnippetDefinitionFromFile }>JSON.parse(preprocessed);
+        const map = new Map<string, ISnippetInternal>();
+
+        for (const name of Object.getOwnPropertyNames(snippets).filter(n => !n.startsWith('$'))) {
+            const snippetFromFile = snippets[name];
+            const snippet = convertToInternalSnippet(name, snippetFromFile);
+            validateSnippet(snippet);
+            assert(snippet.context !== KnownContexts.resources, `Resource snippet "${snippet.name}" should be placed in the resourceSnippets folder instead of "${filePath}"`);
+            map.set(name, snippet);
+        }
+
+        return map;
+    }
+
+    private static async readResourceSnippetsFromFolder(folderPath: string): Promise<Map<string, ISnippetInternal>> {
+        const map = new Map<string, ISnippetInternal>();
+
+        const snippetFiles = await fse.readdir(folderPath);
+        for (const relativePath of snippetFiles.filter(f => f !== 'README.jsonc')) {
+            const snippetName = relativePath.replace(/(.*)\.snippet\.json$/, '$1');
+            assert(snippetName !== relativePath, `Incorrectly formed resource snippet file name ${relativePath}`);
+            const content: string = await readUtf8FileWithBom(path.join(folderPath, relativePath));
+            const snippet = createResourceSnippetFromFile(snippetName, content);
+            const internalSnippet = convertToInternalSnippet(snippetName, snippet);
+            validateSnippet(internalSnippet);
+            map.set(snippetName, internalSnippet);
+        }
+
+        return map;
+    }
+
     /**
-     * Retrieve all snippets
+     * Retrieve all snippets that support a given context
      */
-    public async getSnippets(context: Context): Promise<ISnippet[]> {
-        const map = await this.getMap();
+    public async getSnippets(context: Context | undefined): Promise<ISnippet[]> {
+        const map = await this.getSnippetMap();
         return Array.from(map.values())
             .filter(s => doesSnippetSupportContext(s, context))
             .map(convertToSnippet);
+    }
+
+    public async getAllSnippets(): Promise<ISnippet[]> {
+        const map = await this.getSnippetMap();
+        return Array.from(map.values()).map(convertToSnippet);
     }
 
     /**
@@ -77,7 +119,7 @@ export class SnippetManager implements ISnippetManager {
         return await callWithTelemetryAndErrorHandling('getSnippetsAsCompletionItems', async (actionContext: IActionContext) => {
             actionContext.telemetry.suppressIfSuccessful = true;
 
-            const map = await this.getMap();
+            const map = await this.getSnippetMap();
 
             const items: Completion.Item[] = [];
             for (const entry of map.entries()) {

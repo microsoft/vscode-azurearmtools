@@ -11,7 +11,7 @@ import { ITestPreparation, ITestPreparationResult, testWithPrep } from './testWi
 
 // By default we use the test snippets for tests
 export function useTestSnippets(): void {
-    ext.snippetManager.value = new SnippetManager(path.join(__dirname, '..', '..', '..', 'test', 'support', 'EmptySnippets.jsonc'));
+    ext.snippetManager.value = new SnippetManager(path.join(__dirname, '..', '..', '..', 'test', 'support', 'TestArmSnippets.jsonc'), undefined); //asdf?
     testLog.writeLine("Installed test snippets");
 }
 
@@ -21,7 +21,7 @@ export function useRealSnippets(): void {
 }
 
 export function useNoSnippets(): void {
-    ext.snippetManager.value = new SnippetManager(path.join(__dirname, '..', '..', '..', 'test', 'support', 'EmptySnippets.jsonc'));
+    ext.snippetManager.value = new SnippetManager(path.join(__dirname, '..', '..', '..', 'test', 'support', 'EmptySnippets.jsonc'), undefined);
     testLog.writeLine("Installed empty snippet manager");
 }
 

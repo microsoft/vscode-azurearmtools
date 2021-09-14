@@ -1,7 +1,7 @@
 {
 	"resources": [
 		{
-			"name": "parent/automationCertificate1",
+			"name": "parent/automationCertificate",
 			"type": "Microsoft.Automation/automationAccounts/certificates",
 			"apiVersion": "2015-10-31",
 			"dependsOn": [

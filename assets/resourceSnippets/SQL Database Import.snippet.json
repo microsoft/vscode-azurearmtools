@@ -1,0 +1,29 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"prefix": "arm-sql-db-import",
+		"description": "SQL Database Import"
+	},
+	"resources": [
+		{
+			"name": "${2:sqlServer1}/${1:sqlDatabase1}/import",
+			"type": "Microsoft.Sql/servers/databases/extensions",
+			"apiVersion": "2014-04-01",
+			"dependsOn": [
+				"[resourceId('Microsoft.Sql/servers/databases', '${2:sqlServer1}', '${1:sqlDatabase1}')]"
+			],
+			"tags": {
+				"displayName": "SQL Database Import for ${1:sqlDatabase1}"
+			},
+			"properties": {
+				"storageKeyType": /*${3|StorageAccessKey,SharedAccessKey|}*/ "StorageAccessKey",
+				"storageKey": "${4:storageKey}",
+				"storageUri": "${5:bacpacUri}",
+				"administratorLogin": "${6:adminUsername}",
+				"administratorLoginPassword": "${7:adminPassword}",
+				"operationMode": "Import"
+			}
+		}
+	]
+}

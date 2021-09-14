@@ -17,9 +17,13 @@ import { Context } from "./KnownContexts";
  */
 export interface ISnippetManager {
     /**
-     * Retrieve all snippets
+     * Retrieve all snippets that support the given context
      */
     getSnippets(context: Context): Promise<ISnippet[]>;
+    /**
+     * Retrieve all snippets regardless of context
+     */
+    getAllSnippets(): Promise<ISnippet[]>;
     /**
      * Retrieve completion items for all snippets
      */

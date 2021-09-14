@@ -1,0 +1,25 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"prefix": "arm-nested-template-outer",
+		"description": "Nested (inline) Outer-Scoped Deployment. Expressions reference the parameters of the parent scope."
+	},
+	"resources": [
+		{
+			"name": "${1:nestedDeployment1}",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2020-10-01",
+			"properties": {
+				"mode": "Incremental",
+				"template": {
+					"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+					"contentVersion": "1.0.0.0",
+					"variables": {},
+					"resources": [],
+					"outputs": {}
+				}
+			}
+		}
+	]
+}

@@ -1,0 +1,26 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"prefix": "arm-cosmos-tablestorage-table",
+		"description": ""
+	},
+	"resources": [
+		{
+			"type": "Microsoft.DocumentDB/databaseAccounts/apis/tables",
+			"name": "[concat('${1:account-name}', '/table/', '${2:database-name}')]",
+			"apiVersion": "2016-03-31",
+			"dependsOn": [
+				"[resourceId('Microsoft.DocumentDB/databaseAccounts/', '${1:account-name}')]"
+			],
+			"properties": {
+				"resource": {
+					"id": "${3:table-name}"
+				},
+				"options": {
+					"throughput": "${4:400}"
+				}
+			}
+		}
+	]
+}

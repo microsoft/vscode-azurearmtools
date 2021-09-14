@@ -1,0 +1,51 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"prefix": "arm-cosmos-sql-container",
+		"description": "Cosmos DB SQL Container"
+	},
+	"resources": [
+		{
+			"type": "Microsoft.DocumentDb/databaseAccounts/apis/databases/containers",
+			"name": "[concat('${1:account-name}', '/sql/', '${2:database-name}', '/', '${3:container-name}')]",
+			"apiVersion": "2016-03-31",
+			"dependsOn": [
+				"[resourceId('Microsoft.DocumentDB/databaseAccounts/apis/databases', '${1:account-name}', 'sql', '${2:database-name}')]"
+			],
+			"properties": {
+				"resource": {
+					"id": "${3:container-name}",
+					"partitionKey": {
+						"paths": [
+							"/{2:partition-key}"
+						],
+						"kind": /*${4|hash,range|}*/ "hash"
+					},
+					"indexingPolicy": {
+						"indexingMode": /*${5|consistent,lazy,none|}*/ "consistent",
+						"includedPaths": [
+							{
+								"path": "/*",
+								"indexes": [
+									{
+										"kind": /*${6|Hash,Range,Spatial|}*/ "Hash",
+										"dataType": /*${7|String,Number,Point,Polygon,LineString,MultiPolygon|}*/ "String",
+										"precision": -1
+									}
+								]
+							}
+						],
+						"excludedPaths": [
+							{
+								"path": "/${8:PathToNotIndex}/*"
+							}
+						]
+					}
+				},
+				"options": {
+				}
+			}
+		}
+	]
+}

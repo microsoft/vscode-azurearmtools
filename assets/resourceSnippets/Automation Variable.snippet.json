@@ -1,0 +1,23 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"prefix": "arm-automation-variable",
+		"description": "Automation Variable"
+	},
+	"resources": [
+		{
+			"name": "${1:parent/automationVariable1}",
+			"type": "Microsoft.Automation/automationAccounts/variables",
+			"apiVersion": "2015-10-31",
+			"dependsOn": [
+				"[resourceId('Microsoft.Automation/automationAccounts', '${2:automationAccount1}')]"
+			],
+			"properties": {
+				"value": "${3:value}",
+				"description": "${4:description}",
+				"isEncryptede": /*${5|true,false|}*/ true
+			}
+		}
+	]
+}

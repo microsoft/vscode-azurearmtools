@@ -1,0 +1,26 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"prefix": "arm-nsgrule",
+		"description": "Network Security Group Rule"
+	},
+	"resources": [
+		{
+			"name": "${1:networkSecurityGroupRuleName}",
+			"type": "Microsoft.Network/networkSecurityGroups/securityRules",
+			"apiVersion": "2019-11-01",
+			"properties": {
+				"description": "${2:nsgRuleDescription}",
+				"protocol": /*${3|*,Ah,Esp,Icmp,Tcp,Udb|}*/ "*",
+				"sourcePortRange": "${4:nsgRuleSourcePortRange}",
+				"destinationPortRange": "${5:nsgRuleDestinationPortRange}",
+				"sourceAddressPrefix": "${6:nsgRuleSourceAddressPrefix}",
+				"destinationAddressPrefix": "${7:nsgRileDestinationAddressRange}",
+				"access": /*${8|Allow,Deny|}*/ "Allow",
+				"priority": /*${9:100}*/ 100,
+				"direction": /*${10|Inbound,Outbound|}*/ "Inbound"
+			}
+		}
+	]
+}
