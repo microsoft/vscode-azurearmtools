@@ -9,7 +9,7 @@
 		{
 			"name": "${1:appInsights1}-${2:appServicePlan1}-AutoScaleSettings",
 			"type": "Microsoft.Insights/autoscalesettings",
-			"apiVersion": "2014-04-01",
+			"apiVersion": "2015-04-01",
 			"location": "East US",
 			"tags": {
 				"[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/${2:appServicePlan1}')]": "Resource",
@@ -214,7 +214,7 @@
 		{
 			"name": "${1:appInsights1}",
 			"type": "Microsoft.Insights/components",
-			"apiVersion": "2015-05-01",
+			"apiVersion": "2020-02-02",
 			"location": "Central US",
 			"kind": "web",
 			"tags": {

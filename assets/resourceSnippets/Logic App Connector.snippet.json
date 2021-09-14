@@ -9,7 +9,7 @@
 		{
 			"name": "${1:logicAppConnector1}",
 			"type": "Microsoft.Web/connections",
-			"apiVersion": "2016-06-01",
+			"apiVersion": "2",
 			"location": "[resourceGroup().location]",
 			"tags": {
 			},

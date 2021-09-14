@@ -9,7 +9,7 @@
 		{
 			"name": "[toLower('${1:ubuntuVM1}storage')]",
 			"type": "Microsoft.Storage/storageAccounts",
-			"apiVersion": "2019-06-01",
+			"apiVersion": "2021-04-01",
 			"location": "[resourceGroup().location]",
 			"tags": {
 				"displayName": "${1:ubuntuVM1} Storage Account"
@@ -22,7 +22,7 @@
 		{
 			"name": "${1:ubuntuVM1}-PublicIP",
 			"type": "Microsoft.Network/publicIPAddresses",
-			"apiVersion": "2019-11-01",
+			"apiVersion": "2020-11-01",
 			"location": "[resourceGroup().location]",
 			"tags": {
 				"displayName": "PublicIPAddress"
@@ -37,7 +37,7 @@
 		{
 			"name": "${1:ubuntuVM1}-nsg",
 			"type": "Microsoft.Network/networkSecurityGroups",
-			"apiVersion": "2018-08-01",
+			"apiVersion": "2020-11-01",
 			"location": "[resourceGroup().location]",
 			"properties": {
 				"securityRules": [
@@ -61,7 +61,7 @@
 		{
 			"name": "${1:ubuntuVM1}-VirtualNetwork",
 			"type": "Microsoft.Network/virtualNetworks",
-			"apiVersion": "2019-11-01",
+			"apiVersion": "2020-11-01",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Network/networkSecurityGroups', '${1:ubuntuVM1}-nsg')]"
@@ -91,7 +91,7 @@
 		{
 			"name": "${1:ubuntuVM1}-NetworkInterface",
 			"type": "Microsoft.Network/networkInterfaces",
-			"apiVersion": "2019-11-01",
+			"apiVersion": "2020-11-01",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Network/publicIPAddresses', '${1:ubuntuVM1}-PublicIP')]",
@@ -120,7 +120,7 @@
 		{
 			"name": "${1:ubuntuVM1}",
 			"type": "Microsoft.Compute/virtualMachines",
-			"apiVersion": "2019-07-01",
+			"apiVersion": "2021-03-01",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Network/networkInterfaces', '${1:ubuntuVM1}-NetworkInterface')]"

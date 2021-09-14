@@ -9,7 +9,7 @@
 		{
 			"name": "${1:parent/automationJobSchedule1}",
 			"type": "Microsoft.Automation/automationAccounts/jobSchedules",
-			"apiVersion": "2015-10-31",
+			"apiVersion": "2019-06-01",
 			"location": "[resourceGroup().location]",
 			"tags": {
 			},

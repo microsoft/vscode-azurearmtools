@@ -141,5 +141,13 @@ function Get-ApiVersion {
         $versions = $typeInfo.ApiVersions | Sort-Object -Descending
     }
 
-    return $versions[0]
+    # Pick first version without "preview"
+    $nonPreviews = $versions | Where-Object { $_ -notlike "*preview" }
+    if ($nonPreviews.Length -eq 0) {
+        Write-Warning "Couldn't find a non-preview version for $ResourceType"
+        $versions[0]
+    }
+    else {
+        $nonPreviews[0]
+    }
 }

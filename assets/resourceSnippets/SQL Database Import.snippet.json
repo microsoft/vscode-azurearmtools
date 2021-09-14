@@ -9,7 +9,7 @@
 		{
 			"name": "${2:sqlServer1}/${1:sqlDatabase1}/import",
 			"type": "Microsoft.Sql/servers/databases/extensions",
-			"apiVersion": "2014-04-01",
+			"apiVersion": "2",
 			"dependsOn": [
 				"[resourceId('Microsoft.Sql/servers/databases', '${2:sqlServer1}', '${1:sqlDatabase1}')]"
 			],

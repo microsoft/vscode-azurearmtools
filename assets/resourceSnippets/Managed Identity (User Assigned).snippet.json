@@ -9,7 +9,7 @@
         {
             "name": "${1:managedIdentity1}",
             "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
-            "apiVersion": "2018-11-30",
+            "apiVersion": "2",
             "location": "[resourceGroup().location]"
         }
     ]
