@@ -3,6 +3,8 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 // ---------------------------------------------------------------------------------------------
 
+// tslint:disable:max-func-body-length
+
 import { getBodyFromResourceSnippetFile } from "../extension.bundle";
 import { assertEx } from "./support/assertEx";
 

@@ -55,7 +55,7 @@ export class SnippetManager implements ISnippetManager {
                     const key = snippet[0];
                     const value = snippet[1];
                     assert(!map.has(key), `Resource snippet ${key} already has an entry in the main snippet file`);
-                    map.set(key, value)
+                    map.set(key, value);
                 }
             }
 
@@ -86,7 +86,7 @@ export class SnippetManager implements ISnippetManager {
         const snippetFiles = await fse.readdir(folderPath);
         for (const relativePath of snippetFiles.filter(f => f !== 'README.jsonc')) {
             const snippetName = relativePath.replace(/(.*)\.snippet\.json$/, '$1');
-            assert(snippetName !== relativePath, `Incorrectly formed resource snippet file name ${relativePath}`)
+            assert(snippetName !== relativePath, `Incorrectly formed resource snippet file name ${relativePath}`);
             const content: string = await readUtf8FileWithBom(path.join(folderPath, relativePath));
             const snippet = createResourceSnippetFromFile(snippetName, content);
             const internalSnippet = convertToInternalSnippet(snippetName, snippet);

@@ -9,7 +9,7 @@ import { KnownContexts } from "./KnownContexts";
 import { ISnippetDefinitionFromFile } from "./SnippetManager";
 
 // Similar to Bicep snippet placeholder format
-const StringSnippetPlaceholderCommentPatternRegex = new RegExp(
+const stringSnippetPlaceholderCommentPatternRegex = new RegExp(
     `\\/\\*\\\${` + // start: /*"{
     `(?<snippetPlaceholder>(.*?))` +
     `}\\*\\/` + // end: }"*/
@@ -24,7 +24,7 @@ const StringSnippetPlaceholderCommentPatternRegex = new RegExp(
     'g'
 );
 
-const NonStringSnippetPlaceholderCommentPatternRegex = new RegExp(
+const nonStringSnippetPlaceholderCommentPatternRegex = new RegExp(
     `\\/\\*\\\${` + // start: /*{
     `(?<snippetPlaceholder>(.*?))` +
     `}\\*\\/` + // end: }*/
@@ -84,14 +84,14 @@ export function getBodyFromResourceSnippetFile(snippetName: string, snippetFileC
 function getJsonFromResourceSnippetFile(snippetName: string, snippetFileContent: string): { [key: string]: unknown } {
     // e.g.  /*"{$5|Enabled,Disabled|}"*/"Enabled"  ->   "EMBEDDEDSTRING!"{$5|Enabled,Disabled|}"!EMBEDDEDSTRING"
     // e.g. /*${6|true,false|}*/false -> /*${6|true,false|}*/false
-    let snippetNoPlaceholders = snippetFileContent.replace(StringSnippetPlaceholderCommentPatternRegex, "\"EMBEDDEDSTRING!$1!EMBEDDEDSTRING\"");
+    let snippetNoPlaceholders = snippetFileContent.replace(stringSnippetPlaceholderCommentPatternRegex, "\"EMBEDDEDSTRING!$1!EMBEDDEDSTRING\"");
 
     // e.g.  /*"{$5|Enabled,Disabled|}"*/"Enabled"  ->   "EMBEDDEDSTRING!"{$5|Enabled,Disabled|}"!EMBEDDEDSTRING"
     // e.g. /*${6|true,false|}*/false -> /*${6|true,false|}*/false
-    snippetNoPlaceholders = snippetNoPlaceholders.replace(NonStringSnippetPlaceholderCommentPatternRegex, "\"NOTASTRING!$1!NOTASTRING\"");
+    snippetNoPlaceholders = snippetNoPlaceholders.replace(nonStringSnippetPlaceholderCommentPatternRegex, "\"NOTASTRING!$1!NOTASTRING\"");
 
     try {
-        return JSON.parse(snippetNoPlaceholders);
+        return <{ [key: string]: unknown }>JSON.parse(snippetNoPlaceholders);
     } catch (ex) {
         throw new Error(`Error processing resource snippet '${snippetName}': ${parseError(ex).message}`);
     }
