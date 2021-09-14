@@ -35,7 +35,7 @@ export class CaseInsensitiveMap<TKey extends string, TValue> {
     }
 
     public entries(): [TKey, TValue][] {
-        return <[TKey, TValue][]>Object.entries(this.map);
+        return Array.from(this._map.values());
     }
 
     public map<TReturn>(callbackfn: (key: TKey, value: TValue) => TReturn): TReturn[] {
