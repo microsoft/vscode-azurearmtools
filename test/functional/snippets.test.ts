@@ -221,6 +221,10 @@ const overrideExpectedDiagnostics: { [name: string]: (string | RegExp)[] } = {
     ],
     "Route Table Route": [
         "Template validation failed: The template resource 'route-name' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '50' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+    ],
+    "Windows VM Custom Script": [
+        // Blocked by https://github.com/Azure/azure-resource-manager-schemas/issues/995
+        "Missing required property \"commandToExecute\"",
     ]
 };
 
