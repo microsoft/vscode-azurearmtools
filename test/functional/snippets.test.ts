@@ -246,7 +246,7 @@ suite("Snippets functional tests", () => {
             const resourceSnippets = fse.readdirSync(resourceSnippetsFolderPath)
                 .filter(f => f !== 'README.jsonc')
                 .map(file => file.replace(/(.*)\.snippet\.json$/, '$1'));
-            const snippetExpectedResultsNames = fse.readdirSync(resolveInTestFolder('snippets/expected')).map(file => file.replace(/\.json$/, ''));
+            const snippetExpectedResultsNames = fse.readdirSync(resolveInTestFolder('snippets/expected')).map(file => file.replace(/\.snippetresult\.json$/, ''));
             let snippetNames = Object.getOwnPropertyNames(snippetsFromMainFile).concat(resourceSnippets).concat(snippetExpectedResultsNames);
             snippetNames = [...new Set(snippetNames)]; // dedupe
 
@@ -349,7 +349,7 @@ suite("Snippets functional tests", () => {
         // assert.deepStrictEqual(docTextAfterInsertion, docTextAfterFormatting, "Snippet is incorrectly formatted. Make sure to use \\t instead of spaces, and make sure the tabbing/indentations are correctly structured");
 
         // Compare with result files under snippets/expected
-        const expectedPath = path.join(expectedFolder, `${snippetName}.json`);
+        const expectedPath = path.join(expectedFolder, `${snippetName}.snippetresult.json`);
         const expected: string = fse.readFileSync(expectedPath).toString();
         // Compare text without spaces by converting to/from JSON
         const expectedNormalized = stringify(JSON.parse(removeComments(expected)));
