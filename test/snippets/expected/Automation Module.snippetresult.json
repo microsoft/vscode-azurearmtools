@@ -3,7 +3,7 @@
 		{
 			"name": "[concat('automationAccount1', '/automationVariable1')]",
 			"type": "Microsoft.Automation/automationAccounts/modules",
-			"apiVersion": "2015-10-31",
+			"apiVersion": "2019-06-01",
 			"dependsOn": [
 				"[resourceId('Microsoft.Automation/automationAccounts', 'automationAccount1')]"
 			],

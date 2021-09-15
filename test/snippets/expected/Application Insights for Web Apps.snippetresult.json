@@ -3,7 +3,7 @@
 		{
 			"name": "appInsights1-appServicePlan1-AutoScaleSettings",
 			"type": "Microsoft.Insights/autoscalesettings",
-			"apiVersion": "2014-04-01",
+			"apiVersion": "2015-04-01",
 			"location": "East US",
 			"tags": {
 				"[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/appServicePlan1')]": "Resource",
@@ -32,7 +32,7 @@
 									"timeWindow": "PT10M",
 									"timeAggregation": "Average",
 									"operator": "GreaterThan",
-									"threshold": 80.0
+									"threshold": 80
 								},
 								"scaleAction": {
 									"direction": "Increase",
@@ -50,7 +50,7 @@
 									"timeWindow": "PT1H",
 									"timeAggregation": "Average",
 									"operator": "LessThan",
-									"threshold": 60.0
+									"threshold": 60
 								},
 								"scaleAction": {
 									"direction": "Decrease",
@@ -96,8 +96,7 @@
 				"action": {
 					"odata.type": "Microsoft.Azure.Management.Insights.Models.RuleEmailAction",
 					"sendToServiceOwners": true,
-					"customEmails": [
-					]
+					"customEmails": []
 				}
 			}
 		},
@@ -125,14 +124,13 @@
 						"metricName": "HttpQueueLength"
 					},
 					"operator": "GreaterThan",
-					"threshold": 100.0,
+					"threshold": 100,
 					"windowSize": "PT5M"
 				},
 				"action": {
 					"odata.type": "Microsoft.Azure.Management.Insights.Models.RuleEmailAction",
 					"sendToServiceOwners": true,
-					"customEmails": [
-					]
+					"customEmails": []
 				}
 			}
 		},
@@ -160,14 +158,13 @@
 						"metricName": "Http5xx"
 					},
 					"operator": "GreaterThan",
-					"threshold": 0.0,
+					"threshold": 0,
 					"windowSize": "PT5M"
 				},
 				"action": {
 					"odata.type": "Microsoft.Azure.Management.Insights.Models.RuleEmailAction",
 					"sendToServiceOwners": true,
-					"customEmails": [
-					]
+					"customEmails": []
 				}
 			}
 		},
@@ -200,15 +197,14 @@
 				"action": {
 					"odata.type": "Microsoft.Azure.Management.Insights.Models.RuleEmailAction",
 					"sendToServiceOwners": true,
-					"customEmails": [
-					]
+					"customEmails": []
 				}
 			}
 		},
 		{
 			"name": "appInsights1",
 			"type": "Microsoft.Insights/components",
-			"apiVersion": "2015-05-01",
+			"apiVersion": "2020-02-02",
 			"location": "Central US",
 			"kind": "web",
 			"tags": {

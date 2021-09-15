@@ -3,7 +3,7 @@
 		{
 			"name": "keyVault1",
 			"type": "Microsoft.KeyVault/vaults",
-			"apiVersion": "2016-10-01",
+			"apiVersion": "2019-09-01",
 			"location": "[resourceGroup().location]",
 			"tags": {
 				"displayName": "keyVault1"

@@ -3,18 +3,14 @@
 		{
 			"name": "logicAppConnector1",
 			"type": "Microsoft.Web/connections",
-			"apiVersion": "2016-06-01",
+			"apiVersion": "2",
 			"location": "[resourceGroup().location]",
-			"tags": {
-			},
+			"tags": {},
 			"properties": {
 				"displayName": "logicAppConnector1",
-				"parameterValues": {
-				},
-				"customParameterValues": {
-				},
-				"nonSecretParameterValues": {
-				},
+				"parameterValues": {},
+				"customParameterValues": {},
+				"nonSecretParameterValues": {},
 				"api": {
 					"id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/logicAppConnectorApi1')]"
 				}

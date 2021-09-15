@@ -3,9 +3,8 @@
 		{
 			"name": "parent/automationSchedule1",
 			"type": "Microsoft.Automation/automationAccounts/schedules",
-			"apiVersion": "2015-10-31",
-			"tags": {
-			},
+			"apiVersion": "2019-06-01",
+			"tags": {},
 			"dependsOn": [
 				"[resourceId('Microsoft.Automation/automationAccounts', 'automationAccount1')]"
 			],

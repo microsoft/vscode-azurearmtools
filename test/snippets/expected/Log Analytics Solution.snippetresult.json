@@ -3,17 +3,15 @@
 		{
 			"name": "[concat('logAnalyticsSolution1', '[logAnalyticsWorkspace1]')]",
 			"type": "Microsoft.OperationsManagement/solutions",
-			"apiVersion": "2015-11-01-preview",
+			"apiVersion": "2",
 			"location": "[resourceGroup().location]",
-			"tags": {
-			},
+			"tags": {},
 			"dependsOn": [
 				"[resourceId('Microsoft.OperationalInsights/workspaces/views', 'logAnalyticsWorkspace1', 'logAnalyticsSolution1')]"
 			],
 			"properties": {
 				"workspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', 'logAnalyticsWorkspace1')]",
-				"referencedResources": [
-				],
+				"referencedResources": [],
 				"containedResources": [
 					"[resourceId('Microsoft.OperationalInsights/workspaces/views', 'logAnalyticsWorkspace1', 'logAnalyticsSolution1')]"
 				]
