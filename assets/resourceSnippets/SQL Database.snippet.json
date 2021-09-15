@@ -9,7 +9,7 @@
     {
 	"name": "${1:sqlServer1}/${2:sqlDatabase1}",
 	"type": "Microsoft.Sql/servers/databases",
-	"apiVersion": "2",
+	"apiVersion": "2014-04-01",
 	"location": "[resourceGroup().location]",
 	"tags": {
 		"displayName": "${2:sqlDatabase1}"
