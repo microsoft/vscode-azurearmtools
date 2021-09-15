@@ -16,19 +16,20 @@ import { IAzureUserInput, PromptResult } from 'vscode-azureextensionui';
 import { DeploymentTemplateDoc, InsertItem, TemplateSectionType } from '../../extension.bundle';
 import { getActionContext } from '../support/getActionContext';
 import { getTempFilePath } from "../support/getTempFilePath";
+import { removeApiVersions } from '../support/removeApiVersions';
 import { testWithRealSnippets } from '../support/TestSnippets';
 
 suite("InsertItem", async (): Promise<void> => {
-    function assertTemplate(actual: String, expected: String, textEditor: vscode.TextEditor, ignoreWhiteSpace: boolean = false): void {
+    function assertTemplate(actual: string, expected: string, textEditor: vscode.TextEditor, options?: { ignoreWhiteSpace?: boolean; ignoreApiVersions?: boolean }): void {
         if (textEditor.options.insertSpaces === true) {
             expected = expected.replace(/ {4}/g, ' '.repeat(Number(textEditor.options.tabSize)));
-            if (ignoreWhiteSpace) {
+            if (options?.ignoreWhiteSpace) {
                 expected = expected.replace(/ +/g, ' ');
                 actual = actual.replace(/ +/g, ' ');
             }
         } else {
             expected = expected.replace(/ {4}/g, '\t');
-            if (ignoreWhiteSpace) {
+            if (options?.ignoreWhiteSpace) {
                 expected = expected.replace(/\t+/g, '\t');
                 actual = actual.replace(/\t+/g, '\t');
             }
@@ -36,10 +37,16 @@ suite("InsertItem", async (): Promise<void> => {
         if (textEditor.document.eol === vscode.EndOfLine.CRLF) {
             expected = expected.replace(/\n/g, '\r\n');
         }
-        assert.equal(actual, expected);
+
+        if (options?.ignoreApiVersions) {
+            actual = removeApiVersions(actual);
+            expected = removeApiVersions(expected);
+        }
+
+        assert.strictEqual(actual, expected);
     }
 
-    function testInsertItem(template: string, expected: String, action: (insertItem: InsertItem, deploymentTemplate: DeploymentTemplateDoc, textEditor: vscode.TextEditor) => Promise<void>, showInputBox: string[], textToInsert: string = '', ignoreWhiteSpace: boolean = false): void {
+    function testInsertItem(template: string, expected: string, action: (insertItem: InsertItem, deploymentTemplate: DeploymentTemplateDoc, textEditor: vscode.TextEditor) => Promise<void>, showInputBox: string[], textToInsert: string = '', ignoreWhiteSpace: boolean = false): void {
         testWithRealSnippets("Tabs CRLF", async () => {
             await testInsertItemWithSettings(template, expected, false, 4, true, action, showInputBox, textToInsert, ignoreWhiteSpace);
         });
@@ -60,7 +67,7 @@ suite("InsertItem", async (): Promise<void> => {
         });
     }
 
-    async function testInsertItemWithSettings(template: string, expected: String, insertSpaces: boolean, tabSize: number, eolAsCRLF: boolean, action: (insertItem: InsertItem, deploymentTemplate: DeploymentTemplateDoc, textEditor: vscode.TextEditor) => Promise<void>, showInputBox: string[], textToInsert: string = '', ignoreWhiteSpace: boolean = false): Promise<void> {
+    async function testInsertItemWithSettings(template: string, expected: string, insertSpaces: boolean, tabSize: number, eolAsCRLF: boolean, action: (insertItem: InsertItem, deploymentTemplate: DeploymentTemplateDoc, textEditor: vscode.TextEditor) => Promise<void>, showInputBox: string[], textToInsert: string = '', ignoreWhiteSpace: boolean = false): Promise<void> {
         if (eolAsCRLF) {
             template = template.replace(/\n/g, '\r\n');
         }
@@ -80,7 +87,7 @@ suite("InsertItem", async (): Promise<void> => {
         await action(insertItem, deploymentTemplate, textEditor);
         await textEditor.edit(builder => builder.insert(textEditor.selection.active, textToInsert));
         const docTextAfterInsertion = document.getText();
-        assertTemplate(docTextAfterInsertion, expected, textEditor, ignoreWhiteSpace);
+        assertTemplate(docTextAfterInsertion, expected, textEditor, { ignoreWhiteSpace, ignoreApiVersions: true });
     }
 
     const totallyEmptyTemplate =
@@ -137,7 +144,7 @@ suite("InsertItem", async (): Promise<void> => {
         {
             "name": "keyVault1/keyVaultSecret1",
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "apiVersion": "2016-10-01",
+            "apiVersion": "xxxx-xx-xx",
             "properties": {
                 "value": "secretValue"
             }
@@ -149,7 +156,7 @@ suite("InsertItem", async (): Promise<void> => {
         {
             "name": "keyVault1/keyVaultSecret1",
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "apiVersion": "2016-10-01",
+            "apiVersion": "xxxx-xx-xx",
             "properties": {
                 "value": "secretValue"
             }
@@ -157,7 +164,7 @@ suite("InsertItem", async (): Promise<void> => {
         {
             "name": "applicationSecurityGroup1",
             "type": "Microsoft.Network/applicationSecurityGroups",
-            "apiVersion": "2019-11-01",
+            "apiVersion": "xxxx-xx-xx",
             "location": "[resourceGroup().location]",
             "tags": {},
             "properties": {}

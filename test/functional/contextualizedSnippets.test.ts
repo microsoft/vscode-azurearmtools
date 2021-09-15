@@ -17,6 +17,7 @@ import { delay } from '../support/delay';
 import { diagnosticSources, getDiagnosticsForDocument, IGetDiagnosticsOptions } from '../support/diagnostics';
 import { formatDocumentAndWait } from '../support/formatDocumentAndWait';
 import { parseTemplateWithMarkers } from '../support/parseTemplate';
+import { removeApiVersions } from '../support/removeApiVersions';
 import { simulateCompletion } from '../support/simulateCompletion';
 import { TempDocument, TempEditor, TempFile } from '../support/TempFile';
 import { testLog } from '../support/testLog';
@@ -91,9 +92,13 @@ suite("Contextualized snippets", () => {
                     }
 
                     // Format (vscode seems to be inconsistent about this in these scenarios)
-                    const docTextAfterInsertion = await formatDocumentAndWait(tempDoc.realDocument);
+                    let docTextAfterInsertion = await formatDocumentAndWait(tempDoc.realDocument);
                     testLog.writeLine(`Document after inserting snippet:\n${docTextAfterInsertion}`);
-                    assert.equal(docTextAfterInsertion, expectedTemplate);
+
+                    expectedTemplate = removeApiVersions(expectedTemplate);
+                    docTextAfterInsertion = removeApiVersions(docTextAfterInsertion);
+
+                    assert.strictEqual(docTextAfterInsertion, expectedTemplate);
 
                     // Compare diagnostics
 
@@ -398,7 +403,7 @@ suite("Contextualized snippets", () => {
         {
             "name": "webApp1",
             "type": "Microsoft.Web/sites",
-            "apiVersion": "2018-11-01",
+            "apiVersion": "xxxx-xx-xx",
             "location": "[resourceGroup().location]",
             "tags": {
                 "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/appServicePlan1')]": "Resource",
@@ -436,7 +441,7 @@ suite("Contextualized snippets", () => {
         {
             "name": "[toLower('ubuntuVM1storage')]",
             "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "xxxx-xx-xx",
             "location": "[resourceGroup().location]",
             "tags": {
                 "displayName": "ubuntuVM1 Storage Account"
@@ -449,7 +454,7 @@ suite("Contextualized snippets", () => {
         {
             "name": "ubuntuVM1-PublicIP",
             "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "2019-11-01",
+            "apiVersion": "xxxx-xx-xx",
             "location": "[resourceGroup().location]",
             "tags": {
                 "displayName": "PublicIPAddress"
@@ -464,7 +469,7 @@ suite("Contextualized snippets", () => {
         {
             "name": "ubuntuVM1-nsg",
             "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2018-08-01",
+            "apiVersion": "xxxx-xx-xx",
             "location": "[resourceGroup().location]",
             "properties": {
                 "securityRules": [
@@ -488,7 +493,7 @@ suite("Contextualized snippets", () => {
         {
             "name": "ubuntuVM1-VirtualNetwork",
             "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2019-11-01",
+            "apiVersion": "xxxx-xx-xx",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkSecurityGroups', 'ubuntuVM1-nsg')]"
@@ -518,7 +523,7 @@ suite("Contextualized snippets", () => {
         {
             "name": "ubuntuVM1-NetworkInterface",
             "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "2019-11-01",
+            "apiVersion": "xxxx-xx-xx",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIPAddresses', 'ubuntuVM1-PublicIP')]",
@@ -547,7 +552,7 @@ suite("Contextualized snippets", () => {
         {
             "name": "ubuntuVM1",
             "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2019-07-01",
+            "apiVersion": "xxxx-xx-xx",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', 'ubuntuVM1-NetworkInterface')]"
@@ -609,7 +614,7 @@ suite("Contextualized snippets", () => {
         {
             "name": "webApp1",
             "type": "Microsoft.Web/sites",
-            "apiVersion": "2018-11-01",
+            "apiVersion": "xxxx-xx-xx",
             <!cursor!>
         }
     ]
@@ -621,7 +626,7 @@ suite("Contextualized snippets", () => {
         {
             "name": "webApp1",
             "type": "Microsoft.Web/sites",
-            "apiVersion": "2018-11-01",
+            "apiVersion": "xxxx-xx-xx",
             "tags": {
                 "tagName": "tagValue"
             }
@@ -649,7 +654,7 @@ suite("Contextualized snippets", () => {
         {
             "name": "nestedDeployment1",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
+            "apiVersion": "xxxx-xx-xx",
             "properties": {
                 "expressionEvaluationOptions": {
                     "scope": "inner"
@@ -676,7 +681,7 @@ suite("Contextualized snippets", () => {
         {
             "name": "nestedDeployment1",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
+            "apiVersion": "xxxx-xx-xx",
             "properties": {
                 "expressionEvaluationOptions": {
                     "scope": "inner"
@@ -718,7 +723,7 @@ suite("Contextualized snippets", () => {
         {
             "name": "nestedDeployment1",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
+            "apiVersion": "xxxx-xx-xx",
             "properties": {
                 "expressionEvaluationOptions": {
                     "scope": "inner"
@@ -753,7 +758,7 @@ suite("Contextualized snippets", () => {
         {
             "name": "nestedDeployment1",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
+            "apiVersion": "xxxx-xx-xx",
             "properties": {
                 "expressionEvaluationOptions": {
                     "scope": "inner"
@@ -799,7 +804,7 @@ suite("Contextualized snippets", () => {
         {
             "name": "nestedDeployment1",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
+            "apiVersion": "xxxx-xx-xx",
             "properties": {
                 "expressionEvaluationOptions": {
                     "scope": "inner"
@@ -834,7 +839,7 @@ suite("Contextualized snippets", () => {
         {
             "name": "nestedDeployment1",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
+            "apiVersion": "xxxx-xx-xx",
             "properties": {
                 "expressionEvaluationOptions": {
                     "scope": "inner"
