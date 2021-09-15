@@ -3,14 +3,13 @@
 		{
 			"name": "recoveryServiceVault1",
 			"type": "Microsoft.RecoveryServices/vaults",
-			"apiVersion": "2018-01-10",
+			"apiVersion": "2021-03-01",
 			"location": "[resourceGroup().location]",
 			"sku": {
 				"name": "RS0",
 				"tier": "Standard"
 			},
-			"properties": {
-			}
+			"properties": {}
 		}
 	],
 	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",

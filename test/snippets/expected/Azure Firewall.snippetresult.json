@@ -3,10 +3,9 @@
 		{
 			"name": "firewall1",
 			"type": "Microsoft.Network/azureFirewalls",
-			"apiVersion": "2019-11-01",
+			"apiVersion": "2020-11-01",
 			"location": "[resourceGroup().location]",
-			"tags": {
-			},
+			"tags": {},
 			"properties": {
 				"applicationRuleCollections": [
 					{
@@ -32,8 +31,7 @@
 									"targetFqdns": [
 										"www.microsoft.com"
 									],
-									"fqdnTags": [
-									]
+									"fqdnTags": []
 								}
 							]
 						}
@@ -120,7 +118,7 @@
 		{
 			"name": "publicIPAddress1",
 			"type": "Microsoft.Network/publicIPAddresses",
-			"apiVersion": "2019-11-01",
+			"apiVersion": "2020-11-01",
 			"location": "[resourceGroup().location]",
 			"sku": {
 				"name": "standard"

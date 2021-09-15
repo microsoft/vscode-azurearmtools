@@ -10,8 +10,7 @@
 			],
 			"properties": {
 				"TTL": 3600,
-				"Arecords": [
-				]
+				"Arecords": []
 			}
 		}
 	],

@@ -3,10 +3,9 @@
 		{
 			"name": "publicIPPrefix1",
 			"type": "Microsoft.Network/publicIPPrefixes",
-			"apiVersion": "2019-11-01",
+			"apiVersion": "2020-11-01",
 			"location": "[resourceGroup().location]",
-			"tags": {
-			},
+			"tags": {},
 			"sku": {
 				"name": "Standard"
 			},

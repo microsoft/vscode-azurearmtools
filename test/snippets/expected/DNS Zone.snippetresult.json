@@ -5,8 +5,7 @@
 			"type": "Microsoft.Network/dnsZones",
 			"apiVersion": "2018-05-01",
 			"location": "global",
-			"properties": {
-			}
+			"properties": {}
 		}
 	],
 	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",

@@ -9,7 +9,7 @@
 		{
 			"name": "${1:parent/automationRunbook1}",
 			"type": "Microsoft.Automation/automationAccounts/runbooks",
-			"apiVersion": "2018-06-30",
+			"apiVersion": "2019-06-01",
 			"location": "[resourceGroup().location]",
 			"tags": {
 			},

@@ -9,7 +9,7 @@
 		{
 			"name": "${1:parent/automationVariable1}",
 			"type": "Microsoft.Automation/automationAccounts/variables",
-			"apiVersion": "2015-10-31",
+			"apiVersion": "2019-06-01",
 			"dependsOn": [
 				"[resourceId('Microsoft.Automation/automationAccounts', '${2:automationAccount1}')]"
 			],

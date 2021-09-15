@@ -3,13 +3,12 @@
 		{
 			"name": "availabilitySet1",
 			"type": "Microsoft.Compute/availabilitySets",
-			"apiVersion": "2019-07-01",
+			"apiVersion": "2021-03-01",
 			"location": "[resourceGroup().location]",
 			"tags": {
 				"displayName": "availabilitySet1"
 			},
-			"properties": {
-			}
+			"properties": {}
 		}
 	],
 	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",

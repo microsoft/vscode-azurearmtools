@@ -2,11 +2,10 @@
 	"resources": [
 		{
 			"type": "Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies",
-			"apiVersion": "2019-11-01",
+			"apiVersion": "2020-11-01",
 			"name": "applicationGatewayFirewallName",
 			"location": "[resourceGroup().location]",
-			"dependsOn": [
-			],
+			"dependsOn": [],
 			"properties": {
 				"policySettings": {
 					"requestBodyCheck": true,
@@ -27,7 +26,7 @@
 		},
 		{
 			"type": "Microsoft.Network/applicationGateways",
-			"apiVersion": "2019-11-01",
+			"apiVersion": "2020-11-01",
 			"name": "applicationGatewayName",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
@@ -72,8 +71,7 @@
 				"backendAddressPools": [
 					{
 						"name": "appGatewayBackendPool",
-						"properties": {
-						}
+						"properties": {}
 					}
 				],
 				"backendHttpSettingsCollection": [

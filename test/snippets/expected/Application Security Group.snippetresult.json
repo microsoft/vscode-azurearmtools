@@ -3,12 +3,10 @@
 		{
 			"name": "applicationSecurityGroup1",
 			"type": "Microsoft.Network/applicationSecurityGroups",
-			"apiVersion": "2019-11-01",
+			"apiVersion": "2020-11-01",
 			"location": "[resourceGroup().location]",
-			"tags": {
-			},
-			"properties": {
-			}
+			"tags": {},
+			"properties": {}
 		}
 	],
 	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",

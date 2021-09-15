@@ -11,14 +11,11 @@
 				"resource": {
 					"id": "table-name",
 					"schema": {
-						"columns": [
-						],
-						"partitionKeys": [
-						]
+						"columns": [],
+						"partitionKeys": []
 					}
 				},
-				"options": {
-				}
+				"options": {}
 			}
 		}
 	],

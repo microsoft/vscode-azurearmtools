@@ -41,6 +41,7 @@ import * as Json from "./language/json/JSON";
 import { ReferenceList } from "./language/ReferenceList";
 import { Span } from "./language/Span";
 import { getAvailableResourceTypesAndVersions } from './languageclient/getAvailableResourceTypesAndVersions';
+import { showAvailableResourceTypesAndVersions } from './languageclient/showAvailableResourceTypesAndVersions';
 import { notifyTemplateGraphAvailable, startArmLanguageServerInBackground, waitForLanguageServerAvailable } from "./languageclient/startArmLanguageServer";
 import { InsertionContext } from './snippets/InsertionContext';
 import { KnownContexts } from './snippets/KnownContexts';
@@ -312,6 +313,21 @@ export class AzureRMTools implements IProvideOpenedDocuments {
 
         // Developer commands
         registerCommand("azurerm-vscode-tools.developer.resetGlobalState", resetGlobalState);
+        registerCommand("azurerm-vscode-tools.developer.showAvailableResourceTypesAndVersions", async (_context: IActionContext, uri?: vscode.Uri, editor?: vscode.TextEditor) => {
+            editor = editor || vscode.window.activeTextEditor;
+            uri = uri || vscode.window.activeTextEditor?.document.uri;
+            if (editor) {
+                let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
+                if (!deploymentTemplate) {
+                    return;
+                }
+                const schema = deploymentTemplate.schemaUri;
+                if (schema) {
+                    ext.outputChannel.appendLine(`Retrieving available resource types and apiVersions for ${schema}...`);
+                    await showAvailableResourceTypesAndVersions(schema);
+                }
+            }
+        });
         registerCommand(
             "azurerm-vscode-tools.developer.showInsertionContext",
             async (actionContext: IActionContext) => {
