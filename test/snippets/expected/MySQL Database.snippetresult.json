@@ -3,7 +3,7 @@
 		{
 			"name": "MySQLdb1",
 			"type": "Microsoft.DBforMySQL/servers",
-			"apiVersion": "2",
+			"apiVersion": "2017-12-01",
 			"location": "[resourceGroup().location]",
 			"properties": {
 				"administratorLogin": "adminUsername",

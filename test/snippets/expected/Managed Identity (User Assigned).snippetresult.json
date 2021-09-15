@@ -3,7 +3,7 @@
 		{
 			"name": "managedIdentity1",
 			"type": "Microsoft.ManagedIdentity/userAssignedIdentities",
-			"apiVersion": "2",
+			"apiVersion": "2018-11-30",
 			"location": "[resourceGroup().location]"
 		}
 	],
