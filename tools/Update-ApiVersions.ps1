@@ -34,6 +34,9 @@ function Update-ApiVersions {
             $type, $apiVersion = $_ -split "@"
             $newApiVersion = Get-ApiVersion $type
             if ($newApiVersion) {
+                if ($newApiVersion -notmatch "[0-9]{4}-[0-9]{2}-[0-9]{2}") {
+                    throw "Invalid API version found"
+                }
                 write-host "$type@$apiVersion -> $type@$newApiVersion"
         
                 $pattern = 
@@ -138,16 +141,16 @@ function Get-ApiVersion {
             return
         }
 
-        $versions = $typeInfo.ApiVersions | Sort-Object -Descending
+        $versions = [array]($typeInfo.ApiVersions | Sort-Object -Descending)
     }
 
     # Pick first version without "preview"
-    $nonPreviews = $versions | Where-Object { $_ -notlike "*preview" }
+    $nonPreviews = [array] ($versions | Where-Object { $_ -notlike "*preview" })
     if ($nonPreviews.Length -eq 0) {
         Write-Warning "Couldn't find a non-preview version for $ResourceType"
-        $versions[0]
+        ([array]$versions)[0]
     }
     else {
-        $nonPreviews[0]
+        ([array]$nonPreviews)[0]
     }
 }
