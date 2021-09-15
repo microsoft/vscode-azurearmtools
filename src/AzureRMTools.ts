@@ -323,7 +323,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 }
                 const schema = deploymentTemplate.schemaUri;
                 if (schema) {
-                    ext.outputChannel.appendLine(`Retrieving available resource types and apiVersions for ${schema}...`)
+                    ext.outputChannel.appendLine(`Retrieving available resource types and apiVersions for ${schema}...`);
                     await showAvailableResourceTypesAndVersions(schema);
                 }
             }
