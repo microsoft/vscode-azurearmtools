@@ -1143,7 +1143,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     // Current file is a parameter file
                     isParamFile = true;
 
-                    const templateFileUri = this._mapping.getTemplateFile(activeDocument.uri);
+                    const templateFileUri = this._mapping.getTemplateFile(activeDocument.uri) ?? await this.tryMapFromMetadata(deploymentTemplate);
                     if (templateFileUri) {
                         paramFileHasTemplateFile = true;
                         const doesTemplateFileExist = await pathExists(templateFileUri);
@@ -1176,6 +1176,20 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                 hasTemplateFile: paramFileHasTemplateFile
             });
         }
+    }
+
+    /**
+     * Try to map the parameter file to the template based on metadata in the parameter file.
+     */
+    private async tryMapFromMetadata(parametersDoc: DeploymentParametersDoc): Promise<vscode.Uri | undefined> {
+        const templateFileUri = parametersDoc.metadataTemplateUri;
+        if (!templateFileUri || !await pathExists(templateFileUri)) {
+            return Promise.resolve(undefined);
+        }
+
+        return this._mapping.mapParameterFile(templateFileUri, parametersDoc.documentUri).then(() => {
+            return templateFileUri;
+        });
     }
 
     /**
