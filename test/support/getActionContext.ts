@@ -1,4 +1,4 @@
-import { IActionContext } from "vscode-azureextensionui";
+import { IActionContext, IAzureUserInput } from "vscode-azureextensionui";
 
 export function getActionContext(): IActionContext {
     return {
@@ -13,6 +13,8 @@ export function getActionContext(): IActionContext {
             rethrow: false,
             suppressDisplay: true,
             suppressReportIssue: true
-        }
+        },
+        ui: <IAzureUserInput><unknown>undefined,
+        valuesToMask: []
     };
 }
