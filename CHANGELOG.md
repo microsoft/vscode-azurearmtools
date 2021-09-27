@@ -2,6 +2,28 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.15.3 (2021-09-27)
+
+### Added
+
+- Added notification message about availability of Bicep extension (can choose to never see again) [#1304](https://github.com/microsoft/vscode-azurearmtools/issues/1304)
+
+### Updated
+
+- Updated snippet apiVersion values [#1357](https://github.com/microsoft/vscode-azurearmtools/issues/1357), [#1373](https://github.com/microsoft/vscode-azurearmtools/issues/1373)
+
+### Fixed
+
+- ARM tools snippet completions show up in bicepconfig.json files [#1307](https://github.com/microsoft/vscode-azurearmtools/issues/1307)
+- Note in "providers" template function description that it has been deprecated [#1356](https://github.com/microsoft/vscode-azurearmtools/issues/1356)
+
+### Engineering
+
+- Updated to TypeScript 4
+- Test improvements
+- Improvements to error telemetry from language server
+- Moved reource snippets to individual template files to make editing and proofing easier [#1370](https://github.com/microsoft/vscode-azurearmtools/issues/1370)
+
 ## Version 0.15.2
 
 ### Updated
