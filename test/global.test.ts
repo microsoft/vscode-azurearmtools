@@ -12,7 +12,7 @@ import { armTemplateLanguageId, configKeys, configPrefix, ext, stopArmLanguageSe
 import { displayCacheStatus } from './support/cache';
 import { delay } from "./support/delay";
 import { publishVsCodeLogs } from './support/publishVsCodeLogs';
-import { createTestLog, deleteTestLog, testLog } from './support/testLog';
+import { alwaysEchoTestLog, createTestLog, deleteTestLog, setTestLogOutputFile, testLog, writeToLog, writeToWarning } from './support/testLog';
 import { useTestSnippets } from './support/TestSnippets';
 import { logsFolder } from './testConstants';
 import { useTestFunctionMetadata } from "./TestData";
@@ -31,6 +31,7 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
         rimraf.sync(logsFolder);
     }
     await fse.mkdir(logsFolder);
+    setTestLogOutputFile(path.join(logsFolder, "testlog.txt"));
 
     await displayCacheStatus();
     // await publishCache(path.join(logsFolder, 'pre-cache'));
@@ -48,7 +49,7 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     vscode.commands.executeCommand('workbench.actions.view.problems');
 
     // Set some configuration settings that are required for the tests to run properly
-    console.log("Updating user settings");
+    writeToLog("Updating user settings");
     // ... autoDetectJsonTemplates (so editor loads with .json/json with our language server)
     previousSettings.autoDetectJsonTemplates = vscode.workspace.getConfiguration(configPrefix).get<boolean>(configKeys.autoDetectJsonTemplates);
     await vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, true, vscode.ConfigurationTarget.Global);
@@ -62,12 +63,12 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     const confirmedNewAssociations = Object.assign({}, vscode.workspace.getConfiguration('files').get<{}>('associations'));
     console.warn("Confirmed new file associations:", confirmedNewAssociations);
 
-    console.log('Done: global.test.ts: suiteSetup');
+    writeToLog('Done: global.test.ts: suiteSetup');
 });
 
 // Runs after all tests are done
 suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
-    console.log('Done: global.test.ts: suiteTeardown');
+    writeToLog('Done: global.test.ts: suiteTeardown');
 
     await displayCacheStatus();
     // await publishCache(path.join(logsFolder, 'post-cache'));
@@ -77,7 +78,7 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
     await publishVsCodeLogs(undefined);
 
     /* Restoring settings doesn't seem to work at this point
-    console.log('Restoring settings');
+    writeToLog('Restoring settings');
     vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, previousSettings.autoDetectJsonTemplates, vscode.ConfigurationTarget.Global);
     delete previousSettings.fileAssociations["*.azrm"];
     await vscode.workspace.getConfiguration('file').update('assocations', previousSettings.fileAssociations, vscode.ConfigurationTarget.Global);
@@ -87,24 +88,30 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
     */
 
     await stopArmLanguageServer();
-    console.log("Tests complete.");
+    writeToLog("Tests complete.");
 });
 
 // Runs before each individual test
 setup(function (this: Mocha.IBeforeAndAfterContext): void {
+    writeToLog(`Running: ${this.currentTest.title}`);
     createTestLog();
 });
 
 // Runs after each individual test
 teardown(function (this: Mocha.IBeforeAndAfterContext): void {
-    // console.warn("Teardown");
     if (!this.currentTest.state || this.currentTest.state === 'failed') {
         if (testLog.toString()) {
-            console.warn("Failed");
-            console.warn(`Failed.  TEST LOG:\n${testLog.toString()}\n`);
+            writeToWarning("Failed");
         } else {
-            console.warn("Failed (test log is empty)");
+            writeToWarning("Failed (test log is empty)");
         }
-        deleteTestLog();
+    } else {
+        let message = "Passed.\n";
+        if (alwaysEchoTestLog) {
+            message += `TEST LOG:\n${testLog.toString()}\n`;
+            writeToLog(message);
+        }
     }
+
+    deleteTestLog();
 });

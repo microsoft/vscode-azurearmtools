@@ -2,7 +2,7 @@ steps:
   - task: CopyFiles@2
     displayName: "Copy logs folder to staging directory"
     inputs:
-      Contents: "logs/**"
+      Contents: "$(Build.SourcesDirectory)/logs/**"
       TargetFolder: "$(build.artifactstagingdirectory)"
     condition: succeededOrFailed()
 
@@ -10,5 +10,5 @@ steps:
     displayName: "Publish artifacts: logs"
     inputs:
       PathtoPublish: "$(build.artifactstagingdirectory)"
-      ArtifactName: logs-$(Agent.OS)
+      ArtifactName: testlogs-$(Agent.OS)
     condition: succeededOrFailed()

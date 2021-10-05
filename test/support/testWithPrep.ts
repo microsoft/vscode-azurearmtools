@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { ITest, ITestCallbackContext } from "mocha";
+import { writeToLog } from "./testLog";
 
 export interface ITestPreparation {
     // Perform pretest preparations, and return a Disposable which will revert those changes
@@ -33,7 +34,7 @@ export function testWithPrep(expectation: string, preparations?: ITestPreparatio
                 for (let prep of preparations ?? []) {
                     const prepResult = prep.pretest.call(this);
                     if (prepResult.skipTest) {
-                        console.log(`Skipping test because: ${prepResult.skipTest}`);
+                        writeToLog(`Skipping test because: ${prepResult.skipTest}`);
                         this.skip();
                         return;
                     }
