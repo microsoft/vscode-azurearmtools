@@ -17,6 +17,7 @@ import { commands, Uri } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
 import { getTempFilePath } from '../support/getTempFilePath';
 import { normalizeString } from '../support/normalizeString';
+import { writeToLog } from '../support/testLog';
 import { DISABLE_SLOW_TESTS } from '../testConstants';
 
 const tleGrammarSourcePath: string = path.join(__dirname, '../../../grammars/arm-expression-string.tmLanguage.json');
@@ -254,7 +255,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     } finally {
         let stop = Date.now();
         let duration = stop - start;
-        console.log(`Test duration: ${duration}`);
+        writeToLog(`Test duration: ${duration}`);
         if (duration > longestTestDuration) {
             longestTestDuration = duration;
         }
@@ -369,6 +370,6 @@ suite('TLE colorization', function (this: ISuiteCallbackContext): void {
     });
 
     test("Check longest test duration", () => {
-        console.log(`Longest colorization test duration: ${longestTestDuration / 1000}s`);
+        writeToLog(`Longest colorization test duration: ${longestTestDuration / 1000}s`);
     });
 });

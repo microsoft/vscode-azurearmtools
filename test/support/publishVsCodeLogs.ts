@@ -7,9 +7,10 @@ import * as fse from 'fs-extra';
 import * as path from 'path';
 import { ext } from '../../extension.bundle';
 import { logsFolder } from '../testConstants';
+import { writeToLog, writeToWarning } from './testLog';
 
 export async function publishVsCodeLogs(extensionid: string | undefined): Promise<void> {
-    console.log(`Copying the vscode logs for ${extensionid ?? 'all'}...`);
+    writeToLog(`Copying the vscode logs for ${extensionid ?? 'all'}...`);
     const parentPath = path.dirname(ext.context.logPath);
     const sourcePath = path.join(parentPath, extensionid ?? '..');
     const destFolderPath = path.join(logsFolder, extensionid ?? 'all');
@@ -21,6 +22,6 @@ export async function publishVsCodeLogs(extensionid: string | undefined): Promis
             preserveTimestamps: true
         });
     } else {
-        console.log(`  Log folder does not exist: ${sourcePath}`);
+        writeToWarning(`  Log folder does not exist: ${sourcePath}`);
     }
 }
