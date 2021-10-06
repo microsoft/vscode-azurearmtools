@@ -2,7 +2,11 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-const alwaysEchoTestLog: boolean = /^(true|1)?$/i.test(process.env.ALWAYS_ECHO_TEST_LOG ?? '');
+// tslint:disable: prefer-template
+
+import * as fse from "fs-extra";
+
+export const alwaysEchoTestLog: boolean = /^(true|1)?$/i.test(process.env.ALWAYS_ECHO_TEST_LOG ?? '');
 
 export interface ITestLog {
     writeLine(message: string | undefined): void;
@@ -20,7 +24,38 @@ class UninitializedLog implements ITestLog {
     }
 }
 
+function writeToLogCore(message: string, ...args: object[]): string {
+    message = new Date().toLocaleDateString() + ": " + message + "\n";
+
+    if (testLogOutputFile) {
+        fse.appendFileSync(testLogOutputFile, message);
+    }
+
+    return message;
+}
+
+export function writeToWarning(message: string): void {
+    message = writeToLogCore("** WARNING:" + message);
+    console.warn(message);
+}
+
+export function writeToError(message: string): void {
+    message = writeToLogCore("** ERROR:" + message);
+    console.error(message);
+}
+
+export function writeToLog(message: string): void {
+    message = writeToLogCore(message);
+    console.log(message);
+}
+
 export let testLog: ITestLog = new UninitializedLog();
+
+let testLogOutputFile: string | undefined;
+export function setTestLogOutputFile(filePath: string): void {
+    testLogOutputFile = filePath;
+    writeToLog(`Writing logs to ${testLogOutputFile}`);
+}
 
 export function createTestLog(): void {
     testLog = new StringTestLog();
@@ -34,7 +69,9 @@ export class StringTestLog implements ITestLog {
     private _data: string[] = [];
 
     public writeLine(message: string | undefined): void {
-        this._data.push(message === undefined ? '(undefined)' : message);
+        message = message === undefined ? '(undefined)' : message;
+        this._data.push(message);
+
         if (alwaysEchoTestLog) {
             console.warn(`testLog: ${message}`);
         }

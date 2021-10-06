@@ -7,6 +7,7 @@
 
 import * as os from 'os';
 import * as path from 'path';
+import { writeToLog } from './support/testLog';
 
 export const DEFAULT_TESTCASE_TIMEOUT_MS = 2 * 60 * 1000;
 
@@ -15,15 +16,15 @@ export const isWebpack: boolean = /^(false|0)?$/i.test(process.env.AZCODE_ARM_IG
 export const isWin32: boolean = os.platform() === 'win32';
 export const isCaseSensitiveFileSystem: boolean = !isWin32;
 
-export const basePath = path.join(__dirname, isWebpack ? "" : "..", "..");
+const basePath = path.join(__dirname, isWebpack ? ".." : "..", "..");
 
 // tslint:disable-next-line: strict-boolean-expressions
 export const DISABLE_SLOW_TESTS = !!/^(true|1)$/i.test(process.env.DISABLE_SLOW_TESTS || '');
-console.log(`DISABLE_SLOW_TESTS = ${DISABLE_SLOW_TESTS}`);
+writeToLog(`DISABLE_SLOW_TESTS = ${DISABLE_SLOW_TESTS}`);
 
 // tslint:disable-next-line: strict-boolean-expressions
 export const DISABLE_LANGUAGE_SERVER: boolean = !!/^(true|1)$/i.test(process.env.DISABLE_LANGUAGE_SERVER || '') || DISABLE_SLOW_TESTS;
-console.log(`DISABLE_LANGUAGE_SERVER = ${DISABLE_LANGUAGE_SERVER}`);
+writeToLog(`DISABLE_LANGUAGE_SERVER = ${DISABLE_LANGUAGE_SERVER}`);
 
 // This folder gets published as an artifact after the pipeline runs
 export const logsFolder = path.join(basePath, 'logs');

@@ -10,6 +10,7 @@ import * as process from 'process';
 import * as rimraf from 'rimraf';
 import { parseError } from 'vscode-azureextensionui';
 import { isWin32 } from '../testConstants';
+import { writeToError, writeToLog } from './testLog';
 
 const homedir = os.homedir();
 const cacheFolder = isWin32
@@ -35,35 +36,35 @@ export async function clearCache(): Promise<void> {
             });
 
             if (fse.pathExistsSync(cacheFolder)) {
-                console.error(`...Cache folder still exists!`);
+                writeToError(`...Cache folder still exists!`);
                 await displayCacheStatus();
             } else {
-                console.log(`...Cache folder successfully deleted`);
+                writeToLog(`...Cache folder successfully deleted`);
                 await displayCacheStatus();
             }
         } catch (error) {
-            console.log("Could not clear cache!");
-            console.error(parseError(error).message);
+            writeToError("Could not clear cache!");
+            writeToError(parseError(error).message);
             await displayCacheStatus();
         }
     } else {
-        console.log(`...Cache folder does not exist, no need to clear`);
+        writeToLog(`...Cache folder does not exist, no need to clear`);
     }
 }
 
 export async function displayCacheStatus(): Promise<void> {
-    console.log(`Inspecting cache...`);
+    writeToLog(`Inspecting cache...`);
     if (fse.pathExistsSync(cacheFolder)) {
-        console.log(`  Cache contents:`);
-        console.log(`${(await fse.readdir(cacheFolder)).length} file(s)`);
-        // console.log((await fse.readdir(cacheFolder)).join(os.EOL));
+        writeToLog(`  Cache contents:`);
+        writeToLog(`${(await fse.readdir(cacheFolder)).length} file(s)`);
+        // writeToLog((await fse.readdir(cacheFolder)).join(os.EOL));
     } else {
-        console.log(`  Cache folder does not exist: ${cacheFolder}`);
+        writeToLog(`  Cache folder does not exist: ${cacheFolder}`);
     }
 }
 
 export async function publishCache(destFolderPath: string): Promise<void> {
-    console.log(`Copying the cache...`);
+    writeToLog(`Copying the cache...`);
     const destFolderExpirationPath = path.join(destFolderPath, 'Expiration');
 
     if (await fse.pathExists(destFolderExpirationPath)) {
@@ -81,7 +82,7 @@ export async function publishCache(destFolderPath: string): Promise<void> {
             await copyCacheFile(path.join('Expiration', file), destFolderPath);
         }
     } else {
-        console.log(`  Cache folder does not exist: ${cacheFolder}`);
+        writeToLog(`  Cache folder does not exist: ${cacheFolder}`);
     }
 
     async function copyCacheFile(cacheFileRelativePath: string, destCacheFolderPath: string): Promise<void> {
