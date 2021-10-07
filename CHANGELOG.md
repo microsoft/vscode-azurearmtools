@@ -2,6 +2,11 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.15.4 (2021-10-07)
+
+### Fixed
+
+- Using scaffolding snippets in empty JSON file should not require CTRL+SPACE [#1390](https://github.com/microsoft/vscode-azurearmtools/issues/1390)
 ## Version 0.15.3 (2021-09-27)
 
 ### Added
