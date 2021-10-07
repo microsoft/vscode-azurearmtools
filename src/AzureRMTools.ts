@@ -1402,7 +1402,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     return undefined;
                 }
             } else {
-                const result = await this.getUnsupportedJsonSnippets(actionContext, document, position);
+                const result = await this.getJsonScaffoldingSnippets(actionContext, document, position);
                 jsonDocument = result.jsonDocument;
                 items = result.items;
             }
@@ -1419,17 +1419,24 @@ export class AzureRMTools implements IProvideOpenedDocuments {
     /**
      * Retrieve snippets for a JSON file that is not a deployment or parameters file
      */
-    private async getUnsupportedJsonSnippets(
+    private async getJsonScaffoldingSnippets(
         actionContext: IActionContext,
         document: vscode.TextDocument,
         position: vscode.Position
     ): Promise<{ jsonDocument?: IJsonDocument; items?: Item[] }> {
-        const text = document.getText();
-        if (text.length > 100 /*limit size of strings we trim*/ || text.trim() !== '') {
+        // We only want to show our scaffolding snippets (e.g. "arm!") when the document is empty or if they've started to type "arm" to bring up
+        // these snippets.  If they already have other content in the JSON file, we don't want to show these snippets.
+
+        const fullText = document.getText();
+        let text = fullText;
+        if (text.length > 100) { // Limit size of strings we trim
+            return {};
+        }
+        text = text.trim();
+        if (!(text === "" || text === "a" || text === "ar" || text.startsWith("arm"))) {
             return {};
         }
 
-        // It's an empty (or whitespace) document, so we can try with the empty-document context
         actionContext.telemetry.properties.isEmptyDoc = 'true';
         const insertionContext: InsertionContext = {
             context: KnownContexts.emptyDocument,
@@ -1437,8 +1444,8 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         };
         const jsonDocument: IJsonDocument = new UnsupportedJsonDocument(document.getText(), document.uri);
 
-        const index = jsonDocument.getDocumentCharacterIndex(position.line, position.character);
-        const span = new Span(index, 0);
+        const index = fullText.length - fullText.trimLeft().length; // Start at beginning of non-whitespace
+        const span = new Span(index, fullText.length - index); // Should replace to end of buffer
         const items: Item[] = await ext.snippetManager.value.getSnippetsAsCompletionItems(insertionContext, span);
 
         return { jsonDocument, items };
