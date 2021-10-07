@@ -439,7 +439,6 @@ suite("TemplatePositionContext", () => {
             assert.deepStrictEqual(hoverInfo, []);
         });
 
-
         test("in property name json token", () => {
             const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B'", fakeId, 0);
             const hoverInfo: IHoverInfo[] = dt.getContextFromDocumentCharacterIndex(3, undefined).getHoverInfo();
