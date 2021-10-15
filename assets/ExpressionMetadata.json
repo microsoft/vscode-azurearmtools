@@ -295,6 +295,13 @@
             "maximumArguments": null
         },
         {
+            "name": "items",
+            "expectedUsage": "items(obj)",
+            "description": "Returns an array of keys and values for an object. Elements are consistently ordered alphabetically by key.",
+            "minimumArguments": 1,
+            "maximumArguments": 1
+        },
+        {
             "name": "json",
             "expectedUsage": "json(arg1)",
             "description": "Returns a JSON object from the specified string, or an empty object when null is specified ",
@@ -567,6 +574,27 @@
             ]
         },
         {
+            "name": "managementGroup",
+            "expectedUsage": "managementGroup()",
+            "description": "Returns a structured object that represents the current management group. This function is only valid in templates that are deployed at management group scope",
+            "minimumArguments": 0,
+            "maximumArguments": 0,
+            "returnValueMembers": [
+                {
+                    "name": "id"
+                },
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "type"
+                },
+                {
+                    "name": "properties"
+                }
+            ]
+        },
+        {
             "name": "max",
             "expectedUsage": "max(arg1, ...)",
             "description": "Returns the maximum value from an array of integers or a comma-separated list of integers.",
@@ -784,6 +812,27 @@
             "description": "Returns an array or string with the specified number of elements or characters from the start of the array or string.",
             "minimumArguments": 2,
             "maximumArguments": 2
+        },
+        {
+            "name": "tenant",
+            "expectedUsage": "tenant()",
+            "description": "Returns a structured object that represents the current tenant.",
+            "minimumArguments": 0,
+            "maximumArguments": 0,
+            "returnValueMembers": [
+                {
+                    "name": "country"
+                },
+                {
+                    "name": "countryCode"
+                },
+                {
+                    "name": "displayName"
+                },
+                {
+                    "name": "tenantId"
+                }
+            ]
         },
         {
             "name": "tenantResourceId",
