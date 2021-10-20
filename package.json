@@ -5,7 +5,7 @@
     "version": "0.15.4-alpha",
     "publisher": "msazurermtools",
     "config": {
-        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.21516.2"
+        "ARM_LANGUAGE_SERVER_NUGET_VERSION": "3.0.0-preview.21520.3"
     },
     "categories": [
         "Azure",
