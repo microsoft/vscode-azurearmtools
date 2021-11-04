@@ -6,7 +6,7 @@
 
 import * as fse from "fs-extra";
 
-export const alwaysEchoTestLog: boolean = /^(true|1)?$/i.test(process.env.ALWAYS_ECHO_TEST_LOG ?? '');
+export const alwaysEchoTestLog: boolean = /^(true|1)$/i.test(process.env.ALWAYS_ECHO_TEST_LOG ?? '');
 
 interface ITestLog {
     writeLine(message: string | undefined): void;

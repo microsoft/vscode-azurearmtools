@@ -83,7 +83,7 @@ interface IErrorsAndWarnings {
 
 const invalidRenameError = "Only parameters, variables, user namespaces and user functions can be renamed.";
 
-const echoOutputChannelToConsole: boolean = /^(true|1)?$/i.test(process.env.ECHO_OUTPUT_CHANNEL_TO_CONSOLE ?? '');
+const echoOutputChannelToConsole: boolean = /^(true|1)$/i.test(process.env.ECHO_OUTPUT_CHANNEL_TO_CONSOLE ?? '');
 
 // This method is called when the extension is activated
 // Your extension is activated the very first time the command is executed
