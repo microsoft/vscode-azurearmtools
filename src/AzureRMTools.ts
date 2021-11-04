@@ -875,7 +875,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         // Only ask to upgrade once per session per file
         const document = editor.document;
         const documentPath = document.uri.fsPath;
-        let queriedToUpdateSchema = this._filesAskedToUpdateSchemaThisSession.has(documentPath); // why is queriedToUpdateSchema not used?
+        //let queriedToUpdateSchema = this._filesAskedToUpdateSchemaThisSession.has(documentPath); // why is queriedToUpdateSchema not used?
 
         this._filesAskedToUpdateSchemaThisSession.add(documentPath);
 

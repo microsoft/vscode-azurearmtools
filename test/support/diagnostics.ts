@@ -437,18 +437,7 @@ export async function getDiagnosticsForDocument(
         }
     });
 
-    let diagnostics: IDiagnosticsResults;
-    try {
-        diagnostics = await diagnosticsPromise; //asdfasdf
-        assert(diagnostics);
-    } catch (err) {
-        let a = 1; //asdf
-        a += 1;
-        throw err;
-    } finally {
-        let b = 1; //asdf
-        b += 1;
-    }
+    let diagnostics = await diagnosticsPromise;
 
     if (DEBUG_BREAK_AFTER_DIAGNOSTICS_COMPLETE) {
         // tslint:disable-next-line:no-debugger

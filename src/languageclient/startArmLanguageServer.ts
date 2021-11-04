@@ -92,7 +92,7 @@ export function startArmLanguageServerInBackground(): void {
                         // The server is implemented in .NET Core. We run it by calling 'dotnet' with the dll as an argument
                         let serverDllPath: string = findLanguageServer();
                         let dotnetExePath: string | undefined = await getDotNetPath();
-                        dotnetExePath = undefined; //asdf
+                        if (dotnetExePath) { dotnetExePath = undefined; } //asdf
                         if (!dotnetExePath) { //asdf
                             // Acquisition failed
                             throw new Error(".dotnet acquisition returned no path");
