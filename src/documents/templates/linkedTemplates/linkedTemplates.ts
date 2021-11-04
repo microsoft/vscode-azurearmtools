@@ -16,7 +16,7 @@ import { filterByType } from '../../../util/filterByType';
 import { httpGet } from '../../../util/httpGet';
 import { prependLinkedTemplateScheme, removeLinkedTemplateScheme } from '../../../util/linkedTemplateScheme';
 import { normalizeUri } from '../../../util/normalizedPaths';
-import { pathExists } from '../../../util/pathExists';
+import { pathExistsNoThrow } from '../../../util/pathExists';
 import { parseUri, stringifyUri } from '../../../util/uri';
 import { DeploymentTemplateDoc } from '../../templates/DeploymentTemplateDoc';
 import { LinkedTemplateScope } from '../../templates/scopes/templateScopes';
@@ -181,7 +181,7 @@ async function tryOpenLocalLinkedFile(
 ): Promise<OpenLinkedFileResult> {
     try {
         // Check first if the path exists, so we get a better error message if not
-        if (!(await pathExists(localPath))) {
+        if (!(await pathExistsNoThrow(localPath))) {
             return {
                 loadError: <Errorish>new LinkedTemplatePathNotFoundError(
                     pathType === PathType.parametersLink ?
@@ -256,7 +256,7 @@ export async function openLinkedTemplateFileCommand(linkedTemplateUri: Uri, acti
     actionContext.telemetry.properties.uriHasSas = String(!!linkedTemplateUri.query.match('[&?]sig='));
 
     if (linkedTemplateUri.scheme === documentSchemes.file) {
-        const exists = await pathExists(linkedTemplateUri);
+        const exists = await pathExistsNoThrow(linkedTemplateUri);
         actionContext.telemetry.properties.exists = String(exists);
         if (!exists) {
             const fsPath = linkedTemplateUri.fsPath;
@@ -287,7 +287,7 @@ export async function reloadLinkedTemplateFileCommand(linkedTemplateUri: Uri, ac
     actionContext.telemetry.properties.scheme = linkedTemplateUri.scheme;
 
     if (linkedTemplateUri.scheme === documentSchemes.file) {
-        const exists = await pathExists(linkedTemplateUri);
+        const exists = await pathExistsNoThrow(linkedTemplateUri);
         actionContext.telemetry.properties.exists = String(exists);
         if (!exists) {
             const fsPath = linkedTemplateUri.fsPath;

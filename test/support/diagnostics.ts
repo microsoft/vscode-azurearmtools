@@ -333,107 +333,122 @@ export async function getDiagnosticsForDocument(
 
     const timeoutMs = options.timeoutMs ?? defaultDiagnosticsTimeoutMs;
 
-    // tslint:disable-next-line:typedef promise-must-complete // (false positive for promise-must-complete)
-    let diagnosticsPromise = new Promise<IDiagnosticsResults>(async (resolve, reject) => {
-        let currentDiagnostics: Diagnostic[] | undefined;
+    let diagnosticsPromise = new Promise<IDiagnosticsResults>(async (resolve, reject): Promise<void> => {
+        try {
+            let currentDiagnostics: Diagnostic[] | undefined;
 
-        function getCurrentDiagnostics(): IDiagnosticsResults {
-            const sourceCompletionVersions: { [source: string]: number } = {};
+            function getCurrentDiagnostics(): IDiagnosticsResults {
+                const sourceCompletionVersions: { [source: string]: number } = {};
 
-            currentDiagnostics = languages.getDiagnostics(documentUri);
+                currentDiagnostics = languages.getDiagnostics(documentUri);
 
-            // Filter out any language server state diagnostics
-            currentDiagnostics = currentDiagnostics.filter(d => d.source !== languageServerStateSource);
+                // Filter out any language server state diagnostics
+                currentDiagnostics = currentDiagnostics.filter(d => d.source !== languageServerStateSource);
 
-            // Filter diagnostics according to sources filter
-            let filteredDiagnostics = currentDiagnostics.filter(d => filterSources.find(s => d.source === s.name));
+                // Filter diagnostics according to sources filter
+                let filteredDiagnostics = currentDiagnostics.filter(d => filterSources.find(s => d.source === s.name));
 
-            if (options.ignoreInfos) {
-                filteredDiagnostics = filteredDiagnostics.filter(d => d.message.startsWith(diagnosticsCompletePrefix) || d.severity !== DiagnosticSeverity.Information);
+                if (options.ignoreInfos) {
+                    filteredDiagnostics = filteredDiagnostics.filter(d => d.message.startsWith(diagnosticsCompletePrefix) || d.severity !== DiagnosticSeverity.Information);
+                }
+
+                // Find completion messages
+                for (let d of filteredDiagnostics) {
+                    if (d.message.startsWith(diagnosticsCompletePrefix)) {
+                        const version = Number(d.message.match(/version ([0-9]+)/)![1]);
+                        sourceCompletionVersions[d.source!] = version;
+                    }
+                }
+
+                // Remove completion messages
+                filteredDiagnostics = filteredDiagnostics.filter(d => !d.message.startsWith(diagnosticsCompletePrefix));
+
+                if (includesLanguageServerSource) {
+                    if (ext.languageServerState === LanguageServerState.Failed) {
+                        throw new Error(`Language server failed on start-up: ${ext.languageServerStartupError}`);
+                    } else if (ext.languageServerState === LanguageServerState.Stopped) {
+                        throw new Error(`Language server is in stopped state`);
+                    }
+                }
+
+                return { diagnostics: filteredDiagnostics, sourceCompletionVersions };
             }
 
-            // Find completion messages
-            for (let d of filteredDiagnostics) {
-                if (d.message.startsWith(diagnosticsCompletePrefix)) {
-                    const version = Number(d.message.match(/version ([0-9]+)/)![1]);
-                    sourceCompletionVersions[d.source!] = version;
+            function areAllSourcesComplete(sourceCompletionVersions: { [source: string]: number }): boolean {
+                for (let source of filterSources) {
+                    const completionVersion = sourceCompletionVersions[source.name];
+                    if (completionVersion === undefined) {
+                        return false;
+                    }
+                    if (requiredSourceCompletionVersions[source.name] !== undefined
+                        && completionVersion < requiredSourceCompletionVersions[source.name]) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            async function diagnosticsFilterPasses(results: IDiagnosticsResults): Promise<boolean> {
+                if (options.waitForDiagnosticsFilter) {
+                    const filterValue = await options.waitForDiagnosticsFilter(results);
+                    return filterValue;
+                }
+
+                return true;
+            }
+
+            let currentResults: IDiagnosticsResults = previousResults ?? getCurrentDiagnostics();
+            const requiredSourceCompletionVersions = Object.assign({}, currentResults.sourceCompletionVersions);
+            if (options.waitForChange || previousResults) {
+                // tslint:disable-next-line:no-for-in forin
+                for (let source in requiredSourceCompletionVersions) {
+                    requiredSourceCompletionVersions[source] = requiredSourceCompletionVersions[source] + 1;
                 }
             }
 
-            // Remove completion messages
-            filteredDiagnostics = filteredDiagnostics.filter(d => !d.message.startsWith(diagnosticsCompletePrefix));
+            if (areAllSourcesComplete(currentResults.sourceCompletionVersions) && await diagnosticsFilterPasses(currentResults)) {
+                resolve(currentResults);
+                return;
+            }
 
-            if (includesLanguageServerSource) {
-                if (ext.languageServerState === LanguageServerState.Failed) {
-                    throw new Error(`Language server failed on start-up: ${ext.languageServerStartupError}`);
+            // Now only poll on changed events
+            testLog.writeLine("Waiting for diagnostics to complete...");
+            let done = false;
+            timer = setTimeout(
+                () => {
+                    reject(
+                        new Error('Timed out waiting for diagnostics. Last retrieved diagnostics: '
+                            + (currentDiagnostics ? currentDiagnostics.map(d => d.message).join('\n') : "None")));
+                    done = true;
+                },
+                timeoutMs);
+
+            while (!done) {
+                const results = getCurrentDiagnostics();
+                if (areAllSourcesComplete(results.sourceCompletionVersions) && await diagnosticsFilterPasses(results)) {
+                    resolve(results);
+                    done = true;
                 }
+                await delay(100);
             }
-
-            return { diagnostics: filteredDiagnostics, sourceCompletionVersions };
-        }
-
-        function areAllSourcesComplete(sourceCompletionVersions: { [source: string]: number }): boolean {
-            for (let source of filterSources) {
-                const completionVersion = sourceCompletionVersions[source.name];
-                if (completionVersion === undefined) {
-                    return false;
-                }
-                if (requiredSourceCompletionVersions[source.name] !== undefined
-                    && completionVersion < requiredSourceCompletionVersions[source.name]) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        async function diagnosticsFilterPasses(results: IDiagnosticsResults): Promise<boolean> {
-            if (options.waitForDiagnosticsFilter) {
-                const filterValue = await options.waitForDiagnosticsFilter(results);
-                return filterValue;
-            }
-
-            return true;
-        }
-
-        let currentResults: IDiagnosticsResults = previousResults ?? getCurrentDiagnostics();
-        const requiredSourceCompletionVersions = Object.assign({}, currentResults.sourceCompletionVersions);
-        if (options.waitForChange || previousResults) {
-            // tslint:disable-next-line:no-for-in forin
-            for (let source in requiredSourceCompletionVersions) {
-                requiredSourceCompletionVersions[source] = requiredSourceCompletionVersions[source] + 1;
-            }
-        }
-
-        if (areAllSourcesComplete(currentResults.sourceCompletionVersions) && await diagnosticsFilterPasses(currentResults)) {
-            resolve(currentResults);
-            return;
-        }
-
-        // Now only poll on changed events
-        testLog.writeLine("Waiting for diagnostics to complete...");
-        let done = false;
-        timer = setTimeout(
-            () => {
-                reject(
-                    new Error('Timed out waiting for diagnostics. Last retrieved diagnostics: '
-                        + (currentDiagnostics ? currentDiagnostics.map(d => d.message).join('\n') : "None")));
-                done = true;
-            },
-            timeoutMs);
-
-        while (!done) {
-            const results = getCurrentDiagnostics();
-            if (areAllSourcesComplete(results.sourceCompletionVersions) && await diagnosticsFilterPasses(results)) {
-                resolve(results);
-                done = true;
-            }
-            await delay(100);
+        } catch (err) {
+            reject(err);
         }
     });
 
-    let diagnostics = await diagnosticsPromise;
-    assert(diagnostics);
+    let diagnostics: IDiagnosticsResults;
+    try {
+        diagnostics = await diagnosticsPromise; //asdfasdf
+        assert(diagnostics);
+    } catch (err) {
+        let a = 1; //asdf
+        a += 1;
+        throw err;
+    } finally {
+        let b = 1; //asdf
+        b += 1;
+    }
 
     if (DEBUG_BREAK_AFTER_DIAGNOSTICS_COMPLETE) {
         // tslint:disable-next-line:no-debugger
@@ -463,6 +478,7 @@ export async function getDiagnosticsForDocument(
 
     return diagnostics;
 }
+
 export async function getDiagnosticsForTemplate(
     templateContentsOrFileName: string | Partial<IDeploymentTemplate>,
     expectedMinimumVersionForEachSource: number,

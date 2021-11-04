@@ -77,7 +77,7 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
     await publishVsCodeLogs(path.basename(ext.context.logPath));
     await publishVsCodeLogs(undefined);
 
-    /* Restoring settings doesn't seem to work at this point
+    /* Restoring settings doesn't seem to work anymore
     writeToLog('Restoring settings');
     vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, previousSettings.autoDetectJsonTemplates, vscode.ConfigurationTarget.Global);
     delete previousSettings.fileAssociations["*.azrm"];
@@ -101,12 +101,12 @@ setup(function (this: Mocha.IBeforeAndAfterContext): void {
 teardown(function (this: Mocha.IBeforeAndAfterContext): void {
     if (!this.currentTest.state || this.currentTest.state === 'failed') {
         if (testLog.toString()) {
-            writeToWarning("Failed");
+            writeToWarning(`Failed: ${this.currentTest.title}`);
         } else {
-            writeToWarning("Failed (test log is empty)");
+            writeToWarning(`Failed (test log is empty): ${this.currentTest}`);
         }
     } else {
-        let message = "Passed.\n";
+        let message = `Passed: ${this.currentTest}\n`;
         if (alwaysEchoTestLog) {
             message += `TEST LOG:\n${testLog.toString()}\n`;
             writeToLog(message);

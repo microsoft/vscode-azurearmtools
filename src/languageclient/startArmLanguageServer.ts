@@ -86,31 +86,32 @@ export function startArmLanguageServerInBackground(): void {
             title: `Starting ${languageServerName}`
         },
         async () => {
-            await callWithTelemetryAndErrorHandling('startArmLanguageServer', async (actionContext: IActionContext) => {
-                actionContext.telemetry.suppressIfSuccessful = true;
+            try {
+                await callWithTelemetryAndErrorHandling('startArmLanguageServer', async (actionContext: IActionContext) => {
+                    try {
+                        // The server is implemented in .NET Core. We run it by calling 'dotnet' with the dll as an argument
+                        let serverDllPath: string = findLanguageServer();
+                        let dotnetExePath: string | undefined = await getDotNetPath();
+                        dotnetExePath = undefined; //asdf
+                        if (!dotnetExePath) { //asdf
+                            // Acquisition failed
+                            throw new Error(".dotnet acquisition returned no path");
+                        }
 
-                try {
-                    // The server is implemented in .NET Core. We run it by calling 'dotnet' with the dll as an argument
-                    let serverDllPath: string = findLanguageServer();
-                    let dotnetExePath: string | undefined = await getDotNetPath();
-                    if (!dotnetExePath) {
-                        // Acquisition failed
-                        ext.languageServerStartupError = ".dotnet acquisition returned no path";
+                        await startLanguageClient(serverDllPath, dotnetExePath);
+
+                        ext.languageServerState = haveFirstSchemasFinishedLoading ?
+                            LanguageServerState.Running :
+                            LanguageServerState.LoadingSchemas;
+                    } catch (error) {
+                        ext.languageServerStartupError = `Could not start language server. ${parseError(error).message}\n${error instanceof Error ? error.stack : 'no stack'}`;
                         ext.languageServerState = LanguageServerState.Failed;
-                        return;
+                        throw error;
                     }
-
-                    await startLanguageClient(serverDllPath, dotnetExePath);
-
-                    ext.languageServerState = haveFirstSchemasFinishedLoading ?
-                        LanguageServerState.Running :
-                        LanguageServerState.LoadingSchemas;
-                } catch (error) {
-                    ext.languageServerStartupError = `${parseError(error).message}: ${error instanceof Error ? error.stack : 'no stack'}`;
-                    ext.languageServerState = LanguageServerState.Failed;
-                    throw error;
-                }
-            });
+                });
+            } catch (err) {
+                assert.fail("Shouldn't throw");
+            }
         });
 }
 
@@ -429,9 +430,19 @@ function showLoadingSchemasProgress(): void {
 export async function waitForLanguageServerAvailable(): Promise<void> {
     const currentState = ext.languageServerState;
     switch (currentState) {
-        case LanguageServerState.Stopped:
+        case LanguageServerState.Stopped: {
+            const msg = 'Cannot start language server. It is in a stopped state.';
+            ext.outputChannel.appendLine(msg);
+            throw new Error(msg);
+        }
+
+        case LanguageServerState.Failed: {
+            const msg = `Language server failed on start-up: ${ext.languageServerStartupError}`;
+            ext.outputChannel.appendLine(msg);
+            throw new Error(msg);
+        }
+
         case LanguageServerState.NotStarted:
-        case LanguageServerState.Failed:
             startArmLanguageServerInBackground();
             break;
 
@@ -449,8 +460,12 @@ export async function waitForLanguageServerAvailable(): Promise<void> {
     // tslint:disable-next-line: no-constant-condition
     while (true) {
         switch (ext.languageServerState) {
-            case LanguageServerState.Failed:
-                throw new Error(`Language server failed on start-up: ${ext.languageServerStartupError}`);
+            case LanguageServerState.Failed: {
+                const msg = `Language server failed on start-up: ${ext.languageServerStartupError}`;
+                ext.outputChannel.appendLine(msg);
+                throw new Error(msg);
+            }
+
             case LanguageServerState.NotStarted:
             case LanguageServerState.Starting:
             case LanguageServerState.LoadingSchemas:
@@ -463,8 +478,11 @@ export async function waitForLanguageServerAvailable(): Promise<void> {
                 assert(ext.languageServerClient);
                 return;
 
-            case LanguageServerState.Stopped:
-                throw new Error('Language server has stopped');
+            case LanguageServerState.Stopped: {
+                const msg = 'Language server has stopped';
+                throw new Error(msg);
+            }
+
             default:
                 assertNever(ext.languageServerState);
         }

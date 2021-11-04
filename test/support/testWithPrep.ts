@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { ITest, ITestCallbackContext } from "mocha";
+import { assert } from "../../src/fixed_assert";
 import { writeToLog } from "./testLog";
 
 export interface ITestPreparation {
@@ -18,49 +19,53 @@ export interface ITestPreparationResult {
 }
 
 export function testWithPrep(expectation: string, preparations?: ITestPreparation[], callback?: (this: ITestCallbackContext) => Promise<unknown>): ITest {
-    return test(
-        expectation,
-        async function (this: ITestCallbackContext): Promise<unknown> {
-            const postTests: (() => void)[] = [];
+    try {
+        return test(
+            expectation,
+            async function (this: ITestCallbackContext): Promise<unknown> {
+                const postTestActions: (() => void)[] = [];
 
-            try {
-                if (!callback) {
-                    // This is a pending test
-                    this.skip();
-                    return;
-                }
-
-                // Perform pre-test preparations
-                for (let prep of preparations ?? []) {
-                    const prepResult = prep.pretest.call(this);
-                    if (prepResult.skipTest) {
-                        writeToLog(`Skipping test because: ${prepResult.skipTest}`);
+                try {
+                    if (!callback) {
+                        // This is a pending test
                         this.skip();
                         return;
                     }
 
-                    if (prepResult.postTestActions) {
-                        postTests.push(prepResult.postTestActions);
-                    }
-                }
+                    // Perform pre-test preparations
+                    for (let prep of preparations ?? []) {
+                        const prepResult = prep.pretest.call(this);
+                        if (prepResult.skipTest) {
+                            writeToLog(`Skipping test because: ${prepResult.skipTest}`);
+                            this.skip();
+                            return;
+                        }
 
-                // Perform the test
-                try {
-                    return await callback.call(this);
-                } catch (error) {
-                    if ((<{ message?: string }>error).message === 'sync skip') {
-                        // test skipped
-                    } else {
-                        throw error;
+                        if (prepResult.postTestActions) {
+                            postTestActions.push(prepResult.postTestActions);
+                        }
+                    }
+
+                    // Perform the test
+                    try {
+                        return await callback.call(this);
+                    } catch (error) {
+                        if ((<{ message?: string }>error).message === 'sync skip') {
+                            // test skipped
+                        } else {
+                            throw error;
+                        }
+                    }
+                }
+                finally {
+                    // Perform post-test actions
+                    for (let post of postTestActions) {
+                        post();
                     }
                 }
             }
-            finally {
-                // Perform post-test preparations
-                for (let post of postTests) {
-                    post();
-                }
-            }
-        }
-    );
+        );
+    } catch (err) {
+        assert.fail("Shouldn't throw");
+    }
 }

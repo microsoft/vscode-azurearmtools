@@ -36,48 +36,51 @@ suite("Linked templates functional tests", () => {
     }
 
     async function waitForGraphAvailable(mainTemplate: string, childTemplate: string): Promise<void> {
-        // tslint:disable-next-line: typedef promise-must-complete // false positive
-        await new Promise<void>(resolve => {
-            const disposable = notifyTemplateGraphAvailable(e => {
-                if (Uri.parse(e.rootTemplateUri).fsPath === mainTemplate) {
-                    testLog.writeLine(`Graph available notification for ${mainTemplate}... Looking for child in the graph: ${childTemplate}`);
-                    const child = e.linkedTemplates.find(lt => Uri.parse(lt.fullUri).fsPath === childTemplate);
-                    let ready: boolean;
-                    if (child) {
-                        switch (child.loadState) {
-                            case LinkedFileLoadState.Loading:
-                            case LinkedFileLoadState.NotLoaded:
-                                testLog.writeLine(`...${child.originalPath}: load state = ${child.loadState}, therefore not ready yet`);
-                                // Still loading
-                                ready = false;
-                                break;
+        await new Promise<void>((resolve, reject): void => {
+            try {
+                const disposable = notifyTemplateGraphAvailable(e => {
+                    if (Uri.parse(e.rootTemplateUri).fsPath === mainTemplate) {
+                        testLog.writeLine(`Graph available notification for ${mainTemplate}... Looking for child in the graph: ${childTemplate}`);
+                        const child = e.linkedTemplates.find(lt => Uri.parse(lt.fullUri).fsPath === childTemplate);
+                        let ready: boolean;
+                        if (child) {
+                            switch (child.loadState) {
+                                case LinkedFileLoadState.Loading:
+                                case LinkedFileLoadState.NotLoaded:
+                                    testLog.writeLine(`...${child.originalPath}: load state = ${child.loadState}, therefore not ready yet`);
+                                    // Still loading
+                                    ready = false;
+                                    break;
 
-                            case LinkedFileLoadState.LoadFailed:
-                            case LinkedFileLoadState.NotSupported:
-                            case LinkedFileLoadState.SuccessfullyLoaded:
-                            case LinkedFileLoadState.TooDeep:
-                                testLog.writeLine(`...${child.originalPath}: load state = ${child.loadState} => READY`);
-                                // Load completed or succeeded
-                                ready = true;
-                                break;
+                                case LinkedFileLoadState.LoadFailed:
+                                case LinkedFileLoadState.NotSupported:
+                                case LinkedFileLoadState.SuccessfullyLoaded:
+                                case LinkedFileLoadState.TooDeep:
+                                    testLog.writeLine(`...${child.originalPath}: load state = ${child.loadState} => READY`);
+                                    // Load completed or succeeded
+                                    ready = true;
+                                    break;
 
-                            default:
-                                assertNever(child.loadState);
+                                default:
+                                    assertNever(child.loadState);
+                            }
+                        } else {
+                            ready = false;
+                            testLog.writeLine(`... child not found in graph yet`);
                         }
-                    } else {
-                        ready = false;
-                        testLog.writeLine(`... child not found in graph yet`);
-                    }
 
-                    if (ready) {
-                        testLog.writeLine(`...READY`);
-                        disposable.dispose();
-                        resolve();
-                    } else {
-                        testLog.writeLine(`... not ready yet`);
+                        if (ready) {
+                            testLog.writeLine(`...READY`);
+                            disposable.dispose();
+                            resolve();
+                        } else {
+                            testLog.writeLine(`... not ready yet`);
+                        }
                     }
-                }
-            });
+                });
+            } catch (err) {
+                reject(err);
+            }
         });
     }
 

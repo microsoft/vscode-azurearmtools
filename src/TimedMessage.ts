@@ -34,14 +34,13 @@ export class TimedMessage {
     /**
      * Called whenever the user is interacting with the extension (thus gets called a lot)
      */
-    public registerActiveUse(): void {
+    public registerActiveUseNoThrow(): void {
         if (this._alreadyCheckedThisSession) {
             return;
         }
         this._alreadyCheckedThisSession = true;
 
         // Don't wait
-        // tslint:disable-next-line: no-floating-promises
         callWithTelemetryAndErrorHandling("considerShowingMessage", async (context: IActionContext) => {
             context.errorHandling.suppressDisplay = true;
             context.telemetry.properties.message = this._message;
@@ -82,6 +81,8 @@ export class TimedMessage {
             } else {
                 assert(response === neverAskAgain);
             }
+        }).catch(err => {
+            assert.fail("Shouldn't throw");
         });
     }
 

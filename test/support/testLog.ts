@@ -35,7 +35,7 @@ function writeToLogCore(message: string, ...args: object[]): string {
 }
 
 export function writeToWarning(message: string): void {
-    message = writeToLogCore("** WARNING:" + message);
+    message = writeToLogCore("** WARNING: " + message);
     console.warn(message);
 }
 

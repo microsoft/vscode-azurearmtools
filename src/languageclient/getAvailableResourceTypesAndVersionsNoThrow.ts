@@ -3,10 +3,10 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 // ---------------------------------------------------------------------------------------------
 
-import { callWithTelemetryAndErrorHandlingSync } from "vscode-azureextensionui";
+import { callWithTelemetryAndErrorHandling } from "vscode-azureextensionui";
 import { ext } from "../extensionVariables";
-import { waitForLanguageServerAvailable } from "../languageclient/startArmLanguageServer";
 import { CaseInsensitiveMap } from "../util/CaseInsensitiveMap";
+import { waitForLanguageServerAvailable } from "./startArmLanguageServer";
 
 /**
  * Returns a case-insensitive map of available resource types and their apiVersions for a given ARM schema from the
@@ -15,10 +15,10 @@ import { CaseInsensitiveMap } from "../util/CaseInsensitiveMap";
  *
  * @param schema The ARM schema of the template document to query for
  */
-export async function getAvailableResourceTypesAndVersions(schema: string): Promise<CaseInsensitiveMap<string, string[]>> {
+export async function getAvailableResourceTypesAndVersionsNoThrow(schema: string): Promise<CaseInsensitiveMap<string, string[]>> {
     const map = new CaseInsensitiveMap<string, string[]>();
 
-    await callWithTelemetryAndErrorHandlingSync("getAvailableResourceTypesAndVersions", async () => {
+    await callWithTelemetryAndErrorHandling("getAvailableResourceTypesAndVersions", async () => {
         await waitForLanguageServerAvailable();
 
         const resourceTypes = <{ [key: string]: string[] }>
