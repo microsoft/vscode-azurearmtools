@@ -10,6 +10,7 @@
 const DEBUG_BREAK_AFTER_INSERTING_SNIPPET = false;
 
 import * as assert from 'assert';
+import { ITestCallbackContext } from 'mocha';
 import { Position, Selection } from "vscode";
 import { ext } from "../../extension.bundle";
 import { assertEx } from '../support/assertEx';
@@ -22,6 +23,7 @@ import { simulateCompletion } from '../support/simulateCompletion';
 import { TempDocument, TempEditor, TempFile } from '../support/TempFile';
 import { testLog } from '../support/testLog';
 import { testWithRealSnippets } from '../support/TestSnippets';
+import { DEFAULT_TESTCASE_TIMEOUT_MS } from '../testConstants';
 
 // This tests snippets in different locations, and also different methods of bringing up the snippet context menu (e.g. CTRL+SPACE, double quote etc)
 suite("Contextualized snippets", () => {
@@ -34,12 +36,18 @@ suite("Contextualized snippets", () => {
         expectedDiagnostics: string[]
     ): void {
         const testSources = [diagnosticSources.expressions];
+        const timeout = Math.min(DEFAULT_TESTCASE_TIMEOUT_MS, 2 * 1000); //asdf
+
         for (let triggerCharacter of triggerCharacters) {
             // tslint:disable-next-line: prefer-template
             const name = `${testName}, triggered by ${triggerCharacter ? ("'" + triggerCharacter + "'") : 'CTRL+SPACE'}`;
-            testWithRealSnippets(name, async () => {
+            // tslint:disable:no-function-expression
+            testWithRealSnippets(name, async function (this: ITestCallbackContext): Promise<void> {
+                const start = Date.now();
+                this.timeout(timeout);
+
                 const { dt, markers: { cursor } } = parseTemplateWithMarkers(templateWithCursorMarker);
-                assert(cursor !== undefined, "<!curso!> not found in template");
+                assert(cursor !== undefined, "<!cursor!> not found in template");
 
                 let tempFile: TempFile | undefined;
                 let tempDoc: TempDocument | undefined;
@@ -75,6 +83,9 @@ suite("Contextualized snippets", () => {
                     // Wait until the current document has template graph info assigned
                     // tslint:disable-next-line: no-constant-condition
                     while (true) {
+                        if (Date.now() > start + timeout) {
+                            throw new Error("Timeout");
+                        }
                         const openDoc = ext.provideOpenedDocuments?.getOpenedDeploymentTemplate(tempEditor.realEditor.document.uri);
                         if (openDoc && openDoc.templateGraph) {
                             break;

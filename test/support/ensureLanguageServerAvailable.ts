@@ -16,7 +16,7 @@ export async function ensureLanguageServerAvailable(): Promise<LanguageClient> {
         throw new Error("DISABLE_LANGUAGE_SERVER is set, but this test is trying to call ensureLanguageServerAvailable");
     }
 
-    if (!isLanguageServerAvailable) {
+    if (!isLanguageServerAvailable) { //asdf
         testLog.writeLine("Waiting for language server to be available");
 
         // Open a doc to force the language server to start up
