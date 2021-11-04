@@ -19,7 +19,10 @@ export class RequiresLanguageServer implements ITestPreparation {
             };
         } else {
             if (ext.languageServerState === LanguageServerState.Failed || ext.languageServerState === LanguageServerState.Stopped) {
-                writeToError("Cannot run test because language server is in a failed or stopped state");
+                writeToError(
+                    // tslint:disable-next-line: prefer-template
+                    "Cannot run test because language server is in a failed or stopped state" +
+                    (ext.languageServerStartupError ? ": " + ext.languageServerStartupError : ""));
                 throw new Error("Cannot run test because language server is in a failed or stopped state");
             }
 

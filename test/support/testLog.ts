@@ -30,10 +30,6 @@ class StringTestLog implements ITestLog {
     public writeLine(message: string | undefined): void {
         message = message === undefined ? '(undefined)' : message;
         this._data.push(message);
-
-        if (alwaysEchoTestLog) {
-            console.warn(`testLog: ${message}`);
-        }
     }
 
     public toString(): string {
@@ -68,7 +64,9 @@ export function writeToError(message: string): void {
 export function writeToLog(message: string = ""): void {
     testLog.writeLine(message);
     writeToLogFile(message);
-    console.log(message);
+    if (alwaysEchoTestLog) {
+        console.log(`testLog: ${message}`);
+    }
 }
 
 let testLog: ITestLog = new UninitializedLog();
