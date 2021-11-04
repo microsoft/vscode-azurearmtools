@@ -3,8 +3,11 @@
 // ----------------------------------------------------------------------------
 
 import { ITest, ITestCallbackContext } from "mocha";
+import { ext } from "../../src/extensionVariables";
+import { LanguageServerState } from "../../src/languageclient/startArmLanguageServer";
 import { DEFAULT_TESTCASE_TIMEOUT_MS, DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { UseRealFunctionMetadata } from "../TestData";
+import { writeToError } from "./testLog";
 import { ITestPreparation, ITestPreparationResult, testWithPrep } from "./testWithPrep";
 
 export class RequiresLanguageServer implements ITestPreparation {
@@ -16,6 +19,11 @@ export class RequiresLanguageServer implements ITestPreparation {
                 skipTest: "DISABLE_LANGUAGE_SERVER is set"
             };
         } else {
+            if (ext.languageServerState === LanguageServerState.Failed || ext.languageServerState === LanguageServerState.Stopped) {
+                writeToError("Cannot run test because language server is in a failed or stopped state");
+                throw new Error("Cannot run test because language server is in a failed or stopped state");
+            }
+
             this.timeout(DEFAULT_TESTCASE_TIMEOUT_MS);
             return {};
         }

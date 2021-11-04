@@ -12,7 +12,7 @@ import { armTemplateLanguageId, configKeys, configPrefix, ext, stopArmLanguageSe
 import { displayCacheStatus } from './support/cache';
 import { delay } from "./support/delay";
 import { publishVsCodeLogs } from './support/publishVsCodeLogs';
-import { alwaysEchoTestLog, createTestLog, deleteTestLog, setTestLogOutputFile, testLog, writeToLog, writeToWarning } from './support/testLog';
+import { alwaysEchoTestLog, deleteTestLog, setTestLogOutputFile, testLog, writeToLog, writeToWarning } from './support/testLog';
 import { useTestSnippets } from './support/TestSnippets';
 import { logsFolder } from './testConstants';
 import { useTestFunctionMetadata } from "./TestData";
@@ -94,7 +94,6 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
 // Runs before each individual test
 setup(function (this: Mocha.IBeforeAndAfterContext): void {
     writeToLog(`Running: ${this.currentTest.title}`);
-    createTestLog();
 });
 
 // Runs after each individual test
