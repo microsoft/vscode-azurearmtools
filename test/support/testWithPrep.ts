@@ -2,8 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import * as assert from "assert";
 import { ITest, ITestCallbackContext } from "mocha";
-import { assert } from "../../src/fixed_assert";
 import { writeToLog } from "./testLog";
 
 export interface ITestPreparation {
