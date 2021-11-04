@@ -27,7 +27,7 @@ import { positionToString, rangeToString } from "./rangeToString";
 import { resolveInTestFolder } from "./resolveInTestFolder";
 import { stringify } from "./stringify";
 import { TempDocument, TempEditor, TempFile } from "./TempFile";
-import { testLog } from "./testLog";
+import { writeToLog } from "./testLog";
 
 export const defaultDiagnosticsTimeoutMs = DEFAULT_TESTCASE_TIMEOUT_MS - 2000;
 
@@ -413,7 +413,7 @@ export async function getDiagnosticsForDocument(
             }
 
             // Now only poll on changed events
-            testLog.writeLine("Waiting for diagnostics to complete...");
+            writeToLog("Waiting for diagnostics to complete...");
             let done = false;
             timer = setTimeout(
                 () => {
@@ -456,7 +456,7 @@ export async function getDiagnosticsForDocument(
         clearTimeout(timer);
     }
 
-    testLog.writeLine(`Diagnostics complete:  ${stringify(diagnostics)}`);
+    writeToLog(`Diagnostics complete:  ${stringify(diagnostics)}`);
 
     // Verify the version of expectedMinimumVersionForEachSource
     for (const source of Object.getOwnPropertyNames(diagnostics.sourceCompletionVersions)) {

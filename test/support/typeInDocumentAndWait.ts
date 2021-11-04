@@ -7,7 +7,7 @@ import { Position, Selection, TextEditor, window } from "vscode";
 import { ensureLanguageServerAvailable } from "./ensureLanguageServerAvailable";
 import { actThenWait, getDocumentChangedPromise } from "./getEventPromise";
 import { stringify } from './stringify';
-import { testLog } from './testLog';
+import { writeToLog } from './testLog';
 
 export async function typeInDocumentAndWait(editor: TextEditor, text: string): Promise<string> {
     return await actThenWait(
@@ -20,7 +20,7 @@ export async function typeInDocumentAndWait(editor: TextEditor, text: string): P
             const initialPosition = editor.selection.anchor;
             let setPosition = initialPosition.translate(0, text.length);
 
-            testLog.writeLine(`typeInDocumentAndWait: ${stringify(text)}`);
+            writeToLog(`typeInDocumentAndWait: ${stringify(text)}`);
 
             if (text === '"') {
                 // Imitate vscode adding the closing quote

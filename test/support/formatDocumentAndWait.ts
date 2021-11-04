@@ -5,15 +5,15 @@
 import { commands, TextDocument } from "vscode";
 import { ensureLanguageServerAvailable } from "./ensureLanguageServerAvailable";
 import { actThenWait, getDocumentChangedPromise } from "./getEventPromise";
-import { testLog } from "./testLog";
+import { writeToLog } from "./testLog";
 
 export async function formatDocumentAndWait(document: TextDocument): Promise<string> {
     return await actThenWait(
         async () => {
             await ensureLanguageServerAvailable();
-            testLog.writeLine("Formatting document...");
+            writeToLog("Formatting document...");
             await commands.executeCommand('editor.action.formatDocument');
-            testLog.writeLine("Format completed.");
+            writeToLog("Format completed.");
         },
         getDocumentChangedPromise(document));
 }

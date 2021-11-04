@@ -21,7 +21,7 @@ import { parseTemplateWithMarkers } from '../support/parseTemplate';
 import { removeApiVersions } from '../support/removeApiVersions';
 import { simulateCompletion } from '../support/simulateCompletion';
 import { TempDocument, TempEditor, TempFile } from '../support/TempFile';
-import { testLog } from '../support/testLog';
+import { writeToLog } from '../support/testLog';
 import { testWithRealSnippets } from '../support/TestSnippets';
 import { DEFAULT_TESTCASE_TIMEOUT_MS } from '../testConstants';
 
@@ -70,7 +70,7 @@ suite("Contextualized snippets", () => {
                     const docPos = dt.getDocumentPosition(cursor.index);
                     const pos = new Position(docPos.line, docPos.line);
 
-                    testLog.writeLine(`Document before inserting snippet:\n${tempEditor.document.realDocument.getText()}`);
+                    writeToLog(`Document before inserting snippet:\n${tempEditor.document.realDocument.getText()}`);
 
                     tempEditor.realEditor.selection = new Selection(pos, pos);
                     await delay(1);
@@ -104,7 +104,7 @@ suite("Contextualized snippets", () => {
 
                     // Format (vscode seems to be inconsistent about this in these scenarios)
                     let docTextAfterInsertion = await formatDocumentAndWait(tempDoc.realDocument);
-                    testLog.writeLine(`Document after inserting snippet:\n${docTextAfterInsertion}`);
+                    writeToLog(`Document after inserting snippet:\n${docTextAfterInsertion}`);
 
                     expectedTemplate = removeApiVersions(expectedTemplate);
                     docTextAfterInsertion = removeApiVersions(docTextAfterInsertion);

@@ -3,8 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { ITest, ITestCallbackContext } from "mocha";
-import { ext } from "../../src/extensionVariables";
-import { LanguageServerState } from "../../src/languageclient/startArmLanguageServer";
+import { ext, LanguageServerState } from "../../extension.bundle";
 import { DEFAULT_TESTCASE_TIMEOUT_MS, DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { UseRealFunctionMetadata } from "../TestData";
 import { writeToError } from "./testLog";

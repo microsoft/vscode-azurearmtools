@@ -26,7 +26,7 @@ import { removeComments } from '../support/removeComments';
 import { resolveInTestFolder } from '../support/resolveInTestFolder';
 import { simulateCompletion } from '../support/simulateCompletion';
 import { stringify } from '../support/stringify';
-import { testLog } from '../support/testLog';
+import { writeToLog } from '../support/testLog';
 import { UseRealSnippets } from '../support/TestSnippets';
 import { RequiresLanguageServer } from '../support/testWithLanguageServer';
 import { testWithPrep } from '../support/testWithPrep';
@@ -315,7 +315,7 @@ suite("Snippets functional tests", () => {
         // Insert snippet
         const docTextBeforeInsertion = doc.getText();
         if (LOG_DOC_TEXT_BEFORE_AND_AFTER_SNIPPET_INSERTION) {
-            testLog.writeLine(`Document before inserting snippet:\n${docTextBeforeInsertion}`);
+            writeToLog(`Document before inserting snippet:\n${docTextBeforeInsertion}`);
         }
         await simulateCompletion(
             editor,
@@ -334,7 +334,7 @@ suite("Snippets functional tests", () => {
         // Format (vscode seems to be inconsistent about this in these scenarios)
         const docTextAfterInsertion = await formatDocumentAndWait(doc);
         if (LOG_DOC_TEXT_BEFORE_AND_AFTER_SNIPPET_INSERTION) {
-            testLog.writeLine(`Document after inserting snippet:\n${docTextAfterInsertion}`);
+            writeToLog(`Document after inserting snippet:\n${docTextAfterInsertion}`);
         }
 
         fse.mkdirpSync(resultsFolder);

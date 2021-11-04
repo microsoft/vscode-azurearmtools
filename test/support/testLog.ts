@@ -8,7 +8,7 @@ import * as fse from "fs-extra";
 
 export const alwaysEchoTestLog: boolean = /^(true|1)?$/i.test(process.env.ALWAYS_ECHO_TEST_LOG ?? '');
 
-export interface ITestLog {
+interface ITestLog {
     writeLine(message: string | undefined): void;
     toString(): string;
 }
@@ -16,7 +16,7 @@ export interface ITestLog {
 class UninitializedLog implements ITestLog {
     public writeLine(message: string | undefined): void {
         createTestLog();
-        testLog.writeLine(message);
+        writeToLog(message);
     }
 
     public toString(): string {
@@ -24,7 +24,24 @@ class UninitializedLog implements ITestLog {
     }
 }
 
-function writeToLogCore(message: string, ...args: object[]): string {
+class StringTestLog implements ITestLog {
+    private _data: string[] = [];
+
+    public writeLine(message: string | undefined): void {
+        message = message === undefined ? '(undefined)' : message;
+        this._data.push(message);
+
+        if (alwaysEchoTestLog) {
+            console.warn(`testLog: ${message}`);
+        }
+    }
+
+    public toString(): string {
+        return this._data.join(' \n');
+    }
+}
+
+function writeToLogFile(message: string, ...args: object[]): string {
     message = new Date().toLocaleDateString() + ": " + message + "\n";
 
     if (testLogOutputFile) {
@@ -35,21 +52,26 @@ function writeToLogCore(message: string, ...args: object[]): string {
 }
 
 export function writeToWarning(message: string): void {
-    message = writeToLogCore("** WARNING: " + message);
+    message = "** WARNING: " + message;
+    testLog.writeLine(message);
+    writeToLogFile(message);
     console.warn(message);
 }
 
 export function writeToError(message: string): void {
-    message = writeToLogCore("** ERROR:" + message);
+    message = "** ERROR: " + message;
+    testLog.writeLine(message);
+    writeToLogFile(message);
     console.error(message);
 }
 
-export function writeToLog(message: string): void {
-    message = writeToLogCore(message);
+export function writeToLog(message: string = ""): void {
+    testLog.writeLine(message);
+    writeToLogFile(message);
     console.log(message);
 }
 
-export let testLog: ITestLog = new UninitializedLog();
+let testLog: ITestLog = new UninitializedLog();
 
 let testLogOutputFile: string | undefined;
 export function setTestLogOutputFile(filePath: string): void {
@@ -65,19 +87,6 @@ export function deleteTestLog(): void {
     testLog = new UninitializedLog();
 }
 
-export class StringTestLog implements ITestLog {
-    private _data: string[] = [];
-
-    public writeLine(message: string | undefined): void {
-        message = message === undefined ? '(undefined)' : message;
-        this._data.push(message);
-
-        if (alwaysEchoTestLog) {
-            console.warn(`testLog: ${message}`);
-        }
-    }
-
-    public toString(): string {
-        return this._data.join(' \n');
-    }
+export function getTestLogContents(): string {
+    return testLog.toString();
 }

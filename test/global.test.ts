@@ -12,7 +12,7 @@ import { armTemplateLanguageId, configKeys, configPrefix, ext, stopArmLanguageSe
 import { displayCacheStatus } from './support/cache';
 import { delay } from "./support/delay";
 import { publishVsCodeLogs } from './support/publishVsCodeLogs';
-import { alwaysEchoTestLog, deleteTestLog, setTestLogOutputFile, testLog, writeToLog, writeToWarning } from './support/testLog';
+import { alwaysEchoTestLog, deleteTestLog, getTestLogContents, setTestLogOutputFile, writeToLog, writeToWarning } from './support/testLog';
 import { useTestSnippets } from './support/TestSnippets';
 import { logsFolder } from './testConstants';
 import { useTestFunctionMetadata } from "./TestData";
@@ -98,18 +98,27 @@ setup(function (this: Mocha.IBeforeAndAfterContext): void {
 
 // Runs after each individual test
 teardown(function (this: Mocha.IBeforeAndAfterContext): void {
-    if (!this.currentTest.state || this.currentTest.state === 'failed') {
-        if (testLog.toString()) {
-            writeToWarning(`Failed: ${this.currentTest.title}`);
+    let message: string;
+    const failed = (!this.currentTest.state || this.currentTest.state === 'failed');
+
+    if (failed) {
+        if (getTestLogContents()) {
+            message = `Failed: ${this.currentTest.title}`;
         } else {
-            writeToWarning(`Failed (test log is empty): ${this.currentTest}`);
+            message = `Failed (test log is empty): ${this.currentTest.title}`;
         }
     } else {
-        let message = `Passed: ${this.currentTest}\n`;
-        if (alwaysEchoTestLog) {
-            message += `TEST LOG:\n${testLog.toString()}\n`;
-            writeToLog(message);
-        }
+        message = `Passed: ${this.currentTest}\n`;
+    }
+
+    if (alwaysEchoTestLog) {
+        message += `TEST LOG:\n${getTestLogContents()}\n`;
+    }
+
+    if (failed) {
+        writeToWarning(message);
+    } else {
+        writeToLog(message);
     }
 
     deleteTestLog();
