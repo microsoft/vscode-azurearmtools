@@ -13,12 +13,12 @@ steps:
     displayName: "npm install"
 
   # First package without language server bits (as a test, and if LANGSERVER_NUGET_USERNAME/PASSWORD are not available)
-#  - script: npm run package
-#    displayName: Package without language server (as a test)
+  - script: npm build
+    displayName: build
 
-  - script: npm run package
-    displayName: Package
-    condition: ne(variables['System.PullRequest.IsFork'], 'True') # Don't try to package if run from a fork (won't have the secrets)
-    env:
-      LANGSERVER_NUGET_USERNAME: $(LANGSERVER_NUGET_USERNAME)
-      LANGSERVER_NUGET_PASSWORD: $(LANGSERVER_NUGET_PASSWORD)
+  # - script: npm run package
+  #   displayName: Package
+  #   condition: ne(variables['System.PullRequest.IsFork'], 'True') # Don't try to package if run from a fork (won't have the secrets)
+  #   env:
+  #     LANGSERVER_NUGET_USERNAME: $(LANGSERVER_NUGET_USERNAME)
+  #     LANGSERVER_NUGET_PASSWORD: $(LANGSERVER_NUGET_PASSWORD)
