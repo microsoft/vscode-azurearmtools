@@ -16,7 +16,7 @@ interface ITestLog {
 class UninitializedLog implements ITestLog {
     public writeLine(message: string | undefined): void {
         createTestLog();
-        writeToLog(message);
+        testLog.writeLine(message);
     }
 
     public toString(): string {
