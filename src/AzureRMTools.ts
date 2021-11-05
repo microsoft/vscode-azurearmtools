@@ -399,7 +399,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
         if (vscode.extensions.getExtension('ms-azuretools.vscode-bicep')) {
             // Don't wait
             this._bicepMessage.neverShowAgain().catch(err => {
-                assert.fail("Shouldn't throw");
+                // Ignore
             });
         }
     }
