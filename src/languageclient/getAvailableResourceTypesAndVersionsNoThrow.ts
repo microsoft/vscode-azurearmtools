@@ -42,4 +42,3 @@ export async function getAvailableResourceTypesAndVersionsNoThrow(schema: string
         assert.fail("getAvailableResourceTypesAndVersionsNoThrow shouldn't throw");
     }
 }
-
