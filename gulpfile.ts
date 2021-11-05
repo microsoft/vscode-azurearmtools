@@ -89,7 +89,7 @@ function test(): cp.ChildProcess {
     // This is the timeout for individual tests
     env.MOCHA_timeout = String(DEFAULT_TESTCASE_TIMEOUT_MS);
     env.MOCHA_enableTimeouts = "1";
-    env.MOCHA_grep = "";
+    env.MOCHA_grep = "doesJsonContainArmSchema";
     env.ALWAYS_ECHO_TEST_LOG = "";
     console.log("");
     console.log("*******");
