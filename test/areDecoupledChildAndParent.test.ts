@@ -9,7 +9,7 @@ import * as assert from "assert";
 import { areDecoupledChildAndParent, getResourcesInfo, IResourceInfo } from "../extension.bundle";
 import { IDeploymentTemplateResource, IPartialDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
-import { testLog } from "./support/testLog";
+import { writeToLog } from "./support/testLog";
 
 suite("areDecoupledChildAndParent", () => {
     suite("areDecoupledChildAndParent", () => {
@@ -24,7 +24,7 @@ suite("areDecoupledChildAndParent", () => {
             test(`${name ? name + ':' : ''}child=${childNameExpression}, parent=${parentNameExpression}`, async () => {
                 const dt = parseTemplate(template, []);
                 const infos = getResourcesInfo({ scope: dt.topLevelScope, recognizeDecoupledChildren: false });
-                testLog.writeLine(`Resource Infos found:\n` + infos.map(i => `${i.getFullNameExpression()} (${i.getFullTypeExpression()})`).join('\n'));
+                writeToLog(`Resource Infos found:\n` + infos.map(i => `${i.getFullNameExpression()} (${i.getFullTypeExpression()})`).join('\n'));
 
                 const child = infos.find(i => i.getFullNameExpression() === childNameExpression);
                 assert(!!child, `Could not find resource with full name "${childNameExpression}"`);
@@ -53,7 +53,7 @@ suite("areDecoupledChildAndParent", () => {
                 };
                 const dt = parseTemplate(template);
                 const infos = getResourcesInfo({ scope: dt.topLevelScope, recognizeDecoupledChildren: true });
-                testLog.writeLine(`Resource Infos found:\n` + infos.map(i => `${i.getFullNameExpression()} (${i.getFullTypeExpression()})`).join('\n'));
+                writeToLog(`Resource Infos found:\n` + infos.map(i => `${i.getFullNameExpression()} (${i.getFullTypeExpression()})`).join('\n'));
 
                 testAreDecoupledChildAndParent(infos[0], infos[1], expected, expectedReverse);
             });

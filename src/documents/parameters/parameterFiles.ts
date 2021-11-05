@@ -10,7 +10,7 @@ import { callWithTelemetryAndErrorHandling, DialogResponses, IActionContext, IAz
 import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes, globalStateKeys } from '../../constants';
 import { ext } from '../../extensionVariables';
 import { normalizeFilePath } from '../../util/normalizedPaths';
-import { pathExists } from '../../util/pathExists';
+import { pathExistsNoThrow } from '../../util/pathExistsNoThrow';
 import { DeploymentTemplateDoc } from '../templates/DeploymentTemplateDoc';
 import { containsParametersSchema } from '../templates/schemas';
 import { DeploymentFileMapping } from './DeploymentFileMapping';
@@ -156,7 +156,7 @@ export async function openTemplateFile(mapping: DeploymentFileMapping, parameter
       throw new Error(`There is no template file currently associated with parameter file "${parameterUri.fsPath}"`);
     }
 
-    if (await pathExists(templateUri)) {
+    if (await pathExistsNoThrow(templateUri)) {
       let doc: TextDocument = await workspace.openTextDocument(templateUri);
       await window.showTextDocument(doc);
     } else {
@@ -207,7 +207,7 @@ async function createParameterFileQuickPickList(mapping: DeploymentFileMapping, 
   if (currentParamUri && !currentParamFile) {
     // There is a current parameter file, but it wasn't among the list we came up with.  We must add it to the list.
     currentParamFile = { isCloseNameMatch: false, uri: currentParamUri, friendlyPath: getRelativeParameterFilePath(templateUri, currentParamUri) };
-    let exists = await pathExists(currentParamUri);
+    let exists = await pathExistsNoThrow(currentParamUri);
     currentParamFile.fileNotFound = !exists;
 
     suggestions = suggestions.concat(currentParamFile);
@@ -341,29 +341,32 @@ async function isParameterFile(filePath: string): Promise<boolean> {
 }
 
 async function doesFileContainString(filePath: string, matches: (fileSubcontents: string) => boolean, maxBytesToRead: number): Promise<boolean> {
-  // tslint:disable-next-line: typedef
-  return new Promise<boolean>((resolve, reject) => {
-    const stream = fse.createReadStream(filePath, { encoding: 'utf8' });
+  return new Promise<boolean>((resolve, reject): void => {
+    try {
+      const stream = fse.createReadStream(filePath, { encoding: 'utf8' });
 
-    let content: string = '';
-    stream.on('data', (chunk: string) => {
-      content += chunk;
-      if (matches(content)) {
-        stream.close();
-        resolve(true);
-      }
+      let content: string = '';
+      stream.on('data', (chunk: string) => {
+        content += chunk;
+        if (matches(content)) {
+          stream.close();
+          resolve(true);
+        }
 
-      if (content.length >= maxBytesToRead) {
-        stream.close();
+        if (content.length >= maxBytesToRead) {
+          stream.close();
+          resolve(false);
+        }
+      });
+      stream.on('end', () => {
         resolve(false);
-      }
-    });
-    stream.on('end', () => {
-      resolve(false);
-    });
-    stream.on('error', (err) => {
+      });
+      stream.on('error', (err) => {
+        reject(err);
+      });
+    } catch (err) {
       reject(err);
-    });
+    }
   });
 }
 
@@ -391,17 +394,17 @@ function removeAllExtensions(fileName: string): string {
 /**
  * Search for potential parameter file matches for the given document, and ask the user if appropriate whether to associate it
  */
-export function considerQueryingForParameterFile(mapping: DeploymentFileMapping, document: TextDocument): void {
-  const templateUri = document.uri;
-
-  // Only deal with saved files, because we don't have an accurate
-  //   URI that we can track for unsaved files, and it's a better user experience.
-  if (templateUri.scheme !== documentSchemes.file) {
-    return;
-  }
-
-  // tslint:disable-next-line: no-floating-promises Don't wait
+export function considerQueryingForParameterFileInBackground(mapping: DeploymentFileMapping, document: TextDocument): void {
+  // Don't wait
   callWithTelemetryAndErrorHandling('queryAddParameterFile', async (actionContext: IActionContext): Promise<void> => {
+    const templateUri = document.uri;
+
+    // Only deal with saved files, because we don't have an accurate
+    //   URI that we can track for unsaved files, and it's a better user experience.
+    if (templateUri.scheme !== documentSchemes.file) {
+      return;
+    }
+
     const alreadyHasParamFile: boolean = !!mapping.getParameterFile(document.uri);
     actionContext.telemetry.properties.alreadyHasParamFile = String(alreadyHasParamFile);
 
@@ -464,6 +467,8 @@ export function considerQueryingForParameterFile(mapping: DeploymentFileMapping,
         assert("considerQueryingForParameterFile: Unexpected response");
         break;
     }
+  }).catch(err => {
+    assert.fail("callWithTelemetryAndErrorHandling in considerQueryingForParameterFile shouldn't throw");
   });
 }
 
