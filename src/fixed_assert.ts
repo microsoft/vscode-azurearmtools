@@ -9,7 +9,7 @@
 import * as orig_assert from "assert";
 import { isWebpack } from "./constants";
 
-export const breakOnAssert: boolean = /^(true|1)?$/i.test(process.env.BREAK_ON_ASSERT ?? '');
+export const breakOnAssert: boolean = /^(true|1)$/i.test(process.env.BREAK_ON_ASSERT ?? '');
 
 function fixed_ok(value: unknown, message?: string): void {
     // tslint:disable-next-line: strict-boolean-expressions

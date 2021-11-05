@@ -11,7 +11,7 @@ import { assertNever, LinkedFileLoadState, notifications, notifyTemplateGraphAva
 import { ExpectedDiagnostics, IExpectedDiagnostic, simplifyBadTypeResourceMessage, testDiagnostics, testDiagnosticsFromUri } from "../support/diagnostics";
 import { ensureLanguageServerAvailable } from "../support/ensureLanguageServerAvailable";
 import { resolveInTestFolder } from "../support/resolveInTestFolder";
-import { testLog } from "../support/testLog";
+import { writeToLog } from "../support/testLog";
 import { testWithLanguageServerAndRealFunctionMetadata } from "../support/testWithLanguageServer";
 import { isWin32, testMessages } from "../testConstants";
 
@@ -36,48 +36,51 @@ suite("Linked templates functional tests", () => {
     }
 
     async function waitForGraphAvailable(mainTemplate: string, childTemplate: string): Promise<void> {
-        // tslint:disable-next-line: typedef promise-must-complete // false positive
-        await new Promise<void>(resolve => {
-            const disposable = notifyTemplateGraphAvailable(e => {
-                if (Uri.parse(e.rootTemplateUri).fsPath === mainTemplate) {
-                    testLog.writeLine(`Graph available notification for ${mainTemplate}... Looking for child in the graph: ${childTemplate}`);
-                    const child = e.linkedTemplates.find(lt => Uri.parse(lt.fullUri).fsPath === childTemplate);
-                    let ready: boolean;
-                    if (child) {
-                        switch (child.loadState) {
-                            case LinkedFileLoadState.Loading:
-                            case LinkedFileLoadState.NotLoaded:
-                                testLog.writeLine(`...${child.originalPath}: load state = ${child.loadState}, therefore not ready yet`);
-                                // Still loading
-                                ready = false;
-                                break;
+        await new Promise<void>((resolve, reject): void => {
+            try {
+                const disposable = notifyTemplateGraphAvailable(e => {
+                    if (Uri.parse(e.rootTemplateUri).fsPath === mainTemplate) {
+                        writeToLog(`Graph available notification for ${mainTemplate}... Looking for child in the graph: ${childTemplate}`);
+                        const child = e.linkedTemplates.find(lt => Uri.parse(lt.fullUri).fsPath === childTemplate);
+                        let ready: boolean;
+                        if (child) {
+                            switch (child.loadState) {
+                                case LinkedFileLoadState.Loading:
+                                case LinkedFileLoadState.NotLoaded:
+                                    writeToLog(`...${child.originalPath}: load state = ${child.loadState}, therefore not ready yet`);
+                                    // Still loading
+                                    ready = false;
+                                    break;
 
-                            case LinkedFileLoadState.LoadFailed:
-                            case LinkedFileLoadState.NotSupported:
-                            case LinkedFileLoadState.SuccessfullyLoaded:
-                            case LinkedFileLoadState.TooDeep:
-                                testLog.writeLine(`...${child.originalPath}: load state = ${child.loadState} => READY`);
-                                // Load completed or succeeded
-                                ready = true;
-                                break;
+                                case LinkedFileLoadState.LoadFailed:
+                                case LinkedFileLoadState.NotSupported:
+                                case LinkedFileLoadState.SuccessfullyLoaded:
+                                case LinkedFileLoadState.TooDeep:
+                                    writeToLog(`...${child.originalPath}: load state = ${child.loadState} => READY`);
+                                    // Load completed or succeeded
+                                    ready = true;
+                                    break;
 
-                            default:
-                                assertNever(child.loadState);
+                                default:
+                                    assertNever(child.loadState);
+                            }
+                        } else {
+                            ready = false;
+                            writeToLog(`... child not found in graph yet`);
                         }
-                    } else {
-                        ready = false;
-                        testLog.writeLine(`... child not found in graph yet`);
-                    }
 
-                    if (ready) {
-                        testLog.writeLine(`...READY`);
-                        disposable.dispose();
-                        resolve();
-                    } else {
-                        testLog.writeLine(`... not ready yet`);
+                        if (ready) {
+                            writeToLog(`...READY`);
+                            disposable.dispose();
+                            resolve();
+                        } else {
+                            writeToLog(`... not ready yet`);
+                        }
                     }
-                }
-            });
+                });
+            } catch (err) {
+                reject(err);
+            }
         });
     }
 
@@ -129,7 +132,7 @@ suite("Linked templates functional tests", () => {
                 const waitAllForChildPromises = Promise.all(waitForChildPromises);
 
                 // Open and test diagnostics for the main template file
-                testLog.writeLine("Testing diagnostics in main template.");
+                writeToLog("Testing diagnostics in main template.");
                 // tslint:disable-next-line: no-any
                 await testDiagnostics(
                     mainTemplatePath,
@@ -148,14 +151,14 @@ suite("Linked templates functional tests", () => {
                     tcDiagnostics(options.mainTemplateExpected, testCase)
                 );
 
-                testLog.writeLine("Diagnostics in main template were correct.");
+                writeToLog("Diagnostics in main template were correct.");
 
                 // Test diagnostics (without opening them directly - that should have happened automatically) for the linked templates
                 for (const linkedTemplate of options.linkedTemplates) {
                     const childPath = resolveInTestFolder(tcString(linkedTemplate.linkedTemplateFile, testCase));
                     const childUri = Uri.file(childPath);
                     try {
-                        testLog.writeLine(`Testing diagnostics in ${linkedTemplate.linkedTemplateFile}`);
+                        writeToLog(`Testing diagnostics in ${linkedTemplate.linkedTemplateFile}`);
                         await testDiagnosticsFromUri(
                             childUri,
                             {
