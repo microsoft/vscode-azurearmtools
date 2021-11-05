@@ -91,6 +91,11 @@ function test(): cp.ChildProcess {
     env.MOCHA_enableTimeouts = "1";
     env.MOCHA_grep = "";
     env.ALWAYS_ECHO_TEST_LOG = "";
+    console.log("");
+    console.log("*******");
+    console.log("******* NOTE: After the tests run, see testlogs-<platform>/logs/testlog.txt under artifacts for full test log");
+    console.log("*******");
+    console.log("");
     return cp.spawn('node', ['./node_modules/vscode/bin/test'], { stdio: 'inherit', env });
 }
 
