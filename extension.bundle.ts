@@ -73,7 +73,7 @@ export * from "./src/language/IssueKind";
 export * from "./src/language/LineColPos";
 export * from "./src/language/ReferenceList";
 export * from "./src/language/Span";
-export * from "./src/languageclient/getAvailableResourceTypesAndVersions";
+export * from "./src/languageclient/getAvailableResourceTypesAndVersionsNoThrow";
 export * from "./src/languageclient/startArmLanguageServer";
 export * from './src/snippets/ISnippet';
 export * from './src/snippets/ISnippetManager';

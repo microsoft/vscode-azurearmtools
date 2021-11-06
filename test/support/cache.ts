@@ -21,8 +21,7 @@ export async function clearCache(): Promise<void> {
     await displayCacheStatus();
     if (fse.pathExistsSync(cacheFolder)) {
         try {
-            // tslint:disable-next-line:typedef
-            await new Promise<void>((resolve, reject) => {
+            await new Promise<void>((resolve, reject): void => {
                 rimraf(
                     cacheFolder,
                     (error) => {

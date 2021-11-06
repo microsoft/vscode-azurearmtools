@@ -3,7 +3,7 @@ import { Selection, SnippetString, TextEditor } from 'vscode';
 import { DeploymentTemplateDoc, getVSCodeRangeFromSpan } from '../../extension.bundle';
 import { delay } from './delay';
 import { stringify } from './stringify';
-import { testLog } from './testLog';
+import { writeToLog } from './testLog';
 import { typeInDocumentAndWait } from './typeInDocumentAndWait';
 
 export async function simulateCompletion(
@@ -26,7 +26,7 @@ export async function simulateCompletion(
     // Get completion items
     let result = await pc.getCompletionItems(triggerCharacter, <number>editor.options.tabSize);
     if (result.triggerSuggest) {
-        testLog.writeLine("triggering suggestion because result.triggerSuggest=true");
+        writeToLog("triggering suggestion because result.triggerSuggest=true");
         // Trigger again after entering a newline
         const newContents = await typeInDocumentAndWait(editor, '\n');
 
@@ -40,7 +40,7 @@ export async function simulateCompletion(
 
     // Find the desired snippet
     const snippet = result.items.find(s => s.label === completion || s.label === `"${completion}"`);
-    testLog.writeLine(`Available completions: ${stringify(result)}`);
+    writeToLog(`Available completions: ${stringify(result)}`);
     if (!snippet) {
         throw new Error(`Couldn't find completion with label '${completion}' that is available at this location`);
     }

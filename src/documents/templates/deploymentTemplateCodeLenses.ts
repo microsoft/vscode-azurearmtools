@@ -7,7 +7,7 @@
 import { Range, Uri } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
 import { Span } from '../../language/Span';
-import { pathExists } from '../../util/pathExists';
+import { pathExistsNoThrow } from '../../util/pathExistsNoThrow';
 import { IGotoParameterValueArgs } from '../../vscodeIntegration/commandArguments';
 import { getVSCodeRangeFromSpan } from '../../vscodeIntegration/vscodePosition';
 import { ResolvableCodeLens } from '../DeploymentDocument';
@@ -39,7 +39,7 @@ export class ShowCurrentParameterFileCodeLens extends ResolvableCodeLens {
                 command: 'azurerm-vscode-tools.openParameterFile',
                 arguments: [this.scope.document.documentUri] // Template file uri
             };
-            if (!await pathExists(this.parameterFileUri)) {
+            if (!await pathExistsNoThrow(this.parameterFileUri)) {
                 this.command.title += " $(error) Not found";
             }
             return true;
@@ -110,7 +110,7 @@ export class ParameterDefinitionCodeLens extends ResolvableCodeLens {
             paramsSource = await this.parameterValuesSourceProvider.getValuesSource();
         } catch (err) {
             if (this.parameterValuesSourceProvider.parameterFileUri) {
-                if (!await pathExists(this.parameterValuesSourceProvider.parameterFileUri)) {
+                if (!await pathExistsNoThrow(this.parameterValuesSourceProvider.parameterFileUri)) {
                     errorMessage = `$(error) Parameter file not found`;
                 } else {
                     errorMessage = `$(error) Could not open parameter file: ${parseError(err).message}`;

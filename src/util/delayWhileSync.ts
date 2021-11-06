@@ -4,13 +4,16 @@
 // ---------------------------------------------------------------------------------------------
 
 export async function delayWhileSync(pollMs: number, predicate: () => boolean): Promise<void> {
-    // tslint:disable-next-line:typedef
-    return new Promise(resolve => {
+    return new Promise((resolve, reject): void => {
         const handler = setInterval(
             () => {
-                if (!predicate()) {
-                    clearInterval(handler);
-                    resolve();
+                try {
+                    if (!predicate()) {
+                        clearInterval(handler);
+                        resolve();
+                    }
+                } catch (err) {
+                    reject(err);
                 }
             },
             pollMs);
