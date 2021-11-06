@@ -190,7 +190,7 @@ function validateSnippet(snippet: ISnippetInternal): ISnippetInternal {
     const isResource = doesSnippetSupportContext(snippet, KnownContexts.resources);
     if (isResource) {
         if (!looksLikeResource) {
-            window.showWarningMessage(`Snippet "${snippet.name}" is marked with the resources context but doesn't looke like a resource`);
+            window.showWarningMessage(`Snippet "${snippet.name}" is marked with the resources context but doesn't look like a resource`);
         }
         if (!snippet.hasCurlyBraces) {
             window.showWarningMessage(`Snippet "${snippet.name}" is marked with the resources context but doesn't begin and end with curly braces`);
