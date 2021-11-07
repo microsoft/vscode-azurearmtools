@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 // tslint:disable:promise-function-async max-line-length // Grandfathered in
-// tslint:disable-next-line: no-console
+// tslint:disable: no-console
 
 // CONSIDER: Refactor this file
 import * as path from 'path';
