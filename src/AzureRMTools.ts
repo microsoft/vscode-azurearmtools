@@ -3,6 +3,8 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 // tslint:disable:promise-function-async max-line-length // Grandfathered in
+// tslint:disable-next-line: no-console
+
 // CONSIDER: Refactor this file
 import * as path from 'path';
 import * as vscode from "vscode";
@@ -88,16 +90,16 @@ const echoOutputChannelToConsole: boolean = /^(true|1)$/i.test(process.env.ECHO_
 // This method is called when the extension is activated
 // Your extension is activated the very first time the command is executed
 export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
-    console.error(">>>>>>>>>>>>>> activateInternal");
+    console.log(">>>>>>>>>>>>>> activateInternal");
     ext.context = context;
     ext.outputChannel = createAzExtOutputChannel(outputChannelName, configPrefix);
     ext.ui = new AzureUserInput(context.globalState);
     if (echoOutputChannelToConsole) {
         ext.outputChannel = new ConsoleOutputChannelWrapper(ext.outputChannel);
     }
-    console.error(">>>>>>>>>>>>>> registerUIExtensionVariables");
+    console.log(">>>>>>>>>>>>>> registerUIExtensionVariables");
     registerUIExtensionVariables(ext);
-    console.error(">>>>>>>>>>>>>> after registerUIExtensionVariables");
+    console.log(">>>>>>>>>>>>>> after registerUIExtensionVariables");
 
     context.subscriptions.push(ext.completionItemsSpy);
 

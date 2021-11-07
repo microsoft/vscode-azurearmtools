@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-console.error(">>>>>>>>>>>>>> extensionVariables");
+// tslint:disable-next-line: no-console
+console.log(">>>>>>>>>>>>>> extensionVariables");
 
 import * as os from 'os';
 import * as path from "path";

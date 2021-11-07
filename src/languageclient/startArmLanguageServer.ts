@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
+// tslint:disable: no-console
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
@@ -62,6 +62,8 @@ export async function stopArmLanguageServer(): Promise<void> {
 }
 
 export function startArmLanguageServerInBackground(): void {
+    console.log("<<<<<<<<<<<<<<< startArmLanguageServerInBackground");
+
     switch (ext.languageServerState) {
         case LanguageServerState.Running:
         case LanguageServerState.Starting:
@@ -113,6 +115,7 @@ export function startArmLanguageServerInBackground(): void {
             } catch (err) {
                 assert.fail("callWithTelemetryAndErrorHandling in startArmLanguageServerInBackground onTemplateGraphAvailable shouldn't throw");
             }
+            console.log("<<<<<<<<<<<<<<< startArmLanguageServerInBackground DONE");
         });
 }
 
