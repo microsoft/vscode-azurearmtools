@@ -109,9 +109,9 @@ setup(function (this: Mocha.IBeforeAndAfterContext): void {
             // tslint:disable-next-line: prefer-template
             message = `Extension startup failed: ${ext.extensionStartupError}`;
         } else if (ext.extensionStartupComplete === undefined) {
-            message = "Extension startup never occurred";
+            message = "Extension startup never started";
         } else {
-            message = "Extension startup has not completed";
+            message = "Extension startup started but has not completed";
         }
 
         throw new Error(message);
