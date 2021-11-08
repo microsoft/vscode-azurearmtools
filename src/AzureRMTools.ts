@@ -10,18 +10,13 @@ console.log(">>>>>>>>>>>>>> AzureRMTools.ts");
 // CONSIDER: Refactor this file
 import * as path from 'path';
 import * as vscode from "vscode";
-console.log(">>>>>>>>>>>>>> 7");
-import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, ITelemetryContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
-console.log(">>>>>>>>>>>>>> 8");
+import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, ITelemetryContext, parseError, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { delay } from "../test/support/delay";
 import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "./constants";
-console.log(">>>>>>>>>>>>>> 9");
 import { DeploymentDocument, ResolvableCodeLens } from "./documents/DeploymentDocument";
-console.log(">>>>>>>>>>>>>> 10");
 import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
 import { DeploymentParametersDoc } from "./documents/parameters/DeploymentParametersDoc";
 import { IParameterDefinitionsSource } from "./documents/parameters/IParameterDefinitionsSource";
-console.log(">>>>>>>>>>>>>> 3");
 import { IParameterValuesSource } from "./documents/parameters/IParameterValuesSource";
 import { IParameterValuesSourceProvider } from "./documents/parameters/IParameterValuesSourceProvider";
 import { defaultTabSize } from './documents/parameters/parameterFileGeneration';
@@ -31,7 +26,6 @@ import { IReferenceSite, PositionContext } from "./documents/positionContexts/Po
 import { TemplatePositionContext } from "./documents/positionContexts/TemplatePositionContext";
 import { DeploymentTemplateDoc } from "./documents/templates/DeploymentTemplateDoc";
 import { ExtractItem } from './documents/templates/ExtractItem';
-console.log(">>>>>>>>>>>>>> 4");
 import { getNormalizedDocumentKey } from './documents/templates/getNormalizedDocumentKey';
 import { gotoResources } from './documents/templates/gotoResources';
 import { IJsonDocument } from './documents/templates/IJsonDocument';
@@ -41,13 +35,8 @@ import { allSchemas, getPreferredSchema } from './documents/templates/schemas';
 import { getQuickPickItems, sortTemplate } from "./documents/templates/sortTemplate";
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, setLangIdToArm, templateDocumentSelector, templateOrParameterDocumentSelector } from "./documents/templates/supported";
 import { TemplateSectionType } from "./documents/templates/TemplateSectionType";
-console.log(">>>>>>>>>>>>>> 5");
 import { UnsupportedJsonDocument } from './documents/UnsupportedJsonDocument';
-
-console.log(">>>>>>>>>>>>>> 1");
 import { ext } from "./extensionVariables";
-console.log(">>>>>>>>>>>>>> 2");
-
 import { assert } from './fixed_assert';
 import { IProvideOpenedDocuments } from './IProvideOpenedDocuments';
 import * as TLE from "./language/expressions/TLE";
@@ -90,6 +79,15 @@ import { onCompletionActivated, toVsCodeCompletionItem } from "./vscodeIntegrati
 import { toVSCodeDiagnosticFromIssue } from './vscodeIntegration/toVSCodeDiagnosticFromIssue';
 import { JsonOutlineProvider } from "./vscodeIntegration/Treeview";
 import { getVSCodeRangeFromSpan } from "./vscodeIntegration/vscodePosition";
+console.log(">>>>>>>>>>>>>> 10");
+console.log(">>>>>>>>>>>>>> 11");
+console.log(">>>>>>>>>>>>>> 12");
+console.log(">>>>>>>>>>>>>> 3");
+console.log(">>>>>>>>>>>>>> 4");
+console.log(">>>>>>>>>>>>>> 5");
+
+console.log(">>>>>>>>>>>>>> 1");
+console.log(">>>>>>>>>>>>>> 2");
 
 interface IErrorsAndWarnings {
     errors: Issue[];
@@ -103,32 +101,47 @@ const echoOutputChannelToConsole: boolean = /^(true|1)$/i.test(process.env.ECHO_
 // This method is called when the extension is activated
 // Your extension is activated the very first time the command is executed
 export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
-    console.log(">>>>>>>>>>>>>> activateInternal");
-    ext.context = context;
-    ext.outputChannel = createAzExtOutputChannel(outputChannelName, configPrefix);
-    ext.ui = new AzureUserInput(context.globalState);
-    if (echoOutputChannelToConsole) {
-        ext.outputChannel = new ConsoleOutputChannelWrapper(ext.outputChannel);
+    try {
+        ext.extensionStartupComplete = false;
+
+        console.log(">>>>>>>>>>>>>> activateInternal");
+        ext.context = context;
+        ext.ui = new AzureUserInput(context.globalState);
+        let outputChannel = createAzExtOutputChannel(outputChannelName, configPrefix); //asdfasdf
+        if (echoOutputChannelToConsole) {
+            outputChannel = new ConsoleOutputChannelWrapper(ext.outputChannel);
+        }
+        ext.outputChannel = outputChannel;
+        console.log(">>>>>>>>>>>>>> registerUIExtensionVariables");
+        registerUIExtensionVariables(ext);
+        console.log(">>>>>>>>>>>>>> after registerUIExtensionVariables");
+
+        context.subscriptions.push(ext.completionItemsSpy);
+
+        ext.deploymentFileMapping.value = new DeploymentFileMapping(ext.configuration);
+        if (!ext.snippetManager.hasValue) {
+            ext.snippetManager.value = SnippetManager.createDefault();
+        }
+
+        await callWithTelemetryAndErrorHandling('activate', async (actionContext: IActionContext): Promise<void> => {
+            actionContext.telemetry.properties.isActivationEvent = 'true';
+            actionContext.telemetry.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
+
+            recordConfigValuesToTelemetry(actionContext);
+
+            context.subscriptions.push(new AzureRMTools(context));
+        });
+
+    } catch (err) {
+        const msg = parseError(err).message;
+        ext.extensionStartupError = msg;
+        console.error(msg);
+        throw err;
     }
-    console.log(">>>>>>>>>>>>>> registerUIExtensionVariables");
-    registerUIExtensionVariables(ext);
-    console.log(">>>>>>>>>>>>>> after registerUIExtensionVariables");
 
-    context.subscriptions.push(ext.completionItemsSpy);
-
-    ext.deploymentFileMapping.value = new DeploymentFileMapping(ext.configuration);
-    if (!ext.snippetManager.hasValue) {
-        ext.snippetManager.value = SnippetManager.createDefault();
+    if (!ext.extensionStartupError) {
+        ext.extensionStartupComplete = true;
     }
-
-    await callWithTelemetryAndErrorHandling('activate', async (actionContext: IActionContext): Promise<void> => {
-        actionContext.telemetry.properties.isActivationEvent = 'true';
-        actionContext.telemetry.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
-
-        recordConfigValuesToTelemetry(actionContext);
-
-        context.subscriptions.push(new AzureRMTools(context));
-    });
 }
 
 function recordConfigValuesToTelemetry(actionContext: IActionContext): void {

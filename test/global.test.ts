@@ -29,6 +29,20 @@ let previousSettings = {
 // Runs before all tests
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     console.log(">>>>>>>>>>>>>> suiteSetup");
+
+    if (ext.extensionStartupError || ext.extensionStartupComplete !== true) {
+        if (ext.extensionStartupError) {
+            // tslint:disable-next-line: prefer-template
+            console.error("Extension startup failed: " + ext.extensionStartupError);
+        } else if (ext.extensionStartupComplete === undefined) {
+            console.error("Extension startup never occurred");
+        } else {
+            console.error("Extension startup has not completed");
+        }
+
+        throw new Error("asdff");
+    }
+
     // Create logs folder
     if (await fse.pathExists(logsFolder)) {
         rimraf.sync(logsFolder);
