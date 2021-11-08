@@ -5,6 +5,8 @@
 
 "use strict";
 
+console.log(">>>>>>>>>>>>>> main.js");
+
 // This is the extension entrypoint, which imports extension.js, the actual extension code.
 //
 // This is in a separate file so we can properly measure extension.js load time.
@@ -19,7 +21,9 @@ const ignoreBundle = !/^(false|0)?$/i.test(process.env.AZCODE_ARM_IGNORE_BUNDLE 
 const extensionPath = ignoreBundle ? "./out/src/AzureRMTools.js" : "./dist/extension.bundle";
 const extension = require(extensionPath);
 
+console.log(">>>>>>>>>>>>>> 10");
 async function activate(ctx) {
+    console.log(">>>>>>>>>>>>>> 11");
     return await extension.activateInternal(ctx, perfStats);
 }
 

@@ -44,7 +44,7 @@
             "preLaunchTask": "npm: compile",
             "env": {
                 // =================================================================
-                "MOCHA_grep": "snippet", // RegExp of tests to run (empty for all)
+                "MOCHA_grep": "", // RegExp of tests to run (empty for all)
                 // =================================================================
                 "MOCHA_invert": "0", // Invert the RegExp
                 "MOCHA_bail": "0", // Bail after first failure

@@ -3,8 +3,9 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// tslint:disable-next-line: no-console
-console.log(">>>>>>>>>>>>>> extensionVariables");
+// tslint:disable: no-console
+
+console.log(">>>>>>>>>>>>>> extensionVariables.ts");
 
 import * as os from 'os';
 import * as path from "path";
@@ -37,23 +38,29 @@ class ExtensionVariables {
     private _languageServerStateEmitter: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
 
     public set context(context: vscode.ExtensionContext) {
+        console.log(">>>>>>>>>>>>>> set context");
         this._context.value = context;
     }
     public get context(): vscode.ExtensionContext {
+        console.log(">>>>>>>>>>>>>> get context");
         return this._context.value;
     }
 
     public set jsonOutlineProvider(context: JsonOutlineProvider) {
+        console.log(">>>>>>>>>>>>>> set outline provider");
         this._jsonOutlineProvider.value = context;
     }
     public get jsonOutlineProvider(): JsonOutlineProvider {
+        console.log(">>>>>>>>>>>>>> get outline provider");
         return this._jsonOutlineProvider.value;
     }
 
     public set outputChannel(outputChannel: IAzExtOutputChannel) {
+        console.log(">>>>>>>>>>>>>> set output channel");
         this._outputChannel.value = outputChannel;
     }
     public get outputChannel(): IAzExtOutputChannel {
+        console.log(">>>>>>>>>>>>>> get outputchannel");
         return this._outputChannel.value;
     }
 

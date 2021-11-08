@@ -3,6 +3,8 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+console.log(">>>>>>>>>>>>>> global.test.ts");
+
 import * as fse from 'fs-extra';
 import * as mocha from 'mocha';
 import * as path from 'path';
@@ -26,6 +28,7 @@ let previousSettings = {
 
 // Runs before all tests
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
+    console.log(">>>>>>>>>>>>>> suiteSetup");
     // Create logs folder
     if (await fse.pathExists(logsFolder)) {
         rimraf.sync(logsFolder);
@@ -59,10 +62,13 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     let newAssociations = Object.assign({}, fileAssociations, { '*.azrm': armTemplateLanguageId });
     vscode.workspace.getConfiguration('files', null).update('associations', newAssociations, vscode.ConfigurationTarget.Global);
 
+    console.log(">>>>>>>>>>>>>> 22");
     await delay(1000); // Give vscode time to update the setting
+    console.log(">>>>>>>>>>>>>> 23");
     const confirmedNewAssociations = Object.assign({}, vscode.workspace.getConfiguration('files').get<{}>('associations'));
     console.warn("Confirmed new file associations:", confirmedNewAssociations);
 
+    console.log(">>>>>>>>>>>>>> 24");
     writeToLog('Done: global.test.ts: suiteSetup');
 });
 
@@ -93,6 +99,7 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
 
 // Runs before each individual test
 setup(function (this: Mocha.IBeforeAndAfterContext): void {
+    console.log(">>>>>>>>>>>>>> setup");
     writeToLog(`Running: ${this.currentTest.title}`);
 });
 
@@ -103,9 +110,9 @@ teardown(function (this: Mocha.IBeforeAndAfterContext): void {
 
     if (failed) {
         if (getTestLogContents()) {
-            message = `Failed: ${this.currentTest.title}`;
+            message = `Test Failed: ${this.currentTest.title}`;
         } else {
-            message = `Failed (test log is empty): ${this.currentTest.title}`;
+            message = `Test Failed: (test log is empty): ${this.currentTest.title}`;
         }
     } else {
         message = `Passed: ${this.currentTest}\n`;

@@ -5,16 +5,23 @@
 // tslint:disable:promise-function-async max-line-length // Grandfathered in
 // tslint:disable: no-console
 
+console.log(">>>>>>>>>>>>>> AzureRMTools.ts");
+
 // CONSIDER: Refactor this file
 import * as path from 'path';
 import * as vscode from "vscode";
+console.log(">>>>>>>>>>>>>> 7");
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, ITelemetryContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
+console.log(">>>>>>>>>>>>>> 8");
 import { delay } from "../test/support/delay";
 import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "./constants";
+console.log(">>>>>>>>>>>>>> 9");
 import { DeploymentDocument, ResolvableCodeLens } from "./documents/DeploymentDocument";
+console.log(">>>>>>>>>>>>>> 10");
 import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
 import { DeploymentParametersDoc } from "./documents/parameters/DeploymentParametersDoc";
 import { IParameterDefinitionsSource } from "./documents/parameters/IParameterDefinitionsSource";
+console.log(">>>>>>>>>>>>>> 3");
 import { IParameterValuesSource } from "./documents/parameters/IParameterValuesSource";
 import { IParameterValuesSourceProvider } from "./documents/parameters/IParameterValuesSourceProvider";
 import { defaultTabSize } from './documents/parameters/parameterFileGeneration';
@@ -24,6 +31,7 @@ import { IReferenceSite, PositionContext } from "./documents/positionContexts/Po
 import { TemplatePositionContext } from "./documents/positionContexts/TemplatePositionContext";
 import { DeploymentTemplateDoc } from "./documents/templates/DeploymentTemplateDoc";
 import { ExtractItem } from './documents/templates/ExtractItem';
+console.log(">>>>>>>>>>>>>> 4");
 import { getNormalizedDocumentKey } from './documents/templates/getNormalizedDocumentKey';
 import { gotoResources } from './documents/templates/gotoResources';
 import { IJsonDocument } from './documents/templates/IJsonDocument';
@@ -33,8 +41,13 @@ import { allSchemas, getPreferredSchema } from './documents/templates/schemas';
 import { getQuickPickItems, sortTemplate } from "./documents/templates/sortTemplate";
 import { mightBeDeploymentParameters, mightBeDeploymentTemplate, setLangIdToArm, templateDocumentSelector, templateOrParameterDocumentSelector } from "./documents/templates/supported";
 import { TemplateSectionType } from "./documents/templates/TemplateSectionType";
+console.log(">>>>>>>>>>>>>> 5");
 import { UnsupportedJsonDocument } from './documents/UnsupportedJsonDocument';
+
+console.log(">>>>>>>>>>>>>> 1");
 import { ext } from "./extensionVariables";
+console.log(">>>>>>>>>>>>>> 2");
+
 import { assert } from './fixed_assert';
 import { IProvideOpenedDocuments } from './IProvideOpenedDocuments';
 import * as TLE from "./language/expressions/TLE";
