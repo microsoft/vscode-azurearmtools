@@ -109,7 +109,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
         ext.ui = new AzureUserInput(context.globalState);
         let outputChannel = createAzExtOutputChannel(outputChannelName, configPrefix); //asdfasdf
         if (echoOutputChannelToConsole) {
-            outputChannel = new ConsoleOutputChannelWrapper(ext.outputChannel);
+            outputChannel = new ConsoleOutputChannelWrapper(outputChannel);
         }
         ext.outputChannel = outputChannel;
         console.log(">>>>>>>>>>>>>> registerUIExtensionVariables");

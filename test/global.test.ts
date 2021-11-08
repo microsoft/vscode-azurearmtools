@@ -30,19 +30,6 @@ let previousSettings = {
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     console.log(">>>>>>>>>>>>>> suiteSetup");
 
-    if (ext.extensionStartupError || ext.extensionStartupComplete !== true) {
-        if (ext.extensionStartupError) {
-            // tslint:disable-next-line: prefer-template
-            console.error("Extension startup failed: " + ext.extensionStartupError);
-        } else if (ext.extensionStartupComplete === undefined) {
-            console.error("Extension startup never occurred");
-        } else {
-            console.error("Extension startup has not completed");
-        }
-
-        throw new Error("asdff");
-    }
-
     // Create logs folder
     if (await fse.pathExists(logsFolder)) {
         rimraf.sync(logsFolder);
@@ -114,7 +101,21 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
 // Runs before each individual test
 setup(function (this: Mocha.IBeforeAndAfterContext): void {
     console.log(">>>>>>>>>>>>>> setup");
-    writeToLog(`Running: ${this.currentTest.title}`);
+    writeToLog(`Setup for: ${this.currentTest.title}`);
+
+    if (ext.extensionStartupError || ext.extensionStartupComplete !== true) {
+        let message: string;
+        if (ext.extensionStartupError) {
+            // tslint:disable-next-line: prefer-template
+            message = `Extension startup failed: ${ext.extensionStartupError}`;
+        } else if (ext.extensionStartupComplete === undefined) {
+            message = "Extension startup never occurred";
+        } else {
+            message = "Extension startup has not completed";
+        }
+
+        throw new Error(message);
+    }
 });
 
 // Runs after each individual test
