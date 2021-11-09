@@ -19,12 +19,10 @@ export class InitializeBeforeUse<T> {
     }
 
     public set value(value: T) {
-        if (!this._value.initialized) {
+        if (!this._value.initialized || this.allowChangingValue) {
             this._value = { value: value, initialized: true };
         } else {
-            if (!this.allowChangingValue) {
-                assert.fail(`InitializeBeforeUse: Value has already been set: ${this.propertyName}`);
-            }
+            assert.fail(`InitializeBeforeUse: Value has already been set: ${this.propertyName}`);
         }
     }
 
