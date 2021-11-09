@@ -42,7 +42,6 @@ class ExtensionVariables {
         this._context.value = context;
     }
     public get context(): vscode.ExtensionContext {
-        console.log(">>>>>>>>>>>>>> get context");
         return this._context.value;
     }
 
@@ -107,7 +106,7 @@ class ExtensionVariables {
 
     public readonly completionItemsSpy: CompletionsSpy = new CompletionsSpy();
     public deploymentFileMapping: InitializeBeforeUse<DeploymentFileMapping> = new InitializeBeforeUse<DeploymentFileMapping>("deploymentFileMapping");
-    public snippetManager: InitializeBeforeUse<ISnippetManager> = new InitializeBeforeUse<ISnippetManager>("snippetManager");
+    public snippetManager: InitializeBeforeUse<ISnippetManager> = new InitializeBeforeUse<ISnippetManager>("snippetManager", true);
 }
 
 // tslint:disable-next-line: no-any

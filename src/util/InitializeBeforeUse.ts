@@ -11,7 +11,7 @@ import { assert } from "../fixed_assert";
 export class InitializeBeforeUse<T> {
     private _value: { value: T; initialized: true } | { initialized: false } = { initialized: false };
 
-    public constructor(private propertyName: string) {
+    public constructor(private propertyName: string, private allowChangingValue: boolean = false) {
     }
 
     public get hasValue(): boolean {
@@ -22,7 +22,9 @@ export class InitializeBeforeUse<T> {
         if (!this._value.initialized) {
             this._value = { value: value, initialized: true };
         } else {
-            assert.fail(`InitializeBeforeUse: Value has already been set: ${this.propertyName}`);
+            if (!this.allowChangingValue) {
+                assert.fail(`InitializeBeforeUse: Value has already been set: ${this.propertyName}`);
+            }
         }
     }
 
