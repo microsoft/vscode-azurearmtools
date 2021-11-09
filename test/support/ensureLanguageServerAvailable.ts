@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
-import { workspace } from "vscode";
+import { commands, workspace } from "vscode";
 import { LanguageClient } from "vscode-languageclient";
 import { armTemplateLanguageId, ext, waitForLanguageServerAvailable } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
@@ -53,37 +53,37 @@ export async function ensureExtensionHasInitialized(): Promise<void> { //asdf mo
         }
 
         if (Date.now() > start + timeout) {
-            throw new Error("Timed out waiting for extension to initialize");
+            break;
         }
         await delay(1000);
 
     }
 
-    //     console.warn("First timeout");
+    console.log("First timeout");
 
-    //     console.warn("before");
-    //     await commands.executeCommand("azurerm-vscode-tools.developer.showAvailableResourceTypesAndVersions");
-    //     console.warn("after");
+    console.log("before");
+    await commands.executeCommand("azurerm-vscode-tools.developer.showAvailableResourceTypesAndVersions");
+    console.log("after");
 
-    //     start = Date.now();
-    //     // tslint:disable-next-line: no-constant-condition
-    //     while (true) {
-    //         const extensionStartupComplete = ext.extensionStartupComplete;
+    start = Date.now();
+    // tslint:disable-next-line: no-constant-condition
+    while (true) {
+        const extensionStartupComplete = ext.extensionStartupComplete;
 
-    //         console.log(`Extension initialization state: ${extensionStartupComplete ? "Completed" : extensionStartupComplete === undefined ? "Not started" : "In progress"}`);
+        console.log(`Extension initialization state: ${extensionStartupComplete ? "Completed" : extensionStartupComplete === undefined ? "Not started" : "In progress"}`);
 
-    //         if (extensionStartupComplete) {
-    //             console.log(`Extension initialization complete`);
-    //             return;
-    //         } else if (ext.languageServerStartupError) {
-    //             console.log(`Extension initialization failed: ${ext.extensionStartupError}`);
-    //             throw new Error(ext.languageServerStartupError);
-    //         }
+        if (extensionStartupComplete) {
+            console.log(`Extension initialization complete`);
+            return;
+        } else if (ext.languageServerStartupError) {
+            console.log(`Extension initialization failed: ${ext.extensionStartupError}`);
+            throw new Error(ext.languageServerStartupError);
+        }
 
-    //         if (Date.now() > start + timeout) {
-    //             throw new Error("Timed out waiting for extension to initialize");
-    //         }
-    //         await delay(1000);
+        if (Date.now() > start + timeout) {
+            throw new Error("Timed out waiting for extension to initialize");
+        }
+        await delay(1000);
 
-    //     }
+    }
 }
