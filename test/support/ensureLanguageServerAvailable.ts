@@ -3,9 +3,9 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
-import { extensions, workspace } from "vscode";
+import { Extension, extensions, workspace } from "vscode";
 import { LanguageClient } from "vscode-languageclient";
-import { armTemplateLanguageId, ext, waitForLanguageServerAvailable } from "../../extension.bundle";
+import { armTemplateLanguageId, delayWhileSync, ext, waitForLanguageServerAvailable } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { delay } from "./delay";
 import { writeToLog } from "./testLog";
@@ -35,7 +35,20 @@ export async function ensureLanguageServerAvailable(): Promise<LanguageClient> {
 }
 
 export async function ensureExtensionHasInitialized(): Promise<void> { //asdf move
-    let extensionDotnet = extensions.getExtension("ms-dotnettools.vscode-dotnet-runtime");
+    writeToLog(">>>>>>>>>>>>>> activating dotnet extension ", true);
+    let extensionDotnet: Extension<unknown> | undefined;
+    await delayWhileSync(
+        1000,
+        () => {
+            extensionDotnet = extensions.getExtension("ms-dotnettools.vscode-dotnet-runtime");
+            console.log(extensionDotnet);
+            return !!extensionDotnet;
+        },
+        5 * 60 * 1000);
+    // tslint:disable-next-line: no-non-null-assertion
+    await extensionDotnet!.activate();
+    writeToLog(">>>>>>>>>>>>>> dotnet extension activated", true);
+
     console.log("Dotnet extension: ", extensionDotnet);
 
     const timeout = 13 * 60 * 1000;
