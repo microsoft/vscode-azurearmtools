@@ -35,7 +35,7 @@ export async function ensureLanguageServerAvailable(): Promise<LanguageClient> {
 }
 
 export async function ensureExtensionHasInitialized(): Promise<void> { //asdf move
-    const timeout = 1 * 60 * 1000;
+    const timeout = 3 * 60 * 1000;
 
     let start = Date.now();
     // tslint:disable-next-line: no-constant-condition

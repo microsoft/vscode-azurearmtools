@@ -31,6 +31,8 @@ let previousSettings = {
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     console.log(">>>>>>>>>>>>>> suiteSetup");
 
+    this.timeout(5 * 60 * 1000);
+
     // Create logs folder
     if (await fse.pathExists(logsFolder)) {
         rimraf.sync(logsFolder);
