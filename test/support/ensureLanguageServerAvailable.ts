@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
-import { commands, workspace } from "vscode";
+import { extensions, workspace } from "vscode";
 import { LanguageClient } from "vscode-languageclient";
 import { armTemplateLanguageId, ext, waitForLanguageServerAvailable } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
@@ -42,13 +42,13 @@ export async function ensureExtensionHasInitialized(): Promise<void> { //asdf mo
     while (true) {
         const extensionStartupComplete = ext.extensionStartupComplete;
 
-        console.log(`Extension initialization state: ${extensionStartupComplete ? "Completed" : extensionStartupComplete === undefined ? "Not started" : "In progress"}`);
+        console.log(`Extension initialization state: ${extensionStartupComplete ? "Completed" : extensionStartupComplete === undefined ? "Not started" : "In progress"}`, new Date().toTimeString);
 
         if (extensionStartupComplete) {
-            console.log(`Extension initialization complete`);
+            console.log(`Extension initialization complete`, new Date().toTimeString);
             return;
         } else if (ext.languageServerStartupError) {
-            console.log(`Extension initialization failed: ${ext.extensionStartupError}`);
+            console.log(`Extension initialization failed: ${ext.extensionStartupError}`, new Date().toTimeString);
             throw new Error(ext.languageServerStartupError);
         }
 
@@ -59,11 +59,15 @@ export async function ensureExtensionHasInitialized(): Promise<void> { //asdf mo
 
     }
 
-    console.log("First timeout");
+    console.log("First timeout", new Date().toTimeString);
 
-    console.log("before");
-    await commands.executeCommand("azurerm-vscode-tools.developer.showAvailableResourceTypesAndVersions");
-    console.log("after");
+    console.log("before", new Date().toTimeString);
+    //asdf await commands.executeCommand("azurerm-vscode-tools.developer.showAvailableResourceTypesAndVersions");
+    let extension = extensions.getExtension(ext.extensionId);
+    assert(extension, `Couldn't find extension ${ext.extensionId}`);
+    await extension.activate();
+
+    console.log("after", new Date().toTimeString);
 
     start = Date.now();
     // tslint:disable-next-line: no-constant-condition
@@ -73,10 +77,10 @@ export async function ensureExtensionHasInitialized(): Promise<void> { //asdf mo
         console.log(`Extension initialization state: ${extensionStartupComplete ? "Completed" : extensionStartupComplete === undefined ? "Not started" : "In progress"}`);
 
         if (extensionStartupComplete) {
-            console.log(`Extension initialization complete`);
+            console.log(`Extension initialization complete`, new Date().toTimeString);
             return;
         } else if (ext.languageServerStartupError) {
-            console.log(`Extension initialization failed: ${ext.extensionStartupError}`);
+            console.log(`Extension initialization failed: ${ext.extensionStartupError}`, new Date().toTimeString);
             throw new Error(ext.languageServerStartupError);
         }
 

@@ -29,7 +29,7 @@ let previousSettings = {
 
 // Runs before all tests
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
-    console.log(">>>>>>>>>>>>>> suiteSetup");
+    console.log(">>>>>>>>>>>>>> suiteSetup", new Date().toTimeString);
 
     this.timeout(15 * 60 * 1000);
 
@@ -66,13 +66,13 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     let newAssociations = Object.assign({}, fileAssociations, { '*.azrm': armTemplateLanguageId });
     vscode.workspace.getConfiguration('files', null).update('associations', newAssociations, vscode.ConfigurationTarget.Global);
 
-    console.log(">>>>>>>>>>>>>> 22");
-    await delay(1000); // Give vscode time to update the setting
-    console.log(">>>>>>>>>>>>>> 23");
+    console.log(">>>>>>>>>>>>>> 22", new Date().toTimeString);
+    await delay(5 * 1000); // Give vscode time to update the setting
+    console.log(">>>>>>>>>>>>>> 23, new Date().toTimeString");
     const confirmedNewAssociations = Object.assign({}, vscode.workspace.getConfiguration('files').get<{}>('associations'));
     console.warn("Confirmed new file associations:", confirmedNewAssociations);
 
-    console.log(">>>>>>>>>>>>>> 24");
+    console.log(">>>>>>>>>>>>>> 24", new Date().toTimeString);
 
     //await ensureLanguageServerAvailable();
     await ensureExtensionHasInitialized();
