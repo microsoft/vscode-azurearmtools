@@ -91,7 +91,7 @@ class ExtensionVariables {
     }
     public languageServerStartupError: string | undefined;
 
-    public extensionStartupComplete: boolean | undefined = false;
+    public extensionStartupComplete: boolean | undefined;
     public extensionStartupError: string | undefined;
 
     // Suite support - lets us know when diagnostics have been completely published for a file

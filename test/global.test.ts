@@ -13,7 +13,7 @@ import * as vscode from 'vscode';
 import { armTemplateLanguageId, configKeys, configPrefix, ext, stopArmLanguageServer } from "../extension.bundle";
 import { displayCacheStatus } from './support/cache';
 import { delay } from "./support/delay";
-import { ensureExtensionHasInitialized } from './support/ensureLanguageServerAvailable';
+import { ensureExtensionHasInitialized, ensureLanguageServerAvailable } from './support/ensureLanguageServerAvailable';
 import { publishVsCodeLogs } from './support/publishVsCodeLogs';
 import { alwaysEchoTestLog, deleteTestLog, getTestLogContents, setTestLogOutputFile, writeToLog, writeToWarning } from './support/testLog';
 import { useTestSnippets } from './support/TestSnippets';
@@ -72,6 +72,7 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
 
     console.log(">>>>>>>>>>>>>> 24");
 
+    await ensureLanguageServerAvailable();
     await ensureExtensionHasInitialized();
 
     writeToLog('Done: global.test.ts: suiteSetup');
