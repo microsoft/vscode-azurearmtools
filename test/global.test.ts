@@ -13,6 +13,7 @@ import * as vscode from 'vscode';
 import { armTemplateLanguageId, configKeys, configPrefix, ext, stopArmLanguageServer } from "../extension.bundle";
 import { displayCacheStatus } from './support/cache';
 import { delay } from "./support/delay";
+import { ensureExtensionHasInitialized } from './support/ensureLanguageServerAvailable';
 import { publishVsCodeLogs } from './support/publishVsCodeLogs';
 import { alwaysEchoTestLog, deleteTestLog, getTestLogContents, setTestLogOutputFile, writeToLog, writeToWarning } from './support/testLog';
 import { useTestSnippets } from './support/TestSnippets';
@@ -70,6 +71,9 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     console.warn("Confirmed new file associations:", confirmedNewAssociations);
 
     console.log(">>>>>>>>>>>>>> 24");
+
+    await ensureExtensionHasInitialized();
+
     writeToLog('Done: global.test.ts: suiteSetup');
 });
 
@@ -80,9 +84,13 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
     await displayCacheStatus();
     // await publishCache(path.join(logsFolder, 'post-cache'));
 
-    await publishVsCodeLogs('ms-dotnettools.vscode-dotnet-runtime');
-    await publishVsCodeLogs(path.basename(ext.context.logPath));
-    await publishVsCodeLogs(undefined);
+    if (ext.extensionStartupComplete) {
+        await publishVsCodeLogs('ms-dotnettools.vscode-dotnet-runtime');
+        await publishVsCodeLogs(path.basename(ext.context.logPath));
+        await publishVsCodeLogs(undefined);
+    } else {
+        console.warn("Cannot publish logs because extension context is not available (startup didn't complete)");
+    }
 
     /* Restoring settings doesn't seem to work anymore
     writeToLog('Restoring settings');
@@ -101,21 +109,7 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
 // Runs before each individual test
 setup(function (this: Mocha.IBeforeAndAfterContext): void {
     console.log(">>>>>>>>>>>>>> setup");
-    writeToLog(`Setup for: ${this.currentTest.title}`);
-
-    if (ext.extensionStartupError || ext.extensionStartupComplete !== true) {
-        let message: string;
-        if (ext.extensionStartupError) {
-            // tslint:disable-next-line: prefer-template
-            message = `Extension startup failed: ${ext.extensionStartupError}`;
-        } else if (ext.extensionStartupComplete === undefined) {
-            message = "Extension startup never started";
-        } else {
-            message = "Extension startup started but has not completed";
-        }
-
-        throw new Error(message);
-    }
+    writeToLog(`Running: ${this.currentTest.title}`);
 });
 
 // Runs after each individual test

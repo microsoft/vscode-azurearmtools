@@ -7,6 +7,7 @@ import { workspace } from "vscode";
 import { LanguageClient } from "vscode-languageclient";
 import { armTemplateLanguageId, ext, waitForLanguageServerAvailable } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
+import { delay } from "./delay";
 import { writeToLog } from "./testLog";
 
 let isLanguageServerAvailable = false;
@@ -31,4 +32,30 @@ export async function ensureLanguageServerAvailable(): Promise<LanguageClient> {
 
     assert(ext.languageServerClient);
     return ext.languageServerClient;
+}
+
+export async function ensureExtensionHasInitialized(): Promise<void> { //asdf move
+    const timeout = 2 * 60 * 1000;
+
+    const start = Date.now();
+    // tslint:disable-next-line: no-constant-condition
+    while (true) {
+        const extensionStartupComplete = ext.extensionStartupComplete;
+
+        console.log(`Extension initialization state: ${extensionStartupComplete ? "Completed" : extensionStartupComplete === undefined ? "Not started" : "In progress"}`);
+
+        if (ext.extensionStartupComplete) {
+            console.log(`Extension initialization complete`);
+            return;
+        } else if (ext.languageServerStartupError) {
+            console.log(`Extension initialization failed: ${ext.extensionStartupError}`);
+            throw new Error(ext.languageServerStartupError);
+        }
+
+        if (Date.now() > start + timeout) {
+            throw new Error("Timed out waiting for extension to initialize");
+        }
+        await delay(1000);
+
+    }
 }
