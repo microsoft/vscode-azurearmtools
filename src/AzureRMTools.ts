@@ -79,14 +79,6 @@ import { onCompletionActivated, toVsCodeCompletionItem } from "./vscodeIntegrati
 import { toVSCodeDiagnosticFromIssue } from './vscodeIntegration/toVSCodeDiagnosticFromIssue';
 import { JsonOutlineProvider } from "./vscodeIntegration/Treeview";
 import { getVSCodeRangeFromSpan } from "./vscodeIntegration/vscodePosition";
-console.log(">>>>>>>>>>>>>> 10");
-console.log(">>>>>>>>>>>>>> 11");
-console.log(">>>>>>>>>>>>>> 12");
-console.log(">>>>>>>>>>>>>> 3");
-console.log(">>>>>>>>>>>>>> 4");
-console.log(">>>>>>>>>>>>>> 5");
-
-console.log(">>>>>>>>>>>>>> 1");
 console.log(">>>>>>>>>>>>>> 2");
 
 interface IErrorsAndWarnings {

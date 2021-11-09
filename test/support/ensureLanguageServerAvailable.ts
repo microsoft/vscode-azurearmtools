@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
-import { workspace } from "vscode";
+import { commands, workspace } from "vscode";
 import { LanguageClient } from "vscode-languageclient";
 import { armTemplateLanguageId, ext, waitForLanguageServerAvailable } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
@@ -37,14 +37,42 @@ export async function ensureLanguageServerAvailable(): Promise<LanguageClient> {
 export async function ensureExtensionHasInitialized(): Promise<void> { //asdf move
     const timeout = 2 * 60 * 1000;
 
-    const start = Date.now();
+    let start = Date.now();
     // tslint:disable-next-line: no-constant-condition
     while (true) {
         const extensionStartupComplete = ext.extensionStartupComplete;
 
         console.log(`Extension initialization state: ${extensionStartupComplete ? "Completed" : extensionStartupComplete === undefined ? "Not started" : "In progress"}`);
 
-        if (ext.extensionStartupComplete) {
+        if (extensionStartupComplete) {
+            console.log(`Extension initialization complete`);
+            return;
+        } else if (ext.languageServerStartupError) {
+            console.log(`Extension initialization failed: ${ext.extensionStartupError}`);
+            throw new Error(ext.languageServerStartupError);
+        }
+
+        if (Date.now() > start + timeout) {
+            break;
+        }
+        await delay(1000);
+
+    }
+
+    console.warn("First timeout");
+
+    console.warn("before");
+    await commands.executeCommand("azurerm-vscode-tools.developer.showAvailableResourceTypesAndVersions");
+    console.warn("after");
+
+    start = Date.now();
+    // tslint:disable-next-line: no-constant-condition
+    while (true) {
+        const extensionStartupComplete = ext.extensionStartupComplete;
+
+        console.log(`Extension initialization state: ${extensionStartupComplete ? "Completed" : extensionStartupComplete === undefined ? "Not started" : "In progress"}`);
+
+        if (extensionStartupComplete) {
             console.log(`Extension initialization complete`);
             return;
         } else if (ext.languageServerStartupError) {
