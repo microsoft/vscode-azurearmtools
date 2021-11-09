@@ -93,7 +93,7 @@ const echoOutputChannelToConsole: boolean = /^(true|1)$/i.test(process.env.ECHO_
 // This method is called when the extension is activated
 // Your extension is activated the very first time the command is executed
 export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
-    console.log(">>>>>>>>>>>>>> activateInternal", new Date().toTimeString);
+    console.log(">>>>>>>>>>>>>> activateInternal", new Date().toTimeString());
     try {
         ext.extensionStartupComplete = false;
 
@@ -134,7 +134,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     if (!ext.extensionStartupError) {
         ext.extensionStartupComplete = true;
     }
-    console.log(">>>>>>>>>>>>>> activateInternal end", new Date().toTimeString);
+    console.log(">>>>>>>>>>>>>> activateInternal end", new Date().toTimeString());
 }
 
 function recordConfigValuesToTelemetry(actionContext: IActionContext): void {
