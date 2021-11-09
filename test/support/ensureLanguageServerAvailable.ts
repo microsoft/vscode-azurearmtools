@@ -18,7 +18,7 @@ export async function ensureLanguageServerAvailable(): Promise<LanguageClient> {
     }
 
     if (!isLanguageServerAvailable) { //asdf
-        writeToLog("Waiting for language server to be available");
+        writeToLog("Waiting for language server to be available", true);
 
         // Open a doc to force the language server to start up
         workspace.openTextDocument({
@@ -27,7 +27,7 @@ export async function ensureLanguageServerAvailable(): Promise<LanguageClient> {
         });
 
         await waitForLanguageServerAvailable();
-        writeToLog("Language server now available");
+        writeToLog("Language server now available", true);
     }
 
     assert(ext.languageServerClient);
@@ -35,20 +35,25 @@ export async function ensureLanguageServerAvailable(): Promise<LanguageClient> {
 }
 
 export async function ensureExtensionHasInitialized(): Promise<void> { //asdf move
+    let extensionDotnet = extensions.getExtension("ms-dotnettools.vscode-dotnet-runtime");
+    console.log("Dotnet extension: ", extensionDotnet);
+
     const timeout = 13 * 60 * 1000;
 
     let start = Date.now();
+    writeToLog(
+        `Extension initialization state: ${ext.extensionStartupComplete ? "Completed" : ext.extensionStartupComplete === undefined ? "Not started" : "In progress"}`,
+        true);
+
     // tslint:disable-next-line: no-constant-condition
     while (true) {
         const extensionStartupComplete = ext.extensionStartupComplete;
 
-        console.log(`Extension initialization state: ${extensionStartupComplete ? "Completed" : extensionStartupComplete === undefined ? "Not started" : "In progress"}`, new Date().toTimeString());
-
         if (extensionStartupComplete) {
-            console.log(`Extension initialization complete`, new Date().toTimeString());
+            writeToLog(`Extension initialization complete`, true);
             return;
         } else if (ext.languageServerStartupError) {
-            console.log(`Extension initialization failed: ${ext.extensionStartupError}`, new Date().toTimeString());
+            writeToLog(`Extension initialization failed: ${ext.extensionStartupError}`, true);
             throw new Error(ext.languageServerStartupError);
         }
 
@@ -59,28 +64,27 @@ export async function ensureExtensionHasInitialized(): Promise<void> { //asdf mo
 
     }
 
-    console.log("First timeout", new Date().toTimeString());
+    writeToLog("First timeout", true);
+    writeToLog("Trying to activate extension manually", true);
 
-    console.log("before", new Date().toTimeString());
-    //asdf await commands.executeCommand("azurerm-vscode-tools.developer.showAvailableResourceTypesAndVersions");
     let extension = extensions.getExtension(ext.extensionId);
     assert(extension, `Couldn't find extension ${ext.extensionId}`);
     await extension.activate();
 
-    console.log("after", new Date().toTimeString());
-
     start = Date.now();
+    writeToLog(
+        `Extension initialization state: ${ext.extensionStartupComplete ? "Completed" : ext.extensionStartupComplete === undefined ? "Not started" : "In progress"}`,
+        true);
+
     // tslint:disable-next-line: no-constant-condition
     while (true) {
         const extensionStartupComplete = ext.extensionStartupComplete;
 
-        console.log(`Extension initialization state: ${extensionStartupComplete ? "Completed" : extensionStartupComplete === undefined ? "Not started" : "In progress"}`);
-
         if (extensionStartupComplete) {
-            console.log(`Extension initialization complete`, new Date().toTimeString());
+            writeToLog(`Extension initialization complete`, true);
             return;
         } else if (ext.languageServerStartupError) {
-            console.log(`Extension initialization failed: ${ext.extensionStartupError}`, new Date().toTimeString());
+            writeToLog(`Extension initialization failed: ${ext.extensionStartupError}`, true);
             throw new Error(ext.languageServerStartupError);
         }
 
@@ -88,6 +92,5 @@ export async function ensureExtensionHasInitialized(): Promise<void> { //asdf mo
             throw new Error("Timed out waiting for extension to initialize");
         }
         await delay(1000);
-
     }
 }

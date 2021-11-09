@@ -27,7 +27,7 @@ let previousSettings = {
 
 // Runs before all tests
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
-    console.log(">>>>>>>>>>>>>> suiteSetup", new Date().toTimeString());
+    writeToLog(">>>>>>>>>>>>>> suiteSetup", true);
 
     this.timeout(15 * 60 * 1000);
 
@@ -76,7 +76,7 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
 
 // Runs after all tests are done
 suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
-    writeToLog('Done: global.test.ts: suiteTeardown');
+    writeToLog('suiteTeardown', true);
 
     await displayCacheStatus();
     // await publishCache(path.join(logsFolder, 'post-cache'));
@@ -85,28 +85,28 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
         await publishVsCodeLogs('ms-dotnettools.vscode-dotnet-runtime');
         await publishVsCodeLogs(path.basename(ext.context.logPath));
         await publishVsCodeLogs(undefined);
+
+        /* Restoring settings doesn't seem to work anymore
+        writeToLog('Restoring settings');
+        vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, previousSettings.autoDetectJsonTemplates, vscode.ConfigurationTarget.Global);
+        delete previousSettings.fileAssociations["*.azrm"];
+        await vscode.workspace.getConfiguration('file').update('assocations', previousSettings.fileAssociations, vscode.ConfigurationTarget.Global);
+        await delay(1000);
+        const confirmedNewAssociations = Object.assign({}, vscode.workspace.getConfiguration('files').get<{}>('associations'));
+        console.warn("Confirmed new file associations:", confirmedNewAssociations);
+        */
+
+        await stopArmLanguageServer();
     } else {
         console.warn("Cannot publish logs because extension context is not available (startup didn't complete)");
     }
 
-    /* Restoring settings doesn't seem to work anymore
-    writeToLog('Restoring settings');
-    vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, previousSettings.autoDetectJsonTemplates, vscode.ConfigurationTarget.Global);
-    delete previousSettings.fileAssociations["*.azrm"];
-    await vscode.workspace.getConfiguration('file').update('assocations', previousSettings.fileAssociations, vscode.ConfigurationTarget.Global);
-    await delay(1000);
-    const confirmedNewAssociations = Object.assign({}, vscode.workspace.getConfiguration('files').get<{}>('associations'));
-    console.warn("Confirmed new file associations:", confirmedNewAssociations);
-    */
-
-    await stopArmLanguageServer();
-    writeToLog("Tests complete.");
+    writeToLog("Tests complete.", true);
 });
 
 // Runs before each individual test
 setup(function (this: Mocha.IBeforeAndAfterContext): void {
-    console.log(">>>>>>>>>>>>>> setup");
-    writeToLog(`Running: ${this.currentTest.title}`);
+    writeToLog(`Running: ${this.currentTest.title}`, true);
 });
 
 // Runs after each individual test

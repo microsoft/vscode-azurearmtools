@@ -61,10 +61,10 @@ export function writeToError(message: string): void {
     console.error(message);
 }
 
-export function writeToLog(message: string = ""): void {
+export function writeToLog(message: string = "", echoToConsole: boolean = false): void {
     testLog.writeLine(message);
     writeToLogFile(message);
-    if (alwaysEchoTestLog) {
+    if (echoToConsole || alwaysEchoTestLog) {
         console.log(`testLog: ${message}`);
     }
 }
