@@ -38,7 +38,6 @@ class ExtensionVariables {
     private _languageServerStateEmitter: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
 
     public set context(context: vscode.ExtensionContext) {
-        console.log(">>>>>>>>>>>>>> set context");
         this._context.value = context;
     }
     public get context(): vscode.ExtensionContext {
@@ -46,20 +45,16 @@ class ExtensionVariables {
     }
 
     public set jsonOutlineProvider(context: JsonOutlineProvider) {
-        console.log(">>>>>>>>>>>>>> set outline provider");
         this._jsonOutlineProvider.value = context;
     }
     public get jsonOutlineProvider(): JsonOutlineProvider {
-        console.log(">>>>>>>>>>>>>> get outline provider");
         return this._jsonOutlineProvider.value;
     }
 
     public set outputChannel(outputChannel: IAzExtOutputChannel) {
-        console.log(">>>>>>>>>>>>>> set output channel");
         this._outputChannel.value = outputChannel;
     }
     public get outputChannel(): IAzExtOutputChannel {
-        console.log(">>>>>>>>>>>>>> get outputchannel");
         return this._outputChannel.value;
     }
 

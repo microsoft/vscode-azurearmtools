@@ -79,7 +79,6 @@ import { onCompletionActivated, toVsCodeCompletionItem } from "./vscodeIntegrati
 import { toVSCodeDiagnosticFromIssue } from './vscodeIntegration/toVSCodeDiagnosticFromIssue';
 import { JsonOutlineProvider } from "./vscodeIntegration/Treeview";
 import { getVSCodeRangeFromSpan } from "./vscodeIntegration/vscodePosition";
-console.log(">>>>>>>>>>>>> 2");
 
 interface IErrorsAndWarnings {
     errors: Issue[];
@@ -104,9 +103,8 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
             outputChannel = new ConsoleOutputChannelWrapper(outputChannel);
         }
         ext.outputChannel = outputChannel;
-        console.log(">>>>>>>>>>>>>> registerUIExtensionVariables");
+        console.log(">>>>>>>>>>>>>> registerUIExtensionVariables", new Date().toTimeString());
         registerUIExtensionVariables(ext);
-        console.log(">>>>>>>>>>>>>> after registerUIExtensionVariables");
 
         context.subscriptions.push(ext.completionItemsSpy);
 

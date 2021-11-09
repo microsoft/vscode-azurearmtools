@@ -3,8 +3,6 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-console.log(">>>>>>>>>>>>>> global.test.ts");
-
 import * as fse from 'fs-extra';
 import * as mocha from 'mocha';
 import * as path from 'path';
@@ -66,15 +64,11 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     let newAssociations = Object.assign({}, fileAssociations, { '*.azrm': armTemplateLanguageId });
     vscode.workspace.getConfiguration('files', null).update('associations', newAssociations, vscode.ConfigurationTarget.Global);
 
-    console.log(">>>>>>>>>>>>>> 22", new Date().toTimeString());
     await delay(5 * 1000); // Give vscode time to update the setting
-    console.log(">>>>>>>>>>>>>> 23, new Date().toTimeString");
     const confirmedNewAssociations = Object.assign({}, vscode.workspace.getConfiguration('files').get<{}>('associations'));
     console.warn("Confirmed new file associations:", confirmedNewAssociations);
 
-    console.log(">>>>>>>>>>>>>> 24", new Date().toTimeString());
-
-    //await ensureLanguageServerAvailable();
+    //await ensureLanguageServerAvailable(); //asdf
     await ensureExtensionHasInitialized();
 
     writeToLog('Done: global.test.ts: suiteSetup');
