@@ -2,8 +2,6 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-console.log(">>>>>>>>>>>>>> testWithPrep.ts");
-
 import * as assert from "assert";
 import { ITest, ITestCallbackContext } from "mocha";
 import { writeToLog } from "./testLog";

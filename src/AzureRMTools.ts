@@ -5,13 +5,12 @@
 // tslint:disable:promise-function-async max-line-length // Grandfathered in
 // tslint:disable: no-console
 
-console.log(">>>>>>>>>>>>>> AzureRMTools.ts");
-
 // CONSIDER: Refactor this file
 import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, ITelemetryContext, parseError, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { delay } from "../test/support/delay";
+import { writeToLog } from '../test/support/testLog';
 import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "./constants";
 import { DeploymentDocument, ResolvableCodeLens } from "./documents/DeploymentDocument";
 import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
@@ -92,7 +91,8 @@ const echoOutputChannelToConsole: boolean = /^(true|1)$/i.test(process.env.ECHO_
 // This method is called when the extension is activated
 // Your extension is activated the very first time the command is executed
 export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
-    console.log(">>>>>>>>>>>>>> activateInternal", new Date().toTimeString());
+    writeToLog(">>>>>>>>>>>>>> activateInternal", true);
+
     try {
         ext.extensionStartupComplete = false;
 
@@ -103,7 +103,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
             outputChannel = new ConsoleOutputChannelWrapper(outputChannel);
         }
         ext.outputChannel = outputChannel;
-        console.log(">>>>>>>>>>>>>> registerUIExtensionVariables", new Date().toTimeString());
+        writeToLog(">>>>>>>>>>>>>> registerUIExtensionVariables", true);
         registerUIExtensionVariables(ext);
 
         context.subscriptions.push(ext.completionItemsSpy);
@@ -132,7 +132,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     if (!ext.extensionStartupError) {
         ext.extensionStartupComplete = true;
     }
-    console.log(">>>>>>>>>>>>>> activateInternal end", new Date().toTimeString());
+    writeToLog(">>>>>>>>>>>>>> activateInternal end", true);
 }
 
 function recordConfigValuesToTelemetry(actionContext: IActionContext): void {

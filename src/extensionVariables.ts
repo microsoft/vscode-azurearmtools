@@ -5,8 +5,6 @@
 
 // tslint:disable: no-console
 
-console.log(">>>>>>>>>>>>>> extensionVariables.ts");
-
 import * as os from 'os';
 import * as path from "path";
 import * as vscode from "vscode";

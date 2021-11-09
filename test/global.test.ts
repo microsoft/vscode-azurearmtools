@@ -29,7 +29,13 @@ let previousSettings = {
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     writeToLog(">>>>>>>>>>>>>> suiteSetup", true);
 
-    this.timeout(15 * 60 * 1000);
+    writeToLog(">>>>>>>>>>>>>> activating dotnet extension ", true);
+    let extensionDotnet = vscode.extensions.getExtension("ms-dotnettools.vscode-dotnet-runtime");
+    console.log("Dotnet extension: ", extensionDotnet);
+    await extensionDotnet?.activate();
+    writeToLog(">>>>>>>>>>>>>> dotnet extension activated", true);
+
+    this.timeout(10 * 60 * 1000);
 
     // Create logs folder
     if (await fse.pathExists(logsFolder)) {
