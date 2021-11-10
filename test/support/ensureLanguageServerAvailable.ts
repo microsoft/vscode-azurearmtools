@@ -16,8 +16,8 @@ export async function ensureLanguageServerAvailable(): Promise<LanguageClient> {
         throw new Error("DISABLE_LANGUAGE_SERVER is set, but this test is trying to call ensureLanguageServerAvailable");
     }
 
-    if (!isLanguageServerAvailable) { //asdf
-        writeToLog("Waiting for language server to be available");
+    if (!isLanguageServerAvailable) {
+        writeToLog("Waiting for language server to be available", true);
 
         // Open a doc to force the language server to start up
         workspace.openTextDocument({
@@ -26,7 +26,8 @@ export async function ensureLanguageServerAvailable(): Promise<LanguageClient> {
         });
 
         await waitForLanguageServerAvailable();
-        writeToLog("Language server now available");
+        isLanguageServerAvailable = true;
+        writeToLog("Language server now available", true);
     }
 
     assert(ext.languageServerClient);

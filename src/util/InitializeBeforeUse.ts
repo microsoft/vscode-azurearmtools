@@ -11,19 +11,26 @@ import { assert } from "../fixed_assert";
 export class InitializeBeforeUse<T> {
     private _value: { value: T; initialized: true } | { initialized: false } = { initialized: false };
 
+    public constructor(private propertyName: string, private allowChangingValue: boolean = false) {
+    }
+
     public get hasValue(): boolean {
         return this._value.initialized;
     }
 
     public set value(value: T) {
-        this._value = { value: value, initialized: true };
+        if (!this._value.initialized || this.allowChangingValue) {
+            this._value = { value: value, initialized: true };
+        } else {
+            assert.fail(`InitializeBeforeUse: Value has already been set: ${this.propertyName}`);
+        }
     }
 
     public get value(): T {
         if (this._value.initialized) {
             return this._value.value;
         } else {
-            assert.fail("ExtensionVariables has not been fully initialized");
+            assert.fail(`InitializeBeforeUse: Trying to retrieve value from ExtensionVariables before it has been initialized: ${this.propertyName}`);
         }
     }
 }

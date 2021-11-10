@@ -66,8 +66,8 @@ export interface IReferenceSite {
  * that can be parsed and analyzed about it from that position.
  */
 export abstract class PositionContext {
-    private _documentPosition: InitializeBeforeUse<LineColPos> = new InitializeBeforeUse<LineColPos>();
-    private _documentCharacterIndex: InitializeBeforeUse<number> = new InitializeBeforeUse<number>();
+    private _documentPosition: InitializeBeforeUse<LineColPos> = new InitializeBeforeUse<LineColPos>("_documentPosition");
+    private _documentCharacterIndex: InitializeBeforeUse<number> = new InitializeBeforeUse<number>("_documentCharacterIndex");
     private _jsonToken: CachedValue<Json.Token | undefined> = new CachedValue<Json.Token>();
     private _jsonValue: CachedValue<Json.Value | undefined> = new CachedValue<Json.Value | undefined>();
 

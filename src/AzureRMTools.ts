@@ -3,11 +3,13 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 // tslint:disable:promise-function-async max-line-length // Grandfathered in
+
 // CONSIDER: Refactor this file
 import * as path from 'path';
 import * as vscode from "vscode";
-import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, ITelemetryContext, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
+import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, ITelemetryContext, parseError, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { delay } from "../test/support/delay";
+import { writeToLog } from '../test/support/testLog';
 import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "./constants";
 import { DeploymentDocument, ResolvableCodeLens } from "./documents/DeploymentDocument";
 import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
@@ -88,29 +90,48 @@ const echoOutputChannelToConsole: boolean = /^(true|1)$/i.test(process.env.ECHO_
 // This method is called when the extension is activated
 // Your extension is activated the very first time the command is executed
 export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }): Promise<void> {
-    ext.context = context;
-    ext.outputChannel = createAzExtOutputChannel(outputChannelName, configPrefix);
-    ext.ui = new AzureUserInput(context.globalState);
-    if (echoOutputChannelToConsole) {
-        ext.outputChannel = new ConsoleOutputChannelWrapper(ext.outputChannel);
+    writeToLog(">>> activateInternal", true);
+
+    try {
+        ext.extensionStartupComplete = false;
+
+        ext.context = context;
+        ext.ui = new AzureUserInput(context.globalState);
+        let outputChannel = createAzExtOutputChannel(outputChannelName, configPrefix); //asdfasdf
+        if (echoOutputChannelToConsole) {
+            outputChannel = new ConsoleOutputChannelWrapper(outputChannel);
+        }
+        ext.outputChannel = outputChannel;
+        writeToLog(">>> registerUIExtensionVariables", true);
+        registerUIExtensionVariables(ext);
+
+        context.subscriptions.push(ext.completionItemsSpy);
+
+        ext.deploymentFileMapping.value = new DeploymentFileMapping(ext.configuration);
+        if (!ext.snippetManager.hasValue) {
+            ext.snippetManager.value = SnippetManager.createDefault();
+        }
+
+        await callWithTelemetryAndErrorHandling('activate', async (actionContext: IActionContext): Promise<void> => {
+            actionContext.telemetry.properties.isActivationEvent = 'true';
+            actionContext.telemetry.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
+
+            recordConfigValuesToTelemetry(actionContext);
+
+            context.subscriptions.push(new AzureRMTools(context));
+        });
+
+    } catch (err) {
+        const msg = parseError(err).message;
+        ext.extensionStartupError = msg;
+        console.error(msg);
+        throw err;
     }
-    registerUIExtensionVariables(ext);
 
-    context.subscriptions.push(ext.completionItemsSpy);
-
-    ext.deploymentFileMapping.value = new DeploymentFileMapping(ext.configuration);
-    if (!ext.snippetManager.hasValue) {
-        ext.snippetManager.value = SnippetManager.createDefault();
+    if (!ext.extensionStartupError) {
+        ext.extensionStartupComplete = true;
     }
-
-    await callWithTelemetryAndErrorHandling('activate', async (actionContext: IActionContext): Promise<void> => {
-        actionContext.telemetry.properties.isActivationEvent = 'true';
-        actionContext.telemetry.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
-
-        recordConfigValuesToTelemetry(actionContext);
-
-        context.subscriptions.push(new AzureRMTools(context));
-    });
+    writeToLog(">>> activateInternal end", true);
 }
 
 function recordConfigValuesToTelemetry(actionContext: IActionContext): void {
@@ -1947,9 +1968,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             const rootTemplateUri = parseUri(e.rootTemplateUri);
             const rootTemplate = this.getOpenedDeploymentTemplate(rootTemplateUri);
 
-            // tslint:disable-next-line: no-console
             // console.log(`onTemplateGraphAvailable: ${path.basename(e.rootTemplateUri)}, isComplete=${e.isComplete}:`);
-            // tslint:disable-next-line: no-console
             // console.log(e.linkedTemplates.map(lt => `    ${path.basename(lt.fullUri)}: ${LinkedFileLoadState[lt.loadState]} ${lt.loadErrorMessage ?? ''}`).join('\n'));
 
             // Cache the template graph results

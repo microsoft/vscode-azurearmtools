@@ -62,6 +62,9 @@ export async function stopArmLanguageServer(): Promise<void> {
 }
 
 export function startArmLanguageServerInBackground(): void {
+    // tslint:disable-next-line: no-console
+    console.log(">>> startArmLanguageServerInBackground");
+
     switch (ext.languageServerState) {
         case LanguageServerState.Running:
         case LanguageServerState.Starting:
@@ -113,6 +116,9 @@ export function startArmLanguageServerInBackground(): void {
             } catch (err) {
                 assert.fail("callWithTelemetryAndErrorHandling in startArmLanguageServerInBackground onTemplateGraphAvailable shouldn't throw");
             }
+
+            // tslint:disable-next-line: no-console
+            console.log(">>> startArmLanguageServerInBackground DONE");
         });
 }
 
