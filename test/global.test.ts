@@ -11,7 +11,7 @@ import * as vscode from 'vscode';
 import { armTemplateLanguageId, configKeys, configPrefix, ext, stopArmLanguageServer } from "../extension.bundle";
 import { displayCacheStatus } from './support/cache';
 import { delay } from "./support/delay";
-import { ensureExtensionHasInitialized } from './support/ensureLanguageServerAvailable';
+import { ensureExtensionHasInitialized } from './support/ensureExtensionHasInitialized';
 import { publishVsCodeLogs } from './support/publishVsCodeLogs';
 import { alwaysEchoTestLog, deleteTestLog, getTestLogContents, setTestLogOutputFile, writeToLog, writeToWarning } from './support/testLog';
 import { useTestSnippets } from './support/TestSnippets';
@@ -29,7 +29,7 @@ let previousSettings = {
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     writeToLog(">>>>>>>>>>>>>> suiteSetup", true);
 
-    const timeout = 10 * 60 * 1000;
+    const timeout = 5 * 60 * 1000;
     this.timeout(timeout);
 
     // Create logs folder
@@ -69,7 +69,6 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     const confirmedNewAssociations = Object.assign({}, vscode.workspace.getConfiguration('files').get<{}>('associations'));
     console.warn("Confirmed new file associations:", confirmedNewAssociations);
 
-    //await ensureLanguageServerAvailable(); //asdf
     await ensureExtensionHasInitialized(timeout * 0.95);
 
     writeToLog('Done: global.test.ts: suiteSetup');
