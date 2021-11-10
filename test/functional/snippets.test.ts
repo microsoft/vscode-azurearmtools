@@ -12,7 +12,7 @@ const LOG_DOC_TEXT_BEFORE_AND_AFTER_SNIPPET_INSERTION = false;
 
 import * as assert from 'assert';
 import * as fse from 'fs-extra';
-import { ITestCallbackContext } from 'mocha';
+import { Context } from 'mocha';
 import * as path from 'path';
 import * as stripJsonComments from 'strip-json-comments';
 import { commands, Selection, Uri, window, workspace } from "vscode";
@@ -261,7 +261,7 @@ suite("Snippets functional tests", () => {
                         testWithPrep(
                             `snippet: ${snippetName}`,
                             [RequiresLanguageServer.instance, UseRealSnippets.instance],
-                            async function (this: ITestCallbackContext): Promise<void> {
+                            async function (this: Context): Promise<void> {
                                 const snippets = (await manager.getAllSnippets());
                                 const snippet = snippets.find(s => s.name === snippetName);
                                 assert(snippet !== undefined, `Couldn't find snippet ${snippetName}`);
@@ -273,10 +273,9 @@ suite("Snippets functional tests", () => {
         });
     }
 
-    async function testSnippet(testCallbackContext: ITestCallbackContext, snippetsPath: string, snippetName: string, snippet: ISnippet): Promise<void> {
+    async function testSnippet(testCallbackContext: Context, snippetsPath: string, snippetName: string, snippet: ISnippet): Promise<void> {
         if (overrideSkipTests[snippetName]) {
             testCallbackContext.skip();
-            return;
         }
 
         validateSnippet();

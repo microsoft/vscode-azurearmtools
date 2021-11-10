@@ -10,7 +10,7 @@ const OVERWRITE = false;
 
 import * as assert from 'assert';
 import * as fs from 'fs';
-import { ISuiteCallbackContext, ITestCallbackContext } from 'mocha';
+import { Context, Suite } from 'mocha';
 import * as os from 'os';
 import * as path from 'path';
 import { commands, Uri } from 'vscode';
@@ -313,7 +313,7 @@ function getTestcaseResults(testCases: ITestcase[]): { text: string; results: st
     return { text, results: results.map(r => r.full), fullScopeString, shortScopeString };
 }
 
-suite('TLE colorization', function (this: ISuiteCallbackContext): void {
+suite('TLE colorization', function (this: Suite): void {
     this.timeout(50000); // I've seen as high as 32s on server (esp the first ARM one), although most are no more than a second or two
 
     let testFolder = path.join(__dirname, '..', '..', '..', 'test', 'colorization', 'inputs');
@@ -357,10 +357,9 @@ suite('TLE colorization', function (this: ISuiteCallbackContext): void {
         if (testFile.startsWith('TO' + 'DO')) {
             test(testFile);
         } else {
-            test(testFile, async function (this: ITestCallbackContext): Promise<void> {
+            test(testFile, async function (this: Context): Promise<void> {
                 if (DISABLE_SLOW_TESTS) {
                     this.skip();
-                    return;
                 }
 
                 // tslint:disable-next-line:no-non-null-assertion

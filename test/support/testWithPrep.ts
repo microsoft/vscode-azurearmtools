@@ -3,12 +3,12 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
-import { ITest, ITestCallbackContext } from "mocha";
+import { Context, Test } from "mocha";
 import { writeToLog } from "./testLog";
 
 export interface ITestPreparation {
     // Perform pretest preparations, and return a Disposable which will revert those changes
-    pretest(this: ITestCallbackContext): ITestPreparationResult;
+    pretest(this: Context): ITestPreparationResult;
 }
 
 export interface ITestPreparationResult {
@@ -18,18 +18,17 @@ export interface ITestPreparationResult {
     skipTest?: string;
 }
 
-export function testWithPrep(expectation: string, preparations?: ITestPreparation[], callback?: (this: ITestCallbackContext) => Promise<unknown>): ITest {
+export function testWithPrep(expectation: string, preparations?: ITestPreparation[], callback?: (this: Context) => Promise<unknown>): Test {
     try {
         return test(
             expectation,
-            async function (this: ITestCallbackContext): Promise<unknown> {
+            async function (this: Context): Promise<unknown> {
                 const postTestActions: (() => void)[] = [];
 
                 try {
                     if (!callback) {
                         // This is a pending test
                         this.skip();
-                        return;
                     }
 
                     // Perform pre-test preparations
@@ -38,7 +37,6 @@ export function testWithPrep(expectation: string, preparations?: ITestPreparatio
                         if (prepResult.skipTest) {
                             writeToLog(`Skipping test because: ${prepResult.skipTest}`);
                             this.skip();
-                            return;
                         }
 
                         if (prepResult.postTestActions) {

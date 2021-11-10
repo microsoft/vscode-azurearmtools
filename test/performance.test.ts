@@ -5,13 +5,13 @@
 
 import * as assert from "assert";
 import * as fse from "fs-extra";
-import { ITestCallbackContext } from "mocha";
+import { Context } from "mocha";
 import { parseTemplate } from "./support/parseTemplate";
 import { resolveInTestFolder } from "./support/resolveInTestFolder";
 
 suite("Performance tests", () => {
     suite("warnings and errors performance", () => {
-        test("Lots of variables", async function (this: ITestCallbackContext): Promise<Promise<void>> {
+        test("Lots of variables", async function (this: Context): Promise<Promise<void>> {
             // Takes less than a second on my local dev machine
             this.timeout(5000);
 
