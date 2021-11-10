@@ -29,7 +29,8 @@ let previousSettings = {
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     writeToLog(">>>>>>>>>>>>>> suiteSetup", true);
 
-    this.timeout(10 * 60 * 1000);
+    const timeout = 10 * 60 * 1000;
+    this.timeout(timeout);
 
     // Create logs folder
     if (await fse.pathExists(logsFolder)) {
@@ -69,7 +70,7 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     console.warn("Confirmed new file associations:", confirmedNewAssociations);
 
     //await ensureLanguageServerAvailable(); //asdf
-    await ensureExtensionHasInitialized();
+    await ensureExtensionHasInitialized(timeout * 0.95);
 
     writeToLog('Done: global.test.ts: suiteSetup');
 });
@@ -97,11 +98,10 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
         */
 
         await stopArmLanguageServer();
+        writeToLog("Tests complete.", true);
     } else {
         console.warn("Cannot publish logs because extension context is not available (startup didn't complete)");
     }
-
-    writeToLog("Tests complete.", true);
 });
 
 // Runs before each individual test
