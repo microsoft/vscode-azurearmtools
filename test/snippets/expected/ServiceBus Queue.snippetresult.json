@@ -1,0 +1,44 @@
+{
+	"resources": [
+		{
+			"name": "serviceBusNamespace1/serviceBusQueue1",
+			"type": "Microsoft.ServiceBus/namespaces/queues",
+			"apiVersion": "2021-01-01-preview",
+			"dependsOn": [
+				"[resourceId('Microsoft.ServiceBus/namespaces', 'serviceBusQueue1')]"
+			],
+			"properties": {
+				"lockDuration": "PT5M",
+				"maxSizeInMegabytes": 1024,
+				"requiresDuplicateDetection": false,
+				"requiresSession": false,
+				"defaultMessageTimeToLive": "P14D",
+				"deadLetteringOnMessageExpiration": false,
+				"duplicateDetectionHistoryTimeWindow": "PT10M",
+				"maxDeliveryCount": 10,
+				"autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+				"enablePartitioning": false,
+				"enableExpress": false
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

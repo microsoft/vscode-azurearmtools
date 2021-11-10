@@ -1,0 +1,31 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"prefix": "arm-servicebus-queue",
+		"description": "ServiceBus Queue"
+	},
+	"resources": [
+		{
+			"name": "${1:serviceBusNamespace1}/${2:serviceBusQueue1}",
+			"type": "Microsoft.ServiceBus/namespaces/queues",
+			"apiVersion": "2021-01-01-preview",
+			"dependsOn": [
+				"[resourceId('Microsoft.ServiceBus/namespaces', '${2:serviceBusQueue1}')]"
+			],
+			"properties": {
+				"lockDuration": "${3|PT5M,PT30S|}",
+				"maxSizeInMegabytes": 1024,
+				"requiresDuplicateDetection": false,
+				"requiresSession": false,
+				"defaultMessageTimeToLive": "${4|P14D,PT10M,P10675199DT2H48M5.4775807S,(other)|}",
+				"deadLetteringOnMessageExpiration": false,
+				"duplicateDetectionHistoryTimeWindow": "PT10M",
+				"maxDeliveryCount": 10,
+				"autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+				"enablePartitioning": false,
+				"enableExpress": false
+			}
+		}
+	]
+}
