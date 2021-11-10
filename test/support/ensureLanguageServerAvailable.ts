@@ -7,7 +7,7 @@ import { workspace } from "vscode";
 import { LanguageClient } from "vscode-languageclient";
 import { armTemplateLanguageId, ext, waitForLanguageServerAvailable } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
-import { testLog } from "./testLog";
+import { writeToLog } from "./testLog";
 
 let isLanguageServerAvailable = false;
 
@@ -17,7 +17,7 @@ export async function ensureLanguageServerAvailable(): Promise<LanguageClient> {
     }
 
     if (!isLanguageServerAvailable) {
-        testLog.writeLine("Waiting for language server to be available");
+        writeToLog("Waiting for language server to be available", true);
 
         // Open a doc to force the language server to start up
         workspace.openTextDocument({
@@ -26,7 +26,8 @@ export async function ensureLanguageServerAvailable(): Promise<LanguageClient> {
         });
 
         await waitForLanguageServerAvailable();
-        testLog.writeLine("Language server now available");
+        isLanguageServerAvailable = true;
+        writeToLog("Language server now available", true);
     }
 
     assert(ext.languageServerClient);

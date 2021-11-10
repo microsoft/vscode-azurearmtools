@@ -62,9 +62,8 @@ export namespace survey {
     /**
      * Called whenever the user is interacting with the extension (thus gets called a lot)
      */
-    export function registerActiveUse(): void {
+    export function registerActiveUseNoThrow(): void {
         // Don't wait
-        // tslint:disable-next-line: no-floating-promises
         callWithTelemetryAndErrorHandling("considerShowingSurvey", async (context: IActionContext) => {
             context.errorHandling.suppressDisplay = true;
             // This gets called a lot, we don't want telemetry for most of it
@@ -120,6 +119,8 @@ export namespace survey {
             } finally {
                 isReentrant = false;
             }
+        }).catch(err => {
+            assert.fail("callWithTelemetryAndErrorHandling in survey.registerActiveUseNoThrow shouldn't throw");
         });
     }
 }

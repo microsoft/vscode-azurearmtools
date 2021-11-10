@@ -14,7 +14,7 @@ import { DefinitionKind, DeploymentTemplateDoc, getVSCodeRangeFromSpan, Histogra
 import { diagnosticSources, IDeploymentTemplate, testDiagnostics } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
-import { testLog } from "./support/testLog";
+import { writeToLog } from "./support/testLog";
 import { testWithLanguageServer } from "./support/testWithLanguageServer";
 import { DISABLE_SLOW_TESTS } from "./testConstants";
 
@@ -922,11 +922,6 @@ suite("DeploymentTemplate", () => {
                 assert.throws(() => { new ReferenceInVariableDefinitionsVisitor(<any>undefined); });
             });
 
-            test("with undefined", () => {
-                // tslint:disable-next-line:no-any
-                assert.throws(() => { new ReferenceInVariableDefinitionsVisitor(<any>undefined); });
-            });
-
             test("with deploymentTemplate", () => {
                 const dt = new DeploymentTemplateDoc(`{ "variables": { "a": "[reference('test')]" } }`, fakeId, 0);
                 const visitor = new ReferenceInVariableDefinitionsVisitor(dt);
@@ -1034,7 +1029,7 @@ suite("DeploymentTemplate", () => {
                     index = Math.floor(Math.random() * (json.length + 1)); // length+1 so we include past the last character as a position
                 }
 
-                testLog.writeLine(`Testing index ${index}`);
+                writeToLog(`Testing index ${index}`);
                 try {
                     // Just make sure nothing throws
                     let dt = new DeploymentTemplateDoc(json, fakeId, 0);

@@ -25,6 +25,6 @@ steps:
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
     inputs:
-      testResultsFiles: "*-results.xml"
+      testResultsFiles: "test-results.xml"
       testRunTitle: "$(Agent.OS)"
     condition: succeededOrFailed()

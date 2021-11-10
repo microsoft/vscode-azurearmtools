@@ -11,8 +11,9 @@ import * as vscode from 'vscode';
 import { armTemplateLanguageId, configKeys, configPrefix, ext, stopArmLanguageServer } from "../extension.bundle";
 import { displayCacheStatus } from './support/cache';
 import { delay } from "./support/delay";
+import { ensureExtensionHasInitialized } from './support/ensureExtensionHasInitialized';
 import { publishVsCodeLogs } from './support/publishVsCodeLogs';
-import { alwaysEchoTestLog, createTestLog, deleteTestLog, setTestLogOutputFile, testLog, writeToLog, writeToWarning } from './support/testLog';
+import { alwaysEchoTestLog, deleteTestLog, getTestLogContents, setTestLogOutputFile, writeToLog, writeToWarning } from './support/testLog';
 import { useTestSnippets } from './support/TestSnippets';
 import { logsFolder } from './testConstants';
 import { useTestFunctionMetadata } from "./TestData";
@@ -26,6 +27,11 @@ let previousSettings = {
 
 // Runs before all tests
 suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
+    writeToLog(">>> suiteSetup", true);
+
+    const timeout = 5 * 60 * 1000;
+    this.timeout(timeout);
+
     // Create logs folder
     if (await fse.pathExists(logsFolder)) {
         rimraf.sync(logsFolder);
@@ -59,58 +65,72 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
     let newAssociations = Object.assign({}, fileAssociations, { '*.azrm': armTemplateLanguageId });
     vscode.workspace.getConfiguration('files', null).update('associations', newAssociations, vscode.ConfigurationTarget.Global);
 
-    await delay(1000); // Give vscode time to update the setting
+    await delay(5 * 1000); // Give vscode time to update the setting
     const confirmedNewAssociations = Object.assign({}, vscode.workspace.getConfiguration('files').get<{}>('associations'));
     console.warn("Confirmed new file associations:", confirmedNewAssociations);
+
+    await ensureExtensionHasInitialized(timeout * 0.95);
 
     writeToLog('Done: global.test.ts: suiteSetup');
 });
 
 // Runs after all tests are done
 suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
-    writeToLog('Done: global.test.ts: suiteTeardown');
+    writeToLog('suiteTeardown', true);
 
     await displayCacheStatus();
     // await publishCache(path.join(logsFolder, 'post-cache'));
 
-    await publishVsCodeLogs('ms-dotnettools.vscode-dotnet-runtime');
-    await publishVsCodeLogs(path.basename(ext.context.logPath));
-    await publishVsCodeLogs(undefined);
+    if (ext.extensionStartupComplete) {
+        await publishVsCodeLogs('ms-dotnettools.vscode-dotnet-runtime');
+        await publishVsCodeLogs(path.basename(ext.context.logPath));
+        await publishVsCodeLogs(undefined);
 
-    /* Restoring settings doesn't seem to work at this point
-    writeToLog('Restoring settings');
-    vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, previousSettings.autoDetectJsonTemplates, vscode.ConfigurationTarget.Global);
-    delete previousSettings.fileAssociations["*.azrm"];
-    await vscode.workspace.getConfiguration('file').update('assocations', previousSettings.fileAssociations, vscode.ConfigurationTarget.Global);
-    await delay(1000);
-    const confirmedNewAssociations = Object.assign({}, vscode.workspace.getConfiguration('files').get<{}>('associations'));
-    console.warn("Confirmed new file associations:", confirmedNewAssociations);
-    */
+        /* Restoring settings doesn't seem to work anymore
+        writeToLog('Restoring settings');
+        vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, previousSettings.autoDetectJsonTemplates, vscode.ConfigurationTarget.Global);
+        delete previousSettings.fileAssociations["*.azrm"];
+        await vscode.workspace.getConfiguration('file').update('assocations', previousSettings.fileAssociations, vscode.ConfigurationTarget.Global);
+        await delay(1000);
+        const confirmedNewAssociations = Object.assign({}, vscode.workspace.getConfiguration('files').get<{}>('associations'));
+        console.warn("Confirmed new file associations:", confirmedNewAssociations);
+        */
 
-    await stopArmLanguageServer();
-    writeToLog("Tests complete.");
+        await stopArmLanguageServer();
+        writeToLog("Tests complete.", true);
+    } else {
+        console.warn("Cannot publish logs because extension context is not available (startup didn't complete)");
+    }
 });
 
 // Runs before each individual test
 setup(function (this: Mocha.IBeforeAndAfterContext): void {
-    writeToLog(`Running: ${this.currentTest.title}`);
-    createTestLog();
+    writeToLog(`Running: ${this.currentTest.title}`, true);
 });
 
 // Runs after each individual test
 teardown(function (this: Mocha.IBeforeAndAfterContext): void {
-    if (!this.currentTest.state || this.currentTest.state === 'failed') {
-        if (testLog.toString()) {
-            writeToWarning("Failed");
+    let message: string;
+    const failed = (!this.currentTest.state || this.currentTest.state === 'failed');
+
+    if (failed) {
+        if (getTestLogContents()) {
+            message = `Test Failed: ${this.currentTest.title}`;
         } else {
-            writeToWarning("Failed (test log is empty)");
+            message = `Test Failed: (test log is empty): ${this.currentTest.title}`;
         }
     } else {
-        let message = "Passed.\n";
-        if (alwaysEchoTestLog) {
-            message += `TEST LOG:\n${testLog.toString()}\n`;
-            writeToLog(message);
-        }
+        message = `Passed: ${this.currentTest}\n`;
+    }
+
+    if (alwaysEchoTestLog) {
+        message += `TEST LOG:\n${getTestLogContents()}\n`;
+    }
+
+    if (failed) {
+        writeToWarning(message);
+    } else {
+        writeToLog(message);
     }
 
     deleteTestLog();

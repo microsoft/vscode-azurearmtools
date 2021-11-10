@@ -5,6 +5,8 @@
 
 "use strict";
 
+console.log(">>> main.js");
+
 // This is the extension entrypoint, which imports extension.js, the actual extension code.
 //
 // This is in a separate file so we can properly measure extension.js load time.

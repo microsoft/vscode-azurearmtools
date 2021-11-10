@@ -18,21 +18,25 @@ export function getEventPromise<T>(
     timeout: number = defaultTimeout): Promise<T> {
     return new Promise<T>(
         async (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: unknown) => void): Promise<void> => {
-            let completed = false;
-            executor(
-                (value: T | PromiseLike<T>) => {
-                    completed = true;
-                    resolve(value);
-                },
-                (reason?: unknown) => {
-                    completed = true;
-                    reject(reason);
-                }
-            );
+            try {
+                let completed = false;
+                executor(
+                    (value: T | PromiseLike<T>) => {
+                        completed = true;
+                        resolve(value);
+                    },
+                    (reason?: unknown) => {
+                        completed = true;
+                        reject(reason);
+                    }
+                );
 
-            await delay(timeout);
-            if (!completed) {
-                reject(new TimeoutError(`Timed out waiting for event "${eventName}"`));
+                await delay(timeout);
+                if (!completed) {
+                    reject(new TimeoutError(`Timed out waiting for event "${eventName}"`));
+                }
+            } catch (err) {
+                reject(err);
             }
         });
 }

@@ -22,7 +22,8 @@
                 "AZCODE_ARM_IGNORE_BUNDLE": "1",
                 "DEBUGTELEMETRY": "1", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
                 "NODE_DEBUG": "",
-                "BREAK_ON_ASSERT": "1"
+                "BREAK_ON_ASSERT": "1",
+                "ECHO_OUTPUT_CHANNEL_TO_CONSOLE": "1",
             }
         },
         // Launch tests
@@ -50,13 +51,13 @@
                 "MOCHA_bail": "0", // Bail after first failure
                 "AZCODE_ARM_IGNORE_BUNDLE": "1",
                 "MOCHA_enableTimeouts": "0", // Disable time-outs
-                "DEBUGTELEMETRY": "1", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
+                "DEBUGTELEMETRY": "verbose", // 1=quiet; verbose=see telemetry in console; 0=send telemetry
                 "NODE_DEBUG": "",
-                "DISABLE_LANGUAGE_SERVER": "0",
-                "DISABLE_SLOW_TESTS": "0",
+                "DISABLE_LANGUAGE_SERVER": "",
+                "DISABLE_SLOW_TESTS": "",
                 "ECHO_OUTPUT_CHANNEL_TO_CONSOLE": "1",
-                "BREAK_ON_ASSERT": "0",
-                "ALWAYS_ECHO_TEST_LOG": "0" // If 1 or true, always immediately echos test log to console; otherwise test log is only echoed after a failed testcase
+                "BREAK_ON_ASSERT": "1",
+                "ALWAYS_ECHO_TEST_LOG": "" // If 1 or true, always immediately echos test log to console; otherwise test log is only echoed after a failed testcase
             }
         },
         // Launch extension with webpack
@@ -108,8 +109,8 @@
                 "NODE_DEBUG": "",
                 "AZCODE_ARM_IGNORE_BUNDLE": "0",
                 "ECHO_OUTPUT_CHANNEL_TO_CONSOLE": "1",
-                "BREAK_ON_ASSERT": "0",
-                "ALWAYS_ECHO_TEST_LOG": "0" // If 1 or true, always immediately echos test log to console; otherwise test log is only echoed after a failed testcase
+                "BREAK_ON_ASSERT": "",
+                "ALWAYS_ECHO_TEST_LOG": "" // If 1 or true, always immediately echos test log to console; otherwise test log is only echoed after a failed testcase
             }
         }
     ]
