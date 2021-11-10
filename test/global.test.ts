@@ -105,7 +105,8 @@ suiteTeardown(async function (this: mocha.Context): Promise<void> {
 
 // Runs before each individual test
 setup(function (this: Mocha.Context): void {
-    writeToLog(`Running: ${this.currentTest.title}`, true);
+    // tslint:disable-next-line: no-non-null-assertion
+    writeToLog(`Running: ${this.currentTest!.title}`, true);
 });
 
 // Runs after each individual test
