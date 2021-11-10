@@ -1,0 +1,21 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"metadata": {
+		"prefix": "arm-servicebus-namespace",
+		"description": "ServiceBus Namespace"
+	},
+	"resources": [
+		{
+			"name": "${1:serviceBusNamespace1}",
+			"type": "Microsoft.ServiceBus/namespaces",
+			"apiVersion": "2021-01-01-preview",
+			"location": /*${2|parameters('location'),resourceGroup().location|}*/ "location",
+			"sku": {
+				"name": "Standard"
+			},
+			"properties": {
+			}
+		}
+	]
+}
