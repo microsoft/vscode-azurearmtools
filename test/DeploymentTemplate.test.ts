@@ -7,7 +7,7 @@
 
 import * as assert from "assert";
 import { randomBytes } from "crypto";
-import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
+import { Context, Suite } from "mocha";
 import { Uri } from "vscode";
 import { parseError } from "vscode-azureextensionui";
 import { DefinitionKind, DeploymentTemplateDoc, getVSCodeRangeFromSpan, Histogram, INamedDefinition, IncorrectArgumentsCountIssue, IParameterDefinition, Issue, IssueKind, IVariableDefinition, Json, LineColPos, ReferenceInVariableDefinitionsVisitor, ReferenceList, Span, TemplateScope, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "../extension.bundle";
@@ -933,7 +933,7 @@ suite("DeploymentTemplate", () => {
                 assert.deepStrictEqual(visitor.referenceSpans, []);
             });
 
-            testWithLanguageServer("expecting error: reference in variable definition", async function (this: ITestCallbackContext): Promise<void> {
+            testWithLanguageServer("expecting error: reference in variable definition", async function (this: Context): Promise<void> {
                 await testDiagnostics(
                     {
                         "variables": {
@@ -949,7 +949,7 @@ suite("DeploymentTemplate", () => {
                     ]);
             });
 
-            testWithLanguageServer("expecting error: reference in variable definition inside user function", async function (this: ITestCallbackContext): Promise<void> {
+            testWithLanguageServer("expecting error: reference in variable definition inside user function", async function (this: Context): Promise<void> {
                 await testDiagnostics(
                     {
                         "variables": {
@@ -1013,7 +1013,7 @@ suite("DeploymentTemplate", () => {
         });
     });
 
-    suite("Incomplete JSON shouldn't cause crash", function (this: ISuiteCallbackContext): void {
+    suite("Incomplete JSON shouldn't cause crash", function (this: Suite): void {
         this.timeout(60000);
 
         async function exercisePositionContextAtEveryPointInTheDoc(json: string): Promise<void> {
@@ -1174,10 +1174,9 @@ ${err}`);
             dt.getFunctionCounts();
         });
 
-        test("typing character by character", async function (this: ITestCallbackContext): Promise<void> {
+        test("typing character by character", async function (this: Context): Promise<void> {
             if (DISABLE_SLOW_TESTS) {
                 this.skip();
-                return;
             }
 
             // Just make sure nothing throws
@@ -1192,10 +1191,9 @@ ${err}`);
             }
         });
 
-        test("typing backwards character by character", async function (this: ITestCallbackContext): Promise<void> {
+        test("typing backwards character by character", async function (this: Context): Promise<void> {
             if (DISABLE_SLOW_TESTS) {
                 this.skip();
-                return;
             }
 
             // Just make sure nothing throws
@@ -1210,7 +1208,7 @@ ${err}`);
             }
         });
 
-        test("try parsing the document with a single character deleted (repeat through the whole document)", async function (this: ITestCallbackContext): Promise<void> {
+        test("try parsing the document with a single character deleted (repeat through the whole document)", async function (this: Context): Promise<void> {
             if (DISABLE_SLOW_TESTS) {
                 this.skip();
                 return;
@@ -1229,20 +1227,18 @@ ${err}`);
             }
         });
 
-        test("exercise PositionContext at every point in the full json", async function (this: ITestCallbackContext): Promise<void> {
+        test("exercise PositionContext at every point in the full json", async function (this: Context): Promise<void> {
             if (DISABLE_SLOW_TESTS) {
                 this.skip();
-                return;
             }
 
             // Just make sure nothing throws
             await exercisePositionContextAtEveryPointInTheDoc(template);
         });
 
-        test("Random modifications", async function (this: ITestCallbackContext): Promise<void> {
+        test("Random modifications", async function (this: Context): Promise<void> {
             if (DISABLE_SLOW_TESTS) {
                 this.skip();
-                return;
             }
 
             // Just make sure nothing throws

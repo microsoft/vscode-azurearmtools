@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import * as fs from 'fs';
-import { ITest, ITestCallbackContext } from 'mocha';
+import { Context, Test } from 'mocha';
 import * as path from 'path';
 import { AzureRMAssets, Completion, Span } from "../extension.bundle";
 import { writeToLog } from './support/testLog';
@@ -24,7 +24,7 @@ export function useRealFunctionMetadata(): void {
 export class UseRealFunctionMetadata implements ITestPreparation {
     public static readonly instance: UseRealFunctionMetadata = new UseRealFunctionMetadata();
 
-    public pretest(this: ITestCallbackContext): ITestPreparationResult {
+    public pretest(this: Context): ITestPreparationResult {
         useRealFunctionMetadata();
         return {
             postTestActions: useTestFunctionMetadata
@@ -42,7 +42,7 @@ export async function runWithRealFunctionMetadata(callback: () => Promise<unknow
     }
 }
 
-export function testWithRealFunctionMetadata(expectation: string, callback?: (this: ITestCallbackContext) => Promise<unknown>): ITest {
+export function testWithRealFunctionMetadata(expectation: string, callback?: (this: Context) => Promise<unknown>): Test {
     return testWithPrep(expectation, [UseRealFunctionMetadata.instance], callback);
 }
 

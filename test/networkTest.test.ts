@@ -5,7 +5,7 @@
 // tslint:disable:promise-function-async no-implicit-dependencies
 
 import * as dns from "dns";
-import { ITestCallbackContext } from "mocha";
+import { Context } from "mocha";
 
 let internetConnected: Promise<boolean>;
 /**
@@ -29,7 +29,7 @@ function hasInternetConnection(): Promise<boolean> {
  */
 // tslint:disable-next-line:no-any
 export function networkTest(testName: string, testFunction: () => void | Promise<any>): void {
-    test(testName, function (this: ITestCallbackContext): Promise<void> {
+    test(testName, function (this: Context): Promise<void> {
         this.timeout(10000);
 
         return hasInternetConnection()

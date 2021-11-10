@@ -49,7 +49,7 @@ suite("TreeView", async (): Promise<void> => {
     suite("JsonOutlineProvider", async (): Promise<void> => {
         let provider: JsonOutlineProvider;
 
-        setup(function (this: Mocha.IHookCallbackContext, done: MochaDone): void {
+        setup(function (this: Mocha.Context, done: Mocha.Done): void {
             this.timeout(15000);
 
             async function mySetup(): Promise<void> {

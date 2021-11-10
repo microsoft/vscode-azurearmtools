@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { ITest, ITestCallbackContext } from 'mocha';
+import { Context, Test } from 'mocha';
 import * as path from 'path';
 import { ext, SnippetManager } from "../../extension.bundle";
 import { writeToLog } from './testLog';
@@ -28,7 +28,7 @@ export function useNoSnippets(): void {
 export class UseRealSnippets implements ITestPreparation {
     public static readonly instance: UseRealSnippets = new UseRealSnippets();
 
-    public pretest(this: ITestCallbackContext): ITestPreparationResult {
+    public pretest(this: Context): ITestPreparationResult {
         useRealSnippets();
         return {
             postTestActions: useTestSnippets
@@ -39,7 +39,7 @@ export class UseRealSnippets implements ITestPreparation {
 export class UseNoSnippets implements ITestPreparation {
     public static readonly instance: UseNoSnippets = new UseNoSnippets();
 
-    public pretest(this: ITestCallbackContext): ITestPreparationResult {
+    public pretest(this: Context): ITestPreparationResult {
         useNoSnippets();
         return {
             postTestActions: useTestSnippets
@@ -47,7 +47,7 @@ export class UseNoSnippets implements ITestPreparation {
     }
 }
 
-export function testWithRealSnippets(expectation: string, callback?: (this: ITestCallbackContext) => Promise<unknown>): ITest {
+export function testWithRealSnippets(expectation: string, callback?: (this: Context) => Promise<unknown>): Test {
     return testWithPrep(
         expectation,
         [UseRealSnippets.instance, RequiresLanguageServer.instance], // Language server needed for format document

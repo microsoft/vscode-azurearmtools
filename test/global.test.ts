@@ -25,7 +25,7 @@ let previousSettings = {
 };
 
 // Runs before all tests
-suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
+suiteSetup(async function (this: mocha.Context): Promise<void> {
     // Create logs folder
     if (await fse.pathExists(logsFolder)) {
         rimraf.sync(logsFolder);
@@ -67,7 +67,7 @@ suiteSetup(async function (this: mocha.IHookCallbackContext): Promise<void> {
 });
 
 // Runs after all tests are done
-suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
+suiteTeardown(async function (this: mocha.Context): Promise<void> {
     writeToLog('Done: global.test.ts: suiteTeardown');
 
     await displayCacheStatus();
@@ -92,20 +92,24 @@ suiteTeardown(async function (this: mocha.IHookCallbackContext): Promise<void> {
 });
 
 // Runs before each individual test
-setup(function (this: Mocha.IBeforeAndAfterContext): void {
-    writeToLog(`Running: ${this.currentTest.title}`);
+setup(function (this: Mocha.Context): void {
+    // tslint:disable-next-line: no-non-null-assertion
+    writeToLog(`Running: ${this.currentTest!.title}`);
 });
 
 // Runs after each individual test
-teardown(function (this: Mocha.IBeforeAndAfterContext): void {
+teardown(function (this: Mocha.Context): void {
     let message: string;
-    const failed = (!this.currentTest.state || this.currentTest.state === 'failed');
+    // tslint:disable-next-line: no-non-null-assertion
+    const failed = (!this.currentTest!.state || this.currentTest!.state === 'failed');
 
     if (failed) {
         if (getTestLogContents()) {
-            message = `Failed: ${this.currentTest.title}`;
+            // tslint:disable-next-line: no-non-null-assertion
+            message = `Failed: ${this.currentTest!.title}`;
         } else {
-            message = `Failed (test log is empty): ${this.currentTest.title}`;
+            // tslint:disable-next-line: no-non-null-assertion
+            message = `Failed (test log is empty): ${this.currentTest!.title}`;
         }
     } else {
         message = `Passed: ${this.currentTest}\n`;
