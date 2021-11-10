@@ -10,7 +10,7 @@
 const DEBUG_BREAK_AFTER_INSERTING_SNIPPET = false;
 
 import * as assert from 'assert';
-import { ITestCallbackContext } from 'mocha';
+import { Context } from 'mocha';
 import { Position, Selection } from "vscode";
 import { ext } from "../../extension.bundle";
 import { assertEx } from '../support/assertEx';
@@ -42,7 +42,7 @@ suite("Contextualized snippets", () => {
             // tslint:disable-next-line: prefer-template
             const name = `${testName}, triggered by ${triggerCharacter ? ("'" + triggerCharacter + "'") : 'CTRL+SPACE'}`;
             // tslint:disable:no-function-expression
-            testWithRealSnippets(name, async function (this: ITestCallbackContext): Promise<void> {
+            testWithRealSnippets(name, async function (this: Context): Promise<void> {
                 const start = Date.now();
                 this.timeout(timeout);
 

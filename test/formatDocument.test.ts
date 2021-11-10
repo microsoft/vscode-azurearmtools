@@ -10,7 +10,7 @@
 
 import * as assert from "assert";
 import * as fs from 'fs';
-import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
+import { Context, Suite } from "mocha";
 import * as path from 'path';
 import { commands, languages, Range, Selection, TextDocument, TextEditor, window, workspace } from "vscode";
 import { armTemplateLanguageId } from "../extension.bundle";
@@ -23,11 +23,11 @@ import { testWithLanguageServer } from "./support/testWithLanguageServer";
 const formatDocumentCommand = 'editor.action.formatDocument';
 const formatRangeCommand = 'editor.action.formatSelection';
 
-suite("Format document", function (this: ISuiteCallbackContext): void {
+suite("Format document", function (this: Suite): void {
     this.timeout(defaultDiagnosticsTimeoutMs);
 
     function testFormat(testName: string, source: string, expected: string, range?: Range | RegExp): void {
-        testWithLanguageServer(testName, async function (this: ITestCallbackContext): Promise<void> {
+        testWithLanguageServer(testName, async function (this: Context): Promise<void> {
             let sourceIsFile = false;
             let jsonUnformatted: string = source;
             if (source.match(/\.jsonc?$/)) {
