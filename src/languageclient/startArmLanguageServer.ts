@@ -200,7 +200,7 @@ async function startLanguageClient(serverDllPath: string, dotnetExePath: string)
                             items = items.items;
                         }
 
-                        if (items.every(item => isApiVersion(item.label))) {
+                        if (items.every(item => typeof item.label === "string" && isApiVersion(item.label))) {
                             // It's a list of apiVersion completions
                             // Show them in reverse order so the newest is at the top of the list
                             const countItems = items.length;

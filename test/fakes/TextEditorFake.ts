@@ -3,7 +3,7 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 // ---------------------------------------------------------------------------------------------
 
-import { EndOfLine, Position, Range, Selection, SnippetString, TextEditor, TextEditorDecorationType, TextEditorEdit, TextEditorOptions, Uri } from "vscode";
+import { DecorationOptions, EndOfLine, Position, Range, Selection, SnippetString, TextEditor, TextEditorDecorationType, TextEditorEdit, TextEditorOptions, TextEditorRevealType, Uri, ViewColumn } from "vscode";
 import { DeploymentTemplateDoc } from "../../extension.bundle";
 import { TextDocumentFake } from "./TextDocumentFake";
 
@@ -44,23 +44,23 @@ export class TextEditorFake implements TextEditor {
     public options: TextEditorOptions = {
     };
 
-    public viewColumn?: import("vscode").ViewColumn | undefined;
-    public async edit(callback: (editBuilder: import("vscode").TextEditorEdit) => void, options?: { undoStopBefore: boolean; undoStopAfter: boolean } | undefined): Promise<boolean> {
+    public viewColumn: ViewColumn | undefined;
+    public async edit(callback: (editBuilder: TextEditorEdit) => void, options?: { undoStopBefore: boolean; undoStopAfter: boolean } | undefined): Promise<boolean> {
         const builder = new EditBuilder(this);
         callback(builder);
         return true;
     }
 
-    public insertSnippet(snippet: SnippetString, location?: import("vscode").Range | import("vscode").Position | readonly import("vscode").Position[] | readonly import("vscode").Range[] | undefined, options?: { undoStopBefore: boolean; undoStopAfter: boolean } | undefined): Thenable<boolean> {
+    public insertSnippet(snippet: SnippetString, location?: Range | Position | readonly Position[] | readonly Range[] | undefined, options?: { undoStopBefore: boolean; undoStopAfter: boolean } | undefined): Thenable<boolean> {
         throw new Error("Method not implemented.");
     }
-    public setDecorations(decorationType: TextEditorDecorationType, rangesOrOptions: import("vscode").Range[] | import("vscode").DecorationOptions[]): void {
+    public setDecorations(decorationType: TextEditorDecorationType, rangesOrOptions: Range[] | DecorationOptions[]): void {
         throw new Error("Method not implemented.");
     }
-    public revealRange(range: Range, revealType?: import("vscode").TextEditorRevealType | undefined): void {
+    public revealRange(range: Range, revealType?: TextEditorRevealType | undefined): void {
         throw new Error("Method not implemented.");
     }
-    public show(column?: import("vscode").ViewColumn | undefined): void {
+    public show(column?: ViewColumn | undefined): void {
         throw new Error("Method not implemented.");
     }
     public hide(): void {

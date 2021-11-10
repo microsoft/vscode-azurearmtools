@@ -95,6 +95,7 @@ suite("Functional parameter file completions", () => {
                         assert.fail(`Did not find a completion item starting with "${insertSuggestionPrefix}"`);
                     }
 
+                    assert(typeof currentItem.label === "string");
                     if (currentItem.label.startsWith(insertSuggestionPrefix)) {
                         break;
                     }

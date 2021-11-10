@@ -11,7 +11,7 @@ import { CodeAction, Command, Uri } from 'vscode';
 import { addMissingParameters, assignTemplateGraphToDeploymentTemplate, DeploymentTemplateDoc, filterByType, getNormalizedDocumentKey, getVSCodeRangeFromSpan, IAddMissingParametersArgs, INotifyTemplateGraphArgs, isWin32, LinkedFileLoadState, NormalizedMap, Span } from '../extension.bundle';
 import { TextDocumentFake } from './fakes/TextDocumentFake';
 import { TextEditorFake } from './fakes/TextEditorFake';
-import { getCodeActionContext } from './support/getCodeActionContext';
+import { getCodeActionContext } from './support/getEmptyCodeActionContext';
 import { parseTemplateWithMarkers } from "./support/parseTemplate";
 import { removeComments } from './support/removeComments';
 import { testWithLanguageServer } from './support/testWithLanguageServer';

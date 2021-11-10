@@ -7,11 +7,12 @@
 
 import * as assert from "assert";
 import { randomBytes } from "crypto";
-import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
+import { Context, Suite } from "mocha";
 import { Uri } from "vscode";
 import { parseError } from "vscode-azureextensionui";
 import { DefinitionKind, DeploymentTemplateDoc, getVSCodeRangeFromSpan, Histogram, INamedDefinition, IncorrectArgumentsCountIssue, IParameterDefinition, Issue, IssueKind, IVariableDefinition, Json, LineColPos, ReferenceInVariableDefinitionsVisitor, ReferenceList, Span, TemplateScope, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "../extension.bundle";
 import { diagnosticSources, IDeploymentTemplate, testDiagnostics } from "./support/diagnostics";
+import { getCodeActionContext } from "./support/getEmptyCodeActionContext";
 import { parseTemplate } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
 import { writeToLog } from "./support/testLog";
@@ -928,7 +929,7 @@ suite("DeploymentTemplate", () => {
                 assert.deepStrictEqual(visitor.referenceSpans, []);
             });
 
-            testWithLanguageServer("expecting error: reference in variable definition", async function (this: ITestCallbackContext): Promise<void> {
+            testWithLanguageServer("expecting error: reference in variable definition", async function (this: Context): Promise<void> {
                 await testDiagnostics(
                     {
                         "variables": {
@@ -944,7 +945,7 @@ suite("DeploymentTemplate", () => {
                     ]);
             });
 
-            testWithLanguageServer("expecting error: reference in variable definition inside user function", async function (this: ITestCallbackContext): Promise<void> {
+            testWithLanguageServer("expecting error: reference in variable definition inside user function", async function (this: Context): Promise<void> {
                 await testDiagnostics(
                     {
                         "variables": {
@@ -1008,7 +1009,7 @@ suite("DeploymentTemplate", () => {
         });
     });
 
-    suite("Incomplete JSON shouldn't cause crash", function (this: ISuiteCallbackContext): void {
+    suite("Incomplete JSON shouldn't cause crash", function (this: Suite): void {
         this.timeout(60000);
 
         async function exercisePositionContextAtEveryPointInTheDoc(json: string): Promise<void> {
@@ -1044,7 +1045,7 @@ suite("DeploymentTemplate", () => {
                     pc.getInsertionContext({});
                     pc.getInsertionParent();
                     pc.getScope();
-                    dt.getCodeActions(undefined, getVSCodeRangeFromSpan(dt, new Span(index, 0)), { diagnostics: [] });
+                    dt.getCodeActions(undefined, getVSCodeRangeFromSpan(dt, new Span(index, 0)), getCodeActionContext());
                     /*const items =*/ await pc.getCompletionItems(undefined, 4);
                     // tslint:disable-next-line: no-suspicious-comment
                     /* TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1030
@@ -1169,28 +1170,16 @@ ${err}`);
             dt.getFunctionCounts();
         });
 
-        test("typing character by character", async function (this: ITestCallbackContext): Promise<void> {
+        test("typing character by character", async function (this: Context): Promise<void> {
             if (DISABLE_SLOW_TESTS) {
                 this.skip();
-                return;
             }
 
-            // Just make sure nothing throws
-            for (let i = 0; i < template.length; ++i) {
-                let partialTemplate = template.slice(0, i);
-                let dt = parseTemplate(partialTemplate);
-                findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
-                findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
-                dt.getFunctionCounts();
-
-                await exercisePositionContextAtRandomPointsInTheDoc(template, 0.1);
-            }
         });
 
-        test("typing backwards character by character", async function (this: ITestCallbackContext): Promise<void> {
+        test("typing backwards character by character", async function (this: Context): Promise<void> {
             if (DISABLE_SLOW_TESTS) {
                 this.skip();
-                return;
             }
 
             // Just make sure nothing throws
@@ -1205,7 +1194,7 @@ ${err}`);
             }
         });
 
-        test("try parsing the document with a single character deleted (repeat through the whole document)", async function (this: ITestCallbackContext): Promise<void> {
+        test("try parsing the document with a single character deleted (repeat through the whole document)", async function (this: Context): Promise<void> {
             if (DISABLE_SLOW_TESTS) {
                 this.skip();
                 return;
@@ -1224,20 +1213,18 @@ ${err}`);
             }
         });
 
-        test("exercise PositionContext at every point in the full json", async function (this: ITestCallbackContext): Promise<void> {
+        test("exercise PositionContext at every point in the full json", async function (this: Context): Promise<void> {
             if (DISABLE_SLOW_TESTS) {
                 this.skip();
-                return;
             }
 
             // Just make sure nothing throws
             await exercisePositionContextAtEveryPointInTheDoc(template);
         });
 
-        test("Random modifications", async function (this: ITestCallbackContext): Promise<void> {
+        test("Random modifications", async function (this: Context): Promise<void> {
             if (DISABLE_SLOW_TESTS) {
                 this.skip();
-                return;
             }
 
             // Just make sure nothing throws

@@ -92,7 +92,7 @@ function test(): cp.ChildProcess {
     console.log("*******");
     console.log("");
 
-    return cp.spawn('node', ['./node_modules/vscode/bin/test'], { stdio: 'inherit', env });
+    return cp.spawn('node', ['./out/test/runTest.js'], { stdio: 'inherit', env });
 }
 
 function buildTLEGrammar(): void {

@@ -16,7 +16,7 @@ import { DeploymentTemplateDoc, ExtractItem } from '../../extension.bundle';
 import { assertEx } from '../support/assertEx';
 import { IPartialDeploymentTemplate } from '../support/diagnostics';
 import { getActionContext } from '../support/getActionContext';
-import { getCodeActionContext } from '../support/getCodeActionContext';
+import { getCodeActionContext } from '../support/getEmptyCodeActionContext';
 import { getTempFilePath } from '../support/getTempFilePath';
 import { stringify } from '../support/stringify';
 

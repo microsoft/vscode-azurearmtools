@@ -89,6 +89,7 @@ export * from "./src/util/debugMarkStrings";
 export * from "./src/util/deepClone";
 export * from "./src/util/delayWhileSync";
 export * from './src/util/Duration';
+export * from "./src/util/envUtils";
 export * from './src/util/filterByType';
 export * from "./src/util/Histogram";
 export * from './src/util/httpGet';
@@ -122,3 +123,4 @@ export { Completion };
 export { Json };
 export { basic };
 export { TLE };
+
