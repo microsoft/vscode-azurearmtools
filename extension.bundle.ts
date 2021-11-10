@@ -87,6 +87,7 @@ export * from "./src/util/CaseInsensitiveMap";
 export * from "./src/util/CompletionsSpy";
 export * from "./src/util/debugMarkStrings";
 export * from "./src/util/deepClone";
+export * from "./src/util/delayWhileSync";
 export * from './src/util/Duration';
 export * from './src/util/filterByType';
 export * from "./src/util/Histogram";
@@ -121,4 +122,3 @@ export { Completion };
 export { Json };
 export { basic };
 export { TLE };
-

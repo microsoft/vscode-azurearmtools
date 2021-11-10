@@ -26,10 +26,10 @@ import { JsonOutlineProvider } from "./vscodeIntegration/Treeview";
 class ExtensionVariables {
     public readonly extensionId: string = "msazurermtools.azurerm-vscode-tools";
 
-    private _context: InitializeBeforeUse<vscode.ExtensionContext> = new InitializeBeforeUse<vscode.ExtensionContext>();
-    private _jsonOutlineProvider: InitializeBeforeUse<JsonOutlineProvider> = new InitializeBeforeUse<JsonOutlineProvider>();
-    private _outputChannel: InitializeBeforeUse<IAzExtOutputChannel> = new InitializeBeforeUse<IAzExtOutputChannel>();
-    private _ui: InitializeBeforeUse<IAzureUserInput> = new InitializeBeforeUse<IAzureUserInput>();
+    private _context: InitializeBeforeUse<vscode.ExtensionContext> = new InitializeBeforeUse<vscode.ExtensionContext>("_context");
+    private _jsonOutlineProvider: InitializeBeforeUse<JsonOutlineProvider> = new InitializeBeforeUse<JsonOutlineProvider>("_jsonOutlineProvider");
+    private _outputChannel: InitializeBeforeUse<IAzExtOutputChannel> = new InitializeBeforeUse<IAzExtOutputChannel>("_outputChannel");
+    private _ui: InitializeBeforeUse<IAzureUserInput> = new InitializeBeforeUse<IAzureUserInput>("_ui");
     private _languageServerState: LanguageServerState = LanguageServerState.NotStarted;
     private _languageServerStateEmitter: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
 
@@ -82,6 +82,9 @@ class ExtensionVariables {
     }
     public languageServerStartupError: string | undefined;
 
+    public extensionStartupComplete: boolean | undefined;
+    public extensionStartupError: string | undefined;
+
     // Suite support - lets us know when diagnostics have been completely published for a file
     // tslint:disable-next-line: no-suspicious-comment
     // TODO: Switch to using notifications?
@@ -93,8 +96,8 @@ class ExtensionVariables {
     public readonly configuration: IConfiguration = new VsCodeConfiguration(configPrefix);
 
     public readonly completionItemsSpy: CompletionsSpy = new CompletionsSpy();
-    public deploymentFileMapping: InitializeBeforeUse<DeploymentFileMapping> = new InitializeBeforeUse<DeploymentFileMapping>();
-    public snippetManager: InitializeBeforeUse<ISnippetManager> = new InitializeBeforeUse<ISnippetManager>();
+    public deploymentFileMapping: InitializeBeforeUse<DeploymentFileMapping> = new InitializeBeforeUse<DeploymentFileMapping>("deploymentFileMapping");
+    public snippetManager: InitializeBeforeUse<ISnippetManager> = new InitializeBeforeUse<ISnippetManager>("snippetManager", true);
 }
 
 // tslint:disable-next-line: no-any
