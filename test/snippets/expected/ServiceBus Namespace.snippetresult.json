@@ -1,0 +1,36 @@
+{
+	"resources": [
+		{
+			"name": "serviceBusNamespace1",
+			"type": "Microsoft.ServiceBus/namespaces",
+			"apiVersion": "2021-01-01-preview",
+			"location": "[parameters('location')]",
+			"sku": {
+				"name": "Standard"
+			},
+			"properties": {}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		"location": {
+			"type": "string"
+		}
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}

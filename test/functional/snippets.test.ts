@@ -59,6 +59,34 @@ let resourceTemplate: string = `{
 \t]
 }`;
 
+let resourceTemplateWithLocation: string = `{
+    \t"resources": [
+    \t\t//Insert here: resource
+    \t],
+    \t"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    \t"contentVersion": "1.0.0.0",
+    \t"variables": {
+    \t\t//Insert here: variable
+    \t},
+    \t"parameters": {
+    \t\t"location": {
+    \t\t\t"type": "string"
+    \t\t}
+    \t\t//Insert here: parameter
+    \t},
+    \t"outputs": {
+    \t\t//Insert here: output
+    \t},
+    \t"functions": [
+    \t\t{
+    \t\t\t"namespace": "udf",
+    \t\t\t"members": {
+    \t\t\t\t//Insert here: user function
+    \t\t\t}
+    \t\t}
+    \t]
+    }`;
+
 let emptyTemplate: string = `
 //Insert here: empty
 `;
@@ -280,7 +308,13 @@ suite("Snippets functional tests", () => {
 
         validateSnippet();
 
-        const template = overrideTemplateForSnippet[snippetName] !== undefined ? overrideTemplateForSnippet[snippetName] : resourceTemplate;
+        let defaultTemplate = resourceTemplate;
+        if (snippet.insertText.includes("parameters('location')")) {
+            // add location parameter if used in snippet
+            defaultTemplate = resourceTemplateWithLocation;
+        }
+        const template = overrideTemplateForSnippet[snippetName] !== undefined ? overrideTemplateForSnippet[snippetName] : defaultTemplate;
+
         // tslint:disable-next-line: strict-boolean-expressions
         const expectedDiagnostics = (overrideExpectedDiagnostics[snippetName] || []).sort();
         // tslint:disable-next-line: strict-boolean-expressions

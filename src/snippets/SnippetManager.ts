@@ -86,7 +86,7 @@ export class SnippetManager implements ISnippetManager {
         const snippetFiles = await fse.readdir(folderPath);
         for (const relativePath of snippetFiles.filter(f => f !== 'README.jsonc')) {
             const snippetName = relativePath.replace(/(.*)\.snippet\.json$/, '$1');
-            assert(snippetName !== relativePath, `Incorrectly formed resource snippet file name ${relativePath}`);
+            assert(snippetName !== relativePath, `Resource snippet ${snippetName} should have this filename: ${relativePath}`);
             const content: string = await readUtf8FileWithBom(path.join(folderPath, relativePath));
             const snippet = createResourceSnippetFromFile(snippetName, content);
             const internalSnippet = convertToInternalSnippet(snippetName, snippet);

@@ -917,11 +917,6 @@ suite("DeploymentTemplate", () => {
 
     suite("ReferenceInVariableDefinitionJSONVisitor", () => {
         suite("constructor(DeploymentTemplate)", () => {
-            test("with undefined", () => {
-                // tslint:disable-next-line:no-any
-                assert.throws(() => { new ReferenceInVariableDefinitionsVisitor(<any>undefined); });
-            });
-
             test("with deploymentTemplate", () => {
                 const dt = new DeploymentTemplateDoc(`{ "variables": { "a": "[reference('test')]" } }`, fakeId, 0);
                 const visitor = new ReferenceInVariableDefinitionsVisitor(dt);
