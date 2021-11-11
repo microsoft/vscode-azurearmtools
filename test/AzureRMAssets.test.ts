@@ -72,16 +72,6 @@ suite("AzureRMAssets", () => {
         });
 
         suite("fromString(string)", () => {
-            test("with null", () => {
-                // tslint:disable-next-line:no-any
-                assert.deepStrictEqual(BuiltinFunctionMetadata.fromString(<any>null), []);
-            });
-
-            test("with undefined", () => {
-                // tslint:disable-next-line:no-any
-                assert.deepStrictEqual(BuiltinFunctionMetadata.fromString(<any>undefined), []);
-            });
-
             test("with empty string", () => {
                 assert.deepStrictEqual(BuiltinFunctionMetadata.fromString(""), []);
             });

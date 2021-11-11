@@ -962,19 +962,6 @@ suite("DeploymentTemplate", () => {
         });
 
         suite("visitStringValue(Json.StringValue)", () => {
-            test("with undefined", () => {
-                const dt = new DeploymentTemplateDoc(`{ "variables": { "a": "[reference('test')]" } }`, fakeId, 0);
-                const visitor = new ReferenceInVariableDefinitionsVisitor(dt);
-                // tslint:disable-next-line:no-any
-                assert.throws(() => { visitor.visitStringValue(<any>undefined); });
-            });
-
-            test("with undefined", () => {
-                const dt = new DeploymentTemplateDoc(`{ "variables": { "a": "[reference('test')]" } }`, fakeId, 0);
-                const visitor = new ReferenceInVariableDefinitionsVisitor(dt);
-                // tslint:disable-next-line:no-any
-                assert.throws(() => { visitor.visitStringValue(<any>undefined); });
-            });
 
             test("with non-TLE string", () => {
                 const dt = new DeploymentTemplateDoc(`{ "variables": { "a": "[reference('test')]" } }`, fakeId, 0);
@@ -1206,7 +1193,6 @@ ${err}`);
         test("try parsing the document with a single character deleted (repeat through the whole document)", async function (this: Context): Promise<void> {
             if (DISABLE_SLOW_TESTS) {
                 this.skip();
-                return;
             }
 
             // Just make sure nothing throws

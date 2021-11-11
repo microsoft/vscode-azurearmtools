@@ -33,7 +33,6 @@ export class ReferenceList {
     }
 
     public addAll(list: ReferenceList): void {
-        assert(list);
         assert.deepStrictEqual(this._type, list.kind, "Cannot add references from a list of a different reference type.");
 
         for (const ref of list.references) {

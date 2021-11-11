@@ -53,18 +53,6 @@ suite("Reference", () => {
         });
 
         suite("addAll(Reference.List)", () => {
-            test("with null", () => {
-                const list = new ReferenceList(DefinitionKind.Variable);
-                // tslint:disable-next-line:no-any
-                assert.throws(() => { list.addAll(<any>null); });
-            });
-
-            test("with undefined", () => {
-                const list = new ReferenceList(DefinitionKind.Variable);
-                // tslint:disable-next-line:no-any
-                assert.throws(() => { list.addAll(<any>undefined); });
-            });
-
             test("with empty list of the same type", () => {
                 const list = new ReferenceList(DefinitionKind.Variable);
                 list.addAll(new ReferenceList(DefinitionKind.Variable));
