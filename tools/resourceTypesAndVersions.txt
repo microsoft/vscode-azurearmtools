@@ -1,4 +1,7 @@
 # Use azurerm-vscode-tools.developer.showAvailableResourceTypesAndVersions to generate
+#
+# Example of how to get the official currenty-supported list from an RP (for Microsoft.Web/sites):
+# ((Get-AzResourceProvider -ProviderNamespace Microsoft.Web).ResourceTypes | Where-Object ResourceTypeName -eq sites).ApiVersions
 
 
 # 11/11/2021
