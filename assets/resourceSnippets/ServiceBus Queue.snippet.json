@@ -18,7 +18,7 @@
 				"maxSizeInMegabytes": 1024,
 				"requiresDuplicateDetection": false,
 				"requiresSession": false,
-				"defaultMessageTimeToLive": "${4|P14D,PT10M,P10675199DT2H48M5.4775807S,(other)|}",
+				"defaultMessageTimeToLive": "${4|P14D,PT10M,P10675199DT2H48M5.4775807S|}",
 				"deadLetteringOnMessageExpiration": false,
 				"duplicateDetectionHistoryTimeWindow": "PT10M",
 				"maxDeliveryCount": 10,
