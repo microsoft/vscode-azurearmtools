@@ -2,6 +2,23 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.15.5 (2021-11-15)
+Due to technical issues originating with a recent change in Azure schemas, we haven't been able to update our schemas for a while. This release fixes that issue.
+
+### Added
+
+-  Service bus and blob container snippets [#1379](https://github.com/microsoft/vscode-azurearmtools/issues/1379)
+-  Add definitions for `items()`, `tenant()` and `managementGroup()` functions [#1397](https://github.com/microsoft/vscode-azurearmtools/issues/1397)
+
+
+### Fixed
+- Add support to pick up schemas again (due to breaking change in schemas) [#1324](https://github.com/microsoft/vscode-azurearmtools/issues/1324)
+- Microsoft.Web/sites out of date [#1396](https://github.com/microsoft/vscode-azurearmtools/issues/1396)
+- Microsoft.Authorization/policyAssignments latest API unavailable. [#1384](https://github.com/microsoft/vscode-azurearmtools/issues/1384)
+- Microsoft.Authorization/roleAssignments is unrecognized [#1366](https://github.com/microsoft/vscode-azurearmtools/issues/1366)
+- Microsoft.Web/hostingEnvironments most apiVersions not recognized [#1344](https://github.com/microsoft/vscode-azurearmtools/issues/1344)
+
+
 ## Version 0.15.4 (2021-10-07)
 
 ### Fixed
