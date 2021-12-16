@@ -234,7 +234,7 @@ async function getLanguageServer(): Promise<void> {
         rimraf.sync(languageServerFolderName);
 
         console.log(`Copying language server binaries to ${languageServerFolderName}`);
-        const langServerSourcePath = path.join(pkgsPath, languageServerNugetPackage, 'lib', `netcoreapp${langServerDotnetVersion}`);
+        const langServerSourcePath = path.join(pkgsPath, languageServerNugetPackage, 'lib', `net${langServerDotnetVersion}`);
         const licenseSourcePath = path.join(pkgsPath, languageServerNugetPackage, languageServerLicenseFileName);
 
         fse.mkdirpSync(destPath);
