@@ -214,7 +214,7 @@ async function getLanguageServer(): Promise<void> {
             'install',
             languageServerNugetPackage,
             '-Version', languageServerVersion,
-            '-Framework', `netcoreapp${langServerDotnetVersion}`,
+            '-Framework', `net${langServerDotnetVersion}`,
             '-OutputDirectory', 'pkgs',
             //'-Verbosity', 'detailed',
             '-ExcludeVersion', // Keeps the package version from being included in the output folder name
