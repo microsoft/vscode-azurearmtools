@@ -40,5 +40,20 @@
         }
     ],
     "typescript.tsdk": "./node_modules/typescript/lib",
-    "typescript.enablePromptUseWorkspaceTsdk": true
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "cSpell.words": [
+        "ARMTOOLS",
+        "azureextensiondev",
+        "Creds",
+        "DEBUGTELEMETRY",
+        "dotnettools",
+        "LANGSERVER",
+        "netcoreapp",
+        "TESTCASE",
+        "testlog",
+        "testlogs",
+        "vscodeignore",
+        "vsix",
+        "webpacked"
+    ]
 }

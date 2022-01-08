@@ -7,24 +7,19 @@
 
 import * as assert from 'assert';
 import * as cp from 'child_process';
-import { File } from 'decompress';
 import * as fse from 'fs-extra';
-import * as glob from 'glob';
 import * as gulp from 'gulp';
 import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
 import * as recursiveReadDir from 'recursive-readdir';
 import * as shelljs from 'shelljs';
-import { Stream } from 'stream';
 import { gulp_webpack } from 'vscode-azureextensiondev';
 import { langServerDotnetVersion, languageServerFolderName } from './src/constants';
 import { getTempFilePath } from './test/support/getTempFilePath';
 import { DEFAULT_TESTCASE_TIMEOUT_MS } from "./test/testConstants";
 
 // tslint:disable:no-require-imports
-import decompress = require('gulp-decompress');
-import download = require('gulp-download');
 import rimraf = require('rimraf');
 // tslint:enable:no-require-imports
 
@@ -302,7 +297,7 @@ async function packageVsix(): Promise<void> {
         copyToStagingFolder(licenseSourcePath, languageServerLicenseFileName);
         expectedLicenseFileName = languageServerLicenseFileName;
     } else {
-        // No language server available - jusy copy license.md to staging main folder
+        // No language server available - just copy license.md to staging main folder
         copyToStagingFolder(publicLicenseFileName, languageServerFolderName);
         expectedLicenseFileName = publicLicenseFileName;
     }
@@ -382,29 +377,9 @@ async function verifyTestsReferenceOnlyExtensionBundle(testFolder: string): Prom
     }
 }
 
-export function gulp_installDotNetExtension(): Promise<void> | Stream {
-    const extensionName = '.NET Install Tool for Extension Authors';
-    console.log(`Installing ${extensionName}`);
-    const version: string = '0.1.0';
-    const extensionPath: string = path.join(os.homedir(), `.vscode/extensions/ms-dotnettools.vscode-dotnet-runtime-${version}`);
-    console.log(extensionPath);
-    const existingExtensions: string[] = glob.sync(extensionPath.replace(version, '*'));
-    if (existingExtensions.length === 0) {
-        // tslint:disable-next-line:no-http-string
-        return download(`http://ms-vscode.gallery.vsassets.io/_apis/public/gallery/publisher/ms-dotnettools/extension/vscode-dotnet-runtime/${version}/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage`)
-            .pipe(decompress({
-                filter: (file: File): boolean => file.path.startsWith('extension/'),
-                map: (file: File): File => {
-                    file.path = file.path.slice(10);
-                    return file;
-                }
-            }))
-            .pipe(gulp.dest(extensionPath));
-    } else {
-        console.log(`${extensionName} already installed.`);
-        // We need to signal to gulp that we've completed this async task
-        return Promise.resolve();
-    }
+export function gulp_installDotNetExtension(): cp.ChildProcess {
+    console.log("Installing dotnet runtime extension");
+    return cp.spawn('code', ['--install-extension', 'ms-dotnettools.vscode-dotnet-runtime'], { stdio: 'inherit', env });
 }
 
 exports['webpack-dev'] = gulp.series(() => gulp_webpack('development'), buildGrammars);
