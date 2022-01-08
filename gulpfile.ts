@@ -385,6 +385,11 @@ export async function gulp_installDotNetExtension(): Promise<cp.ChildProcess> {
     console.error("asdfasdf0");
     let executablePath = await downloadAndUnzipVSCode(process.env.CODE_VERSION);
     console.error("asdfasdf1");
+    console.error(path.join(executablePath, "../../Resources/app/bin"));
+    cp.exec('ls -al ' + path.join(executablePath, "../../Resources/app/bin"));
+    console.error(path.join(executablePath, "../../Resources/app"));
+    cp.exec('ls -al ' + path.join(executablePath, "../../Resources/app"));
+    console.error("asdfasdf1.5");
     executablePath = path.join(executablePath, "../../Resources/app/bin/code");
     console.error(executablePath);
     let proc = cp.spawn(executablePath, ['--install-extension', 'ms-dotnettools.vscode-dotnet-runtime'], { stdio: 'inherit', env });
