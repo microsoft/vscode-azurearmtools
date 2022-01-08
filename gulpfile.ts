@@ -377,9 +377,19 @@ async function verifyTestsReferenceOnlyExtensionBundle(testFolder: string): Prom
     }
 }
 
-export function gulp_installDotNetExtension(): cp.ChildProcess {
+export async function gulp_installDotNetExtension(): Promise<cp.ChildProcess> {
     console.log("Installing dotnet runtime extension");
-    return cp.spawn('code', ['--install-extension', 'ms-dotnettools.vscode-dotnet-runtime'], { stdio: 'inherit', env });
+
+    const downloadAndUnzipVSCode = require('vscode-test').downloadAndUnzipVSCode;
+
+    console.error("asdfasdf0");
+    let executablePath = await downloadAndUnzipVSCode(process.env.CODE_VERSION);
+    console.error("asdfasdf1");
+    executablePath = path.join(executablePath, "../../Resources/app/bin/code");
+    console.error(executablePath);
+    let proc = cp.spawn(executablePath, ['--install-extension', 'ms-dotnettools.vscode-dotnet-runtime'], { stdio: 'inherit', env });
+    console.error("asdfasdf2");
+    return proc;
 }
 
 exports['webpack-dev'] = gulp.series(() => gulp_webpack('development'), buildGrammars);
