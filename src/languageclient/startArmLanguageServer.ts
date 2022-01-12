@@ -393,6 +393,7 @@ async function isFile(pathPath: string): Promise<boolean> {
 
 function onNotifyTemplateGraph(args: INotifyTemplateGraphArgs): void {
     callWithTelemetryAndErrorHandlingSync('notifyTemplateGraph', async (context: IActionContext) => {
+        context.telemetry.suppressIfSuccessful = true;
         _notifyTemplateGraphAvailableEmitter.fire(<INotifyTemplateGraphArgs & ITelemetryContext>Object.assign({}, context.telemetry, args));
     });
 }
