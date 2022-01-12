@@ -249,19 +249,24 @@ async function startLanguageClient(serverDllPath: string, dotnetExePath: string)
 
         client.onTelemetry((telemetryData: { eventName: string; properties: { [key: string]: string | undefined } }) => {
             const eventName = telemetryData.eventName.replace(/^\/|\/$/g, ""); // Remove slashes at beginning or end
-            callWithTelemetryAndErrorHandlingSync(`langserver/${eventName}`, telemetryActionContext => {
-                telemetryActionContext.errorHandling.suppressDisplay = true;
+            const fullEventName = `langserver/${eventName}`;
 
-                for (let prop of Object.getOwnPropertyNames(telemetryData.properties)) {
-                    const value = telemetryData.properties[prop];
-                    prop = prop.replace(/^\./g, ""); // Remove starting period
-                    telemetryActionContext.telemetry.properties[prop] = String(value);
-                }
+            if (sanitizeTelemetryData(fullEventName, telemetryData.properties)
+            ) {
+                callWithTelemetryAndErrorHandlingSync(fullEventName, telemetryActionContext => {
+                    telemetryActionContext.errorHandling.suppressDisplay = true;
 
-                if (telemetryActionContext.telemetry.properties.error) {
-                    telemetryActionContext.telemetry.properties.result = 'Failed';
-                }
-            });
+                    for (let prop of Object.getOwnPropertyNames(telemetryData.properties)) {
+                        const value = telemetryData.properties[prop];
+                        prop = prop.replace(/^\./g, ""); // Remove starting period
+                        telemetryActionContext.telemetry.properties[prop] = String(value);
+                    }
+
+                    if (telemetryActionContext.telemetry.properties.error) {
+                        telemetryActionContext.telemetry.properties.result = 'Failed';
+                    }
+                });
+            }
         });
 
         try {
@@ -290,6 +295,26 @@ async function startLanguageClient(serverDllPath: string, dotnetExePath: string)
             );
         }
     });
+}
+
+function sanitizeTelemetryData(fullEventName: string, properties: { [key: string]: string | undefined }): boolean {
+    switch (fullEventName) {
+        case 'langserver/VS/WebTools/Languages/JSON/UnrecognizedResourceApiVersion':
+            if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}(-(alpha|beta|preview)+)?$/i.test(properties['vS.WebTools.Languages.JSON.apiVersion'] ?? '')) {
+                {
+                    return false;
+                }
+            }
+
+            properties['vS.WebTools.Languages.JSON.apiVersion'] = properties['vS.WebTools.Languages.JSON.apiVersion']?.toLowerCase();
+            properties['vS.WebTools.Languages.JSON.type'] = properties['vS.WebTools.Languages.JSON.type']
+                ?.replace('/', '@')
+                .toLowerCase();
+            return true;
+
+        default:
+            return true;
+    }
 }
 
 async function getDotNetPath(): Promise<string | undefined> {
