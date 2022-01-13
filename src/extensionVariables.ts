@@ -9,7 +9,7 @@ import * as os from 'os';
 import * as path from "path";
 import * as vscode from "vscode";
 import { IAzExtOutputChannel, IAzureUserInput } from "vscode-azureextensionui";
-import { LanguageClient } from "vscode-languageclient";
+import { LanguageClient } from 'vscode-languageclient/node';
 import { configPrefix, isWebpack } from "./constants";
 import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
 import { IProvideOpenedDocuments } from './IProvideOpenedDocuments';
