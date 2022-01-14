@@ -31,7 +31,7 @@ export const basePath = path.join(assetsPath, "..");
 export const iconsPath = path.join(basePath, "icons");
 assert(fs.existsSync(assetsPath), "Assets path does not exist: " + assetsPath);
 
-export const DEFAULT_TESTCASE_TIMEOUT_MS = 3 * 60 * 1000;
+export const DEFAULT_TESTCASE_TIMEOUT_MS = 5 * 60 * 1000;
 
 export namespace documentSchemes {
     export const file: string = 'file'; // Locally-saved files

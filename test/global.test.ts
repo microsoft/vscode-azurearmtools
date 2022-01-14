@@ -6,7 +6,6 @@
 import * as fse from 'fs-extra';
 import * as mocha from 'mocha';
 import * as path from 'path';
-import { exit } from 'process';
 import * as rimraf from 'rimraf';
 import * as vscode from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
@@ -143,8 +142,7 @@ teardown(function (this: Mocha.Context): void {
     }
 
     if (_bailed || this.currentTest!.timedOut || parseError(this.currentTest?.err).message.match(/timed/i)) {
-        writeToError('A test timed out, exiting out of suites');
-        exit(1);
+        throw new Error(`A test timed out ('${this.currentTest!.title}'), so exiting out of the rest of the tests because tests tend to be unstable after a timeout`);
     }
 
     deleteTestLog();

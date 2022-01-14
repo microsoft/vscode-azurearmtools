@@ -83,7 +83,7 @@ async function test(): Promise<cp.ChildProcess> {
     // This is the timeout for individual tests
     env.MOCHA_timeout = String(DEFAULT_TESTCASE_TIMEOUT_MS);
     env.MOCHA_enableTimeouts = "1";
-    env.MOCHA_grep = "";
+    env.MOCHA_grep = "//i";
     env.DISABLE_SLOW_TESTS = "";
     env.ALWAYS_ECHO_TEST_LOG = "";
 
@@ -108,14 +108,6 @@ async function test(): Promise<cp.ChildProcess> {
     });
 
     return cp.spawn('node', ['./out/test/runTest.js'], { stdio: 'inherit', env });
-}
-
-async function postTest(): Promise<void> {
-    console.log("");
-    console.log("*******");
-    console.log("******* TESTS DONE");
-    console.log("*******");
-    console.log("");
 }
 
 function buildTLEGrammar(): void {
@@ -400,7 +392,7 @@ async function verifyTestsReferenceOnlyExtensionBundle(testFolder: string): Prom
 
 exports['webpack-dev'] = gulp.series(() => gulp_webpack('development'), buildGrammars);
 exports['webpack-prod'] = gulp.series(() => gulp_webpack('production'), buildGrammars);
-exports.test = gulp.series(test, postTest);
+exports.test = gulp.series(test);
 exports['build-grammars'] = buildGrammars;
 exports['watch-grammars'] = (): unknown => gulp.watch('grammars/**', buildGrammars);
 exports['get-language-server'] = getLanguageServer;
