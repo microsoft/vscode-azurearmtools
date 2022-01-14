@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------------------------
 
 import { MarkdownString } from "vscode";
-import { templateKeys } from "../../constants";
+import { templateKeys } from "../../../common";
 import { assert } from "../../fixed_assert";
 import { getFriendlyExpressionFromTleExpression } from "../../language/expressions/friendlyExpressions";
 import { isTleExpression } from "../../language/expressions/isTleExpression";

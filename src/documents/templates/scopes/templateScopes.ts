@@ -4,7 +4,7 @@
 
 // tslint:disable: max-classes-per-file
 
-import { deploymentsResourceTypeLC, templateKeys } from "../../../constants";
+import { deploymentsResourceTypeLC, templateKeys } from "../../../../common";
 import { IProvideOpenedDocuments } from "../../../IProvideOpenedDocuments";
 import * as Json from "../../../language/json/JSON";
 import { assertNever } from "../../../util/assertNever";

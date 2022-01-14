@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------------------------
 
 import { Location } from "vscode";
-import { configKeys } from "../../constants";
+import { configKeys } from "../../../common";
 import { ext } from "../../extensionVariables";
 import { assert } from "../../fixed_assert";
 import { Span } from "../../language/Span";

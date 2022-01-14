@@ -6,7 +6,7 @@ import * as fse from 'fs-extra';
 import * as path from 'path';
 import { Diagnostic, TextDocument, Uri, window, workspace } from "vscode";
 import { callWithTelemetryAndErrorHandling, DialogResponses, IActionContext, parseError, TelemetryProperties } from "vscode-azureextensionui";
-import { armTemplateLanguageId, documentSchemes } from '../../../constants';
+import { armTemplateLanguageId, documentSchemes } from '../../../../common';
 import { Errorish } from '../../../Errorish';
 import { ext } from "../../../extensionVariables";
 import { assert } from '../../../fixed_assert';

@@ -4,7 +4,7 @@
 
 import * as path from 'path';
 import { Uri } from "vscode";
-import { documentSchemes, isWin32 } from '../constants';
+import { documentSchemes, isWin32 } from '../../common';
 import { stringifyUri } from './uri';
 
 /**

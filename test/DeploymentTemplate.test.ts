@@ -12,6 +12,7 @@ import { Uri } from "vscode";
 import { parseError } from "vscode-azureextensionui";
 import { DefinitionKind, DeploymentTemplateDoc, getVSCodeRangeFromSpan, Histogram, INamedDefinition, IncorrectArgumentsCountIssue, IParameterDefinition, Issue, IssueKind, IVariableDefinition, Json, LineColPos, ReferenceInVariableDefinitionsVisitor, ReferenceList, Span, TemplateScope, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "../extension.bundle";
 import { diagnosticSources, IDeploymentTemplate, testDiagnostics } from "./support/diagnostics";
+import { getEmptyCodeActionContext } from "./support/getEmptyCodeActionContext";
 import { parseTemplate } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
 import { writeToLog } from "./support/testLog";
@@ -1026,7 +1027,7 @@ suite("DeploymentTemplate", () => {
                     pc.getInsertionContext({});
                     pc.getInsertionParent();
                     pc.getScope();
-                    dt.getCodeActions(undefined, getVSCodeRangeFromSpan(dt, new Span(index, 0)), { diagnostics: [] });
+                    dt.getCodeActions(undefined, getVSCodeRangeFromSpan(dt, new Span(index, 0)), getEmptyCodeActionContext());
                     /*const items =*/ await pc.getCompletionItems(undefined, 4);
                     // tslint:disable-next-line: no-suspicious-comment
                     /* TODO: https://github.com/microsoft/vscode-azurearmtools/issues/1030

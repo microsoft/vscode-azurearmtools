@@ -4,7 +4,14 @@
         "no-console": false,
         "no-implicit-dependencies": [
             true,
-            "dev"
+            [
+                "vscode",
+                "gulp",
+                "dev",
+                "mocha",
+                "vscode-azureextensiondev",
+                "@vscode/test-electron"
+            ]
         ],
         "no-unexternalized-strings": false
     }

@@ -6,7 +6,7 @@
 // tslint:disable:no-unnecessary-class // Grandfathered in
 // tslint:disable:switch-default // Grandfathered in
 // tslint:disable:max-classes-per-file // Grandfathered in
-import { templateKeys } from "../../constants";
+import { templateKeys } from "../../../common";
 import { TemplatePositionContext } from "../../documents/positionContexts/TemplatePositionContext";
 import { IFunctionMetadata } from "../../documents/templates/IFunctionMetadata";
 import { assert } from "../../fixed_assert";

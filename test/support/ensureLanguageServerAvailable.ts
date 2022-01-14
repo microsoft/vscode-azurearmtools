@@ -4,7 +4,7 @@
 
 import * as assert from "assert";
 import { workspace } from "vscode";
-import { LanguageClient } from "vscode-languageclient";
+import { LanguageClient } from 'vscode-languageclient/node';
 import { armTemplateLanguageId, ext, waitForLanguageServerAvailable } from "../../extension.bundle";
 import { DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { writeToLog } from "./testLog";

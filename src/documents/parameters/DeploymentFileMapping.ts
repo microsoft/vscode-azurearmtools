@@ -5,7 +5,7 @@
 import * as path from 'path';
 import { isNullOrUndefined } from 'util';
 import { ConfigurationTarget, Uri } from 'vscode';
-import { configKeys } from '../../constants';
+import { configKeys } from '../../../common';
 import { normalizeFilePath } from '../../util/normalizedPaths';
 import { IConfiguration } from '../../vscodeIntegration/Configuration';
 import { getRelativeParameterFilePath, resolveParameterFilePath } from './parameterFilePaths';

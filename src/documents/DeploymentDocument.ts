@@ -89,7 +89,7 @@ export abstract class DeploymentDocument extends JsonDocument {
     public abstract getWarnings(): Issue[];
 }
 
-export abstract class ResolvableCodeLens extends CodeLens { //asdf move
+export abstract class ResolvableCodeLens extends CodeLens {
     public constructor(
         public readonly scope: TemplateScope,
         public readonly span: Span

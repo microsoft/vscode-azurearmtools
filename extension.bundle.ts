@@ -20,8 +20,8 @@ import * as Json from "./src/language/json/JSON";
 import * as basic from "./src/language/json/Tokenizer";
 import * as Completion from './src/vscodeIntegration/Completion';
 
+export * from "./common";
 export { activateInternal, deactivateInternal } from './src/AzureRMTools'; // Export activate/deactivate for main.js
-export * from "./src/constants";
 export * from "./src/documents/DeploymentDocument";
 export * from "./src/documents/parameters/DeploymentFileMapping";
 export * from "./src/documents/parameters/DeploymentParametersDoc";
@@ -89,6 +89,7 @@ export * from "./src/util/debugMarkStrings";
 export * from "./src/util/deepClone";
 export * from "./src/util/delayWhileSync";
 export * from './src/util/Duration';
+export * from "./src/util/envUtils";
 export * from './src/util/filterByType';
 export * from "./src/util/Histogram";
 export * from './src/util/httpGet';
@@ -122,3 +123,4 @@ export { Completion };
 export { Json };
 export { basic };
 export { TLE };
+

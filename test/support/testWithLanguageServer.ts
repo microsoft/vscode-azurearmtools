@@ -12,7 +12,7 @@ import { ITestPreparation, ITestPreparationResult, testWithPrep } from "./testWi
 export class RequiresLanguageServer implements ITestPreparation {
     public static readonly instance: RequiresLanguageServer = new RequiresLanguageServer();
 
-    public pretest(this: Context): ITestPreparationResult {
+    public pretest(this: Mocha.Context): ITestPreparationResult {
         if (DISABLE_LANGUAGE_SERVER) {
             return {
                 skipTest: "DISABLE_LANGUAGE_SERVER is set"

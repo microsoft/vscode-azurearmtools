@@ -8,7 +8,6 @@
 
 import * as assert from 'assert';
 import { commands, Selection } from 'vscode';
-import { newParamValueCompletionLabel, newParamValueCompletionLabelWithQuotes } from '../support/constants';
 import { delay } from '../support/delay';
 import { IDeploymentParametersFile, IDeploymentTemplate } from "../support/diagnostics";
 import { getCompletionItemResolutionPromise, getCompletionItemsPromise, getDocumentChangedPromise } from '../support/getEventPromise';
@@ -17,6 +16,7 @@ import { getDocumentMarkers, removeEOLMarker } from "../support/parseTemplate";
 import { stringify } from '../support/stringify';
 import { TempDocument, TempEditor, TempFile } from '../support/TempFile';
 import { testWithLanguageServer } from '../support/testWithLanguageServer';
+import { newParamValueCompletionLabel, newParamValueCompletionLabelWithQuotes } from '../testConstants';
 
 const defaultTemplate = {
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
@@ -95,6 +95,7 @@ suite("Functional parameter file completions", () => {
                         assert.fail(`Did not find a completion item starting with "${insertSuggestionPrefix}"`);
                     }
 
+                    assert(typeof currentItem.label === "string");
                     if (currentItem.label.startsWith(insertSuggestionPrefix)) {
                         break;
                     }

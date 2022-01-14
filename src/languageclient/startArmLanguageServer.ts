@@ -8,10 +8,10 @@ import * as os from 'os';
 import * as path from 'path';
 import { CancellationToken, CompletionContext, CompletionItem, CompletionList, Diagnostic, Event, EventEmitter, Position, ProgressLocation, TextDocument, Uri, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, ITelemetryContext, parseError } from 'vscode-azureextensionui';
-import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
+import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient/node';
+import { armTemplateLanguageId, backendValidationDiagnosticsSource, configKeys, configPrefix, downloadDotnetVersion, isRunningTests, languageFriendlyName, languageServerFolderName, languageServerName, notifications } from '../../common';
 import { delay } from '../../test/support/delay';
 import { acquireSharedDotnetInstallation } from '../acquisition/acquireSharedDotnetInstallation';
-import { armTemplateLanguageId, backendValidationDiagnosticsSource, configKeys, configPrefix, downloadDotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName, notifications } from '../constants';
 import { convertDiagnosticUrisToLinkedTemplateSchema, INotifyTemplateGraphArgs, IRequestOpenLinkedFileArgs, onRequestOpenLinkedFile } from '../documents/templates/linkedTemplates/linkedTemplates';
 import { templateDocumentSelector } from '../documents/templates/supported';
 import { ext } from '../extensionVariables';
@@ -116,9 +116,6 @@ export function startArmLanguageServerInBackground(): void {
             } catch (err) {
                 assert.fail("callWithTelemetryAndErrorHandling in startArmLanguageServerInBackground onTemplateGraphAvailable shouldn't throw");
             }
-
-            // tslint:disable-next-line: no-console
-            console.log(">>> startArmLanguageServerInBackground DONE");
         });
 }
 
@@ -162,7 +159,7 @@ async function startLanguageClient(serverDllPath: string, dotnetExePath: string)
         if (waitForDebugger) {
             commonArgs.push('--wait-for-debugger');
         }
-        if (ext.addCompletedDiagnostic) {
+        if (isRunningTests || ext.addCompletedDiagnostic) {
             // Forces the server to add a completion message to its diagnostics
             commonArgs.push('--verbose-diagnostics');
         }
@@ -203,7 +200,7 @@ async function startLanguageClient(serverDllPath: string, dotnetExePath: string)
                             items = items.items;
                         }
 
-                        if (items.every(item => isApiVersion(item.label))) {
+                        if (items.every(item => typeof item.label === "string" && isApiVersion(item.label))) {
                             // It's a list of apiVersion completions
                             // Show them in reverse order so the newest is at the top of the list
                             const countItems = items.length;

@@ -4,7 +4,7 @@
 
 import { commands, MessageItem, window } from 'vscode';
 import { callWithTelemetryAndErrorHandling, IActionContext } from "vscode-azureextensionui";
-import { globalStateKeys } from './constants';
+import { globalStateKeys } from '../common';
 import { ext } from "./extensionVariables";
 import { assert } from './fixed_assert';
 import { httpGet } from "./util/httpGet";

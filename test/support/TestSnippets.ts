@@ -11,7 +11,7 @@ import { ITestPreparation, ITestPreparationResult, testWithPrep } from './testWi
 
 // By default we use the test snippets for tests
 export function useTestSnippets(): void {
-    ext.snippetManager.value = new SnippetManager(path.join(__dirname, '..', '..', '..', 'test', 'support', 'TestArmSnippets.jsonc'), undefined); //asdf?
+    ext.snippetManager.value = new SnippetManager(path.join(__dirname, '..', '..', '..', 'test', 'support', 'TestArmSnippets.jsonc'), undefined);
     writeToLog("Installed test snippets");
 }
 

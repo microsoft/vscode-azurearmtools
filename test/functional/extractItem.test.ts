@@ -16,7 +16,7 @@ import { DeploymentTemplateDoc, ExtractItem } from '../../extension.bundle';
 import { assertEx } from '../support/assertEx';
 import { IPartialDeploymentTemplate } from '../support/diagnostics';
 import { getActionContext } from '../support/getActionContext';
-import { getCodeActionContext } from '../support/getCodeActionContext';
+import { getEmptyCodeActionContext } from '../support/getEmptyCodeActionContext';
 import { getTempFilePath } from '../support/getTempFilePath';
 import { stringify } from '../support/stringify';
 
@@ -51,7 +51,7 @@ suite("ExtractItem", async (): Promise<void> => {
             let position = document.positionAt(index);
             let endPosition = document.positionAt(index + selectedText.length);
             textEditor.selection = new vscode.Selection(position, endPosition);
-            let codeActions = deploymentTemplate.getCodeActions(undefined, textEditor.selection, getCodeActionContext());
+            let codeActions = deploymentTemplate.getCodeActions(undefined, textEditor.selection, getEmptyCodeActionContext());
             assert.strictEqual(codeActions.length, codeActionsCount, `GetCodeAction should return ${codeActionsCount}`);
             if (codeActionsCount > 0) {
                 await doExtract(extractItem, deploymentTemplate, textEditor);
