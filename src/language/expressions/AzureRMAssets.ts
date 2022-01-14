@@ -4,7 +4,7 @@
 
 import * as fse from 'fs-extra';
 import * as path from "path";
-import { assetsPath } from '../../constants';
+import { assetsPath } from '../../../common';
 import { ExpressionType } from '../../documents/templates/ExpressionType';
 import { FunctionBehaviors, IFunctionMetadata, IFunctionParameterMetadata } from '../../documents/templates/IFunctionMetadata';
 import { assert } from '../../fixed_assert';
@@ -61,6 +61,8 @@ export class AzureRMAssets {
     }
 
     private static getLocalAssetUri(assetFileName: string): string {
+        console.error(assetsPath);
+        console.error(path.join(assetsPath, assetFileName));
         return path.join(assetsPath, assetFileName);
     }
 

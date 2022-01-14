@@ -6,14 +6,16 @@
 import * as fse from 'fs-extra';
 import * as mocha from 'mocha';
 import * as path from 'path';
+import { exit } from 'process';
 import * as rimraf from 'rimraf';
 import * as vscode from 'vscode';
+import { parseError } from 'vscode-azureextensionui';
 import { armTemplateLanguageId, configKeys, configPrefix, ext, stopArmLanguageServer } from "../extension.bundle";
 import { displayCacheStatus } from './support/cache';
 import { delay } from "./support/delay";
 import { ensureExtensionHasInitialized } from './support/ensureExtensionHasInitialized';
 import { publishVsCodeLogs } from './support/publishVsCodeLogs';
-import { alwaysEchoTestLog, deleteTestLog, getTestLogContents, setTestLogOutputFile, writeToLog, writeToWarning } from './support/testLog';
+import { alwaysEchoTestLog, deleteTestLog, getTestLogContents, setTestLogOutputFile, writeToError, writeToLog } from './support/testLog';
 import { useTestSnippets } from './support/TestSnippets';
 import { logsFolder } from './testConstants';
 import { useTestFunctionMetadata } from "./TestData";
@@ -24,6 +26,11 @@ let previousSettings = {
     autoDetectJsonTemplates: <boolean | undefined>undefined,
     fileAssociations: <{ [key: string]: string }>{}
 };
+
+var _bailed = false;
+export function bail(): void {
+    _bailed = true;
+}
 
 // Runs before all tests
 suiteSetup(async function (this: mocha.Context): Promise<void> {
@@ -104,27 +111,25 @@ suiteTeardown(async function (this: mocha.Context): Promise<void> {
 });
 
 // Runs before each individual test
-setup(function (this: Mocha.Context): void {
-    // tslint:disable-next-line: no-non-null-assertion
-    writeToLog(`Running: ${this.currentTest!.title}`, true);
+setup(function (this: mocha.Context): void {
+    writeToLog(`Running test: ${this.currentTest!.title}`, true);
 });
 
 // Runs after each individual test
 teardown(function (this: Mocha.Context): void {
     let message: string;
-    // tslint:disable-next-line: no-non-null-assertion
     const failed = (!this.currentTest!.state || this.currentTest!.state === 'failed');
 
     if (failed) {
         if (getTestLogContents()) {
-            // tslint:disable-next-line: no-non-null-assertion
-            message = `Test Failed: ${this.currentTest!.title}`;
+            message = `Test Failed: ${this.currentTest!.title}:`;
+            message += `\n  ${parseError(this.currentTest?.err).message}`;
         } else {
-            // tslint:disable-next-line: no-non-null-assertion
-            message = `Test Failed (test log is empty): ${this.currentTest!.title}`;
+            message = `Test Failed: (test log is empty): ${this.currentTest!.title}`;
+            message += `\n  ${parseError(this.currentTest?.err).message}`;
         }
     } else {
-        message = `Passed: ${this.currentTest}\n`;
+        message = `Test passed: ${this.currentTest!.title}\n`;
     }
 
     if (alwaysEchoTestLog) {
@@ -132,9 +137,14 @@ teardown(function (this: Mocha.Context): void {
     }
 
     if (failed) {
-        writeToWarning(message);
+        writeToError(message);
     } else {
         writeToLog(message);
+    }
+
+    if (_bailed || this.currentTest!.timedOut || parseError(this.currentTest?.err).message.match(/timed/i)) {
+        writeToError('A test timed out, exiting out of suites');
+        exit(1);
     }
 
     deleteTestLog();

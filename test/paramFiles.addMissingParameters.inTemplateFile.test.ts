@@ -11,7 +11,7 @@ import { CodeAction, Command, Uri } from 'vscode';
 import { addMissingParameters, assignTemplateGraphToDeploymentTemplate, DeploymentTemplateDoc, filterByType, getNormalizedDocumentKey, getVSCodeRangeFromSpan, IAddMissingParametersArgs, INotifyTemplateGraphArgs, isWin32, LinkedFileLoadState, NormalizedMap, Span } from '../extension.bundle';
 import { TextDocumentFake } from './fakes/TextDocumentFake';
 import { TextEditorFake } from './fakes/TextEditorFake';
-import { getCodeActionContext } from './support/getCodeActionContext';
+import { getEmptyCodeActionContext } from './support/getEmptyCodeActionContext';
 import { parseTemplateWithMarkers } from "./support/parseTemplate";
 import { removeComments } from './support/removeComments';
 import { testWithLanguageServer } from './support/testWithLanguageServer';
@@ -87,7 +87,7 @@ suite("Add missing parameters for nested/linked templates", () => {
             }
 
             // Get valid code actions at the <!bang!> marker
-            const codeActions: (CodeAction | Command)[] = dt.getCodeActions(undefined, range, getCodeActionContext());
+            const codeActions: (CodeAction | Command)[] = dt.getCodeActions(undefined, range, getEmptyCodeActionContext());
 
             // Select the correct code action
             assert.equal(codeActions.length, 2, "Expecting a 2 add missing params code actions");

@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------------------------
 
 import { Uri } from "vscode";
-import { documentSchemes } from "../constants";
+import { documentSchemes } from "../../common";
 import { parseUri, stringifyUri } from "./uri";
 
 /**

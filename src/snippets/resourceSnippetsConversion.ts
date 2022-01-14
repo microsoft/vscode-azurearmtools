@@ -15,7 +15,7 @@ const stringSnippetPlaceholderCommentPatternRegex = new RegExp(
     `}\\*\\/` + // end: }"*/
     `\\s?` + // allow space after placeholder (see above)
     `(` + // placeholder value, either:
-    // /**/ `'(.*?)'` + // single-quoted value asdf
+    // /**/ `'(.*?)'` + // single-quoted value
     /**/ `"(.*?)"` + // double-quoted value
     ///**/ `|\\w+` + // or word
     // /**/ `|-\\d+` + // or integer value
@@ -30,7 +30,7 @@ const nonStringSnippetPlaceholderCommentPatternRegex = new RegExp(
     `}\\*\\/` + // end: }*/
     `\\s?` + // allow space after placeholder (see above)
     `(` + // placeholder value, either:
-    // /**/ `'(.*?)'` + // single-quoted value asdf
+    // /**/ `'(.*?)'` + // single-quoted value
     ///**/ `"(.*?)"` + // double-quoted value
     /**/ `\\w+` + // word
     // /**/ `|-\\d+` + // or integer value

@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------------------------
 
 import * as vscode from "vscode";
-import { expressionsDiagnosticsSource } from "../constants";
+import { expressionsDiagnosticsSource } from "../../common";
 import { DeploymentDocument } from "../documents/DeploymentDocument";
 import { Issue } from "../language/Issue";
 import { getVSCodeRangeFromSpan } from "./vscodePosition";

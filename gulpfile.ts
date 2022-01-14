@@ -7,26 +7,19 @@
 
 import * as assert from 'assert';
 import * as cp from 'child_process';
-import { File } from 'decompress';
 import * as fse from 'fs-extra';
-import * as glob from 'glob';
 import * as gulp from 'gulp';
 import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
 import * as recursiveReadDir from 'recursive-readdir';
 import * as shelljs from 'shelljs';
-import { Stream } from 'stream';
 import { gulp_webpack } from 'vscode-azureextensiondev';
-import { langServerDotnetVersion, languageServerFolderName } from './src/constants';
+import { downloadAndUnzipVSCode, resolveCliPathFromVSCodeExecutablePath } from "vscode-test";
+import { DEFAULT_TESTCASE_TIMEOUT_MS, langServerDotnetVersion, languageServerFolderName } from './common';
 import { getTempFilePath } from './test/support/getTempFilePath';
-import { DEFAULT_TESTCASE_TIMEOUT_MS } from "./test/testConstants";
 
-// tslint:disable:no-require-imports
-import decompress = require('gulp-decompress');
-import download = require('gulp-download');
 import rimraf = require('rimraf');
-// tslint:enable:no-require-imports
 
 const filesAndFoldersToPackage: string[] = [
     // NOTE: License.txt and languageServer folder are handled separately so should not be in this list
@@ -83,13 +76,14 @@ interface IExpressionMetadata {
     }[];
 }
 
-function test(): cp.ChildProcess {
+async function test(): Promise<cp.ChildProcess> {
     env.DEBUGTELEMETRY = '0'; // 1=quiet; verbose=see telemetry in console; 0=send telemetry
     env.CODE_TESTS_PATH = path.join(__dirname, 'dist/test');
+    env.IS_RUNNING_TESTS = '1';
     // This is the timeout for individual tests
     env.MOCHA_timeout = String(DEFAULT_TESTCASE_TIMEOUT_MS);
     env.MOCHA_enableTimeouts = "1";
-    env.MOCHA_grep = '';
+    env.MOCHA_grep = "";
     env.DISABLE_SLOW_TESTS = "";
     env.ALWAYS_ECHO_TEST_LOG = "";
 
@@ -99,7 +93,29 @@ function test(): cp.ChildProcess {
     console.log("*******");
     console.log("");
 
-    return cp.spawn('node', ['./node_modules/vscode/bin/test'], { stdio: 'inherit', env });
+    const vscodeExecutablePath = await downloadAndUnzipVSCode();
+    const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
+
+    const extensionInstallArguments = [
+        "--install-extension",
+        "ms-dotnettools.vscode-dotnet-runtime",
+    ];
+
+    // Install .NET Install Tool as a dependency.
+    cp.spawnSync(cliPath, extensionInstallArguments, {
+        encoding: "utf-8",
+        stdio: "inherit",
+    });
+
+    return cp.spawn('node', ['./out/test/runTest.js'], { stdio: 'inherit', env });
+}
+
+async function postTest(): Promise<void> {
+    console.log("");
+    console.log("*******");
+    console.log("******* TESTS DONE");
+    console.log("*******");
+    console.log("");
 }
 
 function buildTLEGrammar(): void {
@@ -382,34 +398,9 @@ async function verifyTestsReferenceOnlyExtensionBundle(testFolder: string): Prom
     }
 }
 
-export function gulp_installDotNetExtension(): Promise<void> | Stream {
-    const extensionName = '.NET Install Tool for Extension Authors';
-    console.log(`Installing ${extensionName}`);
-    const version: string = '0.1.0';
-    const extensionPath: string = path.join(os.homedir(), `.vscode/extensions/ms-dotnettools.vscode-dotnet-runtime-${version}`);
-    console.log(extensionPath);
-    const existingExtensions: string[] = glob.sync(extensionPath.replace(version, '*'));
-    if (existingExtensions.length === 0) {
-        // tslint:disable-next-line:no-http-string
-        return download(`http://ms-vscode.gallery.vsassets.io/_apis/public/gallery/publisher/ms-dotnettools/extension/vscode-dotnet-runtime/${version}/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage`)
-            .pipe(decompress({
-                filter: (file: File): boolean => file.path.startsWith('extension/'),
-                map: (file: File): File => {
-                    file.path = file.path.slice(10);
-                    return file;
-                }
-            }))
-            .pipe(gulp.dest(extensionPath));
-    } else {
-        console.log(`${extensionName} already installed.`);
-        // We need to signal to gulp that we've completed this async task
-        return Promise.resolve();
-    }
-}
-
 exports['webpack-dev'] = gulp.series(() => gulp_webpack('development'), buildGrammars);
 exports['webpack-prod'] = gulp.series(() => gulp_webpack('production'), buildGrammars);
-exports.test = gulp.series(gulp_installDotNetExtension, test);
+exports.test = gulp.series(test, postTest);
 exports['build-grammars'] = buildGrammars;
 exports['watch-grammars'] = (): unknown => gulp.watch('grammars/**', buildGrammars);
 exports['get-language-server'] = getLanguageServer;

@@ -7,7 +7,7 @@ import * as fse from 'fs-extra';
 import * as path from 'path';
 import { commands, MessageItem, TextDocument, Uri, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, DialogResponses, IActionContext, IAzureQuickPickItem, UserCancelledError } from 'vscode-azureextensionui';
-import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes, globalStateKeys } from '../../constants';
+import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes, globalStateKeys } from '../../../common';
 import { ext } from '../../extensionVariables';
 import { normalizeFilePath } from '../../util/normalizedPaths';
 import { pathExistsNoThrow } from '../../util/pathExistsNoThrow';

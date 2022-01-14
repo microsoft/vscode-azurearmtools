@@ -28,3 +28,9 @@ steps:
       testResultsFiles: "test-results.xml"
       testRunTitle: "$(Agent.OS)"
     condition: succeededOrFailed()
+
+  - script: |
+      ls
+      cat logs/testlog.txt
+    displayName: "Dump test logs"
+    condition: succeededOrFailed()

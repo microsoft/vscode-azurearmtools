@@ -7,7 +7,7 @@ import * as os from 'os';
 import { callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { Message } from 'vscode-jsonrpc';
 import { CloseAction, ErrorAction, ErrorHandler } from 'vscode-languageclient';
-import { languageServerName } from '../constants';
+import { languageServerName } from '../../common';
 
 const languageServerErrorTelemId = 'Language Server Error';
 

@@ -8,9 +8,9 @@
 import * as path from 'path';
 import * as vscode from "vscode";
 import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, ITelemetryContext, parseError, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
+import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "../common";
 import { delay } from "../test/support/delay";
 import { writeToLog } from '../test/support/testLog';
-import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "./constants";
 import { DeploymentDocument, ResolvableCodeLens } from "./documents/DeploymentDocument";
 import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
 import { DeploymentParametersDoc } from "./documents/parameters/DeploymentParametersDoc";
@@ -97,7 +97,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
 
         ext.context = context;
         ext.ui = new AzureUserInput(context.globalState);
-        let outputChannel = createAzExtOutputChannel(outputChannelName, configPrefix); //asdfasdf
+        let outputChannel = createAzExtOutputChannel(outputChannelName, configPrefix);
         if (echoOutputChannelToConsole) {
             outputChannel = new ConsoleOutputChannelWrapper(outputChannel);
         }
@@ -131,7 +131,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     if (!ext.extensionStartupError) {
         ext.extensionStartupComplete = true;
     }
-    writeToLog(">>> activateInternal end", true);
+    writeToLog(">>>>>>>>>>>>>> activateInternal end", true);
 }
 
 function recordConfigValuesToTelemetry(actionContext: IActionContext): void {
@@ -1294,7 +1294,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
     /**
      * Log information about which resource types and apiVersions are being used
      */
-    private async logResourceUsage(deploymentTemplate: DeploymentTemplateDoc): Promise<void> { //asdf issue: test won't wait for this to fail or know if it fails
+    private async logResourceUsage(deploymentTemplate: DeploymentTemplateDoc): Promise<void> {
         await callWithTelemetryAndErrorHandling("schema.stats", async (actionContext: IActionContext): Promise<void> => {
             actionContext.errorHandling.suppressDisplay = true;
 

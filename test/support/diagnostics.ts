@@ -19,6 +19,7 @@ import * as path from 'path';
 import { Diagnostic, DiagnosticSeverity, Disposable, languages, Position, Range, TextDocument, Uri } from "vscode";
 import { parseError } from "vscode-azureextensionui";
 import { backendValidationDiagnosticsSource, diagnosticsCompletePrefix, expressionsDiagnosticsSource, ExpressionType, ext, LanguageServerState, languageServerStateSource, readUtf8FileWithBom } from "../../extension.bundle";
+import { bail } from "../global.test";
 import { DEFAULT_TESTCASE_TIMEOUT_MS, DISABLE_LANGUAGE_SERVER } from "../testConstants";
 import { delay } from "./delay";
 import { mapParameterFile } from "./mapParameterFile";
@@ -417,6 +418,7 @@ export async function getDiagnosticsForDocument(
             let done = false;
             timer = setTimeout(
                 () => {
+                    bail();
                     reject(
                         new Error('Timed out waiting for diagnostics. Last retrieved diagnostics: '
                             + (currentDiagnostics ? currentDiagnostics.map(d => d.message).join('\n') : "None")));

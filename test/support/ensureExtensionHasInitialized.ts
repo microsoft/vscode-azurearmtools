@@ -8,7 +8,7 @@ import { delayWhileSync, ext } from "../../extension.bundle";
 import { delay } from "./delay";
 import { writeToLog } from "./testLog";
 
-export async function ensureExtensionHasInitialized(totalTimeout: number): Promise<void> { //asdf move
+export async function ensureExtensionHasInitialized(totalTimeout: number): Promise<void> {
     async function ensureDotnetExtensionActivated(): Promise<void> {
         writeToLog(">>> Looking for dotnet extension ", true);
         let extensionDotnet: Extension<unknown> | undefined;
@@ -20,7 +20,6 @@ export async function ensureExtensionHasInitialized(totalTimeout: number): Promi
                 return !extensionDotnet;
             },
             5 * 60 * 1000);
-        writeToLog(">>> Activating dotnet extension ", true);
         // tslint:disable-next-line: no-non-null-assertion
         await extensionDotnet!.activate();
         writeToLog(">>> Dotnet extension activated", true);
@@ -66,7 +65,7 @@ export async function ensureExtensionHasInitialized(totalTimeout: number): Promi
     assert(extension, `Couldn't find extension ${ext.extensionId}`);
     await extension.activate();
 
-    writeToLog(">>> Ativation done", true);
+    writeToLog(">>> Activation done", true);
     const result2 = await waitForExtensionInitialization(totalTimeout / 2);
     if (!result2) {
         throw new Error("Timed out waiting for extension initialization to complete");
