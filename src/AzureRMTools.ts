@@ -131,7 +131,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     if (!ext.extensionStartupError) {
         ext.extensionStartupComplete = true;
     }
-    writeToLog(">>>>>>>>>>>>>> activateInternal end", true);
+    writeToLog(">>> activateInternal end", true);
 }
 
 function recordConfigValuesToTelemetry(actionContext: IActionContext): void {

@@ -61,8 +61,6 @@ export class AzureRMAssets {
     }
 
     private static getLocalAssetUri(assetFileName: string): string {
-        console.error(assetsPath);
-        console.error(path.join(assetsPath, assetFileName));
         return path.join(assetsPath, assetFileName);
     }
 

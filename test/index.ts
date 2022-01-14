@@ -44,8 +44,14 @@ function addEnvVarsToMochaOptions(options: Mocha.MochaOptions): void {
             if (typeof value === 'string' && !isNaN(parseInt(value))) {
                 value = parseInt(value);
             }
-            // tslint:disable-next-line: no-any
-            (<any>options)[option] = value;
+
+            if (envVar.toLowerCase() === 'mocha_grep' && typeof value === 'string') {
+                if (value !== '' && value[0] !== '/') {
+                    value = `/${value}/i`;
+                }
+            }
+
+            (<{ [key: string]: unknown }>options)[option] = value;
         }
     }
 }
