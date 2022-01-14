@@ -76,7 +76,7 @@ interface IExpressionMetadata {
     }[];
 }
 
-async function test(): Promise<cp.ChildProcess> {
+async function test(): Promise<void> {
     env.DEBUGTELEMETRY = '0'; // 1=quiet; verbose=see telemetry in console; 0=send telemetry
     env.CODE_TESTS_PATH = path.join(__dirname, 'dist/test');
     env.IS_RUNNING_TESTS = '1';
@@ -102,12 +102,18 @@ async function test(): Promise<cp.ChildProcess> {
     ];
 
     // Install .NET Install Tool as a dependency.
-    cp.spawnSync(cliPath, extensionInstallArguments, {
+    let result = cp.spawnSync(cliPath, extensionInstallArguments, {
         encoding: "utf-8",
         stdio: "inherit",
     });
+    if (result.status !== 0) {
+        throw new Error("Failed to install dotnet runtime extension");
+    }
 
-    return cp.spawn('node', ['./out/test/runTest.js'], { stdio: 'inherit', env });
+    result = cp.spawnSync('node', ['./out/test/runTest.js'], { encoding: "utf-8", stdio: 'inherit', env });
+    if (result.status !== 0) {
+        throw new Error("Tests failed");
+    }
 }
 
 function buildTLEGrammar(): void {

@@ -22,7 +22,7 @@ async function main(): Promise<void> {
         // Download VS Code, unzip it and run the integration test
         await runTests({ extensionDevelopmentPath, extensionTestsPath });
     } catch (err) {
-        console.error('Failed to run tests');
+        console.error('Tests failed');
         process.exit(1);
     }
 }
