@@ -200,7 +200,7 @@ suite("Contextualized snippets", () => {
     "outputs": {
         "output1": {
             "type": "string",
-            "value": "value"
+            "value": "vale"
         }
     }
 }`,
