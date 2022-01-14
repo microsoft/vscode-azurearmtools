@@ -9,6 +9,10 @@ import { deepClone, strings } from "../extension.bundle";
 
 suite("Utilities", () => {
     suite("clone(any)", () => {
+        test("failing synchronous test", () => {
+            assert.fail("whoops");
+        });
+
         test("With null", () => {
             // tslint:disable-next-line:no-any
             assert.deepEqual(null, deepClone(<any>null));
