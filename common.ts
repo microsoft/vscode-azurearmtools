@@ -3,17 +3,35 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+// NOTE: This is used by gulp and should avoid referencing code from ./src
+
+import { assert } from "console";
+import * as fs from "fs";
 import * as os from 'os';
 import * as path from 'path';
 
-export const isWebpack: boolean = /^(false|0)?$/i.test(process.env.AZCODE_ARM_IGNORE_BUNDLE ?? '');
+export const isWebpack: boolean = !!/^(false|0)?$/i.test(process.env.AZCODE_ARM_IGNORE_BUNDLE ?? '');
+console.log(`isWebpack: ${isWebpack}`);
 
 export const isWin32: boolean = os.platform() === 'win32';
 export const isCaseSensitiveFileSystem: boolean = !isWin32;
 
-export const basePath = path.join(__dirname, isWebpack ? "" : "..", "..");
-export const assetsPath = path.join(basePath, "assets");
+let base = __dirname;
+while (true) {
+    let test = path.join(base, "assets");
+    if (fs.existsSync(test)) {
+        base = test;
+        break;
+    }
+    base = path.dirname(base);
+    assert(base != '', "Could not find base project path");
+}
+export const assetsPath = base;
+export const basePath = path.join(assetsPath, "..");
 export const iconsPath = path.join(basePath, "icons");
+assert(fs.existsSync(assetsPath), "Assets path does not exist: " + assetsPath);
+
+export const DEFAULT_TESTCASE_TIMEOUT_MS = 5 * 60 * 1000;
 
 export namespace documentSchemes {
     export const file: string = 'file'; // Locally-saved files
@@ -100,6 +118,8 @@ export namespace globalStateKeys {
 // For testing: We create a diagnostic with this message during testing to indicate when all (expression) diagnostics have been calculated
 export const diagnosticsCompletePrefix = "Diagnostics complete: ";
 export const expressionsDiagnosticsCompletionMessage = diagnosticsCompletePrefix + expressionsDiagnosticsSource;
+
+export const isRunningTests: boolean = /^(true|1)$/i.test(process.env.IS_RUNNING_TESTS ?? '');
 
 export namespace templateKeys {
     // Top-level

@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
-import { templateKeys } from "../../constants";
+import { templateKeys } from "../../../common";
 import { INamedDefinition } from '../../language/INamedDefinition';
 import { Issue } from '../../language/Issue';
 import * as Json from "../../language/json/JSON";

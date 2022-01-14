@@ -2,8 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { templateKeys } from "../../common";
 import { TLE } from "../../extension.bundle";
-import { templateKeys } from "../constants";
 import { TemplateScope } from "../documents/templates/scopes/TemplateScope";
 import { UserFunctionDefinition } from "../documents/templates/UserFunctionDefinition";
 import { UserFunctionNamespaceDefinition } from "../documents/templates/UserFunctionNamespaceDefinition";

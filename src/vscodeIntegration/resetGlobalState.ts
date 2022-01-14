@@ -5,7 +5,7 @@
 
 import { commands, window } from "vscode";
 import { DialogResponses, IActionContext, UserCancelledError } from "vscode-azureextensionui";
-import { extensionName, globalStateKeys } from "../constants";
+import { extensionName, globalStateKeys } from "../../common";
 import { ext } from "../extensionVariables";
 
 export async function resetGlobalState(actionContext: IActionContext): Promise<void> {

@@ -3,7 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import * as os from 'os';
-import { templateKeys } from '../../constants';
+import { templateKeys } from '../../../common';
 import { assert } from '../../fixed_assert';
 import { DefinitionKind, INamedDefinition } from '../../language/INamedDefinition';
 import * as Json from "../../language/json/JSON";

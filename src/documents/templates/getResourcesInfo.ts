@@ -3,7 +3,7 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 // ---------------------------------------------------------------------------------------------
 
-import { templateKeys } from "../../constants";
+import { templateKeys } from "../../../common";
 import { assert } from "../../fixed_assert";
 import { getFriendlyExpressionFromTleExpression } from "../../language/expressions/friendlyExpressions";
 import * as TLE from "../../language/expressions/TLE";

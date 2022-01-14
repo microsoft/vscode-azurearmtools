@@ -7,7 +7,7 @@
 import * as path from "path";
 import { Uri } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
-import { documentSchemes } from "../../constants";
+import { documentSchemes } from "../../../common";
 import { ext } from '../../extensionVariables';
 import { assert } from "../../fixed_assert";
 import { Span } from '../../language/Span';

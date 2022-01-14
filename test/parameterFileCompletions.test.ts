@@ -8,9 +8,9 @@
 import * as assert from 'assert';
 import { isNullOrUndefined } from 'util';
 import { DeploymentTemplateDoc } from "../extension.bundle";
-import { newParamValueCompletionLabel } from './support/constants';
 import { IDeploymentParametersFile, IDeploymentTemplate } from "./support/diagnostics";
 import { parseParametersWithMarkers, parseTemplate } from "./support/parseTemplate";
+import { newParamValueCompletionLabel } from './testConstants';
 
 suite("Parameter file completions", () => {
 

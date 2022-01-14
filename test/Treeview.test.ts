@@ -7,6 +7,7 @@
 
 import * as assert from "assert";
 import * as fse from 'fs-extra';
+import { Context, Done } from "mocha";
 import * as path from "path";
 import * as vscode from "vscode";
 import { parseError } from "vscode-azureextensionui";
@@ -49,7 +50,7 @@ suite("TreeView", async (): Promise<void> => {
     suite("JsonOutlineProvider", async (): Promise<void> => {
         let provider: JsonOutlineProvider;
 
-        setup(function (this: Mocha.Context, done: Mocha.Done): void {
+        setup(function (this: Context, done: Done): void {
             this.timeout(15000);
 
             async function mySetup(): Promise<void> {
@@ -3751,7 +3752,7 @@ suite("TreeView", async (): Promise<void> => {
 });
 
 type ITestTreeItem = {
-    label?: string;
+    label?: string | vscode.TreeItemLabel;
     collapsibleState?: vscode.TreeItemCollapsibleState;
     icon?: string;
     children?: ITestTreeItem[];

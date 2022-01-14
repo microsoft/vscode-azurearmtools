@@ -10,7 +10,7 @@
 
 import * as path from 'path';
 import * as vscode from "vscode";
-import { armTemplateLanguageId, iconsPath, templateKeys } from "../constants";
+import { armTemplateLanguageId, iconsPath, templateKeys } from "../../common";
 import { getResourceInfo } from '../documents/templates/getResourcesInfo';
 import { getFriendlyExpressionFromJsonString } from '../language/expressions/friendlyExpressions';
 import * as Json from "../language/json/JSON";

@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { templateKeys } from "../../constants";
+import { templateKeys } from "../../../common";
 import * as Json from "../../language/json/JSON";
 import { Span } from "../../language/Span";
 import { CachedValue } from "../../util/CachedValue";

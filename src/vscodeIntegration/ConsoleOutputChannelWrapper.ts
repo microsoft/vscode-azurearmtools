@@ -3,8 +3,6 @@
 // Licensed under the MIT License. See License.md in the project root for license information.
 // ---------------------------------------------------------------------------------------------
 
-// tslint:disable: no-console
-
 import * as vscode from "vscode";
 import { IAzExtOutputChannel } from "vscode-azureextensionui";
 

@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 // tslint:disable:max-line-length
-import { templateKeys } from "../../constants";
+import { templateKeys } from "../../../common";
 import { ext } from "../../extensionVariables";
 import { assert } from '../../fixed_assert';
 import { AzureRMAssets, BuiltinFunctionMetadata } from "../../language/expressions/AzureRMAssets";

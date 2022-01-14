@@ -2,8 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { templateKeys } from '../../../../common';
 import { Json, strings } from '../../../../extension.bundle';
-import { templateKeys } from '../../../constants';
 import { assert } from '../../../fixed_assert';
 import * as TLE from "../../../language/expressions/TLE";
 import { CachedValue } from '../../../util/CachedValue';

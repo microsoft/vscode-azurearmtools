@@ -5,7 +5,7 @@
 import * as path from 'path';
 import { languages, Position, Range, TextDocument, workspace } from "vscode";
 import { IActionContext } from "vscode-azureextensionui";
-import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes } from "../../constants";
+import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes } from "../../../common";
 import { containsArmSchema, containsParametersSchema } from "./schemas";
 
 export const templateDocumentSelector = [
