@@ -41,7 +41,7 @@ const env = process.env;
 const preserveStagingFolder = !!env.ARMTOOLS_PRESERVE_STAGING_FOLDER;
 
 // Points to a local folder path to retrieve the language server from when packaging (for packaging private builds)
-// e.g. (MacOS): "export LANGUAGE_SERVER_PACKAGING_PATH=~/repos/ARM-LanguageServer/artifacts/bin/Microsoft.ArmLanguageServer/Debug/netcoreapp3.1"
+// e.g. (MacOS): "export LANGUAGE_SERVER_PACKAGING_PATH=~/repos/ARM-LanguageServer/artifacts/bin/Microsoft.ArmLanguageServer/Debug/net6.0"
 const languageServerPackagingPath = env.LANGUAGE_SERVER_PACKAGING_PATH;
 
 // Official builds will download and include the language server bits (which are licensed differently than the code in the public repo)
@@ -214,7 +214,7 @@ async function getLanguageServer(): Promise<void> {
             'install',
             languageServerNugetPackage,
             '-Version', languageServerVersion,
-            '-Framework', `netcoreapp${langServerDotnetVersion}`,
+            '-Framework', `net${langServerDotnetVersion}`,
             '-OutputDirectory', 'pkgs',
             //'-Verbosity', 'detailed',
             '-ExcludeVersion', // Keeps the package version from being included in the output folder name
@@ -234,7 +234,7 @@ async function getLanguageServer(): Promise<void> {
         rimraf.sync(languageServerFolderName);
 
         console.log(`Copying language server binaries to ${languageServerFolderName}`);
-        const langServerSourcePath = path.join(pkgsPath, languageServerNugetPackage, 'lib', `netcoreapp${langServerDotnetVersion}`);
+        const langServerSourcePath = path.join(pkgsPath, languageServerNugetPackage, 'lib', `net${langServerDotnetVersion}`);
         const licenseSourcePath = path.join(pkgsPath, languageServerNugetPackage, languageServerLicenseFileName);
 
         fse.mkdirpSync(destPath);
