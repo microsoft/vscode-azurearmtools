@@ -2,6 +2,13 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.15.6 (2022-02-11)
+
+### Fixed
+
+- Update schemas cache
+- Upgrade to .NET 6 to support Mac M1/Arm64
+
 ## Version 0.15.5 (2021-11-15)
 Due to technical issues originating with a recent change in Azure schemas, we haven't been able to update our schemas for a while. This release fixes that issue.
 
