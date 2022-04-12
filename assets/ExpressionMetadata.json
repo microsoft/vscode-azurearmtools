@@ -2,137 +2,137 @@
     "$schema": "./ExpressionMetadata.schema.json",
     "functionSignatures": [
         {
-            "description": "Returns the sum of the two provided integers.",
+            "name": "add",
             "expectedUsage": "add(operand1, operand2)",
-            "maximumArguments": 2,
+            "description": "Returns the sum of the two provided integers.",
             "minimumArguments": 2,
-            "name": "add"
+            "maximumArguments": 2
         },
         {
-            "description": "Checks whether all parameter values are true.",
+            "name": "and",
             "expectedUsage": "and(arg1, arg2, ...)",
-            "maximumArguments": null,
+            "description": "Checks whether all parameter values are true.",
             "minimumArguments": 2,
-            "name": "and"
+            "maximumArguments": null
         },
         {
-            "description": "Converts the value to an array.",
+            "name": "array",
             "expectedUsage": "array(convertToArray)",
-            "maximumArguments": 1,
+            "description": "Converts the value to an array.",
             "minimumArguments": 1,
-            "name": "array"
+            "maximumArguments": 1
         },
         {
-            "description": "Returns the base64 representation of the input string.",
+            "name": "base64",
             "expectedUsage": "base64(inputString)",
-            "maximumArguments": 1,
+            "description": "Returns the base64 representation of the input string.",
             "minimumArguments": 1,
-            "name": "base64"
+            "maximumArguments": 1
         },
         {
-            "description": "Converts a base64 representation to a JSON object.",
+            "name": "base64ToJson",
             "expectedUsage": "base64ToJson(base64Value)",
-            "maximumArguments": 1,
+            "description": "Converts a base64 representation to a JSON object.",
             "minimumArguments": 1,
-            "name": "base64ToJson"
+            "maximumArguments": 1
         },
         {
-            "description": "Converts a base64 representation to a string.",
+            "name": "base64ToString",
             "expectedUsage": "base64ToString(base64Value)",
-            "maximumArguments": 1,
+            "description": "Converts a base64 representation to a string.",
             "minimumArguments": 1,
-            "name": "base64ToString"
+            "maximumArguments": 1
         },
         {
-            "description": "Converts the parameter to a boolean.",
+            "name": "bool",
             "expectedUsage": "bool(arg1)",
-            "maximumArguments": 1,
+            "description": "Converts the parameter to a boolean.",
             "minimumArguments": 1,
-            "name": "bool"
+            "maximumArguments": 1
         },
         {
-            "description": "Returns first non-null value from the parameters. Empty strings, empty arrays, and empty objects are not null.",
+            "name": "coalesce",
             "expectedUsage": "coalesce(arg1, arg2, arg3, ...)",
-            "maximumArguments": null,
+            "description": "Returns first non-null value from the parameters. Empty strings, empty arrays, and empty objects are not null.",
             "minimumArguments": 1,
-            "name": "coalesce"
+            "maximumArguments": null
         },
         {
-            "description": "Combines multiple values and returns the concatenated result. This function can take any number of arguments, and can accept either strings or arrays for the parameters.",
+            "name": "concat",
             "expectedUsage": "concat(arg1, arg2, arg3, ...)",
-            "maximumArguments": null,
+            "description": "Combines multiple values and returns the concatenated result. This function can take any number of arguments, and can accept either strings or arrays for the parameters.",
             "minimumArguments": 0,
-            "name": "concat"
+            "maximumArguments": null
         },
         {
-            "description": "Checks whether an array contains a value, an object contains a key, or a string contains a substring.",
+            "name": "contains",
             "expectedUsage": "contains(container, itemToFind)",
-            "maximumArguments": 2,
+            "description": "Checks whether an array contains a value, an object contains a key, or a string contains a substring.",
             "minimumArguments": 2,
-            "name": "contains"
+            "maximumArguments": 2
         },
         {
-            "description": "Returns the current index of an iteration loop.\nThis function is always used with a copy object.",
+            "name": "copyIndex",
             "expectedUsage": "copyIndex([offset]) or copyIndex(loopName, [offset])",
-            "maximumArguments": 2,
+            "description": "Returns the current index of an iteration loop.\nThis function is always used with a copy object.",
             "minimumArguments": 0,
-            "name": "copyIndex"
+            "maximumArguments": 2
         },
         {
-            "description": "Creates an array from the parameters. If no parameters specified, creates an empty array.",
+            "name": "createArray",
             "expectedUsage": "createArray(arg1, arg2, arg3, ...)",
-            "maximumArguments": null,
+            "description": "Creates an array from the parameters. If no parameters specified, creates an empty array.",
             "minimumArguments": 0,
-            "name": "createArray"
+            "maximumArguments": null
         },
         {
-            "description": "Creates an object from the keys and values provided in the arguments.",
+            "name": "createObject",
             "expectedUsage": "createObject(key1, value1, key2, value2, ...)",
-            "maximumArguments": null,
+            "description": "Creates an object from the keys and values provided in the arguments.",
             "minimumArguments": 0,
-            "name": "createObject"
+            "maximumArguments": null
         },
         {
-            "description": "Converts a value to a data URI.",
+            "name": "dataUri",
             "expectedUsage": "dataUri(stringToConvert)",
-            "maximumArguments": 1,
+            "description": "Converts a value to a data URI.",
             "minimumArguments": 1,
-            "name": "dataUri"
+            "maximumArguments": 1
         },
         {
-            "description": "Converts a data URI formatted value to a string.",
+            "name": "dataUriToString",
             "expectedUsage": "dataUriToString(dataUriToConvert)",
-            "maximumArguments": 1,
+            "description": "Converts a data URI formatted value to a string.",
             "minimumArguments": 1,
-            "name": "dataUriToString"
+            "maximumArguments": 1
         },
         {
-            "description": "Adds a time duration to a base value. ISO 8601 format is expected.",
+            "name": "dateTimeAdd",
             "expectedUsage": "dateTimeAdd(base, duration, [format])",
-            "maximumArguments": 3,
+            "description": "Adds a time duration to a base value. ISO 8601 format is expected.",
             "minimumArguments": 2,
-            "name": "dateTimeAdd"
+            "maximumArguments": 3
         },
         {
-            "description": "Converts an epoch time integer value to an ISO8601 dateTime string value.",
+            "name": "dateTimeFromEpoch",
             "expectedUsage": "dateTimeFromEpoch(epochTime)",
-            "maximumArguments": 1,
+            "description": "Converts an epoch time integer value to an ISO8601 dateTime string value.",
             "minimumArguments": 1,
-            "name": "dateTimeFromEpoch"
+            "maximumArguments": 1
         },
         {
-            "description": "Converts an ISO8601 dateTime string to an epoch time integer value.",
+            "name": "dateTimeToEpoch",
             "expectedUsage": "dateTimeToEpoch(dateTime)",
-            "maximumArguments": 1,
+            "description": "Converts an ISO8601 dateTime string to an epoch time integer value.",
             "minimumArguments": 1,
-            "name": "dateTimeToEpoch"
+            "maximumArguments": 1
         },
         {
-            "description": "Returns information about the current deployment operation. This function returns the object that is passed during deployment. The properties in the returned object will differ based on whether the deployment object is passed as a link or as an in-line object.",
-            "expectedUsage": "deployment()",
-            "maximumArguments": 0,
-            "minimumArguments": 0,
             "name": "deployment",
+            "expectedUsage": "deployment()",
+            "description": "Returns information about the current deployment operation. This function returns the object that is passed during deployment. The properties in the returned object will differ based on whether the deployment object is passed as a link or as an in-line object.",
+            "minimumArguments": 0,
+            "maximumArguments": 0,
             "returnValueMembers": [
                 {
                     "name": "name"
@@ -146,32 +146,32 @@
             ]
         },
         {
-            "description": "Returns the integer division of the two provided integers.",
+            "name": "div",
             "expectedUsage": "div(operand1, operand2)",
-            "maximumArguments": 2,
+            "description": "Returns the integer division of the two provided integers.",
             "minimumArguments": 2,
-            "name": "div"
+            "maximumArguments": 2
         },
         {
-            "description": "Determines if an array, object, or string is empty.",
+            "name": "empty",
             "expectedUsage": "empty(itemToTest)",
-            "maximumArguments": 1,
+            "description": "Determines if an array, object, or string is empty.",
             "minimumArguments": 1,
-            "name": "empty"
+            "maximumArguments": 1
         },
         {
-            "description": "Determines whether a string ends with a value. The comparison is case-insensitive.",
+            "name": "endsWith",
             "expectedUsage": "endsWith(stringToSearch, stringToFind)",
-            "maximumArguments": 2,
+            "description": "Determines whether a string ends with a value. The comparison is case-insensitive.",
             "minimumArguments": 2,
-            "name": "endsWith"
+            "maximumArguments": 2
         },
         {
-            "description": "Returns information about the current cloud environment. The function returns an object that contains endpoints and other information specific to the cloud used for the deployment.  The properties in the returned object may differ based on the capabilities of the cloud.",
-            "expectedUsage": "environment()",
-            "maximumArguments": 0,
-            "minimumArguments": 0,
             "name": "environment",
+            "expectedUsage": "environment()",
+            "description": "Returns information about the current cloud environment. The function returns an object that contains endpoints and other information specific to the cloud used for the deployment.  The properties in the returned object may differ based on the capabilities of the cloud.",
+            "minimumArguments": 0,
+            "maximumArguments": 0,
             "returnValueMembers": [
                 {
                     "name": "name"
@@ -215,161 +215,161 @@
             ]
         },
         {
-            "description": "Checks whether two values equal each other.",
+            "name": "equals",
             "expectedUsage": "equals(arg1, arg2)",
-            "maximumArguments": 2,
+            "description": "Checks whether two values equal each other.",
             "minimumArguments": 2,
-            "name": "equals"
+            "maximumArguments": 2
         },
         {
+            "name": "extensionResourceId",
+            "expectedUsage": "extensionResourceId(resourceId, resourceType, resourceName1, [resourceName2]...)",
+            "description": "Returns the unique resource identifier of an extension resource. The resourceId parameter may be a resourceId of any scope or resourceId function. You use this function to create a resourceId for a given resource as required by a property value.",
+            "minimumArguments": 3,
+            "maximumArguments": null,
             "behaviors": [
                 "usesResourceIdCompletions"
-            ],
-            "description": "Returns the unique resource identifier of an extension resource. The resourceId parameter may be a resourceId of any scope or resourceId function. You use this function to create a resourceId for a given resource as required by a property value.",
-            "expectedUsage": "extensionResourceId(resourceId, resourceType, resourceName1, [resourceName2]...)",
-            "maximumArguments": null,
-            "minimumArguments": 3,
-            "name": "extensionResourceId"
+            ]
         },
         {
-            "description": "Returns a boolean value that is always false.",
+            "name": "false",
             "expectedUsage": "false()",
-            "maximumArguments": 0,
+            "description": "Returns a boolean value that is always false.",
             "minimumArguments": 0,
-            "name": "false"
+            "maximumArguments": 0
         },
         {
-            "description": "Returns the first element of the array, or first character of the string.",
+            "name": "first",
             "expectedUsage": "first(arg1)",
-            "maximumArguments": 1,
+            "description": "Returns the first element of the array, or first character of the string.",
             "minimumArguments": 1,
-            "name": "first"
+            "maximumArguments": 1
         },
         {
-            "description": "Converts the value to a floating point number. You only use this function when passing custom parameters to an application, such as a Logic App.",
+            "name": "float",
             "expectedUsage": "float(arg1)",
-            "maximumArguments": 1,
+            "description": "Converts the value to a floating point number. You only use this function when passing custom parameters to an application, such as a Logic App.",
             "minimumArguments": 1,
-            "name": "float"
+            "maximumArguments": 1
         },
         {
-            "description": "Creates a formatted string from input values. It uses the same formatting options as the System.String.Format method in .NET.",
+            "name": "format",
             "expectedUsage": "format(formatString, arg1, arg2, ...)",
-            "maximumArguments": null,
+            "description": "Creates a formatted string from input values. It uses the same formatting options as the System.String.Format method in .NET.",
             "minimumArguments": 1,
-            "name": "format"
+            "maximumArguments": null
         },
         {
-            "description": "Checks whether the first value is greater than the second value.",
+            "name": "greater",
             "expectedUsage": "greater(arg1, arg2)",
-            "maximumArguments": 2,
+            "description": "Checks whether the first value is greater than the second value.",
             "minimumArguments": 2,
-            "name": "greater"
+            "maximumArguments": 2
         },
         {
-            "description": "Checks whether the first value is greater than or equal to the second value.",
+            "name": "greaterOrEquals",
             "expectedUsage": "greaterOrEquals(arg1, arg2)",
-            "maximumArguments": 2,
+            "description": "Checks whether the first value is greater than or equal to the second value.",
             "minimumArguments": 2,
-            "name": "greaterOrEquals"
+            "maximumArguments": 2
         },
         {
-            "description": "This function is helpful when you need to create a value in the format of a globally unique identifier. You provide parameter values that limit the scope of uniqueness for the result. You can specify whether the name is unique down to subscription, resource group, or deployment. The returned value is not a random string, but rather the result of a hash function. The returned value is 36 characters long. It is not globally unique.",
+            "name": "guid",
             "expectedUsage": "guid(baseString, ...)",
-            "maximumArguments": null,
+            "description": "This function is helpful when you need to create a value in the format of a globally unique identifier. You provide parameter values that limit the scope of uniqueness for the result. You can specify whether the name is unique down to subscription, resource group, or deployment. The returned value is not a random string, but rather the result of a hash function. The returned value is 36 characters long. It is not globally unique.",
             "minimumArguments": 1,
-            "name": "guid"
+            "maximumArguments": null
         },
         {
-            "description": "Returns a value based on whether a condition is true or false.",
+            "name": "if",
             "expectedUsage": "if(condition, trueValue, falseValue)",
-            "maximumArguments": 3,
+            "description": "Returns a value based on whether a condition is true or false.",
             "minimumArguments": 3,
-            "name": "if"
+            "maximumArguments": 3
         },
         {
-            "description": "Returns the first position of a value within a string. The comparison is case-insensitive.",
+            "name": "indexOf",
             "expectedUsage": "indexOf(stringToSearch, stringToFind)",
-            "maximumArguments": 2,
+            "description": "Returns the first position of a value within a string. The comparison is case-insensitive.",
             "minimumArguments": 2,
-            "name": "indexOf"
+            "maximumArguments": 2
         },
         {
-            "description": "Converts the specified value to Integer.",
+            "name": "int",
             "expectedUsage": "int(valueToConvert)",
-            "maximumArguments": 1,
+            "description": "Converts the specified value to Integer.",
             "minimumArguments": 1,
-            "name": "int"
+            "maximumArguments": 1
         },
         {
-            "description": "Returns a single array or object with the common elements from the parameters.",
+            "name": "intersection",
             "expectedUsage": "intersection(arg1, arg2, arg3, ...)",
-            "maximumArguments": null,
+            "description": "Returns a single array or object with the common elements from the parameters.",
             "minimumArguments": 2,
-            "name": "intersection"
+            "maximumArguments": null
         },
         {
-            "description": "Returns an array of keys and values for an object. Elements are consistently ordered alphabetically by key.",
+            "name": "items",
             "expectedUsage": "items(obj)",
-            "maximumArguments": 1,
+            "description": "Returns an array of keys and values for an object. Elements are consistently ordered alphabetically by key.",
             "minimumArguments": 1,
-            "name": "items"
+            "maximumArguments": 1
         },
         {
-            "description": "Returns a JSON object from the specified string, or an empty object when null is specified ",
+            "name": "json",
             "expectedUsage": "json(arg1)",
-            "maximumArguments": 1,
+            "description": "Returns a JSON object from the specified string, or an empty object when null is specified ",
             "minimumArguments": 1,
-            "name": "json"
+            "maximumArguments": 1
         },
         {
-            "description": "Returns the last element of the array, or last character of the string.",
+            "name": "last",
             "expectedUsage": "last(arg1)",
-            "maximumArguments": 1,
+            "description": "Returns the last element of the array, or last character of the string.",
             "minimumArguments": 1,
-            "name": "last"
+            "maximumArguments": 1
         },
         {
-            "description": "Returns the last position of a value within a string. The comparison is case-insensitive.",
+            "name": "lastIndexOf",
             "expectedUsage": "lastIndexOf(stringToSearch, stringToFind)",
-            "maximumArguments": 2,
+            "description": "Returns the last position of a value within a string. The comparison is case-insensitive.",
             "minimumArguments": 2,
-            "name": "lastIndexOf"
+            "maximumArguments": 2
         },
         {
+            "name": "length",
+            "expectedUsage": "length(array\/string)",
             "description": "Returns the number of elements in an array or the number of characters in a string. You can use this function with an array to specify the number of iterations when creating resources.",
-            "expectedUsage": "length(array/string)",
-            "maximumArguments": 1,
             "minimumArguments": 1,
-            "name": "length"
+            "maximumArguments": 1
         },
         {
-            "description": "Checks whether the first value is less than the second value.",
+            "name": "less",
             "expectedUsage": "less(arg1, arg2)",
-            "maximumArguments": 2,
+            "description": "Checks whether the first value is less than the second value.",
             "minimumArguments": 2,
-            "name": "less"
+            "maximumArguments": 2
         },
         {
-            "description": "Checks whether the first value is less than or equal to the second value.",
+            "name": "lessOrEquals",
             "expectedUsage": "lessOrEquals(arg1, arg2)",
-            "maximumArguments": 2,
+            "description": "Checks whether the first value is less than or equal to the second value.",
             "minimumArguments": 2,
-            "name": "lessOrEquals"
+            "maximumArguments": 2
         },
         {
+            "name": "list",
+            "expectedUsage": "list(resourceName\/resourceIdentifier, apiVersion)",
             "description": "Performs a GET call to a REST API on the given resource. The function arguments and the returned data depend on the resource type. See https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/template-functions-resource#valid-uses.",
-            "expectedUsage": "list(resourceName/resourceIdentifier, apiVersion)",
-            "maximumArguments": null,
             "minimumArguments": 2,
-            "name": "list"
+            "maximumArguments": null
         },
         {
-            "description": "Creates and returns a SAS token with the specified permissions and expiry from the requestContent. The requestContent object must contain the signedServices, signedResourceTypes, signedPermission and signedExpiry properties.",
-            "expectedUsage": "listAccountSas(resourceName/resourceIdentifier, apiVersion, requestContent)",
-            "maximumArguments": 3,
-            "minimumArguments": 3,
             "name": "listAccountSas",
+            "expectedUsage": "listAccountSas(resourceName\/resourceIdentifier, apiVersion, requestContent)",
+            "description": "Creates and returns a SAS token with the specified permissions and expiry from the requestContent. The requestContent object must contain the signedServices, signedResourceTypes, signedPermission and signedExpiry properties.",
+            "minimumArguments": 3,
+            "maximumArguments": 3,
             "returnValueMembers": [
                 {
                     "name": "accountSasToken"
@@ -377,11 +377,11 @@
             ]
         },
         {
-            "description": "Gets the primary and secondary admin API keys for the specified Azure Search service. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primaryKey and secondaryKey.",
-            "expectedUsage": "listAdminKeys(resourceName/resourceIdentifier, apiVersion)",
-            "maximumArguments": 2,
-            "minimumArguments": 2,
             "name": "listAdminKeys",
+            "expectedUsage": "listAdminKeys(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Gets the primary and secondary admin API keys for the specified Azure Search service. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primaryKey and secondaryKey.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
             "returnValueMembers": [
                 {
                     "name": "primaryKey"
@@ -392,11 +392,11 @@
             ]
         },
         {
-            "description": "Retrieves the authentication keys for a DataFactory Integration Runtime. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the available authkeys.",
-            "expectedUsage": "listAuthKeys(resourceName/resourceIdentifier, apiVersion)",
-            "maximumArguments": 2,
-            "minimumArguments": 2,
             "name": "listAuthKeys",
+            "expectedUsage": "listAuthKeys(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Retrieves the authentication keys for a DataFactory Integration Runtime. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the available authkeys.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
             "returnValueMembers": [
                 {
                     "name": "authKey1"
@@ -407,11 +407,11 @@
             ]
         },
         {
-            "description": "Get callback URL for a trigger of a workflow version. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. See https://docs.microsoft.com/en-us/rest/api/logic/WorkflowVersions/ListCallbackUrl#workflowtriggercallbackurl for more information.",
-            "expectedUsage": "listCallbackUrl(resourceName/resourceIdentifier, apiVersion)",
-            "maximumArguments": 2,
-            "minimumArguments": 2,
             "name": "listCallbackUrl",
+            "expectedUsage": "listCallbackUrl(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Get callback URL for a trigger of a workflow version. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. See https://docs.microsoft.com/en-us/rest/api/logic/WorkflowVersions/ListCallbackUrl#workflowtriggercallbackurl for more information.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
             "returnValueMembers": [
                 {
                     "name": "value"
@@ -434,11 +434,11 @@
             ]
         },
         {
-            "description": "Lists a Channel registration for a Bot Service including secrets.  The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. Example: [listChannelWithKeys(resourceId('Microsoft.BotService/botServices/channels', parameters('botId'), 'DirectLineChannel'), '2018-07-12').properties.properties.sites[0].key]",
-            "expectedUsage": "listChannelWithKeys(resourceName/resourceIdentifier, apiVersion)",
-            "maximumArguments": 2,
-            "minimumArguments": 2,
             "name": "listChannelWithKeys",
+            "expectedUsage": "listChannelWithKeys(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Lists a Channel registration for a Bot Service including secrets.  The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. Example: [listChannelWithKeys(resourceId('Microsoft.BotService/botServices/channels', parameters('botId'), 'DirectLineChannel'), '2018-07-12').properties.properties.sites[0].key]",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
             "returnValueMembers": [
                 {
                     "name": "resource"
@@ -467,11 +467,11 @@
             ]
         },
         {
-            "description": "Gets cluster admin credential of a managed cluster. Returns an array of objects with a 'name' and 'value' property. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
-            "expectedUsage": "listClusterAdminCredential(resourceName/resourceIdentifier, apiVersion)",
-            "maximumArguments": 2,
-            "minimumArguments": 2,
             "name": "listClusterAdminCredential",
+            "expectedUsage": "listClusterAdminCredential(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Gets cluster admin credential of a managed cluster. Returns an array of objects with a 'name' and 'value' property. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
             "returnValueMembers": [
                 {
                     "name": "kubeconfigs"
@@ -479,11 +479,11 @@
             ]
         },
         {
-            "description": "Lists the connection strings for the specified Azure Cosmos DB database account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
-            "expectedUsage": "listConnectionStrings(resourceName/resourceIdentifier, apiVersion)",
-            "maximumArguments": 2,
-            "minimumArguments": 2,
             "name": "listConnectionStrings",
+            "expectedUsage": "listConnectionStrings(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Lists the connection strings for the specified Azure Cosmos DB database account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
             "returnValueMembers": [
                 {
                     "name": "connectionStrings"
@@ -491,11 +491,11 @@
             ]
         },
         {
-            "description": "Lists the login credentials for the specified container registry. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
-            "expectedUsage": "listCredentials(resourceName/resourceIdentifier, apiVersion)",
-            "maximumArguments": 2,
-            "minimumArguments": 2,
             "name": "listCredentials",
+            "expectedUsage": "listCredentials(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Lists the login credentials for the specified container registry. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
             "returnValueMembers": [
                 {
                     "name": "username"
@@ -506,11 +506,11 @@
             ]
         },
         {
-            "description": "Gets the accessProfile for the specified role for a managed cluster. The properties object contains a 'kubeConfig' property. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
-            "expectedUsage": "listCredential(resourceName/resourceIdentifier, apiVersion)",
-            "maximumArguments": 2,
-            "minimumArguments": 2,
             "name": "listCredential",
+            "expectedUsage": "listCredential(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Gets the accessProfile for the specified role for a managed cluster. The properties object contains a 'kubeConfig' property. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
             "returnValueMembers": [
                 {
                     "name": "properties"
@@ -518,57 +518,57 @@
             ]
         },
         {
-            "$comment": "There are more than 20 possible return members, depending on the RP that's being queried.  This causes incorrect Intellisense and false positives for validation (in VS), so turning this off by not specifying returnValueMembers at all. VSCode doesn't show the same validation errors, but intelisense still won't show correct values, and it's easier to keep vscode and vs in sync, so doing it there, too.",
+            "name": "listKeys",
+            "expectedUsage": "listKeys(resourceName\/resourceIdentifier, apiVersion)",
             "description": "Returns the keys of a storage account. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. You can use the function to get the primary (key[0]) and secondary key (key[1]).",
-            "expectedUsage": "listKeys(resourceName/resourceIdentifier, apiVersion)",
-            "maximumArguments": 2,
             "minimumArguments": 2,
-            "name": "listKeys"
+            "maximumArguments": 2,
+            "$comment": "There are more than 20 possible return members, depending on the RP that's being queried.  This causes incorrect Intellisense and false positives for validation (in VS), so turning this off by not specifying returnValueMembers at all. VSCode doesn't show the same validation errors, but intelisense still won't show correct values, and it's easier to keep vscode and vs in sync, so doing it there, too."
         },
         {
-            "description": "Returns a value from the App Config store with Key/Label specified in the request. The KeyLabelObject parameter is a JSON object with the two properties: \"key\" and \"label\" as required by the values in the store.",
-            "expectedUsage": "listKeyValue(resourceName/resourceIdentifier, apiVersion, KeyLabelObject)",
-            "maximumArguments": 3,
-            "minimumArguments": 3,
             "name": "listKeyValue",
-            "returnValueMembers": [
-                {
-                    "name": "value"
-                }
-            ]
-        },
-        {
-            "description": "Lists the virtual network gateway package. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
-            "expectedUsage": "listPackage(resourceName/resourceIdentifier, apiVersion)",
-            "maximumArguments": 2,
-            "minimumArguments": 2,
-            "name": "listPackage"
-        },
-        {
-            "description": "Returns the list of query API keys for the given Azure Search service. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. The function returns an object array with a 'name' and 'key' property for each member.",
-            "expectedUsage": "listQueryKeys(resourceName/resourceIdentifier, apiVersion)",
-            "maximumArguments": 2,
-            "minimumArguments": 2,
-            "name": "listQueryKeys",
-            "returnValueMembers": [
-                {
-                    "name": "value"
-                }
-            ]
-        },
-        {
-            "description": "List the secrets of a key vault. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
-            "expectedUsage": "listSecrets(resourceName/resourceIdentifier, apiVersion)",
-            "maximumArguments": 2,
-            "minimumArguments": 2,
-            "name": "listSecrets"
-        },
-        {
-            "description": "Creates and returns a SAS token for the specific resource with the specified permissions and expiry from the requestContent. The requestContent object must contain the signedServices, signedResourceTypes, signedPermission and signedExpiry properties.",
-            "expectedUsage": "listServiceSas(resourceName/resourceIdentifier, apiVersion, requestContent)",
-            "maximumArguments": 3,
+            "expectedUsage": "listKeyValue(resourceName\/resourceIdentifier, apiVersion, KeyLabelObject)",
+            "description": "Returns a value from the App Config store with Key/Label specified in the request. The KeyLabelObject parameter is a JSON object with the two properties: \"key\" and \"label\" as required by the values in the store.",
             "minimumArguments": 3,
+            "maximumArguments": 3,
+            "returnValueMembers": [
+                {
+                    "name": "value"
+                }
+            ]
+        },
+        {
+            "name": "listPackage",
+            "expectedUsage": "listPackage(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Lists the virtual network gateway package. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2
+        },
+        {
+            "name": "listQueryKeys",
+            "expectedUsage": "listQueryKeys(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Returns the list of query API keys for the given Azure Search service. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName. The function returns an object array with a 'name' and 'key' property for each member.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
+            "returnValueMembers": [
+                {
+                    "name": "value"
+                }
+            ]
+        },
+        {
+            "name": "listSecrets",
+            "expectedUsage": "listSecrets(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "List the secrets of a key vault. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2
+        },
+        {
             "name": "listServiceSas",
+            "expectedUsage": "listServiceSas(resourceName\/resourceIdentifier, apiVersion, requestContent)",
+            "description": "Creates and returns a SAS token for the specific resource with the specified permissions and expiry from the requestContent. The requestContent object must contain the signedServices, signedResourceTypes, signedPermission and signedExpiry properties.",
+            "minimumArguments": 3,
+            "maximumArguments": 3,
             "returnValueMembers": [
                 {
                     "name": "serviceSasToken"
@@ -576,11 +576,11 @@
             ]
         },
         {
-            "description": "Returns the status of a function trigger. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
-            "expectedUsage": "listSyncFunctionTriggerStatus(resourceName/resourceIdentifier, apiVersion)",
-            "maximumArguments": 2,
-            "minimumArguments": 2,
             "name": "listSyncFunctionTriggerStatus",
+            "expectedUsage": "listSyncFunctionTriggerStatus(resourceName\/resourceIdentifier, apiVersion)",
+            "description": "Returns the status of a function trigger. The resourceId can be specified by using the resourceId function or by using the format providerNamespace/resourceType/resourceName.",
+            "minimumArguments": 2,
+            "maximumArguments": 2,
             "returnValueMembers": [
                 {
                     "name": "status"
@@ -588,11 +588,11 @@
             ]
         },
         {
-            "description": "Returns a structured object that represents the current management group. This function is only valid in templates that are deployed at management group scope",
-            "expectedUsage": "managementGroup()",
-            "maximumArguments": 0,
-            "minimumArguments": 0,
             "name": "managementGroup",
+            "expectedUsage": "managementGroup()",
+            "description": "Returns a structured object that represents the current management group. This function is only valid in templates that are deployed at management group scope",
+            "minimumArguments": 0,
+            "maximumArguments": 0,
             "returnValueMembers": [
                 {
                     "name": "id"
@@ -609,116 +609,116 @@
             ]
         },
         {
-            "description": "Returns the maximum value from an array of integers or a comma-separated list of integers.",
+            "name": "max",
             "expectedUsage": "max(arg1, ...)",
-            "maximumArguments": null,
+            "description": "Returns the maximum value from an array of integers or a comma-separated list of integers.",
             "minimumArguments": 1,
-            "name": "max"
+            "maximumArguments": null
         },
         {
-            "description": "Returns the minimum value from an array of integers or a comma-separated list of integers.",
+            "name": "min",
             "expectedUsage": "min(arg1, ...)",
-            "maximumArguments": null,
+            "description": "Returns the minimum value from an array of integers or a comma-separated list of integers.",
             "minimumArguments": 1,
-            "name": "min"
+            "maximumArguments": null
         },
         {
-            "description": "Returns the remainder of the integer division using the two provided integers.",
+            "name": "mod",
             "expectedUsage": "mod(operand1, operand2)",
-            "maximumArguments": 2,
+            "description": "Returns the remainder of the integer division using the two provided integers.",
             "minimumArguments": 2,
-            "name": "mod"
+            "maximumArguments": 2
         },
         {
-            "description": "Returns the multiplication of the two provided integers.",
+            "name": "mul",
             "expectedUsage": "mul(operand1, operand2)",
-            "maximumArguments": 2,
+            "description": "Returns the multiplication of the two provided integers.",
             "minimumArguments": 2,
-            "name": "mul"
+            "maximumArguments": 2
         },
         {
-            "description": "Returns a globally unique identifier (GUID). This function may only be used as a defaultValue on a parameter.",
+            "name": "newGuid",
             "expectedUsage": "newGuid()",
-            "maximumArguments": 0,
+            "description": "Returns a globally unique identifier (GUID). This function may only be used as a defaultValue on a parameter.",
             "minimumArguments": 0,
-            "name": "newGuid"
+            "maximumArguments": 0
         },
         {
-            "description": "Converts boolean value to its opposite value.",
+            "name": "not",
             "expectedUsage": "not(arg1)",
-            "maximumArguments": 1,
+            "description": "Converts boolean value to its opposite value.",
             "minimumArguments": 1,
-            "name": "not"
+            "maximumArguments": 1
         },
         {
-            "description": "Returns a value that is always null, equivalent to json('null').",
+            "name": "null",
             "expectedUsage": "null()",
-            "maximumArguments": 0,
+            "description": "Returns a value that is always null, equivalent to json('null').",
             "minimumArguments": 0,
-            "name": "null"
+            "maximumArguments": 0
         },
         {
-            "description": "Checks whether any parameter value is true.",
+            "name": "or",
             "expectedUsage": "or(arg1, arg2, ...)",
-            "maximumArguments": null,
+            "description": "Checks whether any parameter value is true.",
             "minimumArguments": 2,
-            "name": "or"
+            "maximumArguments": null
         },
         {
-            "description": "Returns a right-aligned string by adding characters to the left until reaching the total specified length.",
+            "name": "padLeft",
             "expectedUsage": "padLeft(stringToPad, totalLength, paddingCharacter)",
-            "maximumArguments": 3,
+            "description": "Returns a right-aligned string by adding characters to the left until reaching the total specified length.",
             "minimumArguments": 3,
-            "name": "padLeft"
+            "maximumArguments": 3
         },
         {
-            "description": "Returns a parameter value. The specified parameter name must be defined in the parameters section of the template.",
+            "name": "parameters",
             "expectedUsage": "parameters(parameterName)",
-            "maximumArguments": 1,
+            "description": "Returns a parameter value. The specified parameter name must be defined in the parameters section of the template.",
             "minimumArguments": 1,
-            "name": "parameters"
+            "maximumArguments": 1
         },
         {
-            "description": "Determines whether a resource type supports zones for a region.",
+            "name": "pickZones",
             "expectedUsage": "pickZones(providerNamespace, resourceType, location, [numberOfZones], [offset])",
-            "maximumArguments": 5,
+            "description": "Determines whether a resource type supports zones for a region.",
             "minimumArguments": 3,
-            "name": "pickZones"
+            "maximumArguments": 5
         },
         {
-            "description": "The providers function has been deprecated. We no longer recommend using it. If you used this function to get an API version for the resource provider, we recommend that you provide a specific API version in your template. Using a dynamically returned API version can break your template if the properties change between versions.",
+            "name": "providers",
             "expectedUsage": "providers(providerNamespace, [resourceType])",
-            "maximumArguments": 2,
+            "description": "The providers function has been deprecated. We no longer recommend using it. If you used this function to get an API version for the resource provider, we recommend that you provide a specific API version in your template. Using a dynamically returned API version can break your template if the properties change between versions.",
             "minimumArguments": 1,
-            "name": "providers"
+            "maximumArguments": 2
         },
         {
-            "description": "Creates an array of integers from a starting integer and containing a number of items.",
+            "name": "range",
             "expectedUsage": "range(startingInteger, numberOfElements)",
-            "maximumArguments": 2,
+            "description": "Creates an array of integers from a starting integer and containing a number of items.",
             "minimumArguments": 2,
-            "name": "range"
+            "maximumArguments": 2
         },
         {
+            "name": "reference",
+            "expectedUsage": "reference(resourceName\/resourceIdentifier, [apiVersion], ['Full'])",
             "description": "Enables an expression to derive its value from another resource's runtime state.",
-            "expectedUsage": "reference(resourceName/resourceIdentifier, [apiVersion], ['Full'])",
-            "maximumArguments": 3,
             "minimumArguments": 1,
-            "name": "reference"
+            "maximumArguments": 3
         },
         {
-            "description": "Returns a new string with all instances of one character in the specified string replaced by another character.",
+            "name": "replace",
             "expectedUsage": "replace(originalString, oldCharacter, newCharacter)",
-            "maximumArguments": 3,
+            "description": "Returns a new string with all instances of one character in the specified string replaced by another character.",
             "minimumArguments": 3,
-            "name": "replace"
+            "maximumArguments": 3
         },
         {
-            "description": "Returns a structured object that represents the current resource group.",
-            "expectedUsage": "resourceGroup()",
-            "maximumArguments": 0,
-            "minimumArguments": 0,
             "name": "resourceGroup",
+            "expectedUsage": "resourceGroup()",
+            "description": "Returns a structured object that represents the current resource group.",
+            "minimumArguments": 0,
+            "maximumArguments": 0,
             "returnValueMembers": [
                 {
                     "name": "id"
@@ -738,56 +738,56 @@
             ]
         },
         {
+            "name": "resourceId",
+            "expectedUsage": "resourceId([subscriptionId], [resourceGroupName], resourceType, resourceName1, [resourceName2]...)",
+            "description": "Returns the unique resource identifier of a resource group scoped resource. You use this function to create a resourceId for a given resource as required by a property value.",
+            "minimumArguments": 2,
+            "maximumArguments": null,
             "behaviors": [
                 "usesResourceIdCompletions"
-            ],
-            "description": "Returns the unique resource identifier of a resource group scoped resource. You use this function to create a resourceId for a given resource as required by a property value.",
-            "expectedUsage": "resourceId([subscriptionId], [resourceGroupName], resourceType, resourceName1, [resourceName2]...)",
-            "maximumArguments": null,
-            "minimumArguments": 2,
-            "name": "resourceId"
+            ]
         },
         {
-            "description": "Returns an array or string with all of the elements or characters after the specified number in the array or string.",
+            "name": "skip",
             "expectedUsage": "skip(originalValue, numberToSkip)",
-            "maximumArguments": 2,
+            "description": "Returns an array or string with all of the elements or characters after the specified number in the array or string.",
             "minimumArguments": 2,
-            "name": "skip"
+            "maximumArguments": 2
         },
         {
-            "description": "Returns an array of strings that contains the substrings of the input string that are delimited by the sent delimiters.",
+            "name": "split",
             "expectedUsage": "split(inputString, delimiter)",
-            "maximumArguments": 2,
+            "description": "Returns an array of strings that contains the substrings of the input string that are delimited by the sent delimiters.",
             "minimumArguments": 2,
-            "name": "split"
+            "maximumArguments": 2
         },
         {
-            "description": "Determines whether a string starts with a value. The comparison is case-insensitive.",
+            "name": "startsWith",
             "expectedUsage": "startsWith(stringToSEarch, stringToFind)",
-            "maximumArguments": 2,
+            "description": "Determines whether a string starts with a value. The comparison is case-insensitive.",
             "minimumArguments": 2,
-            "name": "startsWith"
+            "maximumArguments": 2
         },
         {
-            "description": "Converts the specified value to String.",
+            "name": "string",
             "expectedUsage": "string(valueToConvert)",
-            "maximumArguments": 1,
+            "description": "Converts the specified value to String.",
             "minimumArguments": 1,
-            "name": "string"
+            "maximumArguments": 1
         },
         {
-            "description": "Returns the subtraction of the two provided integers.",
+            "name": "sub",
             "expectedUsage": "sub(operand1, operand2)",
-            "maximumArguments": 2,
+            "description": "Returns the subtraction of the two provided integers.",
             "minimumArguments": 2,
-            "name": "sub"
+            "maximumArguments": 2
         },
         {
-            "description": "Returns details about the subscription.",
-            "expectedUsage": "subscription()",
-            "maximumArguments": 0,
-            "minimumArguments": 0,
             "name": "subscription",
+            "expectedUsage": "subscription()",
+            "description": "Returns details about the subscription.",
+            "minimumArguments": 0,
+            "maximumArguments": 0,
             "returnValueMembers": [
                 {
                     "name": "displayName"
@@ -804,35 +804,35 @@
             ]
         },
         {
+            "name": "subscriptionResourceId",
+            "expectedUsage": "subscriptionResourceId([subscriptionId], resourceType, resourceName1, [resourceName2]...)",
+            "description": "Returns the unique resource identifier of a subscription scoped resource. You use this function to create a resourceId for a given resource as required by a property value.",
+            "minimumArguments": 2,
+            "maximumArguments": null,
             "behaviors": [
                 "usesResourceIdCompletions"
-            ],
-            "description": "Returns the unique resource identifier of a subscription scoped resource. You use this function to create a resourceId for a given resource as required by a property value.",
-            "expectedUsage": "subscriptionResourceId([subscriptionId], resourceType, resourceName1, [resourceName2]...)",
-            "maximumArguments": null,
-            "minimumArguments": 2,
-            "name": "subscriptionResourceId"
+            ]
         },
         {
-            "description": "Returns a substring that starts at the specified character position and contains the specified number of characters.",
+            "name": "substring",
             "expectedUsage": "substring(stringToParse, startIndex, length)",
-            "maximumArguments": 3,
+            "description": "Returns a substring that starts at the specified character position and contains the specified number of characters.",
             "minimumArguments": 1,
-            "name": "substring"
+            "maximumArguments": 3
         },
         {
-            "description": "Returns an array or string with the specified number of elements or characters from the start of the array or string.",
+            "name": "take",
             "expectedUsage": "take(originalValue, numberToTake)",
-            "maximumArguments": 2,
+            "description": "Returns an array or string with the specified number of elements or characters from the start of the array or string.",
             "minimumArguments": 2,
-            "name": "take"
+            "maximumArguments": 2
         },
         {
-            "description": "Returns a structured object that represents the current tenant.",
-            "expectedUsage": "tenant()",
-            "maximumArguments": 0,
-            "minimumArguments": 0,
             "name": "tenant",
+            "expectedUsage": "tenant()",
+            "description": "Returns a structured object that represents the current tenant.",
+            "minimumArguments": 0,
+            "maximumArguments": 0,
             "returnValueMembers": [
                 {
                     "name": "country"
@@ -849,91 +849,91 @@
             ]
         },
         {
+            "name": "tenantResourceId",
+            "expectedUsage": "tenantResourceId(resourceType, resourceName1, [resourceName2]...)",
+            "description": "Returns the unique resource identifier of a tenant scoped resource. You use this function to create a resourceId for a given resource as required by a property value.",
+            "minimumArguments": 2,
+            "maximumArguments": null,
             "behaviors": [
                 "usesResourceIdCompletions"
-            ],
-            "description": "Returns the unique resource identifier of a tenant scoped resource. You use this function to create a resourceId for a given resource as required by a property value.",
-            "expectedUsage": "tenantResourceId(resourceType, resourceName1, [resourceName2]...)",
-            "maximumArguments": null,
-            "minimumArguments": 2,
-            "name": "tenantResourceId"
+            ]
         },
         {
-            "description": "Converts the specified string to lower case.",
+            "name": "toLower",
             "expectedUsage": "toLower(string)",
-            "maximumArguments": 1,
+            "description": "Converts the specified string to lower case.",
             "minimumArguments": 1,
-            "name": "toLower"
+            "maximumArguments": 1
         },
         {
-            "description": "Converts the specified string to upper case.",
+            "name": "toUpper",
             "expectedUsage": "toUpper(string)",
-            "maximumArguments": 1,
+            "description": "Converts the specified string to upper case.",
             "minimumArguments": 1,
-            "name": "toUpper"
+            "maximumArguments": 1
         },
         {
-            "description": "Removes all leading and trailing white-space characters from the specified string.",
+            "name": "trim",
             "expectedUsage": "trim(stringToTrim)",
-            "maximumArguments": 1,
+            "description": "Removes all leading and trailing white-space characters from the specified string.",
             "minimumArguments": 1,
-            "name": "trim"
+            "maximumArguments": 1
         },
         {
-            "description": "Returns a boolean value that is always true.",
+            "name": "true",
             "expectedUsage": "true()",
-            "maximumArguments": 0,
+            "description": "Returns a boolean value that is always true.",
             "minimumArguments": 0,
-            "name": "true"
+            "maximumArguments": 0
         },
         {
-            "description": "Returns a single array or object with all elements from the parameters. Duplicate values or keys are only included once.",
+            "name": "union",
             "expectedUsage": "union(arg1, arg2, arg3, ...)",
-            "maximumArguments": null,
+            "description": "Returns a single array or object with all elements from the parameters. Duplicate values or keys are only included once.",
             "minimumArguments": 2,
-            "name": "union"
+            "maximumArguments": null
         },
         {
-            "description": "Creates a deterministic hash string based on the values provided as parameters.\n### Remarks\nThis function is helpful when you need to create a unique name for a resource. You provide parameter values that represent the level of uniqueness for the result. You can specify whether the name is unique for your subscription, resource group, or deployment.\nThe returned value isn't a random string, but rather the result of a hash function. The returned value is 13 characters long. It isn't globally unique. You may want to combine the value with a prefix from your naming convention to create a name that is meaningful.\n### Example\n`[concat('storage', uniqueString(resourceGroup().id))]`",
+            "name": "uniqueString",
             "expectedUsage": "uniqueString(baseString, ...)",
-            "maximumArguments": null,
+            "description": "Creates a deterministic hash string based on the values provided as parameters.\n### Remarks\nThis function is helpful when you need to create a unique name for a resource. You provide parameter values that represent the level of uniqueness for the result. You can specify whether the name is unique for your subscription, resource group, or deployment.\nThe returned value isn't a random string, but rather the result of a hash function. The returned value is 13 characters long. It isn't globally unique. You may want to combine the value with a prefix from your naming convention to create a name that is meaningful.\n### Example\n`[concat('storage', uniqueString(resourceGroup().id))]`",
             "minimumArguments": 1,
-            "name": "uniqueString"
+            "maximumArguments": null
         },
         {
-            "description": "Creates an absolute URI by combining the baseUri and the relativeUri string.",
+            "name": "uri",
             "expectedUsage": "uri(baseUri, relativeUri)",
-            "maximumArguments": 2,
+            "description": "Creates an absolute URI by combining the baseUri and the relativeUri string.",
             "minimumArguments": 2,
-            "name": "uri"
+            "maximumArguments": 2
         },
         {
-            "description": "Encodes a URI.",
+            "name": "uriComponent",
             "expectedUsage": "uriComponent(stringToEncode)",
-            "maximumArguments": 1,
+            "description": "Encodes a URI.",
             "minimumArguments": 1,
-            "name": "uriComponent"
+            "maximumArguments": 1
         },
         {
-            "description": "Returns a string of a URI encoded value.",
+            "name": "uriComponentToString",
             "expectedUsage": "uriComponentToString(uriEncodedString)",
-            "maximumArguments": 1,
+            "description": "Returns a string of a URI encoded value.",
             "minimumArguments": 1,
-            "name": "uriComponentToString"
+            "maximumArguments": 1
         },
         {
-            "description": "Returns the current (UTC) datetime value in the format provided. If no format is provided the ISO 8601 (yyyyMMddTHH:mm:ssZ) format will be used. This function may only be used as a defaultValue on a parameter.",
+            "name": "utcNow",
             "expectedUsage": "utcNow([format])",
-            "maximumArguments": 1,
+            "description": "Returns the current (UTC) datetime value in the format provided. If no format is provided the ISO 8601 (yyyyMMddTHH:mm:ssZ) format will be used. This function may only be used as a defaultValue on a parameter.",
             "minimumArguments": 0,
-            "name": "utcNow"
+            "maximumArguments": 1
         },
         {
-            "description": "Returns the value of variable. The specified variable name must be defined in the variables section of the template.",
+            "name": "variables",
             "expectedUsage": "variables(variableName)",
-            "maximumArguments": 1,
+            "description": "Returns the value of variable. The specified variable name must be defined in the variables section of the template.",
             "minimumArguments": 1,
-            "name": "variables"
+            "maximumArguments": 1
         }
     ]
 }
