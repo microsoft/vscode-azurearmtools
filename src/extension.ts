@@ -199,7 +199,11 @@ export class AzureRMToolsExtension implements IProvideOpenedDocuments {
 
         const jsonOutline: JsonOutlineProvider = new JsonOutlineProvider(context);
         ext.jsonOutlineProvider = jsonOutline;
-        context.subscriptions.push(vscode.window.registerTreeDataProvider("azurerm-vscode-tools.template-outline", jsonOutline));
+        context.subscriptions.push(vscode.window.createTreeView(
+            "azurerm-vscode-tools.template-outline", {
+            treeDataProvider: jsonOutline,
+            showCollapseAll: true,
+        }));
         context.subscriptions.push(this.getRegisteredRenameCodeActionProvider());
         // For telemetry
         registerCommand("azurerm-vscode-tools.completion-activated", (actionContext: IActionContext, args: object) => {
