@@ -657,7 +657,7 @@
     },
     "dependencies": {
         "fs-extra": "^10.1.0",
-        "glob": "^7.2.0",
+        "glob": "^8.0.1",
         "glob-promise": "^4.2.2",
         "moment": "^2.29.3",
         "nuget": "^2.0.2",
