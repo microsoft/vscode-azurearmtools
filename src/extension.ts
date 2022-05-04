@@ -118,7 +118,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
 
             recordConfigValuesToTelemetry(actionContext);
 
-            context.subscriptions.push(new AzureRMTools(context));
+            context.subscriptions.push(new AzureRMToolsExtension(context));
         });
 
     } catch (err) {
@@ -158,7 +158,7 @@ export function deactivateInternal(): void {
     // Nothing to do
 }
 
-export class AzureRMTools implements IProvideOpenedDocuments {
+export class AzureRMToolsExtension implements IProvideOpenedDocuments {
     private readonly _diagnosticsCollection: vscode.DiagnosticCollection;
     // Key is normalized URI
     private readonly _deploymentDocuments: Map<string, DeploymentDocument> = new Map<string, DeploymentDocument>();
@@ -1286,8 +1286,8 @@ export class AzureRMTools implements IProvideOpenedDocuments {
                     incorrectArgCounts.add(encodedName);
                 }
             }
-            properties.unrecognized = AzureRMTools.convertSetToJson(unrecognized);
-            properties.incorrectArgs = AzureRMTools.convertSetToJson(incorrectArgCounts);
+            properties.unrecognized = AzureRMToolsExtension.convertSetToJson(unrecognized);
+            properties.incorrectArgs = AzureRMToolsExtension.convertSetToJson(incorrectArgCounts);
         });
     }
 
@@ -1369,7 +1369,7 @@ export class AzureRMTools implements IProvideOpenedDocuments {
             private _parameterValuesSource: CachedPromise<IParameterValuesSource> = new CachedPromise<IParameterValuesSource>();
 
             public constructor(
-                private readonly parent: AzureRMTools,
+                private readonly parent: AzureRMToolsExtension,
                 public readonly parameterFileUri: vscode.Uri) {
             }
 
