@@ -15,7 +15,7 @@ export async function typeInDocumentAndWait(editor: TextEditor, text: string): P
             // Not using the 'type' command because:
             //  1) Seems to be not 100% consistent
             //  2) It causes vscode to call provideCompletionItems, which causes interaction with
-            //      the triggerSuggest behavior in AzureRMTools.ts
+            //      the triggerSuggest behavior in extension.ts
 
             const initialPosition = editor.selection.anchor;
             let setPosition = initialPosition.translate(0, text.length);
