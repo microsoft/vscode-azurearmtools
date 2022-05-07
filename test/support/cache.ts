@@ -3,6 +3,8 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+// tslint:disable: no-implicit-dependencies
+
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';

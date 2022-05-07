@@ -3,6 +3,8 @@
  *  Licensed under the MIT License. See LICENSE.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+// tslint:disable:no-console no-function-expression no-implicit-dependencies
+
 import * as fse from 'fs-extra';
 import * as mocha from 'mocha';
 import * as path from 'path';
@@ -18,8 +20,6 @@ import { alwaysEchoTestLog, deleteTestLog, getTestLogContents, setTestLogOutputF
 import { useTestSnippets } from './support/TestSnippets';
 import { logsFolder } from './testConstants';
 import { useTestFunctionMetadata } from "./TestData";
-
-// tslint:disable:no-console no-function-expression
 
 let previousSettings = {
     autoDetectJsonTemplates: <boolean | undefined>undefined,
