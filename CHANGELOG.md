@@ -6,7 +6,7 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 
 ### Fixed
 
-- Update schemas cache
+- Update schemas cache (fixes part of [Warning about apiVersion (ot yet added in 2019-04-01/deploymentTemplate.json](https://github.com/Azure/azure-resource-manager-schemas/issues/1785)
 - Update dependencies
 
 ### Added
