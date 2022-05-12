@@ -2,6 +2,18 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.15.7 (2022-05-11)
+
+### Fixed
+
+- Update schemas cache (fixes part of [Warning about apiVersion (ot yet added in 2019-04-01/deploymentTemplate.json](https://github.com/Azure/azure-resource-manager-schemas/issues/1785)
+- Update dependencies
+
+### Added
+
+- New ARM functions: dateTimeFromEpoch, dateTimeToEpoch [#1462](https://github.com/microsoft/vscode-azurearmtools/pull/1462)
+- Add Collapse All to JSON Outline [#1472](https://github.com/microsoft/vscode-azurearmtools/issues/1472)
+
 ## Version 0.15.6 (2022-02-11)
 
 ### Fixed
@@ -10,27 +22,28 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 - Upgrade to .NET 6 to support Mac M1/Arm64
 
 ## Version 0.15.5 (2021-11-15)
+
 Due to technical issues originating with a recent change in Azure schemas, we haven't been able to update our schemas for a while. This release fixes that issue.
 
 ### Added
 
--  Service bus and blob container snippets [#1379](https://github.com/microsoft/vscode-azurearmtools/issues/1379)
--  Add definitions for `items()`, `tenant()` and `managementGroup()` functions [#1397](https://github.com/microsoft/vscode-azurearmtools/issues/1397)
-
+- Service bus and blob container snippets [#1379](https://github.com/microsoft/vscode-azurearmtools/issues/1379)
+- Add definitions for `items()`, `tenant()` and `managementGroup()` functions [#1397](https://github.com/microsoft/vscode-azurearmtools/issues/1397)
 
 ### Fixed
+
 - Add support to pick up schemas again (due to breaking change in schemas) [#1324](https://github.com/microsoft/vscode-azurearmtools/issues/1324)
 - Microsoft.Web/sites out of date [#1396](https://github.com/microsoft/vscode-azurearmtools/issues/1396)
 - Microsoft.Authorization/policyAssignments latest API unavailable. [#1384](https://github.com/microsoft/vscode-azurearmtools/issues/1384)
 - Microsoft.Authorization/roleAssignments is unrecognized [#1366](https://github.com/microsoft/vscode-azurearmtools/issues/1366)
 - Microsoft.Web/hostingEnvironments most apiVersions not recognized [#1344](https://github.com/microsoft/vscode-azurearmtools/issues/1344)
 
-
 ## Version 0.15.4 (2021-10-07)
 
 ### Fixed
 
 - Using scaffolding snippets in empty JSON file should not require CTRL+SPACE [#1390](https://github.com/microsoft/vscode-azurearmtools/issues/1390)
+
 ## Version 0.15.3 (2021-09-27)
 
 ### Added
@@ -63,6 +76,7 @@ Due to technical issues originating with a recent change in Azure schemas, we ha
 ### Fixed
 
 - Correct minor typo for `deprecrated` (thanks Jack Blower @ElvenSpellmaker!) [#1301](https://github.com/microsoft/vscode-azurearmtools/issues/1301)
+
 ## Version 0.15.1
 
 ### Added
@@ -77,6 +91,7 @@ Due to technical issues originating with a recent change in Azure schemas, we ha
 - Clicking F12 while on a parameter definition should show all refs but instead says "no definition found" [#1267](https://github.com/microsoft/vscode-azurearmtools/issues/1267)
 
 ### Maintenance
+
 - Telemetry to better understand which resource types and apiVersions do not have schemas [#1250](https://github.com/microsoft/vscode-azurearmtools/issues/1250)
 - Retrieve list of valid schemas and apiVersions from the language server for future features [#1258](https://github.com/microsoft/vscode-azurearmtools/issues/1258)
 
@@ -102,14 +117,15 @@ Due to technical issues originating with a recent change in Azure schemas, we ha
 - Schemas updated
 
 ### Fixed
-  - Clearer notification when the extension is starting up and loading schemas [#463](https://github.com/microsoft/vscode-azurearmtools/issues/463)
-  - Intellisense for AutoScaleSettings recommends "statistics" when it should be "statistic" [#1141](https://github.com/microsoft/vscode-azurearmtools/issues/1141)
-  - Incorrect validation errors in user-defined functions when using recently added builtin functions (createObject etc.) [#1153](https://github.com/microsoft/vscode-azurearmtools/issues/1153)
 
+- Clearer notification when the extension is starting up and loading schemas [#463](https://github.com/microsoft/vscode-azurearmtools/issues/463)
+- Intellisense for AutoScaleSettings recommends "statistics" when it should be "statistic" [#1141](https://github.com/microsoft/vscode-azurearmtools/issues/1141)
+- Incorrect validation errors in user-defined functions when using recently added builtin functions (createObject etc.) [#1153](https://github.com/microsoft/vscode-azurearmtools/issues/1153)
 
 ## Version 0.14.1 (2021-02-05)
 
 ### Fixed
+
 - Give warning if the wrong schema might be wrong for the deployment resources being used [#1055](https://github.com/microsoft/vscode-azurearmtools/issues/1055)
 - Add support for pickZones() function (thanks Brian Golden @bgold09!) [#1130](https://github.com/microsoft/vscode-azurearmtools/issues/1130)
 - Add mention of ARM Viewer to README [#1140](https://github.com/microsoft/vscode-azurearmtools/issues/1140)
@@ -145,7 +161,7 @@ Due to technical issues originating with a recent change in Azure schemas, we ha
     - Completions cause entire current word to be deleted [#903](https://github.com/microsoft/vscode-azurearmtools/issues/903)
     - Tab completion of params/vars wipes out remainder of string [#349](https://github.com/microsoft/vscode-azurearmtools/issues/349)
     - Sparse filtering does not work for our expression Intellisense [#572](https://github.com/microsoft/vscode-azurearmtools/issues/572)
--  Child/parent code lenses for resources
+- Child/parent code lenses for resources
 
 ### Changed
 
@@ -235,13 +251,14 @@ Due to technical issues originating with a recent change in Azure schemas, we ha
 ### Added
 
 - Improved parameter file support:
+
   - Completions for missing and new parameter values (type double quote or CTRL+SPACE)
   - Quick fix and code actions for adding missing parameter values
   - Rename parameters across template and parameter file
   - Go To Definition and Find References for parameters across both files
 
 - Insert item... (variables, parameters, resources, functions, outputs) **implemented by Nils Hedström @nilshedstrom, thanks!**
-Look for this in the editor context menu or the ARM Template Outline view!
+  Look for this in the editor context menu or the ARM Template Outline view!
 - Completions for resourceId arguments based on resources found inside the template
 - New `Application Gateway` and `Application Gateway and Firewall` snippets (thanks Emmanuel Auffray @ManuInNZ!)
 
@@ -285,14 +302,14 @@ Look for this in the editor context menu or the ARM Template Outline view!
 ### Added
 
 - First round of support for parameter files
-  * Specify a parameter file to associate with a template file
-  * Parameter file will be used to enable additional validation
-  * Create new parameter file from parameters within the template
+  - Specify a parameter file to associate with a template file
+  - Parameter file will be used to enable additional validation
+  - Create new parameter file from parameters within the template
 - Support filtering for child resource type name and apiVersion values
 - Template sorting (**implemented by Nils Hedström @nilshedstrom, thanks!**)
 - Snippet improvements
-  * apiVersions updated
-  * various fixes and standardization
+  - apiVersions updated
+  - various fixes and standardization
 - Added more resource type icons for ARM TEMPLATE OUTLINE view (thanks Nils Hedström @nilshedstrom!) [#253](https://github.com/microsoft/vscode-azurearmtools/issues/253)
 - Support for schema auto-completion inside nested templates
 
