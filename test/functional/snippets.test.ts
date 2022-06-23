@@ -229,11 +229,11 @@ const overrideExpectedDiagnostics: { [name: string]: (string | RegExp)[] } = {
     ],
     "Cosmos DB Mongo Database": [
         // TODO: fix snippet
-        "Template validation failed: The template resource 'account-name/mongodb/database-name/collectionName' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '4' and column '66' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+        "Template validation failed: The template resource 'account-name/mongodb/database-name/collectionName' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '4' and column '{COL}' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "DNS Record": [
         // TODO: fix snippet
-        "Template validation failed: The template resource 'dnsRecord1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '42' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+        "Template validation failed: The template resource 'dnsRecord1' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '{COL}' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "KeyVault": [
         // Expected (by design)
@@ -245,10 +245,12 @@ const overrideExpectedDiagnostics: { [name: string]: (string | RegExp)[] } = {
         "Value must match the regular expression ^[a-zA-Z0-9-]{1,127}$"
     ],
     "Network Security Group Rule": [
-        "Template validation failed: The template resource 'networkSecurityGroupRuleName' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '67' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+        // TODO: fix snippet
+        "Template validation failed: The template resource 'networkSecurityGroupRuleName' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '{COL}' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "Route Table Route": [
-        "Template validation failed: The template resource 'route-name' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '50' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
+        // TODO: fix snippet
+        "Template validation failed: The template resource 'route-name' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '{COL}' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
     "Windows VM Custom Script": [
         // Blocked by https://github.com/Azure/azure-resource-manager-schemas/issues/995
@@ -376,6 +378,10 @@ suite("Snippets functional tests", () => {
         fse.writeFileSync(outputPath, docTextAfterInsertion);
 
         validateDocumentWithSnippet();
+
+        // Massage diagnostics
+        // The column in some of the error messages points to the end of the resource type string, and considers tabs to be one space, so it's not very accurate and can be affected by tabs/formatting, so remove it
+        messages = messages.map(m => m.replace(/and column '[0-9]+' has incorrect segment lengths/, "and column '{COL}' has incorrect segment lengths"));
 
         // Compare diagnostics
         assertEx.arraysEqual(messages, expectedDiagnostics, {}, "Diagnostics mismatch");
