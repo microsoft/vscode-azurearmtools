@@ -1,0 +1,18 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "metadata": {
+        "prefix": "arm-automanage-best-practices-prod-assignment",
+        "description": "Create a Best Practices Production Configuration Profile Assignment"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachines/providers/configurationProfileAssignments",
+            "apiVersion": "2022-05-04",
+            "name": "[concat('${1:vmName}', '/Microsoft.Automanage/default')]",
+            "properties": {
+                "configurationProfile": "/providers/Microsoft.Automanage/bestPractices/AzureBestPracticesProduction"
+            }
+        }
+    ]
+}
