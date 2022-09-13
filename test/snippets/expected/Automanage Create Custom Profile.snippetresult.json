@@ -1,0 +1,60 @@
+{
+	"resources": [
+		{
+			"name": "automanage",
+			"type": "Microsoft.Automanage/configurationProfiles",
+			"apiVersion": "2022-05-04",
+			"location": "[resourceGroup().location]",
+			"properties": {
+				"configuration": {
+					"Antimalware/Enable": true,
+					"Antimalware/Exclusions/Paths": "",
+					"Antimalware/Exclusions/Extensions": "",
+					"Antimalware/Exclusions/Processes": "",
+					"Antimalware/EnableRealTimeProtection": true,
+					"Antimalware/RunScheduledScan": true,
+					"Antimalware/ScanType": "Quick",
+					"Antimalware/ScanDay": 7,
+					"Antimalware/ScanTimeInMinutes": 120,
+					"Backup/Enable": true,
+					"Backup/PolicyName": "dailyBackupPolicy",
+					"Backup/TimeZone": "UTC",
+					"Backup/InstantRpRetentionRangeInDays": 2,
+					"Backup/SchedulePolicy/ScheduleRunFrequency": "Daily",
+					"Backup/SchedulePolicy/SchedulePolicyType": "SimpleSchedulePolicy",
+					"Backup/RetentionPolicy/RetentionPolicyType": "LongTermRetentionPolicy",
+					"Backup/RetentionPolicy/DailySchedule/RetentionDuration/Count": 180,
+					"Backup/RetentionPolicy/DailySchedule/RetentionDuration/DurationType": "Days",
+					"WindowsAdminCenter/Enable": false,
+					"VMInsights/Enable": true,
+					"AzureSecurityCenter/Enable": true,
+					"UpdateManagement/Enable": true,
+					"ChangeTrackingAndInventory/Enable": true,
+					"GuestConfiguration/Enable": true,
+					"AutomationAccount/Enable": true,
+					"LogAnalytics/Enable": true,
+					"BootDiagnostics/Enable": true
+				}
+			}
+		}
+	],
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"variables": {
+		//Insert here: variable
+	},
+	"parameters": {
+		//Insert here: parameter
+	},
+	"outputs": {
+		//Insert here: output
+	},
+	"functions": [
+		{
+			"namespace": "udf",
+			"members": {
+				//Insert here: user function
+			}
+		}
+	]
+}
