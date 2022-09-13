@@ -6,12 +6,12 @@
         "description": "Create a Custom Automanage Configuration Profile Assignment"
     },
     "resources": [
-       {
+        {
             "type": "Microsoft.Compute/virtualMachines/providers/configurationProfileAssignments",
             "apiVersion": "2022-05-04",
             "name": "[concat('${1:vmName}', '/Microsoft.Automanage/default')]",
             "properties": {
-                "configurationProfile": "/subscriptions/${2:subscriptionId}/resourceGroups/${3:resourceGroup}/providers/Microsoft.Automanage/configurationProfiles/${4:profileName}"
+                "configurationProfile": "[resourceId('Microsoft.Automanage/configurationProfiles', '${2:configurationProfileName}')]"
             }
         }
     ]
