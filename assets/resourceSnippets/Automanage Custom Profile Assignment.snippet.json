@@ -7,9 +7,10 @@
     },
     "resources": [
         {
-            "type": "Microsoft.Compute/virtualMachines/providers/configurationProfileAssignments",
+            "type": "Microsoft.Automanage/configurationProfileAssignments",
+            "scope": "'Microsoft.Compute/virtualMachines/${1:vmName}",
             "apiVersion": "2022-05-04",
-            "name": "[concat('${1:vmName}', '/Microsoft.Automanage/default')]",
+            "name": "default",
             "properties": {
                 "configurationProfile": "[resourceId('Microsoft.Automanage/configurationProfiles', '${2:configurationProfileName}')]"
             }
