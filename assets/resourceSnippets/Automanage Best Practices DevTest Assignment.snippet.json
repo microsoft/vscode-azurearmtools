@@ -1,0 +1,19 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "metadata": {
+        "prefix": "arm-automanage-bp-devtest-assignment",
+        "description": "Create a Best Practices DevTest Configuration Profile Assignment"
+    },
+    "resources": [
+        {
+            "scope": "'Microsoft.Compute/virtualMachines/${1:vmName}",
+            "type": "Microsoft.Automanage/configurationProfileAssignments",
+            "apiVersion": "2022-05-04",
+            "name": "default",
+            "properties": {
+                "configurationProfile": "/providers/Microsoft.Automanage/bestPractices/AzureBestPracticesDevTest"
+            }
+        }
+    ]
+}
