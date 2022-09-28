@@ -1,6 +1,6 @@
 {
 	"resources": [
-		{
+		 {
 			"name": "automanage",
 			"type": "Microsoft.Automanage/configurationProfiles",
 			"apiVersion": "2022-05-04",
@@ -36,7 +36,7 @@
 					"BootDiagnostics/Enable": true
 				}
 			}
-		}
+		 }
 	],
 	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
 	"contentVersion": "1.0.0.0",
