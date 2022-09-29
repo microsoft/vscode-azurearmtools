@@ -60,7 +60,7 @@
         {
             "name": "concat",
             "expectedUsage": "concat(arg1, arg2, arg3, ...)",
-            "description": "Combines multiple values and returns the concatenated result. This function can take any number of arguments, and can accept either strings or arrays for the parameters.",
+            "description": "Combines multiple values and returns the concatenated result. This function can take any number of arguments, and can accept either strings or arrays for the parameters. The string comparison is case-sensitive. However, when testing if an object contains a key, the comparison is case-insensitive.",
             "minimumArguments": 0,
             "maximumArguments": null
         },
@@ -314,6 +314,13 @@
             "description": "Returns an array of keys and values for an object. Elements are consistently ordered alphabetically by key.",
             "minimumArguments": 1,
             "maximumArguments": 1
+        },
+        {
+            "name": "join",
+            "expectedUsage": "join(inputArray, delimiter)",
+            "description": "Joins multiple strings into a single string, separated using a delimiter.",
+            "minimumArguments": 2,
+            "maximumArguments": 2
         },
         {
             "name": "json",
@@ -896,7 +903,7 @@
         {
             "name": "uniqueString",
             "expectedUsage": "uniqueString(baseString, ...)",
-            "description": "Creates a deterministic hash string based on the values provided as parameters.\n### Remarks\nThis function is helpful when you need to create a unique name for a resource. You provide parameter values that represent the level of uniqueness for the result. You can specify whether the name is unique for your subscription, resource group, or deployment.\nThe returned value isn't a random string, but rather the result of a hash function. The returned value is 13 characters long. It isn't globally unique. You may want to combine the value with a prefix from your naming convention to create a name that is meaningful.\n### Example\n`[concat('storage', uniqueString(resourceGroup().id))]`",
+            "description": "Creates a deterministic hash string of length 13 based on the values provided as parameters.\n### Remarks\nThis function is helpful when you need to create a unique name for a resource. You provide parameter values that represent the level of uniqueness for the result. You can specify whether the name is unique for your subscription, resource group, or deployment.\nThe returned value isn't a random string, but rather the result of a hash function. The returned value is 13 characters long. It isn't globally unique. You may want to combine the value with a prefix from your naming convention to create a name that is meaningful.\n### Example\n`[concat('storage', uniqueString(resourceGroup().id))]`",
             "minimumArguments": 1,
             "maximumArguments": null
         },
