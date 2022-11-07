@@ -4,7 +4,7 @@ All notable changes to the "vscode-azurearmtools" extension will be documented i
 
 ## Version 0.15.8 (2022-10-03)
 
-### Fixed
+### Changed
 
 - Update schemas cache
 - Update dependencies
