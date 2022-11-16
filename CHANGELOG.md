@@ -2,6 +2,22 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.15.8 (2022-10-03)
+
+### Changed
+
+- Update schemas cache
+- Update dependencies
+
+### Added
+
+- Automanage snippets (thanks [Andrew Smith](https://github.com/AndrewCS149)!) [#1508](https://github.com/microsoft/vscode-azurearmtools/pull/1508):
+  - Automanage Best Practices DevTest Assignment
+  - Automanage Best Practices Prod Assignment
+  - Automanage Custom Profile Assignment
+  - Automanage Create Custom Profile
+- Add join() function and update a few function descriptions [#1517](https://github.com/microsoft/vscodemtools/issues/1517)
+
 ## Version 0.15.7 (2022-05-11)
 
 ### Fixed
