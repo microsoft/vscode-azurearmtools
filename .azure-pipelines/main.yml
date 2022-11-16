@@ -19,6 +19,8 @@ jobs:
       - template: common/lint.yml
       - template: common/test.yml
       - template: common/publish-logs.yml
+    variables:
+      Codeql.Enabled: true
 
   - job: macOS
     pool:
