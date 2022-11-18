@@ -27,7 +27,7 @@
 					"Backup/RetentionPolicy/DailySchedule/RetentionDuration/DurationType": "Days",
 					"WindowsAdminCenter/Enable": false,
 					"VMInsights/Enable": true,
-					"AzureSecurityCenter/Enable": true,
+                    "DefenderForCloud/Enable": true,
 					"UpdateManagement/Enable": true,
 					"ChangeTrackingAndInventory/Enable": true,
 					"GuestConfiguration/Enable": true,
