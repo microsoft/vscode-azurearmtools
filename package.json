@@ -641,7 +641,7 @@
         "gulp": "^4.0.2",
         "mocha": "^10.0.0",
         "nuget": "^2.0.2",
-        "recursive-readdir": "^2.2.2",
+        "recursive-readdir": "^2.2.3",
         "rimraf": "3.0.2",
         "shelljs": "^0.8.5",
         "source-map-support": "^0.5.12",
