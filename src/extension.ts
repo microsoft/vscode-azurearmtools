@@ -49,7 +49,6 @@ import { InsertionContext } from './snippets/InsertionContext';
 import { KnownContexts } from './snippets/KnownContexts';
 import { showInsertionContext } from "./snippets/showInsertionContext";
 import { SnippetManager } from "./snippets/SnippetManager";
-import { survey } from "./survey";
 import { TimedMessage } from './TimedMessage';
 import { assertNever } from './util/assertNever';
 import { CachedPromise } from "./util/CachedPromise";
@@ -2006,7 +2005,9 @@ export class AzureRMToolsExtension implements IProvideOpenedDocuments {
     }
 
     private registerActiveUse(): void {
-        survey.registerActiveUseNoThrow();
+        // Survey disabled for now
+        // survey.registerActiveUseNoThrow();
+
         this._bicepMessage.registerActiveUseNoThrow();
     }
 }
