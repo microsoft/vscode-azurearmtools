@@ -11,10 +11,12 @@
 			],
 			"properties": {
 				"virtualNetworkGateway1": {
-					"id": "[resourceId('Microsoft.Network/virtualNetworkGateways', 'vnetGateway1')]"
+					"id": "[resourceId('Microsoft.Network/virtualNetworkGateways', 'vnetGateway1')]",
+					"properties": {}
 				},
 				"localNetworkGateway2": {
-					"id": "[resourceId('Microsoft.Network/localNetworkGateways', 'localGateway1')]"
+					"id": "[resourceId('Microsoft.Network/localNetworkGateways', 'localGateway1')]",
+					"properties": {}
 				},
 				"connectionType": "IPsec",
 				"routingWeight": 0,
