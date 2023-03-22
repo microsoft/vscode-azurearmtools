@@ -1,6 +1,6 @@
 # Azure Resource Manager (ARM) Tools for Visual Studio Code (Preview)
 
-[![Version](https://vsmarketplacebadge.apphb.com/version/msazurermtools.azurerm-vscode-tools.svg)](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) [![Installs](https://vsmarketplacebadge.apphb.com/installs-short/msazurermtools.azurerm-vscode-tools.svg)](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) [![Build Status](https://dev.azure.com/ms-azuretools/AzCode/_apis/build/status/vscode-azurearmtools)](https://dev.azure.com/ms-azuretools/AzCode/_build/latest?definitionId=10)
+[![Version](https://img.shields.io/visual-studio-marketplace/v/msazurermtools.azurerm-vscode-tools.svg)](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) [![Installs](https://img.shields.io/visual-studio-marketplace/i/msazurermtools.azurerm-vscode-tools.svg)](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools) [![Build Status](https://dev.azure.com/ms-azuretools/AzCode/_apis/build/status/vscode-azurearmtools)](https://dev.azure.com/ms-azuretools/AzCode/_build/latest?definitionId=10)
 
 The Azure Resource Manager (ARM) Tools for Visual Studio Code provides language support, resource snippets, and resource auto-completion to help you create and validate Azure Resource Manager templates.
 
@@ -27,7 +27,7 @@ When in an empty JSON file, typing `arm` produces a list of scaffolding snippets
 
 ![Image showing the arm template scaffolding snippet](./images/json-snippets.png)
 
-Notice that adding scaffolding for an ARM template changes the Visual Studio Code language mode to *Azure Resource Manager Template*.
+Notice that adding scaffolding for an ARM template changes the Visual Studio Code language mode to _Azure Resource Manager Template_.
 
 ![Image showing that the language type has changed to Azure Resource Manager Template](./images/arm-template-language.png)
 
@@ -45,18 +45,18 @@ Each snippet includes tab stops to help navigate through commonly modified confi
 
 The following table lists the available ARM Tools snippets.
 
-| Snippet | Description |
-|---|---|
-| `arm!` | Adds the framework for a full deployment template file for resource group deployments. |
-|`arm!s` | Adds the framework for a full deployment template file for subscription deployments. |
-| `arm!mg` | Adds the framework for a full deployment template file for management group deployments. |
-| `arm!t` | Adds the framework for a full deployment template file for tenant deployments. |
-| `armp!` | Adds the framework for a full deployment template parameters file. |
-| `""` | While in the _parameters_ section adds a parameter to the template. |
-| `""` | While in the _variables_ section adds a variable to the template. |
-| `{}` | While in the _functions_ section add a new user-defined function. |
+| Snippet                     | Description                                                                                                                                                |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `arm!`                      | Adds the framework for a full deployment template file for resource group deployments.                                                                     |
+| `arm!s`                     | Adds the framework for a full deployment template file for subscription deployments.                                                                       |
+| `arm!mg`                    | Adds the framework for a full deployment template file for management group deployments.                                                                   |
+| `arm!t`                     | Adds the framework for a full deployment template file for tenant deployments.                                                                             |
+| `armp!`                     | Adds the framework for a full deployment template parameters file.                                                                                         |
+| `""`                        | While in the _parameters_ section adds a parameter to the template.                                                                                        |
+| `""`                        | While in the _variables_ section adds a variable to the template.                                                                                          |
+| `{}`                        | While in the _functions_ section add a new user-defined function.                                                                                          |
 | `arm-` or the resource name | Displays 70+ snippets for creating Azure resources. For example, type `arm-ubuntu` to add all five resources necessary for a basic Ubuntu virtual machine. |
-| `""` | While in the _outputs_ section adds an output to the template. |
+| `""`                        | While in the _outputs_ section adds an output to the template.                                                                                             |
 
 ## Azure schema completion and validation
 
@@ -165,68 +165,66 @@ Scenarios supported:
 - Relative path (requires Microsoft.Resources/deployments apiVersion 2020-06-01 or higher for use in template specs and 2020-10-01 for use in direct deployments):
 
 ```json5
-        {
-            "name": "linkedDeployment1",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2020-10-01",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    // Relative to current template's folder
-                    "relativePath": "child.json"
-                },
-                "parameters": {
-                }
-            }
-        }
+{
+  name: "linkedDeployment1",
+  type: "Microsoft.Resources/deployments",
+  apiVersion: "2020-10-01",
+  properties: {
+    mode: "Incremental",
+    templateLink: {
+      // Relative to current template's folder
+      relativePath: "child.json",
+    },
+    parameters: {},
+  },
+}
 ```
 
 - Full URI:
 
 ```json5
-        {
-            "name": "linkedDeployment1",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2020-10-01",
-            "variables": {
-                "templateUri": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/101-vm-simple-windows/azuredeploy.json"
-            },
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "[variables('templateUri)]"
-                },
-                "parameters": {
-                }
-            }
-        }
+{
+  name: "linkedDeployment1",
+  type: "Microsoft.Resources/deployments",
+  apiVersion: "2020-10-01",
+  variables: {
+    templateUri: "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/101-vm-simple-windows/azuredeploy.json",
+  },
+  properties: {
+    mode: "Incremental",
+    templateLink: {
+      uri: "[variables('templateUri)]",
+    },
+    parameters: {},
+  },
+}
 ```
 
 - Relative to deployed template location
 
 ```json5
-        {
-            "name": "linkedDeployment1",
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2020-10-01",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    // When the template is deployed from a staging location, the URI be relative to the deployed
-                    // location.
-                    // While editing, this will be relative to the current template's local file folder.
-                    "uri": "[uri(deployment().properties.templateLink.uri, 'child.json')]"
-                },
-                "parameters": {
-                }
-            }
-        }
+{
+  name: "linkedDeployment1",
+  type: "Microsoft.Resources/deployments",
+  apiVersion: "2020-10-01",
+  properties: {
+    mode: "Incremental",
+    templateLink: {
+      // When the template is deployed from a staging location, the URI be relative to the deployed
+      // location.
+      // While editing, this will be relative to the current template's local file folder.
+      uri: "[uri(deployment().properties.templateLink.uri, 'child.json')]",
+    },
+    parameters: {},
+  },
+}
 ```
 
 Additional features:
+
 - CTRL-click on relativePath value or click on code lens to navigate to linked template
 - ["Light-bulb" and snippet support](https://github.com/microsoft/vscode-azurearmtools/blob/mafellin/1225-linked-template-README/README.md#add-missing-parameters) to fill in parameter values for a linked template
-![linkedtemplatelightbulb](https://user-images.githubusercontent.com/6855361/109719960-088d5b00-7b6f-11eb-8e91-74b363f768ff.gif)
+  ![linkedtemplatelightbulb](https://user-images.githubusercontent.com/6855361/109719960-088d5b00-7b6f-11eb-8e91-74b363f768ff.gif)
 
 ## Template navigation
 
@@ -268,7 +266,7 @@ You can also right-click on any element in the ARM Template Outline view to init
 
 ![Inserting an item into an Azure Resource Manager template](./images/insert-item-outline.png)
 
-*Thanks to Nils Hedström [@nilshedstrom](https://github.com/nilshedstrom) for implementing this feature!*
+_Thanks to Nils Hedström [@nilshedstrom](https://github.com/nilshedstrom) for implementing this feature!_
 
 ### Sort template
 
@@ -282,7 +280,7 @@ Select the element that you want to sort.
 
 Template sorting can also be engaged using the ARM template outline.
 
-*Thanks to Nils Hedström [@nilshedstrom](https://github.com/nilshedstrom) for implementing this feature!*
+_Thanks to Nils Hedström [@nilshedstrom](https://github.com/nilshedstrom) for implementing this feature!_
 
 ### Extract to variable or parameter
 
@@ -290,7 +288,7 @@ Select a JSON string or a subset of an expression string then select the lightbu
 
 ![Image demonstrating extracting a variable and a parameter](./images/extract-vars-and-params.gif)
 
-*Thanks to Nils Hedström [@nilshedstrom](https://github.com/nilshedstrom) for implementing this feature!*
+_Thanks to Nils Hedström [@nilshedstrom](https://github.com/nilshedstrom) for implementing this feature!_
 
 ### Hover to format complex expressions or multi-line strings
 
@@ -299,6 +297,7 @@ Select a JSON string or a subset of an expression string then select the lightbu
 ![Image showing hovering over a multi-line string](./images/hover-to-format-string.png)
 
 To assist with navigating complex expressions or multi-line strings, VS Code has a ["Go to Bracket" command](https://www.youtube.com/watch?v=iYUJeFeXPfw&ab_channel=Code2020). You can use the [command palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette) or a keyboard shortcut:
+
 - Mac: Cmd+Shift+\
 - Windows: Ctrl+Shift+\
 - Windows with Spanish keyboard: Ctrl+Shift+|
@@ -322,13 +321,13 @@ To assist with navigating complex expressions or multi-line strings, VS Code has
 
 You may be interested in adjusting the following extension configurations. These can be configured in [VS Code User Settings](https://code.visualstudio.com/docs/getstarted/settings).
 
-| Configuration | Description |
-|---|---|
-| azureResourceManagerTools.autoDetectJsonTemplates | Auto-detects ARM template and sets editor language type to Azure Resource Manager Template. |
-| azureResourceManagerTools.checkForLatestSchema | Check if the root schema for deployment templates is using an out-of-date version and suggest updating it to the latest version. |
-| azureResourceManagerTools.checkForMatchingParameterFiles | Check if an opened template file has a matching parameter file and prompt to create an association. |
-| azureResourceManagerTools.codelens.enable | Set to false to disable all code lens functionality. |
-| azureResourceManagerTools.codelens.parameters | Set to false to disable code lens for parameters. |
+| Configuration                                            | Description                                                                                                                      |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| azureResourceManagerTools.autoDetectJsonTemplates        | Auto-detects ARM template and sets editor language type to Azure Resource Manager Template.                                      |
+| azureResourceManagerTools.checkForLatestSchema           | Check if the root schema for deployment templates is using an out-of-date version and suggest updating it to the latest version. |
+| azureResourceManagerTools.checkForMatchingParameterFiles | Check if an opened template file has a matching parameter file and prompt to create an association.                              |
+| azureResourceManagerTools.codelens.enable                | Set to false to disable all code lens functionality.                                                                             |
+| azureResourceManagerTools.codelens.parameters            | Set to false to disable code lens for parameters.                                                                                |
 
 ## Automatic Detection of deployment template files
 
