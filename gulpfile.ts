@@ -191,6 +191,11 @@ function executeInShell(command: string): void {
 }
 
 async function getLanguageServer(): Promise<void> {
+    console.log("asdfg env.LANGSERVER_NUGET_USERNAME length =" + (env.LANGSERVER_NUGET_USERNAME ?? "").length);
+    console.log("asdfg env.LANGSERVER_NUGET_PASSWORD length =" + (env.LANGSERVER_NUGET_PASSWORD ?? "").length);
+    console.log("asdfg env.LANGUAGE_SERVER_PACKAGING_PATH length =" + (env.LANGUAGE_SERVER_PACKAGING_PATH ?? "").length);
+
+
     if (languageServerAvailable) {
         const pkgsPath = path.join(__dirname, 'pkgs');
 

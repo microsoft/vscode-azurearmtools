@@ -18,7 +18,7 @@ steps:
 
   - script: npm run package
     displayName: Package
-    condition: ne(variables['System.PullRequest.IsFork'], 'True') # Don't try to package if run from a fork (won't have the secrets)
+    # condition: ne(variables['System.PullRequest.IsFork'], 'True') # Don't try to package if run from a fork (won't have the secrets)
     env:
       LANGSERVER_NUGET_USERNAME: $(LANGSERVER_NUGET_USERNAME)
       LANGSERVER_NUGET_PASSWORD: $(LANGSERVER_NUGET_PASSWORD)
