@@ -287,8 +287,7 @@ export class InsertItem {
         }: {
             templatePart: Json.ObjectValue; // The parent to place the new text into
             textEditor: vscode.TextEditor;
-            // tslint:disable-next-line:no-any
-            data: any;
+            data: unknown;
             name: string;
             setCursor?: boolean;
             reveal?: boolean;
@@ -384,9 +383,7 @@ export class InsertItem {
     private async insertFunctionAsMembers(namespace: Json.ObjectValue, textEditor: vscode.TextEditor): Promise<void> {
         const functionName = await this.ui.showInputBox({ prompt: "Name of function?" });
         const functionDef = await this.getFunction();
-        // tslint:disable-next-line:no-any
-        const members: any = {};
-        // tslint:disable-next-line:no-unsafe-any
+        const members: { [key: string]: unknown } = {};
         members[functionName] = functionDef;
         await this.insertInObjectHelper({
             templatePart: namespace,
@@ -446,8 +443,7 @@ export class InsertItem {
                 context.errorHandling.suppressReportIssue = true;
                 throw new Error(invalidTemplateMessage);
             }
-            // tslint:disable-next-line:no-any
-            const subPart: any = [];
+            const subPart: unknown = [];
             index = await this.insertInObjectHelper({
                 templatePart: templateTopLevel,
                 textEditor,
@@ -510,8 +506,7 @@ export class InsertItem {
         return parameters;
     }
 
-    // tslint:disable-next-line:no-any
-    private async insertInArray(templatePart: Json.ArrayValue, textEditor: vscode.TextEditor, data: any): Promise<void> {
+    private async insertInArray(templatePart: Json.ArrayValue, textEditor: vscode.TextEditor, data: unknown): Promise<void> {
         const index = templatePart.span.endIndex;
         const text = JSON.stringify(data, null, '\t');
         const indentedText = this.indent(`\r\n${text}\r\n`, 2);
@@ -527,13 +522,10 @@ export class InsertItem {
         return namespace;
     }
 
-    // tslint:disable-next-line:no-any
-    private async getFunctionMembers(): Promise<any> {
+    private async getFunctionMembers(): Promise<{ [key: string]: unknown }> {
         const functionName = await this.ui.showInputBox({ prompt: "Name of function?" });
         const functionDef = await this.getFunction();
-        // tslint:disable-next-line:no-any
-        const members: any = {};
-        // tslint:disable-next-line:no-unsafe-any
+        const members: { [key: string]: unknown } = {};
         members[functionName] = functionDef;
         return members;
     }
@@ -620,8 +612,7 @@ interface FunctionParameter extends Data {
 
 interface FunctionNameSpace {
     namespace: string;
-    // tslint:disable-next-line:no-any
-    members: any[];
+    members: { [key: string]: unknown };
 }
 
 type Data = { [key: string]: unknown };
