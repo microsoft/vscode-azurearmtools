@@ -117,7 +117,7 @@ suite("Linked templates functional tests", () => {
 
                 // Make sure the language server starts up
                 const client = await ensureLanguageServerAvailable();
-                client.onNotification(notifications.Diagnostics.codeAnalysisStarting, async (args: notifications.Diagnostics.ICodeAnalysisStartingArgs) => {
+                client.onNotification(notifications.Diagnostics.codeAnalysisStarting, async (_args: notifications.Diagnostics.ICodeAnalysisStartingArgs) => {
                     //testLog.writeLine(JSON.stringify(args, null, 2));
                 });
 

@@ -37,7 +37,7 @@ export function getParameterValuesCodeActions(
     parentParameterDefinitionsSource: IParameterDefinitionsSource | undefined,
     // This is the range currently being inspected
     range: Range | Selection,
-    context: CodeActionContext
+    _context: CodeActionContext
 ): (Command | CodeAction)[] {
     const actions: (Command | CodeAction)[] = [];
     const parametersProperty = parameterValuesSource.parameterValuesProperty;

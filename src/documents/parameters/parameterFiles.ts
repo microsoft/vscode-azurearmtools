@@ -274,7 +274,7 @@ function sortQuickPickList(pickItems: IAzureQuickPickItem<IPossibleParameterFile
   });
 }
 
-function createQuickPickItem(paramFile: IPossibleParameterFile, current: IPossibleParameterFile | undefined, templateUri: Uri): IAzureQuickPickItem<IPossibleParameterFile> {
+function createQuickPickItem(paramFile: IPossibleParameterFile, current: IPossibleParameterFile | undefined, _templateUri: Uri): IAzureQuickPickItem<IPossibleParameterFile> {
   const isCurrent: boolean = paramFile === current;
   let description = isCurrent ? currentMessage
     : paramFile.isCloseNameMatch ? similarFilenameMessage
@@ -467,7 +467,7 @@ export function considerQueryingForParameterFileInBackground(mapping: Deployment
         assert("considerQueryingForParameterFile: Unexpected response");
         break;
     }
-  }).catch(err => {
+  }).catch(_err => {
     assert.fail("callWithTelemetryAndErrorHandling in considerQueryingForParameterFile shouldn't throw");
   });
 }

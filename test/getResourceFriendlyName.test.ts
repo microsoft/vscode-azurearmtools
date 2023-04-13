@@ -16,6 +16,7 @@ suite("getFriendlyNameForResource", () => {
     function createFriendlyNameTest(testName: string, resource: Partial<IDeploymentTemplateResource>, expectedWithShortName: string, expectedWithLongName: string): void {
         test(`${testName} (short name)`, async () => {
             let keepTestNameInClosure = testName;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-self-assign -- makes debugging easier
             keepTestNameInClosure = keepTestNameInClosure;
 
             const dt = parseTemplate({
@@ -30,6 +31,7 @@ suite("getFriendlyNameForResource", () => {
         });
         test(`${testName} (long name)`, async () => {
             let keepTestNameInClosure = testName;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-self-assign -- makes debugging easier
             keepTestNameInClosure = keepTestNameInClosure;
 
             const dt = parseTemplate({

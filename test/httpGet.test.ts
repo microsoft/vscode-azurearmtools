@@ -37,7 +37,7 @@ suite("HttpClient", () => {
 
         networkTest("with non-existing site ('http://i.dont.exist.com')", () => {
             return httpGet("http://i.dont.exist.com")
-                .then((content: string) => {
+                .then((_content: string) => {
                     assert(false, "Expected the catch function to be called.");
                 })
                 // tslint:disable-next-line:no-any

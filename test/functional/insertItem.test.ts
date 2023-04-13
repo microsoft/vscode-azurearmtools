@@ -14,10 +14,10 @@ import * as vscode from "vscode";
 import { window, workspace } from "vscode";
 import { IAzureUserInput, PromptResult } from 'vscode-azureextensionui';
 import { DeploymentTemplateDoc, InsertItem, TemplateSectionType } from '../../extension.bundle';
+import { testWithRealSnippets } from '../support/TestSnippets';
 import { getActionContext } from '../support/getActionContext';
 import { getTempFilePath } from "../support/getTempFilePath";
 import { removeApiVersions } from '../support/removeApiVersions';
-import { testWithRealSnippets } from '../support/TestSnippets';
 
 suite("InsertItem", async (): Promise<void> => {
     function assertTemplate(actual: string, expected: string, textEditor: vscode.TextEditor, options?: { ignoreWhiteSpace?: boolean; ignoreApiVersions?: boolean }): void {
@@ -505,14 +505,14 @@ class MockUserInput implements IAzureUserInput {
         return this._onDidFinishPromptEmitter.event;
     }
 
-    public async showQuickPick<T extends vscode.QuickPickItem>(items: T[] | Thenable<T[]>, options: import("vscode-azureextensionui").IAzureQuickPickOptions): Promise<T> {
+    public async showQuickPick<T extends vscode.QuickPickItem>(items: T[] | Thenable<T[]>, _options: import("vscode-azureextensionui").IAzureQuickPickOptions): Promise<T> {
         const result = await items;
         const label = this.showInputBoxTexts.shift()!;
         const item = result.find(x => x.label === label)!;
         return item;
     }
 
-    public async showInputBox(options: vscode.InputBoxOptions): Promise<string> {
+    public async showInputBox(_options: vscode.InputBoxOptions): Promise<string> {
         return this.showInputBoxTexts.shift()!;
     }
 
@@ -520,7 +520,7 @@ class MockUserInput implements IAzureUserInput {
         return items[0];
     }
 
-    public async showOpenDialog(options: vscode.OpenDialogOptions): Promise<vscode.Uri[]> {
+    public async showOpenDialog(_options: vscode.OpenDialogOptions): Promise<vscode.Uri[]> {
         return [vscode.Uri.file("c:\\some\\path")];
     }
 }
