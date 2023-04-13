@@ -86,6 +86,7 @@ export class TimedMessage {
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await -- grandfathered in
     private async checkForDebugMode(): Promise<void> {
         if (ext.configuration.get<boolean>(this._debugSettingKey)) {
             this._settings = debugSettings;

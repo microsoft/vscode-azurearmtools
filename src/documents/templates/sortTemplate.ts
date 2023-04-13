@@ -79,7 +79,7 @@ export async function sortTemplate(template: DeploymentTemplateDoc | undefined, 
 async function showSortingResultMessage(sortAction: () => Promise<boolean>, part: string): Promise<void> {
     const didSorting = await sortAction();
     const message = didSorting ? `"${part}" section was sorted` : `Nothing in "${part.toLowerCase()}" needed sorting`;
-    vscode.window.showInformationMessage(message);
+    void vscode.window.showInformationMessage(message);
 }
 
 /**

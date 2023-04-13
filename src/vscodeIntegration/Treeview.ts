@@ -12,9 +12,9 @@ import * as path from 'path';
 import * as vscode from "vscode";
 import { armTemplateLanguageId, iconsPath, templateKeys } from "../../common";
 import { getResourceInfo } from '../documents/templates/getResourcesInfo';
+import { ContainsBehavior } from '../language/Span';
 import { getFriendlyExpressionFromJsonString } from '../language/expressions/friendlyExpressions';
 import * as Json from "../language/json/JSON";
-import { ContainsBehavior } from '../language/Span';
 
 const topLevelIcons: [string, string][] = [
     ["$schema", "label.svg"],
@@ -288,7 +288,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<IElementInfo
             // Select the method name
             editor.selection = new vscode.Selection(range.start, range.end);
             // Swap the focus to the editor
-            vscode.window.showTextDocument(editor.document, editor.viewColumn, false);
+            void vscode.window.showTextDocument(editor.document, editor.viewColumn, false);
         }
     }
 
@@ -558,7 +558,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<IElementInfo
     }
 
     private setTreeViewContext(visible: boolean): void {
-        vscode.commands.executeCommand('setContext', 'showAzureTemplateView', visible);
+        void vscode.commands.executeCommand('setContext', 'showAzureTemplateView', visible);
     }
 }
 

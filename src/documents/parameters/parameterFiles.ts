@@ -458,7 +458,7 @@ export function considerQueryingForParameterFileInBackground(mapping: Deployment
 
         // Let them know how to do it manually
         // Don't wait for an answer
-        window.showInformationMessage(howToMessage);
+        void window.showInformationMessage(howToMessage);
         break;
       case select.title:
         await commands.executeCommand("azurerm-vscode-tools.selectParameterFile", templateUri);

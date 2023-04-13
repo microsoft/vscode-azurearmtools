@@ -14,16 +14,16 @@ export async function resetGlobalState(_actionContext: IActionContext): Promise<
         DialogResponses.yes,
         DialogResponses.cancel)
     ) {
-        ext.context.globalState.update(globalStateKeys.dontAskAboutSchemaFiles, undefined);
-        ext.context.globalState.update(globalStateKeys.dontAskAboutParameterFiles, undefined);
-        ext.context.globalState.update(globalStateKeys.survey.neverShowSurvey, undefined);
-        ext.context.globalState.update(globalStateKeys.survey.surveyPostponedUntilTime, undefined);
-        ext.context.globalState.update(globalStateKeys.messages.bicepMessagePostponedUntilTime, undefined);
+        void ext.context.globalState.update(globalStateKeys.dontAskAboutSchemaFiles, undefined);
+        void ext.context.globalState.update(globalStateKeys.dontAskAboutParameterFiles, undefined);
+        void ext.context.globalState.update(globalStateKeys.survey.neverShowSurvey, undefined);
+        void ext.context.globalState.update(globalStateKeys.survey.surveyPostponedUntilTime, undefined);
+        void ext.context.globalState.update(globalStateKeys.messages.bicepMessagePostponedUntilTime, undefined);
 
         const reload = "Reload Now";
         if (reload === await window.showInformationMessage(`Global state for ${extensionName} has been reset.`, reload)) {
             // Don't wait
-            commands.executeCommand("workbench.action.reloadWindow");
+            void commands.executeCommand("workbench.action.reloadWindow");
         }
     } else {
         throw new UserCancelledError();

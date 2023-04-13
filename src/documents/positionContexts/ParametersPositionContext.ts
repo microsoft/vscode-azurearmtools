@@ -74,6 +74,7 @@ export class ParametersPositionContext extends PositionContext {
         return undefined;
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await -- grandfathered in
     public async getCompletionItems(triggerCharacter: string | undefined, tabSize: number): Promise<ICompletionItemsResult> {
         return {
             items: getPropertyValueCompletionItems(

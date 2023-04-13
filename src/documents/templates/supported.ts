@@ -101,7 +101,7 @@ export function mightBeDeploymentParameters(textDocument: TextDocument): boolean
 }
 
 export function setLangIdToArm(document: TextDocument, actionContext: IActionContext): void {
-    languages.setTextDocumentLanguage(document, armTemplateLanguageId);
+    void languages.setTextDocumentLanguage(document, armTemplateLanguageId);
 
     actionContext.telemetry.properties.switchedToArm = 'true';
     actionContext.telemetry.properties.docLangId = document.languageId;

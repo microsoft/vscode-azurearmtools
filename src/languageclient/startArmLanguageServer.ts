@@ -83,7 +83,7 @@ export function startArmLanguageServerInBackground(): void {
 
     ext.languageServerState = LanguageServerState.Starting;
 
-    window.withProgress(
+    void window.withProgress(
         {
             location: ProgressLocation.Notification,
             title: `Starting ${languageServerName}`
@@ -241,7 +241,7 @@ async function startLanguageClient(serverDllPath: string, dotnetExePath: string)
         client.clientOptions.errorHandler = new WrappedErrorHandler(defaultHandler);
 
         if (waitForDebugger) {
-            window.showWarningMessage(`The ${configPrefix}.languageServer.waitForDebugger option is set.  The language server will pause on startup until a debugger is attached.`);
+            void window.showWarningMessage(`The ${configPrefix}.languageServer.waitForDebugger option is set.  The language server will pause on startup until a debugger is attached.`);
         }
 
         client.onTelemetry((telemetryData: { eventName: string; properties: { [key: string]: string | undefined } }) => {
@@ -414,7 +414,7 @@ async function isFile(pathPath: string): Promise<boolean> {
  */
 
 function onNotifyTemplateGraph(args: INotifyTemplateGraphArgs): void {
-    callWithTelemetryAndErrorHandlingSync('notifyTemplateGraph', async (context: IActionContext) => {
+    callWithTelemetryAndErrorHandlingSync('notifyTemplateGraph', (context: IActionContext) => {
         context.telemetry.suppressIfSuccessful = true;
         _notifyTemplateGraphAvailableEmitter.fire(<INotifyTemplateGraphArgs & ITelemetryContext>Object.assign({}, context.telemetry, args));
     });
@@ -453,6 +453,8 @@ function showLoadingSchemasProgress(): void {
             async () => delayWhileSync(500, () => ext.languageServerState === LanguageServerState.LoadingSchemas)
         ).then(() => {
             isShowingLoadingSchemasProgress = false;
+        }, () => {
+            // ignore errors
         });
     }
 }

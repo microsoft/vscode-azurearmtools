@@ -86,23 +86,23 @@ export class InsertItem {
         switch (sectionType) {
             case TemplateSectionType.Functions:
                 await this.insertFunction(template.topLevelValue, textEditor, context);
-                vscode.window.showInformationMessage("Please type the output of the function.");
+                void vscode.window.showInformationMessage("Please type the output of the function.");
                 break;
             case TemplateSectionType.Outputs:
                 await this.insertOutput(template.topLevelValue, textEditor, context);
-                vscode.window.showInformationMessage("Please type the value of the output.");
+                void vscode.window.showInformationMessage("Please type the value of the output.");
                 break;
             case TemplateSectionType.Parameters:
                 await this.insertParameter(template.topLevelValue, textEditor, context);
-                vscode.window.showInformationMessage("Done inserting parameter.");
+                void vscode.window.showInformationMessage("Done inserting parameter.");
                 break;
             case TemplateSectionType.Resources:
                 await this.insertResource(template.topLevelValue, textEditor, context);
-                vscode.window.showInformationMessage("Press TAB to move between the tab stops.");
+                void vscode.window.showInformationMessage("Press TAB to move between the tab stops.");
                 break;
             case TemplateSectionType.Variables:
                 await this.insertVariable(template.topLevelValue, textEditor, context);
-                vscode.window.showInformationMessage("Please type the value of the variable.");
+                void vscode.window.showInformationMessage("Please type the value of the variable.");
                 break;
             case TemplateSectionType.TopLevel:
                 assert.fail("Unknown insert item type!");
