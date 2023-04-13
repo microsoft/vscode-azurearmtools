@@ -249,12 +249,12 @@ suite("Language", () => {
     suite("Position", () => {
         suite("constructor(number,number)", () => {
             test("With null _line", () => {
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new LineColPos(<any>null, 3); });
             });
 
             test("With undefined _line", () => {
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new LineColPos(<any>undefined, 3); });
             });
 
@@ -263,12 +263,12 @@ suite("Language", () => {
             });
 
             test("With null _column", () => {
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new LineColPos(2, <any>null); });
             });
 
             test("With undefined _column", () => {
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new LineColPos(2, <any>undefined); });
             });
 
@@ -287,22 +287,22 @@ suite("Language", () => {
     suite("Issue", () => {
         suite("constructor(Span,string)", () => {
             test("With null span", () => {
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new Issue(<any>null, "error message", IssueKind.tleSyntax); });
             });
 
             test("With undefined span", () => {
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new Issue(<any>undefined, "error message", IssueKind.tleSyntax); });
             });
 
             test("With null message", () => {
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new Issue(new Span(4, 1), <any>null, IssueKind.tleSyntax); });
             });
 
             test("With undefined message", () => {
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new Issue(new Span(4, 1), <any>undefined, IssueKind.tleSyntax); });
             });
 

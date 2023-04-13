@@ -78,7 +78,8 @@ class LinkedTemplatePathNotFoundError extends Error {
  */
 export async function onRequestOpenLinkedFile(
     {
-        _sourceTemplateUri,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        sourceTemplateUri,
         requestedLinkResolvedUri,
         pathType
     }: IRequestOpenLinkedFileArgs

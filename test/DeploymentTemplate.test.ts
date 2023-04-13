@@ -10,8 +10,8 @@ import { randomBytes } from "crypto";
 import { Context, Suite } from "mocha";
 import { Uri } from "vscode";
 import { parseError } from "vscode-azureextensionui";
-import { DefinitionKind, DeploymentTemplateDoc, getVSCodeRangeFromSpan, Histogram, INamedDefinition, IncorrectArgumentsCountIssue, IParameterDefinition, Issue, IssueKind, IVariableDefinition, Json, LineColPos, ReferenceInVariableDefinitionsVisitor, ReferenceList, Span, TemplateScope, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "../extension.bundle";
-import { diagnosticSources, IDeploymentTemplate, testDiagnostics } from "./support/diagnostics";
+import { DefinitionKind, DeploymentTemplateDoc, Histogram, INamedDefinition, IParameterDefinition, IVariableDefinition, IncorrectArgumentsCountIssue, Issue, IssueKind, Json, LineColPos, ReferenceInVariableDefinitionsVisitor, ReferenceList, Span, TemplateScope, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue, getVSCodeRangeFromSpan } from "../extension.bundle";
+import { IDeploymentTemplate, diagnosticSources, testDiagnostics } from "./support/diagnostics";
 import { getEmptyCodeActionContext } from "./support/getEmptyCodeActionContext";
 import { parseTemplate } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
@@ -54,12 +54,12 @@ suite("DeploymentTemplate", () => {
 
     suite("constructor(string)", () => {
         test("Null stringValue", () => {
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             assert.throws(() => { new DeploymentTemplateDoc(<any>undefined, fakeId, 0); });
         });
 
         test("Undefined stringValue", () => {
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             assert.throws(() => { new DeploymentTemplateDoc(<any>undefined, fakeId, 0); });
         });
 
@@ -299,7 +299,7 @@ suite("DeploymentTemplate", () => {
 
         test("with one user function where function name matches a built-in function name", async () => {
             parseTemplate(
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 <IDeploymentTemplate><any>{
                     "name": "[contoso.reference()]", // This is not a call to the built-in "reference" function
                     "functions": [
@@ -384,7 +384,7 @@ suite("DeploymentTemplate", () => {
 
         test("Calling user function with name 'reference' okay in variables", async () => {
             const template =
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 <IDeploymentTemplate><any>{
                     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
@@ -1305,7 +1305,7 @@ ${err}`);
 
     suite("getCommentsCount()", () => {
         test("no comments", async () => {
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const dt = parseTemplate(<any>{
                 "$schema": "foo",
                 "contentVersion": "1.2.3 /*not a comment*/",
@@ -1316,7 +1316,7 @@ ${err}`);
         });
 
         test("block comments", async () => {
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const dt = parseTemplate(`{
                 "$schema": "foo",
                 /* This is
@@ -1329,7 +1329,7 @@ ${err}`);
         });
 
         test("single-line comments", async () => {
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const dt = parseTemplate(`{
                 "$schema": "foo", // This is a comment
                 "contentVersion": "1.2.3", // Another comment

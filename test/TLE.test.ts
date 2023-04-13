@@ -55,12 +55,12 @@ suite("TLE", () => {
     suite("StringValue", () => {
         suite("constructor(tle.Token)", () => {
             test("with undefined token", () => {
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new TLE.StringValue(<any>undefined); });
             });
 
             test("with undefined token", () => {
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new TLE.StringValue(<any>undefined); });
             });
         });
@@ -143,7 +143,7 @@ suite("TLE", () => {
                 const leftSquareBracket = TLE.Token.createLeftSquareBracket(6);
                 const index = new TLE.NumberValue(TLE.Token.createNumber(7, "3"));
                 const rightSquareBracket = TLE.Token.createRightSquareBracket(8);
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new TLE.ArrayAccessValue(<any>undefined, leftSquareBracket, index, rightSquareBracket); });
             });
 
@@ -151,7 +151,7 @@ suite("TLE", () => {
                 const leftSquareBracket = TLE.Token.createLeftSquareBracket(6);
                 const index = new TLE.NumberValue(TLE.Token.createNumber(7, "3"));
                 const rightSquareBracket = TLE.Token.createRightSquareBracket(8);
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new TLE.ArrayAccessValue(<any>undefined, leftSquareBracket, index, rightSquareBracket); });
             });
 
@@ -159,7 +159,7 @@ suite("TLE", () => {
                 const source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
                 const index = new TLE.NumberValue(TLE.Token.createNumber(7, "3"));
                 const rightSquareBracket = TLE.Token.createRightSquareBracket(8);
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new TLE.ArrayAccessValue(source, <any>undefined, index, rightSquareBracket); });
             });
 
@@ -299,7 +299,7 @@ suite("TLE", () => {
                 const leftParenthesis = TLE.Token.createLeftParenthesis(5);
                 const rightParenthesis = TLE.Token.createRightParenthesis(10);
 
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new TLE.FunctionCallValue(undefined, undefined, name, leftParenthesis, commaTokens, <any>undefined, rightParenthesis); });
             });
 
@@ -1601,7 +1601,7 @@ suite("TLE", () => {
     suite("Tokenizer", () => {
         suite("readToken()", () => {
             test("with undefined stringValue", () => {
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { TLE.Tokenizer.fromString(<any>undefined); });
             });
 
@@ -1970,7 +1970,7 @@ suite("TLE", () => {
             });
 
             test("with undefined value", () => {
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const errors = getReferenceErrors(emptyScope, <any>undefined);
                 assert.deepStrictEqual(errors, []);
             });
@@ -2041,7 +2041,7 @@ suite("TLE", () => {
                 const errors = getReferenceErrors(emptyScope, concat);
                 assert.deepStrictEqual(
                     errors,
-                    // tslint:disable-next-line:no-any
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     [new IncorrectArgumentsCountIssue(new Span(2, 12), "The function 'resourceId' takes at least 2 arguments.", "resourceId", 0, 2, <any>undefined)]);
             });
 
@@ -2050,7 +2050,7 @@ suite("TLE", () => {
                 const errors = getReferenceErrors(emptyScope, concat);
                 assert.deepStrictEqual(
                     errors,
-                    // tslint:disable-next-line:no-any
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     [new IncorrectArgumentsCountIssue(new Span(2, 13), "The function 'resourceId' takes at least 2 arguments.", "resourceId", 1, 2, <any>undefined)]);
             });
 
@@ -2184,7 +2184,7 @@ suite("TLE", () => {
                 const issues: Issue[] = [];
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
                 assert(param);
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const visitor = FindReferencesAndErrorsVisitor.visit(dt.topLevelScope, 0, <any>undefined, metadata, referenceListsMap, issues);
                 assert(visitor);
                 assert.deepStrictEqual(referenceListsMap.get(param), undefined);

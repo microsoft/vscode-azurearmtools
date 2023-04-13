@@ -283,7 +283,7 @@ suite("User functions", () => {
                 ]
             }];
 
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const dt = parseTemplate(<any>template, [
             ]);
             assert.equal(0, dt.topLevelScope.namespaceDefinitions.length);

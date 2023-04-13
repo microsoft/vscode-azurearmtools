@@ -51,24 +51,24 @@ suite("TemplatePositionContext", () => {
 
     suite("fromDocumentLineAndColumnIndexes(DeploymentTemplate,number,number)", () => {
         test("with undefined deploymentTemplate", () => {
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(<any>undefined, 1, 2, undefined); });
         });
 
         test("with undefined deploymentTemplate", () => {
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(<any>undefined, 1, 2, undefined); });
         });
 
         test("with undefined documentLineIndex", () => {
             const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, <any>undefined, 2, undefined); });
         });
 
         test("with undefined documentLineIndex", () => {
             const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, <any>undefined, 2, undefined); });
         });
 
@@ -88,13 +88,13 @@ suite("TemplatePositionContext", () => {
 
         test("with undefined documentColumnIndex", () => {
             const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 0, <any>undefined, undefined); });
         });
 
         test("with undefined documentColumnIndex", () => {
             const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 0, <any>undefined, undefined); });
         });
 
@@ -124,24 +124,24 @@ suite("TemplatePositionContext", () => {
 
     suite("fromDocumentCharacterIndex(DeploymentTemplate,number)", () => {
         test("with undefined deploymentTemplate", () => {
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(<any>undefined, 1, undefined); });
         });
 
         test("with undefined deploymentTemplate", () => {
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(<any>undefined, 1, undefined); });
         });
 
         test("with undefined documentCharacterIndex", () => {
             const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(dt, <any>undefined, undefined); });
         });
 
         test("with undefined documentCharacterIndex", () => {
             const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(dt, <any>undefined, undefined); });
         });
 
