@@ -17,6 +17,7 @@ export function getEventPromise<T>(
     executor: (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: unknown) => void) => void,
     timeout: number = defaultTimeout): Promise<T> {
     return new Promise<T>(
+        // eslint-disable-next-line no-async-promise-executor -- CONSIDER: grandfathered in, doesn't seem to have problems
         async (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: unknown) => void): Promise<void> => {
             try {
                 let completed = false;

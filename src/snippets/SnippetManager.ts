@@ -181,7 +181,7 @@ function doesSnippetSupportContext(snippet: ISnippetInternal, context: Context |
 function validateSnippet(snippet: ISnippetInternal): ISnippetInternal {
     const context = snippet.context;
     if (context === undefined) {
-        window.showWarningMessage(`Snippet "${snippet.name}" has no context specified`);
+        void window.showWarningMessage(`Snippet "${snippet.name}" has no context specified`);
     }
 
     const looksLikeResource = snippet.body.some(
@@ -190,14 +190,14 @@ function validateSnippet(snippet: ISnippetInternal): ISnippetInternal {
     const isResource = doesSnippetSupportContext(snippet, KnownContexts.resources);
     if (isResource) {
         if (!looksLikeResource) {
-            window.showWarningMessage(`Snippet "${snippet.name}" is marked with the resources context but doesn't look like a resource`);
+            void window.showWarningMessage(`Snippet "${snippet.name}" is marked with the resources context but doesn't look like a resource`);
         }
         if (!snippet.hasCurlyBraces) {
-            window.showWarningMessage(`Snippet "${snippet.name}" is marked with the resources context but doesn't begin and end with curly braces`);
+            void window.showWarningMessage(`Snippet "${snippet.name}" is marked with the resources context but doesn't begin and end with curly braces`);
         }
     } else {
         if (looksLikeResource) {
-            window.showWarningMessage(`Snippet "${snippet.name}" looks like a resource but isn't supported in the resources context`);
+            void window.showWarningMessage(`Snippet "${snippet.name}" looks like a resource but isn't supported in the resources context`);
         }
     }
 
