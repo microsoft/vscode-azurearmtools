@@ -279,11 +279,11 @@ async function startLanguageClient(serverDllPath: string, dotnetExePath: string)
                 return onRequestOpenLinkedFile(args);
             });
 
-            client.onNotification(notifications.notifyTemplateGraph, async (args: INotifyTemplateGraphArgs) => {
+            client.onNotification(notifications.notifyTemplateGraph, (args: INotifyTemplateGraphArgs) => {
                 onNotifyTemplateGraph(args);
             });
 
-            client.onNotification(notifications.schemaValidationNotification, async (args: notifications.ISchemaValidationNotificationArgs) => {
+            client.onNotification(notifications.schemaValidationNotification, (args: notifications.ISchemaValidationNotificationArgs) => {
                 onSchemaValidationNotication(args);
             });
         } catch (error) {
@@ -393,7 +393,7 @@ function findLanguageServer(): string {
                 throw new Error(`Couldn't find the ${languageServerName} at ${fullPath}.  Please verify or remove your '${configPrefix}.languageServer.path' setting.`);
             }
 
-            window.showInformationMessage(`Using custom path for ${languageServerName}: ${fullPath}`);
+            void window.showInformationMessage(`Using custom path for ${languageServerName}: ${fullPath}`);
             return fullPath;
         }
     });

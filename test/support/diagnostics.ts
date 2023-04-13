@@ -334,6 +334,7 @@ export async function getDiagnosticsForDocument(
 
     const timeoutMs = options.timeoutMs ?? defaultDiagnosticsTimeoutMs;
 
+    // eslint-disable-next-line no-async-promise-executor -- CONSIDER: working, so leaving for now
     const diagnosticsPromise = new Promise<IDiagnosticsResults>(async (resolve, reject): Promise<void> => {
         try {
             let currentDiagnostics: Diagnostic[] | undefined;

@@ -106,6 +106,7 @@ export class InsertItem {
                 break;
             case TemplateSectionType.TopLevel:
                 assert.fail("Unknown insert item type!");
+            // eslint-disable-next-line no-fallthrough -- can't fall through because of assert.fail
             default:
                 assertNever(sectionType);
         }
