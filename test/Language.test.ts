@@ -103,22 +103,22 @@ suite("Language", () => {
 
         suite("union()", () => {
             test("With null", () => {
-                let s = new Span(5, 7);
+                const s = new Span(5, 7);
                 assert.deepStrictEqual(s, s.union(undefined));
             });
 
             test("With same span", () => {
-                let s = new Span(5, 7);
+                const s = new Span(5, 7);
                 assert.deepEqual(s, s.union(s));
             });
 
             test("With equal span", () => {
-                let s = new Span(5, 7);
+                const s = new Span(5, 7);
                 assert.deepEqual(s, s.union(new Span(5, 7)));
             });
 
             test("With subset span", () => {
-                let s = new Span(5, 17);
+                const s = new Span(5, 17);
                 assert.deepEqual(s, s.union(new Span(10, 2)));
             });
         });
@@ -126,17 +126,17 @@ suite("Language", () => {
         suite("intersect()", () => {
 
             test("With null", () => {
-                let s = Span.fromStartAndAfterEnd(5, 7);
+                const s = Span.fromStartAndAfterEnd(5, 7);
                 assert.deepStrictEqual(s.intersect(undefined), undefined);
             });
 
             test("With same span", () => {
-                let s = Span.fromStartAndAfterEnd(5, 7);
+                const s = Span.fromStartAndAfterEnd(5, 7);
                 assert.deepEqual(s, s.intersect(s));
             });
 
             test("With equal span", () => {
-                let s = Span.fromStartAndAfterEnd(5, 7);
+                const s = Span.fromStartAndAfterEnd(5, 7);
                 assert.deepEqual(s, s.intersect(new Span(5, 7)));
             });
 

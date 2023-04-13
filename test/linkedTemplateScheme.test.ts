@@ -14,7 +14,7 @@ suite("linkedTemplateScheme", () => {
             const uri = parseUri(uriString);
             assert.equal(stringifyUri(uri), uriString);
 
-            let uri2 = removeLinkedTemplateScheme(uri);
+            const uri2 = removeLinkedTemplateScheme(uri);
             assert.equal(stringifyUri(uri2), uriString);
         });
 
@@ -24,7 +24,7 @@ suite("linkedTemplateScheme", () => {
             const uriWithScheme = parseUri(uriStringWithScheme);
             assert.equal(stringifyUri(uriWithScheme), uriStringWithScheme);
 
-            let uri2 = removeLinkedTemplateScheme(uriWithScheme);
+            const uri2 = removeLinkedTemplateScheme(uriWithScheme);
             assert.equal(stringifyUri(uri2), uriString);
         });
     });
@@ -35,7 +35,7 @@ suite("linkedTemplateScheme", () => {
             const uriStringWithScheme = `linked-template:${uriString}`;
             const uri = parseUri(uriString);
 
-            let uri2 = prependLinkedTemplateScheme(uri);
+            const uri2 = prependLinkedTemplateScheme(uri);
             assert.equal(stringifyUri(uri2), uriStringWithScheme);
         });
 
@@ -44,7 +44,7 @@ suite("linkedTemplateScheme", () => {
             const uriStringWithScheme = `linked-template:${uriString}`;
             const uriWithScheme = parseUri(uriStringWithScheme);
 
-            let uri2 = prependLinkedTemplateScheme(uriWithScheme);
+            const uri2 = prependLinkedTemplateScheme(uriWithScheme);
             assert.equal(stringifyUri(uri2), uriStringWithScheme);
         });
     });

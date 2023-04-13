@@ -74,7 +74,7 @@ export function mightBeDeploymentTemplate(textDocument: TextDocument): boolean {
             return false;
         }
 
-        let startOfDocument = textDocument.getText(new Range(new Position(0, 0), new Position(maxLinesToDetectSchemaIn - 1, 0)));
+        const startOfDocument = textDocument.getText(new Range(new Position(0, 0), new Position(maxLinesToDetectSchemaIn - 1, 0)));
 
         // Do a quick dirty check if the first portion of the JSON contains a schema string that we're interested in
         // (might not actually be in a $schema property, though)
@@ -90,7 +90,7 @@ export function mightBeDeploymentParameters(textDocument: TextDocument): boolean
     }
 
     if (isJsonOrJsoncLangId(textDocument)) {
-        let startOfDocument = textDocument.getText(new Range(new Position(0, 0), new Position(maxLinesToDetectSchemaIn - 1, 0)));
+        const startOfDocument = textDocument.getText(new Range(new Position(0, 0), new Position(maxLinesToDetectSchemaIn - 1, 0)));
 
         // Do a quick dirty check if the first portion of the JSON contains a schema string that we're interested in
         // (might not actually be in a $schema property, though)

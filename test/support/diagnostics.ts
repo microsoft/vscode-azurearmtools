@@ -293,7 +293,7 @@ export async function testDiagnostics(templateContentsOrFileName: string | Parti
 }
 
 async function testDiagnosticsCore(getDiagnostics: () => Promise<IDiagnosticsResults>, options: ITestDiagnosticsOptions, expected: ExpectedDiagnostics): Promise<void> {
-    let actual: IDiagnosticsResults = await getDiagnostics();
+    const actual: IDiagnosticsResults = await getDiagnostics();
     compareDiagnostics(actual.diagnostics, expected, options);
 }
 
@@ -334,7 +334,7 @@ export async function getDiagnosticsForDocument(
 
     const timeoutMs = options.timeoutMs ?? defaultDiagnosticsTimeoutMs;
 
-    let diagnosticsPromise = new Promise<IDiagnosticsResults>(async (resolve, reject): Promise<void> => {
+    const diagnosticsPromise = new Promise<IDiagnosticsResults>(async (resolve, reject): Promise<void> => {
         try {
             let currentDiagnostics: Diagnostic[] | undefined;
 
@@ -354,7 +354,7 @@ export async function getDiagnosticsForDocument(
                 }
 
                 // Find completion messages
-                for (let d of filteredDiagnostics) {
+                for (const d of filteredDiagnostics) {
                     if (d.message.startsWith(diagnosticsCompletePrefix)) {
                         const version = Number(d.message.match(/version ([0-9]+)/)![1]);
                         sourceCompletionVersions[d.source!] = version;
@@ -376,7 +376,7 @@ export async function getDiagnosticsForDocument(
             }
 
             function areAllSourcesComplete(sourceCompletionVersions: { [source: string]: number }): boolean {
-                for (let source of filterSources) {
+                for (const source of filterSources) {
                     const completionVersion = sourceCompletionVersions[source.name];
                     if (completionVersion === undefined) {
                         return false;
@@ -399,11 +399,11 @@ export async function getDiagnosticsForDocument(
                 return true;
             }
 
-            let currentResults: IDiagnosticsResults = previousResults ?? getCurrentDiagnostics();
+            const currentResults: IDiagnosticsResults = previousResults ?? getCurrentDiagnostics();
             const requiredSourceCompletionVersions = Object.assign({}, currentResults.sourceCompletionVersions);
             if (options.waitForChange || previousResults) {
                 // tslint:disable-next-line:no-for-in forin
-                for (let source in requiredSourceCompletionVersions) {
+                for (const source in requiredSourceCompletionVersions) {
                     requiredSourceCompletionVersions[source] = requiredSourceCompletionVersions[source] + 1;
                 }
             }
@@ -439,7 +439,7 @@ export async function getDiagnosticsForDocument(
         }
     });
 
-    let diagnostics = await diagnosticsPromise;
+    const diagnostics = await diagnosticsPromise;
 
     if (DEBUG_BREAK_AFTER_DIAGNOSTICS_COMPLETE) {
         // tslint:disable-next-line:no-debugger
@@ -485,9 +485,9 @@ export async function getDiagnosticsForTemplate(
         options = options || {};
 
         if (typeof templateContentsOrFileName === 'string') {
-            if (!!templateContentsOrFileName.match(/\.jsonc?$/)) {
+            if (templateContentsOrFileName.match(/\.jsonc?$/)) {
                 // It's a filename
-                let sourcePath = resolveInTestFolder(templateContentsOrFileName);
+                const sourcePath = resolveInTestFolder(templateContentsOrFileName);
                 templateFile = TempFile.fromExistingFile(sourcePath);
             } else {
                 // It's a content string
@@ -513,7 +513,7 @@ export async function getDiagnosticsForTemplate(
             }
 
             if (options.search) {
-                let newContents = templateContents.replace(options.search, options.replace!);
+                const newContents = templateContents.replace(options.search, options.replace!);
                 templateContents = newContents;
             }
 
@@ -547,7 +547,7 @@ export async function getDiagnosticsForTemplate(
         editor = new TempEditor(document);
         await editor.open();
 
-        let diagnostics: IDiagnosticsResults = await getDiagnosticsForDocument(document.realDocument, expectedMinimumVersionForEachSource, options);
+        const diagnostics: IDiagnosticsResults = await getDiagnosticsForDocument(document.realDocument, expectedMinimumVersionForEachSource, options);
         assert(diagnostics);
 
         await editor.dispose();
@@ -622,12 +622,12 @@ function compareDiagnostics(actual: Diagnostic[], expected: ExpectedDiagnostics,
     transformResults(actual, options);
 
     // Do the expected messages include ranges?
-    let expectedHasRanges = expected.length === 0 ||
+    const expectedHasRanges = expected.length === 0 ||
         (typeof expected[0] === 'string' && !!expected[0].match(/\[[0-9]+,[0-9]+-[0-9]+,[0-9]+\]/)
             || (typeof expected[0] !== 'string' && expected[0].startLineNumber !== undefined));
-    let expectedHasPositions = expected.length > 0 &&
+    const expectedHasPositions = expected.length > 0 &&
         (typeof expected[0] === 'string' && !!expected[0].match(/\[[0-9]+,[0-9]+\]/));
-    let includeRange: IncludeRange = (!!options.includeRange || expectedHasRanges) ? IncludeRange.range
+    const includeRange: IncludeRange = (!!options.includeRange || expectedHasRanges) ? IncludeRange.range
         : (!!options.includePositions || expectedHasPositions) ? IncludeRange.position
             : IncludeRange.no;
 

@@ -31,7 +31,7 @@ suite("SortTemplate", async (): Promise<void> => {
 
         fse.writeFileSync(tempPath, template);
 
-        let doc = await workspace.openTextDocument(tempPath);
+        const doc = await workspace.openTextDocument(tempPath);
         await window.showTextDocument(doc);
 
         // SortTemplate

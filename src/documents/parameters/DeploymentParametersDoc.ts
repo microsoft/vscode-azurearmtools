@@ -51,7 +51,7 @@ export class DeploymentParametersDoc extends DeploymentDocument {
     public getParameterValue(parameterName: string): ParameterValueDefinition | undefined {
         // Number of parameters generally small, not worth creating a case-insensitive dictionary
         const parameterNameLC = parameterName.toLowerCase();
-        for (let param of this.parameterValueDefinitions) {
+        for (const param of this.parameterValueDefinitions) {
             if (param.nameValue.unquotedValue.toLowerCase() === parameterNameLC) {
                 return param;
             }

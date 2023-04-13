@@ -46,8 +46,8 @@ export class DeploymentFileMapping {
             // tslint:disable-next-line: strict-boolean-expressions
             || {};
         if (typeof paramFiles === 'object') {
-            for (let templatePath of Object.getOwnPropertyNames(paramFiles)) {
-                let paramPathObject = paramFiles[templatePath];
+            for (const templatePath of Object.getOwnPropertyNames(paramFiles)) {
+                const paramPathObject = paramFiles[templatePath];
                 if (typeof paramPathObject !== 'string' || isNullOrUndefined(paramPathObject)) {
                     continue;
                 }
@@ -58,7 +58,7 @@ export class DeploymentFileMapping {
 
                 if (path.isAbsolute(templatePath) && isFilePath(templatePath)) {
                     // Resolve parameter file relative to template file's folder
-                    let resolvedParamPath: string = resolveParameterFilePath(normalizedTemplatePath, paramPath);
+                    const resolvedParamPath: string = resolveParameterFilePath(normalizedTemplatePath, paramPath);
                     if (isFilePath(resolvedParamPath)) {
                         // If the user has an entry in both workspace and user settings, vscode combines the two objects,
                         //   with workspace settings overriding the user settings.
@@ -77,7 +77,7 @@ export class DeploymentFileMapping {
         }
 
         // Create reverse mapping
-        for (let entry of this._mapToParams) {
+        for (const entry of this._mapToParams) {
             const mapping: IMapping = entry[1];
             this._mapToTemplates.set(mapping.normalizedParams.fsPath, mapping);
         }
@@ -123,7 +123,7 @@ export class DeploymentFileMapping {
         // Copy existing entries that don't match (might be multiple entries with different casing, so can't do simple delete)
         const newMap: { [key: string]: string | undefined } = {};
 
-        for (let templatePath of Object.getOwnPropertyNames(map)) {
+        for (const templatePath of Object.getOwnPropertyNames(map)) {
             if (normalizeFilePath(templatePath) !== normalizedTemplatePath) {
                 newMap[templatePath] = map[templatePath];
             }

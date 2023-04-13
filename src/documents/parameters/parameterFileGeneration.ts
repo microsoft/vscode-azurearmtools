@@ -36,7 +36,7 @@ export async function queryCreateParameterFile(actionContext: IActionContext, sc
         path.dirname(templateUri.fsPath),
         `${fileNameWithoutJsonC}.parameters.json`);
 
-    let newUri: Uri | undefined = await window.showSaveDialog({
+    const newUri: Uri | undefined = await window.showSaveDialog({
         defaultUri: Uri.file(defaultParamPath),
         filters: {
             JSON: ['json', 'jsonc']
@@ -46,7 +46,7 @@ export async function queryCreateParameterFile(actionContext: IActionContext, sc
         throw new UserCancelledError();
     }
 
-    let paramsObj: string = createParameterFileContents(scope, tabSize, onlyRequiredParams);
+    const paramsObj: string = createParameterFileContents(scope, tabSize, onlyRequiredParams);
     await fse.writeFile(newUri.fsPath, paramsObj, {
         encoding: 'utf8'
     });
@@ -173,9 +173,9 @@ function createParameters(
     tabSize: number,
     onlyRequiredParameters: boolean
 ): CaseInsensitiveMap<string, string> {
-    let params: CaseInsensitiveMap<string, string> = new CaseInsensitiveMap<string, string>();
+    const params: CaseInsensitiveMap<string, string> = new CaseInsensitiveMap<string, string>();
 
-    for (let paramDef of scope.parameterDefinitionsSource.parameterDefinitions) {
+    for (const paramDef of scope.parameterDefinitionsSource.parameterDefinitions) {
         if (!onlyRequiredParameters || !paramDef.defaultValue) {
             params.set(paramDef.nameValue.unquotedValue, createParameterFromTemplateParameter(scope.parameterDefinitionsSource, paramDef, undefined, tabSize));
         }

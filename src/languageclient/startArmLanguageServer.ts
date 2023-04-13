@@ -53,7 +53,7 @@ export async function stopArmLanguageServer(): Promise<void> {
     ext.outputChannel.appendLine(`Stopping ${languageServerName}...`);
     ext.languageServerState = LanguageServerState.Stopped;
     if (ext.languageServerClient) {
-        let client: LanguageClient = ext.languageServerClient;
+        const client: LanguageClient = ext.languageServerClient;
         ext.languageServerClient = undefined;
         await client.stop();
     }
@@ -93,8 +93,8 @@ export function startArmLanguageServerInBackground(): void {
                 await callWithTelemetryAndErrorHandling('startArmLanguageServer', async (actionContext: IActionContext) => {
                     try {
                         // The server is implemented in .NET Core. We run it by calling 'dotnet' with the dll as an argument
-                        let serverDllPath: string = findLanguageServer();
-                        let dotnetExePath: string | undefined = await getDotNetPath();
+                        const serverDllPath: string = findLanguageServer();
+                        const dotnetExePath: string | undefined = await getDotNetPath();
                         if (!dotnetExePath) {
                             // Acquisition failed
                             ext.languageServerStartupError = ".dotnet acquisition returned no path";
@@ -145,11 +145,11 @@ async function startLanguageClient(serverDllPath: string, dotnetExePath: string)
         //   Error
         //   Critical
         //   None
-        let trace: string = workspace.getConfiguration(configPrefix).get<string>(configKeys.traceLevel)
+        const trace: string = workspace.getConfiguration(configPrefix).get<string>(configKeys.traceLevel)
             // tslint:disable-next-line: strict-boolean-expressions
             || defaultTraceLevel;
 
-        let commonArgs = [
+        const commonArgs = [
             serverDllPath,
             '--logLevel',
             trace
@@ -166,13 +166,13 @@ async function startLanguageClient(serverDllPath: string, dotnetExePath: string)
 
         // If the extension is launched in debug mode then the debug server options are used
         // Otherwise the run options are used
-        let serverOptions: ServerOptions = {
+        const serverOptions: ServerOptions = {
             run: { command: dotnetExePath, args: commonArgs, options: { shell: false } },
             debug: { command: dotnetExePath, args: commonArgs, options: { shell: false } },
         };
 
         // Options to control the language client
-        let clientOptions: LanguageClientOptions = {
+        const clientOptions: LanguageClientOptions = {
             documentSelector: templateDocumentSelector,
             diagnosticCollectionName: `${languageServerName} diagnostics`,
             outputChannel: ext.outputChannel, // Use the same output channel as the extension does
@@ -229,7 +229,7 @@ async function startLanguageClient(serverDllPath: string, dotnetExePath: string)
         ext.outputChannel.appendLine(`Language server nuget version: ${langServerVersion}`);
         ext.outputChannel.appendLine(`Client options:${os.EOL}${JSON.stringify(clientOptions, undefined, 2)}`);
         ext.outputChannel.appendLine(`Server options:${os.EOL}${JSON.stringify(serverOptions, undefined, 2)}`);
-        let client: LanguageClient = new LanguageClient(
+        const client: LanguageClient = new LanguageClient(
             armTemplateLanguageId,
             languageFriendlyName, // Used in the Output window combobox
             serverOptions,
@@ -237,7 +237,7 @@ async function startLanguageClient(serverDllPath: string, dotnetExePath: string)
         );
 
         // Use an error handler that sends telemetry
-        let defaultHandler = client.createDefaultErrorHandler();
+        const defaultHandler = client.createDefaultErrorHandler();
         client.clientOptions.errorHandler = new WrappedErrorHandler(defaultHandler);
 
         if (waitForDebugger) {
@@ -269,7 +269,7 @@ async function startLanguageClient(serverDllPath: string, dotnetExePath: string)
         try {
             // client.trace = Trace.Messages;
 
-            let disposable = client.start();
+            const disposable = client.start();
             ext.context.subscriptions.push(disposable);
 
             await client.onReady();
@@ -371,7 +371,7 @@ function findLanguageServer(): string {
         actionContext.errorHandling.rethrow = true;
         actionContext.errorHandling.suppressDisplay = true; // Let caller handle
 
-        let serverDllPathSetting: string | undefined = workspace.getConfiguration(configPrefix).get<string | undefined>(configKeys.langServerPath);
+        const serverDllPathSetting: string | undefined = workspace.getConfiguration(configPrefix).get<string | undefined>(configKeys.langServerPath);
         if (typeof serverDllPathSetting !== 'string' || serverDllPathSetting === '') {
             actionContext.telemetry.properties.customServerDllPath = 'false';
 

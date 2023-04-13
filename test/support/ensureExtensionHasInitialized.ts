@@ -29,7 +29,7 @@ export async function ensureExtensionHasInitialized(totalTimeout: number): Promi
     await ensureDotnetExtensionActivated();
 
     async function waitForExtensionInitialization(timeout: number): Promise<boolean> {
-        let start = Date.now();
+        const start = Date.now();
         writeToLog(
             `Extension initialization state: ${ext.extensionStartupComplete ? "Completed" : ext.extensionStartupComplete === undefined ? "Not started" : "In progress"}`,
             true);
@@ -61,7 +61,7 @@ export async function ensureExtensionHasInitialized(totalTimeout: number): Promi
 
     writeToLog(">>> First timeout hit, will try to activate extension manually", true);
 
-    let extension = extensions.getExtension(ext.extensionId);
+    const extension = extensions.getExtension(ext.extensionId);
     assert(extension, `Couldn't find extension ${ext.extensionId}`);
     await extension.activate();
 

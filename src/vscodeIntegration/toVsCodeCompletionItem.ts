@@ -58,7 +58,7 @@ export function toVsCodeCompletionItem(jsonDocument: IJsonDocument, item: Comple
         kind: item.kind,
         function: item.kind === Completion.CompletionKind.tleFunction ? item.label : undefined
     };
-    for (let key of Object.getOwnPropertyNames(item.telemetryProperties ?? {})) {
+    for (const key of Object.getOwnPropertyNames(item.telemetryProperties ?? {})) {
         telemetryArgs[key] = item.telemetryProperties?.[key];
     }
     vscodeItem.command = {

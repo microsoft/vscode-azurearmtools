@@ -21,12 +21,12 @@ import { useTestSnippets } from './support/TestSnippets';
 import { logsFolder } from './testConstants';
 import { useTestFunctionMetadata } from "./TestData";
 
-let previousSettings = {
+const previousSettings = {
     autoDetectJsonTemplates: <boolean | undefined>undefined,
     fileAssociations: <{ [key: string]: string }>{}
 };
 
-var _bailed = false;
+let _bailed = false;
 export function bail(): void {
     _bailed = true;
 }
@@ -66,9 +66,9 @@ suiteSetup(async function (this: mocha.Context): Promise<void> {
     previousSettings.autoDetectJsonTemplates = vscode.workspace.getConfiguration(configPrefix).get<boolean>(configKeys.autoDetectJsonTemplates);
     await vscode.workspace.getConfiguration(configPrefix).update(configKeys.autoDetectJsonTemplates, true, vscode.ConfigurationTarget.Global);
     // ... Add {'*.azrm':'arm-template'} to file.assocations (so colorization tests use the correct grammar, since _workbench.captureSyntaxTokens doesn't actually load anything into an editor)
-    let fileAssociations = previousSettings.fileAssociations = Object.assign({}, vscode.workspace.getConfiguration('files').get<{}>('associations'));
+    const fileAssociations = previousSettings.fileAssociations = Object.assign({}, vscode.workspace.getConfiguration('files').get<{}>('associations'));
     console.warn("Old file associations:", fileAssociations);
-    let newAssociations = Object.assign({}, fileAssociations, { '*.azrm': armTemplateLanguageId });
+    const newAssociations = Object.assign({}, fileAssociations, { '*.azrm': armTemplateLanguageId });
     vscode.workspace.getConfiguration('files', null).update('associations', newAssociations, vscode.ConfigurationTarget.Global);
 
     await delay(5 * 1000); // Give vscode time to update the setting

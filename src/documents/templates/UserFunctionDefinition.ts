@@ -65,7 +65,7 @@ export class UserFunctionDefinition implements INamedDefinition {
 
     public get output(): OutputDefinition | undefined {
         return this._output.getOrCacheValue(() => {
-            let output = Json.asObjectValue(this.objectValue.getPropertyValue("output"));
+            const output = Json.asObjectValue(this.objectValue.getPropertyValue("output"));
             if (output) {
                 return new OutputDefinition(output);
             }

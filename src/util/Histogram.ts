@@ -8,7 +8,7 @@ export class Histogram {
     private _counts: { [key: string]: number } = {};
 
     public get keys(): (string | undefined | null)[] {
-        let result: (string | undefined | null)[] = Object.getOwnPropertyNames(this._counts);
+        const result: (string | undefined | null)[] = Object.getOwnPropertyNames(this._counts);
         if (this._nullCounts > 0) {
             result.push(null);
         }
@@ -31,7 +31,7 @@ export class Histogram {
                 this._counts[key] += count;
             }
         } else {
-            for (let rhsKey of key.keys) {
+            for (const rhsKey of key.keys) {
                 this.add(rhsKey, key.getCount(rhsKey));
             }
         }

@@ -61,7 +61,7 @@ function getCompletions(
     const allResources = getResourcesInfo({ scope, recognizeDecoupledChildren: false });
 
     // Check previous arguments in the call to see if any of them matches a known resource type
-    let argWithResourceType = findFunctionCallArgumentWithResourceType(
+    const argWithResourceType = findFunctionCallArgumentWithResourceType(
         allResources,
         pc,
         funcCall,
@@ -97,7 +97,7 @@ function getCompletions(
             break;
         }
 
-        let argExpression: string | undefined = getArgumentExpressionText(pc, funcCall, parentStringToken, argIndex);
+        const argExpression: string | undefined = getArgumentExpressionText(pc, funcCall, parentStringToken, argIndex);
         if (!argExpression) {
             return [];
         }
@@ -109,13 +109,13 @@ function getCompletions(
 
     // Add completions for all remaining resources, at the given name segment index
     const results: Completion.Item[] = [];
-    for (let info of filteredResources) {
+    for (const info of filteredResources) {
         const insertText = info.nameSegmentExpressions[nameSegmentIndex];
         if (insertText) {
             const label = insertText;
 
-            let nameSegmentArgument = funcCall.argumentExpressions[argIndex];
-            let span = getReplacementSpan(pc, nameSegmentArgument, parentStringToken);
+            const nameSegmentArgument = funcCall.argumentExpressions[argIndex];
+            const span = getReplacementSpan(pc, nameSegmentArgument, parentStringToken);
 
             results.push(new Completion.Item({
                 label,
@@ -156,15 +156,15 @@ function findFunctionCallArgumentWithResourceType(
     maxIndex: number
 ): { argIndex: number; typeExpression: string } | undefined {
     for (let argIndex = 0; argIndex <= maxIndex; ++argIndex) {
-        let argText: string | undefined = getArgumentExpressionText(pc, funcCall, parentStringToken, argIndex);
+        const argText: string | undefined = getArgumentExpressionText(pc, funcCall, parentStringToken, argIndex);
         if (argText) {
             if (looksLikeResourceTypeStringLiteral(argText)) {
                 return { argIndex, typeExpression: argText };
             }
 
-            let argTextLC = argText?.toLowerCase();
+            const argTextLC = argText?.toLowerCase();
             if (argTextLC) {
-                for (let info of resources) {
+                for (const info of resources) {
                     if (info.getFullTypeExpression()?.toLowerCase() === argTextLC) {
                         return { argIndex, typeExpression: argText };
                     }
@@ -220,8 +220,8 @@ function getResourceTypeCompletions(
         const insertText = info.getFullTypeExpression();
         if (insertText) {
             const label = insertText;
-            let typeArgument = funcCall.argumentExpressions[argumentIndex];
-            let span = getReplacementSpan(pc, typeArgument, parentStringToken);
+            const typeArgument = funcCall.argumentExpressions[argumentIndex];
+            const span = getReplacementSpan(pc, typeArgument, parentStringToken);
 
             const item = new Completion.Item({
                 label,
@@ -255,7 +255,7 @@ function getResourceTypeCompletions(
 }
 
 function getReplacementSpan(pc: PositionContext, argument: TLE.Value | undefined, parentStringToken: Json.Token): Span {
-    let span = argument?.getSpan()?.translate(parentStringToken.span.startIndex)
+    const span = argument?.getSpan()?.translate(parentStringToken.span.startIndex)
         ?? pc.emptySpanAtDocumentCharacterIndex;
     return span;
 }

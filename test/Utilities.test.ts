@@ -28,8 +28,8 @@ suite("Utilities", () => {
         });
 
         test("With empty object", () => {
-            let emptyObject = {};
-            let clone = deepClone(emptyObject);
+            const emptyObject = {};
+            const clone = deepClone(emptyObject);
             assert.deepEqual(emptyObject, clone);
             // tslint:disable-next-line:no-string-literal
             // tslint:disable-next-line: no-any
@@ -39,8 +39,8 @@ suite("Utilities", () => {
         });
 
         test("With empty array", () => {
-            let emptyArray: string[] = [];
-            let clone = deepClone(emptyArray);
+            const emptyArray: string[] = [];
+            const clone = deepClone(emptyArray);
             assert.deepEqual(emptyArray, clone);
             clone.push("test");
             assert.deepEqual([], emptyArray);
@@ -48,8 +48,8 @@ suite("Utilities", () => {
         });
 
         test("With object with string property", () => {
-            let value = { hello: "there" };
-            let clone = deepClone(value);
+            const value = { hello: "there" };
+            const clone = deepClone(value);
             assert.deepEqual(value, clone);
             // tslint:disable-next-line:no-any
             (<any>clone).test = "testValue";
@@ -58,8 +58,8 @@ suite("Utilities", () => {
         });
 
         test("With object with number property", () => {
-            let value = { age: 3 };
-            let clone = deepClone(value);
+            const value = { age: 3 };
+            const clone = deepClone(value);
             assert.deepEqual(value, clone);
             // tslint:disable-next-line:no-any
             (<any>clone).test = "testValue";
@@ -68,8 +68,8 @@ suite("Utilities", () => {
         });
 
         test("With object with boolean property", () => {
-            let value = { okay: true };
-            let clone = deepClone(value);
+            const value = { okay: true };
+            const clone = deepClone(value);
             assert.deepEqual(value, clone);
             // tslint:disable-next-line:no-any
             (<any>clone).test = "testValue";

@@ -21,7 +21,7 @@ import { getTempFilePath } from '../support/getTempFilePath';
 import { stringify } from '../support/stringify';
 
 suite("ExtractItem", async (): Promise<void> => {
-    let testUserInput: TestUserInput = new TestUserInput(vscode);
+    const testUserInput: TestUserInput = new TestUserInput(vscode);
     async function runExtractParameterTest(startTemplate: string | IPartialDeploymentTemplate, selectedText: string, testInputs: (string | RegExp)[], codeActionsCount: number = 2, expectedTemplate?: string | IPartialDeploymentTemplate): Promise<void> {
         await runExtractItemTest(startTemplate, selectedText, testInputs, codeActionsCount, expectedTemplate, async (extractItem, template, editor) => await extractItem.extractParameter(editor, template, getActionContext()));
     }
@@ -41,17 +41,17 @@ suite("ExtractItem", async (): Promise<void> => {
             }
 
             fse.writeFileSync(tempPath, startTemplate);
-            let document = await vscode.workspace.openTextDocument(tempPath);
-            let textEditor = await vscode.window.showTextDocument(document);
-            let extractItem = new ExtractItem(testUserInput);
-            let deploymentTemplate = new DeploymentTemplateDoc(document.getText(), document.uri, 0);
-            let text = document.getText(undefined);
-            let index = text.indexOf(selectedText);
+            const document = await vscode.workspace.openTextDocument(tempPath);
+            const textEditor = await vscode.window.showTextDocument(document);
+            const extractItem = new ExtractItem(testUserInput);
+            const deploymentTemplate = new DeploymentTemplateDoc(document.getText(), document.uri, 0);
+            const text = document.getText(undefined);
+            const index = text.indexOf(selectedText);
             assert(index >= 0, `Couldn't find selected text "${selectedText}"`);
-            let position = document.positionAt(index);
-            let endPosition = document.positionAt(index + selectedText.length);
+            const position = document.positionAt(index);
+            const endPosition = document.positionAt(index + selectedText.length);
             textEditor.selection = new vscode.Selection(position, endPosition);
-            let codeActions = deploymentTemplate.getCodeActions(undefined, textEditor.selection, getEmptyCodeActionContext());
+            const codeActions = deploymentTemplate.getCodeActions(undefined, textEditor.selection, getEmptyCodeActionContext());
             assert.strictEqual(codeActions.length, codeActionsCount, `GetCodeAction should return ${codeActionsCount}`);
             if (codeActionsCount > 0) {
                 await doExtract(extractItem, deploymentTemplate, textEditor);

@@ -128,7 +128,7 @@ export class ParameterDefinitionCodeLens extends ResolvableCodeLens {
             const givenValueAsString = paramValue?.toFullFriendlyString();
             const hasDefaultValue = !!this.parameterDefinition.defaultValue;
 
-            if (!!paramReference) {
+            if (paramReference) {
                 title = 'Value: (KeyVault reference)';
             } else if (givenValueAsString !== undefined) {
                 title = `Value: ${givenValueAsString}`;
@@ -160,7 +160,7 @@ export class ParameterDefinitionCodeLens extends ResolvableCodeLens {
         } else if (paramsSource) {
             // If the parameter doesn't have a value to navigate to, then show the
             // properties section or top of the file
-            let span: Span = paramsSource.getParameterValue(this.parameterDefinition.nameValue.unquotedValue)?.value?.span
+            const span: Span = paramsSource.getParameterValue(this.parameterDefinition.nameValue.unquotedValue)?.value?.span
                 ?? paramsSource?.parameterValuesProperty?.nameValue.span
                 ?? new Span(0, 0);
             const range: Range = getVSCodeRangeFromSpan(paramsSource.document, span);

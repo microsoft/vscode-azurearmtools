@@ -45,21 +45,21 @@ const tabSize = 20;
 let unpreprocess: [RegExp, string][] | undefined;
 function unpreprocessScopes(scopes: string): string {
     if (!unpreprocess) {
-        let source: string = fs.readFileSync(tleGrammarSourcePath).toString();
-        let grammar = <IGrammar>JSON.parse(source);
+        const source: string = fs.readFileSync(tleGrammarSourcePath).toString();
+        const grammar = <IGrammar>JSON.parse(source);
         // tslint:disable-next-line: strict-boolean-expressions
-        let preprocess = grammar.preprocess || <{ [key: string]: string }>{};
+        const preprocess = grammar.preprocess || <{ [key: string]: string }>{};
         unpreprocess = [];
-        for (let key of Object.getOwnPropertyNames(preprocess)) {
+        for (const key of Object.getOwnPropertyNames(preprocess)) {
             if (key.startsWith("scope-")) {
-                let value = preprocess[key];
+                const value = preprocess[key];
                 unpreprocess.push([new RegExp(value.replace('.', '\\.'), "g"), `{{${key}}}`]);
             }
         }
     }
 
     unpreprocess.forEach(entry => {
-        let [regex, replacement] = entry;
+        const [regex, replacement] = entry;
         scopes = scopes.replace(regex, replacement);
     });
 
@@ -68,17 +68,17 @@ function unpreprocessScopes(scopes: string): string {
 
 let longestTestDuration = 0;
 async function assertUnchangedTokens(testPath: string, resultPath: string): Promise<void> {
-    let start = Date.now();
+    const start = Date.now();
     try {
         // If the test filename contains ".invalid.", then all testcases in it should have at least one "invalid" token.
         // Otherwise they should contain none.
-        let shouldHaveInvalidTokens = !!testPath.match(/\.INVALID\./i);
+        const shouldHaveInvalidTokens = !!testPath.match(/\.INVALID\./i);
 
         // If the test filename contains ".not-arm.", then all testcases in it should not contain any source.json.arm-template tokens.
         // Otherwise they should have at least one.
-        let shouldBeArmTemplate = !testPath.match(/\.NOT-ARM\./i);
+        const shouldBeArmTemplate = !testPath.match(/\.NOT-ARM\./i);
 
-        let shouldBeExpression = shouldBeArmTemplate && !testPath.match(/\.NOT-EXPR\./i);
+        const shouldBeExpression = shouldBeArmTemplate && !testPath.match(/\.NOT-EXPR\./i);
 
         let filePathForReadingTokens = testPath;
 
@@ -92,13 +92,13 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
             fs.writeFileSync(filePathForReadingTokens, fs.readFileSync(testPath));
         }
 
-        let rawData: { c: string; t: string; r: unknown[] }[] | undefined = await commands.executeCommand('_workbench.captureSyntaxTokens', Uri.file(filePathForReadingTokens));
+        const rawData: { c: string; t: string; r: unknown[] }[] | undefined = await commands.executeCommand('_workbench.captureSyntaxTokens', Uri.file(filePathForReadingTokens));
         if (!rawData) {
             throw new Error("_workbench.captureSyntaxTokens failed");
         }
 
         // Let's use more reasonable property names in our data
-        let data: ITokenInfo[] = rawData.map(d => <ITokenInfo>{ text: d.c.trim(), scopes: d.t, colors: d.r })
+        const data: ITokenInfo[] = rawData.map(d => <ITokenInfo>{ text: d.c.trim(), scopes: d.t, colors: d.r })
             .filter(d => d.text !== "");
 
         // let doc = await workspace.openTextDocument(filePathForReadingTokens);
@@ -118,7 +118,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
         // ------------- USAGE TIP ------------
         // If the test filename contains '.full-scope.', then the full scope will be output for each test, otherwise
         //   only the top of the scope stack will be output and compared (easier to compare changes that way).
-        let shouldCompareFullScope = !!testPath.match(/\.FULL-SCOPE\./i);
+        const shouldCompareFullScope = !!testPath.match(/\.FULL-SCOPE\./i);
 
         // ------------- USAGE TIP ------------
         // If the test contains code like this:
@@ -137,7 +137,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
             }
 
             // Skip past the dictionary key
-            let dictionaryNestingLevel = getDictionaryNestingLevel(data[nBegin].scopes);
+            const dictionaryNestingLevel = getDictionaryNestingLevel(data[nBegin].scopes);
             while (getDictionaryNestingLevel(data[nBegin].scopes) === dictionaryNestingLevel) {
                 nBegin++;
             }
@@ -154,7 +154,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
                 // end of the dictionary value item
                 getDictionaryNestingLevel(t.scopes) === dictionaryNestingLevel);
             if (nEnd < 0) {
-                let { fullScopeString, text } = getTestcaseResults([{ testString: '', data: data.slice(nBegin) }]);
+                const { fullScopeString, text } = getTestcaseResults([{ testString: '', data: data.slice(nBegin) }]);
                 assert(false, `Couldn't find end of test string starting here:\\n${text}\n${fullScopeString}`);
             }
             nEnd -= 1;
@@ -169,8 +169,8 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
             if (testCases === undefined) {
                 testCases = [];
             }
-            let testData = data.slice(nBegin, nEnd + 1);
-            let testcase: ITestcase = { testString: `TEST STRING: ${testData.map(d => d.text).join("")}`, data: testData };
+            const testData = data.slice(nBegin, nEnd + 1);
+            const testcase: ITestcase = { testString: `TEST STRING: ${testData.map(d => d.text).join("")}`, data: testData };
             testCases.push(testcase);
 
             // Skip to look for next set of data
@@ -181,18 +181,18 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
         // tslint:disable-next-line: strict-boolean-expressions
         testCases = testCases || [<ITestcase>{ data }];
 
-        let { results: testcaseResults, fullScopeString: resultsFullString, shortScopeString: resultsShortString } = getTestcaseResults(testCases);
-        let resultsString = shouldCompareFullScope ? resultsFullString : resultsShortString;
+        const { results: testcaseResults, fullScopeString: resultsFullString, shortScopeString: resultsShortString } = getTestcaseResults(testCases);
+        const resultsString = shouldCompareFullScope ? resultsFullString : resultsShortString;
 
-        let actualResultPath = `${resultPath}.actual`;
-        let resultPathToWriteTo = OVERWRITE ? resultPath : actualResultPath;
+        const actualResultPath = `${resultPath}.actual`;
+        const resultPathToWriteTo = OVERWRITE ? resultPath : actualResultPath;
         let removeActualResultPath = false;
         if (fs.existsSync(resultPath)) {
-            let previousResult = normalizeString(fs.readFileSync(resultPath).toString().trim());
+            const previousResult = normalizeString(fs.readFileSync(resultPath).toString().trim());
             let isJustDiff = false;
 
             try {
-                for (let testcaseResult of testcaseResults) {
+                for (const testcaseResult of testcaseResults) {
                     if (shouldHaveInvalidTokens) {
                         assert(
                             testcaseResult.includes('invalid.illegal'),
@@ -214,7 +214,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
                             "This test's filename contains '.NOT-ARM.', but at least one testcase in it contains an source.json.arm-template token (but shouldn't).");
                     }
 
-                    let isExpression = testcaseResult.includes('meta.expression.tle.arm-template');
+                    const isExpression = testcaseResult.includes('meta.expression.tle.arm-template');
                     if (shouldBeExpression) {
                         assert(
                             isExpression,
@@ -231,7 +231,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
                 assert.equal(resultsString, previousResult);
                 removeActualResultPath = true;
             } catch (e) {
-                let nonDiffError = isJustDiff ? "" : `${parseError(e).message}${os.EOL}`;
+                const nonDiffError = isJustDiff ? "" : `${parseError(e).message}${os.EOL}`;
                 writeToResultsFile(resultPathToWriteTo, resultsString, shouldCompareFullScope, resultsFullString);
 
                 if (OVERWRITE) {
@@ -253,8 +253,8 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
             fs.unlinkSync(actualResultPath);
         }
     } finally {
-        let stop = Date.now();
-        let duration = stop - start;
+        const stop = Date.now();
+        const duration = stop - start;
         writeToLog(`Test duration: ${duration}`);
         if (duration > longestTestDuration) {
             longestTestDuration = duration;
@@ -270,24 +270,24 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
 }
 
 function getDictionaryNestingLevel(scopes: string): number {
-    let matches = scopes.match(/meta\.structure\.dictionary\.value/g);
+    const matches = scopes.match(/meta\.structure\.dictionary\.value/g);
     return matches ? matches.length : 0;
 }
 
 function getTestcaseResults(testCases: ITestcase[]): { text: string; results: string[]; fullScopeString: string; shortScopeString: string } {
-    let results = testCases.map((testcase: ITestcase): { short: string; full: string } => {
-        let prefix = testcase.testString ? `${testcase.testString}${os.EOL}` : "";
+    const results = testCases.map((testcase: ITestcase): { short: string; full: string } => {
+        const prefix = testcase.testString ? `${testcase.testString}${os.EOL}` : "";
 
         function getLastScope(scopes: string): string {
-            let lastSpaceIndex = scopes.lastIndexOf(" ");
+            const lastSpaceIndex = scopes.lastIndexOf(" ");
             return lastSpaceIndex > 0 ? scopes.slice(lastSpaceIndex + 1) : scopes;
         }
 
         function getTestCaseString(full: boolean): string {
             return testcase.data.map(td => {
-                let theText = td.text.trim();
-                let padding = tabSize - theText.length;
-                let scopes = unpreprocessScopes(full ? td.scopes : getLastScope(td.scopes));
+                const theText = td.text.trim();
+                const padding = tabSize - theText.length;
+                const scopes = unpreprocessScopes(full ? td.scopes : getLastScope(td.scopes));
                 if (padding > 0) {
                     return `${theText}${" ".repeat(padding)}${scopes}`;
                 } else {
@@ -296,8 +296,8 @@ function getTestcaseResults(testCases: ITestcase[]): { text: string; results: st
             }).join(os.EOL);
         }
 
-        let fullTestCaseString = getTestCaseString(true);
-        let shortTestCaseString = getTestCaseString(false);
+        const fullTestCaseString = getTestCaseString(true);
+        const shortTestCaseString = getTestCaseString(false);
 
         return { short: prefix + shortTestCaseString, full: prefix + fullTestCaseString };
     });
@@ -308,7 +308,7 @@ function getTestcaseResults(testCases: ITestcase[]): { text: string; results: st
     let shortScopeString = results.map(r => r.short).join(`${os.EOL}${os.EOL}`);
     shortScopeString = normalizeString(shortScopeString.trim());
 
-    let text = normalizeString(testCases.map(tc => tc.data).map((tis: ITokenInfo[]) => tis.map(ti => ti.text).join('')).join(''));
+    const text = normalizeString(testCases.map(tc => tc.data).map((tis: ITokenInfo[]) => tis.map(ti => ti.text).join('')).join(''));
 
     return { text, results: results.map(r => r.full), fullScopeString, shortScopeString };
 }
@@ -316,8 +316,8 @@ function getTestcaseResults(testCases: ITestcase[]): { text: string; results: st
 suite('TLE colorization', function (this: Suite): void {
     this.timeout(50000); // I've seen as high as 32s on server (esp the first ARM one), although most are no more than a second or two
 
-    let testFolder = path.join(__dirname, '..', '..', '..', 'test', 'colorization', 'inputs');
-    let resultsFolder = path.join(__dirname, '..', '..', '..', 'test', 'colorization', 'results');
+    const testFolder = path.join(__dirname, '..', '..', '..', 'test', 'colorization', 'inputs');
+    const resultsFolder = path.join(__dirname, '..', '..', '..', 'test', 'colorization', 'results');
 
     let testFiles: string[];
     let resultFiles: string[];
@@ -333,17 +333,17 @@ suite('TLE colorization', function (this: Suite): void {
     assert(testFiles.length, `Couldn't find any test files in ${testFolder}`);
 
     resultFiles = fs.readdirSync(resultsFolder);
-    for (let resultFile of resultFiles) {
+    for (const resultFile of resultFiles) {
         if (resultFile.endsWith('.actual') || resultFile.endsWith('.full-scope-result.txt')) {
             fs.unlinkSync(path.join(resultsFolder, resultFile));
         }
     }
     resultFiles = fs.readdirSync(resultsFolder);
 
-    let testToResultFileMap = new Map<string, string>();
-    let orphanedResultFiles = new Set<string>(resultFiles);
+    const testToResultFileMap = new Map<string, string>();
+    const orphanedResultFiles = new Set<string>(resultFiles);
     testFiles.forEach(testFile => {
-        let resultFile = `${path.basename(testFile)}.txt`;
+        const resultFile = `${path.basename(testFile)}.txt`;
         testToResultFileMap.set(testFile, resultFile);
         orphanedResultFiles.delete(resultFile);
     });

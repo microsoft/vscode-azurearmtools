@@ -14,7 +14,7 @@ suite("FunctionCountVisitor", () => {
         const visitor = FunctionCountVisitor.visit(tleParseResult.expression);
 
         const expected = new Histogram();
-        for (let propName of Object.getOwnPropertyNames(expectedFunctionCounts)) {
+        for (const propName of Object.getOwnPropertyNames(expectedFunctionCounts)) {
             expected.add(propName, expectedFunctionCounts[propName]);
         }
 

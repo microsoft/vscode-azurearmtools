@@ -122,7 +122,7 @@ suite("Linked templates functional tests", () => {
                 });
 
                 // Create promise to wait for child graphs to be available
-                let waitForChildPromises: Promise<unknown>[] = [];
+                const waitForChildPromises: Promise<unknown>[] = [];
                 for (const expectedLinkedTemplate of options.linkedTemplates) {
                     // Wait for child template's graph to be available
                     const childPath = resolveInTestFolder(tcString(expectedLinkedTemplate.linkedTemplateFile, testCase));

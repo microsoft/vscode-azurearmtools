@@ -222,7 +222,7 @@ function convertToInternalSnippet(snippetName: string, snippetFromFile: ISnippet
 }
 
 function convertToSnippet(snippet: ISnippetInternal): ISnippet {
-    let body = snippet.body;
+    const body = snippet.body;
     const insertText = body.join('\n'); // vscode will change to EOL as appropriate
     return {
         name: snippet.name,

@@ -40,7 +40,7 @@ export class Stopwatch {
     public get duration(): Duration {
         assert(this._startTimeMilliseconds !== undefined);
 
-        let endTimeMilliseconds: number = this._stopTimeMilliseconds !== undefined ? this._stopTimeMilliseconds : Date.now();
+        const endTimeMilliseconds: number = this._stopTimeMilliseconds !== undefined ? this._stopTimeMilliseconds : Date.now();
         // tslint:disable-next-line: no-non-null-assertion // Asserted
         return Duration.milliseconds(endTimeMilliseconds - this._startTimeMilliseconds!);
     }

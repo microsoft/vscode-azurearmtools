@@ -76,10 +76,10 @@ export async function publishCache(destFolderPath: string): Promise<void> {
     await fse.mkdir(destFolderExpirationPath);
 
     if (fse.pathExistsSync(cacheFolder)) {
-        for (let file of await fse.readdir(cacheFolder)) {
+        for (const file of await fse.readdir(cacheFolder)) {
             await copyCacheFile(file, destFolderPath);
         }
-        for (let file of await fse.readdir(path.join(cacheFolder, "Expiration"))) {
+        for (const file of await fse.readdir(path.join(cacheFolder, "Expiration"))) {
             await copyCacheFile(path.join('Expiration', file), destFolderPath);
         }
     } else {

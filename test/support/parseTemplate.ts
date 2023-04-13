@@ -142,7 +142,7 @@ export function removeEOLMarker(s: string): string {
  * Returns the document without the tags, plus a dictionary of the tags and their positions
  */
 export function getDocumentMarkers(doc: object | string, options?: { tabSize?: number }): { unmarkedText: string; markers: Markers } {
-    let markers: Markers = {};
+    const markers: Markers = {};
     doc = typeof doc === "string" ? doc : stringify(doc, options?.tabSize);
     let modified = doc;
 
@@ -150,7 +150,7 @@ export function getDocumentMarkers(doc: object | string, options?: { tabSize?: n
 
     // tslint:disable-next-line:no-constant-condition
     while (true) {
-        let match: RegExpMatchArray | null = modified.match(/<!([a-zA-Z][a-zA-Z0-9$]*)!>/);
+        const match: RegExpMatchArray | null = modified.match(/<!([a-zA-Z][a-zA-Z0-9$]*)!>/);
         if (!match) {
             break;
         }
@@ -186,7 +186,7 @@ export function replaceInTemplate(
     replacements: { [key: string]: string | { [key: string]: unknown } },
     options?: {}
 ): IPartialDeploymentTemplate {
-    let templateString = stringify(template);
+    const templateString = stringify(template);
 
     // $REPLACE_PROP_LINE$
     function getPropLineReplacementString(s: string, addComma: boolean): string {

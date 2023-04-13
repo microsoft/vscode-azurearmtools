@@ -9,7 +9,7 @@ import * as assert from 'assert';
 import * as os from 'os';
 import { ext, indentMultilineString, unindentMultilineString } from "../../extension.bundle";
 
-for (let eolIndex of [0, 1]) {
+for (const eolIndex of [0, 1]) {
     const eolLabel = ['win32', 'Mac/Linux'][eolIndex];
     const EOL = ['\r\n', '\n'][eolIndex];
 

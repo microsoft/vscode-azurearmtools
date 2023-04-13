@@ -22,7 +22,7 @@ export class FormattedStringHoverInfo implements IHoverInfo {
     }
 
     public getHoverText(): MarkdownString {
-        let formattedString = this._value.quotedValue
+        const formattedString = this._value.quotedValue
             .replace(/\\r\\n/g, '\n')
             .replace(/\\r/g, '\n')
             .replace(/\\n/g, '\n')

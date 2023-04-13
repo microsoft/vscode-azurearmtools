@@ -12,7 +12,7 @@ import { getVSCodeRangeFromSpan } from "./vscodePosition";
 export function toVSCodeDiagnosticFromIssue(deploymentDocument: DeploymentDocument, issue: Issue, severity: vscode.DiagnosticSeverity): vscode.Diagnostic {
     const range: vscode.Range = getVSCodeRangeFromSpan(deploymentDocument, issue.span);
     const message: string = issue.message;
-    let diagnostic = new vscode.Diagnostic(range, message, severity);
+    const diagnostic = new vscode.Diagnostic(range, message, severity);
     diagnostic.source = expressionsDiagnosticsSource;
     diagnostic.code = "";
 

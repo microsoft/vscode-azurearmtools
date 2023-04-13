@@ -22,7 +22,7 @@ export function getParentAndChildCodeLenses(scope: TemplateScope, infos: IJsonRe
     const lenses: ResolvableCodeLens[] = [];
 
     for (const resource of infos) {
-        if (!!resource.parent) {
+        if (resource.parent) {
             lenses.push(new ParentCodeLens(scope, resource));
         }
         if (resource.children.length > 0) {

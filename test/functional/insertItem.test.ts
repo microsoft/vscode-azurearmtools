@@ -79,11 +79,11 @@ suite("InsertItem", async (): Promise<void> => {
         }
         const tempPath = getTempFilePath(`insertItem`, '.azrm');
         fse.writeFileSync(tempPath, template);
-        let document = await workspace.openTextDocument(tempPath);
-        let textEditor = await window.showTextDocument(document);
-        let ui = new MockUserInput(showInputBox);
-        let insertItem = new InsertItem(ui);
-        let deploymentTemplate = new DeploymentTemplateDoc(document.getText(), document.uri, document.version);
+        const document = await workspace.openTextDocument(tempPath);
+        const textEditor = await window.showTextDocument(document);
+        const ui = new MockUserInput(showInputBox);
+        const insertItem = new InsertItem(ui);
+        const deploymentTemplate = new DeploymentTemplateDoc(document.getText(), document.uri, document.version);
         await action(insertItem, deploymentTemplate, textEditor);
         await textEditor.edit(builder => builder.insert(textEditor.selection.active, textToInsert));
         const docTextAfterInsertion = document.getText();
@@ -506,9 +506,9 @@ class MockUserInput implements IAzureUserInput {
     }
 
     public async showQuickPick<T extends vscode.QuickPickItem>(items: T[] | Thenable<T[]>, options: import("vscode-azureextensionui").IAzureQuickPickOptions): Promise<T> {
-        let result = await items;
-        let label = this.showInputBoxTexts.shift()!;
-        let item = result.find(x => x.label === label)!;
+        const result = await items;
+        const label = this.showInputBoxTexts.shift()!;
+        const item = result.find(x => x.label === label)!;
         return item;
     }
 

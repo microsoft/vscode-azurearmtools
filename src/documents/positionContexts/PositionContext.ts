@@ -118,7 +118,7 @@ export abstract class PositionContext {
      * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
      */
     public get __debugDisplay(): string {
-        let docText: string = this._document.documentText;
+        const docText: string = this._document.documentText;
         return __debugMarkPositionInString(docText, this.documentCharacterIndex, "<CURSOR>");
     }
 
@@ -126,7 +126,7 @@ export abstract class PositionContext {
      * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
      */
     public get __debugFullDisplay(): string {
-        let docText: string = this._document.documentText;
+        const docText: string = this._document.documentText;
         return __debugMarkPositionInString(docText, this.documentCharacterIndex, "<CURSOR>", Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
     }
 

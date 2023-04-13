@@ -38,7 +38,7 @@ suite("Contextualized snippets", () => {
         const testSources = [diagnosticSources.expressions];
         const timeout = DEFAULT_TESTCASE_TIMEOUT_MS;
 
-        for (let triggerCharacter of triggerCharacters) {
+        for (const triggerCharacter of triggerCharacters) {
             // tslint:disable-next-line: prefer-template
             const name = `${testName}, triggered by ${triggerCharacter ? ("'" + triggerCharacter + "'") : 'CTRL+SPACE'}`;
             // tslint:disable:no-function-expression
@@ -95,7 +95,7 @@ suite("Contextualized snippets", () => {
 
                     // Wait for final diagnostics but don't compare until we've compared the expected text first
                     diagnosticResults = await getDiagnosticsForDocument(tempEditor.realEditor.document, 2, diagnosticOptions, diagnosticResults);
-                    let messages = diagnosticResults.diagnostics.map(d => d.message).sort();
+                    const messages = diagnosticResults.diagnostics.map(d => d.message).sort();
 
                     if (DEBUG_BREAK_AFTER_INSERTING_SNIPPET) {
                         // tslint:disable-next-line: no-debugger

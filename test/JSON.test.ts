@@ -82,13 +82,13 @@ suite("JSON", () => {
             });
 
             test("with 1 token", () => {
-                let pr = Json.parse("true");
+                const pr = Json.parse("true");
                 assert(pr);
                 assert.deepStrictEqual(1, pr.tokenCount);
             });
 
             test("with 2 tokens", () => {
-                let pr = Json.parse("[]");
+                const pr = Json.parse("[]");
                 assert(pr);
                 assert.deepStrictEqual(2, pr.tokenCount);
             });
@@ -96,34 +96,34 @@ suite("JSON", () => {
 
         suite("getCharacterIndex(number,number)", () => {
             test("with negative line index", () => {
-                let pr = Json.parse("");
+                const pr = Json.parse("");
                 assert.throws(() => { pr.getCharacterIndex(-1, 0); });
             });
 
             test("with negative column index", () => {
-                let pr = Json.parse("");
+                const pr = Json.parse("");
                 assert.throws(() => { pr.getCharacterIndex(0, -1); });
             });
 
             test("with line index greater than input string line count", () => {
-                let pr = Json.parse("hello there");
+                const pr = Json.parse("hello there");
                 assert.throws(() => { pr.getCharacterIndex(1, 0); });
             });
 
             test("with column index greater than input string column length", () => {
-                let pr = Json.parse("hello there");
+                const pr = Json.parse("hello there");
                 assert.throws(() => {
                     pr.getCharacterIndex(0, "hello there".length + 1);
                 });
             });
 
             test("with 0 column index on empty input string line length", () => {
-                let pr = Json.parse("");
+                const pr = Json.parse("");
                 assert.deepStrictEqual(0, pr.getCharacterIndex(0, 0));
             });
 
             test("with a single line", () => {
-                let pr = Json.parse("hello there");
+                const pr = Json.parse("hello there");
                 assert.deepStrictEqual(0, pr.getCharacterIndex(0, 0));
                 assert.deepStrictEqual(1, pr.getCharacterIndex(0, 1));
                 assert.deepStrictEqual("hello".length, pr.getCharacterIndex(0, "hello".length));
@@ -131,7 +131,7 @@ suite("JSON", () => {
             });
 
             test("with multiple lines", () => {
-                let pr = Json.parse("a\nbb\n\nccc\ndddd");
+                const pr = Json.parse("a\nbb\n\nccc\ndddd");
                 assert.deepStrictEqual([2, 3, 1, 4, 4], pr.lineLengths);
 
                 assert.deepStrictEqual(0, pr.getCharacterIndex(0, 0));
@@ -165,22 +165,22 @@ suite("JSON", () => {
 
         suite("getTokenAtCharacterIndex(number)", () => {
             test("with negative character index", () => {
-                let pr = Json.parse("49");
+                const pr = Json.parse("49");
                 assert.throws(() => { pr.getTokenAtCharacterIndex(-1); });
             });
 
             test("with character index deepStrictEqual to the character count", () => {
-                let pr = Json.parse("50");
+                const pr = Json.parse("50");
                 assert.deepStrictEqual(parseNumber("50", 0), pr.getTokenAtCharacterIndex(2));
             });
 
             test("with character index greater than the character count", () => {
-                let pr = Json.parse("51");
+                const pr = Json.parse("51");
                 assert.deepStrictEqual(undefined, pr.getTokenAtCharacterIndex(3));
             });
 
             test("with character index inside character index range", () => {
-                let pr = Json.parse("{ 'hello': 42 }  ");
+                const pr = Json.parse("{ 'hello': 42 }  ");
                 assert.deepStrictEqual(Json.LeftCurlyBracket(0), pr.getTokenAtCharacterIndex(0));
                 assert.deepStrictEqual(undefined, pr.getTokenAtCharacterIndex(1));
                 assert.deepStrictEqual(Json.QuotedString(2, parseBasicTokens("'hello'")), pr.getTokenAtCharacterIndex(2));
@@ -197,56 +197,56 @@ suite("JSON", () => {
 
     suite("parse(string)", () => {
         test("with empty text", () => {
-            let result: Json.ParseResult = Json.parse("");
+            const result: Json.ParseResult = Json.parse("");
             assert.deepStrictEqual(result.tokenCount, 0);
             assert.deepStrictEqual(result.lineLengths, [0]);
             assert.deepStrictEqual(result.value, undefined);
         });
 
         test("with quoted string", () => {
-            let result: Json.ParseResult = Json.parse("'hello there'");
+            const result: Json.ParseResult = Json.parse("'hello there'");
             assert.deepStrictEqual(result.tokenCount, 1);
             assert.deepStrictEqual(result.lineLengths, [13]);
             assert.deepStrictEqual(result.value, new Json.StringValue(new Span(0, 13), "'hello there'"));
         });
 
         test("with number", () => {
-            let result: Json.ParseResult = Json.parse("14");
+            const result: Json.ParseResult = Json.parse("14");
             assert.deepStrictEqual(result.tokenCount, 1);
             assert.deepStrictEqual(result.lineLengths, [2]);
             assert.deepStrictEqual(result.value, new Json.NumberValue(new Span(0, 2), "14"));
         });
 
         test("with boolean (false)", () => {
-            let result: Json.ParseResult = Json.parse("false");
+            const result: Json.ParseResult = Json.parse("false");
             assert.deepStrictEqual(result.tokenCount, 1);
             assert.deepStrictEqual(result.lineLengths, [5]);
             assert.deepStrictEqual(result.value, new Json.BooleanValue(new Span(0, 5), false));
         });
 
         test("with boolean (true)", () => {
-            let result: Json.ParseResult = Json.parse("true");
+            const result: Json.ParseResult = Json.parse("true");
             assert.deepStrictEqual(result.tokenCount, 1);
             assert.deepStrictEqual(result.lineLengths, [4]);
             assert.deepStrictEqual(result.value, new Json.BooleanValue(new Span(0, 4), true));
         });
 
         test("with left curly bracket", () => {
-            let result: Json.ParseResult = Json.parse("{");
+            const result: Json.ParseResult = Json.parse("{");
             assert.deepStrictEqual(result.tokenCount, 1);
             assert.deepStrictEqual(result.lineLengths, [1]);
             assert.deepStrictEqual(result.value, new Json.ObjectValue(new Span(0, 1), []));
         });
 
         test("with right curly bracket", () => {
-            let result: Json.ParseResult = Json.parse("}");
+            const result: Json.ParseResult = Json.parse("}");
             assert.deepStrictEqual(result.tokenCount, 1);
             assert.deepStrictEqual(result.lineLengths, [1]);
             assert.deepStrictEqual(result.value, undefined);
         });
 
         test("with empty object", () => {
-            let result: Json.ParseResult = Json.parse("{}");
+            const result: Json.ParseResult = Json.parse("{}");
             assert.deepStrictEqual(result.tokenCount, 2);
             assert.deepStrictEqual(result.lineLengths, [2]);
             assert.deepStrictEqual(result.value, new Json.ObjectValue(new Span(0, 2), []));
@@ -268,7 +268,7 @@ suite("JSON", () => {
         });
 
         test("with object with one string property and one number property", () => {
-            let result: Json.ParseResult = Json.parse("{ 'a': 'A', 'b': 30 }");
+            const result: Json.ParseResult = Json.parse("{ 'a': 'A', 'b': 30 }");
             assert.deepStrictEqual(9, result.tokenCount);
             assert.deepStrictEqual([21], result.lineLengths);
 

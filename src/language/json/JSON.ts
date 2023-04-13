@@ -380,9 +380,9 @@ export class Tokenizer {
      */
     private moveNextBasicToken(): boolean {
         const result: boolean = this._innerTokenizer.moveNext();
-        let currentBasicToken = this.currentBasicToken();
+        const currentBasicToken = this.currentBasicToken();
         if (currentBasicToken) {
-            let currentBasicTokenType = this.currentBasicTokenType();
+            const currentBasicTokenType = this.currentBasicTokenType();
             this._lineLengths[this._lineLengths.length - 1] += currentBasicToken.length();
             if (currentBasicTokenType === basic.TokenType.NewLine || currentBasicTokenType === basic.TokenType.CarriageReturnNewLine) {
                 this._lineLengths.push(0);
@@ -1049,7 +1049,7 @@ export class ParseResult {
         const spanStartIndex = span.startIndex;
         const spanEndIndex = span.endIndex;
 
-        for (let token of tokens) {
+        for (const token of tokens) {
             if (token.span.endIndex >= spanStartIndex) {
                 if (token.span.startIndex > spanEndIndex) {
                     break;
@@ -1076,7 +1076,7 @@ export class ParseResult {
         } else {
             const nextLineIndex = this.getCharacterIndex(line + 1, 0);
 
-            for (let token of tokens) { // CONSIDER: binary search
+            for (const token of tokens) { // CONSIDER: binary search
                 if (token.span.startIndex >= nextLineIndex) {
                     break;
                 }
@@ -1096,7 +1096,7 @@ export class ParseResult {
      */
     public get maxCharacterIndex(): number {
         let result = 0;
-        for (let lineLength of this._lineLengths) {
+        for (const lineLength of this._lineLengths) {
             result += lineLength;
         }
         return result;
@@ -1152,7 +1152,7 @@ export class ParseResult {
 
         let remainingChars: number = characterIndex;
 
-        for (let lineLength of this.lineLengths) {
+        for (const lineLength of this.lineLengths) {
             if (lineLength <= remainingChars) {
                 ++line;
                 remainingChars -= lineLength;
@@ -1272,9 +1272,9 @@ export class ParseResult {
             let minTokenIndex = 0;
             let maxTokenIndex = tokenCount - 1;
             while (!token && minTokenIndex <= maxTokenIndex) {
-                let midTokenIndex = Math.floor((maxTokenIndex + minTokenIndex) / 2);
-                let currentToken = ParseResult.getToken(tokens, midTokenIndex);
-                let currentTokenSpan = currentToken.span;
+                const midTokenIndex = Math.floor((maxTokenIndex + minTokenIndex) / 2);
+                const currentToken = ParseResult.getToken(tokens, midTokenIndex);
+                const currentTokenSpan = currentToken.span;
 
                 if (characterIndex < currentTokenSpan.startIndex) {
                     maxTokenIndex = midTokenIndex - 1;

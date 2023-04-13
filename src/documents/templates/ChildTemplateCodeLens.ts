@@ -74,7 +74,7 @@ export class NestedTemplateCodeLens extends ChildTemplateCodeLens {
         }
 
         // If language server not running yet, show language server state instead of file load state
-        let langServerLoadState: string | undefined = getLoadStateFromLanguageServerStatus();
+        const langServerLoadState: string | undefined = getLoadStateFromLanguageServerStatus();
         if (langServerLoadState) {
             title += ` - ${langServerLoadState}`;
         }

@@ -54,7 +54,7 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
     return;
   }
 
-  let templateUri: Uri = sourceUri;
+  const templateUri: Uri = sourceUri;
 
   if (templateUri.scheme === documentSchemes.untitled) {
     actionContext.errorHandling.suppressReportIssue = true;
@@ -65,7 +65,7 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
   const contents = editor.document.getText(undefined);
   const template: DeploymentTemplateDoc = new DeploymentTemplateDoc(contents, templateUri, editor.document.version);
 
-  let quickPickList: IQuickPickList = await createParameterFileQuickPickList(mapping, templateUri);
+  const quickPickList: IQuickPickList = await createParameterFileQuickPickList(mapping, templateUri);
   // Show the quick pick
   const result: IAzureQuickPickItem<IPossibleParameterFile | undefined> = await ext.ui.showQuickPick(
     quickPickList.items,
@@ -115,7 +115,7 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
   } else if (result === quickPickList.newFile) {
     // New parameter file
 
-    let newUri: Uri = await queryCreateParameterFile(actionContext, template.topLevelScope);
+    const newUri: Uri = await queryCreateParameterFile(actionContext, template.topLevelScope);
     await mapping.mapParameterFile(templateUri, newUri);
     await commands.executeCommand('azurerm-vscode-tools.openParameterFile', templateUri, newUri);
   } else if (result === quickPickList.openCurrent) {
@@ -139,12 +139,12 @@ export async function selectParameterFile(actionContext: IActionContext, mapping
 
 export async function openParameterFile(mapping: DeploymentFileMapping, templateUri: Uri | undefined, parameterUri: Uri | undefined): Promise<void> {
   if (templateUri) {
-    let paramFile: Uri | undefined = parameterUri || mapping.getParameterFile(templateUri);
+    const paramFile: Uri | undefined = parameterUri || mapping.getParameterFile(templateUri);
     if (!paramFile) {
       throw new Error(`There is currently no parameter file for template file "${templateUri.fsPath}"`);
     }
 
-    let doc: TextDocument = await workspace.openTextDocument(paramFile);
+    const doc: TextDocument = await workspace.openTextDocument(paramFile);
     await window.showTextDocument(doc);
   }
 }
@@ -157,7 +157,7 @@ export async function openTemplateFile(mapping: DeploymentFileMapping, parameter
     }
 
     if (await pathExistsNoThrow(templateUri)) {
-      let doc: TextDocument = await workspace.openTextDocument(templateUri);
+      const doc: TextDocument = await workspace.openTextDocument(templateUri);
       await window.showTextDocument(doc);
     } else {
       const remove: MessageItem = { title: `Unlink` };
@@ -207,7 +207,7 @@ async function createParameterFileQuickPickList(mapping: DeploymentFileMapping, 
   if (currentParamUri && !currentParamFile) {
     // There is a current parameter file, but it wasn't among the list we came up with.  We must add it to the list.
     currentParamFile = { isCloseNameMatch: false, uri: currentParamUri, friendlyPath: getRelativeParameterFilePath(templateUri, currentParamUri) };
-    let exists = await pathExistsNoThrow(currentParamUri);
+    const exists = await pathExistsNoThrow(currentParamUri);
     currentParamFile.fileNotFound = !exists;
 
     suggestions = suggestions.concat(currentParamFile);
@@ -227,7 +227,7 @@ async function createParameterFileQuickPickList(mapping: DeploymentFileMapping, 
   // Add None at top, New/Browse/Open Current at bottom
   const none: IAzureQuickPickItem<IPossibleParameterFile | undefined> = {
     label: "$(circle-slash) None",
-    description: !!currentParamUri ? undefined : currentMessage,
+    description: currentParamUri ? undefined : currentMessage,
     data: undefined
   };
   const browse: IAzureQuickPickItem<IPossibleParameterFile | undefined> = {
@@ -293,7 +293,7 @@ function createQuickPickItem(paramFile: IPossibleParameterFile, current: IPossib
  * Finds parameter files to suggest for a given template.
  */
 export async function findSuggestedParameterFiles(templateUri: Uri): Promise<IPossibleParameterFile[]> {
-  let paths: IPossibleParameterFile[] = [];
+  const paths: IPossibleParameterFile[] = [];
 
   return await callWithTelemetryAndErrorHandling('findSuggestedParameterFiles', async (actionContext: IActionContext) => {
     actionContext.errorHandling.rethrow = false;
@@ -303,7 +303,7 @@ export async function findSuggestedParameterFiles(templateUri: Uri): Promise<IPo
     try {
       const folder = path.dirname(templateUri.fsPath);
       const fileNames: string[] = await fse.readdir(folder);
-      for (let paramFileName of fileNames) {
+      for (const paramFileName of fileNames) {
         const fullPath: string = path.join(folder, paramFileName);
         const uri: Uri = Uri.file(fullPath);
         if (await isParameterFile(fullPath) && templateUri.fsPath !== fullPath) {
@@ -487,7 +487,7 @@ function canAsk(templateUri: Uri, actionContext: IActionContext): boolean {
     return false;
   }
 
-  let ignoreThisSession = _filesToIgnoreThisSession.has(normalizeFilePath(templateUri));
+  const ignoreThisSession = _filesToIgnoreThisSession.has(normalizeFilePath(templateUri));
   if (ignoreThisSession) {
     actionContext.telemetry.properties.ignoreThisSession = 'true';
     return false;
@@ -496,11 +496,11 @@ function canAsk(templateUri: Uri, actionContext: IActionContext): boolean {
   return true;
 }
 
-function dontAskAgainThisSession(templateUri: Uri, actionContext: IActionContext): void {
+function dontAskAgainThisSession(templateUri: Uri, _actionContext: IActionContext): void {
   _filesToIgnoreThisSession.add(normalizeFilePath(templateUri));
 }
 
-async function neverAskAgain(templateUri: Uri, actionContext: IActionContext): Promise<void> {
+async function neverAskAgain(templateUri: Uri, _actionContext: IActionContext): Promise<void> {
   // tslint:disable-next-line: strict-boolean-expressions
   const neverAskFiles: string[] = ext.context.globalState.get<string[]>(globalStateKeys.dontAskAboutParameterFiles) || [];
   const key: string = normalizeFilePath(templateUri);

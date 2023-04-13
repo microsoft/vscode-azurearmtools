@@ -61,61 +61,61 @@ suite("TemplatePositionContext", () => {
         });
 
         test("with undefined documentLineIndex", () => {
-            let dt = new DeploymentTemplateDoc("{}", fakeId, 0);
+            const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
             // tslint:disable-next-line:no-any
             assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, <any>undefined, 2, undefined); });
         });
 
         test("with undefined documentLineIndex", () => {
-            let dt = new DeploymentTemplateDoc("{}", fakeId, 0);
+            const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
             // tslint:disable-next-line:no-any
             assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, <any>undefined, 2, undefined); });
         });
 
         test("with negative documentLineIndex", () => {
-            let dt = new DeploymentTemplateDoc("{}", fakeId, 0);
+            const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
             assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, -1, 2, undefined); });
         });
 
         test("with documentLineIndex equal to document line count", () => {
-            let dt = new DeploymentTemplateDoc("{}", fakeId, 0);
+            const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
             assert.deepStrictEqual(1, dt.lineCount);
-            let pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 1, 0, undefined);
+            const pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 1, 0, undefined);
             assert.strictEqual(0, pc.documentLineIndex);
             assert.strictEqual(0, pc.documentColumnIndex);
             assert.strictEqual(0, pc.documentCharacterIndex);
         });
 
         test("with undefined documentColumnIndex", () => {
-            let dt = new DeploymentTemplateDoc("{}", fakeId, 0);
+            const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
             // tslint:disable-next-line:no-any
             assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 0, <any>undefined, undefined); });
         });
 
         test("with undefined documentColumnIndex", () => {
-            let dt = new DeploymentTemplateDoc("{}", fakeId, 0);
+            const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
             // tslint:disable-next-line:no-any
             assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 0, <any>undefined, undefined); });
         });
 
         test("with negative documentColumnIndex", () => {
-            let dt = new DeploymentTemplateDoc("{}", fakeId, 0);
+            const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
             assert.throws(() => { TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 0, -2, undefined); });
         });
 
         test("with documentColumnIndex greater than line length", () => {
-            let dt = new DeploymentTemplateDoc("{}", fakeId, 0);
-            let pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 0, 3, undefined);
+            const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
+            const pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 0, 3, undefined);
             assert.strictEqual(0, pc.documentLineIndex);
             assert.strictEqual(2, pc.documentColumnIndex);
             assert.strictEqual(2, pc.documentCharacterIndex);
         });
 
         test("with valid arguments", () => {
-            let dt = new DeploymentTemplateDoc("{}", fakeId, 0);
-            let documentLineIndex = 0;
-            let documentColumnIndex = 2;
-            let pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, documentLineIndex, documentColumnIndex, undefined);
+            const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
+            const documentLineIndex = 0;
+            const documentColumnIndex = 2;
+            const pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, documentLineIndex, documentColumnIndex, undefined);
             assert.deepStrictEqual(new LineColPos(0, 2), pc.documentPosition);
             assert.deepStrictEqual(0, pc.documentLineIndex);
             assert.deepStrictEqual(2, pc.documentColumnIndex);
@@ -134,34 +134,34 @@ suite("TemplatePositionContext", () => {
         });
 
         test("with undefined documentCharacterIndex", () => {
-            let dt = new DeploymentTemplateDoc("{}", fakeId, 0);
+            const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
             // tslint:disable-next-line:no-any
             assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(dt, <any>undefined, undefined); });
         });
 
         test("with undefined documentCharacterIndex", () => {
-            let dt = new DeploymentTemplateDoc("{}", fakeId, 0);
+            const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
             // tslint:disable-next-line:no-any
             assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(dt, <any>undefined, undefined); });
         });
 
         test("with negative documentCharacterIndex", () => {
-            let dt = new DeploymentTemplateDoc("{}", fakeId, 0);
+            const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
             assert.throws(() => { TemplatePositionContext.fromDocumentCharacterIndex(dt, -1, undefined); });
         });
 
         test("with documentCharacterIndex greater than the maximum character index", () => {
-            let dt = new DeploymentTemplateDoc("{}", fakeId, 0);
-            let pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, 3, undefined);
+            const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
+            const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, 3, undefined);
             assert.strictEqual(0, pc.documentLineIndex);
             assert.strictEqual(2, pc.documentColumnIndex);
             assert.strictEqual(2, pc.documentCharacterIndex);
         });
 
         test("with valid arguments", () => {
-            let dt = new DeploymentTemplateDoc("{}", fakeId, 0);
-            let documentCharacterIndex = 2;
-            let pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, documentCharacterIndex, undefined);
+            const dt = new DeploymentTemplateDoc("{}", fakeId, 0);
+            const documentCharacterIndex = 2;
+            const pc = TemplatePositionContext.fromDocumentCharacterIndex(dt, documentCharacterIndex, undefined);
             assert.deepStrictEqual(2, pc.documentCharacterIndex);
         });
     });
@@ -169,24 +169,24 @@ suite("TemplatePositionContext", () => {
     suite("documentPosition", () => {
         test("with PositionContext from line and column indexes", () => {
             const dt = new DeploymentTemplateDoc("{\n}", fakeId, 0);
-            let pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 1, 0, undefined);
+            const pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(dt, 1, 0, undefined);
             assert.deepStrictEqual(new LineColPos(1, 0), pc.documentPosition);
         });
 
         test("with PositionContext from characterIndex", () => {
-            let pc = TemplatePositionContext.fromDocumentCharacterIndex(new DeploymentTemplateDoc("{\n}", fakeId, 0), 2, undefined);
+            const pc = TemplatePositionContext.fromDocumentCharacterIndex(new DeploymentTemplateDoc("{\n}", fakeId, 0), 2, undefined);
             assert.deepStrictEqual(new LineColPos(1, 0), pc.documentPosition);
         });
     });
 
     suite("documentCharacterIndex", () => {
         test("with PositionContext from line and column indexes", () => {
-            let pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(new DeploymentTemplateDoc("{\n}", fakeId, 0), 1, 0, undefined);
+            const pc = TemplatePositionContext.fromDocumentLineAndColumnIndexes(new DeploymentTemplateDoc("{\n}", fakeId, 0), 1, 0, undefined);
             assert.deepStrictEqual(2, pc.documentCharacterIndex);
         });
 
         test("with PositionContext from characterIndex", () => {
-            let pc = TemplatePositionContext.fromDocumentCharacterIndex(new DeploymentTemplateDoc("{\n}", fakeId, 0), 2, undefined);
+            const pc = TemplatePositionContext.fromDocumentCharacterIndex(new DeploymentTemplateDoc("{\n}", fakeId, 0), 2, undefined);
             assert.deepStrictEqual(2, pc.documentCharacterIndex);
         });
     });
@@ -215,38 +215,38 @@ suite("TemplatePositionContext", () => {
 
     suite("jsonToken", () => {
         test("with characterIndex in whitespace", () => {
-            let dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
-            let pc = dt.getContextFromDocumentCharacterIndex(1, undefined);
+            const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
+            const pc = dt.getContextFromDocumentCharacterIndex(1, undefined);
             assert.deepStrictEqual(undefined, pc.jsonToken);
         });
 
         test("with characterIndex at the start of a LeftCurlyBracket", () => {
-            let dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
-            let pc = dt.getContextFromDocumentCharacterIndex(0, undefined);
+            const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
+            const pc = dt.getContextFromDocumentCharacterIndex(0, undefined);
             assert.deepStrictEqual(Json.LeftCurlyBracket(0), pc.jsonToken);
         });
 
         test("with characterIndex at the start of a QuotedString", () => {
-            let dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
-            let pc = dt.getContextFromDocumentCharacterIndex(2, undefined);
+            const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
+            const pc = dt.getContextFromDocumentCharacterIndex(2, undefined);
             assert.deepStrictEqual(pc.jsonToken, jsonTest.parseQuotedString(`'a'`, 2));
         });
 
         test("with characterIndex inside of a QuotedString", () => {
-            let dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
-            let pc = dt.getContextFromDocumentCharacterIndex(3, undefined);
+            const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
+            const pc = dt.getContextFromDocumentCharacterIndex(3, undefined);
             assert.deepStrictEqual(pc.jsonToken, jsonTest.parseQuotedString(`'a'`, 2));
         });
 
         test("with characterIndex at the end of a closed QuotedString", () => {
-            let dt = new DeploymentTemplateDoc("{ 'a'", fakeId, 0);
-            let pc = dt.getContextFromDocumentCharacterIndex(5, undefined);
+            const dt = new DeploymentTemplateDoc("{ 'a'", fakeId, 0);
+            const pc = dt.getContextFromDocumentCharacterIndex(5, undefined);
             assert.deepStrictEqual(pc.jsonToken, jsonTest.parseQuotedString(`'a'`, 2));
         });
 
         test("with characterIndex at the end of an unclosed QuotedString", () => {
-            let dt = new DeploymentTemplateDoc("{ 'a", fakeId, 0);
-            let pc = dt.getContextFromDocumentCharacterIndex(4, undefined);
+            const dt = new DeploymentTemplateDoc("{ 'a", fakeId, 0);
+            const pc = dt.getContextFromDocumentCharacterIndex(4, undefined);
             assert.deepStrictEqual(pc.jsonToken, jsonTest.parseQuotedString(`'a`, 2));
         });
     });
@@ -265,14 +265,14 @@ suite("TemplatePositionContext", () => {
         });
 
         test("with characterIndex at the start of a Colon", () => {
-            let dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
-            let pc = dt.getContextFromDocumentCharacterIndex(5, undefined);
+            const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
+            const pc = dt.getContextFromDocumentCharacterIndex(5, undefined);
             assert.deepStrictEqual(pc.tleInfo, undefined);
         });
 
         test("with characterIndex at the start of a non-TLE QuotedString", () => {
-            let dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
-            let pc = dt.getContextFromDocumentCharacterIndex(2, undefined);
+            const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
+            const pc = dt.getContextFromDocumentCharacterIndex(2, undefined);
             const parseResult = TLE.Parser.parse("'a'");
             assert.deepStrictEqual(parseResult, pc.tleInfo!.tleParseResult);
         });
@@ -326,26 +326,26 @@ suite("TemplatePositionContext", () => {
 
     suite("tleCharacterIndex", () => {
         test("with characterIndex at the start of a LeftCurlyBracket", () => {
-            let dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
-            let pc = dt.getContextFromDocumentCharacterIndex(0, undefined);
+            const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
+            const pc = dt.getContextFromDocumentCharacterIndex(0, undefined);
             assert.deepStrictEqual(pc.tleInfo, undefined);
         });
 
         test("with characterIndex in whitespace", () => {
-            let dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
-            let pc = dt.getContextFromDocumentCharacterIndex(1, undefined);
+            const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
+            const pc = dt.getContextFromDocumentCharacterIndex(1, undefined);
             assert.deepStrictEqual(undefined, pc.tleInfo);
         });
 
         test("with characterIndex at the start of a non-TLE QuotedString", () => {
-            let dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
-            let pc = dt.getContextFromDocumentCharacterIndex(2, undefined);
+            const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
+            const pc = dt.getContextFromDocumentCharacterIndex(2, undefined);
             assert.deepStrictEqual(0, pc.tleInfo!.tleCharacterIndex);
         });
 
         test("with characterIndex at the start of a TLE", () => {
-            let dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
-            let pc = dt.getContextFromDocumentCharacterIndex(17, undefined);
+            const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
+            const pc = dt.getContextFromDocumentCharacterIndex(17, undefined);
             assert.deepStrictEqual(0, pc.tleInfo!.tleCharacterIndex);
         });
 
@@ -356,8 +356,8 @@ suite("TemplatePositionContext", () => {
         });
 
         test("with characterIndex after the end of a closed TLE", () => {
-            let dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
-            let pc = dt.getContextFromDocumentCharacterIndex(32, undefined);
+            const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
+            const pc = dt.getContextFromDocumentCharacterIndex(32, undefined);
             assert.deepStrictEqual(pc.tleInfo, undefined);
         });
 
@@ -370,14 +370,14 @@ suite("TemplatePositionContext", () => {
 
     suite("tleValue", () => {
         test("with characterIndex at the start of a LeftCurlyBracket", () => {
-            let dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
-            let pc = dt.getContextFromDocumentCharacterIndex(0, undefined);
+            const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
+            const pc = dt.getContextFromDocumentCharacterIndex(0, undefined);
             assert.deepStrictEqual(pc.tleInfo, undefined);
         });
 
         test("with characterIndex in whitespace", () => {
-            let dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
-            let pc = dt.getContextFromDocumentCharacterIndex(1, undefined);
+            const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
+            const pc = dt.getContextFromDocumentCharacterIndex(1, undefined);
             assert.deepStrictEqual(pc.tleInfo, undefined);
         });
 
@@ -411,8 +411,8 @@ suite("TemplatePositionContext", () => {
         });
 
         test("with characterIndex after the end of a closed TLE", () => {
-            let dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
-            let pc = dt.getContextFromDocumentCharacterIndex(32, undefined);
+            const dt = new DeploymentTemplateDoc("{ 'a': 'A', 'b': \"[concat('B')]\" }", fakeId, 0);
+            const pc = dt.getContextFromDocumentCharacterIndex(32, undefined);
             assert.deepStrictEqual(pc.tleInfo, undefined);
         });
 

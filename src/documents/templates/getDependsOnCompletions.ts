@@ -41,7 +41,7 @@ export function getDependsOnCompletions(
     }
 
     // Find the nearest IResource containing the current position
-    let currentResource = findClosestEnclosingResource(pc.documentCharacterIndex, infos);
+    const currentResource = findClosestEnclosingResource(pc.documentCharacterIndex, infos);
 
     // Find descendents of the resource
     const descendentsIncludingSelf: Set<IResourceInfo> = findDescendentsIncludingSelf(currentResource);
@@ -69,7 +69,7 @@ function getDependsOnCompletionsForResource(resource: IJsonResourceInfo, span: S
 
     if (resourceIdExpression) {
         const friendlyNameExpression = resource.getFriendlyNameExpression({ fullName: false });
-        let friendlyTypeExpression = resource.getFriendlyTypeExpression({ fullType: false });
+        const friendlyTypeExpression = resource.getFriendlyTypeExpression({ fullType: false });
 
         const label = friendlyNameExpression;
         const insertText = `"[${resourceIdExpression}]"`;

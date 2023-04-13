@@ -1015,8 +1015,8 @@ suite("DeploymentTemplate", () => {
                 writeToLog(`Testing index ${index}`);
                 try {
                     // Just make sure nothing throws
-                    let dt = new DeploymentTemplateDoc(json, fakeId, 0);
-                    let pc = dt.getContextFromDocumentCharacterIndex(index, undefined);
+                    const dt = new DeploymentTemplateDoc(json, fakeId, 0);
+                    const pc = dt.getContextFromDocumentCharacterIndex(index, undefined);
                     pc.getReferences();
                     pc.getSignatureHelp();
                     pc.tleInfo;
@@ -1095,8 +1095,8 @@ ${err}`);
 
         test("https://github.com/Microsoft/vscode-azurearmtools/issues/193", async () => {
             // Just make sure nothing throws
-            let modifiedTemplate = template.replace('"type": "string"', '"type": string');
-            let dt = parseTemplate(modifiedTemplate);
+            const modifiedTemplate = template.replace('"type": "string"', '"type": string');
+            const dt = parseTemplate(modifiedTemplate);
             findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
             findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
             dt.getFunctionCounts();
@@ -1104,7 +1104,7 @@ ${err}`);
 
         test("Unended string", async () => {
             const json = "{ \"";
-            let dt = parseTemplate(json);
+            const dt = parseTemplate(json);
             findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
             findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
             dt.getFunctionCounts();
@@ -1112,7 +1112,7 @@ ${err}`);
 
         test("No top-level object", async () => {
             const json = "\"hello\"";
-            let dt = parseTemplate(json);
+            const dt = parseTemplate(json);
             findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
             findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
             dt.getFunctionCounts();
@@ -1129,7 +1129,7 @@ ${err}`);
                 "subnetRef": "[concat(variables('vne2tId'), '/subnets/', parameters('subnetName'))]"
             }
         }`;
-            let dt = parseTemplate(json);
+            const dt = parseTemplate(json);
             findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
             findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
             dt.getFunctionCounts();
@@ -1146,7 +1146,7 @@ ${err}`);
                 "subnetRef": "[concat(variables('vne2tId'), '/subnets/', parameters('subnetName'))]"
             }
         }`;
-            let dt = parseTemplate(json);
+            const dt = parseTemplate(json);
             findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
             findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
             dt.getFunctionCounts();
@@ -1159,8 +1159,8 @@ ${err}`);
 
             // Just make sure nothing throws
             for (let i = 0; i < template.length; ++i) {
-                let partialTemplate = template.slice(0, i);
-                let dt = parseTemplate(partialTemplate);
+                const partialTemplate = template.slice(0, i);
+                const dt = parseTemplate(partialTemplate);
                 findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
                 findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
                 dt.getFunctionCounts();
@@ -1176,8 +1176,8 @@ ${err}`);
 
             // Just make sure nothing throws
             for (let i = 0; i < template.length; ++i) {
-                let partialTemplate = template.slice(i);
-                let dt = parseTemplate(partialTemplate);
+                const partialTemplate = template.slice(i);
+                const dt = parseTemplate(partialTemplate);
                 findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
                 findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
                 dt.getFunctionCounts();
@@ -1194,8 +1194,8 @@ ${err}`);
             // Just make sure nothing throws
             for (let i = 0; i < template.length; ++i) {
                 // Remove the single character at position i
-                let partialTemplate = template.slice(0, i) + template.slice(i + 1);
-                let dt = parseTemplate(partialTemplate);
+                const partialTemplate = template.slice(0, i) + template.slice(i + 1);
+                const dt = parseTemplate(partialTemplate);
                 findReferences(dt, DefinitionKind.Parameter, "adminUsername", dt.topLevelScope);
                 findReferences(dt, DefinitionKind.Variable, "resourceGroup", dt.topLevelScope);
                 dt.getFunctionCounts();
@@ -1225,14 +1225,14 @@ ${err}`);
                 const previousTemplate = modifiedTemplate;
                 if (modifiedTemplate.length > 0 && Math.random() < 0.5) {
                     // Delete some characters
-                    let position = Math.random() * (modifiedTemplate.length - 1);
-                    let length = Math.random() * Math.max(5, modifiedTemplate.length);
+                    const position = Math.random() * (modifiedTemplate.length - 1);
+                    const length = Math.random() * Math.max(5, modifiedTemplate.length);
                     modifiedTemplate = modifiedTemplate.slice(position, position + length);
                 } else {
                     // Insert some characters
-                    let position = Math.random() * modifiedTemplate.length;
-                    let length = Math.random() * 5;
-                    let s = randomBytes(length).toString();
+                    const position = Math.random() * modifiedTemplate.length;
+                    const length = Math.random() * 5;
+                    const s = randomBytes(length).toString();
                     modifiedTemplate = modifiedTemplate.slice(0, position) + s + modifiedTemplate.slice(position);
                 }
 
