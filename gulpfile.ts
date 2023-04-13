@@ -194,6 +194,8 @@ async function getLanguageServer(): Promise<void> {
     console.log("asdfg env.LANGSERVER_NUGET_USERNAME length =" + (env.LANGSERVER_NUGET_USERNAME ?? "").length);
     console.log("asdfg env.LANGSERVER_NUGET_PASSWORD length =" + (env.LANGSERVER_NUGET_PASSWORD ?? "").length);
     console.log("asdfg env.LANGUAGE_SERVER_PACKAGING_PATH length =" + (env.LANGUAGE_SERVER_PACKAGING_PATH ?? "").length);
+    console.log("asdfg env.LANGSERVER_NUGET_USERNAME[0] =" + (env.LANGSERVER_NUGET_USERNAME ?? "")[0]);
+    console.log("asdfg env.LANGSERVER_NUGET_PASSWORD[0] =" + (env.LANGSERVER_NUGET_PASSWORD ?? "")[0]);
 
 
     if (languageServerAvailable) {
