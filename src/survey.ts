@@ -119,7 +119,7 @@ export namespace survey {
             } finally {
                 isReentrant = false;
             }
-        }).catch(err => {
+        }).catch(_err => {
             assert.fail("callWithTelemetryAndErrorHandling in survey.registerActiveUseNoThrow shouldn't throw");
         });
     }
@@ -165,7 +165,7 @@ async function requestTakeSurvey(context: IActionContext): Promise<void> {
     }
 }
 
-async function launchSurvey(context: IActionContext): Promise<void> {
+async function launchSurvey(_context: IActionContext): Promise<void> {
     await commands.executeCommand('vscode.open', parseUri(linkToSurvey));
 }
 

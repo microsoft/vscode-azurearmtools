@@ -81,7 +81,7 @@ export class TimedMessage {
             } else {
                 assert(response === neverAskAgain);
             }
-        }).catch(err => {
+        }).catch(_err => {
             assert.fail("callWithTelemetryAndErrorHandling in TimedMessage.registerActiveUseNoThrow shouldn't throw");
         });
     }
