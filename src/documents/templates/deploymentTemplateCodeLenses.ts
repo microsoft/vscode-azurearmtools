@@ -65,6 +65,7 @@ export class SelectParameterFileCodeLens extends ResolvableCodeLens {
         super(scope, span);
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     public async resolve(): Promise<boolean> {
         let title: string;
         if (this.parameterFileUri) {
