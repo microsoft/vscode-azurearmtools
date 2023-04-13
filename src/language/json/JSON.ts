@@ -243,7 +243,7 @@ export function readQuotedString(iterator: Iterator<basic.Token>): basic.Token[]
 export function readWhitespace(iterator: Iterator<basic.Token>): basic.Token[] {
     const whitespaceTokens: basic.Token[] = [];
 
-    // tslint:disable-next-line: no-constant-condition
+    // eslint-disable-next-line no-constant-condition
     while (true) {
         let current: basic.Token | undefined = iterator.current();
         if (!current) {

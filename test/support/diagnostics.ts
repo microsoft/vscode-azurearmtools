@@ -442,7 +442,7 @@ export async function getDiagnosticsForDocument(
     const diagnostics = await diagnosticsPromise;
 
     if (DEBUG_BREAK_AFTER_DIAGNOSTICS_COMPLETE) {
-        // tslint:disable-next-line:no-debugger
+        // eslint-disable-next-line no-debugger
         debugger;
         // ************* BREAKPOINT HERE TO INSPECT THE TEST FILE WITH DIAGNOSTICS IN THE VSCODE EDITOR
         //

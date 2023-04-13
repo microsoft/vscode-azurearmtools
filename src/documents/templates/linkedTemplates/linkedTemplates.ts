@@ -5,12 +5,12 @@
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import { Diagnostic, TextDocument, Uri, window, workspace } from "vscode";
-import { callWithTelemetryAndErrorHandling, DialogResponses, IActionContext, parseError, TelemetryProperties } from "vscode-azureextensionui";
+import { DialogResponses, IActionContext, TelemetryProperties, callWithTelemetryAndErrorHandling, parseError } from "vscode-azureextensionui";
 import { armTemplateLanguageId, documentSchemes } from '../../../../common';
 import { Errorish } from '../../../Errorish';
+import { IProvideOpenedDocuments } from '../../../IProvideOpenedDocuments';
 import { ext } from "../../../extensionVariables";
 import { assert } from '../../../fixed_assert';
-import { IProvideOpenedDocuments } from '../../../IProvideOpenedDocuments';
 import { ContainsBehavior } from "../../../language/Span";
 import { filterByType } from '../../../util/filterByType';
 import { httpGet } from '../../../util/httpGet';
@@ -78,7 +78,7 @@ class LinkedTemplatePathNotFoundError extends Error {
  */
 export async function onRequestOpenLinkedFile(
     {
-        sourceTemplateUri,
+        _sourceTemplateUri,
         requestedLinkResolvedUri,
         pathType
     }: IRequestOpenLinkedFileArgs

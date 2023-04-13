@@ -148,7 +148,7 @@ export function getDocumentMarkers(doc: object | string, options?: { tabSize?: n
 
     modified = removeEOLMarker(modified);
 
-    // tslint:disable-next-line:no-constant-condition
+    // eslint-disable-next-line no-constant-condition
     while (true) {
         const match: RegExpMatchArray | null = modified.match(/<!([a-zA-Z][a-zA-Z0-9$]*)!>/);
         if (!match) {

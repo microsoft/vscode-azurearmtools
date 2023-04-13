@@ -368,7 +368,7 @@ suite("Snippets functional tests", () => {
         let messages = diagnosticResults.diagnostics.map(d => d.message).sort();
 
         if (DEBUG_BREAK_AFTER_INSERTING_SNIPPET) {
-            // tslint:disable-next-line: no-debugger
+            // eslint-disable-next-line no-debugger
             debugger;
         }
 

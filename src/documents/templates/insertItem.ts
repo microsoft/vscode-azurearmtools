@@ -300,7 +300,7 @@ export class InsertItem {
         // Figure out the indenting level based on existing text
         const templatePartStartPos = textEditor.document.positionAt(templatePart.span.startIndex);
         const templatePartStartLine = textEditor.document.lineAt(templatePartStartPos.line);
-        // tslint:disable-next-line: no-non-null-assertion // Will always match at least empty string
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Will always match at least empty string
         const templatePartInitialWhitespace: string = templatePartStartLine.text.match(/^\s*/)![0];
         let spacesPerTab = Math.max(1, Number(textEditor.options.tabSize) ?? 1);
         const templatePartIndentColumn = templatePartInitialWhitespace.replace(/\t/g, ' '.repeat(spacesPerTab)).length;

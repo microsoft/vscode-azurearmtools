@@ -41,7 +41,7 @@ export class UserFunctionMetadata implements IFunctionMetadata {
             []);
     }
 
-    public hasBehavior(behavior: FunctionBehaviors): boolean {
+    public hasBehavior(_behavior: FunctionBehaviors): boolean {
         return false;
     }
 }

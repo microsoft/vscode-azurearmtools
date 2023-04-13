@@ -7,12 +7,12 @@ import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
 import { CancellationToken, CompletionContext, CompletionItem, CompletionList, Diagnostic, Event, EventEmitter, Position, ProgressLocation, TextDocument, Uri, window, workspace } from 'vscode';
-import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, ITelemetryContext, parseError } from 'vscode-azureextensionui';
+import { IActionContext, ITelemetryContext, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient/node';
 import { armTemplateLanguageId, backendValidationDiagnosticsSource, configKeys, configPrefix, downloadDotnetVersion, isRunningTests, languageFriendlyName, languageServerFolderName, languageServerName, notifications } from '../../common';
 import { delay } from '../../test/support/delay';
 import { acquireSharedDotnetInstallation } from '../acquisition/acquireSharedDotnetInstallation';
-import { convertDiagnosticUrisToLinkedTemplateSchema, INotifyTemplateGraphArgs, IRequestOpenLinkedFileArgs, onRequestOpenLinkedFile } from '../documents/templates/linkedTemplates/linkedTemplates';
+import { INotifyTemplateGraphArgs, IRequestOpenLinkedFileArgs, convertDiagnosticUrisToLinkedTemplateSchema, onRequestOpenLinkedFile } from '../documents/templates/linkedTemplates/linkedTemplates';
 import { templateDocumentSelector } from '../documents/templates/supported';
 import { ext } from '../extensionVariables';
 import { assert } from '../fixed_assert';
@@ -90,7 +90,7 @@ export function startArmLanguageServerInBackground(): void {
         },
         async () => {
             try {
-                await callWithTelemetryAndErrorHandling('startArmLanguageServer', async (actionContext: IActionContext) => {
+                await callWithTelemetryAndErrorHandling('startArmLanguageServer', async (_actionContext: IActionContext) => {
                     try {
                         // The server is implemented in .NET Core. We run it by calling 'dotnet' with the dll as an argument
                         const serverDllPath: string = findLanguageServer();
@@ -399,7 +399,7 @@ function findLanguageServer(): string {
     });
 
     assert(typeof serverDllPath === "string", "Should have thrown instead of returning undefined");
-    // tslint:disable-next-line:no-non-null-assertion // Asserted
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Asserted
     return serverDllPath!;
 }
 
@@ -487,7 +487,7 @@ export async function waitForLanguageServerAvailable(): Promise<void> {
             assertNever(currentState);
     }
 
-    // tslint:disable-next-line: no-constant-condition
+    // eslint-disable-next-line no-constant-condition
     while (true) {
         switch (ext.languageServerState) {
             case LanguageServerState.Failed: {

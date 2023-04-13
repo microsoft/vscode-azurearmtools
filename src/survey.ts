@@ -205,7 +205,7 @@ function getIsSurveyPostponed(): boolean {
     return postponedUntilTime > Date.now();
 }
 
-function getSessionLengthMs(context: IActionContext): number {
+function getSessionLengthMs(_context: IActionContext): number {
     if (usageSessionStart === undefined) {
         // Session just started
         usageSessionStart = Date.now();

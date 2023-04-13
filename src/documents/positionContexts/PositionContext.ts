@@ -18,7 +18,7 @@ import { nonNullValue } from "../../util/nonNull";
 import * as Completion from "../../vscodeIntegration/Completion";
 import { IHoverInfo } from '../../vscodeIntegration/IHoverInfo';
 import { UsageInfoHoverInfo } from "../../vscodeIntegration/UsageInfoHoverInfo";
-import { DeploymentDocument as DeploymentDocument } from "../DeploymentDocument";
+import { DeploymentDocument } from "../DeploymentDocument";
 import { IJsonDocument } from '../templates/IJsonDocument';
 import { TemplateScope } from '../templates/scopes/TemplateScope';
 
@@ -161,8 +161,7 @@ export abstract class PositionContext {
 
     public get jsonTokenStartIndex(): number {
         assert(!!this.jsonToken, "The jsonTokenStartIndex can only be requested when the PositionContext is inside a JSONToken.");
-        // tslint:disable-next-line:no-non-null-assertion no-unnecessary-type-assertion // Asserted
-        return this.jsonToken!.span.startIndex;
+        return this.jsonToken?.span.startIndex;
     }
 
     public get emptySpanAtDocumentCharacterIndex(): Span {

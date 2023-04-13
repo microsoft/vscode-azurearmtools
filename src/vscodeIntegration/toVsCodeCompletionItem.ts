@@ -72,10 +72,8 @@ export function toVsCodeCompletionItem(jsonDocument: IJsonDocument, item: Comple
     // vscode requires all spans to include the original position and be on the same line, otherwise
     //   it ignores it.  Verify that here.
     assert(vscodeItem.range, "Completion item doesn't have a range");
-    // tslint:disable-next-line: no-non-null-assertion
-    assert(vscodeItem.range!.contains(cursorPosition), "Completion item range doesn't include cursor");
-    // tslint:disable-next-line: no-non-null-assertion
-    assert(vscodeItem.range!.isSingleLine, "Completion item range must be a single line");
+    assert(vscodeItem.range?.contains(cursorPosition), "Completion item range doesn't include cursor");
+    assert(vscodeItem.range?.isSingleLine, "Completion item range must be a single line");
 
     return vscodeItem;
 }

@@ -11,21 +11,21 @@ import { IActionContext } from 'vscode-azureextensionui';
 import { configKeys, templateKeys } from "../../../common";
 import { TemplateScopeKind } from '../../../extension.bundle';
 import { ext } from '../../extensionVariables';
-import { AzureRMAssets, FunctionsMetadata } from "../../language/expressions/AzureRMAssets";
-import { isTleExpression } from '../../language/expressions/isTleExpression';
-import * as TLE from "../../language/expressions/TLE";
 import { INamedDefinition } from '../../language/INamedDefinition';
 import { Issue } from '../../language/Issue';
 import { IssueKind } from '../../language/IssueKind';
-import * as Json from "../../language/json/JSON";
 import { ReferenceList } from "../../language/ReferenceList";
 import { ContainsBehavior, Span } from "../../language/Span";
+import { AzureRMAssets, FunctionsMetadata } from "../../language/expressions/AzureRMAssets";
+import * as TLE from "../../language/expressions/TLE";
+import { isTleExpression } from '../../language/expressions/isTleExpression';
+import * as Json from "../../language/json/JSON";
 import { CachedValue } from '../../util/CachedValue';
 import { CaseInsensitiveMap } from '../../util/CaseInsensitiveMap';
+import { Histogram } from '../../util/Histogram';
 import { expectParameterDocumentOrUndefined } from '../../util/expectDocument';
 import { filterByType } from '../../util/filterByType';
 import { filterNotUndefined } from '../../util/filterNotUndefined';
-import { Histogram } from '../../util/Histogram';
 import { nonNullValue } from '../../util/nonNull';
 import { FindReferencesAndErrorsVisitor } from "../../visitors/FindReferencesAndErrorsVisitor";
 import { FunctionCountVisitor } from "../../visitors/FunctionCountVisitor";
@@ -40,16 +40,16 @@ import { getMissingParameterErrors, getParameterValuesCodeActions } from '../par
 import { SynchronousParameterValuesSourceProvider } from "../parameters/SynchronousParameterValuesSourceProvider";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
 import { LinkedTemplateCodeLens, NestedTemplateCodeLens } from './ChildTemplateCodeLens';
+import { getParentAndChildCodeLenses } from './ParentAndChildCodeLenses';
+import { UserFunctionParameterDefinition } from './UserFunctionParameterDefinition';
 import { ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
 import { getResourcesInfo } from './getResourcesInfo';
 import { INotifyTemplateGraphArgs } from './linkedTemplates/linkedTemplates';
-import { getParentAndChildCodeLenses } from './ParentAndChildCodeLenses';
 import { isArmSchema } from './schemas';
 import { DeploymentScopeKind } from './scopes/DeploymentScopeKind';
 import { IDeploymentSchemaReference } from './scopes/IDeploymentSchemaReference';
 import { TemplateScope } from "./scopes/TemplateScope";
 import { IChildDeploymentScope, LinkedTemplateScope, NestedTemplateInnerScope, NestedTemplateOuterScope, TopLevelTemplateScope } from './scopes/templateScopes';
-import { UserFunctionParameterDefinition } from './UserFunctionParameterDefinition';
 
 export interface IScopedParseResult {
     parseResult: TLE.TleParseResult;
@@ -862,7 +862,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         return lenses;
     }
 
-    public getDocumentLinks(context: IActionContext): DocumentLink[] {
+    public getDocumentLinks(_context: IActionContext): DocumentLink[] {
         const links: DocumentLink[] = [];
 
         // Make a document link out of each deployment "relativePath" property value

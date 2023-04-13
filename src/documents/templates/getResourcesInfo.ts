@@ -473,7 +473,7 @@ function splitExpressionIntoSegments(jsonString: string): string[] {
                                 .map(s => `'${s}'`);
                             rewrittenArgs.push(...refactoredArg);
                         } else {
-                            // tslint:disable-next-line: no-non-null-assertion // checked with .every() above
+                            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- checked with .every() above
                             rewrittenArgs.push(arg!);
                         }
                     }

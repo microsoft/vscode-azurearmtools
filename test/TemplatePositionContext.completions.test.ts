@@ -497,7 +497,7 @@ suite("TemplatePositionContext.completions", () => {
                 const tokens: number[] = [];
                 document = typeof document === "string" ? document : JSON.stringify(document);
 
-                // tslint:disable-next-line:no-constant-condition
+                // eslint-disable-next-line no-constant-condition
                 while (true) {
                     const tokenPos: number = document.indexOf("!");
                     if (tokenPos < 0) {

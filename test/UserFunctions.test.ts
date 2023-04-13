@@ -8,11 +8,11 @@
 import * as assert from "assert";
 import * as os from 'os';
 import { DefinitionKind, DeploymentTemplateDoc, IHoverInfo, IReferenceSite, Span } from "../extension.bundle";
+import { allTestDataExpectedCompletions } from "./TestData";
 import { createExpressionCompletionsTestEx } from "./support/createCompletionsTest";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
 import { testGetReferences } from "./support/testGetReferences";
-import { allTestDataExpectedCompletions } from "./TestData";
 
 suite("User functions", () => {
 
@@ -69,6 +69,7 @@ suite("User functions", () => {
             "<!var1Definition!>var1": {
                 "a": {
                     "b": {
+                        // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
                         "c": 16180339887498948482
                     },
                     "d": 42
@@ -1747,6 +1748,7 @@ suite("User functions", () => {
                 "var1": {
                     "a": {
                         "b": {
+                            // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
                             "c": 16180339887498948482
                         },
                         "d": 42

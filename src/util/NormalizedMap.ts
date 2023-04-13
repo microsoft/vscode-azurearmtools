@@ -18,7 +18,7 @@ export class NormalizedMap<TKey, TValue> implements Map<TKey, TValue> {
         return this._map.delete(this.normalizeKey(key));
     }
 
-    public forEach(callbackfn: (value: TValue, key: TKey, map: Map<TKey, TValue>) => void, thisArg?: NormalizedMap<TKey, TValue>): void {
+    public forEach(_callbackfn: (value: TValue, key: TKey, map: Map<TKey, TValue>) => void, _thisArg?: NormalizedMap<TKey, TValue>): void {
         throw new Error("NYI");
     }
 

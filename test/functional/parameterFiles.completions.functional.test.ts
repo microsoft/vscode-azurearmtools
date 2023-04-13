@@ -81,6 +81,7 @@ suite("Functional parameter file completions", () => {
 
                 // Wait for our code to return completion items
                 let items = await completionItemsPromise;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-self-assign -- makes debugging easier
                 items = items;
 
                 // Wait for any resolution to be sure the UI is ready

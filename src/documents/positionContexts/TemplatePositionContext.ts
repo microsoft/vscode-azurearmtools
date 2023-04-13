@@ -486,7 +486,7 @@ export class TemplatePositionContext extends PositionContext {
                 }
             } else if (tleValue instanceof TLE.FunctionCallValue) {
                 assert(this.jsonToken);
-                // tslint:disable-next-line:no-non-null-assertion
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 completions.push(... this.getFunctionCallCompletions(tleValue, this.jsonToken!, tleInfo.tleCharacterIndex, scope));
             } else if (tleValue instanceof TLE.StringValue) {
                 completions.push(...this.getStringLiteralCompletions(tleValue, tleInfo.tleCharacterIndex, scope));
@@ -574,7 +574,7 @@ export class TemplatePositionContext extends PositionContext {
         const funcCall = tleStringValue.getFunctionCallParentOfArgument();
         if (funcCall) {
             assert(this.jsonToken && this.jsonToken.type === Json.TokenType.QuotedString);
-            // tslint:disable-next-line: no-non-null-assertion
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const jsonParentStringToken = this.jsonToken!;
             // It might be a resourceId/etc completion
             return getResourceIdCompletions(

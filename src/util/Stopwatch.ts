@@ -25,15 +25,13 @@ export class Stopwatch {
 
     public get startTime(): Date {
         assert(this._startTimeMilliseconds !== undefined);
-
-        // tslint:disable-next-line: no-non-null-assertion // Asserted
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return new Date(this._startTimeMilliseconds!);
     }
 
     public get stopTime(): Date {
         assert(this._stopTimeMilliseconds !== undefined);
-
-        // tslint:disable-next-line: no-non-null-assertion // Asserted
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return new Date(this._startTimeMilliseconds!);
     }
 
@@ -41,7 +39,7 @@ export class Stopwatch {
         assert(this._startTimeMilliseconds !== undefined);
 
         const endTimeMilliseconds: number = this._stopTimeMilliseconds !== undefined ? this._stopTimeMilliseconds : Date.now();
-        // tslint:disable-next-line: no-non-null-assertion // Asserted
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- asserted
         return Duration.milliseconds(endTimeMilliseconds - this._startTimeMilliseconds!);
     }
 }

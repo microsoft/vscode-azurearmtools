@@ -8,7 +8,7 @@ import { DialogResponses, IActionContext, UserCancelledError } from "vscode-azur
 import { extensionName, globalStateKeys } from "../../common";
 import { ext } from "../extensionVariables";
 
-export async function resetGlobalState(actionContext: IActionContext): Promise<void> {
+export async function resetGlobalState(_actionContext: IActionContext): Promise<void> {
     if (DialogResponses.yes === await ext.ui.showWarningMessage(
         `Reset all global state for the ${extensionName} extension (VS Code settings will not be changed)? This will cause such things as whether you wish to answer a survey or whether to ignore certain files to be forgotten.`,
         DialogResponses.yes,

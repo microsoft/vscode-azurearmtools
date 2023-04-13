@@ -13,7 +13,7 @@ import * as fs from 'fs';
 import { Context, Suite } from 'mocha';
 import * as os from 'os';
 import * as path from 'path';
-import { commands, Uri } from 'vscode';
+import { Uri, commands } from 'vscode';
 import { parseError } from 'vscode-azureextensionui';
 import { getTempFilePath } from '../support/getTempFilePath';
 import { normalizeString } from '../support/normalizeString';
@@ -319,7 +319,6 @@ suite('TLE colorization', function (this: Suite): void {
     const testFolder = path.join(__dirname, '..', '..', '..', 'test', 'colorization', 'inputs');
     const resultsFolder = path.join(__dirname, '..', '..', '..', 'test', 'colorization', 'results');
 
-    let testFiles: string[];
     let resultFiles: string[];
 
     if (!fs.existsSync(testFolder)) {
@@ -329,7 +328,7 @@ suite('TLE colorization', function (this: Suite): void {
         fs.mkdirSync(resultsFolder);
     }
 
-    testFiles = fs.readdirSync(testFolder);
+    const testFiles = fs.readdirSync(testFolder);
     assert(testFiles.length, `Couldn't find any test files in ${testFolder}`);
 
     resultFiles = fs.readdirSync(resultsFolder);

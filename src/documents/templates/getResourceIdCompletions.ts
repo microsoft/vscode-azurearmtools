@@ -90,7 +90,7 @@ function getCompletions(
     //   all optional args and after the resource type)
     let nameSegmentIndex = 0;
 
-    // tslint:disable-next-line:no-constant-condition
+    // eslint-disable-next-line no-constant-condition
     while (true) {
         assert(argIndex <= argIndexAtCursor);
         if (argIndex === argIndexAtCursor) {

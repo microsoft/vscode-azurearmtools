@@ -44,6 +44,7 @@ suite("areDecoupledChildAndParent", () => {
         ): void {
             test(`${name ? name + ': ' : ''}child=${child.name}, parent=${parent.name}`, async () => {
                 let keepNameInClosure = name;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-self-assign -- intentional as name implies
                 keepNameInClosure = keepNameInClosure;
                 const template: IPartialDeploymentTemplate = {
                     resources: [

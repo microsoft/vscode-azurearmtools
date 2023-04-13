@@ -5,8 +5,8 @@
 
 import * as vscode from "vscode";
 import { templateKeys } from '../../../common';
-import * as Json from "../../language/json/JSON";
 import { Span } from "../../language/Span";
+import * as Json from "../../language/json/JSON";
 import { assertNever } from "../../util/assertNever";
 import { IParameterDefinition } from "../parameters/IParameterDefinition";
 import { DeploymentTemplateDoc } from "./DeploymentTemplateDoc";
@@ -180,7 +180,7 @@ function createCommentsMap(tokens: Json.Token[], commentTokens: Json.Token[], la
     let currentCommentsSpan: Span | undefined;
     const allTokens = tokens.concat(commentTokens);
     allTokens.sort((a, b) => a.span.startIndex - b.span.startIndex);
-    allTokens.forEach((token, index) => {
+    allTokens.forEach((token, _index) => {
         if (token.type === Json.TokenType.Comment) {
             currentCommentsSpan = !currentCommentsSpan ? token.span : token.span.union(currentCommentsSpan);
         } else {

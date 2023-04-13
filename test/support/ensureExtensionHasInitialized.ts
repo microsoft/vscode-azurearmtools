@@ -34,7 +34,7 @@ export async function ensureExtensionHasInitialized(totalTimeout: number): Promi
             `Extension initialization state: ${ext.extensionStartupComplete ? "Completed" : ext.extensionStartupComplete === undefined ? "Not started" : "In progress"}`,
             true);
 
-        // tslint:disable-next-line: no-constant-condition
+        // eslint-disable-next-line no-constant-condition
         while (true) {
             const extensionStartupComplete = ext.extensionStartupComplete;
 

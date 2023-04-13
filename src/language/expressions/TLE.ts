@@ -433,7 +433,7 @@ export class FunctionCallValue extends ParentValue {
             return `${this._namespaceToken.stringValue}.${name}`;
         } else {
             assert(this.nameToken, "We asserted in the constructor that we have to have a namespace or a name");
-            // tslint:disable-next-line: no-non-null-assertion
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             return this.name!;
         }
     }
@@ -451,7 +451,7 @@ export class FunctionCallValue extends ParentValue {
             );
 
         assert(result, "Should have had at least one of a namespace or a name, therefore span should be non-empty");
-        // tslint:disable-next-line: no-non-null-assertion // Asserted
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return result!;
     }
 
@@ -724,8 +724,7 @@ export class PropertyAccess extends ParentValue {
         while (currentSource instanceof PropertyAccess) {
             const propertyAccess: PropertyAccess | undefined = asPropertyAccessValue(currentSource);
             assert(propertyAccess);
-            // tslint:disable-next-line:no-non-null-assertion // Asserted
-            currentSource = propertyAccess!.source;
+            currentSource = propertyAccess?.source;
         }
         return asFunctionCallValue(currentSource);
     }
@@ -829,7 +828,7 @@ export class BraceHighlighter {
         assert(tleParseResult);
         assert(tleParseResult.leftSquareBracketToken);
 
-        // tslint:disable-next-line:no-non-null-assertion // Asserted above
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- asserted
         highlightCharacterIndexes.push(tleParseResult.leftSquareBracketToken!.span.startIndex);
         if (tleParseResult.rightSquareBracketToken) {
             highlightCharacterIndexes.push(tleParseResult.rightSquareBracketToken.span.startIndex);
@@ -840,7 +839,7 @@ export class BraceHighlighter {
         assert(tleFunction);
         assert(tleFunction.leftParenthesisToken);
 
-        // tslint:disable-next-line:no-non-null-assertion // Asserted
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- asserted
         highlightCharacterIndexes.push(tleFunction.leftParenthesisToken!
             .span.startIndex);
         if (tleFunction.rightParenthesisToken) {
@@ -883,7 +882,7 @@ export abstract class TleVisitor {
         }
     }
 
-    public visitNumber(tleNumber: NumberValue): void {
+    public visitNumber(_tleNumber: NumberValue): void {
         // Nothing to do
     }
 
@@ -894,7 +893,7 @@ export abstract class TleVisitor {
         }
     }
 
-    public visitString(tleString: StringValue): void {
+    public visitString(_tleString: StringValue): void {
         // Nothing to do
     }
 }
@@ -1054,7 +1053,7 @@ export class Parser {
 
                 if (!propertyNameToken) {
                     assert(errorSpan);
-                    // tslint:disable-next-line: no-non-null-assertion // Asserted
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- asserted
                     errors.push(new Issue(errorSpan!, "Expected a literal value.", IssueKind.tleSyntax));
                 }
 
@@ -1086,15 +1085,14 @@ export class Parser {
     private static parseFunctionCall(tokenizer: Tokenizer, errors: Issue[]): FunctionCallValue {
         assert(tokenizer);
         assert(tokenizer.current, "tokenizer must have a current token.");
-        // tslint:disable-next-line:no-non-null-assertion // Asserted
-        assert.deepEqual(TokenType.Literal, tokenizer.current!.getType(), "tokenizer's current token must be a literal.");
+        assert.deepEqual(TokenType.Literal, tokenizer.current?.getType(), "tokenizer's current token must be a literal.");
         assert(errors);
 
         let namespaceToken: Token | undefined;
         let nameToken: Token | undefined;
         let periodToken: Token | undefined;
 
-        // tslint:disable-next-line:no-non-null-assertion // Asserted
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- asserted
         const firstToken: Token = tokenizer.current!;
         tokenizer.next();
 
@@ -1206,8 +1204,7 @@ export class Parser {
         function getFullNameSpan(): Span {
             if (!nameToken) {
                 assert(namespaceToken);
-                // tslint:disable-next-line: no-non-null-assertion
-                return namespaceToken!.span;
+                return namespaceToken?.span;
             } else {
                 // tslint:disable-next-line: strict-boolean-expressions
                 return nameToken.span.union(namespaceToken && namespaceToken.span);
@@ -1578,15 +1575,14 @@ export enum TokenType {
  */
 export function readQuotedTLEString(iterator: Iterator<basic.Token>): basic.Token[] {
     assert(iterator.current());
-    // tslint:disable-next-line:no-non-null-assertion // Asserted
-    assert(iterator.current()!.getType() === basic.TokenType.SingleQuote);
-    // tslint:disable-next-line:no-non-null-assertion // Asserted
+    assert(iterator.current()?.getType() === basic.TokenType.SingleQuote);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- asserted
     const quotedStringTokens: basic.Token[] = [iterator.current()!];
     iterator.moveNext();
 
     let escaped: boolean = false;
     while (iterator.current()) {
-        // tslint:disable-next-line:no-non-null-assertion // guaranteed by while
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- guarded by while
         const current = iterator.current()!;
         quotedStringTokens.push(current);
 
