@@ -30,6 +30,7 @@ suite("TemplatePositionContext.completions", () => {
                 [UseNoSnippets.instance],
                 async () => {
                     let keepInClosureForEasierDebugging = testName;
+                    // eslint-disable-next-line no-self-assign, @typescript-eslint/no-unused-vars
                     keepInClosureForEasierDebugging = keepInClosureForEasierDebugging;
 
                     const dt = new DeploymentTemplateDoc(documentText, fakeId, 0);
@@ -621,6 +622,7 @@ suite("TemplatePositionContext.completions", () => {
                     testName,
                     [UseNoSnippets.instance],
                     async () => {
+                        // eslint-disable-next-line no-self-assign -- keeps in encosure, easier to debug
                         testName = testName;
 
                         templateWithReplacement = stringify(templateWithReplacement);

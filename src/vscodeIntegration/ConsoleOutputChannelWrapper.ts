@@ -40,9 +40,9 @@ export class ConsoleOutputChannelWrapper implements IAzExtOutputChannel {
 
     public show(column?: vscode.ViewColumn | undefined, preserveFocus?: boolean | undefined): void;
 
-    // tslint:disable-next-line: no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public show(column?: any, preserveFocus?: boolean | undefined): void {
-        // tslint:disable-next-line: no-unsafe-any
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.outputChannel.show(column, preserveFocus);
     }
 

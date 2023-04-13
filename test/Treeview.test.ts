@@ -11,7 +11,7 @@ import { Context, Done } from "mocha";
 import * as path from "path";
 import * as vscode from "vscode";
 import { parseError } from "vscode-azureextensionui";
-import { ext, IElementInfo, JsonOutlineProvider, shortenTreeLabel } from "../extension.bundle";
+import { IElementInfo, JsonOutlineProvider, ext, shortenTreeLabel } from "../extension.bundle";
 import { getTempFilePath } from "./support/getTempFilePath";
 
 suite("TreeView", async (): Promise<void> => {
@@ -25,7 +25,7 @@ suite("TreeView", async (): Promise<void> => {
             }
 
             createShortenTest(undefined, undefined);
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             createShortenTest(<any>null, <any>null);
             createShortenTest("", "");
             createShortenTest("a", "a");
@@ -68,7 +68,7 @@ suite("TreeView", async (): Promise<void> => {
 
         async function testChildren(template: string, expected: ITestTreeItem[]): Promise<void> {
             await showNewTextDocument(template);
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const rawTree = provider.getChildren(<any>null);
             // tslint:disable-next-line: strict-boolean-expressions
             assert(!!rawTree);
@@ -83,7 +83,7 @@ suite("TreeView", async (): Promise<void> => {
         // Tests the tree against only the given properties
         async function testTree(template: string, expected: ITestTreeItem[], selectProperties?: string[]): Promise<void> {
             await showNewTextDocument(template);
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const rawTree = getTree(<any>null);
 
             function select(node: ITestTreeItem): Partial<ITestTreeItem> {

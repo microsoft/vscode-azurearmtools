@@ -80,7 +80,7 @@ suite("Utilities", () => {
 
     suite("isWhitespaceCharacter(string)", () => {
         test("With null", () => {
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             assert.equal(false, strings.isWhitespaceCharacter(<any>null));
         });
 
@@ -115,7 +115,7 @@ suite("Utilities", () => {
 
     suite("isQuoteCharacter(string)", () => {
         test("With null", () => {
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             assert.equal(false, strings.isQuoteCharacter(<any>null));
         });
 
@@ -150,7 +150,7 @@ suite("Utilities", () => {
 
     suite("isDigit(string)", () => {
         test("With null", () => {
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             assert.equal(false, strings.isDigit(<any>null));
         });
 
@@ -208,9 +208,9 @@ suite("Utilities", () => {
                 assert.deepStrictEqual(strings.unquote(input), expected);
             });
         }
-        // tslint:disable-next-line: no-any
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         testUnquote(<any>null, "");
-        // tslint:disable-next-line: no-any
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         testUnquote(<any>undefined, "");
         testUnquote("\"\"", "");
         testUnquote("''", "");

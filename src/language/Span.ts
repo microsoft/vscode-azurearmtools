@@ -133,15 +133,13 @@ export class Span {
      */
 
     public union(rhs: Span | undefined): Span {
-        let result: Span;
         if (rhs) {
             const minStart = Math.min(this.startIndex, rhs.startIndex);
             const maxAfterEndIndex = Math.max(this.afterEndIndex, rhs.afterEndIndex);
-            result = new Span(minStart, maxAfterEndIndex - minStart);
+            return new Span(minStart, maxAfterEndIndex - minStart);
         } else {
-            result = this;
+            return this;
         }
-        return result;
     }
 
     /**
@@ -166,7 +164,7 @@ export class Span {
 
     public intersect(rhs: Span | undefined): Span | undefined {
         if (rhs) {
-            // tslint:disable-next-line:no-this-assignment
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
             let lhs: Span = this;
             if (rhs.startIndex < this.startIndex) {
                 [lhs, rhs] = [rhs, lhs];

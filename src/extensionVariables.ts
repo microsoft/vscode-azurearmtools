@@ -9,8 +9,8 @@ import * as vscode from "vscode";
 import { IAzExtOutputChannel, IAzureUserInput } from "vscode-azureextensionui";
 import { LanguageClient } from 'vscode-languageclient/node';
 import { configPrefix, isWebpack } from "../common";
-import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
 import { IProvideOpenedDocuments } from './IProvideOpenedDocuments';
+import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
 import { LanguageServerState } from "./languageclient/startArmLanguageServer";
 import { ISnippetManager } from './snippets/ISnippetManager';
 import { CompletionsSpy } from "./util/CompletionsSpy";
@@ -100,11 +100,11 @@ class ExtensionVariables {
     public snippetManager: InitializeBeforeUse<ISnippetManager> = new InitializeBeforeUse<ISnippetManager>("snippetManager", true);
 }
 
-// tslint:disable-next-line: no-any
+// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
 if (!(<any>global).vscodearm_ext) {
-    // tslint:disable-next-line: no-any
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
     (<any>global).vscodearm_ext = new ExtensionVariables();
 }
 
-// tslint:disable-next-line: no-any no-unsafe-any
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
 export const ext: ExtensionVariables = (<any>global).vscodearm_ext;

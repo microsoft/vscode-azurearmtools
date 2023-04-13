@@ -184,7 +184,7 @@ export function getDocumentMarkers(doc: object | string, options?: { tabSize?: n
 export function replaceInTemplate(
     template: string | IPartialDeploymentTemplate,
     replacements: { [key: string]: string | { [key: string]: unknown } },
-    options?: {}
+    _options?: {}
 ): IPartialDeploymentTemplate {
     const templateString = stringify(template);
 
