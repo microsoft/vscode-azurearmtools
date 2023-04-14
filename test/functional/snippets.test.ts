@@ -265,12 +265,6 @@ const overrideIgnoreSchemaValidation: { [name: string]: boolean } = {
      +   'Missing required property "protectedSettings"'
      */
     "Linux VM Custom Script": true,
-
-    // TODO: Remove when schemas are published
-    "Automanage Best Practices DevTest Assignment": true,
-    "Automanage Best Practices Prod Assignment": true,
-    "Automanage Create Custom Profile": true,
-    "Automanage Custom Profile Assignment": true,
 };
 
 suite("Snippets functional tests", () => {
