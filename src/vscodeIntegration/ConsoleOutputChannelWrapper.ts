@@ -36,6 +36,16 @@ export class ConsoleOutputChannelWrapper implements IAzExtOutputChannel {
         this.outputChannel.clear();
     }
 
+    /**
+     * Replaces all output from the channel with the given value.
+     *
+     * @param value A string, falsy values will not be printed.
+     */
+    public replace(value: string): void {
+        console.log(value);
+        this.outputChannel.replace(value);
+    }
+
     public show(preserveFocus?: boolean | undefined): void;
 
     public show(column?: vscode.ViewColumn | undefined, preserveFocus?: boolean | undefined): void;

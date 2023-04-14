@@ -37,7 +37,7 @@
     "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
     "engines": {
         "$comment": "Must match version of @types/vscode in devDepndencies",
-        "vscode": "^1.62.0"
+        "vscode": "^1.66.0"
     },
     "preview": true,
     "activationEvents": [
@@ -636,7 +636,7 @@
         "@types/recursive-readdir": "^2.2.0",
         "@types/rimraf": "2.0.2",
         "@types/shelljs": "0.8.3",
-        "@types/vscode": "^1.62.0",
+        "@types/vscode": "^1.66.0",
         "@types/webpack": "^4.41.26",
         "@vscode/test-electron": "^1.6.2",
         "gulp": "^4.0.2",
