@@ -1,3 +1,8 @@
+# Variables
+variables:
+  - name: Codeql.Enabled
+    value: true
+    
 jobs:
   - job: Windows
     pool:
@@ -29,6 +34,3 @@ jobs:
       #- template: common/lint.yml
       - template: common/test.yml
       - template: common/publish-logs.yml
-
-variables:
-  Codeql.Enabled: true
