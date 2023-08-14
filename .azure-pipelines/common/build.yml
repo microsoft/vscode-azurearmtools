@@ -7,7 +7,7 @@ steps:
   - task: NodeTool@0
     displayName: "Use Node 12.x"
     inputs:
-      versionSpec: 12.x
+      versionSpec: 18.16.x
 
   - task: Npm@1
     displayName: "npm install"
