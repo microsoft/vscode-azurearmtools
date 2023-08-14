@@ -9,7 +9,8 @@
         "**/node_modules": true
     },
     "editor.codeActionsOnSave": {
-        "source.fixAll": true, //asdfg   "source.fixAll.eslint": true,?
+        "source.fixAll": true,
+        "source.fixAll.eslint": true,
         "source.organizeImports": true
     },
     "files.exclude": {
