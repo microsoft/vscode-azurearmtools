@@ -30,7 +30,7 @@ function hasInternetConnection(): Promise<boolean> {
 // tslint:disable-next-line:no-any
 export function networkTest(testName: string, testFunction: () => void | Promise<any>): void {
     test(testName, function (this: Context): Promise<void> {
-        this.timeout(10000);
+        this.timeout(20000);
 
         return hasInternetConnection()
             .then((connected: boolean) => {
