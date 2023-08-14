@@ -6,8 +6,8 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
 // tslint:disable-next-line:no-duplicate-imports
+import { IActionContext, IAzureQuickPickItem, IAzureUserInput } from "@microsoft/vscode-azext-utils";
 import { commands } from "vscode";
-import { IActionContext, IAzureQuickPickItem, IAzureUserInput } from "vscode-azureextensionui";
 import { Json, templateKeys } from "../../../extension.bundle";
 import { ext } from "../../extensionVariables";
 import { ObjectValue } from "../../language/json/JSON";

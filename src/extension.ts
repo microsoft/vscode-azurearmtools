@@ -5,9 +5,10 @@
 // tslint:disable:promise-function-async max-line-length // Grandfathered in
 
 // CONSIDER: Refactor this file
+import { TestUserInput } from "@microsoft/vscode-azext-dev";
+import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, ITelemetryContext, parseError, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "@microsoft/vscode-azext-utils";
 import * as path from 'path';
 import * as vscode from "vscode";
-import { AzureUserInput, callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, createAzExtOutputChannel, IActionContext, ITelemetryContext, parseError, registerCommand, registerUIExtensionVariables, TelemetryProperties } from "vscode-azureextensionui";
 import { armTemplateLanguageId, configKeys, configPrefix, documentSchemes, expressionsDiagnosticsCompletionMessage, expressionsDiagnosticsSource, globalStateKeys, outputChannelName } from "../common";
 import { delay } from "../test/support/delay";
 import { writeToLog } from '../test/support/testLog';
@@ -95,7 +96,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
         ext.extensionStartupComplete = false;
 
         ext.context = context;
-        ext.ui = new AzureUserInput(context.globalState);
+        ext.ui = new TestUserInput(vscode);
         let outputChannel = createAzExtOutputChannel(outputChannelName, configPrefix);
         if (echoOutputChannelToConsole) {
             outputChannel = new ConsoleOutputChannelWrapper(outputChannel);

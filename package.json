@@ -37,38 +37,14 @@
     "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
     "engines": {
         "$comment": "Must match version of @types/vscode in devDepndencies",
-        "vscode": "^1.63.0"
+        "vscode": "^1.79.0"
     },
     "preview": true,
     "activationEvents": [
-        "onLanguage:arm-template",
         "onLanguage:json",
         "onLanguage:jsonc",
-        "onCommand:azurerm-vscode-tools.sortTemplate",
-        "onCommand:azurerm-vscode-tools.sortFunctions",
-        "onCommand:azurerm-vscode-tools.sortOutputs",
-        "onCommand:azurerm-vscode-tools.sortParameters",
-        "onCommand:azurerm-vscode-tools.sortResources",
-        "onCommand:azurerm-vscode-tools.sortVariables",
-        "onCommand:azurerm-vscode-tools.selectParameterFile",
-        "onCommand:azurerm-vscode-tools.openParameterFile",
-        "onCommand:azurerm-vscode-tools.openTemplateFile",
-        "onCommand:azurerm-vscode-tools.codeLens.openLinkedTemplateFile",
-        "onCommand:azurerm-vscode-tools.codeLens.reloadLinkedTemplateFile",
-        "onCommand:azurerm-vscode-tools.codeLens.gotoParameterValue",
-        "onCommand:azurerm-vscode-tools.codeAction.addAllMissingParameters",
-        "onCommand:azurerm-vscode-tools.codeAction.addMissingRequiredParameters",
         "onCommand:azurerm-vscode-tools.codeAction.extractParameter",
-        "onCommand:azurerm-vscode-tools.codeAction.extractVariable",
-        "onCommand:azurerm-vscode-tools.insertItem",
-        "onCommand:azurerm-vscode-tools.insertParameter",
-        "onCommand:azurerm-vscode-tools.insertVariable",
-        "onCommand:azurerm-vscode-tools.insertOutput",
-        "onCommand:azurerm-vscode-tools.insertFunction",
-        "onCommand:azurerm-vscode-tools.insertResource",
-        "onCommand:azurerm-vscode-tools.developer.resetGlobalState",
-        "onCommand:azurerm-vscode-tools.developer.showInsertionContext",
-        "onCommand:azurerm-vscode-tools.developer.showAvailableResourceTypesAndVersions"
+        "onCommand:azurerm-vscode-tools.codeAction.extractVariable"
     ],
     "contributes": {
         "grammars": [
@@ -626,7 +602,7 @@
     },
     "devDependencies": {
         "@microsoft/eslint-config-azuretools": "^0.1.0",
-        "@microsoft/vscode-azext-dev": "^2.0.1",
+        "@microsoft/vscode-azext-dev": "^0.2.0",
         "@types/decompress": "^4.2.3",
         "@types/estree": "^1.0.0",
         "@types/fs-extra": "^5.1.0",
@@ -651,7 +627,6 @@
         "ts-node": "^10.9.1",
         "typescript": "^5.0.4",
         "@vscode/vsce": "^2.20.1",
-        "vscode-azureextensiondev": "^0.10.4",
         "vscode-test": "^1.5.2",
         "webpack": "^5.88.2",
         "webpack-cli": "^5.1.4"
@@ -663,7 +638,7 @@
         "moment": "^2.29.4",
         "opn": "^5.5.0",
         "strip-json-comments": "^3.1.1",
-        "vscode-azureextensionui": "^0.36.0",
+        "@microsoft/vscode-azext-utils": "^0.1.0",
         "vscode-jsonrpc": "^6.0.0",
         "vscode-languageclient": "^7.0.0"
     },

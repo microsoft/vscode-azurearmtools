@@ -8,13 +8,13 @@
 // Turn on to overwrite results files rather than creating new ".txt.actual" files when there are differences.
 const OVERWRITE = false;
 
+import { parseError } from '@microsoft/vscode-azext-utils';
 import * as assert from 'assert';
 import * as fs from 'fs';
 import { Context, Suite } from 'mocha';
 import * as os from 'os';
 import * as path from 'path';
 import { Uri, commands } from 'vscode';
-import { parseError } from 'vscode-azureextensionui';
 import { getTempFilePath } from '../support/getTempFilePath';
 import { normalizeString } from '../support/normalizeString';
 import { writeToLog } from '../support/testLog';

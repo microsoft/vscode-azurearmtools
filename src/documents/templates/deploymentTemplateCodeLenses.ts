@@ -4,8 +4,8 @@
 
 // tslint:disable: max-classes-per-file
 
+import { parseError } from '@microsoft/vscode-azext-utils';
 import { Range, Uri } from 'vscode';
-import { parseError } from 'vscode-azureextensionui';
 import { Span } from '../../language/Span';
 import { pathExistsNoThrow } from '../../util/pathExistsNoThrow';
 import { IGotoParameterValueArgs } from '../../vscodeIntegration/commandArguments';

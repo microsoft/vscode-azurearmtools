@@ -10,7 +10,7 @@
 'use strict';
 
 const process = require('process');
-const dev = require("vscode-azureextensiondev");
+const dev = require("@microsoft/vscode-azext-dev");
 
 let DEBUG_WEBPACK = !!process.env.DEBUG_WEBPACK;
 

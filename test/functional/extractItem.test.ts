@@ -8,10 +8,10 @@
 
 // WARNING: At the breakpoint, the extension will be in an inactivate state (i.e., if you make changes in the editor, diagnostics,
 //   formatting, etc. will not be updated until you F5 again)
+import { TestUserInput } from '@microsoft/vscode-azext-dev';
 import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import * as vscode from "vscode";
-import { TestUserInput } from 'vscode-azureextensiondev';
 import { DeploymentTemplateDoc, ExtractItem } from '../../extension.bundle';
 import { assertEx } from '../support/assertEx';
 import { IPartialDeploymentTemplate } from '../support/diagnostics';

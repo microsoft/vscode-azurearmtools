@@ -5,21 +5,21 @@
 
 // tslint:disable:no-console no-function-expression no-implicit-dependencies
 
+import { parseError } from '@microsoft/vscode-azext-utils';
 import * as fse from 'fs-extra';
 import * as mocha from 'mocha';
 import * as path from 'path';
 import * as rimraf from 'rimraf';
 import * as vscode from 'vscode';
-import { parseError } from 'vscode-azureextensionui';
 import { armTemplateLanguageId, configKeys, configPrefix, ext, stopArmLanguageServer } from "../extension.bundle";
+import { useTestFunctionMetadata } from "./TestData";
+import { useTestSnippets } from './support/TestSnippets';
 import { displayCacheStatus } from './support/cache';
 import { delay } from "./support/delay";
 import { ensureExtensionHasInitialized } from './support/ensureExtensionHasInitialized';
 import { publishVsCodeLogs } from './support/publishVsCodeLogs';
 import { alwaysEchoTestLog, deleteTestLog, getTestLogContents, setTestLogOutputFile, writeToError, writeToLog } from './support/testLog';
-import { useTestSnippets } from './support/TestSnippets';
 import { logsFolder } from './testConstants';
-import { useTestFunctionMetadata } from "./TestData";
 
 const previousSettings = {
     autoDetectJsonTemplates: <boolean | undefined>undefined,

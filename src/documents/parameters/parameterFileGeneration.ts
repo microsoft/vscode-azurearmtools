@@ -2,15 +2,15 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { IActionContext, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import { QuickPickItem, Uri, window } from "vscode";
-import { IActionContext, UserCancelledError } from 'vscode-azureextensionui';
 import { ext } from '../../extensionVariables';
 import { isTleExpression } from "../../language/expressions/isTleExpression";
 import * as Json from "../../language/json/JSON";
-import { assertNever } from '../../util/assertNever';
 import { CaseInsensitiveMap } from '../../util/CaseInsensitiveMap';
+import { assertNever } from '../../util/assertNever';
 import { indentMultilineString, unindentMultilineString } from '../../util/multilineStrings';
 import { ExpressionType } from '../templates/ExpressionType';
 import { TemplateScope } from '../templates/scopes/TemplateScope';

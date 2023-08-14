@@ -7,12 +7,11 @@
 
 // WARNING: At the breakpoint, the extension will be in an inactivate state (i.e., if you make changes in the editor, diagnostics,
 //   formatting, etc. will not be updated until you F5 again)
+import { IAzureUserInput, PromptResult } from '@microsoft/vscode-azext-utils';
 import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import * as vscode from "vscode";
-// tslint:disable-next-line:no-duplicate-imports
 import { window, workspace } from "vscode";
-import { IAzureUserInput, PromptResult } from 'vscode-azureextensionui';
 import { DeploymentTemplateDoc, InsertItem, TemplateSectionType } from '../../extension.bundle';
 import { testWithRealSnippets } from '../support/TestSnippets';
 import { getActionContext } from '../support/getActionContext';
@@ -492,7 +491,7 @@ suite("InsertItem", async (): Promise<void> => {
     });
 });
 
-// CONSIDER: Switch to using TestUserInput from vscode-azureextensiondev
+// CONSIDER: Switch to using TestUserInput from @microsoft/vscode-azext-dev
 class MockUserInput implements IAzureUserInput {
     private showInputBoxTexts: string[] = [];
     private _onDidFinishPromptEmitter: vscode.EventEmitter<PromptResult> = new vscode.EventEmitter<PromptResult>();
@@ -505,7 +504,7 @@ class MockUserInput implements IAzureUserInput {
         return this._onDidFinishPromptEmitter.event;
     }
 
-    public async showQuickPick<T extends vscode.QuickPickItem>(items: T[] | Thenable<T[]>, _options: import("vscode-azureextensionui").IAzureQuickPickOptions): Promise<T> {
+    public async showQuickPick<T extends vscode.QuickPickItem>(items: T[] | Thenable<T[]>, _options: import("@microsoft/vscode-azext-utils").IAzureQuickPickOptions): Promise<T> {
         const result = await items;
         const label = this.showInputBoxTexts.shift()!;
         const item = result.find(x => x.label === label)!;
@@ -516,7 +515,7 @@ class MockUserInput implements IAzureUserInput {
         return this.showInputBoxTexts.shift()!;
     }
 
-    public async showWarningMessage<T extends vscode.MessageItem>(message: string, options: import("vscode-azureextensionui").IAzureMessageOptions, ...items: T[]): Promise<T> {
+    public async showWarningMessage<T extends vscode.MessageItem>(message: string, options: import("@microsoft/vscode-azext-utils").IAzureMessageOptions, ...items: T[]): Promise<T> {
         return items[0];
     }
 

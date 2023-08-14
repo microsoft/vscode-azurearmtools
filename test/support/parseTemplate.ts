@@ -2,10 +2,10 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { parseError } from '@microsoft/vscode-azext-utils';
 import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import { Uri } from 'vscode';
-import { parseError } from 'vscode-azureextensionui';
 import { DeploymentParametersDoc, DeploymentTemplateDoc, Issue, IssueSeverity } from "../../extension.bundle";
 import { IDeploymentParametersFile, IPartialDeploymentTemplate } from './diagnostics';
 import { resolveInTestFolder } from './resolveInTestFolder';

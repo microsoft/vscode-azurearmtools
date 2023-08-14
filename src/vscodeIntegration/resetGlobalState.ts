@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { DialogResponses, IActionContext, UserCancelledError } from "@microsoft/vscode-azext-utils";
 import { commands, window } from "vscode";
-import { DialogResponses, IActionContext, UserCancelledError } from "vscode-azureextensionui";
 import { extensionName, globalStateKeys } from "../../common";
 import { ext } from "../extensionVariables";
 

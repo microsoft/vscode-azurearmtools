@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IAzExtOutputChannel, IAzureUserInput } from "@microsoft/vscode-azext-utils";
 import * as os from 'os';
 import * as path from "path";
 import * as vscode from "vscode";
-import { IAzExtOutputChannel, IAzureUserInput } from "vscode-azureextensionui";
 import { LanguageClient } from 'vscode-languageclient/node';
 import { configPrefix, isWebpack } from "../common";
 import { IProvideOpenedDocuments } from './IProvideOpenedDocuments';

@@ -5,6 +5,7 @@
 
 // tslint:disable:no-unsafe-any no-console prefer-template no-implicit-dependencies export-name
 
+import { gulp_webpack } from '@microsoft/vscode-azext-dev';
 import * as assert from 'assert';
 import * as cp from 'child_process';
 import * as fse from 'fs-extra';
@@ -14,7 +15,6 @@ import * as path from 'path';
 import * as process from 'process';
 import * as recursiveReadDir from 'recursive-readdir';
 import * as shelljs from 'shelljs';
-import { gulp_webpack } from 'vscode-azureextensiondev';
 import { downloadAndUnzipVSCode, resolveCliPathFromVSCodeExecutablePath } from "vscode-test";
 import { DEFAULT_TESTCASE_TIMEOUT_MS, langServerDotnetVersion, languageServerFolderName } from './common';
 import { getTempFilePath } from './test/support/getTempFilePath';
