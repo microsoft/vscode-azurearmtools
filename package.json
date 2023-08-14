@@ -628,8 +628,8 @@
         "typescript": "^5.0.4",
         "@vscode/vsce": "^2.20.1",
         "vscode-test": "^1.5.2",
-        "webpack": "^5.88.2",
-        "webpack-cli": "^5.1.4"
+        "webpack": "^5.76.0",
+        "webpack-cli": "^4.6.0"
     },
     "dependencies": {
         "fs-extra": "^10.1.0",
