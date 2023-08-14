@@ -626,7 +626,7 @@
     },
     "devDependencies": {
         "@microsoft/eslint-config-azuretools": "^0.1.0",
-        "@microsoft/vscode-azext-dev": "^0.1.5",
+        "@microsoft/vscode-azext-dev": "^2.0.1",
         "@types/decompress": "^4.2.3",
         "@types/estree": "^1.0.0",
         "@types/fs-extra": "^5.1.0",
