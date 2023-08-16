@@ -601,6 +601,7 @@
         "verify-test-uses-extension-bundle": "gulp verify-test-uses-extension-bundle"
     },
     "devDependencies": {
+        "@azure/ms-rest-azure-env": "^2.0.0",
         "@microsoft/eslint-config-azuretools": "^0.2.1",
         "@microsoft/vscode-azext-dev": "^2.0.1",
         "@types/decompress": "^4.2.3",
@@ -639,7 +640,6 @@
         "glob": "^7.2.0",
         "glob-promise": "^4.2.2",
         "moment": "^2.29.4",
-        "opn": "^5.5.0",
         "strip-json-comments": "^3.1.1",
         "@microsoft/vscode-azext-utils": "^0.1.0",
         "vscode-jsonrpc": "^6.0.0",
