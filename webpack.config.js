@@ -16,6 +16,8 @@ let DEBUG_WEBPACK = !!process.env.DEBUG_WEBPACK;
 
 let config = dev.getDefaultWebpackConfig({
     target: 'node',
+    // CONSIDER: This shouldn't be necessary, why are these needed?  asdfg
+    //asdfg externalNodeModules: ["browserslist", "terser-webpack-plugin", "ts-loader", "loader-runner", "webpack"],
     projectRoot: __dirname,
     verbosity: DEBUG_WEBPACK ? 'debug' : 'normal',
     externals:
