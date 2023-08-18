@@ -109,7 +109,7 @@ export class TopLevelVariableDefinition extends VariableDefinition {
                 const loopVarProperties: Json.Property[] = [];
 
                 // ... For each element of the copy block array, add a new loop variable
-                for (let copyElement of arrayValue.elements) {
+                for (const copyElement of arrayValue.elements) {
                     // Element has to be an object
                     const loopVarObject = Json.asObjectValue(copyElement);
                     if (loopVarObject) {

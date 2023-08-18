@@ -183,8 +183,9 @@ suite("DeploymentTemplate code lenses", () => {
                     `${topLevelParamName} with no value in param file` :
                     `${topLevelParamName} with value ${JSON.stringify(valueInParamFile).replace(/\r\n|\n/g, ' ')}`;
                 test(testName, async () => {
-                    let a = testName;
-                    a = a;
+                    let keepTestNameInClosure = testName;
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-self-assign -- intentional as name implies
+                    keepTestNameInClosure = keepTestNameInClosure;
                     const dt = parseTemplate(template1);
                     const param = dt.topLevelScope.getParameterDefinition(topLevelParamName);
                     assert(!!param);
@@ -285,6 +286,7 @@ suite("DeploymentTemplate code lenses", () => {
         suite("parameters for nested inner-scoped template", () => {
             function createCodeLensTest(testName: string, template: IPartialDeploymentTemplate, expected: (string | RegExp)[]): void {
                 testWithLanguageServer(testName, async () => {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-self-assign -- keeps in encosure, makes debugging easier
                     testName = testName;
                     const dt = parseTemplate(template);
 

@@ -5,6 +5,7 @@
 
 // tslint:disable:no-unsafe-any no-console prefer-template no-implicit-dependencies export-name
 
+import { gulp_webpack } from '@microsoft/vscode-azext-dev';
 import * as assert from 'assert';
 import * as cp from 'child_process';
 import * as fse from 'fs-extra';
@@ -14,7 +15,6 @@ import * as path from 'path';
 import * as process from 'process';
 import * as recursiveReadDir from 'recursive-readdir';
 import * as shelljs from 'shelljs';
-import { gulp_webpack } from 'vscode-azureextensiondev';
 import { downloadAndUnzipVSCode, resolveCliPathFromVSCodeExecutablePath } from "vscode-test";
 import { DEFAULT_TESTCASE_TIMEOUT_MS, langServerDotnetVersion, languageServerFolderName } from './common';
 import { getTempFilePath } from './test/support/getTempFilePath';
@@ -96,22 +96,48 @@ async function test(): Promise<void> {
     const vscodeExecutablePath = await downloadAndUnzipVSCode();
     const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
 
+    const extensionsDirs = path.resolve('.vscode-test/extensions');
+    console.log("extensionsDirs: " + extensionsDirs);
+
     const extensionInstallArguments = [
         "--install-extension",
         "ms-dotnettools.vscode-dotnet-runtime",
+        `--extensions-dir=${extensionsDirs}`,
     ];
 
-    // Install .NET Install Tool as a dependency.
-    let result = cp.spawnSync(cliPath, extensionInstallArguments, {
+    const extensionListArguments = [
+        "--list-extensions",
+        "--show-versions",
+        `--extensions-dir=${extensionsDirs}`,
+    ];
+
+    console.log("Install .NET Install Tool as a dependency...");
+    console.log("cliPath: " + cliPath);
+    console.log("extensionInstallArguments: " + extensionInstallArguments);
+
+    //gulp_installVSCodeExtension("ms-dotnettools", "vscode-dotnet-runtime");
+    let result = cp.spawnSync(cliPath, extensionListArguments, {
         encoding: "utf-8",
         stdio: "inherit",
     });
+    console.log("result.error: " + result.error);
+    console.log("result.output: " + result.output);
+
+    result = cp.spawnSync(cliPath, extensionInstallArguments, {
+        encoding: "utf-8",
+        stdio: "inherit",
+    });
+    console.log("result.error: " + result.error);
+    console.log("result.output: " + result.output);
     if (result.status !== 0) {
         throw new Error("Failed to install dotnet runtime extension");
+    } else {
+        console.log(".NET Install Tool installed successfully");
     }
 
-    result = cp.spawnSync('node', ['./out/test/runTest.js'], { encoding: "utf-8", stdio: 'inherit', env });
-    if (result.status !== 0) {
+    var testsResult = cp.spawnSync('node', ['./out/test/runTest.js'], { encoding: "utf-8", stdio: 'inherit', env });
+    console.log("Tests result: " + testsResult.status);
+    if (testsResult.status !== 0) {
         throw new Error("Tests failed");
     }
 }

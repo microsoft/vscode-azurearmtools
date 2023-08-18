@@ -97,7 +97,7 @@ suite("Add missing parameters - functional", () => {
                 if (template) {
                     templateFile = TempFile.fromContents(stringify(template, 4), 'template');
                 }
-                let paramsFile = TempFile.fromContents(unmarkedText, 'params');
+                const paramsFile = TempFile.fromContents(unmarkedText, 'params');
 
                 // Map template to params
                 if (templateFile) {

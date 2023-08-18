@@ -60,13 +60,13 @@ export class TemplatePositionContext extends PositionContext {
     private _tleInfo: CachedValue<TleInfo | undefined> = new CachedValue<TleInfo | undefined>();
 
     public static fromDocumentLineAndColumnIndexes(deploymentTemplate: DeploymentTemplateDoc, documentLineIndex: number, documentColumnIndex: number, associatedParameters: DeploymentParametersDoc | undefined, allowOutOfBounds: boolean = true): TemplatePositionContext {
-        let context = new TemplatePositionContext(deploymentTemplate, associatedParameters);
+        const context = new TemplatePositionContext(deploymentTemplate, associatedParameters);
         context.initFromDocumentLineAndColumnIndices(documentLineIndex, documentColumnIndex, allowOutOfBounds);
         return context;
     }
 
     public static fromDocumentCharacterIndex(deploymentTemplate: DeploymentTemplateDoc, documentCharacterIndex: number, associatedParameters: DeploymentParametersDoc | undefined, allowOutOfBounds: boolean = true): TemplatePositionContext {
-        let context = new TemplatePositionContext(deploymentTemplate, associatedParameters);
+        const context = new TemplatePositionContext(deploymentTemplate, associatedParameters);
         context.initFromDocumentCharacterIndex(documentCharacterIndex, allowOutOfBounds);
         return context;
     }
@@ -448,7 +448,7 @@ export class TemplatePositionContext extends PositionContext {
         const tleInfo = this.tleInfo;
         const completions: Completion.Item[] = [];
 
-        for (let uniqueScope of this.document.uniqueScopes) {
+        for (const uniqueScope of this.document.uniqueScopes) {
             if (uniqueScope.parameterValuesSource) {
                 completions.push(...getPropertyValueCompletionItems(
                     uniqueScope.parameterDefinitionsSource,
@@ -486,7 +486,7 @@ export class TemplatePositionContext extends PositionContext {
                 }
             } else if (tleValue instanceof TLE.FunctionCallValue) {
                 assert(this.jsonToken);
-                // tslint:disable-next-line:no-non-null-assertion
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 completions.push(... this.getFunctionCallCompletions(tleValue, this.jsonToken!, tleInfo.tleCharacterIndex, scope));
             } else if (tleValue instanceof TLE.StringValue) {
                 completions.push(...this.getStringLiteralCompletions(tleValue, tleInfo.tleCharacterIndex, scope));
@@ -535,7 +535,7 @@ export class TemplatePositionContext extends PositionContext {
             return { items: [], triggerSuggest: true };
         } else if (insertionContext.context) {
             // Show snippets that match the snippet context at this location
-            let replacementInfo = this.getCompletionReplacementSpanInfo();
+            const replacementInfo = this.getCompletionReplacementSpanInfo();
             const snippets = await ext.snippetManager.value.getSnippetsAsCompletionItems(insertionContext, replacementInfo.span ?? this.emptySpanAtDocumentCharacterIndex);
             return { items: snippets };
         }
@@ -574,7 +574,7 @@ export class TemplatePositionContext extends PositionContext {
         const funcCall = tleStringValue.getFunctionCallParentOfArgument();
         if (funcCall) {
             assert(this.jsonToken && this.jsonToken.type === Json.TokenType.QuotedString);
-            // tslint:disable-next-line: no-non-null-assertion
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const jsonParentStringToken = this.jsonToken!;
             // It might be a resourceId/etc completion
             return getResourceIdCompletions(
@@ -644,7 +644,7 @@ export class TemplatePositionContext extends PositionContext {
                 // Don't currently support completions from a user function returning an object,
                 // so there must be no function namespace
                 if (functionName && !functionSource.namespaceToken) {
-                    let functionMetadata: BuiltinFunctionMetadata | undefined = AzureRMAssets.getFunctionMetadataFromName(functionName);
+                    const functionMetadata: BuiltinFunctionMetadata | undefined = AzureRMAssets.getFunctionMetadataFromName(functionName);
                     if (functionMetadata) {
                         // Property completion off of a built-in function. Completions will consist of the
                         //   returnValueMembers of the function, if any.
@@ -832,7 +832,7 @@ export class TemplatePositionContext extends PositionContext {
                 const references: ReferenceList = this.document.findReferencesToDefinition(refInfo.definition);
 
                 // References in the parameters file or parameter values of a nested/linked template
-                let parameterValuesSource: IParameterValuesSource | undefined = refInfo.definitionScope && this.getParameterValuesSource(refInfo.definitionScope);
+                const parameterValuesSource: IParameterValuesSource | undefined = refInfo.definitionScope && this.getParameterValuesSource(refInfo.definitionScope);
                 if (parameterValuesSource) {
                     const templateReferences = findReferencesToDefinitionInParameterValues(parameterValuesSource, refInfo.definition);
                     references.addAll(templateReferences);
@@ -889,7 +889,7 @@ export class TemplatePositionContext extends PositionContext {
                 }
 
                 // Is it a user function definition inside any namespace?
-                for (let ns of scope.namespaceDefinitions) {
+                for (const ns of scope.namespaceDefinitions) {
                     const userFunctionDefinition: UserFunctionDefinition | undefined = scope.getUserFunctionDefinition(ns.nameValue.unquotedValue, unquotedString);
                     if (userFunctionDefinition && userFunctionDefinition.nameValue === jsonStringValue) {
                         return userFunctionDefinition;

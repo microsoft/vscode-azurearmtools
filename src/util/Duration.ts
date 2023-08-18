@@ -33,7 +33,7 @@ export class Duration {
     }
 
     public toString(): string {
-        let ms = this.totalMilliseconds;
+        const ms = this.totalMilliseconds;
         return `${ms} millisecond${(ms !== 1 ? "s" : "")}`;
     }
 

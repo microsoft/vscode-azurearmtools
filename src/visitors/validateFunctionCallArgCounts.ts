@@ -11,27 +11,21 @@ import { Issue } from "../language/Issue";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 
 export function validateUserFunctionCallArgCounts(tleFunction: TLE.FunctionCallValue, nsDefinition: UserFunctionNamespaceDefinition, functionDefinition: UserFunctionDefinition): Issue | undefined {
-    let actualFullFunctionName: string;
-    let minimumArguments: number;
     let maximumArguments: number | undefined;
 
-    actualFullFunctionName = functionDefinition.fullName;
-    minimumArguments = maximumArguments = functionDefinition.parameterDefinitions.length;
+    const actualFullFunctionName = functionDefinition.fullName;
+    const minimumArguments = maximumArguments = functionDefinition.parameterDefinitions.length;
 
     return getFunctionArgumentCountError(actualFullFunctionName, minimumArguments, maximumArguments, tleFunction);
 }
 
 export function validateBuiltInFunctionCallArgCounts(tleFunction: TLE.FunctionCallValue, functionMetadata: assets.BuiltinFunctionMetadata): Issue | undefined {
-    let actualFullFunctionName: string;
-    let minimumArguments: number;
-    let maximumArguments: number | undefined;
+    const actualFullFunctionName = functionMetadata.fullName;
 
-    actualFullFunctionName = functionMetadata.fullName;
-
-    minimumArguments = functionMetadata.minimumArguments;
+    const minimumArguments = functionMetadata.minimumArguments;
     assert(typeof minimumArguments === 'number', `TLE function metadata for '${actualFullFunctionName}' has a null or undefined minimum argument value.`);
 
-    maximumArguments = functionMetadata.maximumArguments;
+    const maximumArguments = functionMetadata.maximumArguments;
 
     return getFunctionArgumentCountError(actualFullFunctionName, minimumArguments, maximumArguments, tleFunction);
 }
@@ -62,7 +56,7 @@ function getFunctionArgumentCountError(
     }
 
     if (message) {
-        let issue = new IncorrectArgumentsCountIssue(tleFunction.getSpan(), message, actualFullFunctionName, tleFunction.argumentExpressions.length, minimumArguments, maximumArguments);
+        const issue = new IncorrectArgumentsCountIssue(tleFunction.getSpan(), message, actualFullFunctionName, tleFunction.argumentExpressions.length, minimumArguments, maximumArguments);
         return issue;
     }
 }

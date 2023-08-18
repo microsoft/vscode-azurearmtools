@@ -33,13 +33,13 @@ export class TextDocumentFake implements TextDocument {
     public lineAt(line: number): TextLine;
     // tslint:disable-next-line: unified-signatures
     public lineAt(position: Position): TextLine;
-    public lineAt(position: number | Position): TextLine {
+    public lineAt(_position: number | Position): TextLine {
         throw new Error("Method not implemented.");
     }
-    public offsetAt(position: Position): number {
+    public offsetAt(_position: Position): number {
         throw new Error("Method not implemented.");
     }
-    public positionAt(offset: number): Position {
+    public positionAt(_offset: number): Position {
         throw new Error("Method not implemented.");
     }
     public getText(range?: Range | undefined): string {
@@ -53,13 +53,13 @@ export class TextDocumentFake implements TextDocument {
             return this._textBuffer.slice();
         }
     }
-    public getWordRangeAtPosition(position: Position, regex?: RegExp | undefined): Range | undefined {
+    public getWordRangeAtPosition(_position: Position, _regex?: RegExp | undefined): Range | undefined {
         throw new Error("Method not implemented.");
     }
-    public validateRange(range: Range): Range {
+    public validateRange(_range: Range): Range {
         throw new Error("Method not implemented.");
     }
-    public validatePosition(position: Position): Position {
+    public validatePosition(_position: Position): Position {
         throw new Error("Method not implemented.");
     }
 }

@@ -21,9 +21,7 @@
         ".vscode-test": true,
         "out": true
     },
-    "files.associations": {
-        "tslint.json": "jsonc"
-    },
+    "files.associations": {},
     "json.schemas": [
         {
             "fileMatch": [

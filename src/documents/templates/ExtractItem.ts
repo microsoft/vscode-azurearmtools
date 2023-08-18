@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from "vscode";
-import { IActionContext, IAzureUserInput, UserCancelledError } from "vscode-azureextensionui";
+import { IActionContext, IAzureUserInput, UserCancelledError } from "@microsoft/vscode-azext-utils";
 import { isTleExpression } from "../../language/expressions/isTleExpression";
 import { ObjectValue } from "../../language/json/JSON";
 import { DeploymentTemplateDoc } from "./DeploymentTemplateDoc";
@@ -16,19 +16,19 @@ export class ExtractItem {
     }
 
     public async extractParameter(editor: vscode.TextEditor, template: DeploymentTemplateDoc, context: IActionContext): Promise<void> {
-        let selection = this.expandSelection(editor.selection, editor.document, template, editor);
+        const selection = this.expandSelection(editor.selection, editor.document, template, editor);
         editor.selection = selection;
-        let selectedText = editor.document.getText(selection);
-        let name = await this.ui.showInputBox({ prompt: "Enter the new parameter name" });
+        const selectedText = editor.document.getText(selection);
+        const name = await this.ui.showInputBox({ prompt: "Enter the new parameter name" });
         if (!name) {
             context.telemetry.properties.cancelStep = 'name';
             throw new UserCancelledError();
         }
         const leaveEmpty = "Press 'Enter' if you do not want to add a description.";
-        let description = await this.ui.showInputBox({ prompt: "Description?", placeHolder: leaveEmpty });
+        const description = await this.ui.showInputBox({ prompt: "Description?", placeHolder: leaveEmpty });
         const insertText = `[parameters('${name}')]`;
         const texts = this.fixExtractTexts(selectedText, insertText, selection, template, editor);
-        let owningRootObject = this.getVarsParamsOwningRootObject(template, selection);
+        const owningRootObject = this.getVarsParamsOwningRootObject(template, selection);
         await new InsertItem(this.ui).insertParameterWithDefaultValue(owningRootObject, editor, context, name, texts.selectedText, description, { undoStopBefore: true, undoStopAfter: false });
         await editor.edit(builder => builder.replace(editor.selection, texts.insertText), { undoStopBefore: false, undoStopAfter: true });
         editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.end), vscode.TextEditorRevealType.Default);
@@ -36,22 +36,22 @@ export class ExtractItem {
 
     // Gets the root object where new parameters and variables should be added
     private getVarsParamsOwningRootObject(template: DeploymentTemplateDoc, selection: vscode.Selection): ObjectValue | undefined {
-        let scope = template.getContextFromDocumentLineAndColumnIndexes(selection.start.line, selection.start.character, undefined).getScope();
+        const scope = template.getContextFromDocumentLineAndColumnIndexes(selection.start.line, selection.start.character, undefined).getScope();
         return scope.memberOwningRootObject;
     }
 
     public async extractVariable(editor: vscode.TextEditor, template: DeploymentTemplateDoc, context: IActionContext): Promise<void> {
-        let selection = this.expandSelection(editor.selection, editor.document, template, editor);
+        const selection = this.expandSelection(editor.selection, editor.document, template, editor);
         editor.selection = selection;
-        let selectedText = editor.document.getText(selection);
-        let name = await this.ui.showInputBox({ prompt: "Enter the new variable name" });
+        const selectedText = editor.document.getText(selection);
+        const name = await this.ui.showInputBox({ prompt: "Enter the new variable name" });
         if (!name) {
             context.telemetry.properties.cancelStep = 'name';
             throw new UserCancelledError();
         }
-        let insertText = `[variables('${name}')]`;
+        const insertText = `[variables('${name}')]`;
         const texts = this.fixExtractTexts(selectedText, insertText, selection, template, editor);
-        let topLevel = this.getVarsParamsOwningRootObject(template, selection);
+        const topLevel = this.getVarsParamsOwningRootObject(template, selection);
         await new InsertItem(this.ui).insertVariableWithValue(topLevel, editor, context, name, texts.selectedText, { undoStopBefore: true, undoStopAfter: false });
         await editor.edit(builder => builder.replace(editor.selection, texts.insertText), { undoStopBefore: false, undoStopAfter: true });
         editor.revealRange(new vscode.Range(editor.selection.start, editor.selection.end), vscode.TextEditorRevealType.Default);
@@ -85,7 +85,7 @@ export class ExtractItem {
             return selection;
         }
         if (selection.start.character === selection.end.character) {
-            let pc = template.getContextFromDocumentLineAndColumnIndexes(selection.start.line, selection.start.character, undefined);
+            const pc = template.getContextFromDocumentLineAndColumnIndexes(selection.start.line, selection.start.character, undefined);
             if (pc.jsonValue) {
                 const span = pc.jsonValue.span;
                 return new vscode.Selection(editor.document.positionAt(span.startIndex + 1), editor.document.positionAt(span.endIndex));
@@ -120,9 +120,9 @@ export class ExtractItem {
     }
 
     private isInsideExpression(selection: vscode.Selection, template: DeploymentTemplateDoc, editor: vscode.TextEditor): boolean {
-        let pc = template.getContextFromDocumentLineAndColumnIndexes(selection.start.line, selection.start.character, undefined);
+        const pc = template.getContextFromDocumentLineAndColumnIndexes(selection.start.line, selection.start.character, undefined);
         if (pc.jsonValue && pc.jsonValue.asStringValue) {
-            let selectedText = editor.document.getText(selection);
+            const selectedText = editor.document.getText(selection);
             if (selectedText === pc.jsonValue.asStringValue.unquotedValue) {
                 return false;
             }

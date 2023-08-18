@@ -10,7 +10,7 @@ import { IDeploymentTemplate } from "./support/diagnostics";
 
 // =========== 101-acsengine-swarmmode/azuredeploy.json
 
-export let template_101_acsengine_swarmmode: IDeploymentTemplate = {
+export const template_101_acsengine_swarmmode: IDeploymentTemplate = {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
@@ -1180,7 +1180,7 @@ export const template_101_app_service_regional_vnet_integration: IDeploymentTemp
 
 // =========== 101-acsengine-swarmmode/azuredeploy.json
 
-export let template_201_time_series_insights_environment_with_eventhub: IDeploymentTemplate = {
+export const template_201_time_series_insights_environment_with_eventhub: IDeploymentTemplate = {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {

@@ -11,7 +11,7 @@ class EditBuilder implements TextEditorEdit {
     public constructor(public readonly textEditorFake: TextEditorFake) {
     }
 
-    public replace(location: Selection | Range | Position, value: string): void {
+    public replace(_location: Selection | Range | Position, _value: string): void {
         throw new Error("Method not implemented.");
     }
 
@@ -26,10 +26,10 @@ class EditBuilder implements TextEditorEdit {
     }
 
     // tslint:disable-next-line: no-reserved-keywords
-    public delete(location: Selection | Range): void {
+    public delete(_location: Selection | Range): void {
         throw new Error("Method not implemented.");
     }
-    public setEndOfLine(endOfLine: EndOfLine): void {
+    public setEndOfLine(_endOfLine: EndOfLine): void {
         throw new Error("Method not implemented.");
     }
 }
@@ -45,22 +45,22 @@ export class TextEditorFake implements TextEditor {
     };
 
     public viewColumn: ViewColumn = ViewColumn.One;
-    public async edit(callback: (editBuilder: TextEditorEdit) => void, options?: { undoStopBefore: boolean; undoStopAfter: boolean } | undefined): Promise<boolean> {
+    public async edit(callback: (editBuilder: TextEditorEdit) => void, _options?: { undoStopBefore: boolean; undoStopAfter: boolean } | undefined): Promise<boolean> {
         const builder = new EditBuilder(this);
         callback(builder);
         return true;
     }
 
-    public insertSnippet(snippet: SnippetString, location?: Range | Position | readonly Position[] | readonly Range[] | undefined, options?: { undoStopBefore: boolean; undoStopAfter: boolean } | undefined): Thenable<boolean> {
+    public insertSnippet(_snippet: SnippetString, _location?: Range | Position | readonly Position[] | readonly Range[] | undefined, _options?: { undoStopBefore: boolean; undoStopAfter: boolean } | undefined): Thenable<boolean> {
         throw new Error("Method not implemented.");
     }
-    public setDecorations(decorationType: TextEditorDecorationType, rangesOrOptions: Range[] | DecorationOptions[]): void {
+    public setDecorations(_decorationType: TextEditorDecorationType, _rangesOrOptions: Range[] | DecorationOptions[]): void {
         throw new Error("Method not implemented.");
     }
-    public revealRange(range: Range, revealType?: TextEditorRevealType | undefined): void {
+    public revealRange(_range: Range, _revealType?: TextEditorRevealType | undefined): void {
         throw new Error("Method not implemented.");
     }
-    public show(column?: ViewColumn | undefined): void {
+    public show(_column?: ViewColumn | undefined): void {
         throw new Error("Method not implemented.");
     }
     public hide(): void {

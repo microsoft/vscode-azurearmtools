@@ -7,7 +7,7 @@
 // tslint:disable:prefer-template
 
 import { CompletionItem, TextDocument, workspace } from 'vscode';
-import { ext, ICompletionsSpyResult } from '../../extension.bundle';
+import { ICompletionsSpyResult, ext } from '../../extension.bundle';
 import { delay } from '../support/delay';
 
 const defaultTimeout: number = 30 * 1000;
@@ -17,6 +17,7 @@ export function getEventPromise<T>(
     executor: (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: unknown) => void) => void,
     timeout: number = defaultTimeout): Promise<T> {
     return new Promise<T>(
+        // eslint-disable-next-line no-async-promise-executor -- CONSIDER: grandfathered in, doesn't seem to have problems
         async (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: unknown) => void): Promise<void> => {
             try {
                 let completed = false;
@@ -55,7 +56,7 @@ export async function actThenWait<T, U>(action: () => Promise<T> | T, promise: P
 export function getDocumentChangedPromise(document: TextDocument, timeout: number = defaultTimeout): Promise<string> {
     return getEventPromise<string>(
         "onDidChangeTextDocument",
-        (resolve, reject) => {
+        (resolve, _reject) => {
             const disposable = workspace.onDidChangeTextDocument(e => {
                 if (e.document === document) {
                     disposable.dispose();
@@ -69,7 +70,7 @@ export function getDocumentChangedPromise(document: TextDocument, timeout: numbe
 export function getCompletionItemsPromise(document: TextDocument, timeout: number = defaultTimeout): Promise<ICompletionsSpyResult> {
     return getEventPromise(
         "onCompletionItems",
-        (resolve, reject) => {
+        (resolve, _reject) => {
             const disposable = ext.completionItemsSpy.onCompletionItems(e => {
                 if (e.document.documentUri.fsPath === document.uri.fsPath) {
                     disposable.dispose();
@@ -83,7 +84,7 @@ export function getCompletionItemsPromise(document: TextDocument, timeout: numbe
 export function getCompletionItemResolutionPromise(item?: CompletionItem, timeout: number = defaultTimeout): Promise<CompletionItem> {
     return getEventPromise(
         "onCompletionItemResolved",
-        (resolve, reject) => {
+        (resolve, _reject) => {
             const disposable = ext.completionItemsSpy.onCompletionItemResolved(e => {
                 if (!item || e === item) {
                     disposable.dispose();

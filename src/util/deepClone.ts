@@ -16,17 +16,17 @@ export function deepClone<T extends {}>(value: T): T {
         result = value;
     } else if (value instanceof Array) {
         result = [];
-        // tslint:disable-next-line:forin no-for-in // Grandfathered in
-        for (let index in value) {
+        // eslint-disable-next-line @typescript-eslint/no-for-in-array
+        for (const index in value) {
             (<unknown[]>result)[index] = deepClone(value[index]);
         }
     } else {
         result = {};
         // tslint:disable-next-line:no-for-in // Grandfathered in
-        for (let propertyName in value) {
-            // tslint:disable-next-line: no-unsafe-any no-any
+        for (const propertyName in value) {
+            // eslint-disable-next-line no-prototype-builtins
             if (value.hasOwnProperty(propertyName)) {
-                (<{ [key: string]: unknown }>result)[propertyName] = deepClone(value[propertyName]);
+                (<{ [key: string]: unknown }>result)[propertyName] = deepClone(<T>value[propertyName]);
             }
         }
     }

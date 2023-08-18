@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IActionContext } from '@microsoft/vscode-azext-utils';
 import * as vscode from 'vscode';
-import { IActionContext } from 'vscode-azureextensionui';
 import { IJsonDocument } from '../documents/templates/IJsonDocument';
 import { assert } from '../fixed_assert';
 import { assertNever } from '../util/assertNever';
@@ -58,7 +58,7 @@ export function toVsCodeCompletionItem(jsonDocument: IJsonDocument, item: Comple
         kind: item.kind,
         function: item.kind === Completion.CompletionKind.tleFunction ? item.label : undefined
     };
-    for (let key of Object.getOwnPropertyNames(item.telemetryProperties ?? {})) {
+    for (const key of Object.getOwnPropertyNames(item.telemetryProperties ?? {})) {
         telemetryArgs[key] = item.telemetryProperties?.[key];
     }
     vscodeItem.command = {
@@ -72,10 +72,8 @@ export function toVsCodeCompletionItem(jsonDocument: IJsonDocument, item: Comple
     // vscode requires all spans to include the original position and be on the same line, otherwise
     //   it ignores it.  Verify that here.
     assert(vscodeItem.range, "Completion item doesn't have a range");
-    // tslint:disable-next-line: no-non-null-assertion
-    assert(vscodeItem.range!.contains(cursorPosition), "Completion item range doesn't include cursor");
-    // tslint:disable-next-line: no-non-null-assertion
-    assert(vscodeItem.range!.isSingleLine, "Completion item range must be a single line");
+    assert(vscodeItem.range?.contains(cursorPosition), "Completion item range doesn't include cursor");
+    assert(vscodeItem.range?.isSingleLine, "Completion item range must be a single line");
 
     return vscodeItem;
 }

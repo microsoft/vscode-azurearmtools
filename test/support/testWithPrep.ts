@@ -18,7 +18,7 @@ export interface ITestPreparationResult {
     skipTest?: string;
 }
 
-export function testWithPrep(expectation: string, preparations?: ITestPreparation[], callback?: (this: Context) => Promise<unknown>): Test {
+export function testWithPrep(expectation: string, preparations?: ITestPreparation[], callback?: (this: Context) => void | Promise<unknown>): Test {
     try {
         return test(
             expectation,
@@ -32,7 +32,7 @@ export function testWithPrep(expectation: string, preparations?: ITestPreparatio
                     }
 
                     // Perform pre-test preparations
-                    for (let prep of preparations ?? []) {
+                    for (const prep of preparations ?? []) {
                         const prepResult = prep.pretest.call(this);
                         if (prepResult.skipTest) {
                             writeToLog(`Skipping test because: ${prepResult.skipTest}`);
@@ -57,7 +57,7 @@ export function testWithPrep(expectation: string, preparations?: ITestPreparatio
                 }
                 finally {
                     // Perform post-test actions
-                    for (let post of postTestActions) {
+                    for (const post of postTestActions) {
                         post();
                     }
                 }

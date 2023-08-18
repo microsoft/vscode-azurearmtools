@@ -269,7 +269,7 @@ function concatExpressionsWithSeparator(expressions: string[], unquotedLiteralSe
 
 function getInfoFromResourcesArray(resourcesArray: Json.ArrayValue, parent: IJsonResourceInfo | undefined): IJsonResourceInfo[] {
     const results: IJsonResourceInfo[] = [];
-    for (let resourceValue of resourcesArray.elements ?? []) {
+    for (const resourceValue of resourcesArray.elements ?? []) {
         const resourceObject = Json.asObjectValue(resourceValue);
         if (resourceObject) {
             getInfoFromResourceObject(resourceObject, parent, results, true);
@@ -339,7 +339,7 @@ function getInfoFromResourceObject(resourceObject: Json.ObjectValue, parent: IJs
             if (resType.unquotedValue.toLowerCase() === 'microsoft.network/virtualnetworks') {
                 const subnets = resourceObject.getPropertyValue(templateKeys.properties)?.asObjectValue
                     ?.getPropertyValue('subnets')?.asArrayValue;
-                for (let subnet of subnets?.elements ?? []) {
+                for (const subnet of subnets?.elements ?? []) {
                     const subnetObject = subnet.asObjectValue;
                     const subnetName = subnetObject?.getPropertyValue(templateKeys.resourceName)?.asStringValue;
                     if (subnetObject && subnetName) {
@@ -466,14 +466,14 @@ function splitExpressionIntoSegments(jsonString: string): string[] {
                     // First, rewrite any string literals that contain a forward slash
                     // into separate string literals, e.g.
                     //   concat('a/', parameters('p1')) -> [ 'a', parameters('p1') ]
-                    let rewrittenArgs: (TLE.Value | string)[] = []; // string instances are string literals
-                    for (let arg of argumentExpressions) {
+                    const rewrittenArgs: (TLE.Value | string)[] = []; // string instances are string literals
+                    for (const arg of argumentExpressions) {
                         if (arg instanceof TLE.StringValue && arg.unquotedValue.includes('/')) {
                             const refactoredArg: string[] = splitStringAndKeepSeparators(arg.unquotedValue, '/')
                                 .map(s => `'${s}'`);
                             rewrittenArgs.push(...refactoredArg);
                         } else {
-                            // tslint:disable-next-line: no-non-null-assertion // checked with .every() above
+                            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- checked with .every() above
                             rewrittenArgs.push(arg!);
                         }
                     }
@@ -481,11 +481,11 @@ function splitExpressionIntoSegments(jsonString: string): string[] {
                     // Separate it into groups of arguments that are separated by '/'
                     // string literals, e.g.
                     //   [a, '/', b, c, '/', d] -> [ [a], [b, c], [d]]
-                    let segmentGroups: string[][] = [];
+                    const segmentGroups: string[][] = [];
                     let newGroup: string[] = [];
 
                     let separatorFound = false;
-                    for (let arg of rewrittenArgs) {
+                    for (const arg of rewrittenArgs) {
                         const argAsString = typeof arg === 'string' ? arg : arg.getSpan().getText(quotedValue);
                         if (arg === `'/'`) {
                             separatorFound = true;
@@ -517,11 +517,11 @@ function splitExpressionIntoSegments(jsonString: string): string[] {
  * are keep in the array returned.
  */
 function splitStringAndKeepSeparators(s: string, separator: string): string[] {
-    let result: string[] = [];
-    let substrings: string[] = s.split(separator);
+    const result: string[] = [];
+    const substrings: string[] = s.split(separator);
 
     let first = true;
-    for (let substring of substrings) {
+    for (const substring of substrings) {
         if (!first) {
             result.push('/');
         }
@@ -545,8 +545,8 @@ function getFriendlyNameExpression(
     let friendlyName: string;
 
     // Look for displayName tag first
-    let tags = resourceObject?.getPropertyValue(templateKeys.tags)?.asObjectValue;
-    let displayName = tags?.getPropertyValue(templateKeys.displayNameTag)?.asStringValue?.unquotedValue;
+    const tags = resourceObject?.getPropertyValue(templateKeys.tags)?.asObjectValue;
+    const displayName = tags?.getPropertyValue(templateKeys.displayNameTag)?.asStringValue?.unquotedValue;
     if (displayName) {
         friendlyName = displayName;
     } else {
@@ -582,10 +582,10 @@ function getFriendlyResourceLabel(
             fullType?: boolean;
         }
 ): string {
-    let nameLabel: string = getFriendlyNameExpression({ resource, fullName });
+    const nameLabel: string = getFriendlyNameExpression({ resource, fullName });
 
     // Add short type as well
-    let typeLabel = getFriendlyTypeExpression({ resource, fullType });
+    const typeLabel = getFriendlyTypeExpression({ resource, fullType });
 
     return `${nameLabel} (${typeLabel})`;
 }

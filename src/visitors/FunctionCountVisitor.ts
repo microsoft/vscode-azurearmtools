@@ -22,16 +22,16 @@ export class FunctionCountVisitor extends TleVisitor {
         // Log count for both "func" and "func(<args-count>)"
 
         // tslint:disable-next-line: strict-boolean-expressions
-        let args = tleFunction.argumentExpressions || [];
-        let argsCount = args.length;
-        let functionName = tleFunction.fullName;
-        let functionNameWithArgs = `${functionName}(${argsCount})`;
+        const args = tleFunction.argumentExpressions || [];
+        const argsCount = args.length;
+        const functionName = tleFunction.fullName;
+        const functionNameWithArgs = `${functionName}(${argsCount})`;
         this._functionCounts.add(functionName);
         this._functionCounts.add(functionNameWithArgs);
         super.visitFunctionCall(tleFunction);
     }
     public static visit(tleValue: Value | undefined): FunctionCountVisitor {
-        let visitor = new FunctionCountVisitor();
+        const visitor = new FunctionCountVisitor();
         if (tleValue) {
             tleValue.accept(visitor);
         }

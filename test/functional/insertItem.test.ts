@@ -7,17 +7,16 @@
 
 // WARNING: At the breakpoint, the extension will be in an inactivate state (i.e., if you make changes in the editor, diagnostics,
 //   formatting, etc. will not be updated until you F5 again)
+import { IAzureUserInput, PromptResult } from '@microsoft/vscode-azext-utils';
 import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import * as vscode from "vscode";
-// tslint:disable-next-line:no-duplicate-imports
 import { window, workspace } from "vscode";
-import { IAzureUserInput, PromptResult } from 'vscode-azureextensionui';
 import { DeploymentTemplateDoc, InsertItem, TemplateSectionType } from '../../extension.bundle';
+import { testWithRealSnippets } from '../support/TestSnippets';
 import { getActionContext } from '../support/getActionContext';
 import { getTempFilePath } from "../support/getTempFilePath";
 import { removeApiVersions } from '../support/removeApiVersions';
-import { testWithRealSnippets } from '../support/TestSnippets';
 
 suite("InsertItem", async (): Promise<void> => {
     function assertTemplate(actual: string, expected: string, textEditor: vscode.TextEditor, options?: { ignoreWhiteSpace?: boolean; ignoreApiVersions?: boolean }): void {
@@ -79,11 +78,11 @@ suite("InsertItem", async (): Promise<void> => {
         }
         const tempPath = getTempFilePath(`insertItem`, '.azrm');
         fse.writeFileSync(tempPath, template);
-        let document = await workspace.openTextDocument(tempPath);
-        let textEditor = await window.showTextDocument(document);
-        let ui = new MockUserInput(showInputBox);
-        let insertItem = new InsertItem(ui);
-        let deploymentTemplate = new DeploymentTemplateDoc(document.getText(), document.uri, document.version);
+        const document = await workspace.openTextDocument(tempPath);
+        const textEditor = await window.showTextDocument(document);
+        const ui = new MockUserInput(showInputBox);
+        const insertItem = new InsertItem(ui);
+        const deploymentTemplate = new DeploymentTemplateDoc(document.getText(), document.uri, document.version);
         await action(insertItem, deploymentTemplate, textEditor);
         await textEditor.edit(builder => builder.insert(textEditor.selection.active, textToInsert));
         const docTextAfterInsertion = document.getText();
@@ -492,7 +491,7 @@ suite("InsertItem", async (): Promise<void> => {
     });
 });
 
-// CONSIDER: Switch to using TestUserInput from vscode-azureextensiondev
+// CONSIDER: Switch to using TestUserInput from @microsoft/vscode-azext-dev
 class MockUserInput implements IAzureUserInput {
     private showInputBoxTexts: string[] = [];
     private _onDidFinishPromptEmitter: vscode.EventEmitter<PromptResult> = new vscode.EventEmitter<PromptResult>();
@@ -505,22 +504,22 @@ class MockUserInput implements IAzureUserInput {
         return this._onDidFinishPromptEmitter.event;
     }
 
-    public async showQuickPick<T extends vscode.QuickPickItem>(items: T[] | Thenable<T[]>, options: import("vscode-azureextensionui").IAzureQuickPickOptions): Promise<T> {
-        let result = await items;
-        let label = this.showInputBoxTexts.shift()!;
-        let item = result.find(x => x.label === label)!;
+    public async showQuickPick<T extends vscode.QuickPickItem>(items: T[] | Thenable<T[]>, _options: import("@microsoft/vscode-azext-utils").IAzureQuickPickOptions): Promise<T> {
+        const result = await items;
+        const label = this.showInputBoxTexts.shift()!;
+        const item = result.find(x => x.label === label)!;
         return item;
     }
 
-    public async showInputBox(options: vscode.InputBoxOptions): Promise<string> {
+    public async showInputBox(_options: vscode.InputBoxOptions): Promise<string> {
         return this.showInputBoxTexts.shift()!;
     }
 
-    public async showWarningMessage<T extends vscode.MessageItem>(message: string, options: import("vscode-azureextensionui").IAzureMessageOptions, ...items: T[]): Promise<T> {
+    public async showWarningMessage<T extends vscode.MessageItem>(message: string, options: import("@microsoft/vscode-azext-utils").IAzureMessageOptions, ...items: T[]): Promise<T> {
         return items[0];
     }
 
-    public async showOpenDialog(options: vscode.OpenDialogOptions): Promise<vscode.Uri[]> {
+    public async showOpenDialog(_options: vscode.OpenDialogOptions): Promise<vscode.Uri[]> {
         return [vscode.Uri.file("c:\\some\\path")];
     }
 }

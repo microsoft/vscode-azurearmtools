@@ -11,7 +11,7 @@ import { ITestPreparation, ITestPreparationResult, testWithPrep } from './suppor
 
 // By default we use the test metadata for tests
 export function useTestFunctionMetadata(): void {
-    let testMetadata = fs.readFileSync(path.join(__dirname, '..', '..', 'test', 'TestData.ExpressionMetadata.json'));
+    const testMetadata = fs.readFileSync(path.join(__dirname, '..', '..', 'test', 'TestData.ExpressionMetadata.json'));
     AzureRMAssets.setFunctionsMetadata(testMetadata.toString());
     writeToLog("Installed test function metadata");
 }

@@ -19,7 +19,7 @@ suite("UserFunctionNamespaceDefinition", () => {
             const namespaceName = createStringProperty("namespaceMisspelled", "Contoso");
             const namespaceObject = new Json.ObjectValue(fakeSpan, [namespaceName]);
 
-            let pd = UserFunctionNamespaceDefinition.createIfValid(dt.topLevelScope, dt, namespaceObject);
+            const pd = UserFunctionNamespaceDefinition.createIfValid(dt.topLevelScope, dt, namespaceObject);
             assert(!pd, "No namespace name, should be invalid");
         });
 

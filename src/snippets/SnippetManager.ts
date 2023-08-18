@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { callWithTelemetryAndErrorHandling, IActionContext } from '@microsoft/vscode-azext-utils';
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as stripJsonComments from "strip-json-comments";
 import { window } from 'vscode';
-import { callWithTelemetryAndErrorHandling, IActionContext } from 'vscode-azureextensionui';
 import { assetsPath, extensionName } from '../../common';
 import { assert } from '../fixed_assert';
 import { Span } from '../language/Span';
@@ -181,7 +181,7 @@ function doesSnippetSupportContext(snippet: ISnippetInternal, context: Context |
 function validateSnippet(snippet: ISnippetInternal): ISnippetInternal {
     const context = snippet.context;
     if (context === undefined) {
-        window.showWarningMessage(`Snippet "${snippet.name}" has no context specified`);
+        void window.showWarningMessage(`Snippet "${snippet.name}" has no context specified`);
     }
 
     const looksLikeResource = snippet.body.some(
@@ -190,14 +190,14 @@ function validateSnippet(snippet: ISnippetInternal): ISnippetInternal {
     const isResource = doesSnippetSupportContext(snippet, KnownContexts.resources);
     if (isResource) {
         if (!looksLikeResource) {
-            window.showWarningMessage(`Snippet "${snippet.name}" is marked with the resources context but doesn't look like a resource`);
+            void window.showWarningMessage(`Snippet "${snippet.name}" is marked with the resources context but doesn't look like a resource`);
         }
         if (!snippet.hasCurlyBraces) {
-            window.showWarningMessage(`Snippet "${snippet.name}" is marked with the resources context but doesn't begin and end with curly braces`);
+            void window.showWarningMessage(`Snippet "${snippet.name}" is marked with the resources context but doesn't begin and end with curly braces`);
         }
     } else {
         if (looksLikeResource) {
-            window.showWarningMessage(`Snippet "${snippet.name}" looks like a resource but isn't supported in the resources context`);
+            void window.showWarningMessage(`Snippet "${snippet.name}" looks like a resource but isn't supported in the resources context`);
         }
     }
 
@@ -222,7 +222,7 @@ function convertToInternalSnippet(snippetName: string, snippetFromFile: ISnippet
 }
 
 function convertToSnippet(snippet: ISnippetInternal): ISnippet {
-    let body = snippet.body;
+    const body = snippet.body;
     const insertText = body.join('\n'); // vscode will change to EOL as appropriate
     return {
         name: snippet.name,

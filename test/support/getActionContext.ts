@@ -1,18 +1,33 @@
-import { IActionContext } from "vscode-azureextensionui";
+/*---------------------------------------------------------------------------------------------
+*  Copyright (c) Microsoft Corporation. All rights reserved.
+*  Licensed under the MIT License. See License.txt in the project root for license information.
+*--------------------------------------------------------------------------------------------*/
+
+import { IActionContext, IAzureUserInput } from "@microsoft/vscode-azext-utils";
 
 export function getActionContext(): IActionContext {
     return {
         telemetry: {
-            measurements: {},
-            properties: {},
-            suppressAll: true,
-            suppressIfSuccessful: true
+            properties: {
+                isActivationEvent: 'false',
+                lastStep: '',
+                result: 'Succeeded',
+                stack: '',
+                error: '',
+                errorMessage: ''
+            },
+            measurements: {
+                duration: 0
+            },
+            suppressIfSuccessful: false,
+            suppressAll: false
         },
         errorHandling: {
-            issueProperties: {},
+            suppressDisplay: false,
             rethrow: false,
-            suppressDisplay: true,
-            suppressReportIssue: true
-        }
+            issueProperties: {}
+        },
+        ui: <IAzureUserInput><unknown>undefined,
+        valuesToMask: []
     };
 }

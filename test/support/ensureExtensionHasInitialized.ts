@@ -10,31 +10,32 @@ import { writeToLog } from "./testLog";
 
 export async function ensureExtensionHasInitialized(totalTimeout: number): Promise<void> {
     async function ensureDotnetExtensionActivated(): Promise<void> {
-        writeToLog(">>> Looking for dotnet extension ", true);
+        const dotnetExtensionName = "ms-dotnettools.vscode-dotnet-runtime";
+        writeToLog(`>>> Looking for dotnet extension ${dotnetExtensionName}`, true);
         let extensionDotnet: Extension<unknown> | undefined;
         await delayWhileSync(
             5 * 1000,
             () => {
-                extensionDotnet = extensions.getExtension("ms-dotnettools.vscode-dotnet-runtime");
-                writeToLog(extensionDotnet !== undefined ? "Dotnet extension found" : "Dotnet extension not found", true);
+                extensionDotnet = extensions.getExtension(dotnetExtensionName);
+                writeToLog(extensionDotnet !== undefined ? `Dotnet extension ${dotnetExtensionName} found` : `Dotnet extension ${dotnetExtensionName} not found`, true);
                 return !extensionDotnet;
             },
             5 * 60 * 1000);
         // tslint:disable-next-line: no-non-null-assertion
         await extensionDotnet!.activate();
-        writeToLog(">>> Dotnet extension activated", true);
+        writeToLog(`>>> Dotnet extension ${dotnetExtensionName} is active`, true);
         // console.log("Dotnet extension: ", extensionDotnet);
     }
 
     await ensureDotnetExtensionActivated();
 
     async function waitForExtensionInitialization(timeout: number): Promise<boolean> {
-        let start = Date.now();
+        const start = Date.now();
         writeToLog(
             `Extension initialization state: ${ext.extensionStartupComplete ? "Completed" : ext.extensionStartupComplete === undefined ? "Not started" : "In progress"}`,
             true);
 
-        // tslint:disable-next-line: no-constant-condition
+        // eslint-disable-next-line no-constant-condition
         while (true) {
             const extensionStartupComplete = ext.extensionStartupComplete;
 
@@ -61,7 +62,7 @@ export async function ensureExtensionHasInitialized(totalTimeout: number): Promi
 
     writeToLog(">>> First timeout hit, will try to activate extension manually", true);
 
-    let extension = extensions.getExtension(ext.extensionId);
+    const extension = extensions.getExtension(ext.extensionId);
     assert(extension, `Couldn't find extension ${ext.extensionId}`);
     await extension.activate();
 

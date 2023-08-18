@@ -14,7 +14,7 @@ export async function testStringAtEachIndex<T>(
     getTestResult: (text: string, index: number) => T | Promise<T>
 ): Promise<void> {
     // Make the true/false markers unique so we can pass them to parseParametersWithMarkers
-    for (let marker of Object.keys(expectedValues)) {
+    for (const marker of Object.keys(expectedValues)) {
         for (let i = 1; ; ++i) {
             // Add a unique integer to the first non-unique marker found
             const newString = textWithMarkers.replace(`<!${marker}!>`, `<!${marker}$${i}!>`);

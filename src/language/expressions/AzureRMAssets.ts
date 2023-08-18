@@ -29,16 +29,16 @@ export class AzureRMAssets {
             // Reset so next call to getFunctionsMetadata will retrieve real data
             AzureRMAssets._functionsMetadata = undefined;
         } else {
-            let array = BuiltinFunctionMetadata.fromString(metadataString);
+            const array = BuiltinFunctionMetadata.fromString(metadataString);
             AzureRMAssets._functionsMetadata = new FunctionsMetadata(array);
         }
     }
 
     public static getFunctionsMetadata(): FunctionsMetadata {
         if (!AzureRMAssets._functionsMetadata) {
-            let uri = AzureRMAssets.getFunctionMetadataUri();
-            let contents = AzureRMAssets.readFile(uri);
-            let array: BuiltinFunctionMetadata[] = BuiltinFunctionMetadata.fromString(contents);
+            const uri = AzureRMAssets.getFunctionMetadataUri();
+            const contents = AzureRMAssets.readFile(uri);
+            const array: BuiltinFunctionMetadata[] = BuiltinFunctionMetadata.fromString(contents);
             AzureRMAssets._functionsMetadata = new FunctionsMetadata(array);
         }
 

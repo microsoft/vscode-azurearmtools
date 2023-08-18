@@ -2,15 +2,15 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { IActionContext, UserCancelledError } from '@microsoft/vscode-azext-utils';
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import { QuickPickItem, Uri, window } from "vscode";
-import { IActionContext, UserCancelledError } from 'vscode-azureextensionui';
 import { ext } from '../../extensionVariables';
 import { isTleExpression } from "../../language/expressions/isTleExpression";
 import * as Json from "../../language/json/JSON";
-import { assertNever } from '../../util/assertNever';
 import { CaseInsensitiveMap } from '../../util/CaseInsensitiveMap';
+import { assertNever } from '../../util/assertNever';
 import { indentMultilineString, unindentMultilineString } from '../../util/multilineStrings';
 import { ExpressionType } from '../templates/ExpressionType';
 import { TemplateScope } from '../templates/scopes/TemplateScope';
@@ -24,7 +24,7 @@ export async function queryCreateParameterFile(actionContext: IActionContext, sc
     const required = <QuickPickItem>{ label: "Only required parameters", description: "Uses only parameters that have no default value in the template file" };
     const templateUri = scope.document.documentUri;
 
-    const whichParams = await ext.ui.showQuickPick([all, required], {
+    const whichParams = await actionContext.ui.showQuickPick([all, required], {
         placeHolder: `Include which parameters from ${path.basename(templateUri.fsPath)}?`
     });
     const onlyRequiredParams = whichParams === required;
@@ -36,7 +36,7 @@ export async function queryCreateParameterFile(actionContext: IActionContext, sc
         path.dirname(templateUri.fsPath),
         `${fileNameWithoutJsonC}.parameters.json`);
 
-    let newUri: Uri | undefined = await window.showSaveDialog({
+    const newUri: Uri | undefined = await window.showSaveDialog({
         defaultUri: Uri.file(defaultParamPath),
         filters: {
             JSON: ['json', 'jsonc']
@@ -46,7 +46,7 @@ export async function queryCreateParameterFile(actionContext: IActionContext, sc
         throw new UserCancelledError();
     }
 
-    let paramsObj: string = createParameterFileContents(scope, tabSize, onlyRequiredParams);
+    const paramsObj: string = createParameterFileContents(scope, tabSize, onlyRequiredParams);
     await fse.writeFile(newUri.fsPath, paramsObj, {
         encoding: 'utf8'
     });
@@ -173,9 +173,9 @@ function createParameters(
     tabSize: number,
     onlyRequiredParameters: boolean
 ): CaseInsensitiveMap<string, string> {
-    let params: CaseInsensitiveMap<string, string> = new CaseInsensitiveMap<string, string>();
+    const params: CaseInsensitiveMap<string, string> = new CaseInsensitiveMap<string, string>();
 
-    for (let paramDef of scope.parameterDefinitionsSource.parameterDefinitions) {
+    for (const paramDef of scope.parameterDefinitionsSource.parameterDefinitions) {
         if (!onlyRequiredParameters || !paramDef.defaultValue) {
             params.set(paramDef.nameValue.unquotedValue, createParameterFromTemplateParameter(scope.parameterDefinitionsSource, paramDef, undefined, tabSize));
         }

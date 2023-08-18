@@ -14,8 +14,8 @@ let internetConnected: Promise<boolean>;
 function hasInternetConnection(): Promise<boolean> {
     if (internetConnected === undefined) {
         // tslint:disable-next-line:typedef
-        internetConnected = new Promise<boolean>((resolve, reject) => {
-            dns.lookup("www.microsoft.com", (error: Error | null, address: string, family: number) => {
+        internetConnected = new Promise<boolean>((resolve, _reject) => {
+            dns.lookup("www.microsoft.com", (error: Error | null, _address: string, _family: number) => {
                 resolve(!error);
             });
         });
@@ -30,7 +30,7 @@ function hasInternetConnection(): Promise<boolean> {
 // tslint:disable-next-line:no-any
 export function networkTest(testName: string, testFunction: () => void | Promise<any>): void {
     test(testName, function (this: Context): Promise<void> {
-        this.timeout(10000);
+        this.timeout(20000);
 
         return hasInternetConnection()
             .then((connected: boolean) => {

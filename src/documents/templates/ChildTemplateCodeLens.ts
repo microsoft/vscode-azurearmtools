@@ -4,9 +4,9 @@
 
 // tslint:disable: max-classes-per-file
 
+import { parseError } from '@microsoft/vscode-azext-utils';
 import * as path from "path";
 import { Uri } from 'vscode';
-import { parseError } from 'vscode-azureextensionui';
 import { documentSchemes } from "../../../common";
 import { ext } from '../../extensionVariables';
 import { assert } from "../../fixed_assert";
@@ -74,7 +74,7 @@ export class NestedTemplateCodeLens extends ChildTemplateCodeLens {
         }
 
         // If language server not running yet, show language server state instead of file load state
-        let langServerLoadState: string | undefined = getLoadStateFromLanguageServerStatus();
+        const langServerLoadState: string | undefined = getLoadStateFromLanguageServerStatus();
         if (langServerLoadState) {
             title += ` - ${langServerLoadState}`;
         }
@@ -85,6 +85,7 @@ export class NestedTemplateCodeLens extends ChildTemplateCodeLens {
         return lenses;
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await -- grandfathered in
     public async resolve(): Promise<boolean> {
         // Nothing else to do
         return true;
@@ -209,6 +210,7 @@ export class LinkedTemplateCodeLens extends ChildTemplateCodeLens {
         return lenses;
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await -- grandfathered in
     public async resolve(): Promise<boolean> {
         // Nothing else to do
         return true;
@@ -225,6 +227,8 @@ export class ReloadLinkedTemplateCodeLens extends ResolvableCodeLens {
                 [linkedFileUri]
         };
     }
+
+    // eslint-disable-next-line @typescript-eslint/require-await -- grandfathered in
     public async resolve(): Promise<boolean> {
         return true;
     }

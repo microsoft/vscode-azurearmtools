@@ -32,17 +32,17 @@ export function setContext(
 
     // Temlate files...
     // Note: We don't need an "isTemplateFile" context because we have a specific langid for template files
-    commands.executeCommand(
+    void commands.executeCommand(
         'setContext',
         hasParameterFileContextName,
         value.isTemplateFile && value.hasParamFile);
 
     // Parameter files...
-    commands.executeCommand(
+    void commands.executeCommand(
         'setContext',
         isParameterFileContextName,
         value.isParamFile);
-    commands.executeCommand(
+    void commands.executeCommand(
         'setContext',
         hasTemplateFileContextName,
         value.hasTemplateFile);

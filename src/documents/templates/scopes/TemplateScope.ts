@@ -142,7 +142,7 @@ export abstract class TemplateScope implements IParameterDefinitionsSourceProvid
 
     public get childScopes(): TemplateScope[] {
         const scopes: TemplateScope[] = [];
-        for (let resource of this.resources ?? []) {
+        for (const resource of this.resources ?? []) {
             if (resource.childDeployment) {
                 scopes.push(resource.childDeployment);
             }
@@ -152,8 +152,8 @@ export abstract class TemplateScope implements IParameterDefinitionsSourceProvid
         // (If it's not unique, we'd end up getting the parent's function definitions
         // instead of our own, so ignore)
         if (this.hasUniqueParamsVarsAndFunctions) {
-            for (let namespace of this.namespaceDefinitions) {
-                for (let member of namespace.members) {
+            for (const namespace of this.namespaceDefinitions) {
+                for (const member of namespace.members) {
                     scopes.push(member.scope);
                 }
             }
@@ -166,11 +166,11 @@ export abstract class TemplateScope implements IParameterDefinitionsSourceProvid
     public getParameterDefinition(parameterName: string): IParameterDefinition | undefined {
         const unquotedParameterName = strings.unquote(parameterName);
         if (unquotedParameterName) {
-            let parameterNameLC = unquotedParameterName.toLowerCase();
+            const parameterNameLC = unquotedParameterName.toLowerCase();
 
             // Find the last definition that matches, because that's what Azure does if there are matching names
             for (let i = this.parameterDefinitionsSource.parameterDefinitions.length - 1; i >= 0; --i) {
-                let pd = this.parameterDefinitionsSource.parameterDefinitions[i];
+                const pd = this.parameterDefinitionsSource.parameterDefinitions[i];
                 if (pd.nameValue.toString().toLowerCase() === parameterNameLC) {
                     return pd;
                 }
@@ -186,7 +186,7 @@ export abstract class TemplateScope implements IParameterDefinitionsSourceProvid
             return undefined;
         }
 
-        let namespaceNameLC = namespaceName.toLowerCase();
+        const namespaceNameLC = namespaceName.toLowerCase();
         return this.namespaceDefinitions.find((nd: UserFunctionNamespaceDefinition) => nd.nameValue.toString().toLowerCase() === namespaceNameLC);
     }
 
@@ -196,9 +196,9 @@ export abstract class TemplateScope implements IParameterDefinitionsSourceProvid
             return undefined;
         }
 
-        let nd = typeof namespace === 'string' ? this.getFunctionNamespaceDefinition(namespace) : namespace;
+        const nd = typeof namespace === 'string' ? this.getFunctionNamespaceDefinition(namespace) : namespace;
         if (nd) {
-            let result = nd.getMemberDefinition(functionName);
+            const result = nd.getMemberDefinition(functionName);
             return result ? result : undefined;
         }
 
@@ -213,7 +213,7 @@ export abstract class TemplateScope implements IParameterDefinitionsSourceProvid
 
             // Find the last definition that matches, because that's what Azure does
             for (let i = this.variableDefinitions.length - 1; i >= 0; --i) {
-                let vd = this.variableDefinitions[i];
+                const vd = this.variableDefinitions[i];
                 if (vd.nameValue.toString().toLowerCase() === variableNameLC) {
                     return vd;
                 }

@@ -23,12 +23,12 @@ export class ParametersPositionContext extends PositionContext {
     }
 
     public static fromDocumentLineAndColumnIndices(deploymentParameters: DeploymentParametersDoc, documentLineIndex: number, documentColumnIndex: number, associatedTemplate: DeploymentTemplateDoc | undefined): ParametersPositionContext {
-        let context = new ParametersPositionContext(deploymentParameters, associatedTemplate);
+        const context = new ParametersPositionContext(deploymentParameters, associatedTemplate);
         context.initFromDocumentLineAndColumnIndices(documentLineIndex, documentColumnIndex);
         return context;
     }
     public static fromDocumentCharacterIndex(deploymentParameters: DeploymentParametersDoc, documentCharacterIndex: number, deploymentTemplate: DeploymentTemplateDoc | undefined): ParametersPositionContext {
-        let context = new ParametersPositionContext(deploymentParameters, deploymentTemplate);
+        const context = new ParametersPositionContext(deploymentParameters, deploymentTemplate);
         context.initFromDocumentCharacterIndex(documentCharacterIndex);
         return context;
     }
@@ -74,6 +74,7 @@ export class ParametersPositionContext extends PositionContext {
         return undefined;
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await -- grandfathered in
     public async getCompletionItems(triggerCharacter: string | undefined, tabSize: number): Promise<ICompletionItemsResult> {
         return {
             items: getPropertyValueCompletionItems(

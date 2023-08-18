@@ -12,13 +12,13 @@ import { isWebpack } from "../common";
 export const breakOnAssert: boolean = /^(true|1)$/i.test(process.env.BREAK_ON_ASSERT ?? '');
 
 function fixed_ok(value: unknown, message?: string): void {
-    // tslint:disable-next-line: strict-boolean-expressions
+    // eslint-disable-next-line no-extra-boolean-cast
     if (!!value) {
         return;
     }
 
-    if (breakOnAssert) {
-        // tslint:disable:no-debugger
+    if (breakOnAssert && process.env.DISABLE_BREAK_ON_ASSERT !== 'true') {
+        // eslint-disable-next-line no-debugger
         debugger;
     }
 

@@ -37,7 +37,7 @@ class StringTestLog implements ITestLog {
     }
 }
 
-function writeToLogFile(message: string, ...args: object[]): string {
+function writeToLogFile(message: string, ..._args: object[]): string {
     message = new Date().toLocaleDateString() + ": " + message + "\n";
 
     if (testLogOutputFile) {

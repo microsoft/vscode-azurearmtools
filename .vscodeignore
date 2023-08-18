@@ -11,6 +11,8 @@
 **/*.map
 build
 dist/test/**
+.eslintignore
+.eslintrc.js
 grammars/**
 gulp*
 images/*.svg
@@ -24,7 +26,6 @@ test-results.xml
 test/**
 tsconfig.json
 tsd.json
-tslint.json
 typings/**
 webpack.config*
 *.vsix

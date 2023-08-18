@@ -5,12 +5,12 @@
 
 // tslint:disable: no-implicit-dependencies
 
+import { parseError } from '@microsoft/vscode-azext-utils';
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
 import * as process from 'process';
 import * as rimraf from 'rimraf';
-import { parseError } from 'vscode-azureextensionui';
 import { isWin32 } from '../testConstants';
 import { writeToError, writeToLog } from './testLog';
 
@@ -76,10 +76,10 @@ export async function publishCache(destFolderPath: string): Promise<void> {
     await fse.mkdir(destFolderExpirationPath);
 
     if (fse.pathExistsSync(cacheFolder)) {
-        for (let file of await fse.readdir(cacheFolder)) {
+        for (const file of await fse.readdir(cacheFolder)) {
             await copyCacheFile(file, destFolderPath);
         }
-        for (let file of await fse.readdir(path.join(cacheFolder, "Expiration"))) {
+        for (const file of await fse.readdir(path.join(cacheFolder, "Expiration"))) {
             await copyCacheFile(path.join('Expiration', file), destFolderPath);
         }
     } else {

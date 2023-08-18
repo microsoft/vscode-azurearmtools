@@ -34,7 +34,7 @@ import { testWithPrep } from '../support/testWithPrep';
 const resultsFolder = path.join(__dirname, '..', '..', '..', 'test', 'snippets', 'results');
 const expectedFolder = path.join(__dirname, '..', '..', '..', 'test', 'snippets', 'expected');
 
-let resourceTemplate: string = `{
+const resourceTemplate: string = `{
 \t"resources": [
 \t\t//Insert here: resource
 \t],
@@ -59,7 +59,7 @@ let resourceTemplate: string = `{
 \t]
 }`;
 
-let resourceTemplateWithLocation: string = `{
+const resourceTemplateWithLocation: string = `{
     \t"resources": [
     \t\t//Insert here: resource
     \t],
@@ -87,7 +87,7 @@ let resourceTemplateWithLocation: string = `{
     \t]
     }`;
 
-let emptyTemplate: string = `
+const emptyTemplate: string = `
 //Insert here: empty
 `;
 
@@ -291,7 +291,7 @@ suite("Snippets functional tests", () => {
             snippetNames = [...new Set(snippetNames)]; // dedupe
 
             const manager = SnippetManager.createDefault();
-            for (let snippetName of snippetNames) {
+            for (const snippetName of snippetNames) {
                 if (!snippetName.startsWith('$')) {
                     for (let i = 0; i < 1; ++i) {
                         testWithPrep(
@@ -338,8 +338,8 @@ suite("Snippets functional tests", () => {
 
         fse.writeFileSync(tempPath, template);
 
-        let doc = await workspace.openTextDocument(tempPath);
-        let editor = await window.showTextDocument(doc);
+        const doc = await workspace.openTextDocument(tempPath);
+        const editor = await window.showTextDocument(doc);
 
         // Wait for first set of diagnostics to finish.
         const diagnosticOptions: IGetDiagnosticsOptions = {
@@ -368,7 +368,7 @@ suite("Snippets functional tests", () => {
         let messages = diagnosticResults.diagnostics.map(d => d.message).sort();
 
         if (DEBUG_BREAK_AFTER_INSERTING_SNIPPET) {
-            // tslint:disable-next-line: no-debugger
+            // eslint-disable-next-line no-debugger
             debugger;
         }
 

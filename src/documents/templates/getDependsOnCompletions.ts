@@ -6,13 +6,13 @@
 import { MarkdownString } from "vscode";
 import { templateKeys } from "../../../common";
 import { assert } from "../../fixed_assert";
+import { ContainsBehavior, Span } from "../../language/Span";
 import { getFriendlyExpressionFromTleExpression } from "../../language/expressions/friendlyExpressions";
 import { isTleExpression } from "../../language/expressions/isTleExpression";
 import * as Json from "../../language/json/JSON";
-import { ContainsBehavior, Span } from "../../language/Span";
 import * as Completion from "../../vscodeIntegration/Completion";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
-import { getResourcesInfo, IJsonResourceInfo, IResourceInfo, jsonStringToTleExpression } from "./getResourcesInfo";
+import { IJsonResourceInfo, IResourceInfo, getResourcesInfo, jsonStringToTleExpression } from "./getResourcesInfo";
 
 // Handle completions for dependsOn array entries
 export function getDependsOnCompletions(
@@ -41,7 +41,7 @@ export function getDependsOnCompletions(
     }
 
     // Find the nearest IResource containing the current position
-    let currentResource = findClosestEnclosingResource(pc.documentCharacterIndex, infos);
+    const currentResource = findClosestEnclosingResource(pc.documentCharacterIndex, infos);
 
     // Find descendents of the resource
     const descendentsIncludingSelf: Set<IResourceInfo> = findDescendentsIncludingSelf(currentResource);
@@ -69,7 +69,7 @@ function getDependsOnCompletionsForResource(resource: IJsonResourceInfo, span: S
 
     if (resourceIdExpression) {
         const friendlyNameExpression = resource.getFriendlyNameExpression({ fullName: false });
-        let friendlyTypeExpression = resource.getFriendlyTypeExpression({ fullType: false });
+        const friendlyTypeExpression = resource.getFriendlyTypeExpression({ fullType: false });
 
         const label = friendlyNameExpression;
         const insertText = `"[${resourceIdExpression}]"`;
@@ -130,7 +130,7 @@ function findClosestEnclosingResource(documentIndex: number, infos: IJsonResourc
     if (firstMatch) {
         // We found an arbitrary resource that contains this position.  Find the deepest child that still contains it
         let deepestMatch = firstMatch;
-        // tslint:disable-next-line: no-constant-condition
+        // eslint-disable-next-line no-constant-condition
         while (true) {
             const childrenContainingResource = deepestMatch.children.filter(child => (<IJsonResourceInfo>child).resourceObject.span.contains(documentIndex, containsBehavior));
             assert(childrenContainingResource.length <= 1, "Shouldn't find multiple children containing the document position");

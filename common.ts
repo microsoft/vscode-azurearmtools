@@ -17,14 +17,15 @@ export const isWin32: boolean = os.platform() === 'win32';
 export const isCaseSensitiveFileSystem: boolean = !isWin32;
 
 let base = __dirname;
+// eslint-disable-next-line no-constant-condition
 while (true) {
-    let test = path.join(base, "assets");
+    const test = path.join(base, "assets");
     if (fs.existsSync(test)) {
         base = test;
         break;
     }
     base = path.dirname(base);
-    assert(base != '', "Could not find base project path");
+    assert(base !== '', "Could not find base project path");
 }
 export const assetsPath = base;
 export const basePath = path.join(assetsPath, "..");
