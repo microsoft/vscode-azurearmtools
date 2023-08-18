@@ -78,6 +78,7 @@ export function createExpressionCompletionsTestEx(
         options?.preps ?? [],
         async () => {
             let keepInClosure = name;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-self-assign -- makes debugging easier
             keepInClosure = keepInClosure;
 
             template = stringify(template).replace(contextFind, expressionWithCursorMarker);

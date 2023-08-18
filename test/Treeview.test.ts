@@ -5,13 +5,13 @@
 // tslint:disable:max-func-body-length align max-line-length
 // tslint:disable:no-non-null-assertion no-invalid-template-strings
 
+import { parseError } from "@microsoft/vscode-azext-utils";
 import * as assert from "assert";
 import * as fse from 'fs-extra';
 import { Context, Done } from "mocha";
 import * as path from "path";
 import * as vscode from "vscode";
-import { parseError } from "vscode-azureextensionui";
-import { ext, IElementInfo, JsonOutlineProvider, shortenTreeLabel } from "../extension.bundle";
+import { IElementInfo, JsonOutlineProvider, ext, shortenTreeLabel } from "../extension.bundle";
 import { getTempFilePath } from "./support/getTempFilePath";
 
 suite("TreeView", async (): Promise<void> => {
@@ -19,13 +19,13 @@ suite("TreeView", async (): Promise<void> => {
         suite("shortenTreeLabel", () => {
             function createShortenTest(label: string | undefined, expected: string | undefined): void {
                 test(String(label), () => {
-                    let shortenedLabel = shortenTreeLabel(label!);
+                    const shortenedLabel = shortenTreeLabel(label!);
                     assert.strictEqual(shortenedLabel, expected);
                 });
             }
 
             createShortenTest(undefined, undefined);
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             createShortenTest(<any>null, <any>null);
             createShortenTest("", "");
             createShortenTest("a", "a");
@@ -54,7 +54,7 @@ suite("TreeView", async (): Promise<void> => {
             this.timeout(15000);
 
             async function mySetup(): Promise<void> {
-                let extension = vscode.extensions.getExtension(ext.extensionId);
+                const extension = vscode.extensions.getExtension(ext.extensionId);
                 assert(extension, "Extension not found");
                 await extension!.activate();
                 provider = ext.jsonOutlineProvider;
@@ -68,12 +68,12 @@ suite("TreeView", async (): Promise<void> => {
 
         async function testChildren(template: string, expected: ITestTreeItem[]): Promise<void> {
             await showNewTextDocument(template);
-            // tslint:disable-next-line:no-any
-            let rawTree = provider.getChildren(<any>null);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            const rawTree = provider.getChildren(<any>null);
             // tslint:disable-next-line: strict-boolean-expressions
             assert(!!rawTree);
-            let tree = rawTree.map(child => {
-                let treeItem = provider.getTreeItem(child);
+            const tree = rawTree.map(child => {
+                const treeItem = provider.getTreeItem(child);
                 return toTestTreeItem(treeItem);
             });
 
@@ -83,13 +83,13 @@ suite("TreeView", async (): Promise<void> => {
         // Tests the tree against only the given properties
         async function testTree(template: string, expected: ITestTreeItem[], selectProperties?: string[]): Promise<void> {
             await showNewTextDocument(template);
-            // tslint:disable-next-line:no-any
-            let rawTree = getTree(<any>null);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            const rawTree = getTree(<any>null);
 
             function select(node: ITestTreeItem): Partial<ITestTreeItem> {
                 if (selectProperties) {
-                    let newNode: Partial<ITestTreeItem> = {};
-                    for (let prop of selectProperties) {
+                    const newNode: Partial<ITestTreeItem> = {};
+                    for (const prop of selectProperties) {
                         // tslint:disable-next-line: no-any
                         (<any>newNode)[prop] = (<any>node)[prop];
                     }
@@ -99,7 +99,7 @@ suite("TreeView", async (): Promise<void> => {
                 }
             }
 
-            let tree = treeMap(rawTree, select);
+            const tree = treeMap(rawTree, select);
             assert.deepStrictEqual(tree, expected);
         }
 
@@ -108,8 +108,8 @@ suite("TreeView", async (): Promise<void> => {
         }
 
         function treeMap<T extends INode<T>, U extends INode<U>>(tree: T[], visit: (node: T) => U): INode<U>[] {
-            let newTree = tree.map<INode<T>>(node => {
-                let newNode = visit(node);
+            const newTree = tree.map<INode<T>>(node => {
+                const newNode = visit(node);
                 if (node.children) {
                     newNode.children = treeMap(<T[]>node.children, visit);
                 }
@@ -129,14 +129,14 @@ suite("TreeView", async (): Promise<void> => {
         }
 
         function getTree(element?: IElementInfo): ITestTreeItem[] {
-            let children = provider.getChildren(element);
-            let tree = children.map(child => {
-                let treeItem = provider.getTreeItem(child);
-                let testItem = toTestTreeItem(treeItem);
+            const children = provider.getChildren(element);
+            const tree = children.map(child => {
+                const treeItem = provider.getTreeItem(child);
+                const testItem = toTestTreeItem(treeItem);
 
                 if (treeItem.collapsibleState === vscode.TreeItemCollapsibleState.Collapsed) {
                     // Get subchildren
-                    let testGrandChilderen = getTree(child);
+                    const testGrandChilderen = getTree(child);
                     testItem.children = testGrandChilderen;
                 }
 
@@ -3759,7 +3759,7 @@ type ITestTreeItem = {
 };
 
 function toTestTreeItem(item: vscode.TreeItem): ITestTreeItem {
-    let testItem: ITestTreeItem = {
+    const testItem: ITestTreeItem = {
         label: item.label,
         collapsibleState: item.collapsibleState
     };
@@ -3772,9 +3772,9 @@ function toTestTreeItem(item: vscode.TreeItem): ITestTreeItem {
 }
 
 async function showNewTextDocument(text: string): Promise<vscode.TextEditor> {
-    let filePath = getTempFilePath("", ".jsonc");
+    const filePath = getTempFilePath("", ".jsonc");
     fse.writeFileSync(filePath, text);
-    let textDocument = await vscode.workspace.openTextDocument(filePath);
+    const textDocument = await vscode.workspace.openTextDocument(filePath);
     return await vscode.window.showTextDocument(textDocument);
 }
 

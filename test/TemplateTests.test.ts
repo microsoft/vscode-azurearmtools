@@ -22,7 +22,7 @@ suite("Template tests", () => {
                 const dt = new DeploymentTemplateDoc(typeof template === "string" ? template : stringify(template), Uri.file("id"), 0);
                 const expectedErrors: string[] = [
                 ];
-                let errors = dt.getErrors(undefined);
+                const errors = dt.getErrors(undefined);
                 assert.deepStrictEqual(errors, expectedErrors, "Expected no errors in template");
             } finally {
                 useTestFunctionMetadata();

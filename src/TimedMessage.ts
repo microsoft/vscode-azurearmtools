@@ -2,8 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { callWithTelemetryAndErrorHandling, IActionContext } from "@microsoft/vscode-azext-utils";
 import { commands, MessageItem, Uri, window } from 'vscode';
-import { callWithTelemetryAndErrorHandling, IActionContext } from "vscode-azureextensionui";
 import { ext } from "./extensionVariables";
 import { assert } from './fixed_assert';
 import { minutesToMs, weeksToMs } from "./util/time";
@@ -81,11 +81,12 @@ export class TimedMessage {
             } else {
                 assert(response === neverAskAgain);
             }
-        }).catch(err => {
+        }).catch(_err => {
             assert.fail("callWithTelemetryAndErrorHandling in TimedMessage.registerActiveUseNoThrow shouldn't throw");
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await -- grandfathered in
     private async checkForDebugMode(): Promise<void> {
         if (ext.configuration.get<boolean>(this._debugSettingKey)) {
             this._settings = debugSettings;

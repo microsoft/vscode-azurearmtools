@@ -92,7 +92,7 @@ suite("AzureRMAssets", () => {
                 assert.deepStrictEqual(
                     BuiltinFunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z", "description": "1" } ] }`),
                     [
-                        // tslint:disable-next-line:no-any
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         new BuiltinFunctionMetadata("a", "z", "1", <any>undefined, <any>undefined, [], undefined)
                     ]);
             });
@@ -102,9 +102,9 @@ suite("AzureRMAssets", () => {
                     // tslint:disable-next-line:max-line-length
                     BuiltinFunctionMetadata.fromString(`{ "functionSignatures": [ { "name": "a", "expectedUsage": "z" }, { "name": "b", "expectedUsage": "y", "description": "7" } ] }`),
                     [
-                        // tslint:disable-next-line:no-any
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         new BuiltinFunctionMetadata("a", "z", <any>undefined, <any>undefined, <any>undefined, [], undefined),
-                        // tslint:disable-next-line:no-any
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         new BuiltinFunctionMetadata("b", "y", "7", <any>undefined, <any>undefined, [], undefined)
                     ]);
             });

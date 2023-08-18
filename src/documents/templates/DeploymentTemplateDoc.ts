@@ -4,28 +4,28 @@
 
 // tslint:disable: max-classes-per-file // Private classes are related to DeploymentTemplate implementation
 
+import { IActionContext } from '@microsoft/vscode-azext-utils';
 import * as assert from 'assert';
 import * as path from 'path';
 import { CodeAction, CodeActionContext, CodeActionKind, Command, DocumentLink, Range, Selection, Uri } from "vscode";
-import { IActionContext } from 'vscode-azureextensionui';
 import { configKeys, templateKeys } from "../../../common";
 import { TemplateScopeKind } from '../../../extension.bundle';
 import { ext } from '../../extensionVariables';
-import { AzureRMAssets, FunctionsMetadata } from "../../language/expressions/AzureRMAssets";
-import { isTleExpression } from '../../language/expressions/isTleExpression';
-import * as TLE from "../../language/expressions/TLE";
 import { INamedDefinition } from '../../language/INamedDefinition';
 import { Issue } from '../../language/Issue';
 import { IssueKind } from '../../language/IssueKind';
-import * as Json from "../../language/json/JSON";
 import { ReferenceList } from "../../language/ReferenceList";
 import { ContainsBehavior, Span } from "../../language/Span";
+import { AzureRMAssets, FunctionsMetadata } from "../../language/expressions/AzureRMAssets";
+import * as TLE from "../../language/expressions/TLE";
+import { isTleExpression } from '../../language/expressions/isTleExpression';
+import * as Json from "../../language/json/JSON";
 import { CachedValue } from '../../util/CachedValue';
 import { CaseInsensitiveMap } from '../../util/CaseInsensitiveMap';
+import { Histogram } from '../../util/Histogram';
 import { expectParameterDocumentOrUndefined } from '../../util/expectDocument';
 import { filterByType } from '../../util/filterByType';
 import { filterNotUndefined } from '../../util/filterNotUndefined';
-import { Histogram } from '../../util/Histogram';
 import { nonNullValue } from '../../util/nonNull';
 import { FindReferencesAndErrorsVisitor } from "../../visitors/FindReferencesAndErrorsVisitor";
 import { FunctionCountVisitor } from "../../visitors/FunctionCountVisitor";
@@ -40,16 +40,16 @@ import { getMissingParameterErrors, getParameterValuesCodeActions } from '../par
 import { SynchronousParameterValuesSourceProvider } from "../parameters/SynchronousParameterValuesSourceProvider";
 import { TemplatePositionContext } from "../positionContexts/TemplatePositionContext";
 import { LinkedTemplateCodeLens, NestedTemplateCodeLens } from './ChildTemplateCodeLens';
+import { getParentAndChildCodeLenses } from './ParentAndChildCodeLenses';
+import { UserFunctionParameterDefinition } from './UserFunctionParameterDefinition';
 import { ParameterDefinitionCodeLens, SelectParameterFileCodeLens, ShowCurrentParameterFileCodeLens } from './deploymentTemplateCodeLenses';
 import { getResourcesInfo } from './getResourcesInfo';
 import { INotifyTemplateGraphArgs } from './linkedTemplates/linkedTemplates';
-import { getParentAndChildCodeLenses } from './ParentAndChildCodeLenses';
 import { isArmSchema } from './schemas';
 import { DeploymentScopeKind } from './scopes/DeploymentScopeKind';
 import { IDeploymentSchemaReference } from './scopes/IDeploymentSchemaReference';
 import { TemplateScope } from "./scopes/TemplateScope";
 import { IChildDeploymentScope, LinkedTemplateScope, NestedTemplateInnerScope, NestedTemplateOuterScope, TopLevelTemplateScope } from './scopes/templateScopes';
-import { UserFunctionParameterDefinition } from './UserFunctionParameterDefinition';
 
 export interface IScopedParseResult {
     parseResult: TLE.TleParseResult;
@@ -276,7 +276,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                     || scope instanceof NestedTemplateInnerScope
                     || scope instanceof LinkedTemplateScope
                 ) {
-                    let span: Span = scope.owningDeploymentResource.nameValue?.span ?? scope.owningDeploymentResource.span;
+                    const span: Span = scope.owningDeploymentResource.nameValue?.span ?? scope.owningDeploymentResource.span;
                     const kind = scope instanceof LinkedTemplateScope ? IssueKind.cannotValidateLinkedTemplate : IssueKind.cannotValidateNestedTemplate;
                     const message = `${kind === IssueKind.cannotValidateLinkedTemplate ? 'Linked template' : 'Nested template'} "${scope.owningDeploymentResource.nameValue?.unquotedValue ?? 'unknown'}" will not have validation or parameter completion. To enable, either add default values to all top-level parameters or add a parameter file ("Select/Create Parameter File" command).`;
                     issues.push(new Issue(span, message, kind));
@@ -302,28 +302,28 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
             if (scope instanceof NestedTemplateOuterScope) {
                 const parameters = getPropertyValueOfScope(templateKeys.parameters);
                 // tslint:disable-next-line: strict-boolean-expressions
-                if (!!parameters?.asObjectValue?.properties?.length) {
+                if (parameters?.asObjectValue?.properties?.length) {
                     warnings.push(
                         new Issue(parameters.span, warningMessage, IssueKind.inaccessibleNestedScopeMembers));
                 }
 
                 const variables = getPropertyValueOfScope(templateKeys.variables);
                 // tslint:disable-next-line: strict-boolean-expressions
-                if (!!variables?.asObjectValue?.properties.length) {
+                if (variables?.asObjectValue?.properties.length) {
                     warnings.push(
                         new Issue(variables.span, warningMessage, IssueKind.inaccessibleNestedScopeMembers));
                 }
 
                 const namespaces = getPropertyValueOfScope(templateKeys.functions);
                 // tslint:disable-next-line: strict-boolean-expressions
-                if (!!namespaces?.asArrayValue?.elements.length) {
+                if (namespaces?.asArrayValue?.elements.length) {
                     warnings.push(
                         new Issue(namespaces.span, warningMessage, IssueKind.inaccessibleNestedScopeMembers));
                 }
 
                 const propertyValues = scope.parameterValuesProperty;
                 // tslint:disable-next-line: strict-boolean-expressions
-                if (!!propertyValues?.value?.asObjectValue?.properties.length) {
+                if (propertyValues?.value?.asObjectValue?.properties.length) {
                     warnings.push(
                         new Issue(propertyValues.span, warningMessage, IssueKind.inaccessibleNestedScopeMembers));
                 }
@@ -400,7 +400,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                 this.jsonParseResult.value,
                 (stringValue: Json.StringValue): void => {
                     const tleParseResult = this.getTLEParseResultFromJsonStringValue(stringValue);
-                    let tleFunctionCountVisitor = FunctionCountVisitor.visit(tleParseResult.parseResult.expression);
+                    const tleFunctionCountVisitor = FunctionCountVisitor.visit(tleParseResult.parseResult.expression);
                     functionCounts.add(tleFunctionCountVisitor.functionCounts);
                 });
         }
@@ -463,7 +463,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         return [resourceCounts, invalidResourceCounts, invalidVersionCounts];
 
         function traverseResources(resourcesObject: Json.ArrayValue, parentKey: string | undefined): void {
-            for (let resource of resourcesObject.elements) {
+            for (const resource of resourcesObject.elements) {
                 const resourceObject = Json.asObjectValue(resource);
                 if (resourceObject) {
                     const resourceType = Json.asStringValue(resourceObject.getPropertyValue(templateKeys.resourceType));
@@ -483,7 +483,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                             resourceTypeString = "[expression]";
                         }
 
-                        let simpleKey = `${resourceTypeString}@${apiVersionString}`;
+                        const simpleKey = `${resourceTypeString}@${apiVersionString}`;
                         const fullKey = parentKey ? `${simpleKey}[parent=${parentKey}]` : simpleKey;
                         resourceCounts.add(fullKey);
 
@@ -575,7 +575,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     }
 
     private visitAllReachableStringValues(onStringValue: (stringValue: Json.StringValue) => void): void {
-        let value = this.topLevelValue;
+        const value = this.topLevelValue;
         if (value) {
             GenericStringVisitor.visit(value, onStringValue);
         }
@@ -591,7 +591,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         // Add missing parameter values
         for (const scope of this.uniqueScopes) {
             if (scope.parameterValuesSource) {
-                let parentParameterDefinitionsSource: IParameterDefinitionsSource | undefined = scope.parentWithUniqueParamsVarsAndFunctions.parameterDefinitionsSource;
+                const parentParameterDefinitionsSource: IParameterDefinitionsSource | undefined = scope.parentWithUniqueParamsVarsAndFunctions.parameterDefinitionsSource;
                 const scopeActions = getParameterValuesCodeActions(
                     scope.parameterValuesSource,
                     scope.parameterDefinitionsSource,
@@ -612,33 +612,33 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     // tslint:disable-next-line: cyclomatic-complexity // TODO: Consider refactoring
     private getExtractVarParamCodeActions(range: Range | Selection): (CodeAction | Command)[] {
         let shouldAddExtractActions: boolean = false;
-        let pc = this.getContextFromDocumentLineAndColumnIndexes(range.start.line, range.start.character, undefined);
+        const pc = this.getContextFromDocumentLineAndColumnIndexes(range.start.line, range.start.character, undefined);
 
         // We currently only handle single-line strings
         if (range.start.line === range.end.line) {
             // Can only call pc.jsonTokenStartIndex if we're inside a JSON token
             if (pc.jsonToken && pc.jsonTokenStartIndex > 0) {
-                let jsonToken = pc.document.getJSONValueAtDocumentCharacterIndex(pc.jsonTokenStartIndex - 1, ContainsBehavior.extended);
+                const jsonToken = pc.document.getJSONValueAtDocumentCharacterIndex(pc.jsonTokenStartIndex - 1, ContainsBehavior.extended);
                 if ((jsonToken instanceof Json.Property || jsonToken instanceof Json.ArrayValue) && pc.document.topLevelValue) {
-                    let scope = pc.getScope();
+                    const scope = pc.getScope();
                     if (!scope.rootObject) {
                         return [];
                     }
-                    let resources = scope.rootObject.getPropertyValue(templateKeys.resources);
+                    const resources = scope.rootObject.getPropertyValue(templateKeys.resources);
                     // Are we inside the resources object?
                     if (!resources || !resources.span.intersect(jsonToken.span)) {
                         return [];
                     }
-                    let jsonValue = pc.document.getJSONValueAtDocumentCharacterIndex(pc.jsonTokenStartIndex, ContainsBehavior.extended);
+                    const jsonValue = pc.document.getJSONValueAtDocumentCharacterIndex(pc.jsonTokenStartIndex, ContainsBehavior.extended);
                     if (!jsonValue) {
                         return [];
                     }
                     const stringValue = jsonValue.asStringValue;
                     if (stringValue) {
                         if (!range.isEmpty) {
-                            let startIndex = this.getDocumentCharacterIndex(range.start.line, range.start.character);
-                            let endIndex = this.getDocumentCharacterIndex(range.end.line, range.end.character);
-                            let span: Span = new Span(startIndex, endIndex - startIndex);
+                            const startIndex = this.getDocumentCharacterIndex(range.start.line, range.start.character);
+                            const endIndex = this.getDocumentCharacterIndex(range.end.line, range.end.character);
+                            const span: Span = new Span(startIndex, endIndex - startIndex);
                             const selectedText = this.getDocumentTextWithSquareBrackets(span);
                             if (this.isParameterOrVariableReference(selectedText)) {
                                 return [];
@@ -671,12 +671,12 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     }
 
     private getDocumentTextWithSquareBrackets(span: Span): string {
-        let text = this.getDocumentText(span);
+        const text = this.getDocumentText(span);
         if (text.startsWith("[") && text.endsWith("]")) {
             return text;
         }
-        let extendedSpan = span.extendLeft(1).extendRight(1);
-        let extendedText = this.getDocumentText(extendedSpan);
+        const extendedSpan = span.extendLeft(1).extendRight(1);
+        const extendedText = this.getDocumentText(extendedSpan);
         if (extendedText.startsWith("[") && extendedText.endsWith("]")) {
             return extendedText;
         }
@@ -684,12 +684,12 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
     }
 
     private getDocumentTextWithSurroundingCharacters(span: Span, start: string, end: string): string {
-        let text = this.getDocumentText(span);
+        const text = this.getDocumentText(span);
         if (text.startsWith(start) && text.endsWith(end)) {
             return text;
         }
-        let extendedSpan = span.extendLeft(1).extendRight(1);
-        let extendedText = this.getDocumentText(extendedSpan);
+        const extendedSpan = span.extendLeft(1).extendRight(1);
+        const extendedText = this.getDocumentText(extendedSpan);
         if (extendedText.startsWith(start) && extendedText.endsWith(end)) {
             return extendedText;
         }
@@ -821,7 +821,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         topLevelParameterValuesProvider: IParameterValuesSourceProvider | undefined
     ): ResolvableCodeLens[] {
         const lenses: ResolvableCodeLens[] = [];
-        for (let scope of this.allScopes) {
+        for (const scope of this.allScopes) {
             const owningDeploymentResource = (<Partial<IChildDeploymentScope>>scope).owningDeploymentResource;
             if (scope.rootObject || owningDeploymentResource) {
                 switch (scope.scopeKind) {
@@ -841,7 +841,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
                         assert(scope instanceof LinkedTemplateScope, "Expected a LinkedTemplateScope");
                         if (owningDeploymentResource) {
                             const templateLinkObject = scope.templateLinkObject;
-                            let span = templateLinkObject ? templateLinkObject.span : owningDeploymentResource.span;
+                            const span = templateLinkObject ? templateLinkObject.span : owningDeploymentResource.span;
 
                             lenses.push(...
                                 LinkedTemplateCodeLens.create(
@@ -862,7 +862,7 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
         return lenses;
     }
 
-    public getDocumentLinks(context: IActionContext): DocumentLink[] {
+    public getDocumentLinks(_context: IActionContext): DocumentLink[] {
         const links: DocumentLink[] = [];
 
         // Make a document link out of each deployment "relativePath" property value
@@ -908,12 +908,12 @@ export class DeploymentTemplateDoc extends DeploymentDocument {
      */
     public get allScopes(): TemplateScope[] {
         return this._allScopes.getOrCacheValue(() => {
-            let scopes: TemplateScope[] = [this.topLevelScope];
+            const scopes: TemplateScope[] = [this.topLevelScope];
             traverse(this.topLevelScope);
             return scopes;
 
             function traverse(scope: TemplateScope | undefined): void {
-                for (let childScope of scope?.childScopes ?? []) {
+                for (const childScope of scope?.childScopes ?? []) {
                     assert(scopes.indexOf(childScope) < 0, "Already in array");
                     scopes.push(childScope);
                     traverse(childScope);
@@ -950,7 +950,7 @@ class StringParseAndScopeAssignmentVisitor extends Json.Visitor {
     public visitStringValue(jsonStringValue: Json.StringValue): void {
         assert(!this._jsonStringValueToTleParseResultMap.has(jsonStringValue), "Already parsed this string");
         // Parse the string as a possible TLE expression and cache
-        let tleParseResult: TLE.TleParseResult = TLE.Parser.parse(jsonStringValue.quotedValue);
+        const tleParseResult: TLE.TleParseResult = TLE.Parser.parse(jsonStringValue.quotedValue);
         this._jsonStringValueToTleParseResultMap.set(jsonStringValue, {
             parseResult: tleParseResult,
             scope: this._currentScope

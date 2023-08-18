@@ -133,15 +133,13 @@ export class Span {
      */
 
     public union(rhs: Span | undefined): Span {
-        let result: Span;
-        if (!!rhs) {
-            let minStart = Math.min(this.startIndex, rhs.startIndex);
-            let maxAfterEndIndex = Math.max(this.afterEndIndex, rhs.afterEndIndex);
-            result = new Span(minStart, maxAfterEndIndex - minStart);
+        if (rhs) {
+            const minStart = Math.min(this.startIndex, rhs.startIndex);
+            const maxAfterEndIndex = Math.max(this.afterEndIndex, rhs.afterEndIndex);
+            return new Span(minStart, maxAfterEndIndex - minStart);
         } else {
-            result = this;
+            return this;
         }
-        return result;
     }
 
     /**
@@ -165,8 +163,8 @@ export class Span {
      */
 
     public intersect(rhs: Span | undefined): Span | undefined {
-        if (!!rhs) {
-            // tslint:disable-next-line:no-this-assignment
+        if (rhs) {
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
             let lhs: Span = this;
             if (rhs.startIndex < this.startIndex) {
                 [lhs, rhs] = [rhs, lhs];
@@ -175,8 +173,8 @@ export class Span {
             // if (lhs.endIndex < rhs.startIndex) {
             //     return undefined;
             // }
-            let start = rhs.startIndex;
-            let afterEnd = (lhs.afterEndIndex < rhs.afterEndIndex) ? lhs.afterEndIndex : rhs.afterEndIndex;
+            const start = rhs.startIndex;
+            const afterEnd = (lhs.afterEndIndex < rhs.afterEndIndex) ? lhs.afterEndIndex : rhs.afterEndIndex;
 
             if (afterEnd >= start) {
                 return new Span(start, afterEnd - start);

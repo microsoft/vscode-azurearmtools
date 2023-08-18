@@ -2,10 +2,10 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { parseError } from '@microsoft/vscode-azext-utils';
 import * as assert from 'assert';
 import * as fse from 'fs-extra';
 import { Uri } from 'vscode';
-import { parseError } from 'vscode-azureextensionui';
 import { DeploymentParametersDoc, DeploymentTemplateDoc, Issue, IssueSeverity } from "../../extension.bundle";
 import { IDeploymentParametersFile, IPartialDeploymentTemplate } from './diagnostics';
 import { resolveInTestFolder } from './resolveInTestFolder';
@@ -142,15 +142,15 @@ export function removeEOLMarker(s: string): string {
  * Returns the document without the tags, plus a dictionary of the tags and their positions
  */
 export function getDocumentMarkers(doc: object | string, options?: { tabSize?: number }): { unmarkedText: string; markers: Markers } {
-    let markers: Markers = {};
+    const markers: Markers = {};
     doc = typeof doc === "string" ? doc : stringify(doc, options?.tabSize);
     let modified = doc;
 
     modified = removeEOLMarker(modified);
 
-    // tslint:disable-next-line:no-constant-condition
+    // eslint-disable-next-line no-constant-condition
     while (true) {
-        let match: RegExpMatchArray | null = modified.match(/<!([a-zA-Z][a-zA-Z0-9$]*)!>/);
+        const match: RegExpMatchArray | null = modified.match(/<!([a-zA-Z][a-zA-Z0-9$]*)!>/);
         if (!match) {
             break;
         }
@@ -184,9 +184,9 @@ export function getDocumentMarkers(doc: object | string, options?: { tabSize?: n
 export function replaceInTemplate(
     template: string | IPartialDeploymentTemplate,
     replacements: { [key: string]: string | { [key: string]: unknown } },
-    options?: {}
+    _options?: {}
 ): IPartialDeploymentTemplate {
-    let templateString = stringify(template);
+    const templateString = stringify(template);
 
     // $REPLACE_PROP_LINE$
     function getPropLineReplacementString(s: string, addComma: boolean): string {

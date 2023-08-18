@@ -7,7 +7,7 @@ import { IssueKind } from "../language/IssueKind";
 import { Span } from "../language/Span";
 
 export class InvalidFunctionContextIssue extends Issue {
-    constructor(span: Span, private _functionName: string, message: string) {
+    constructor(span: Span, private _functionName: string, _message: string) {
         super(span, `Cannot use '${_functionName}' in this context.`, IssueKind.badFuncContext);
     }
 

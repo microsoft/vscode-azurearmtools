@@ -60,7 +60,7 @@ export class UserFunctionNamespaceDefinition implements INamedDefinition {
     }
 
     public static createIfValid(parentScope: TemplateScope, document: IJsonDocument, functionValue: Json.ObjectValue): UserFunctionNamespaceDefinition | undefined {
-        let nameValue: Json.StringValue | undefined = Json.asStringValue(functionValue.getPropertyValue("namespace"));
+        const nameValue: Json.StringValue | undefined = Json.asStringValue(functionValue.getPropertyValue("namespace"));
         if (nameValue) {
             return new UserFunctionNamespaceDefinition(parentScope, document, nameValue, functionValue);
         }
@@ -85,11 +85,11 @@ export class UserFunctionNamespaceDefinition implements INamedDefinition {
 
             const members: Json.ObjectValue | undefined = Json.asObjectValue(this._value.getPropertyValue(templateKeys.userFunctionMembers));
             if (members) {
-                for (let member of members.properties) {
-                    let name: Json.StringValue = member.nameValue;
-                    let value = Json.asObjectValue(member.value);
+                for (const member of members.properties) {
+                    const name: Json.StringValue = member.nameValue;
+                    const value = Json.asObjectValue(member.value);
                     if (value) {
-                        let func = new UserFunctionDefinition(this.parentScope, this.document, this, name, value, member.span);
+                        const func = new UserFunctionDefinition(this.parentScope, this.document, this, name, value, member.span);
                         membersResult.push(func);
                     }
                 }
@@ -101,7 +101,7 @@ export class UserFunctionNamespaceDefinition implements INamedDefinition {
 
     public getMemberDefinition(functionName: string): UserFunctionDefinition | undefined {
         if (functionName) {
-            let functionNameLC = functionName.toLowerCase();
+            const functionNameLC = functionName.toLowerCase();
             return this.members.find(fd => fd.nameValue.toString().toLowerCase() === functionNameLC);
         } else {
             return undefined;

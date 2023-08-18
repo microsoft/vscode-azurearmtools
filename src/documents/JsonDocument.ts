@@ -96,7 +96,7 @@ export abstract class JsonDocument implements IJsonDocument {
 
     public getMaxLineLength(): number {
         let max = 0;
-        for (let len of this.jsonParseResult.lineLengths) {
+        for (const len of this.jsonParseResult.lineLengths) {
             if (len > max) {
                 max = len;
             }

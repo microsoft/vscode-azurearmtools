@@ -37,7 +37,7 @@ export function getParameterValuesCodeActions(
     parentParameterDefinitionsSource: IParameterDefinitionsSource | undefined,
     // This is the range currently being inspected
     range: Range | Selection,
-    context: CodeActionContext
+    _context: CodeActionContext
 ): (Command | CodeAction)[] {
     const actions: (Command | CodeAction)[] = [];
     const parametersProperty = parameterValuesSource.parameterValuesProperty;
@@ -99,7 +99,7 @@ export function getMissingParameters(
     onlyRequiredParameters: boolean
 ): IParameterDefinition[] {
     const results: IParameterDefinition[] = [];
-    for (let paramDef of parameterDefinitionsSource?.parameterDefinitions ?? []) {
+    for (const paramDef of parameterDefinitionsSource?.parameterDefinitions ?? []) {
         const paramValue = parameterValuesSource.getParameterValue(paramDef.nameValue.unquotedValue);
         if (!paramValue) {
             results.push(paramDef);
@@ -154,19 +154,19 @@ export async function addMissingParameters(
         }
 
         // Create insertion text
-        let paramsAsText: string[] = [];
-        for (let param of missingParams) {
+        const paramsAsText: string[] = [];
+        for (const param of missingParams) {
             const paramText = createParameterFromTemplateParameter(parameterDefinitionsSource, param, parentParameterDefinitions, defaultTabSize);
             paramsAsText.push(paramText);
         }
-        let newText = paramsAsText.join(`,${EOL}`);
+        const newText = paramsAsText.join(`,${EOL}`);
 
         // Determine indentation
         const parametersObjectIndent = parameterValuesDocument.getDocumentPosition(parametersProperty?.nameValue.span.startIndex).column;
         const lastParameter = parameterValuesSource.parameterValueDefinitions.length > 0 ? parameterValuesSource.parameterValueDefinitions[parameterValuesSource.parameterValueDefinitions.length - 1] : undefined;
         const lastParameterIndent = lastParameter ? parameterValuesDocument.getDocumentPosition(lastParameter?.fullSpan.startIndex).column : undefined;
         const newTextIndent = lastParameterIndent === undefined ? parametersObjectIndent + defaultTabSize : lastParameterIndent;
-        let indentedText = indentMultilineString(newText, newTextIndent);
+        const indentedText = indentMultilineString(newText, newTextIndent);
         let insertText = EOL + indentedText;
 
         // If insertion point is on the same line as the end of the parameters object, then add a newline
@@ -241,7 +241,7 @@ export function getCompletionForNewParameter(
     documentIndex: number
 ): Completion.Item {
     const detail = "Insert new parameter";
-    let snippet =
+    const snippet =
         // tslint:disable-next-line:prefer-template
         `"\${1:parameter1}": {` + EOL
         + `\t"value": "\${2:value}"` + EOL
@@ -274,7 +274,7 @@ export function getCompletionsForMissingParameters(
         pv => pv.nameValue.unquotedValue.toLowerCase());
 
     // For each parameter in the template
-    for (let param of parameterDefinitionsSource.parameterDefinitions) {
+    for (const param of parameterDefinitionsSource.parameterDefinitions) {
         // Is this already in the parameter file?
         const paramNameLC = param.nameValue.unquotedValue.toLowerCase();
         if (paramsInParameterFile.includes(paramNameLC)) {
@@ -284,7 +284,7 @@ export function getCompletionsForMissingParameters(
         const isRequired = !param.defaultValue;
         const label = param.nameValue.quotedValue;
         const paramText = createParameterFromTemplateParameter(parameterDefinitionsSource, param, parentParameterDefinitionsSource, tabSize);
-        let replacement = paramText;
+        const replacement = paramText;
         const documentation = `Insert a value for parameter "${param.nameValue.unquotedValue}"`;
         const detail = (isRequired ? "(required parameter)" : "(optional parameter)")
             + EOL
@@ -375,7 +375,7 @@ export function getPropertyValueCompletionItems(
     documentIndex: number,
     triggerCharacter: string | undefined
 ): Completion.Item[] {
-    let completions: Completion.Item[] = [];
+    const completions: Completion.Item[] = [];
 
     if ((!triggerCharacter || triggerCharacter === '"') && canAddPropertyValueHere(parameterValuesSource, documentIndex)) {
         if (parameterDefinitionsSource) {
@@ -410,7 +410,7 @@ export function canAddPropertyValueHere(
     }
 
     // Check if we're inside a comment
-    if (!!parameterValuesSource.document.jsonParseResult.getCommentTokenAtDocumentIndex(
+    if (parameterValuesSource.document.jsonParseResult.getCommentTokenAtDocumentIndex(
         documentIndex,
         ContainsBehavior.enclosed)
     ) {
@@ -463,7 +463,7 @@ export function getReferenceSiteInfoForParameterValue(
     values: IParameterValuesSource,
     documentCharacterIndex: number
 ): IReferenceSite | undefined {
-    for (let paramValue of values.parameterValueDefinitions) {
+    for (const paramValue of values.parameterValueDefinitions) {
         // Are we inside the name of a parameter?
         if (paramValue.nameValue.span.contains(documentCharacterIndex, ContainsBehavior.extended)) {
             // Does it have an associated parameter definition in our list?

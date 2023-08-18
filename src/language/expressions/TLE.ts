@@ -323,10 +323,10 @@ export class ArrayAccessValue extends ParentValue {
 
     public toString(): string {
         let result: string = `${this._source.toString()}[`;
-        if (!!this._indexValue) {
+        if (this._indexValue) {
             result += this._indexValue.toString();
         }
-        if (!!this._rightSquareBracketToken) {
+        if (this._rightSquareBracketToken) {
             result += "]";
         }
         return result;
@@ -356,7 +356,7 @@ export class ArrayAccessValue extends ParentValue {
         result += indexExpression;
 
         // Closing "]"
-        if (!!this._rightSquareBracketToken) {
+        if (this._rightSquareBracketToken) {
             result += "]";
         }
 
@@ -433,7 +433,7 @@ export class FunctionCallValue extends ParentValue {
             return `${this._namespaceToken.stringValue}.${name}`;
         } else {
             assert(this.nameToken, "We asserted in the constructor that we have to have a namespace or a name");
-            // tslint:disable-next-line: no-non-null-assertion
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             return this.name!;
         }
     }
@@ -451,7 +451,7 @@ export class FunctionCallValue extends ParentValue {
             );
 
         assert(result, "Should have had at least one of a namespace or a name, therefore span should be non-empty");
-        // tslint:disable-next-line: no-non-null-assertion // Asserted
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return result!;
     }
 
@@ -470,7 +470,7 @@ export class FunctionCallValue extends ParentValue {
             return false;
         }
 
-        let thisNamespace = this._namespaceToken ? this._namespaceToken.stringValue : '';
+        const thisNamespace = this._namespaceToken ? this._namespaceToken.stringValue : '';
 
         return thisNamespace.toLowerCase() === namespaceName.toLowerCase() &&
             this.nameToken.stringValue.toLowerCase() === name.toLowerCase();
@@ -503,8 +503,8 @@ export class FunctionCallValue extends ParentValue {
                 result = result.union(this._rightParenthesisToken.span);
             } else if (this._argumentExpressions.length > 0 || this._commaTokens.length > 0) {
                 for (let i = this._argumentExpressions.length - 1; 0 <= i; --i) {
-                    let arg = this._argumentExpressions[i];
-                    if (!!arg) {
+                    const arg = this._argumentExpressions[i];
+                    if (arg) {
                         result = result.union(arg.getSpan());
                         break;
                     }
@@ -577,7 +577,7 @@ export class FunctionCallValue extends ParentValue {
         let result = this.fullName;
 
         // Left paren
-        if (!!this._leftParenthesisToken) {
+        if (this._leftParenthesisToken) {
             result += multiline ? `(\n${' '.repeat(currentIndent + tabSize)}` : '(';
         }
 
@@ -593,7 +593,7 @@ export class FunctionCallValue extends ParentValue {
         }
 
         // Right paren
-        if (!!this._rightParenthesisToken) {
+        if (this._rightParenthesisToken) {
             result += `)`;
         }
 
@@ -603,13 +603,13 @@ export class FunctionCallValue extends ParentValue {
     private getStringFromArguments(expressionStrings: string[]): string {
         let result = this.fullName;
 
-        if (!!this._leftParenthesisToken) {
+        if (this._leftParenthesisToken) {
             result += "(";
         }
 
         result += expressionStrings.join(', ');
 
-        if (!!this._rightParenthesisToken) {
+        if (this._rightParenthesisToken) {
             result += ")";
         }
 
@@ -629,7 +629,7 @@ export class FunctionCallValue extends ParentValue {
         const coalescedExpressions: string[] = [];
         const expressionsLength = expressions.length;
         for (let i = 0; i < expressionsLength; ++i) {
-            let currentExpression = expressions[i]?.formatCore(options, currentIndent) ?? '';
+            const currentExpression = expressions[i]?.formatCore(options, currentIndent) ?? '';
 
             const prevCoalescedExpression = coalescedExpressions[coalescedExpressions.length - 1];
             if (prevCoalescedExpression) {
@@ -724,8 +724,7 @@ export class PropertyAccess extends ParentValue {
         while (currentSource instanceof PropertyAccess) {
             const propertyAccess: PropertyAccess | undefined = asPropertyAccessValue(currentSource);
             assert(propertyAccess);
-            // tslint:disable-next-line:no-non-null-assertion // Asserted
-            currentSource = propertyAccess!.source;
+            currentSource = propertyAccess?.source;
         }
         return asFunctionCallValue(currentSource);
     }
@@ -741,7 +740,7 @@ export class PropertyAccess extends ParentValue {
     public getSpan(): Span {
         let result = this._source.getSpan();
 
-        if (!!this._nameToken) {
+        if (this._nameToken) {
             result = result.union(this._nameToken.span);
         } else {
             result = result.union(this._periodToken.span);
@@ -760,7 +759,7 @@ export class PropertyAccess extends ParentValue {
 
     public toString(): string {
         let result = `${this._source.toString()}.`;
-        if (!!this._nameToken) {
+        if (this._nameToken) {
             result += this._nameToken.stringValue;
         }
         return result;
@@ -768,7 +767,7 @@ export class PropertyAccess extends ParentValue {
 
     public formatCore(options: ITleFormatOptions, currentIndent: number): string {
         let result = `${this._source.formatCore(options, currentIndent)}.`;
-        if (!!this._nameToken) {
+        if (this._nameToken) {
             result += this._nameToken.stringValue;
         }
         return result;
@@ -782,16 +781,16 @@ export class BraceHighlighter {
     public static getHighlightCharacterIndexes(context: TemplatePositionContext): number[] {
         assert(context);
 
-        let highlightCharacterIndexes: number[] = [];
+        const highlightCharacterIndexes: number[] = [];
 
         if (context.tleInfo) {
-            let tleParseResult = context.tleInfo.tleParseResult;
-            let tleCharacterIndex = context.tleInfo.tleCharacterIndex;
+            const tleParseResult = context.tleInfo.tleParseResult;
+            const tleCharacterIndex = context.tleInfo.tleCharacterIndex;
 
             if (!!tleParseResult.leftSquareBracketToken && tleParseResult.leftSquareBracketToken.span.startIndex === tleCharacterIndex) {
                 BraceHighlighter.addTLEBracketHighlights(highlightCharacterIndexes, tleParseResult);
             } else {
-                let tleValue: Value | undefined = tleParseResult.getValueAtCharacterIndex(tleCharacterIndex);
+                const tleValue: Value | undefined = tleParseResult.getValueAtCharacterIndex(tleCharacterIndex);
                 if (tleValue instanceof FunctionCallValue) {
                     if (!!tleValue.leftParenthesisToken && tleValue.leftParenthesisToken.span.startIndex === tleCharacterIndex) {
                         BraceHighlighter.addTLEFunctionHighlights(highlightCharacterIndexes, tleValue);
@@ -803,13 +802,13 @@ export class BraceHighlighter {
                 }
             }
 
-            let leftOfTLECharacterIndex = tleCharacterIndex - 1;
+            const leftOfTLECharacterIndex = tleCharacterIndex - 1;
             if (!!tleParseResult.rightSquareBracketToken
                 && tleParseResult.rightSquareBracketToken.span.startIndex === leftOfTLECharacterIndex
             ) {
                 BraceHighlighter.addTLEBracketHighlights(highlightCharacterIndexes, tleParseResult);
             } else if (0 <= leftOfTLECharacterIndex) {
-                let tleValue: Value | undefined = tleParseResult.getValueAtCharacterIndex(leftOfTLECharacterIndex);
+                const tleValue: Value | undefined = tleParseResult.getValueAtCharacterIndex(leftOfTLECharacterIndex);
                 if (tleValue instanceof FunctionCallValue) {
                     if (!!tleValue.rightParenthesisToken && tleValue.rightParenthesisToken.span.startIndex === leftOfTLECharacterIndex) {
                         BraceHighlighter.addTLEFunctionHighlights(highlightCharacterIndexes, tleValue);
@@ -829,9 +828,9 @@ export class BraceHighlighter {
         assert(tleParseResult);
         assert(tleParseResult.leftSquareBracketToken);
 
-        // tslint:disable-next-line:no-non-null-assertion // Asserted above
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- asserted
         highlightCharacterIndexes.push(tleParseResult.leftSquareBracketToken!.span.startIndex);
-        if (!!tleParseResult.rightSquareBracketToken) {
+        if (tleParseResult.rightSquareBracketToken) {
             highlightCharacterIndexes.push(tleParseResult.rightSquareBracketToken.span.startIndex);
         }
     }
@@ -840,10 +839,10 @@ export class BraceHighlighter {
         assert(tleFunction);
         assert(tleFunction.leftParenthesisToken);
 
-        // tslint:disable-next-line:no-non-null-assertion // Asserted
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- asserted
         highlightCharacterIndexes.push(tleFunction.leftParenthesisToken!
             .span.startIndex);
-        if (!!tleFunction.rightParenthesisToken) {
+        if (tleFunction.rightParenthesisToken) {
             highlightCharacterIndexes.push(tleFunction.rightParenthesisToken.span.startIndex);
         }
     }
@@ -853,7 +852,7 @@ export class BraceHighlighter {
         assert(tleArrayAccess.leftSquareBracketToken);
 
         highlightCharacterIndexes.push(tleArrayAccess.leftSquareBracketToken.span.startIndex);
-        if (!!tleArrayAccess.rightSquareBracketToken) {
+        if (tleArrayAccess.rightSquareBracketToken) {
             highlightCharacterIndexes.push(tleArrayAccess.rightSquareBracketToken.span.startIndex);
         }
     }
@@ -883,7 +882,7 @@ export abstract class TleVisitor {
         }
     }
 
-    public visitNumber(tleNumber: NumberValue): void {
+    public visitNumber(_tleNumber: NumberValue): void {
         // Nothing to do
     }
 
@@ -894,7 +893,7 @@ export abstract class TleVisitor {
         }
     }
 
-    public visitString(tleString: StringValue): void {
+    public visitString(_tleString: StringValue): void {
         // Nothing to do
     }
 }
@@ -932,12 +931,12 @@ export class Parser {
         let leftSquareBracketToken: Token | undefined;
         let expression: Value | undefined;
         let rightSquareBracketToken: Token | undefined;
-        let errors: Issue[] = [];
+        const errors: Issue[] = [];
 
         if (3 <= quotedStringValue.length && quotedStringValue.substr(1, 2) === "[[") {
             expression = new StringValue(Token.createQuotedString(0, quotedStringValue));
         } else {
-            let tokenizer = Tokenizer.fromString(quotedStringValue);
+            const tokenizer = Tokenizer.fromString(quotedStringValue);
             tokenizer.next();
 
             if (!tokenizer.current || tokenizer.current.getType() !== TokenType.LeftSquareBracket) {
@@ -970,7 +969,7 @@ export class Parser {
                     }
                 }
 
-                if (!!rightSquareBracketToken) {
+                if (rightSquareBracketToken) {
                     while (<Token | undefined>tokenizer.current) {
                         errors.push(new Issue(tokenizer.current.span, "Nothing should exist after the closing ']' except for whitespace.", IssueKind.tleSyntax));
                         tokenizer.next();
@@ -981,7 +980,7 @@ export class Parser {
 
                 if (!expression) {
                     let errorSpan: Span = leftSquareBracketToken.span;
-                    if (!!rightSquareBracketToken) {
+                    if (rightSquareBracketToken) {
                         errorSpan = errorSpan.union(rightSquareBracketToken.span);
                     }
                     errors.push(new Issue(errorSpan, "Expected a function or property expression.", IssueKind.tleSyntax));
@@ -997,8 +996,8 @@ export class Parser {
         if (tokenizer.current) {
             let rootExpression: Value | undefined; // Initial expression
 
-            let token = tokenizer.current;
-            let tokenType = token.getType();
+            const token = tokenizer.current;
+            const tokenType = token.getType();
             if (tokenType === TokenType.Literal) {
                 rootExpression = Parser.parseFunctionCall(tokenizer, errors);
             } else if (tokenType === TokenType.QuotedString) {
@@ -1027,7 +1026,7 @@ export class Parser {
         // Check for property or array accesses off of the root expression
         while (<Token | undefined>tokenizer.current) {
             if (tokenizer.current.getType() === TokenType.Period) {
-                let periodToken = tokenizer.current;
+                const periodToken = tokenizer.current;
                 tokenizer.next();
 
                 let propertyNameToken: Token | undefined;
@@ -1040,7 +1039,7 @@ export class Parser {
                     } else {
                         errorSpan = tokenizer.current.span;
 
-                        let tokenType = tokenizer.current.getType();
+                        const tokenType = tokenizer.current.getType();
                         if (tokenType !== TokenType.RightParenthesis
                             && tokenType !== TokenType.RightSquareBracket
                             && tokenType !== TokenType.Comma
@@ -1054,7 +1053,7 @@ export class Parser {
 
                 if (!propertyNameToken) {
                     assert(errorSpan);
-                    // tslint:disable-next-line: no-non-null-assertion // Asserted
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- asserted
                     errors.push(new Issue(errorSpan!, "Expected a literal value.", IssueKind.tleSyntax));
                 }
 
@@ -1062,10 +1061,10 @@ export class Parser {
                 //   was correctly given or not, so we can have proper intellisense/etc.
                 expression = new PropertyAccess(expression, periodToken, propertyNameToken);
             } else if (tokenizer.current.getType() === TokenType.LeftSquareBracket) {
-                let leftSquareBracketToken: Token = tokenizer.current;
+                const leftSquareBracketToken: Token = tokenizer.current;
                 tokenizer.next();
 
-                let indexValue: Value | undefined = Parser.parseExpression(tokenizer, errors);
+                const indexValue: Value | undefined = Parser.parseExpression(tokenizer, errors);
 
                 let rightSquareBracketToken: Token | undefined;
                 if (<Token | undefined>tokenizer.current && tokenizer.current.getType() === TokenType.RightSquareBracket) {
@@ -1086,16 +1085,15 @@ export class Parser {
     private static parseFunctionCall(tokenizer: Tokenizer, errors: Issue[]): FunctionCallValue {
         assert(tokenizer);
         assert(tokenizer.current, "tokenizer must have a current token.");
-        // tslint:disable-next-line:no-non-null-assertion // Asserted
-        assert.deepEqual(TokenType.Literal, tokenizer.current!.getType(), "tokenizer's current token must be a literal.");
+        assert.deepEqual(TokenType.Literal, tokenizer.current?.getType(), "tokenizer's current token must be a literal.");
         assert(errors);
 
         let namespaceToken: Token | undefined;
         let nameToken: Token | undefined;
         let periodToken: Token | undefined;
 
-        // tslint:disable-next-line:no-non-null-assertion // Asserted
-        let firstToken: Token = tokenizer.current!;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- asserted
+        const firstToken: Token = tokenizer.current!;
         tokenizer.next();
 
         // Check for <namespace>.<functionname>
@@ -1119,8 +1117,8 @@ export class Parser {
 
         let leftParenthesisToken: Token | undefined;
         let rightParenthesisToken: Token | undefined;
-        let commaTokens: Token[] = [];
-        let argumentExpressions: (Value | undefined)[] = [];
+        const commaTokens: Token[] = [];
+        const argumentExpressions: (Value | undefined)[] = [];
 
         // tslint:disable-next-line: strict-boolean-expressions
         if (tokenizer.current) {
@@ -1151,7 +1149,7 @@ export class Parser {
                 if (tokenizer.current.getType() === TokenType.RightParenthesis || tokenizer.current.getType() === TokenType.RightSquareBracket) {
                     break;
                 } else if (expectingArgument) {
-                    let expression = Parser.parseExpression(tokenizer, errors);
+                    const expression = Parser.parseExpression(tokenizer, errors);
                     if (!expression && tokenizer.hasCurrent() && tokenizer.current.getType() === TokenType.Comma) {
                         errors.push(new Issue(tokenizer.current.span, "Expected a constant string, function, or property expression.", IssueKind.tleSyntax));
                     }
@@ -1180,7 +1178,7 @@ export class Parser {
                 }
                 errors.push(new Issue(errorSpan, "Expected a constant string, function, or property expression.", IssueKind.tleSyntax));
             }
-        } else if (!!leftParenthesisToken) {
+        } else if (leftParenthesisToken) {
             errors.push(new Issue(leftParenthesisToken.span, "Expected a right parenthesis (')').", IssueKind.tleSyntax));
         }
 
@@ -1193,7 +1191,7 @@ export class Parser {
                     break;
 
                 case TokenType.RightSquareBracket:
-                    if (!!leftParenthesisToken) {
+                    if (leftParenthesisToken) {
                         errors.push(new Issue(tokenizer.current.span, "Expected a right parenthesis (')').", IssueKind.tleSyntax));
                     }
                     break;
@@ -1206,8 +1204,7 @@ export class Parser {
         function getFullNameSpan(): Span {
             if (!nameToken) {
                 assert(namespaceToken);
-                // tslint:disable-next-line: no-non-null-assertion
-                return namespaceToken!.span;
+                return namespaceToken?.span;
             } else {
                 // tslint:disable-next-line: strict-boolean-expressions
                 return nameToken.span.union(namespaceToken && namespaceToken.span);
@@ -1578,15 +1575,14 @@ export enum TokenType {
  */
 export function readQuotedTLEString(iterator: Iterator<basic.Token>): basic.Token[] {
     assert(iterator.current());
-    // tslint:disable-next-line:no-non-null-assertion // Asserted
-    assert(iterator.current()!.getType() === basic.TokenType.SingleQuote);
-    // tslint:disable-next-line:no-non-null-assertion // Asserted
+    assert(iterator.current()?.getType() === basic.TokenType.SingleQuote);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- asserted
     const quotedStringTokens: basic.Token[] = [iterator.current()!];
     iterator.moveNext();
 
     let escaped: boolean = false;
     while (iterator.current()) {
-        // tslint:disable-next-line:no-non-null-assertion // guaranteed by while
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- guarded by while
         const current = iterator.current()!;
         quotedStringTokens.push(current);
 

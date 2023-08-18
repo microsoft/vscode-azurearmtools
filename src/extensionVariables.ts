@@ -3,14 +3,16 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { IAzExtOutputChannel } from "@microsoft/vscode-azext-utils";
 import * as os from 'os';
 import * as path from "path";
 import * as vscode from "vscode";
-import { IAzExtOutputChannel, IAzureUserInput } from "vscode-azureextensionui";
+// This is the documented way to use this module (https://github.com/microsoft/vscode-extension-samples/blob/main/lsp-sample/client/src/extension.ts)
+// eslint-disable-next-line import/no-internal-modules
 import { LanguageClient } from 'vscode-languageclient/node';
 import { configPrefix, isWebpack } from "../common";
-import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
 import { IProvideOpenedDocuments } from './IProvideOpenedDocuments';
+import { DeploymentFileMapping } from "./documents/parameters/DeploymentFileMapping";
 import { LanguageServerState } from "./languageclient/startArmLanguageServer";
 import { ISnippetManager } from './snippets/ISnippetManager';
 import { CompletionsSpy } from "./util/CompletionsSpy";
@@ -29,7 +31,6 @@ class ExtensionVariables {
     private _context: InitializeBeforeUse<vscode.ExtensionContext> = new InitializeBeforeUse<vscode.ExtensionContext>("_context");
     private _jsonOutlineProvider: InitializeBeforeUse<JsonOutlineProvider> = new InitializeBeforeUse<JsonOutlineProvider>("_jsonOutlineProvider");
     private _outputChannel: InitializeBeforeUse<IAzExtOutputChannel> = new InitializeBeforeUse<IAzExtOutputChannel>("_outputChannel");
-    private _ui: InitializeBeforeUse<IAzureUserInput> = new InitializeBeforeUse<IAzureUserInput>("_ui");
     private _languageServerState: LanguageServerState = LanguageServerState.NotStarted;
     private _languageServerStateEmitter: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
 
@@ -52,13 +53,6 @@ class ExtensionVariables {
     }
     public get outputChannel(): IAzExtOutputChannel {
         return this._outputChannel.value;
-    }
-
-    public set ui(ui: IAzureUserInput) {
-        this._ui.value = ui;
-    }
-    public get ui(): IAzureUserInput {
-        return this._ui.value;
     }
 
     public EOL: string = os.EOL;
@@ -100,11 +94,11 @@ class ExtensionVariables {
     public snippetManager: InitializeBeforeUse<ISnippetManager> = new InitializeBeforeUse<ISnippetManager>("snippetManager", true);
 }
 
-// tslint:disable-next-line: no-any
+// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
 if (!(<any>global).vscodearm_ext) {
-    // tslint:disable-next-line: no-any
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
     (<any>global).vscodearm_ext = new ExtensionVariables();
 }
 
-// tslint:disable-next-line: no-any no-unsafe-any
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
 export const ext: ExtensionVariables = (<any>global).vscodearm_ext;

@@ -10,36 +10,36 @@ import { Duration } from "../extension.bundle";
 suite("Duration", () => {
     suite("totalMilliseconds(number)", () => {
         test("With negative", () => {
-            let d = Duration.milliseconds(-5);
+            const d = Duration.milliseconds(-5);
             assert.deepEqual(-5, d.totalMilliseconds);
         });
 
         test("With zero", () => {
-            let d = Duration.milliseconds(0);
+            const d = Duration.milliseconds(0);
             assert.deepEqual(0, d.totalMilliseconds);
         });
 
         test("With positive", () => {
-            let d = Duration.milliseconds(20);
+            const d = Duration.milliseconds(20);
             assert.deepEqual(20, d.totalMilliseconds);
         });
     });
 
     suite("totalSeconds(number)", () => {
         test("With negative", () => {
-            let d = Duration.seconds(-5);
+            const d = Duration.seconds(-5);
             assert.deepEqual(-5000, d.totalMilliseconds);
             assert.deepEqual(-5, d.totalSeconds);
         });
 
         test("With zero", () => {
-            let d = Duration.seconds(0);
+            const d = Duration.seconds(0);
             assert.deepEqual(0, d.totalMilliseconds);
             assert.deepEqual(0, d.totalSeconds);
         });
 
         test("With positive", () => {
-            let d = Duration.seconds(20);
+            const d = Duration.seconds(20);
             assert.deepEqual(20000, d.totalMilliseconds);
             assert.deepEqual(20, d.totalSeconds);
         });

@@ -4,9 +4,9 @@
 
 // tslint:disable:object-literal-key-quotes no-http-string max-func-body-length
 
+import { parseError } from "@microsoft/vscode-azext-utils";
 import * as assert from "assert";
 import { Uri } from "vscode";
-import { parseError } from "vscode-azureextensionui";
 import { assertNever, LinkedFileLoadState, notifications, notifyTemplateGraphAvailable } from "../../extension.bundle";
 import { ExpectedDiagnostics, IExpectedDiagnostic, simplifyBadTypeResourceMessage, testDiagnostics, testDiagnosticsFromUri } from "../support/diagnostics";
 import { ensureLanguageServerAvailable } from "../support/ensureLanguageServerAvailable";
@@ -117,12 +117,12 @@ suite("Linked templates functional tests", () => {
 
                 // Make sure the language server starts up
                 const client = await ensureLanguageServerAvailable();
-                client.onNotification(notifications.Diagnostics.codeAnalysisStarting, async (args: notifications.Diagnostics.ICodeAnalysisStartingArgs) => {
+                client.onNotification(notifications.Diagnostics.codeAnalysisStarting, async (_args: notifications.Diagnostics.ICodeAnalysisStartingArgs) => {
                     //testLog.writeLine(JSON.stringify(args, null, 2));
                 });
 
                 // Create promise to wait for child graphs to be available
-                let waitForChildPromises: Promise<unknown>[] = [];
+                const waitForChildPromises: Promise<unknown>[] = [];
                 for (const expectedLinkedTemplate of options.linkedTemplates) {
                     // Wait for child template's graph to be available
                     const childPath = resolveInTestFolder(tcString(expectedLinkedTemplate.linkedTemplateFile, testCase));

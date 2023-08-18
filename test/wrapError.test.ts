@@ -3,20 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { parseError } from '@microsoft/vscode-azext-utils';
 import * as assert from 'assert';
-import { parseError } from 'vscode-azureextensionui';
 import { ext, wrapError } from '../extension.bundle';
 
 suite("wrapError", () => {
     test("outer string, inner string", () => {
-        let wrapped = wrapError('Outer error.', 'Inner error.');
+        const wrapped = wrapError('Outer error.', 'Inner error.');
         assert(wrapped instanceof Error);
         assert.equal(parseError(wrapped).message, `Outer error. ${ext.EOL}Inner error.`);
     });
 
     test("outer string, inner error", () => {
         const inner = new Error('Inner error.');
-        let wrapped = wrapError('Outer error.', inner);
+        const wrapped = wrapError('Outer error.', inner);
         assert(wrapped instanceof Error);
         assert.equal(parseError(wrapped).message, `Outer error. ${ext.EOL}Inner error.`);
         assert.equal(wrapped.stack, inner.stack);
@@ -38,7 +38,7 @@ suite("wrapError", () => {
         }
         assert(isReadOnly);
 
-        let wrapped = wrapError('Outer error.', inner);
+        const wrapped = wrapError('Outer error.', inner);
         assert(wrapped instanceof Error);
         assert.equal(parseError(wrapped).message, `Outer error. ${ext.EOL}Inner message.`);
         assert.equal(wrapped.stack, inner.stack);

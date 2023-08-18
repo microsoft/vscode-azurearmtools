@@ -14,17 +14,17 @@ suite("Reference", () => {
 
         suite("constructor(Reference.Type, Span[])", () => {
             test("with null type", () => {
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new ReferenceList(<any>null); });
             });
 
             test("with undefined type", () => {
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new ReferenceList(<any>undefined); });
             });
 
             test("with null spans", () => {
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new ReferenceList(DefinitionKind.Parameter, <any>null); });
             });
 

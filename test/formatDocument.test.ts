@@ -43,10 +43,10 @@ suite("Format document", function (this: Suite): void {
                 assert(!jsonUnformatted.match(/[\n\r]/), "The input file to format should only be one line of JSON. Did it get corrupted?");
             }
 
-            let filePath = getTempFilePath(sourceIsFile ? `temp.${path.basename(source)}` : undefined);
+            const filePath = getTempFilePath(sourceIsFile ? `temp.${path.basename(source)}` : undefined);
             fs.writeFileSync(filePath, jsonUnformatted);
-            let doc = await workspace.openTextDocument(filePath);
-            let editor: TextEditor = await window.showTextDocument(doc);
+            const doc = await workspace.openTextDocument(filePath);
+            const editor: TextEditor = await window.showTextDocument(doc);
             if (!sourceIsFile && doc.languageId !== armTemplateLanguageId) {
                 await languages.setTextDocumentLanguage(doc, armTemplateLanguageId);
             }
@@ -62,7 +62,7 @@ suite("Format document", function (this: Suite): void {
                 } else {
                     foundRange = range;
                 }
-                let selection: Selection = new Selection(foundRange.start, foundRange.end);
+                const selection: Selection = new Selection(foundRange.start, foundRange.end);
                 editor.selection = selection;
 
                 await commands.executeCommand(formatRangeCommand);
@@ -244,7 +244,7 @@ suite("Format document", function (this: Suite): void {
 });
 
 function rangeFromMatch(doc: TextDocument, regex: RegExp): Range {
-    let match = doc.getText().match(regex);
+    const match = doc.getText().match(regex);
     assert(!!match, "Could not find rangeFromMatch pattern");
     return new Range(
         doc.positionAt(match!.index!),

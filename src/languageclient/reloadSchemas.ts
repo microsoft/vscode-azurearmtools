@@ -19,7 +19,7 @@ export async function reloadSchemas(): Promise<void> {
             reload
         )) {
             // Don't wait
-            commands.executeCommand('workbench.action.reloadWindow');
+            void commands.executeCommand('workbench.action.reloadWindow');
         }
     } else {
         throw new Error("Language server is not yet ready. Please try again in a little while.");

@@ -5,8 +5,8 @@
 
 import * as vscode from "vscode";
 import { templateKeys } from '../../../common';
-import * as Json from "../../language/json/JSON";
 import { Span } from "../../language/Span";
+import * as Json from "../../language/json/JSON";
 import { assertNever } from "../../util/assertNever";
 import { IParameterDefinition } from "../parameters/IParameterDefinition";
 import { DeploymentTemplateDoc } from "./DeploymentTemplateDoc";
@@ -31,7 +31,7 @@ export class SortQuickPickItem implements vscode.QuickPickItem {
 }
 
 export function getQuickPickItems(): SortQuickPickItem[] {
-    let items: SortQuickPickItem[] = [];
+    const items: SortQuickPickItem[] = [];
     items.push(new SortQuickPickItem("Functions", TemplateSectionType.Functions, "Sort function namespaces and functions"));
     items.push(new SortQuickPickItem("Outputs", TemplateSectionType.Outputs, "Sort outputs"));
     items.push(new SortQuickPickItem("Parameters", TemplateSectionType.Parameters, "Sort parameters for the template"));
@@ -77,9 +77,9 @@ export async function sortTemplate(template: DeploymentTemplateDoc | undefined, 
  * @returns A promise of void
  */
 async function showSortingResultMessage(sortAction: () => Promise<boolean>, part: string): Promise<void> {
-    let didSorting = await sortAction();
-    let message = didSorting ? `"${part}" section was sorted` : `Nothing in "${part.toLowerCase()}" needed sorting`;
-    vscode.window.showInformationMessage(message);
+    const didSorting = await sortAction();
+    const message = didSorting ? `"${part}" section was sorted` : `Nothing in "${part.toLowerCase()}" needed sorting`;
+    void vscode.window.showInformationMessage(message);
 }
 
 /**
@@ -89,11 +89,11 @@ async function showSortingResultMessage(sortAction: () => Promise<boolean>, part
  * @returns True if order was changed when sorting, otherwise false
  */
 async function sortOutputs(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor): Promise<boolean> {
-    let rootValue = template.topLevelValue;
+    const rootValue = template.topLevelValue;
     if (!rootValue) {
         return false;
     }
-    let outputs = Json.asObjectValue(rootValue.getPropertyValue(templateKeys.outputs));
+    const outputs = Json.asObjectValue(rootValue.getPropertyValue(templateKeys.outputs));
     if (outputs) {
         return await sortGeneric<Json.Property>(outputs.properties, x => x.nameValue.quotedValue, x => x.span, template, textEditor);
     }
@@ -107,15 +107,15 @@ async function sortOutputs(template: DeploymentTemplateDoc, textEditor: vscode.T
  * @returns True if the order was changed when sorting, otherwise false
  */
 async function sortResources(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor): Promise<boolean> {
-    let rootValue = template.topLevelValue;
+    const rootValue = template.topLevelValue;
     if (!rootValue) {
         return false;
     }
-    let resources = Json.asArrayValue(rootValue.getPropertyValue(templateKeys.resources));
+    const resources = Json.asArrayValue(rootValue.getPropertyValue(templateKeys.resources));
     if (resources) {
-        let didSort1 = await sortGenericDeep<Json.Value, Json.Value>(
+        const didSort1 = await sortGenericDeep<Json.Value, Json.Value>(
             resources.elements, getResourcesFromResource, getNameFromResource, x => x.span, template, textEditor);
-        let didSort2 = await sortGeneric<Json.Value>(resources.elements, getNameFromResource, x => x.span, template, textEditor);
+        const didSort2 = await sortGeneric<Json.Value>(resources.elements, getNameFromResource, x => x.span, template, textEditor);
         return didSort1 || didSort2;
     }
     return false;
@@ -128,7 +128,7 @@ async function sortResources(template: DeploymentTemplateDoc, textEditor: vscode
  * @returns True if order was changed after sorting, otherwise false
  */
 async function sortTopLevel(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor): Promise<boolean> {
-    let rootValue = template.topLevelValue;
+    const rootValue = template.topLevelValue;
     if (!rootValue) {
         return false;
     }
@@ -166,21 +166,21 @@ async function sortParameters(template: DeploymentTemplateDoc, textEditor: vscod
  * @returns True if order was changed after sorting, otherwise false
  */
 async function sortFunctions(template: DeploymentTemplateDoc, textEditor: vscode.TextEditor): Promise<boolean> {
-    let didSort1 = await sortGenericDeep<UserFunctionNamespaceDefinition, UserFunctionDefinition>(
+    const didSort1 = await sortGenericDeep<UserFunctionNamespaceDefinition, UserFunctionDefinition>(
         template.topLevelScope.namespaceDefinitions,
         x => x.members, x => x.nameValue.quotedValue, x => x.span, template, textEditor);
-    let didSort2 = await sortGeneric<UserFunctionNamespaceDefinition>(
+    const didSort2 = await sortGeneric<UserFunctionNamespaceDefinition>(
         template.topLevelScope.namespaceDefinitions,
         x => x.nameValue.quotedValue, x => x.span, template, textEditor);
     return didSort1 || didSort2;
 }
 
 function createCommentsMap(tokens: Json.Token[], commentTokens: Json.Token[], lastSpan: Span): CommentsMap {
-    let commentsMap: CommentsMap = new Map<number, Span>();
+    const commentsMap: CommentsMap = new Map<number, Span>();
     let currentCommentsSpan: Span | undefined;
-    let allTokens = tokens.concat(commentTokens);
+    const allTokens = tokens.concat(commentTokens);
     allTokens.sort((a, b) => a.span.startIndex - b.span.startIndex);
-    allTokens.forEach((token, index) => {
+    allTokens.forEach((token, _index) => {
         if (token.type === Json.TokenType.Comment) {
             currentCommentsSpan = !currentCommentsSpan ? token.span : token.span.union(currentCommentsSpan);
         } else {
@@ -198,8 +198,8 @@ function createCommentsMap(tokens: Json.Token[], commentTokens: Json.Token[], la
 }
 
 function expandSpanToPrecedingComments(span: Span, comments: CommentsMap): Span {
-    let startIndex = span.startIndex;
-    let commentSpan = comments.get(startIndex);
+    const startIndex = span.startIndex;
+    const commentSpan = comments.get(startIndex);
     // tslint:disable-next-line: strict-boolean-expressions
     if (!commentSpan) {
         return span;
@@ -237,27 +237,27 @@ async function sortGeneric<T>(list: T[], sortSelector: (value: T) => string, spa
     if (list.length < 2) {
         return false;
     }
-    let document = textEditor.document;
-    let lastSpan = spanSelector(list[list.length - 1]);
-    let comments = createCommentsMap(template.jsonParseResult.tokens, template.jsonParseResult.commentTokens, lastSpan);
-    let selectionWithComments = getSelection(expandSpanToPrecedingComments(spanSelector(list[0]), comments), expandSpanToPrecedingComments(lastSpan, comments), document);
-    let indentedTexts = getIndentTexts<T>(list, x => expandSpanToPrecedingComments(spanSelector(x), comments), document);
-    let orderBefore = list.map(sortSelector);
-    let sorted = list.sort((a, b) => sortSelector(a).localeCompare(sortSelector(b)));
-    let orderAfter = list.map(sortSelector);
+    const document = textEditor.document;
+    const lastSpan = spanSelector(list[list.length - 1]);
+    const comments = createCommentsMap(template.jsonParseResult.tokens, template.jsonParseResult.commentTokens, lastSpan);
+    const selectionWithComments = getSelection(expandSpanToPrecedingComments(spanSelector(list[0]), comments), expandSpanToPrecedingComments(lastSpan, comments), document);
+    const indentedTexts = getIndentTexts<T>(list, x => expandSpanToPrecedingComments(spanSelector(x), comments), document);
+    const orderBefore = list.map(sortSelector);
+    const sorted = list.sort((a, b) => sortSelector(a).localeCompare(sortSelector(b)));
+    const orderAfter = list.map(sortSelector);
     if (arraysEqual<string>(orderBefore, orderAfter)) {
         return false;
     }
-    let sortedTexts = sorted.map(value => getText(expandSpanToPrecedingComments(spanSelector(value), comments), document));
-    let joined = joinTexts(sortedTexts, indentedTexts);
+    const sortedTexts = sorted.map(value => getText(expandSpanToPrecedingComments(spanSelector(value), comments), document));
+    const joined = joinTexts(sortedTexts, indentedTexts);
     await textEditor.edit(x => x.replace(selectionWithComments, joined));
     return true;
 }
 
 async function sortGenericDeep<T, TChild>(list: T[], childSelector: (value: T) => TChild[] | undefined, sortSelector: (value: TChild) => string, spanSelector: (value: TChild) => Span, template: DeploymentTemplateDoc, textEditor: vscode.TextEditor): Promise<boolean> {
     let didSorting = false;
-    for (let item of list) {
-        let children = childSelector(item);
+    for (const item of list) {
+        const children = childSelector(item);
         if (children) {
             if (await sortGeneric(children, sortSelector, spanSelector, template, textEditor)) {
                 didSorting = true;
@@ -268,24 +268,24 @@ async function sortGenericDeep<T, TChild>(list: T[], childSelector: (value: T) =
 }
 
 function getNameFromResource(value: Json.Value): string {
-    let objectValue = Json.asObjectValue(value);
+    const objectValue = Json.asObjectValue(value);
     if (!objectValue) {
         return "";
     }
-    let nameProperty = objectValue.getPropertyValue("name");
+    const nameProperty = objectValue.getPropertyValue("name");
     if (!nameProperty) {
         return "";
     }
-    let name = nameProperty.toShortFriendlyString();
+    const name = nameProperty.toShortFriendlyString();
     return name;
 }
 
 function getResourcesFromResource(value: Json.Value): Json.Value[] | undefined {
-    let objectValue = Json.asObjectValue(value);
+    const objectValue = Json.asObjectValue(value);
     if (!objectValue) {
         return undefined;
     }
-    let resources = Json.asArrayValue(objectValue.getPropertyValue("resources"));
+    const resources = Json.asArrayValue(objectValue.getPropertyValue("resources"));
     if (!resources) {
         return undefined;
     }
@@ -302,11 +302,11 @@ function joinTexts(texts: String[], intendentTexts: String[]): string {
 }
 
 function getIndentTexts<T>(list: T[], spanSelector: (value: T) => Span, document: vscode.TextDocument): String[] {
-    let indentTexts: String[] = [];
+    const indentTexts: String[] = [];
     for (let index = 0; index < list.length - 1; index++) {
-        let span1 = spanSelector(list[index]);
-        let span2 = spanSelector(list[index + 1]);
-        let intendentText = document.getText(new vscode.Range(document.positionAt(span1.afterEndIndex), document.positionAt(span2.startIndex)));
+        const span1 = spanSelector(list[index]);
+        const span2 = spanSelector(list[index + 1]);
+        const intendentText = document.getText(new vscode.Range(document.positionAt(span1.afterEndIndex), document.positionAt(span2.startIndex)));
         indentTexts.push(intendentText);
     }
     return indentTexts;
@@ -317,15 +317,15 @@ function getRange(span: Span, document: vscode.TextDocument): vscode.Range {
 }
 
 function getText(span: Span, document: vscode.TextDocument): String {
-    let range = getRange(span, document);
-    let text = document.getText(range);
+    const range = getRange(span, document);
+    const text = document.getText(range);
     return text;
 }
 
 function getSelection(start: Span, end: Span, document: vscode.TextDocument): vscode.Selection {
-    let startIndex = start.startIndex;
-    let endIndex = end.afterEndIndex;
-    let selection = new vscode.Selection(document.positionAt(startIndex), document.positionAt(endIndex));
+    const startIndex = start.startIndex;
+    const endIndex = end.afterEndIndex;
+    const selection = new vscode.Selection(document.positionAt(startIndex), document.positionAt(endIndex));
     return selection;
 }
 

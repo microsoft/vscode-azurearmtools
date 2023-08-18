@@ -16,6 +16,7 @@ suite("friendly expressions", () => {
         ): void {
             test(tleExpression, () => {
                 let keepTestNameInClosure = tleExpression;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-self-assign -- intentional as name implies
                 keepTestNameInClosure = keepTestNameInClosure;
 
                 const actual = getFriendlyExpressionFromTleExpression(tleExpression);
@@ -157,6 +158,7 @@ suite("friendly expressions", () => {
         ): void {
             test(jsonString, () => {
                 let keepTestNameInClosure = jsonString;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-self-assign -- intentional as name implies
                 keepTestNameInClosure = keepTestNameInClosure;
 
                 const actual = getFriendlyExpressionFromJsonString(jsonString);

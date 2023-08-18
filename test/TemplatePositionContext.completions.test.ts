@@ -30,12 +30,13 @@ suite("TemplatePositionContext.completions", () => {
                 [UseNoSnippets.instance],
                 async () => {
                     let keepInClosureForEasierDebugging = testName;
+                    // eslint-disable-next-line no-self-assign, @typescript-eslint/no-unused-vars
                     keepInClosureForEasierDebugging = keepInClosureForEasierDebugging;
 
                     const dt = new DeploymentTemplateDoc(documentText, fakeId, 0);
                     const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex(index, undefined);
 
-                    let completionItems: Completion.Item[] = (await pc.getCompletionItems(undefined, 2)).items;
+                    const completionItems: Completion.Item[] = (await pc.getCompletionItems(undefined, 2)).items;
                     const completionItems2: Completion.Item[] = (await pc.getCompletionItems(undefined, 2)).items;
                     assert.deepStrictEqual(completionItems, completionItems2, "Got different results");
 
@@ -44,7 +45,7 @@ suite("TemplatePositionContext.completions", () => {
         }
 
         function compareTestableCompletionItems(actualItems: Completion.Item[], expectedItems: Completion.Item[]): void {
-            let isFunctionCompletions = expectedItems.some(item => allTestDataCompletionNames.has(item.label));
+            const isFunctionCompletions = expectedItems.some(item => allTestDataCompletionNames.has(item.label));
 
             // Ignore functions that aren't in our testing list
             if (isFunctionCompletions) {
@@ -55,8 +56,8 @@ suite("TemplatePositionContext.completions", () => {
             }
 
             // Make it easier to see missing names quickly
-            let actualNames = actualItems.map(item => item.label);
-            let expectedNames = expectedItems.map(item => typeof item === 'string' ? item : item.label);
+            const actualNames = actualItems.map(item => item.label);
+            const expectedNames = expectedItems.map(item => typeof item === 'string' ? item : item.label);
             assert.deepStrictEqual(actualNames, expectedNames);
 
             assert.deepEqual(actualItems, expectedItems);
@@ -494,12 +495,12 @@ suite("TemplatePositionContext.completions", () => {
 
             // CONSIDER: Use parseTemplateWithMarkers
             function getDocumentAndMarkers(document: object | string): { documentText: string; tokens: number[] } {
-                let tokens: number[] = [];
+                const tokens: number[] = [];
                 document = typeof document === "string" ? document : JSON.stringify(document);
 
-                // tslint:disable-next-line:no-constant-condition
+                // eslint-disable-next-line no-constant-condition
                 while (true) {
-                    let tokenPos: number = document.indexOf("!");
+                    const tokenPos: number = document.indexOf("!");
                     if (tokenPos < 0) {
                         break;
                     }
@@ -514,7 +515,7 @@ suite("TemplatePositionContext.completions", () => {
             }
 
             suite("Parameter defaultValue deep completion for objects", () => {
-                let { documentText, tokens } = getDocumentAndMarkers({
+                const { documentText, tokens } = getDocumentAndMarkers({
                     parameters: {
                         a: {
                             type: "object",
@@ -531,7 +532,7 @@ suite("TemplatePositionContext.completions", () => {
                         b: "[parameters('a').!aa.!bb.!]"
                     }
                 });
-                let [dotAa, dotBb, dot] = tokens;
+                const [dotAa, dotBb, dot] = tokens;
 
                 completionItemsTest(
                     documentText,
@@ -548,7 +549,7 @@ suite("TemplatePositionContext.completions", () => {
             });
 
             suite("Parameter defaultValue with array nested in object", () => {
-                let { documentText, tokens } = getDocumentAndMarkers({
+                const { documentText, tokens } = getDocumentAndMarkers({
                     "parameters": {
                         "location": {
                             "type": "object",
@@ -566,7 +567,7 @@ suite("TemplatePositionContext.completions", () => {
                         }
                     }
                 });
-                let [dotB] = tokens;
+                const [dotB] = tokens;
 
                 completionItemsTest(
                     documentText,
@@ -621,6 +622,7 @@ suite("TemplatePositionContext.completions", () => {
                     testName,
                     [UseNoSnippets.instance],
                     async () => {
+                        // eslint-disable-next-line no-self-assign -- keeps in encosure, easier to debug
                         testName = testName;
 
                         templateWithReplacement = stringify(templateWithReplacement);
@@ -632,13 +634,13 @@ suite("TemplatePositionContext.completions", () => {
                         assert(!!cursor!, "Didn't find <!cursor!> in test expression");
                         const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex(cursor.index, undefined);
 
-                        let completionItems: Completion.Item[] = (await pc.getCompletionItems(undefined, 2)).items;
+                        const completionItems: Completion.Item[] = (await pc.getCompletionItems(undefined, 2)).items;
                         if (!expectedExample) {
                             assert.equal(completionItems.length, 0, "Expected 0 completion items");
                             return;
                         }
 
-                        let foundItem = completionItems.find(ci => ci.label === expectedExample.label);
+                        const foundItem = completionItems.find(ci => ci.label === expectedExample.label);
                         assert(!!foundItem, `Did not find a completion item with the label "${expectedExample.label}"`);
 
                         const actual = {

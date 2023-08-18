@@ -12,22 +12,22 @@ suite("__debugMarkPositionInString", () => {
     const position = "this is a ".length;
 
     test("short string, single char insert", () => {
-        let result1 = __debugMarkPositionInString(text, position, "!");
+        const result1 = __debugMarkPositionInString(text, position, "!");
         assert.equal(result1, "this is a !short string");
     });
 
     test("short string, longer insert", () => {
-        let result2 = __debugMarkPositionInString(text, position, "very ");
+        const result2 = __debugMarkPositionInString(text, position, "very ");
         assert.equal(result2, "this is a very short string");
     });
 
     test("ellipses at front", () => {
-        let result2 = __debugMarkPositionInString(text, position, "very ", 2);
+        const result2 = __debugMarkPositionInString(text, position, "very ", 2);
         assert.equal(result2, "...a very short string");
     });
 
     test("ellipses at end", () => {
-        let result2 = __debugMarkPositionInString(text, position, "very ", 25, 5);
+        const result2 = __debugMarkPositionInString(text, position, "very ", 25, 5);
         assert.equal(result2, "this is a very short...");
     });
 });
@@ -37,22 +37,22 @@ suite("__debugMarkSubstring", () => {
     const position = "this is a ".length;
 
     test("short string, single char insert", () => {
-        let result1 = __debugMarkRangeInString(text, position, 1);
+        const result1 = __debugMarkRangeInString(text, position, 1);
         assert.equal(result1, "this is a <<s>>hort string");
     });
 
     test("short string, longer insert", () => {
-        let result2 = __debugMarkRangeInString(text, position, 5);
+        const result2 = __debugMarkRangeInString(text, position, 5);
         assert.equal(result2, "this is a <<short>> string");
     });
 
     test("ellipses at front", () => {
-        let result2 = __debugMarkRangeInString(text, position, 5, "<", ">", 2);
+        const result2 = __debugMarkRangeInString(text, position, 5, "<", ">", 2);
         assert.equal(result2, "...a <short> string");
     });
 
     test("ellipses at end", () => {
-        let result2 = __debugMarkRangeInString(text, position, 5, "<", ">", 25, 7);
+        const result2 = __debugMarkRangeInString(text, position, 5, "<", ">", 25, 7);
         assert.equal(result2, "this is a <short> string...");
     });
 });

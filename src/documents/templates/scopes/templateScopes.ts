@@ -146,7 +146,7 @@ function getVariableDefinitionsFromObject(objectValue: Json.ObjectValue | undefi
         const variables: Json.ObjectValue | undefined = Json.asObjectValue(objectValue.getPropertyValue(templateKeys.variables));
         if (variables) {
             const varDefs: IVariableDefinition[] = [];
-            for (let prop of variables.properties) {
+            for (const prop of variables.properties) {
                 if (prop.nameValue.unquotedValue.toLowerCase() === templateKeys.copyLoop) {
                     // We have a top-level copy block, e.g.:
                     //
@@ -164,7 +164,7 @@ function getVariableDefinitionsFromObject(objectValue: Json.ObjectValue | undefi
                     //
                     // Each element of the array is a TopLevelCopyBlockVariableDefinition
                     const varsArray: Json.ArrayValue | undefined = Json.asArrayValue(prop.value);
-                    for (let varElement of varsArray?.elements ?? []) {
+                    for (const varElement of varsArray?.elements ?? []) {
                         const def = TopLevelCopyBlockVariableDefinition.createIfValid(varElement);
                         if (def) {
                             varDefs.push(def);
@@ -210,10 +210,10 @@ function getNamespaceDefinitionsFromObject(parentScope: TemplateScope, document:
     if (objectValue) {
         const functionNamespacesArray: Json.ArrayValue | undefined = Json.asArrayValue(objectValue.getPropertyValue(templateKeys.functions));
         if (functionNamespacesArray) {
-            for (let namespaceElement of functionNamespacesArray.elements) {
+            for (const namespaceElement of functionNamespacesArray.elements) {
                 const namespaceObject = Json.asObjectValue(namespaceElement);
                 if (namespaceObject) {
-                    let namespace = UserFunctionNamespaceDefinition.createIfValid(parentScope, document, namespaceObject);
+                    const namespace = UserFunctionNamespaceDefinition.createIfValid(parentScope, document, namespaceObject);
                     if (namespace) {
                         namespaceDefinitions.push(namespace);
                     }
@@ -239,7 +239,7 @@ export function getResourcesFromObject(owningScope: TemplateScope, objectValue: 
     const resources: IResource[] = [];
     if (objectValue) {
         const resourceObjects = getResourceObjects(objectValue);
-        for (let resourceValue of resourceObjects?.elements ?? []) {
+        for (const resourceValue of resourceObjects?.elements ?? []) {
             const resourceObject = resourceValue.asObjectValue;
             if (resourceObject) {
                 resources.push(new Resource(owningScope, resourceObject));

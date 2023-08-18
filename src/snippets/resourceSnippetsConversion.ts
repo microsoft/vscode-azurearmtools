@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.md in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { parseError } from "vscode-azureextensionui";
+import { parseError } from "@microsoft/vscode-azext-utils";
 import { assert } from "../fixed_assert";
 import { KnownContexts } from "./KnownContexts";
 import { ISnippetDefinitionFromFile } from "./SnippetManager";

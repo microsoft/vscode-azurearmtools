@@ -26,7 +26,7 @@ export async function run(): Promise<void> {
 
     const mocha = new Mocha(options);
 
-    let files: string[] = await glob('**/**.test.js', { cwd: __dirname });
+    const files: string[] = await glob('**/**.test.js', { cwd: __dirname });
     files.forEach(f => mocha.addFile(path.resolve(__dirname, f)));
 
     const failures = await new Promise<number>((resolve): Mocha.Runner => mocha.run(resolve));

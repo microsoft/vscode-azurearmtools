@@ -13,7 +13,7 @@ export function mapJsonObjectValue(objectValue: Json.ObjectValue, map: (prop: Js
     let changed = false;
     const modifiedProps: Json.Property[] = [];
 
-    for (let prop of objectValue.properties) {
+    for (const prop of objectValue.properties) {
         const newProp: Json.Property | Json.Property[] = map(prop);
         if (newProp instanceof Json.Property) {
             modifiedProps.push(newProp);
@@ -23,7 +23,7 @@ export function mapJsonObjectValue(objectValue: Json.ObjectValue, map: (prop: Js
         } else {
             // Returned an array of properties - add them all
             const newProperties: Json.Property[] = newProp;
-            for (let propElement of newProperties) {
+            for (const propElement of newProperties) {
                 modifiedProps.push(propElement);
             }
             changed = true;

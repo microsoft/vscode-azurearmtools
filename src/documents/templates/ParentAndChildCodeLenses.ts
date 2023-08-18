@@ -22,7 +22,7 @@ export function getParentAndChildCodeLenses(scope: TemplateScope, infos: IJsonRe
     const lenses: ResolvableCodeLens[] = [];
 
     for (const resource of infos) {
-        if (!!resource.parent) {
+        if (resource.parent) {
             lenses.push(new ParentCodeLens(scope, resource));
         }
         if (resource.children.length > 0) {
@@ -104,6 +104,7 @@ export class ChildrenCodeLens extends ParentOrChildCodeLens {
         super(scope, sourceResource);
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await -- grandfathered in
     public async resolve(): Promise<boolean> {
         let title: string;
         const children = <IJsonResourceInfo[]>this.sourceResource?.children ?? [];
@@ -130,6 +131,7 @@ export class ParentCodeLens extends ParentOrChildCodeLens {
         super(scope, sourceResource);
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await -- grandfathered in
     public async resolve(): Promise<boolean> {
         const parent = <IJsonResourceInfo | undefined>this.sourceResource?.parent;
 

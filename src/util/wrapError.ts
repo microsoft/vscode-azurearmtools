@@ -3,8 +3,8 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
+import { parseError } from '@microsoft/vscode-azext-utils';
 import * as os from 'os';
-import { parseError } from 'vscode-azureextensionui';
 
 /**
  * "Wraps" an existing throwable item, placing a new message at the beginning of the current message.
@@ -31,7 +31,7 @@ function cloneError(error: Error): Error {
     const copy = new Error();
     for (const propName of Object.getOwnPropertyNames(error)) {
         try {
-            // tslint:disable-next-line: no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
             (<any>copy)[propName] = (<any>error)[propName];
         } catch (err2) {
             // Ignore

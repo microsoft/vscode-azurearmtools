@@ -13,16 +13,16 @@ import * as assert from 'assert';
 import { Context } from 'mocha';
 import { Position, Selection } from "vscode";
 import { ext } from "../../extension.bundle";
+import { TempDocument, TempEditor, TempFile } from '../support/TempFile';
+import { testWithRealSnippets } from '../support/TestSnippets';
 import { assertEx } from '../support/assertEx';
 import { delay } from '../support/delay';
-import { diagnosticSources, getDiagnosticsForDocument, IGetDiagnosticsOptions } from '../support/diagnostics';
+import { IGetDiagnosticsOptions, diagnosticSources, getDiagnosticsForDocument } from '../support/diagnostics';
 import { formatDocumentAndWait } from '../support/formatDocumentAndWait';
 import { parseTemplateWithMarkers } from '../support/parseTemplate';
 import { removeApiVersions } from '../support/removeApiVersions';
 import { simulateCompletion } from '../support/simulateCompletion';
-import { TempDocument, TempEditor, TempFile } from '../support/TempFile';
 import { writeToLog } from '../support/testLog';
-import { testWithRealSnippets } from '../support/TestSnippets';
 import { DEFAULT_TESTCASE_TIMEOUT_MS } from '../testConstants';
 
 // This tests snippets in different locations, and also different methods of bringing up the snippet context menu (e.g. CTRL+SPACE, double quote etc)
@@ -38,7 +38,7 @@ suite("Contextualized snippets", () => {
         const testSources = [diagnosticSources.expressions];
         const timeout = DEFAULT_TESTCASE_TIMEOUT_MS;
 
-        for (let triggerCharacter of triggerCharacters) {
+        for (const triggerCharacter of triggerCharacters) {
             // tslint:disable-next-line: prefer-template
             const name = `${testName}, triggered by ${triggerCharacter ? ("'" + triggerCharacter + "'") : 'CTRL+SPACE'}`;
             // tslint:disable:no-function-expression
@@ -81,7 +81,7 @@ suite("Contextualized snippets", () => {
                     );
 
                     // Wait until the current document has template graph info assigned
-                    // tslint:disable-next-line: no-constant-condition
+                    // eslint-disable-next-line no-constant-condition
                     while (true) {
                         if (Date.now() > start + timeout) {
                             throw new Error("Timeout");
@@ -95,10 +95,10 @@ suite("Contextualized snippets", () => {
 
                     // Wait for final diagnostics but don't compare until we've compared the expected text first
                     diagnosticResults = await getDiagnosticsForDocument(tempEditor.realEditor.document, 2, diagnosticOptions, diagnosticResults);
-                    let messages = diagnosticResults.diagnostics.map(d => d.message).sort();
+                    const messages = diagnosticResults.diagnostics.map(d => d.message).sort();
 
                     if (DEBUG_BREAK_AFTER_INSERTING_SNIPPET) {
-                        // tslint:disable-next-line: no-debugger
+                        // eslint-disable-next-line no-debugger
                         debugger;
                     }
 

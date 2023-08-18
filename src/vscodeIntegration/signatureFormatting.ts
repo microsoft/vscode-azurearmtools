@@ -16,7 +16,7 @@ export function getUserFunctionUsage(func: UserFunctionDefinition, includeNamesp
 
 export function getFunctionUsage(name: string, params: IParameterDefinition[], outputTypeAsString: string | null | undefined): string {
     let usage: string = `${name}(${params.map(p => getFunctionParamUsage(p.nameValue.unquotedValue, p.validType)).join(", ")})`;
-    let outputType: ExpressionType | undefined = toValidExpressionType(outputTypeAsString);
+    const outputType: ExpressionType | undefined = toValidExpressionType(outputTypeAsString);
     if (outputType) {
         usage += ` [${outputType}]`;
     }

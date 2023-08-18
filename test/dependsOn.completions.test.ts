@@ -47,7 +47,7 @@ suite("dependsOn completions", () => {
 
             function filterActual(item: Completion.Item): PartialCompletionItem {
                 // tslint:disable-next-line: strict-boolean-expressions
-                if (!!replaceStart) {
+                if (replaceStart) {
                     return {
                         ...item,
                         replaceSpanStart: replaceStart.index,

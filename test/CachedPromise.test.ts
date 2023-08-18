@@ -36,8 +36,8 @@ suite("CachedPromise<T>", () => {
             });
         }
 
-        let promise1 = getPromise();
-        let promise2 = getPromise();
+        const promise1 = getPromise();
+        const promise2 = getPromise();
 
         assert.equal(await promise1, "1");
         assert.equal(await promise2, "1");
@@ -80,8 +80,8 @@ suite("CachedPromise<T>", () => {
             });
         }
 
-        let promise1: Promise<string> = getPromise();
-        let promise2: Promise<string> = getPromise();
+        const promise1: Promise<string> = getPromise();
+        const promise2: Promise<string> = getPromise();
         assert(promise1 === promise2);
 
         let error1;

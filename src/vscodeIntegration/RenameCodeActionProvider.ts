@@ -16,7 +16,7 @@ export class RenameCodeActionProvider implements vscode.CodeActionProvider {
     }
 
     public async provideCodeActions(document: vscode.TextDocument, range: vscode.Range): Promise<vscode.CodeAction[] | undefined> {
-        let pc = await this.action(document, range.start) as TemplatePositionContext | undefined;
+        const pc = await this.action(document, range.start) as TemplatePositionContext | undefined;
         const referenceSiteInfo = pc && pc.getReferenceSiteInfo(true);
         if (!referenceSiteInfo || getRenameError(referenceSiteInfo)) {
             return;

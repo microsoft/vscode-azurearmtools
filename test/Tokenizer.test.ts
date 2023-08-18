@@ -132,9 +132,9 @@ suite("Tokenizer", () => {
                 });
             }
 
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             constructorTest(<any>null);
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             constructorTest(<any>undefined);
             constructorTest("");
             constructorTest("hello");
@@ -165,9 +165,9 @@ suite("Tokenizer", () => {
                 });
             }
 
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             nextTest(<any>null);
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             nextTest(<any>undefined);
             nextTest("");
 

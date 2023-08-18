@@ -25,21 +25,21 @@ suite("ResourceUsage (schema.stats telemetry)", () => {
         const [resourceUsage, invalidResourceCounts, invalidVersionCounts] = dt.getResourceUsage(availableResourceTypesAndVersions);
 
         const expectedResourceCountsHistogram = new Histogram();
-        for (let propName of Object.getOwnPropertyNames(expectedResourceCounts)) {
+        for (const propName of Object.getOwnPropertyNames(expectedResourceCounts)) {
             expectedResourceCountsHistogram.add(propName, expectedResourceCounts[propName]);
         }
         assert.deepStrictEqual(resourceUsage, expectedResourceCountsHistogram);
 
         if (expectedInvalidResourceCounts) {
             const expectedInvalidResourceCountsHistogram = new Histogram();
-            for (let propName of Object.getOwnPropertyNames(expectedInvalidResourceCounts)) {
+            for (const propName of Object.getOwnPropertyNames(expectedInvalidResourceCounts)) {
                 expectedInvalidResourceCountsHistogram.add(propName, expectedInvalidResourceCounts[propName]);
             }
             assert.deepStrictEqual(invalidResourceCounts, expectedInvalidResourceCountsHistogram);
         }
         if (expectedInvalidVersionCounts) {
             const expectedInvalidVersionCountsHistogram = new Histogram();
-            for (let propName of Object.getOwnPropertyNames(expectedInvalidVersionCounts)) {
+            for (const propName of Object.getOwnPropertyNames(expectedInvalidVersionCounts)) {
                 expectedInvalidVersionCountsHistogram.add(propName, expectedInvalidVersionCounts[propName]);
             }
             assert.deepStrictEqual(invalidVersionCounts, expectedInvalidVersionCountsHistogram);

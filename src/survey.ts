@@ -2,8 +2,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { callWithTelemetryAndErrorHandling, IActionContext } from "@microsoft/vscode-azext-utils";
 import { commands, MessageItem, window } from 'vscode';
-import { callWithTelemetryAndErrorHandling, IActionContext } from "vscode-azureextensionui";
 import { globalStateKeys } from '../common';
 import { ext } from "./extensionVariables";
 import { assert } from './fixed_assert';
@@ -119,7 +119,7 @@ export namespace survey {
             } finally {
                 isReentrant = false;
             }
-        }).catch(err => {
+        }).catch(_err => {
             assert.fail("callWithTelemetryAndErrorHandling in survey.registerActiveUseNoThrow shouldn't throw");
         });
     }
@@ -165,7 +165,7 @@ async function requestTakeSurvey(context: IActionContext): Promise<void> {
     }
 }
 
-async function launchSurvey(context: IActionContext): Promise<void> {
+async function launchSurvey(_context: IActionContext): Promise<void> {
     await commands.executeCommand('vscode.open', parseUri(linkToSurvey));
 }
 
@@ -205,7 +205,7 @@ function getIsSurveyPostponed(): boolean {
     return postponedUntilTime > Date.now();
 }
 
-function getSessionLengthMs(context: IActionContext): number {
+function getSessionLengthMs(_context: IActionContext): number {
     if (usageSessionStart === undefined) {
         // Session just started
         usageSessionStart = Date.now();

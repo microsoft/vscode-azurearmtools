@@ -10,6 +10,7 @@ import { Uri } from "vscode";
 import { AzureRMAssets, BuiltinFunctionMetadata, DefinitionKind, DeploymentTemplateDoc, FindReferencesAndErrorsVisitor, FunctionsMetadata, INamedDefinition, IncorrectArgumentsCountIssue, Issue, IssueKind, isTleExpression, nonNullValue, ReferenceList, Span, TemplatePositionContext, TemplateScope, TLE, TopLevelTemplateScope, UndefinedVariablePropertyVisitor, UnrecognizedBuiltinFunctionIssue } from "../extension.bundle";
 import { IDeploymentTemplate } from "./support/diagnostics";
 import { parseTemplate } from "./support/parseTemplate";
+import { testWithoutBreakOnAssert } from "./support/testWithoutBreakOnAssert";
 
 const tleSyntax = IssueKind.tleSyntax;
 
@@ -54,13 +55,13 @@ suite("TLE", () => {
 
     suite("StringValue", () => {
         suite("constructor(tle.Token)", () => {
-            test("with undefined token", () => {
-                // tslint:disable-next-line:no-any
+            testWithoutBreakOnAssert("with undefined token", () => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new TLE.StringValue(<any>undefined); });
             });
 
-            test("with undefined token", () => {
-                // tslint:disable-next-line:no-any
+            testWithoutBreakOnAssert("with undefined token", () => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new TLE.StringValue(<any>undefined); });
             });
         });
@@ -139,46 +140,46 @@ suite("TLE", () => {
 
     suite("ArrayAccess", () => {
         suite("constructor(tle.Value,tle.Token,tle.Value,tle.Token)", () => {
-            test("with undefined _source", () => {
-                let leftSquareBracket = TLE.Token.createLeftSquareBracket(6);
-                let index = new TLE.NumberValue(TLE.Token.createNumber(7, "3"));
-                let rightSquareBracket = TLE.Token.createRightSquareBracket(8);
-                // tslint:disable-next-line:no-any
+            testWithoutBreakOnAssert("with undefined _source", () => {
+                const leftSquareBracket = TLE.Token.createLeftSquareBracket(6);
+                const index = new TLE.NumberValue(TLE.Token.createNumber(7, "3"));
+                const rightSquareBracket = TLE.Token.createRightSquareBracket(8);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new TLE.ArrayAccessValue(<any>undefined, leftSquareBracket, index, rightSquareBracket); });
             });
 
-            test("with undefined _source", () => {
-                let leftSquareBracket = TLE.Token.createLeftSquareBracket(6);
-                let index = new TLE.NumberValue(TLE.Token.createNumber(7, "3"));
-                let rightSquareBracket = TLE.Token.createRightSquareBracket(8);
-                // tslint:disable-next-line:no-any
+            testWithoutBreakOnAssert("with undefined _source", () => {
+                const leftSquareBracket = TLE.Token.createLeftSquareBracket(6);
+                const index = new TLE.NumberValue(TLE.Token.createNumber(7, "3"));
+                const rightSquareBracket = TLE.Token.createRightSquareBracket(8);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new TLE.ArrayAccessValue(<any>undefined, leftSquareBracket, index, rightSquareBracket); });
             });
 
-            test("with undefined _leftSquareBracket", () => {
-                let source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
-                let index = new TLE.NumberValue(TLE.Token.createNumber(7, "3"));
-                let rightSquareBracket = TLE.Token.createRightSquareBracket(8);
-                // tslint:disable-next-line:no-any
+            testWithoutBreakOnAssert("with undefined _leftSquareBracket", () => {
+                const source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
+                const index = new TLE.NumberValue(TLE.Token.createNumber(7, "3"));
+                const rightSquareBracket = TLE.Token.createRightSquareBracket(8);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new TLE.ArrayAccessValue(source, <any>undefined, index, rightSquareBracket); });
             });
 
-            test("with undefined _index", () => {
-                let source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
-                let leftSquareBracket = TLE.Token.createLeftSquareBracket(6);
-                let rightSquareBracket = TLE.Token.createRightSquareBracket(8);
-                let arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, undefined, rightSquareBracket);
+            testWithoutBreakOnAssert("with undefined _index", () => {
+                const source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
+                const leftSquareBracket = TLE.Token.createLeftSquareBracket(6);
+                const rightSquareBracket = TLE.Token.createRightSquareBracket(8);
+                const arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, undefined, rightSquareBracket);
                 assert.deepStrictEqual(source, arrayAccess.source);
                 assert.deepStrictEqual(leftSquareBracket, arrayAccess.leftSquareBracketToken);
                 assert.deepStrictEqual(undefined, arrayAccess.indexValue);
                 assert.deepStrictEqual(rightSquareBracket, arrayAccess.rightSquareBracketToken);
             });
 
-            test("with undefined _rightSquareBracket", () => {
-                let source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
-                let leftSquareBracket = TLE.Token.createLeftSquareBracket(6);
-                let index = new TLE.NumberValue(TLE.Token.createNumber(7, "3"));
-                let arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, index, undefined);
+            testWithoutBreakOnAssert("with undefined _rightSquareBracket", () => {
+                const source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
+                const leftSquareBracket = TLE.Token.createLeftSquareBracket(6);
+                const index = new TLE.NumberValue(TLE.Token.createNumber(7, "3"));
+                const arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, index, undefined);
                 assert.deepStrictEqual(source, arrayAccess.source);
                 assert.deepStrictEqual(leftSquareBracket, arrayAccess.leftSquareBracketToken);
                 assert.deepStrictEqual(index, arrayAccess.indexValue);
@@ -188,75 +189,75 @@ suite("TLE", () => {
 
         suite("getSpan()", () => {
             test("with no index or right square bracket", () => {
-                let source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
-                let leftSquareBracket = TLE.Token.createLeftSquareBracket(6);
-                let arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, undefined, undefined);
+                const source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
+                const leftSquareBracket = TLE.Token.createLeftSquareBracket(6);
+                const arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, undefined, undefined);
                 assert.deepStrictEqual(new Span(5, 2), arrayAccess.getSpan());
             });
 
             test("with whitespace between source and left square bracket", () => {
-                let source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
-                let leftSquareBracket = TLE.Token.createLeftSquareBracket(8);
-                let arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, undefined, undefined);
+                const source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
+                const leftSquareBracket = TLE.Token.createLeftSquareBracket(8);
+                const arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, undefined, undefined);
                 assert.deepStrictEqual(new Span(5, 4), arrayAccess.getSpan());
             });
 
             test("with no right square bracket", () => {
-                let source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
-                let leftSquareBracket = TLE.Token.createLeftSquareBracket(8);
-                let index = new TLE.NumberValue(TLE.Token.createNumber(10, "10"));
-                let arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, index, undefined);
+                const source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
+                const leftSquareBracket = TLE.Token.createLeftSquareBracket(8);
+                const index = new TLE.NumberValue(TLE.Token.createNumber(10, "10"));
+                const arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, index, undefined);
                 assert.deepStrictEqual(new Span(5, 7), arrayAccess.getSpan());
             });
 
             test("with no index", () => {
-                let source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
-                let leftSquareBracket = TLE.Token.createLeftSquareBracket(8);
-                let rightSquareBracket = TLE.Token.createRightSquareBracket(12);
-                let arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, undefined, rightSquareBracket);
+                const source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
+                const leftSquareBracket = TLE.Token.createLeftSquareBracket(8);
+                const rightSquareBracket = TLE.Token.createRightSquareBracket(12);
+                const arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, undefined, rightSquareBracket);
                 assert.deepStrictEqual(new Span(5, 8), arrayAccess.getSpan());
             });
 
             test("with complete array access", () => {
-                let source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
-                let leftSquareBracket = TLE.Token.createLeftSquareBracket(8);
-                let index = new TLE.NumberValue(TLE.Token.createNumber(10, "10"));
-                let rightSquareBracket = TLE.Token.createRightSquareBracket(12);
-                let arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, index, rightSquareBracket);
+                const source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
+                const leftSquareBracket = TLE.Token.createLeftSquareBracket(8);
+                const index = new TLE.NumberValue(TLE.Token.createNumber(10, "10"));
+                const rightSquareBracket = TLE.Token.createRightSquareBracket(12);
+                const arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, index, rightSquareBracket);
                 assert.deepStrictEqual(new Span(5, 8), arrayAccess.getSpan());
             });
         });
 
         suite("toString()", () => {
             test("with no index or right square bracket", () => {
-                let source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
-                let leftSquareBracket = TLE.Token.createLeftSquareBracket(10);
-                let arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, undefined, undefined);
+                const source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
+                const leftSquareBracket = TLE.Token.createLeftSquareBracket(10);
+                const arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, undefined, undefined);
                 assert.deepStrictEqual("2[", arrayAccess.toString());
             });
 
             test("with no right square bracket", () => {
-                let source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
-                let leftSquareBracket = TLE.Token.createLeftSquareBracket(10);
-                let index = new TLE.StringValue(TLE.Token.createQuotedString(20, "'hello'"));
-                let arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, index, undefined);
+                const source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
+                const leftSquareBracket = TLE.Token.createLeftSquareBracket(10);
+                const index = new TLE.StringValue(TLE.Token.createQuotedString(20, "'hello'"));
+                const arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, index, undefined);
                 assert.deepStrictEqual("2['hello'", arrayAccess.toString());
             });
 
             test("with no index", () => {
-                let source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
-                let leftSquareBracket = TLE.Token.createLeftSquareBracket(10);
-                let rightSquareBracket = TLE.Token.createRightSquareBracket(30);
-                let arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, undefined, rightSquareBracket);
+                const source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
+                const leftSquareBracket = TLE.Token.createLeftSquareBracket(10);
+                const rightSquareBracket = TLE.Token.createRightSquareBracket(30);
+                const arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, undefined, rightSquareBracket);
                 assert.deepStrictEqual("2[]", arrayAccess.toString());
             });
 
             test("with a complete array access", () => {
-                let source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
-                let leftSquareBracket = TLE.Token.createLeftSquareBracket(10);
-                let index = new TLE.StringValue(TLE.Token.createQuotedString(20, "'hello'"));
-                let rightSquareBracket = TLE.Token.createRightSquareBracket(30);
-                let arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, index, rightSquareBracket);
+                const source = new TLE.NumberValue(TLE.Token.createNumber(5, "2"));
+                const leftSquareBracket = TLE.Token.createLeftSquareBracket(10);
+                const index = new TLE.StringValue(TLE.Token.createQuotedString(20, "'hello'"));
+                const rightSquareBracket = TLE.Token.createRightSquareBracket(30);
+                const arrayAccess = new TLE.ArrayAccessValue(source, leftSquareBracket, index, rightSquareBracket);
                 assert.deepStrictEqual("2['hello']", arrayAccess.toString());
             });
         });
@@ -264,13 +265,13 @@ suite("TLE", () => {
 
     suite("FunctionCallValue", () => {
         suite("constructor(tle.Token,tle.Token,tle.Value[],tle.Token)", () => {
-            test("with undefined namespaceToken", () => {
-                let name = TLE.Token.createLiteral(1, "test");
-                let leftParenthesis = TLE.Token.createLeftParenthesis(5);
-                let commaTokens: TLE.Token[] = [];
-                let args: (TLE.Value | undefined)[] = [];
-                let rightParenthesis = TLE.Token.createRightParenthesis(10);
-                let f = new TLE.FunctionCallValue(undefined, undefined, name, leftParenthesis, commaTokens, args, rightParenthesis);
+            testWithoutBreakOnAssert("with undefined namespaceToken", () => {
+                const name = TLE.Token.createLiteral(1, "test");
+                const leftParenthesis = TLE.Token.createLeftParenthesis(5);
+                const commaTokens: TLE.Token[] = [];
+                const args: (TLE.Value | undefined)[] = [];
+                const rightParenthesis = TLE.Token.createRightParenthesis(10);
+                const f = new TLE.FunctionCallValue(undefined, undefined, name, leftParenthesis, commaTokens, args, rightParenthesis);
                 assert.deepStrictEqual(name, f.nameToken);
                 assert.deepStrictEqual(leftParenthesis, f.leftParenthesisToken);
                 assert.deepStrictEqual(args, f.argumentExpressions);
@@ -279,13 +280,13 @@ suite("TLE", () => {
                 assert.deepStrictEqual(f.fullName, "test");
             });
 
-            test("with undefined _leftParenthesisToken", () => {
-                let name = TLE.Token.createLiteral(1, "test");
-                let commaTokens: TLE.Token[] = [];
-                let args: (TLE.Value | undefined)[] = [];
-                let rightParenthesis = TLE.Token.createRightParenthesis(10);
+            testWithoutBreakOnAssert("with undefined _leftParenthesisToken", () => {
+                const name = TLE.Token.createLiteral(1, "test");
+                const commaTokens: TLE.Token[] = [];
+                const args: (TLE.Value | undefined)[] = [];
+                const rightParenthesis = TLE.Token.createRightParenthesis(10);
 
-                let f = new TLE.FunctionCallValue(undefined, undefined, name, undefined, commaTokens, args, rightParenthesis);
+                const f = new TLE.FunctionCallValue(undefined, undefined, name, undefined, commaTokens, args, rightParenthesis);
 
                 assert.deepStrictEqual(name, f.nameToken);
                 assert.deepStrictEqual(undefined, f.leftParenthesisToken);
@@ -293,23 +294,23 @@ suite("TLE", () => {
                 assert.deepStrictEqual(rightParenthesis, f.rightParenthesisToken);
             });
 
-            test("with undefined _argumentExpressions", () => {
-                let name = TLE.Token.createLiteral(1, "test");
-                let commaTokens: TLE.Token[] = [];
-                let leftParenthesis = TLE.Token.createLeftParenthesis(5);
-                let rightParenthesis = TLE.Token.createRightParenthesis(10);
+            testWithoutBreakOnAssert("with undefined _argumentExpressions", () => {
+                const name = TLE.Token.createLiteral(1, "test");
+                const commaTokens: TLE.Token[] = [];
+                const leftParenthesis = TLE.Token.createLeftParenthesis(5);
+                const rightParenthesis = TLE.Token.createRightParenthesis(10);
 
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { new TLE.FunctionCallValue(undefined, undefined, name, leftParenthesis, commaTokens, <any>undefined, rightParenthesis); });
             });
 
-            test("with undefined _rightParenthesisToken", () => {
-                let name = TLE.Token.createLiteral(1, "test");
-                let commaTokens: TLE.Token[] = [];
-                let leftParenthesis = TLE.Token.createLeftParenthesis(5);
-                let args: (TLE.Value | undefined)[] = [];
+            testWithoutBreakOnAssert("with undefined _rightParenthesisToken", () => {
+                const name = TLE.Token.createLiteral(1, "test");
+                const commaTokens: TLE.Token[] = [];
+                const leftParenthesis = TLE.Token.createLeftParenthesis(5);
+                const args: (TLE.Value | undefined)[] = [];
 
-                let f = new TLE.FunctionCallValue(undefined, undefined, name, leftParenthesis, commaTokens, args, undefined);
+                const f = new TLE.FunctionCallValue(undefined, undefined, name, leftParenthesis, commaTokens, args, undefined);
 
                 assert.deepStrictEqual(name, f.nameToken);
                 assert.deepStrictEqual(leftParenthesis, f.leftParenthesisToken);
@@ -320,43 +321,43 @@ suite("TLE", () => {
 
         suite("getSpan()", () => {
             test("with name", () => {
-                let f = parseExpression("\"[concat]\"").expression;
+                const f = parseExpression("\"[concat]\"").expression;
                 assert(f instanceof TLE.FunctionCallValue);
                 assert.deepStrictEqual(new Span(2, 6), f!.getSpan());
             });
 
             test("with left parenthesis", () => {
-                let f = parseExpression("\"[concat(]\"").expression;
+                const f = parseExpression("\"[concat(]\"").expression;
                 assert(f instanceof TLE.FunctionCallValue);
                 assert.deepStrictEqual(new Span(2, 7), f!.getSpan());
             });
 
             test("with one argument and no right parenthesis", () => {
-                let f = parseExpression("\"[concat(70").expression;
+                const f = parseExpression("\"[concat(70").expression;
                 assert(f instanceof TLE.FunctionCallValue);
                 assert.deepStrictEqual(new Span(2, 9), f!.getSpan());
             });
 
             test("with two arguments and no right parenthesis", () => {
-                let f = parseExpression("\"[concat(70, 3").expression;
+                const f = parseExpression("\"[concat(70, 3").expression;
                 assert(f instanceof TLE.FunctionCallValue);
                 assert.deepStrictEqual(new Span(2, 12), f!.getSpan());
             });
 
             test("with left and right parenthesis and no arguments", () => {
-                let f = parseExpression("\"[concat()\"").expression;
+                const f = parseExpression("\"[concat()\"").expression;
                 assert(f instanceof TLE.FunctionCallValue);
                 assert.deepStrictEqual(new Span(2, 8), f!.getSpan());
             });
 
             test("with left and right parenthesis and arguments", () => {
-                let f = parseExpression("\"[concat('hello', 'world')\"").expression;
+                const f = parseExpression("\"[concat('hello', 'world')\"").expression;
                 assert(f instanceof TLE.FunctionCallValue);
                 assert.deepStrictEqual(new Span(2, 24), f!.getSpan());
             });
 
             test("with last argument missing and no right parenthesis", () => {
-                let f = parseExpression("\"[concat('hello',").expression;
+                const f = parseExpression("\"[concat('hello',").expression;
                 assert(f instanceof TLE.FunctionCallValue);
                 assert.deepStrictEqual(new Span(2, 15), f!.getSpan());
             });
@@ -371,38 +372,38 @@ suite("TLE", () => {
 
         suite("getHighlightCharacterIndexes(number,TLEParseResult)", () => {
             test("with quoted string that isn't a TLE", () => {
-                let template = new DeploymentTemplateDoc("\"Hello world\"", fakeId, 0);
+                const template = new DeploymentTemplateDoc("\"Hello world\"", fakeId, 0);
                 assert.deepStrictEqual([], getHighlights(template, 0));
                 assert.deepStrictEqual([], getHighlights(template, 5));
                 assert.deepStrictEqual([], getHighlights(template, 11));
             });
 
             test("with left square bracket", () => {
-                let template = new DeploymentTemplateDoc("\"[", fakeId, 0);
+                const template = new DeploymentTemplateDoc("\"[", fakeId, 0);
                 assert.deepStrictEqual([], getHighlights(template, 0));
                 assert.deepStrictEqual([1], getHighlights(template, 1));
                 assert.deepStrictEqual([], getHighlights(template, 2));
             });
 
             test("with empty TLE", () => {
-                let template = new DeploymentTemplateDoc("\"[]\"", fakeId, 0);
+                const template = new DeploymentTemplateDoc("\"[]\"", fakeId, 0);
                 assert.deepStrictEqual([1, 2], getHighlights(template, 1), "When the caret is before a TLE's left square bracket, then the left and right square brackets should be highlighted.");
                 assert.deepStrictEqual([], getHighlights(template, 2), "When the caret is to the right of a TLE's left square bracket and to the left of the right square bracket, nothing should be highlighted.");
                 assert.deepStrictEqual([1, 2], getHighlights(template, 3), "When the caret is after a TLE's right square bracket, then the left and right square brackets should be highlighted.");
             });
 
             test("with function with no parenthesis", () => {
-                let template = new DeploymentTemplateDoc("\"[concat", fakeId, 0);
+                const template = new DeploymentTemplateDoc("\"[concat", fakeId, 0);
                 assert.deepStrictEqual([], getHighlights(template, 8));
             });
 
             test("with function with left parenthesis but no right parenthesis", () => {
-                let template = new DeploymentTemplateDoc("\"[concat(", fakeId, 0);
+                const template = new DeploymentTemplateDoc("\"[concat(", fakeId, 0);
                 assert.deepStrictEqual([8], getHighlights(template, 8));
             });
 
             test("with function with left and right parenthesis", () => {
-                let template = new DeploymentTemplateDoc("\"[concat()", fakeId, 0);
+                const template = new DeploymentTemplateDoc("\"[concat()", fakeId, 0);
                 assert.deepStrictEqual([8, 9], getHighlights(template, "\"[concat".length), "Both left and right parentheses should be highlighted when the caret is before the left parenthesis.");
                 assert.deepStrictEqual([], getHighlights(template, 9));
                 assert.deepStrictEqual([8, 9], getHighlights(template, "\"[concat()".length), "Both left and right parentheses should be highlighted when the caret is after the right parenthesis.");
@@ -466,16 +467,16 @@ suite("TLE", () => {
 
     suite("Parser", () => {
         suite("parse(string)", () => {
-            test("with empty stringValue", () => {
+            testWithoutBreakOnAssert("with empty stringValue", () => {
                 assert.throws(() => { parseExpression(""); });
             });
 
-            test("with non-empty non-quoted stringValue", () => {
+            testWithoutBreakOnAssert("with non-empty non-quoted stringValue", () => {
                 assert.throws(() => { parseExpression("hello"); });
             });
 
             test("with single double-quote character", () => {
-                let pr = parseExpression("\"");
+                const pr = parseExpression("\"");
                 assert(pr);
                 assert.equal(undefined, pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -486,7 +487,7 @@ suite("TLE", () => {
             });
 
             test("with empty quoted string", () => {
-                let pr = parseExpression("\"\"");
+                const pr = parseExpression("\"\"");
                 assert(pr);
                 assert.equal(undefined, pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -497,7 +498,7 @@ suite("TLE", () => {
             });
 
             test("with non-empty quoted string", () => {
-                let pr = parseExpression("\"hello\"");
+                const pr = parseExpression("\"hello\"");
                 assert(pr);
                 assert.equal(undefined, pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -508,7 +509,7 @@ suite("TLE", () => {
             });
 
             test("with left square bracket (but no right square bracket)", () => {
-                let pr = parseExpression("\"[\"");
+                const pr = parseExpression("\"[\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.equal(undefined, pr.expression);
@@ -522,7 +523,7 @@ suite("TLE", () => {
             });
 
             test("with two left square brackets", () => {
-                let pr = parseExpression("\"[[\"");
+                const pr = parseExpression("\"[[\"");
                 assert(pr);
                 assert.equal(undefined, pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -533,7 +534,7 @@ suite("TLE", () => {
             });
 
             test("with two left square brackets and a right square bracket", () => {
-                let pr = parseExpression("\"[[]\"");
+                const pr = parseExpression("\"[[]\"");
                 assert(pr);
                 assert.equal(undefined, pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -544,7 +545,7 @@ suite("TLE", () => {
             });
 
             test("with two left square brackets and a literal", () => {
-                let pr = parseExpression("\"[[hello\"");
+                const pr = parseExpression("\"[[hello\"");
                 assert(pr);
                 assert.equal(undefined, pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -555,7 +556,7 @@ suite("TLE", () => {
             });
 
             test("with left and right square brackets", () => {
-                let pr = parseExpression("\"[]\"");
+                const pr = parseExpression("\"[]\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.equal(undefined, pr.expression);
@@ -566,7 +567,7 @@ suite("TLE", () => {
             });
 
             test("with left and right square brackets after whitespace", () => {
-                let pr = parseExpression("\"  []\"");
+                const pr = parseExpression("\"  []\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(3), pr.leftSquareBracketToken);
                 assert.equal(undefined, pr.expression);
@@ -577,7 +578,7 @@ suite("TLE", () => {
             });
 
             test("with left and right square brackets with whitespace between them", () => {
-                let pr = parseExpression("\"[    ]\"");
+                const pr = parseExpression("\"[    ]\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(undefined, pr.expression);
@@ -588,7 +589,7 @@ suite("TLE", () => {
             });
 
             test("with right square bracket", () => {
-                let pr = parseExpression("\"]\"");
+                const pr = parseExpression("\"]\"");
                 assert(pr);
                 assert.equal(undefined, pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -599,7 +600,7 @@ suite("TLE", () => {
             });
 
             test("with function name without parentheses, arguments, or right square bracket", () => {
-                let pr = parseExpression("\"[concat\"");
+                const pr = parseExpression("\"[concat\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(new TLE.FunctionCallValue(undefined, undefined, TLE.Token.createLiteral(2, "concat"), undefined, [], [], undefined), pr.expression);
@@ -613,7 +614,7 @@ suite("TLE", () => {
             });
 
             test("with function namespace and period but no function name", () => {
-                let pr = parseExpression("\"[concat.\"");
+                const pr = parseExpression("\"[concat.\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(new TLE.FunctionCallValue(TLE.Token.createLiteral(2, "concat"), TLE.Token.createPeriod(2 + "concat".length), undefined, undefined, [], [], undefined), pr.expression);
@@ -628,7 +629,7 @@ suite("TLE", () => {
             });
 
             test("with function name without parentheses or arguments", () => {
-                let pr = parseExpression("\"[concat]\"");
+                const pr = parseExpression("\"[concat]\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(new TLE.FunctionCallValue(undefined, undefined, TLE.Token.createLiteral(2, "concat"), undefined, [], [], undefined), pr.expression);
@@ -639,7 +640,7 @@ suite("TLE", () => {
             });
 
             test("with function name and left parenthesis without right square bracket", () => {
-                let pr = parseExpression("\"[concat (\"");
+                const pr = parseExpression("\"[concat (\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -662,7 +663,7 @@ suite("TLE", () => {
             });
 
             test("with function name and left parenthesis", () => {
-                let pr = parseExpression("\"[concat (]\"");
+                const pr = parseExpression("\"[concat (]\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -682,7 +683,7 @@ suite("TLE", () => {
             });
 
             test("with function name and right parenthesis", () => {
-                let pr = parseExpression("\"[concat)]\"");
+                const pr = parseExpression("\"[concat)]\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -705,7 +706,7 @@ suite("TLE", () => {
             });
 
             test("with function with no arguments", () => {
-                let pr = parseExpression("\" [ concat (    )  ]  \"");
+                const pr = parseExpression("\" [ concat (    )  ]  \"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(2), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -723,7 +724,7 @@ suite("TLE", () => {
             });
 
             test("with function with one number argument", () => {
-                let pr = parseExpression("\"[concat(12)]\"");
+                const pr = parseExpression("\"[concat(12)]\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(12), pr.rightSquareBracketToken);
@@ -743,7 +744,7 @@ suite("TLE", () => {
             });
 
             test("with user namespace and function with one number argument", () => {
-                let pr = parseExpression("\"[con.at(12)]\"");
+                const pr = parseExpression("\"[con.at(12)]\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(12), pr.rightSquareBracketToken);
@@ -763,7 +764,7 @@ suite("TLE", () => {
             });
 
             test("with function with no closing double quote or right square bracket", () => {
-                let pr = parseExpression("\"[concat()");
+                const pr = parseExpression("\"[concat()");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -785,7 +786,7 @@ suite("TLE", () => {
             });
 
             test("with function with no closing right square bracket", () => {
-                let pr = parseExpression("\"[concat()\"");
+                const pr = parseExpression("\"[concat()\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -910,7 +911,7 @@ suite("TLE", () => {
             });
 
             test("with function with one missing argument and no right parenthesis", () => {
-                let pr = parseExpression("\"[concat('a1',");
+                const pr = parseExpression("\"[concat('a1',");
                 assert(pr);
                 assert.deepStrictEqual(pr.leftSquareBracketToken, TLE.Token.createLeftSquareBracket(1));
                 assert.deepStrictEqual(pr.rightSquareBracketToken, undefined);
@@ -942,7 +943,7 @@ suite("TLE", () => {
             });
 
             test("with function with three missing arguments", () => {
-                let pr = parseExpression("\"[concat(,,)]\"");
+                const pr = parseExpression("\"[concat(,,)]\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -1182,7 +1183,7 @@ suite("TLE", () => {
             });
 
             test("with property access with missing period", () => {
-                let pr = parseExpression("\"[resourceGroup()name]\"");
+                const pr = parseExpression("\"[resourceGroup()name]\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -1387,7 +1388,7 @@ suite("TLE", () => {
             });
 
             test("with function after string", () => {
-                let pr = parseExpression("\"[hello()'world']\"");
+                const pr = parseExpression("\"[hello()'world']\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -1405,7 +1406,7 @@ suite("TLE", () => {
             });
 
             test("with function after string", () => {
-                let pr = parseExpression("\"[hello'world'()]\"");
+                const pr = parseExpression("\"[hello'world'()]\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -1423,7 +1424,7 @@ suite("TLE", () => {
             });
 
             test("with string followed by literal", () => {
-                let pr = parseExpression("\"['world'hello]\"");
+                const pr = parseExpression("\"['world'hello]\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -1446,7 +1447,7 @@ suite("TLE", () => {
             });
 
             test("with literal followed by string", () => {
-                let pr = parseExpression("\"[hello'world']\"");
+                const pr = parseExpression("\"[hello'world']\"");
                 assert(pr);
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), pr.leftSquareBracketToken);
                 assert.deepStrictEqual(
@@ -1484,21 +1485,21 @@ suite("TLE", () => {
     suite("Token", () => {
         suite("createLeftParenthesis(number)", () => {
             test("Negative startIndex", () => {
-                let t = TLE.Token.createLeftParenthesis(-1);
+                const t = TLE.Token.createLeftParenthesis(-1);
                 assert.equal(TLE.TokenType.LeftParenthesis, t.getType());
                 assert.deepStrictEqual(new Span(-1, 1), t.span);
                 assert.equal("(", t.stringValue);
             });
 
             test("Zero startIndex", () => {
-                let t = TLE.Token.createLeftParenthesis(0);
+                const t = TLE.Token.createLeftParenthesis(0);
                 assert.equal(TLE.TokenType.LeftParenthesis, t.getType());
                 assert.deepStrictEqual(new Span(0, 1), t.span);
                 assert.equal("(", t.stringValue);
             });
 
             test("Positive startIndex", () => {
-                let t = TLE.Token.createLeftParenthesis(7);
+                const t = TLE.Token.createLeftParenthesis(7);
                 assert.equal(TLE.TokenType.LeftParenthesis, t.getType());
                 assert.deepStrictEqual(new Span(7, 1), t.span);
                 assert.equal("(", t.stringValue);
@@ -1507,21 +1508,21 @@ suite("TLE", () => {
 
         suite("createRightParenthesis(number)", () => {
             test("Negative startIndex", () => {
-                let t = TLE.Token.createRightParenthesis(-1);
+                const t = TLE.Token.createRightParenthesis(-1);
                 assert.equal(TLE.TokenType.RightParenthesis, t.getType());
                 assert.deepStrictEqual(new Span(-1, 1), t.span);
                 assert.equal(")", t.stringValue);
             });
 
             test("Zero startIndex", () => {
-                let t = TLE.Token.createRightParenthesis(0);
+                const t = TLE.Token.createRightParenthesis(0);
                 assert.equal(TLE.TokenType.RightParenthesis, t.getType());
                 assert.deepStrictEqual(new Span(0, 1), t.span);
                 assert.equal(")", t.stringValue);
             });
 
             test("Positive startIndex", () => {
-                let t = TLE.Token.createRightParenthesis(7);
+                const t = TLE.Token.createRightParenthesis(7);
                 assert.equal(TLE.TokenType.RightParenthesis, t.getType());
                 assert.deepStrictEqual(new Span(7, 1), t.span);
                 assert.equal(")", t.stringValue);
@@ -1530,21 +1531,21 @@ suite("TLE", () => {
 
         suite("createLeftSquareBracket(number)", () => {
             test("Negative startIndex", () => {
-                let t = TLE.Token.createLeftSquareBracket(-1);
+                const t = TLE.Token.createLeftSquareBracket(-1);
                 assert.equal(TLE.TokenType.LeftSquareBracket, t.getType());
                 assert.deepStrictEqual(new Span(-1, 1), t.span);
                 assert.equal("[", t.stringValue);
             });
 
             test("Zero startIndex", () => {
-                let t = TLE.Token.createLeftSquareBracket(0);
+                const t = TLE.Token.createLeftSquareBracket(0);
                 assert.equal(TLE.TokenType.LeftSquareBracket, t.getType());
                 assert.deepStrictEqual(new Span(0, 1), t.span);
                 assert.equal("[", t.stringValue);
             });
 
             test("Positive startIndex", () => {
-                let t = TLE.Token.createLeftSquareBracket(7);
+                const t = TLE.Token.createLeftSquareBracket(7);
                 assert.equal(TLE.TokenType.LeftSquareBracket, t.getType());
                 assert.deepStrictEqual(new Span(7, 1), t.span);
                 assert.equal("[", t.stringValue);
@@ -1553,21 +1554,21 @@ suite("TLE", () => {
 
         suite("createRightSquareBracket(number)", () => {
             test("Negative startIndex", () => {
-                let t = TLE.Token.createRightSquareBracket(-1);
+                const t = TLE.Token.createRightSquareBracket(-1);
                 assert.equal(TLE.TokenType.RightSquareBracket, t.getType());
                 assert.deepStrictEqual(new Span(-1, 1), t.span);
                 assert.equal("]", t.stringValue);
             });
 
             test("Zero startIndex", () => {
-                let t = TLE.Token.createRightSquareBracket(0);
+                const t = TLE.Token.createRightSquareBracket(0);
                 assert.equal(TLE.TokenType.RightSquareBracket, t.getType());
                 assert.deepStrictEqual(new Span(0, 1), t.span);
                 assert.equal("]", t.stringValue);
             });
 
             test("Positive startIndex", () => {
-                let t = TLE.Token.createRightSquareBracket(7);
+                const t = TLE.Token.createRightSquareBracket(7);
                 assert.equal(TLE.TokenType.RightSquareBracket, t.getType());
                 assert.deepStrictEqual(new Span(7, 1), t.span);
                 assert.equal("]", t.stringValue);
@@ -1576,21 +1577,21 @@ suite("TLE", () => {
 
         suite("createComma(number)", () => {
             test("Negative startIndex", () => {
-                let t = TLE.Token.createComma(-1);
+                const t = TLE.Token.createComma(-1);
                 assert.equal(TLE.TokenType.Comma, t.getType());
                 assert.deepStrictEqual(new Span(-1, 1), t.span);
                 assert.equal(",", t.stringValue);
             });
 
             test("Zero startIndex", () => {
-                let t = TLE.Token.createComma(0);
+                const t = TLE.Token.createComma(0);
                 assert.equal(TLE.TokenType.Comma, t.getType());
                 assert.deepStrictEqual(new Span(0, 1), t.span);
                 assert.equal(",", t.stringValue);
             });
 
             test("Positive startIndex", () => {
-                let t = TLE.Token.createComma(7);
+                const t = TLE.Token.createComma(7);
                 assert.equal(TLE.TokenType.Comma, t.getType());
                 assert.deepStrictEqual(new Span(7, 1), t.span);
                 assert.equal(",", t.stringValue);
@@ -1600,28 +1601,28 @@ suite("TLE", () => {
 
     suite("Tokenizer", () => {
         suite("readToken()", () => {
-            test("with undefined stringValue", () => {
-                // tslint:disable-next-line:no-any
+            testWithoutBreakOnAssert("with undefined stringValue", () => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 assert.throws(() => { TLE.Tokenizer.fromString(<any>undefined); });
             });
 
-            test("with '' stringValue", () => {
+            testWithoutBreakOnAssert("with '' stringValue", () => {
                 assert.throws(() => { TLE.Tokenizer.fromString(""); });
             });
 
-            test("with empty TLE expression without surrounding quotes", () => {
+            testWithoutBreakOnAssert("with empty TLE expression without surrounding quotes", () => {
                 assert.throws(() => { TLE.Tokenizer.fromString("[]"); });
             });
 
             test("with empty TLE expression", () => {
-                let tt = TLE.Tokenizer.fromString("\"[]\"");
+                const tt = TLE.Tokenizer.fromString("\"[]\"");
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(2), tt.readToken());
                 assert.equal(undefined, tt.readToken());
             });
 
             test("with empty TLE object with whitespace inside", () => {
-                let tt = TLE.Tokenizer.fromString("\"[ ]\"");
+                const tt = TLE.Tokenizer.fromString("\"[ ]\"");
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createWhitespace(2, " "), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(3), tt.readToken());
@@ -1629,84 +1630,84 @@ suite("TLE", () => {
             });
 
             test("with comma", () => {
-                let tt = TLE.Tokenizer.fromString("\",\"");
+                const tt = TLE.Tokenizer.fromString("\",\"");
                 assert.deepStrictEqual(TLE.Token.createComma(1), tt.readToken());
                 assert.equal(undefined, tt.readToken());
             });
 
             test("with whitespace", () => {
-                let tt = TLE.Tokenizer.fromString("\" \r\n\t \"");
+                const tt = TLE.Tokenizer.fromString("\" \r\n\t \"");
                 assert.deepStrictEqual(TLE.Token.createWhitespace(1, " \r\n\t "), tt.readToken());
                 assert.equal(undefined, tt.readToken());
             });
 
             test("with double-quoted empty string", () => {
-                let tt = TLE.Tokenizer.fromString("\"\"");
+                const tt = TLE.Tokenizer.fromString("\"\"");
                 assert.equal(undefined, tt.readToken());
             });
 
             test("with escaped single-quoted empty string", () => {
-                let tt = TLE.Tokenizer.fromString("\"\'\'\"");
+                const tt = TLE.Tokenizer.fromString("\"\'\'\"");
                 assert.deepStrictEqual(TLE.Token.createQuotedString(1, "\'\'"), tt.readToken());
                 assert.equal(undefined, tt.readToken());
             });
 
             test("with unescaped single-quoted empty string", () => {
-                let tt = TLE.Tokenizer.fromString("\"''\"");
+                const tt = TLE.Tokenizer.fromString("\"''\"");
                 assert.deepStrictEqual(TLE.Token.createQuotedString(1, "''"), tt.readToken());
                 assert.equal(undefined, tt.readToken());
             });
 
             test("with unterminated double-quoted string", () => {
-                let tt = TLE.Tokenizer.fromString("'\"hello'");
+                const tt = TLE.Tokenizer.fromString("'\"hello'");
                 assert.deepStrictEqual(TLE.Token.createQuotedString(1, "\"hello"), tt.readToken());
                 assert.equal(undefined, tt.readToken());
             });
 
             test("with unterminated single-quoted string", () => {
-                let tt = TLE.Tokenizer.fromString("\"\'hello\"");
+                const tt = TLE.Tokenizer.fromString("\"\'hello\"");
                 assert.deepStrictEqual(TLE.Token.createQuotedString(1, "\'hello"), tt.readToken());
                 assert.equal(undefined, tt.readToken());
             });
 
             test("with double-quoted string with escaped back-slash inside", () => {
-                let tt = TLE.Tokenizer.fromString("\"'C:\\\\Users\\\\'\"");
+                const tt = TLE.Tokenizer.fromString("\"'C:\\\\Users\\\\'\"");
                 assert.deepStrictEqual(TLE.Token.createQuotedString(1, "'C:\\\\Users\\\\'"), tt.readToken());
                 assert.equal(undefined, tt.readToken());
             });
 
             test("with double-quoted string with escaped double-quote inside", () => {
-                let tt = TLE.Tokenizer.fromString("'\"hello\\\"there\"'");
+                const tt = TLE.Tokenizer.fromString("'\"hello\\\"there\"'");
                 assert.deepStrictEqual(TLE.Token.createQuotedString(1, "\"hello\\\"there\""), tt.readToken());
                 assert.equal(undefined, tt.readToken());
             });
 
             test("with zero", () => {
-                let tt = TLE.Tokenizer.fromString("'0'");
+                const tt = TLE.Tokenizer.fromString("'0'");
                 assert.deepStrictEqual(TLE.Token.createNumber(1, "0"), tt.readToken());
                 assert.equal(undefined, tt.readToken());
             });
 
             test("with positive number", () => {
-                let tt = TLE.Tokenizer.fromString("\"123\"");
+                const tt = TLE.Tokenizer.fromString("\"123\"");
                 assert.deepStrictEqual(TLE.Token.createNumber(1, "123"), tt.readToken());
                 assert.equal(undefined, tt.readToken());
             });
 
             test("with negative number", () => {
-                let tt = TLE.Tokenizer.fromString("'-456");
+                const tt = TLE.Tokenizer.fromString("'-456");
                 assert.deepStrictEqual(TLE.Token.createNumber(1, "-456"), tt.readToken());
                 assert.equal(undefined, tt.readToken());
             });
 
             test("with floating-point number", () => {
-                let tt = TLE.Tokenizer.fromString("\"7.8\"");
+                const tt = TLE.Tokenizer.fromString("\"7.8\"");
                 assert.deepStrictEqual(TLE.Token.createNumber(1, "7.8"), tt.readToken());
                 assert.equal(undefined, tt.readToken());
             });
 
             test("with expression with single constant string", () => {
-                let tt = TLE.Tokenizer.fromString("\"[ 'apples']\"");
+                const tt = TLE.Tokenizer.fromString("\"[ 'apples']\"");
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createWhitespace(2, " "), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createQuotedString(3, "'apples'"), tt.readToken());
@@ -1715,13 +1716,13 @@ suite("TLE", () => {
             });
 
             test("with true", () => {
-                let tt = TLE.Tokenizer.fromString("'true'");
+                const tt = TLE.Tokenizer.fromString("'true'");
                 assert.deepStrictEqual(TLE.Token.createLiteral(1, "true"), tt.readToken());
                 assert.equal(undefined, tt.readToken());
             });
 
             test("with value that starts with '.'", () => {
-                let tt = TLE.Tokenizer.fromString("\". hello there\"");
+                const tt = TLE.Tokenizer.fromString("\". hello there\"");
                 assert.deepStrictEqual(TLE.Token.createPeriod(1), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createWhitespace(2, " "), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createLiteral(3, "hello"), tt.readToken());
@@ -1731,13 +1732,13 @@ suite("TLE", () => {
             });
 
             test("with literal that ends with a number", () => {
-                let tt = TLE.Tokenizer.fromString("\"base64\"");
+                const tt = TLE.Tokenizer.fromString("\"base64\"");
                 assert.deepStrictEqual(TLE.Token.createLiteral(1, "base64"), tt.readToken());
                 assert.equal(undefined, tt.readToken());
             });
 
             test("with several invalid literals", () => {
-                let tt = TLE.Tokenizer.fromString("\".[]82348923asdglih   asl .,'\"");
+                const tt = TLE.Tokenizer.fromString("\".[]82348923asdglih   asl .,'\"");
                 assert.deepStrictEqual(TLE.Token.createPeriod(1), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(2), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createRightSquareBracket(3), tt.readToken());
@@ -1753,7 +1754,7 @@ suite("TLE", () => {
             });
 
             test("with function TLE with no arguments", () => {
-                let tt = TLE.Tokenizer.fromString("'[concat()]'");
+                const tt = TLE.Tokenizer.fromString("'[concat()]'");
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createLiteral(2, "concat"), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createLeftParenthesis(8), tt.readToken());
@@ -1763,7 +1764,7 @@ suite("TLE", () => {
             });
 
             test("with user-defined function TLE with no arguments", () => {
-                let tt = TLE.Tokenizer.fromString("'[co.cat()]'");
+                const tt = TLE.Tokenizer.fromString("'[co.cat()]'");
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createLiteral(2, "co"), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createPeriod(4), tt.readToken());
@@ -1775,7 +1776,7 @@ suite("TLE", () => {
             });
 
             test("with user-defined function TLE with no arguments and with name matching a built-in function", () => {
-                let tt = TLE.Tokenizer.fromString("'[co.sum()]'");
+                const tt = TLE.Tokenizer.fromString("'[co.sum()]'");
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createLiteral(2, "co"), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createPeriod(4), tt.readToken());
@@ -1787,7 +1788,7 @@ suite("TLE", () => {
             });
 
             test("with function TLE with no arguments with no closing right square bracket", () => {
-                let tt = TLE.Tokenizer.fromString("'[concat()'");
+                const tt = TLE.Tokenizer.fromString("'[concat()'");
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createLiteral(2, "concat"), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createLeftParenthesis(8), tt.readToken());
@@ -1796,7 +1797,7 @@ suite("TLE", () => {
             });
 
             test("with function TLE with one argument", () => {
-                let tt = TLE.Tokenizer.fromString("\"[concat('Seattle')]\"");
+                const tt = TLE.Tokenizer.fromString("\"[concat('Seattle')]\"");
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createLiteral(2, "concat"), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createLeftParenthesis(8), tt.readToken());
@@ -1807,7 +1808,7 @@ suite("TLE", () => {
             });
 
             test("with function TLE with two arguments", () => {
-                let tt = TLE.Tokenizer.fromString("\"[concat('Seattle', 'WA')]\"");
+                const tt = TLE.Tokenizer.fromString("\"[concat('Seattle', 'WA')]\"");
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createLiteral(2, "concat"), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createLeftParenthesis(8), tt.readToken());
@@ -1822,7 +1823,7 @@ suite("TLE", () => {
 
             suite("Quoted TLE strings", () => {
                 test("simple string", () => {
-                    let tt = TLE.Tokenizer.fromString("\"['Seattle']\"");
+                    const tt = TLE.Tokenizer.fromString("\"['Seattle']\"");
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createLeftSquareBracket(1));
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createQuotedString(2, "'Seattle'"));
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createRightSquareBracket(11));
@@ -1830,7 +1831,7 @@ suite("TLE", () => {
                 });
 
                 test("empty string", () => {
-                    let tt = TLE.Tokenizer.fromString("\"['']\"");
+                    const tt = TLE.Tokenizer.fromString("\"['']\"");
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createLeftSquareBracket(1));
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createQuotedString(2, "''"));
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createRightSquareBracket(4));
@@ -1838,7 +1839,7 @@ suite("TLE", () => {
                 });
 
                 test("string with just escaped apostrophe", () => {
-                    let tt = TLE.Tokenizer.fromString("\"['''']\"");
+                    const tt = TLE.Tokenizer.fromString("\"['''']\"");
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createLeftSquareBracket(1));
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createQuotedString(2, "''''"));
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createRightSquareBracket(6));
@@ -1846,7 +1847,7 @@ suite("TLE", () => {
                 });
 
                 test("with single escaped apostrophe", () => {
-                    let tt = TLE.Tokenizer.fromString("\"['That''s all, folks!']\"");
+                    const tt = TLE.Tokenizer.fromString("\"['That''s all, folks!']\"");
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createLeftSquareBracket(1));
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createQuotedString(2, "'That''s all, folks!'"));
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createRightSquareBracket(23));
@@ -1854,7 +1855,7 @@ suite("TLE", () => {
                 });
 
                 test("with double escaped apostrophes", () => {
-                    let tt = TLE.Tokenizer.fromString("\"['That''''s all, folks!']\"");
+                    const tt = TLE.Tokenizer.fromString("\"['That''''s all, folks!']\"");
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createLeftSquareBracket(1));
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createQuotedString(2, "'That''''s all, folks!'"));
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createRightSquareBracket(25));
@@ -1862,7 +1863,7 @@ suite("TLE", () => {
                 });
 
                 test("with multiple escaped apostrophes", () => {
-                    let tt = TLE.Tokenizer.fromString("\"['That''s all, ''folks''!']\"");
+                    const tt = TLE.Tokenizer.fromString("\"['That''s all, ''folks''!']\"");
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createLeftSquareBracket(1));
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createQuotedString(2, "'That''s all, ''folks''!'"));
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createRightSquareBracket(27));
@@ -1870,7 +1871,7 @@ suite("TLE", () => {
                 });
 
                 test("with escaped apostrophes at beginning and end of expression", () => {
-                    let tt = TLE.Tokenizer.fromString("\"['''That is all, folks!''']\"");
+                    const tt = TLE.Tokenizer.fromString("\"['''That is all, folks!''']\"");
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createLeftSquareBracket(1));
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createQuotedString(2, "'''That is all, folks!'''"));
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createRightSquareBracket(27));
@@ -1878,7 +1879,7 @@ suite("TLE", () => {
                 });
 
                 test("with double quote", () => {
-                    let tt = TLE.Tokenizer.fromString("\"['That is \"all\", folks!']\"");
+                    const tt = TLE.Tokenizer.fromString("\"['That is \"all\", folks!']\"");
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createLeftSquareBracket(1));
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createQuotedString(2, "'That is \"all\", folks!'"));
                     assert.deepStrictEqual(tt.readToken(), TLE.Token.createRightSquareBracket(25));
@@ -1886,8 +1887,8 @@ suite("TLE", () => {
                 });
 
                 test("https://github.com/Microsoft/vscode-azurearmtools/issues/34", () => {
-                    let tt = TLE.Tokenizer.fromString("\"[concat(reference(parameters('publicIpName')).dnsSettings.fqdn, ';  sudo docker volume rm ''dockercompose_cert-volume''; sudo docker-compose up')]\"");
-                    let expected = [
+                    const tt = TLE.Tokenizer.fromString("\"[concat(reference(parameters('publicIpName')).dnsSettings.fqdn, ';  sudo docker volume rm ''dockercompose_cert-volume''; sudo docker-compose up')]\"");
+                    const expected = [
                         "[",
                         "concat",
                         "(",
@@ -1908,7 +1909,7 @@ suite("TLE", () => {
                         ")",
                         "]"
                     ];
-                    for (let expectedToken of expected) {
+                    for (const expectedToken of expected) {
                         assert.deepStrictEqual(tt.readToken()!.stringValue, expectedToken);
                     }
                     assert.equal(tt.readToken(), undefined);
@@ -1916,7 +1917,7 @@ suite("TLE", () => {
             });
 
             test("with function TLE with multiple arguments", () => {
-                let tt = TLE.Tokenizer.fromString("\"[concat('Seattle', 'WA', 'USA')]\"");
+                const tt = TLE.Tokenizer.fromString("\"[concat('Seattle', 'WA', 'USA')]\"");
                 assert.deepStrictEqual(TLE.Token.createLeftSquareBracket(1), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createLiteral(2, "concat"), tt.readToken());
                 assert.deepStrictEqual(TLE.Token.createLeftParenthesis(8), tt.readToken());
@@ -1970,7 +1971,7 @@ suite("TLE", () => {
             });
 
             test("with undefined value", () => {
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const errors = getReferenceErrors(emptyScope, <any>undefined);
                 assert.deepStrictEqual(errors, []);
             });
@@ -2041,7 +2042,7 @@ suite("TLE", () => {
                 const errors = getReferenceErrors(emptyScope, concat);
                 assert.deepStrictEqual(
                     errors,
-                    // tslint:disable-next-line:no-any
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     [new IncorrectArgumentsCountIssue(new Span(2, 12), "The function 'resourceId' takes at least 2 arguments.", "resourceId", 0, 2, <any>undefined)]);
             });
 
@@ -2050,7 +2051,7 @@ suite("TLE", () => {
                 const errors = getReferenceErrors(emptyScope, concat);
                 assert.deepStrictEqual(
                     errors,
-                    // tslint:disable-next-line:no-any
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                     [new IncorrectArgumentsCountIssue(new Span(2, 13), "The function 'resourceId' takes at least 2 arguments.", "resourceId", 1, 2, <any>undefined)]);
             });
 
@@ -2184,7 +2185,7 @@ suite("TLE", () => {
                 const issues: Issue[] = [];
                 const param = dt.topLevelScope.getParameterDefinition("pName")!;
                 assert(param);
-                // tslint:disable-next-line:no-any
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 const visitor = FindReferencesAndErrorsVisitor.visit(dt.topLevelScope, 0, <any>undefined, metadata, referenceListsMap, issues);
                 assert(visitor);
                 assert.deepStrictEqual(referenceListsMap.get(param), undefined);

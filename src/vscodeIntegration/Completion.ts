@@ -131,7 +131,7 @@ export class Item {
 
     public static fromNamespaceDefinition(namespace: UserFunctionNamespaceDefinition, span: Span): Item {
         const label: string = namespace.nameValue.unquotedValue;
-        let insertText: string = `${label}`;
+        const insertText: string = `${label}`;
 
         return new Item({
             label,
@@ -199,7 +199,7 @@ export class Item {
         const addedLC = new Set<string>();
         const deduped: Item[] = [];
 
-        for (let item of items) {
+        for (const item of items) {
             const itemLabelLC = item.label.toLowerCase();
             if (!addedLC.has(itemLabelLC)) {
                 deduped.push(item);

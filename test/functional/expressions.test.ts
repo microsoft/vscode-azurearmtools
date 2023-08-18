@@ -13,7 +13,7 @@ suite("Expressions functional tests", () => {
     // testName defaults to expression if left blank
     function testExpression(testName: string, expression: string, expected: string[]): void {
         testWithLanguageServer(testName || expression, async () => {
-            let template: IDeploymentTemplate = {
+            const template: IDeploymentTemplate = {
                 $schema: "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                 contentVersion: "1.0.0.0",
                 resources: [
