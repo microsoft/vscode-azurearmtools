@@ -4,16 +4,15 @@
 
 import { Context, Test } from "mocha";
 // eslint-disable-next-line no-restricted-imports
-import { disableBreakOnAssert } from "../../src/fixed_assert";
 import { ITestPreparation, ITestPreparationResult, testWithPrep } from "./testWithPrep";
 
 export class WithoutBreakOnAssertPrep implements ITestPreparation {
     public static readonly instance: WithoutBreakOnAssertPrep = new WithoutBreakOnAssertPrep();
 
     public pretest(this: Mocha.Context): ITestPreparationResult {
-        disableBreakOnAssert(true);
+        process.env.DISABLE_BREAK_ON_ASSERT = 'true';
         return {
-            postTestActions: () => disableBreakOnAssert(false)
+            postTestActions: () => process.env.DISABLE_BREAK_ON_ASSERT = ''
         };
     }
 }

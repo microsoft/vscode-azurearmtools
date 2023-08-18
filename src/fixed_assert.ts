@@ -11,10 +11,6 @@ import { isWebpack } from "../common";
 
 export const breakOnAssert: boolean = /^(true|1)$/i.test(process.env.BREAK_ON_ASSERT ?? '');
 
-export function disableBreakOnAssert(value: boolean): void {
-    process.env.DISABLE_BREAK_ON_ASSERT = value ? 'true' : '';
-}
-
 function fixed_ok(value: unknown, message?: string): void {
     // eslint-disable-next-line no-extra-boolean-cast
     if (!!value) {
