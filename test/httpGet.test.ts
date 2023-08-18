@@ -11,7 +11,7 @@ import { httpGet } from "../extension.bundle";
 import { networkTest } from "./networkTest.test";
 
 suite("HttpClient", () => {
-    suite("get(string)", function (this: Suite) {
+    suite("get(string)", function (this: Suite): void {
         this.timeout(60000);
 
         networkTest("with existing site ('http://www.bing.com')", () => {
