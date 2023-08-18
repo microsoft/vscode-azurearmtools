@@ -6,11 +6,14 @@
 // tslint:disable:promise-function-async
 
 import * as assert from "assert";
+import { Suite } from "mocha";
 import { httpGet } from "../extension.bundle";
 import { networkTest } from "./networkTest.test";
 
 suite("HttpClient", () => {
-    suite("get(string)", () => {
+    suite("get(string)", function (this: Suite) {
+        this.timeout(60000);
+
         networkTest("with existing site ('http://www.bing.com')", () => {
             return httpGet("http://www.bing.com")
                 .then((content: string) => {
