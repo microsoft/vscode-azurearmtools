@@ -626,7 +626,7 @@
     },
     "devDependencies": {
         "@types/decompress": "^4.2.3",
-        "@types/fs-extra": "^5.1.0",
+        "@types/fs-extra": "^11.0.1",
         "@types/gulp": "^4.0.8",
         "@types/mocha": "^8.2.3",
         "@types/node": "^14.14.24",
@@ -656,7 +656,7 @@
         "webpack-cli": "^3.3.12"
     },
     "dependencies": {
-        "fs-extra": "^10.1.0",
+        "fs-extra": "^11.1.1",
         "glob": "^7.2.0",
         "glob-promise": "^4.2.2",
         "moment": "^2.29.4",
