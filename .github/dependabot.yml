@@ -28,3 +28,4 @@ updates:
       - dependency-name: "@types/vscode"
         versions:
         - ">1.62.0"
+
