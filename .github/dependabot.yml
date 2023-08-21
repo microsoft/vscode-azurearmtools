@@ -16,8 +16,8 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "sunday"
+      interval: "daily"
+    open-pull-requests-limit: 100
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -28,3 +28,4 @@ updates:
       - dependency-name: "@types/vscode"
         versions:
         - ">1.62.0"
+
