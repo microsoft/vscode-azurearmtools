@@ -213,7 +213,6 @@ async function getLanguageServer(): Promise<void> {
         const args = [
             'install',
             languageServerNugetPackage,
-            '-Version', languageServerVersion,
             '-Framework', `net${langServerDotnetVersion}`,
             '-OutputDirectory', 'pkgs',
             //'-Verbosity', 'detailed',
@@ -221,6 +220,12 @@ async function getLanguageServer(): Promise<void> {
             '-NonInteractive',
             '-ConfigFile', configPath
         ];
+        if (languageServerVersion) {
+            args.push('-Version', languageServerVersion);
+        } else {
+            args.push("-Prerelease");
+        }
+
         if (os.platform() === 'linux') {
             app = 'mono';
             args.unshift('nuget.exe');
