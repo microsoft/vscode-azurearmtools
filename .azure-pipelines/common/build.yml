@@ -5,9 +5,12 @@ steps:
       versionSpec: "5.2.0"
 
   - task: NodeTool@0
-    displayName: "Use Node 12.x"
+    displayName: "Install node.js"
     inputs:
-      versionSpec: 12.x
+      versionSpec: 14.21.3
+
+  - script: npm install -g npm@8.19.4
+    displayName: "Install npm"
 
   - task: Npm@1
     displayName: "npm install"
