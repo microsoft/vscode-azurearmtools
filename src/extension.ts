@@ -344,6 +344,7 @@ export class AzureRMToolsExtension implements IProvideOpenedDocuments {
             if (editor) {
                 let deploymentTemplate = this.getOpenedDeploymentTemplate(editor.document);
                 if (!deploymentTemplate) {
+                    ext.outputChannel.appendLine("No template opened.");
                     return;
                 }
                 const schema = deploymentTemplate.schemaUri;

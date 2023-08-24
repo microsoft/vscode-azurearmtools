@@ -1,4 +1,22 @@
 # Updates apiVersions in a file to the newest version supported by the resource provider (doesn't necessarily have a schema)
+#
+# INSTRUCTIONS:
+#
+# 1) Update availableResourceTypesAndVersions.txt
+#   a) Update schemas in the extension
+#   b) Open the updated extension in VS Code
+#   c) Create an empty json file and run the "arm!" snippet to create a blank template target the resource group schema
+#   d) Run this command: azurerm-vscode-tools.developer.showAvailableResourceTypesAndVersions
+#   e) Repeat c-d for the subscription, management group and tenant schemas
+#   f) Copy the output in the output window to availableResourceTypesAndVersions.txt, replacing the old entry (blank lines are ok)
+#   g) Save availableResourceTypesAndVersions.txt
+# 2) Update snippets
+#   a) Install az Powershell module: Install-Module -Name Az -Repository PSGallery
+#   b) From repo root, run (yes, extra period): . ./tools/Update-ApiVersions.ps1
+#   c) Run: Update-ApiVersions ./assets/resourceSnippets/ ./tools/resourceTypesAndVersions.txt
+#   d) Run: Update-ApiVersions ./test/snippets/expected/ ./tools/resourceTypesAndVersions.txt
+#   d) Run tests and create PR
+
 
 $providersCache = @{}
 $versionsFileContents = @()
@@ -38,8 +56,8 @@ function Update-ApiVersions {
                     throw "Invalid API version found"
                 }
                 write-host "$type@$apiVersion -> $type@$newApiVersion"
-        
-                $pattern = 
+
+                $pattern =
                 '(?ms)' + # multiline
                 '"type":\s*"(?<type>[-a-zA-Z.\/]+)"' + # type
                 '(?<middle>[,\s]*)' + # newline/whitespace
@@ -56,7 +74,7 @@ function Update-ApiVersions {
                         return $_
                     }
                 }
-            } 
+            }
         }
 
         Set-Content $FilePath $content.TrimEnd()
@@ -76,7 +94,7 @@ function Find-UsedApiVersionsInFile {
 
     $json = Get-Content $FilePath -Raw | ConvertFrom-Json
     $uses = Find-UsedApiVersionsInJson $json
-    $uses | sort 
+    $uses | sort
 }
 
 function Find-UsedApiVersionsInJson {
