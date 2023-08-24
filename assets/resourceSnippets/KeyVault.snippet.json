@@ -9,7 +9,7 @@
 		{
 			"name": "${1:keyVault1}",
 			"type": "Microsoft.KeyVault/vaults",
-			"apiVersion": "2019-09-01",
+			"apiVersion": "2023-02-01",
 			"location": "[resourceGroup().location]",
 			"tags": {
 				"displayName": "${1:keyVault1}"

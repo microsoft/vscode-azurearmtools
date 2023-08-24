@@ -9,7 +9,7 @@
         {
             "name": "${1:containerRegistry1}",
             "type": "Microsoft.ContainerRegistry/registries",
-            "apiVersion": "2019-05-01",
+            "apiVersion": "2023-07-01",
             "location": "[resourceGroup().location]",
             "sku": {
                 "name": /*${2|Classic,Basic,Standard,Premium|}*/ "Classic"
