@@ -3,7 +3,7 @@
 		{
 			"name": "firewall1",
 			"type": "Microsoft.Network/azureFirewalls",
-			"apiVersion": "2020-11-01",
+			"apiVersion": "2023-04-01",
 			"location": "[resourceGroup().location]",
 			"tags": {},
 			"properties": {
@@ -118,7 +118,7 @@
 		{
 			"name": "publicIPAddress1",
 			"type": "Microsoft.Network/publicIPAddresses",
-			"apiVersion": "2020-11-01",
+			"apiVersion": "2023-04-01",
 			"location": "[resourceGroup().location]",
 			"sku": {
 				"name": "standard"

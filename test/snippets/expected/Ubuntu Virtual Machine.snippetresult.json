@@ -3,7 +3,7 @@
 		{
 			"name": "[toLower('ubuntuVM1storage')]",
 			"type": "Microsoft.Storage/storageAccounts",
-			"apiVersion": "2021-04-01",
+			"apiVersion": "2023-01-01",
 			"location": "[resourceGroup().location]",
 			"tags": {
 				"displayName": "ubuntuVM1 Storage Account"
@@ -16,7 +16,7 @@
 		{
 			"name": "ubuntuVM1-PublicIP",
 			"type": "Microsoft.Network/publicIPAddresses",
-			"apiVersion": "2020-11-01",
+			"apiVersion": "2023-04-01",
 			"location": "[resourceGroup().location]",
 			"tags": {
 				"displayName": "PublicIPAddress"
@@ -31,7 +31,7 @@
 		{
 			"name": "ubuntuVM1-nsg",
 			"type": "Microsoft.Network/networkSecurityGroups",
-			"apiVersion": "2020-11-01",
+			"apiVersion": "2023-04-01",
 			"location": "[resourceGroup().location]",
 			"properties": {
 				"securityRules": [
@@ -55,7 +55,7 @@
 		{
 			"name": "ubuntuVM1-VirtualNetwork",
 			"type": "Microsoft.Network/virtualNetworks",
-			"apiVersion": "2020-11-01",
+			"apiVersion": "2023-04-01",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Network/networkSecurityGroups', 'ubuntuVM1-nsg')]"
@@ -85,7 +85,7 @@
 		{
 			"name": "ubuntuVM1-NetworkInterface",
 			"type": "Microsoft.Network/networkInterfaces",
-			"apiVersion": "2020-11-01",
+			"apiVersion": "2023-04-01",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Network/publicIPAddresses', 'ubuntuVM1-PublicIP')]",
@@ -114,7 +114,7 @@
 		{
 			"name": "ubuntuVM1",
 			"type": "Microsoft.Compute/virtualMachines",
-			"apiVersion": "2021-03-01",
+			"apiVersion": "2023-03-01",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Network/networkInterfaces', 'ubuntuVM1-NetworkInterface')]"

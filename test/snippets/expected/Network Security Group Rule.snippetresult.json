@@ -3,7 +3,7 @@
 		{
 			"name": "networkSecurityGroupRuleName",
 			"type": "Microsoft.Network/networkSecurityGroups/securityRules",
-			"apiVersion": "2020-11-01",
+			"apiVersion": "2023-04-01",
 			"properties": {
 				"description": "nsgRuleDescription",
 				"protocol": "*",

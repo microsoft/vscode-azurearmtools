@@ -3,7 +3,7 @@
 		{
 			"name": "containerGroup1",
 			"type": "Microsoft.ContainerInstance/containerGroups",
-			"apiVersion": "2021-03-01",
+			"apiVersion": "2023-05-01",
 			"location": "[resourceGroup().location]",
 			"properties": {
 				"containers": [

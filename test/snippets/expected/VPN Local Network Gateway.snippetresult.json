@@ -3,7 +3,7 @@
 		{
 			"name": "localNetworkGateway1",
 			"type": "Microsoft.Network/localNetworkGateways",
-			"apiVersion": "2020-11-01",
+			"apiVersion": "2023-04-01",
 			"location": "[resourceGroup().location]",
 			"properties": {
 				"localNetworkAddressSpace": {

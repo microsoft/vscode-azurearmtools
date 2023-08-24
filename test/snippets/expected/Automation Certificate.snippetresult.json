@@ -3,7 +3,7 @@
 		{
 			"name": "parent/automationCertificate",
 			"type": "Microsoft.Automation/automationAccounts/certificates",
-			"apiVersion": "2019-06-01",
+			"apiVersion": "2022-08-08",
 			"dependsOn": [
 				"[resourceId('Microsoft.Automation/automationAccounts', 'automationAccount1')]"
 			],
