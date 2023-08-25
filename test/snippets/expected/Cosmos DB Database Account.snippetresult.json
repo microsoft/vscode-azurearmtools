@@ -3,7 +3,7 @@
 		{
 			"name": "cosmosDbAccount1",
 			"type": "Microsoft.DocumentDB/databaseAccounts",
-			"apiVersion": "2021-05-15",
+			"apiVersion": "2023-04-15",
 			"location": "[resourceGroup().location]",
 			"tags": {},
 			"kind": "GlobalDocumentDB",

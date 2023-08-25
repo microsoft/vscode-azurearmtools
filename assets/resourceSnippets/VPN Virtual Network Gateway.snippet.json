@@ -9,7 +9,7 @@
 		{
 			"name": "${1:virtualNetworkGateway1}",
 			"type": "Microsoft.Network/virtualNetworkGateways",
-			"apiVersion": "2020-11-01",
+			"apiVersion": "2023-04-01",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Network/publicIPAddresses', '${2:publicIPAddress1}')]",

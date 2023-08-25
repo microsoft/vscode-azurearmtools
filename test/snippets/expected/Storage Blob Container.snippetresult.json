@@ -3,7 +3,7 @@
 		{
 			"name": "accountName/default/blobContainerName",
 			"type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-			"apiVersion": "2021-04-01",
+			"apiVersion": "2023-01-01",
 			"dependsOn": [
 				"[resourceId('Microsoft.Storage/storageAccounts', 'accountName')]"
 			],

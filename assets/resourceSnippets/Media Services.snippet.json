@@ -9,7 +9,7 @@
 		{
 			"name": "${1:mediaServices1}",
 			"type": "Microsoft.Media/mediaServices",
-			"apiVersion": "2018-07-01",
+			"apiVersion": "2023-01-01",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Storage/storageAccounts', '${2:mediaServiceStorageAccount1}')]"

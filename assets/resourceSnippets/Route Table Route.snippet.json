@@ -9,7 +9,7 @@
         {
             "name": "${1:route-name}",
             "type": "Microsoft.Network/routeTables/routes",
-            "apiVersion": "2020-11-01",
+            "apiVersion": "2023-04-01",
             "properties": {
                 "addressPrefix": "${2:address-prefix}",
                 "nextHopType": /*${3|VirtualNetworkGateway,VnetLocal,Internet,VirtualAppliance,None|}*/ "VirtualNetworkGateway",

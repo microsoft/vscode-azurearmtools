@@ -9,7 +9,7 @@
     {
 	"name": "${1:sqlServer1}/${2:sqlDatabase1}",
 	"type": "Microsoft.Sql/servers/databases",
-	"apiVersion": "2014-04-01",
+	"apiVersion": "2021-11-01",
 	"location": "[resourceGroup().location]",
 	"tags": {
 		"displayName": "${2:sqlDatabase1}"
@@ -20,7 +20,7 @@
 	"properties": {
 		"collation": "SQL_Latin1_General_CP1_CI_AS",
 		"edition": "Basic",
-		"maxSizeBytes": "1073741824",
+		"maxSizeBytes": 1073741824,
 		"requestedServiceObjectiveName": "Basic"
 	}
 }

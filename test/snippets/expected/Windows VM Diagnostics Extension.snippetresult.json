@@ -3,7 +3,7 @@
 		{
 			"name": "windowsVM1/Diagnostics",
 			"type": "Microsoft.Compute/virtualMachines/extensions",
-			"apiVersion": "2021-03-01",
+			"apiVersion": "2023-03-01",
 			"location": "[resourceGroup().location]",
 			"tags": {
 				"displayName": "Diagnostics Extension for windowsVM1"

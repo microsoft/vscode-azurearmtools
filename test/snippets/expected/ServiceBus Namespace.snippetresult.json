@@ -3,7 +3,7 @@
 		{
 			"name": "serviceBusNamespace1",
 			"type": "Microsoft.ServiceBus/namespaces",
-			"apiVersion": "2021-01-01-preview",
+			"apiVersion": "2021-11-01",
 			"location": "[parameters('location')]",
 			"sku": {
 				"name": "Standard"
