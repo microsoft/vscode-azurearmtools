@@ -18,9 +18,9 @@
 					{
 						"name": "Default",
 						"capacity": {
-							"minimum": 1,
-							"maximum": 2,
-							"default": 1
+							"minimum": "1",
+							"maximum": "2",
+							"default": "1"
 						},
 						"rules": [
 							{
@@ -37,7 +37,7 @@
 								"scaleAction": {
 									"direction": "Increase",
 									"type": "ChangeCount",
-									"value": 1,
+									"value": "1",
 									"cooldown": "PT10M"
 								}
 							},
@@ -55,7 +55,7 @@
 								"scaleAction": {
 									"direction": "Decrease",
 									"type": "ChangeCount",
-									"value": 1,
+									"value": "1",
 									"cooldown": "PT1H"
 								}
 							}
