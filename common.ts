@@ -58,10 +58,10 @@ export const configPrefix = 'azureResourceManagerTools'; // Prefix for user sett
 
 // The dotnet version the language server is compiled against (affects where the
 // assembly is found in the langServer folder)
-export const langServerDotnetVersion = '6.0';
+export const langServerDotnetVersion = '7.0';
 // The dotnet version to download and run the language server against (minor version
 // may be greater than langServerDotnetVersion)
-export const downloadDotnetVersion = '6.0';
+export const downloadDotnetVersion = '7.0';
 
 export namespace configKeys {
     export const autoDetectJsonTemplates = 'autoDetectJsonTemplates';
