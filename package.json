@@ -633,7 +633,7 @@
         "@types/node": "^14.14.24",
         "@types/recursive-readdir": "^2.2.1",
         "@types/rimraf": "2.0.2",
-        "@types/shelljs": "0.8.3",
+        "@types/shelljs": "0.8.12",
         "@types/vscode": "^1.62.0",
         "@types/webpack": "^4.41.26",
         "@vscode/test-electron": "^1.6.2",
