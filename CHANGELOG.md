@@ -2,6 +2,16 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.15.11 (2023-08-29)
+
+### Changed
+
+- Update schemas cache
+- Update dependencies
+- Make it easier to ship schema cache updates in the future
+- Update to dotnet 7.0
+- Update apiVersions in snippets
+
 ## Version 0.15.8 (2022-10-03)
 
 ### Changed
