@@ -2,6 +2,13 @@
 
 All notable changes to the "vscode-azurearmtools" extension will be documented in this file.
 
+## Version 0.15.12 (2023-11)
+
+### Changed
+
+- Update schemas cache
+- Fix issue when using the Remote Repositories extension [#1647](https://github.com/microsoft/vscode-azurearmtools/issues/1647)
+
 ## Version 0.15.11 (2023-08-29)
 
 ### Changed
