@@ -641,7 +641,7 @@
         "@types/shelljs": "0.8.12",
         "@types/vscode": "^1.62.0",
         "@types/webpack": "^4.41.26",
-        "@vscode/test-electron": "^1.6.2",
+        "@vscode/test-electron": "^2.3.6",
         "mocha-junit-reporter": "^2.2.1",
         "mocha-multi-reporters": "^1.5.1",
         "glob": "^7.2.3",
