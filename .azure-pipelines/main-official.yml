@@ -33,7 +33,9 @@ extends:
       jobs:
       - job: Windows
         pool:
-          vmImage: VSEngSS-MicroBuild2022-1ES
+          name: AzurePipelines-EO
+          image: 1ESPT-Windows2022
+          os: windows
         templateContext:
           outputs:
           - output: pipelineArtifact
