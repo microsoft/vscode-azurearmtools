@@ -31,68 +31,68 @@ extends:
     stages:
     - stage: Validate
       jobs:
-        - job: Windows
-          pool:
-            vmImage: VSEngSS-MicroBuild2022-1ES
-          templateContext:
-            outputs:
-            - output: pipelineArtifact
-              displayName: 'Publish artifacts: logs'
-              condition: succeededOrFailed()
-              targetPath: "$(build.artifactstagingdirectory)"
-              artifactName: testlogs-$(Agent.OS)
+      - job: Windows
+        pool:
+          vmImage: VSEngSS-MicroBuild2022-1ES
+        templateContext:
+          outputs:
+          - output: pipelineArtifact
+            displayName: 'Publish artifacts: logs'
+            condition: succeededOrFailed()
+            targetPath: "$(build.artifactstagingdirectory)"
+            artifactName: testlogs-$(Agent.OS)
 
-          steps:
-            - template: common/build.yml
-            #- template: common/test-without-langserver.yml
-            #- template: common/lint.yml
-            - template: common/test.yml
-            - template: common/prepare-logs.yml
+        steps:
+          - template: common/build.yml@self
+          #- template: common/test-without-langserver.yml@self
+          #- template: common/lint.yml@self
+          - template: common/test.yml@self
+          - template: common/prepare-logs.yml@self
 
-        - job: Linux
-          pool:
-            name: AzurePipelines-EO
-            image: 1ESPT-Ubuntu20.04
-            os: linux
-          templateContext:
-            outputParentDirectory: $(build.artifactstagingdirectory)
-            outputs:
-            - output: pipelineArtifact
-              displayName: 'Publish artifacts: logs'
-              condition: succeededOrFailed()
-              targetPath: "$(build.artifactstagingdirectory)"
-              artifactName: testlogs-$(Agent.OS)
-              # Only publish vsix from linux build since we use this to release and want to stay consistent
-            - output: pipelineArtifact
-              displayName: 'Publish artifacts: vsix'
-              condition: ne(variables['System.PullRequest.IsFork'], 'True')
-              targetPath: "$(build.artifactstagingdirectory)/vsix"
-              artifactName: vsix
+      - job: Linux
+        pool:
+          name: AzurePipelines-EO
+          image: 1ESPT-Ubuntu20.04
+          os: linux
+        templateContext:
+          outputParentDirectory: $(build.artifactstagingdirectory)
+          outputs:
+          - output: pipelineArtifact
+            displayName: 'Publish artifacts: logs'
+            condition: succeededOrFailed()
+            targetPath: "$(build.artifactstagingdirectory)"
+            artifactName: testlogs-$(Agent.OS)
+            # Only publish vsix from linux build since we use this to release and want to stay consistent
+          - output: pipelineArtifact
+            displayName: 'Publish artifacts: vsix'
+            condition: ne(variables['System.PullRequest.IsFork'], 'True')
+            targetPath: "$(build.artifactstagingdirectory)/vsix"
+            artifactName: vsix
 
-          steps:
-            - template: common/build.yml
-            - template: common/prepare-vsix.yml
-            #- template: common/test-without-langserver.yml
-            - template: common/lint.yml
-            - template: common/test.yml
-            - template: common/prepare-logs.yml
+        steps:
+          - template: common/build.yml@self
+          - template: common/prepare-vsix.yml@self
+          #- template: common/test-without-langserver.yml@self
+          - template: common/lint.yml@self
+          - template: common/test.yml@self
+          - template: common/prepare-logs.yml@self
 
-        - job: macOS
-          pool:
-            name: Azure Pipelines
-            image: macOS-latest
-            os: macOS
-          templateContext:
-            outputs:
-            - output: pipelineArtifact
-              displayName: 'Publish artifacts: logs'
-              condition: succeededOrFailed()
-              targetPath: "$(build.artifactstagingdirectory)"
-              artifactName: testlogs-$(Agent.OS)
+      - job: macOS
+        pool:
+          name: Azure Pipelines
+          image: macOS-latest
+          os: macOS
+        templateContext:
+          outputs:
+          - output: pipelineArtifact
+            displayName: 'Publish artifacts: logs'
+            condition: succeededOrFailed()
+            targetPath: "$(build.artifactstagingdirectory)"
+            artifactName: testlogs-$(Agent.OS)
 
-          steps:
-            - template: common/build.yml
-            #- template: common/test-without-langserver.yml
-            #- template: common/lint.yml
-            - template: common/test.yml
-            - template: common/prepare-logs.yml
+        steps:
+          - template: common/build.yml@self
+          #- template: common/test-without-langserver.yml@self
+          #- template: common/lint.yml@self
+          - template: common/test.yml@self
+          - template: common/prepare-logs.yml@self
