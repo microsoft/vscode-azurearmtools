@@ -105,12 +105,13 @@ async function test(): Promise<void> {
     let result = cp.spawnSync(cliPath, extensionInstallArguments, {
         encoding: "utf-8",
         stdio: "inherit",
+        shell: true,
     });
     if (result.status !== 0) {
         throw new Error("Failed to install dotnet runtime extension");
     }
 
-    result = cp.spawnSync('node', ['./out/test/runTest.js'], { encoding: "utf-8", stdio: 'inherit', env });
+    result = cp.spawnSync('node', ['./out/test/runTest.js'], { encoding: "utf-8", stdio: 'inherit', env, shell: true });
     if (result.status !== 0) {
         throw new Error("Tests failed");
     }
