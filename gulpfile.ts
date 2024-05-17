@@ -5,7 +5,7 @@
 
 // tslint:disable:no-unsafe-any no-console prefer-template no-implicit-dependencies export-name
 
-import { downloadAndUnzipVSCode, resolveCliPathFromVSCodeExecutablePath } from '@vscode/test-electron';
+import { downloadAndUnzipVSCode, resolveCliArgsFromVSCodeExecutablePath } from '@vscode/test-electron';
 import * as assert from 'assert';
 import * as cp from 'child_process';
 import * as fse from 'fs-extra';
@@ -94,21 +94,40 @@ async function test(): Promise<void> {
     console.log("");
 
     const vscodeExecutablePath = await downloadAndUnzipVSCode();
-    const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
+    const [cliRawPath, ...cliArguments] =
+      resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
+    const cliPath = `"${cliRawPath}"`;
 
     const extensionInstallArguments = [
+        ...cliArguments,
         "--install-extension",
         "ms-dotnettools.vscode-dotnet-runtime",
     ];
 
-    // Install .NET Install Tool as a dependency.
+      // Install .NET Install Tool extension as a dependency.
+      console.log(
+        `Installing dotnet extension: ${cliPath} ${extensionInstallArguments.join(" ")}`,
+      );
     let result = cp.spawnSync(cliPath, extensionInstallArguments, {
         encoding: "utf-8",
         stdio: "inherit",
         shell: true,
     });
     if (result.status !== 0) {
-        throw new Error("Failed to install dotnet runtime extension");
+        throw new Error("Failed to install dotnet runtime extension: " + result.error ?? result.output?.filter((o) => !!o).join("\n") ?? "Unknown error");
+    }
+    console.log("Installed extensions:");
+    result = cp.spawnSync(cliPath, [
+        ...cliArguments,
+        "--list-extensions",
+      ], {
+      encoding: "utf-8",
+      stdio: "inherit",
+      shell: true,
+    });
+    console.log(result.error ?? result.output?.filter((o) => !!o).join("\n"));
+    if (result.error) {
+      process.exit(1);
     }
 
     result = cp.spawnSync('node', ['./out/test/runTest.js'], { encoding: "utf-8", stdio: 'inherit', env, shell: true });
