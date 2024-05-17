@@ -95,7 +95,7 @@ async function test(): Promise<void> {
 
     const vscodeExecutablePath = await downloadAndUnzipVSCode();
     const [cliRawPath, ...cliArguments] =
-      resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
+        resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
     const cliPath = `"${cliRawPath}"`;
 
     const extensionInstallArguments = [
@@ -104,10 +104,10 @@ async function test(): Promise<void> {
         "ms-dotnettools.vscode-dotnet-runtime",
     ];
 
-      // Install .NET Install Tool extension as a dependency.
-      console.log(
+    // Install .NET Install Tool extension as a dependency.
+    console.log(
         `Installing dotnet extension: ${cliPath} ${extensionInstallArguments.join(" ")}`,
-      );
+    );
     let result = cp.spawnSync(cliPath, extensionInstallArguments, {
         encoding: "utf-8",
         stdio: "inherit",
@@ -120,14 +120,14 @@ async function test(): Promise<void> {
     result = cp.spawnSync(cliPath, [
         ...cliArguments,
         "--list-extensions",
-      ], {
-      encoding: "utf-8",
-      stdio: "inherit",
-      shell: true,
+    ], {
+        encoding: "utf-8",
+        stdio: "inherit",
+        shell: true,
     });
     console.log(result.error ?? result.output?.filter((o) => !!o).join("\n"));
     if (result.error) {
-      process.exit(1);
+        process.exit(1);
     }
 
     result = cp.spawnSync('node', ['./out/test/runTest.js'], { encoding: "utf-8", stdio: 'inherit', env, shell: true });
