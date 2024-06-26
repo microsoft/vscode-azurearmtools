@@ -214,8 +214,8 @@ async function getLanguageServer(): Promise<void> {
             'install',
             languageServerNugetPackage,
             '-Framework', `net${langServerDotnetVersion}`,
-            '-OutputDirectory', 'pkgs',
-            //'-Verbosity', 'detailed',
+            '-OutputDirectory', pkgsPath,
+            '-Verbosity', 'detailed',
             '-ExcludeVersion', // Keeps the package version from being included in the output folder name
             '-NonInteractive',
             '-ConfigFile', configPath
@@ -231,20 +231,24 @@ async function getLanguageServer(): Promise<void> {
             args.unshift('nuget.exe');
         }
         const command = `${app} ${args.join(' ')}`;
+        const languageServerPackageFolderName = path.join(pkgsPath, languageServerNugetPackage);
+        console.log(`Deleting ${languageServerPackageFolderName}`);
+        rimraf.sync(languageServerPackageFolderName);
         executeInShell(command);
         fse.unlinkSync(configPath);
 
         // Copy binaries and license into dist\languageServer
-        console.log(`Removing ${languageServerFolderName}`);
-        rimraf.sync(languageServerFolderName);
+        console.log(`Deleting ${destPath}`);
+        rimraf.sync(destPath);
 
         console.log(`Copying language server binaries to ${languageServerFolderName}`);
         const langServerSourcePath = path.join(pkgsPath, languageServerNugetPackage, 'lib', `net${langServerDotnetVersion}`);
-        const licenseSourcePath = path.join(pkgsPath, languageServerNugetPackage, languageServerLicenseFileName);
 
         fse.mkdirpSync(destPath);
+        console.log(`  ${langServerSourcePath} -> ${destPath}`);
         copyFolder(langServerSourcePath, destPath);
 
+        const licenseSourcePath = path.join(pkgsPath, languageServerNugetPackage, languageServerLicenseFileName);
         const licenseDest = path.join(languageServerFolderName, languageServerLicenseFileName);
         console.log(`Copying language server license ${licenseSourcePath} to ${licenseDest}`);
         fse.copyFileSync(licenseSourcePath, licenseDest);
