@@ -60,6 +60,12 @@
         "description": "The size of the Virtual Machine."
       }
     },
+    "networkSecurityGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Network Security Group."
+      },
+    },
     "_artifactsLocation": {
       "type": "string",
       "metadata": {
@@ -262,7 +268,10 @@
             "name": "[variables('virtualNetworkName')]",
             "properties": {
               "addressPrefix": "[variables('addressPrefix')]"
-            }
+            },
+            "networkSecurityGroup": {
+              "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+            }  
           }
         ]
       }
