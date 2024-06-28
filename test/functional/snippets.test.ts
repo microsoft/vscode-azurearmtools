@@ -30,6 +30,7 @@ import { writeToLog } from '../support/testLog';
 import { UseRealSnippets } from '../support/TestSnippets';
 import { RequiresLanguageServer } from '../support/testWithLanguageServer';
 import { testWithPrep } from '../support/testWithPrep';
+import { UseRealFunctionMetadata } from '../TestData';
 
 const resultsFolder = path.join(__dirname, '..', '..', '..', 'test', 'snippets', 'results');
 const expectedFolder = path.join(__dirname, '..', '..', '..', 'test', 'snippets', 'expected');
@@ -365,7 +366,7 @@ suite("Snippets functional tests", () => {
                     for (let i = 0; i < 1; ++i) {
                         testWithPrep(
                             `snippet: ${snippetName}`,
-                            [RequiresLanguageServer.instance, UseRealSnippets.instance],
+                            [RequiresLanguageServer.instance, UseRealSnippets.instance, UseRealFunctionMetadata.instance],
                             async function (this: Context): Promise<void> {
                                 const snippets = (await manager.getAllSnippets());
                                 const snippet = snippets.find(s => s.name === snippetName);

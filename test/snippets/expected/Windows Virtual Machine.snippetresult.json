@@ -187,11 +187,11 @@
 	"variables": {
 		//Insert here: variable
 	},
+	"outputs": {},
 	"parameters": {
-		//Insert here: parameter
-	},
-	"outputs": {
-		//Insert here: output
+		"location": {
+			"type": "string"
+		}
 	},
 	"functions": [
 		{
