@@ -3,7 +3,7 @@
 	"contentVersion": "1.0.0.0",
 	"metadata": {
 		"prefix": "arm-vm-ubuntu",
-		"description": "Ubuntu Virtual Machine (see https://learn.microsoft.com/azure/virtual-machines/linux/create-ssh-secured-vm-from-template for more information)"
+		"description": "Ubuntu Virtual Machine (see https://learn.microsoft.com/azure/virtual-machines/linux/create-ssh-secured-vm-from-template)"
 	},
   "parameters": {
     "projectName": {

@@ -1,164 +1,185 @@
 {
 	"resources": [
 		{
-			"name": "[toLower('windowsVM1storage')]",
 			"type": "Microsoft.Storage/storageAccounts",
-			"apiVersion": "2023-01-01",
-			"location": "[resourceGroup().location]",
-			"tags": {
-				"displayName": "windowsVM1 Storage Account"
-			},
+			"apiVersion": "2022-05-01",
+			"name": "[variables('storageAccountName')]",
+			"location": "[parameters('location')]",
 			"sku": {
 				"name": "Standard_LRS"
 			},
 			"kind": "Storage"
 		},
 		{
-			"name": "windowsVM1-PublicIP",
 			"type": "Microsoft.Network/publicIPAddresses",
-			"apiVersion": "2023-04-01",
-			"location": "[resourceGroup().location]",
-			"tags": {
-				"displayName": "PublicIPAddress"
+			"apiVersion": "2022-05-01",
+			"name": "[parameters('publicIpName')]",
+			"location": "[parameters('location')]",
+			"sku": {
+				"name": "[parameters('publicIpSku')]"
 			},
 			"properties": {
-				"publicIPAllocationMethod": "Dynamic",
+				"publicIPAllocationMethod": "[parameters('publicIPAllocationMethod')]",
 				"dnsSettings": {
-					"domainNameLabel": "[toLower('windowsVM1')]"
+					"domainNameLabel": "[parameters('dnsLabelPrefix')]"
 				}
 			}
 		},
 		{
-			"name": "windowsVM1-nsg",
 			"type": "Microsoft.Network/networkSecurityGroups",
-			"apiVersion": "2023-04-01",
-			"location": "[resourceGroup().location]",
+			"apiVersion": "2022-05-01",
+			"name": "[variables('networkSecurityGroupName')]",
+			"location": "[parameters('location')]",
 			"properties": {
 				"securityRules": [
 					{
-						"name": "nsgRule1",
+						"name": "default-allow-3389",
 						"properties": {
-							"description": "description",
+							"priority": 1000,
+							"access": "Allow",
+							"direction": "Inbound",
+							"destinationPortRange": "3389",
 							"protocol": "Tcp",
 							"sourcePortRange": "*",
-							"destinationPortRange": "3389",
 							"sourceAddressPrefix": "*",
-							"destinationAddressPrefix": "*",
-							"access": "Allow",
-							"priority": 100,
-							"direction": "Inbound"
+							"destinationAddressPrefix": "*"
 						}
 					}
 				]
 			}
 		},
 		{
-			"name": "windowsVM1-VirtualNetwork",
 			"type": "Microsoft.Network/virtualNetworks",
-			"apiVersion": "2023-04-01",
-			"location": "[resourceGroup().location]",
-			"dependsOn": [
-				"[resourceId('Microsoft.Network/networkSecurityGroups', 'windowsVM1-nsg')]"
-			],
-			"tags": {
-				"displayName": "windowsVM1-VirtualNetwork"
-			},
+			"apiVersion": "2022-05-01",
+			"name": "[variables('virtualNetworkName')]",
+			"location": "[parameters('location')]",
 			"properties": {
 				"addressSpace": {
 					"addressPrefixes": [
-						"10.0.0.0/16"
+						"[variables('addressPrefix')]"
 					]
 				},
 				"subnets": [
 					{
-						"name": "windowsVM1-VirtualNetwork-Subnet",
+						"name": "[variables('subnetName')]",
 						"properties": {
-							"addressPrefix": "10.0.0.0/24",
+							"addressPrefix": "[variables('subnetPrefix')]",
 							"networkSecurityGroup": {
-								"id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'windowsVM1-nsg')]"
+								"id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
 							}
 						}
 					}
 				]
-			}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+			]
 		},
 		{
-			"name": "windowsVM1-NetworkInterface",
 			"type": "Microsoft.Network/networkInterfaces",
-			"apiVersion": "2023-04-01",
-			"location": "[resourceGroup().location]",
-			"dependsOn": [
-				"[resourceId('Microsoft.Network/publicIPAddresses', 'windowsVM1-PublicIP')]",
-				"[resourceId('Microsoft.Network/virtualNetworks', 'windowsVM1-VirtualNetwork')]"
-			],
-			"tags": {
-				"displayName": "windowsVM1 Network Interface"
-			},
+			"apiVersion": "2022-05-01",
+			"name": "[variables('nicName')]",
+			"location": "[parameters('location')]",
 			"properties": {
 				"ipConfigurations": [
 					{
-						"name": "ipConfig1",
+						"name": "ipconfig1",
 						"properties": {
 							"privateIPAllocationMethod": "Dynamic",
 							"publicIPAddress": {
-								"id": "[resourceId('Microsoft.Network/publicIPAddresses', 'windowsVM1-PublicIP')]"
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIpName'))]"
 							},
 							"subnet": {
-								"id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'windowsVM1-VirtualNetwork', 'windowsVM1-VirtualNetwork-Subnet')]"
+								"id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
 							}
 						}
 					}
 				]
-			}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIpName'))]",
+				"[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+			]
 		},
 		{
-			"name": "windowsVM1",
 			"type": "Microsoft.Compute/virtualMachines",
-			"apiVersion": "2023-03-01",
-			"location": "[resourceGroup().location]",
-			"dependsOn": [
-				"[resourceId('Microsoft.Storage/storageAccounts', toLower('windowsVM1storage'))]",
-				"[resourceId('Microsoft.Network/networkInterfaces', 'windowsVM1-NetworkInterface')]"
-			],
-			"tags": {
-				"displayName": "windowsVM1"
-			},
+			"apiVersion": "2022-03-01",
+			"name": "[parameters('vmName')]",
+			"location": "[parameters('location')]",
 			"properties": {
 				"hardwareProfile": {
-					"vmSize": "Standard_A2_v2"
+					"vmSize": "[parameters('vmSize')]"
 				},
 				"osProfile": {
-					"computerName": "windowsVM1",
-					"adminUsername": "adminUsername",
-					"adminPassword": "adminPassword"
+					"computerName": "[parameters('vmName')]",
+					"adminUsername": "[parameters('adminUsername')]",
+					"adminPassword": "[parameters('adminPassword')]"
 				},
 				"storageProfile": {
 					"imageReference": {
 						"publisher": "MicrosoftWindowsServer",
 						"offer": "WindowsServer",
-						"sku": "2012-R2-Datacenter",
+						"sku": "[parameters('OSVersion')]",
 						"version": "latest"
 					},
 					"osDisk": {
-						"name": "windowsVM1OSDisk",
-						"caching": "ReadWrite",
-						"createOption": "FromImage"
-					}
+						"createOption": "FromImage",
+						"managedDisk": {
+							"storageAccountType": "StandardSSD_LRS"
+						}
+					},
+					"dataDisks": [
+						{
+							"diskSizeGB": 1023,
+							"lun": 0,
+							"createOption": "Empty"
+						}
+					]
 				},
 				"networkProfile": {
 					"networkInterfaces": [
 						{
-							"id": "[resourceId('Microsoft.Network/networkInterfaces', 'windowsVM1-NetworkInterface')]"
+							"id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
 						}
 					]
 				},
 				"diagnosticsProfile": {
 					"bootDiagnostics": {
 						"enabled": true,
-						"storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', toLower('windowsVM1storage'))).primaryEndpoints.blob]"
+						"storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2022-05-01').primaryEndpoints.blob]"
+					}
+				},
+				"securityProfile": "[if(equals(parameters('securityType'), 'TrustedLaunch'), variables('securityProfileJson'), null())]"
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]",
+				"[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+			]
+		},
+		{
+			"condition": "[and(equals(parameters('securityType'), 'TrustedLaunch'), and(equals(variables('securityProfileJson').uefiSettings.secureBootEnabled, true()), equals(variables('securityProfileJson').uefiSettings.vTpmEnabled, true())))]",
+			"type": "Microsoft.Compute/virtualMachines/extensions",
+			"apiVersion": "2022-03-01",
+			"name": "[format('{0}/{1}', parameters('vmName'), variables('extensionName'))]",
+			"location": "[parameters('location')]",
+			"properties": {
+				"publisher": "[variables('extensionPublisher')]",
+				"type": "[variables('extensionName')]",
+				"typeHandlerVersion": "[variables('extensionVersion')]",
+				"autoUpgradeMinorVersion": true,
+				"enableAutomaticUpgrade": true,
+				"settings": {
+					"AttestationConfig": {
+						"MaaSettings": {
+							"maaEndpoint": "[variables('maaEndpoint')]",
+							"maaTenantName": "[variables('maaTenantName')]"
+						}
 					}
 				}
-			}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+			]
 		}
 	],
 	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
