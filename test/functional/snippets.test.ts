@@ -279,6 +279,9 @@ const overrideExpectedDiagnostics: { [name: string]: (string | RegExp)[] } = {
         "Undefined variable reference: 'vmName'",
         "Undefined variable reference: 'vmName'"
     ],
+    "Virtual Network": [
+        "Undefined parameter reference: 'networkSecurityGroupName'",
+    ],
     "Windows Virtual Machine": [
         "Undefined parameter reference: 'OSVersion'",
         "Undefined parameter reference: 'adminPassword'",
