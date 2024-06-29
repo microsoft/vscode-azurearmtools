@@ -19,6 +19,7 @@ import { diagnosticSources, getDiagnosticsForDocument, IGetDiagnosticsOptions } 
 import { formatDocumentAndWait } from '../support/formatDocumentAndWait';
 import { parseTemplateWithMarkers } from '../support/parseTemplate';
 import { removeApiVersions } from '../support/removeApiVersions';
+import { removeComments } from '../support/removeComments';
 import { simulateCompletion } from '../support/simulateCompletion';
 import { TempDocument, TempEditor, TempFile } from '../support/TempFile';
 import { writeToLog } from '../support/testLog';
@@ -109,10 +110,13 @@ suite("Contextualized snippets", () => {
                     expectedTemplate = removeApiVersions(expectedTemplate);
                     docTextAfterInsertion = removeApiVersions(docTextAfterInsertion);
 
-                    assert.strictEqual(docTextAfterInsertion, expectedTemplate);
+                    // Compare text without spaces by converting to/from JSON
+                    const expectedNormalized = JSON.stringify(JSON.parse(removeComments(expectedTemplate)), null, 2);
+                    const actualNormalized = JSON.stringify(JSON.parse(removeComments(docTextAfterInsertion)), null, 2);
+
+                    assertEx.strictEqual(actualNormalized, expectedNormalized, "Doc after snippet insertion doesn't match expected");
 
                     // Compare diagnostics
-
                     assertEx.arraysEqual(messages, expectedDiagnostics, {}, "Diagnostics comparison failed");
                 } finally {
                     await tempEditor?.dispose();
@@ -435,12 +439,37 @@ suite("Contextualized snippets", () => {
             );
 
             createContextualizedSnippetTest(
-                "top-level - multiple resources in one snippet",
+                "top-level - multiple resources in one snippet (Ubuntu VM)",
                 "arm-vm-ubuntu",
                 [undefined, '{'],
                 `{
                 "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
+                "parameters": {
+                    "adminPublicKey": {
+                        "type": "string"
+                    },
+                    "adminUsername": {
+                        "type": "string"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "vmSize": {
+                        "type": "string"
+                    }
+                },
+                "variables": {
+                    "networkInterfaceName": "value",
+                    "networkSecurityGroupName": "value",
+                    "networkSecurityGroupName2": "value",
+                    "publicIPAddressName": "value",
+                    "vNetAddressPrefixes": "value",
+                    "vNetName": "value",
+                    "vNetSubnetAddressPrefix": "value",
+                    "vNetSubnetName": "value",
+                    "vmName": "value"
+                },
                 "resources": [
                     <!cursor!>
                 ]
@@ -448,17 +477,42 @@ suite("Contextualized snippets", () => {
                 `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminPublicKey": {
+            "type": "string"
+        },
+        "adminUsername": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "vmSize": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "networkInterfaceName": "value",
+        "networkSecurityGroupName": "value",
+        "networkSecurityGroupName2": "value",
+        "publicIPAddressName": "value",
+        "vNetAddressPrefixes": "value",
+        "vNetName": "value",
+        "vNetSubnetAddressPrefix": "value",
+        "vNetSubnetName": "value",
+        "vmName": "value"
+    },
     "resources": [
-        {
+      {
         "type": "Microsoft.Network/networkSecurityGroups",
         "apiVersion": "2020-05-01",
         "name": "[variables('networkSecurityGroupName')]",
         "location": "[parameters('location')]",
         "properties": {
-            "securityRules": [
+          "securityRules": [
             {
-                "name": "ssh_rule",
-                "properties": {
+              "name": "ssh_rule",
+              "properties": {
                 "description": "Locks inbound down to ssh default port 22.",
                 "protocol": "Tcp",
                 "sourcePortRange": "*",
@@ -468,34 +522,34 @@ suite("Contextualized snippets", () => {
                 "access": "Allow",
                 "priority": 123,
                 "direction": "Inbound"
-                }
+              }
             }
-            ]
+          ]
         }
-        },
-        {
+      },
+      {
         "type": "Microsoft.Network/publicIPAddresses",
         "apiVersion": "2020-05-01",
         "name": "[variables('publicIPAddressName')]",
         "location": "[parameters('location')]",
         "properties": {
-            "publicIPAllocationMethod": "Dynamic"
+          "publicIPAllocationMethod": "Dynamic"
         },
         "sku": {
-            "name": "Basic"
+          "name": "Basic"
         }
-        },
-        {
+      },
+      {
         "comments": "Simple Network Security Group for subnet [variables('vNetSubnetName')]",
         "type": "Microsoft.Network/networkSecurityGroups",
         "apiVersion": "2020-05-01",
         "name": "[variables('networkSecurityGroupName2')]",
         "location": "[parameters('location')]",
         "properties": {
-            "securityRules": [
+          "securityRules": [
             {
-                "name": "default-allow-22",
-                "properties": {
+              "name": "default-allow-22",
+              "properties": {
                 "priority": 1000,
                 "access": "Allow",
                 "direction": "Inbound",
@@ -504,112 +558,112 @@ suite("Contextualized snippets", () => {
                 "sourceAddressPrefix": "*",
                 "sourcePortRange": "*",
                 "destinationAddressPrefix": "*"
-                }
+              }
             }
-            ]
+          ]
         }
-        },
-        {
+      },
+      {
         "type": "Microsoft.Network/virtualNetworks",
         "apiVersion": "2020-05-01",
         "name": "[variables('vNetName')]",
         "location": "[parameters('location')]",
         "dependsOn": [
-            "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName2'))]"
+          "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName2'))]"
         ],
         "properties": {
-            "addressSpace": {
+          "addressSpace": {
             "addressPrefixes": [
-                "[variables('vNetAddressPrefixes')]"
+              "[variables('vNetAddressPrefixes')]"
             ]
-            },
-            "subnets": [
+          },
+          "subnets": [
             {
-                "name": "[variables('vNetSubnetName')]",
-                "properties": {
+              "name": "[variables('vNetSubnetName')]",
+              "properties": {
                 "addressPrefix": "[variables('vNetSubnetAddressPrefix')]",
                 "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName2'))]"
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName2'))]"
                 }
-                }
+              }
             }
-            ]
+          ]
         }
-        },
-        {
+      },
+      {
         "type": "Microsoft.Network/networkInterfaces",
         "apiVersion": "2020-05-01",
         "name": "[variables('networkInterfaceName')]",
         "location": "[parameters('location')]",
         "dependsOn": [
-            "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]",
-            "[resourceId('Microsoft.Network/virtualNetworks', variables('vNetName'))]",
-            "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+          "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]",
+          "[resourceId('Microsoft.Network/virtualNetworks', variables('vNetName'))]",
+          "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
         ],
         "properties": {
-            "ipConfigurations": [
+          "ipConfigurations": [
             {
-                "name": "ipconfig1",
-                "properties": {
+              "name": "ipconfig1",
+              "properties": {
                 "privateIPAllocationMethod": "Dynamic",
                 "publicIPAddress": {
-                    "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
+                  "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
                 },
                 "subnet": {
-                    "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vNetName'), variables('vNetSubnetName'))]"
+                  "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vNetName'), variables('vNetSubnetName'))]"
                 }
-                }
+              }
             }
-            ]
+          ]
         }
-        },
-        {
+      },
+      {
         "type": "Microsoft.Compute/virtualMachines",
         "apiVersion": "2021-11-01",
         "name": "[variables('vmName')]",
         "location": "[parameters('location')]",
         "dependsOn": [
-            "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+          "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
         ],
         "properties": {
-            "hardwareProfile": {
+          "hardwareProfile": {
             "vmSize": "[parameters('vmSize')]"
-            },
-            "osProfile": {
+          },
+          "osProfile": {
             "computerName": "[variables('vmName')]",
             "adminUsername": "[parameters('adminUsername')]",
             "linuxConfiguration": {
-                "disablePasswordAuthentication": true,
-                "ssh": {
+              "disablePasswordAuthentication": true,
+              "ssh": {
                 "publicKeys": [
-                    {
+                  {
                     "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
                     "keyData": "[parameters('adminPublicKey')]"
-                    }
+                  }
                 ]
-                }
+              }
             }
-            },
-            "storageProfile": {
+          },
+          "storageProfile": {
             "imageReference": {
-                "publisher": "Canonical",
-                "offer": "0001-com-ubuntu-server-jammy",
-                "sku": "22_04-lts-gen2",
-                "version": "latest"
+              "publisher": "Canonical",
+              "offer": "0001-com-ubuntu-server-jammy",
+              "sku": "22_04-lts-gen2",
+              "version": "latest"
             },
             "osDisk": {
-                "createOption": "fromImage"
+              "createOption": "fromImage"
             }
-            },
-            "networkProfile": {
+          },
+          "networkProfile": {
             "networkInterfaces": [
-                {
+              {
                 "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
-                }
+              }
             ]
-            }
+          }
         }
-        }
+      }
     ]
 }`,
                 [

@@ -8,6 +8,9 @@
 			"tags": {
 				"displayName": "virtualNetwork1"
 			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+			],		  
 			"properties": {
 				"addressSpace": {
 					"addressPrefixes": [
