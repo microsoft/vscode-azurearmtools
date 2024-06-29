@@ -280,7 +280,10 @@ const overrideExpectedDiagnostics: { [name: string]: (string | RegExp)[] } = {
         "Undefined variable reference: 'vmName'"
     ],
     "Virtual Network": [
-        "Undefined parameter reference: 'networkSecurityGroupName'",
+        "Template validation failed: The template variable 'networkSecurityGroupName' is not found. Please see https://aka.ms/arm-template/#variables for usage details.",
+        "Undefined variable reference: 'networkSecurityGroupName'",
+        "Undefined variable reference: 'networkSecurityGroupName'",
+        "Undefined variable reference: 'networkSecurityGroupName'",
     ],
     "Windows Virtual Machine": [
         "Undefined parameter reference: 'OSVersion'",
