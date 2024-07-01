@@ -45,6 +45,12 @@
         "description": "SSH RSA public key file as a string."
       }
     },
+    "networkSecurityGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Network Security Group."
+      }
+    },
     "vmSize": {
       "type": "string",
       "defaultValue": "Standard_D4_v3",
@@ -261,6 +267,9 @@
             "name": "[variables('virtualNetworkName')]",
             "properties": {
               "addressPrefix": "[variables('addressPrefix')]"
+            },
+            "networkSecurityGroup": {
+              "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
             }
           }
         ]

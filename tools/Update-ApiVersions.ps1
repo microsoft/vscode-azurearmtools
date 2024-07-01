@@ -111,7 +111,7 @@ function Find-UsedApiVersionsInJson {
     foreach ($resource in $resources) {
         $type = $resource.type
         $apiVersion = $resource.apiVersion
-        if ($type && $apiVersion) {
+        if ($type -ne "" -and $apiVersion -ne "") {
             $uses += "$type@$apiVersion"
         }
     }

@@ -508,7 +508,10 @@
         "osProfile": {
           "adminPassword": "[variables('adminPassword')]",
           "adminUsername": "[variables('adminUsername')]",
-          "computerName": "[variables('vmName')]"
+          "computerName": "[variables('vmName')]",
+          "linuxConfiguration": {
+            "disablePasswordAuthentication": true
+          }
         },
         "storageProfile": {
           "imageReference": {

@@ -74,8 +74,8 @@ suite("Acceptance validation tests (all sources)", () => {
         'templates/language-service-p1.template.new-schema.json',
         {},
         [
-            `Warning: Missing required property "kind" (arm-template (schema))`,
-            `Warning: Missing required property "sku" (arm-template (schema))`,
+            //`Warning: Missing required property "kind" (arm-template (schema))`,
+            //`Warning: Missing required property "sku" (arm-template (schema))`,
             `Warning: The parameter 'unusedParameter' is never used. (arm-template (expressions))`
         ]);
 

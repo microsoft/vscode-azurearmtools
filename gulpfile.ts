@@ -5,6 +5,7 @@
 
 // tslint:disable:no-unsafe-any no-console prefer-template no-implicit-dependencies export-name
 
+import { downloadAndUnzipVSCode, resolveCliArgsFromVSCodeExecutablePath } from '@vscode/test-electron';
 import * as assert from 'assert';
 import * as cp from 'child_process';
 import * as fse from 'fs-extra';
@@ -15,7 +16,6 @@ import * as process from 'process';
 import * as recursiveReadDir from 'recursive-readdir';
 import * as shelljs from 'shelljs';
 import { gulp_webpack } from 'vscode-azureextensiondev';
-import { downloadAndUnzipVSCode, resolveCliPathFromVSCodeExecutablePath } from "vscode-test";
 import { DEFAULT_TESTCASE_TIMEOUT_MS, langServerDotnetVersion, languageServerFolderName } from './common';
 import { getTempFilePath } from './test/support/getTempFilePath';
 
@@ -94,23 +94,43 @@ async function test(): Promise<void> {
     console.log("");
 
     const vscodeExecutablePath = await downloadAndUnzipVSCode();
-    const cliPath = resolveCliPathFromVSCodeExecutablePath(vscodeExecutablePath);
+    const [cliRawPath, ...cliArguments] =
+      resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
+    const cliPath = `"${cliRawPath}"`;
 
     const extensionInstallArguments = [
+        ...cliArguments,
         "--install-extension",
         "ms-dotnettools.vscode-dotnet-runtime",
     ];
 
-    // Install .NET Install Tool as a dependency.
+      // Install .NET Install Tool extension as a dependency.
+      console.log(
+        `Installing dotnet extension: ${cliPath} ${extensionInstallArguments.join(" ")}`,
+      );
     let result = cp.spawnSync(cliPath, extensionInstallArguments, {
         encoding: "utf-8",
         stdio: "inherit",
+        shell: true,
     });
     if (result.status !== 0) {
-        throw new Error("Failed to install dotnet runtime extension");
+        throw new Error("Failed to install dotnet runtime extension: " + result.error ?? result.output?.filter((o) => !!o).join("\n") ?? "Unknown error");
+    }
+    console.log("Installed extensions:");
+    result = cp.spawnSync(cliPath, [
+        ...cliArguments,
+        "--list-extensions",
+      ], {
+      encoding: "utf-8",
+      stdio: "inherit",
+      shell: true,
+    });
+    console.log(result.error ?? result.output?.filter((o) => !!o).join("\n"));
+    if (result.error) {
+      process.exit(1);
     }
 
-    result = cp.spawnSync('node', ['./out/test/runTest.js'], { encoding: "utf-8", stdio: 'inherit', env });
+    result = cp.spawnSync('node', ['./out/test/runTest.js'], { encoding: "utf-8", stdio: 'inherit', env, shell: true });
     if (result.status !== 0) {
         throw new Error("Tests failed");
     }
@@ -214,8 +234,8 @@ async function getLanguageServer(): Promise<void> {
             'install',
             languageServerNugetPackage,
             '-Framework', `net${langServerDotnetVersion}`,
-            '-OutputDirectory', 'pkgs',
-            //'-Verbosity', 'detailed',
+            '-OutputDirectory', pkgsPath,
+            '-Verbosity', 'detailed',
             '-ExcludeVersion', // Keeps the package version from being included in the output folder name
             '-NonInteractive',
             '-ConfigFile', configPath
@@ -231,20 +251,24 @@ async function getLanguageServer(): Promise<void> {
             args.unshift('nuget.exe');
         }
         const command = `${app} ${args.join(' ')}`;
+        const languageServerPackageFolderName = path.join(pkgsPath, languageServerNugetPackage);
+        console.log(`Deleting ${languageServerPackageFolderName}`);
+        rimraf.sync(languageServerPackageFolderName);
         executeInShell(command);
         fse.unlinkSync(configPath);
 
         // Copy binaries and license into dist\languageServer
-        console.log(`Removing ${languageServerFolderName}`);
-        rimraf.sync(languageServerFolderName);
+        console.log(`Deleting ${destPath}`);
+        rimraf.sync(destPath);
 
         console.log(`Copying language server binaries to ${languageServerFolderName}`);
         const langServerSourcePath = path.join(pkgsPath, languageServerNugetPackage, 'lib', `net${langServerDotnetVersion}`);
-        const licenseSourcePath = path.join(pkgsPath, languageServerNugetPackage, languageServerLicenseFileName);
 
         fse.mkdirpSync(destPath);
+        console.log(`  ${langServerSourcePath} -> ${destPath}`);
         copyFolder(langServerSourcePath, destPath);
 
+        const licenseSourcePath = path.join(pkgsPath, languageServerNugetPackage, languageServerLicenseFileName);
         const licenseDest = path.join(languageServerFolderName, languageServerLicenseFileName);
         console.log(`Copying language server license ${licenseSourcePath} to ${licenseDest}`);
         fse.copyFileSync(licenseSourcePath, licenseDest);
