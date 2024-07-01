@@ -1,5 +1,5 @@
 {
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": false,
     "editor.insertSpaces": true,
     "editor.tabSize": 4,
     "files.insertFinalNewline": true,
@@ -9,8 +9,8 @@
         "**/node_modules": true
     },
     "editor.codeActionsOnSave": {
-        "source.fixAll": true,
-        "source.organizeImports": true
+        "source.fixAll": "explicit",
+        "source.organizeImports": "explicit"
     },
     "files.exclude": {
         "**/.git": true,
