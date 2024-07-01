@@ -19,6 +19,7 @@ import { diagnosticSources, getDiagnosticsForDocument, IGetDiagnosticsOptions } 
 import { formatDocumentAndWait } from '../support/formatDocumentAndWait';
 import { parseTemplateWithMarkers } from '../support/parseTemplate';
 import { removeApiVersions } from '../support/removeApiVersions';
+import { removeComments } from '../support/removeComments';
 import { simulateCompletion } from '../support/simulateCompletion';
 import { TempDocument, TempEditor, TempFile } from '../support/TempFile';
 import { writeToLog } from '../support/testLog';
@@ -109,10 +110,13 @@ suite("Contextualized snippets", () => {
                     expectedTemplate = removeApiVersions(expectedTemplate);
                     docTextAfterInsertion = removeApiVersions(docTextAfterInsertion);
 
-                    assert.strictEqual(docTextAfterInsertion, expectedTemplate);
+                    // Compare text without spaces by converting to/from JSON
+                    const expectedNormalized = JSON.stringify(JSON.parse(removeComments(expectedTemplate)), null, 2);
+                    const actualNormalized = JSON.stringify(JSON.parse(removeComments(docTextAfterInsertion)), null, 2);
+
+                    assertEx.strictEqual(actualNormalized, expectedNormalized, "Doc after snippet insertion doesn't match expected");
 
                     // Compare diagnostics
-
                     assertEx.arraysEqual(messages, expectedDiagnostics, {}, "Diagnostics comparison failed");
                 } finally {
                     await tempEditor?.dispose();
@@ -435,12 +439,37 @@ suite("Contextualized snippets", () => {
             );
 
             createContextualizedSnippetTest(
-                "top-level - multiple resources in one snippet",
+                "top-level - multiple resources in one snippet (Ubuntu VM)",
                 "arm-vm-ubuntu",
                 [undefined, '{'],
                 `{
                 "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
                 "contentVersion": "1.0.0.0",
+                "parameters": {
+                    "adminPublicKey": {
+                        "type": "string"
+                    },
+                    "adminUsername": {
+                        "type": "string"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "vmSize": {
+                        "type": "string"
+                    }
+                },
+                "variables": {
+                    "networkInterfaceName": "value",
+                    "networkSecurityGroupName": "value",
+                    "networkSecurityGroupName2": "value",
+                    "publicIPAddressName": "value",
+                    "vNetAddressPrefixes": "value",
+                    "vNetName": "value",
+                    "vNetSubnetAddressPrefix": "value",
+                    "vNetSubnetName": "value",
+                    "vmName": "value"
+                },
                 "resources": [
                     <!cursor!>
                 ]
@@ -448,166 +477,193 @@ suite("Contextualized snippets", () => {
                 `{
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-    "resources": [
-        {
-            "name": "[toLower('ubuntuVM1storage')]",
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "xxxx-xx-xx",
-            "location": "[resourceGroup().location]",
-            "tags": {
-                "displayName": "ubuntuVM1 Storage Account"
-            },
-            "sku": {
-                "name": "Standard_LRS"
-            },
-            "kind": "Storage"
+    "parameters": {
+        "adminPublicKey": {
+            "type": "string"
         },
-        {
-            "name": "ubuntuVM1-PublicIP",
-            "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "xxxx-xx-xx",
-            "location": "[resourceGroup().location]",
-            "tags": {
-                "displayName": "PublicIPAddress"
-            },
-            "properties": {
-                "publicIPAllocationMethod": "Dynamic",
-                "dnsSettings": {
-                    "domainNameLabel": "[toLower('ubuntuVM1')]"
-                }
-            }
+        "adminUsername": {
+            "type": "string"
         },
-        {
-            "name": "ubuntuVM1-nsg",
-            "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "xxxx-xx-xx",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "securityRules": [
-                    {
-                        "name": "nsgRule1",
-                        "properties": {
-                            "description": "description",
-                            "protocol": "Tcp",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "22",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
-                            "priority": 100,
-                            "direction": "Inbound"
-                        }
-                    }
-                ]
-            }
+        "location": {
+            "type": "string"
         },
-        {
-            "name": "ubuntuVM1-VirtualNetwork",
-            "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "xxxx-xx-xx",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', 'ubuntuVM1-nsg')]"
-            ],
-            "tags": {
-                "displayName": "ubuntuVM1-VirtualNetwork"
-            },
-            "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "10.0.0.0/16"
-                    ]
-                },
-                "subnets": [
-                    {
-                        "name": "ubuntuVM1-VirtualNetwork-Subnet",
-                        "properties": {
-                            "addressPrefix": "10.0.0.0/24",
-                            "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'ubuntuVM1-nsg')]"
-                            }
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "name": "ubuntuVM1-NetworkInterface",
-            "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "xxxx-xx-xx",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', 'ubuntuVM1-PublicIP')]",
-                "[resourceId('Microsoft.Network/virtualNetworks', 'ubuntuVM1-VirtualNetwork')]"
-            ],
-            "tags": {
-                "displayName": "ubuntuVM1-NetworkInterface"
-            },
-            "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipConfig1",
-                        "properties": {
-                            "privateIPAllocationMethod": "Dynamic",
-                            "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'ubuntuVM1-PublicIP')]"
-                            },
-                            "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'ubuntuVM1-VirtualNetwork', 'ubuntuVM1-VirtualNetwork-Subnet')]"
-                            }
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "name": "ubuntuVM1",
-            "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "xxxx-xx-xx",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/networkInterfaces', 'ubuntuVM1-NetworkInterface')]"
-            ],
-            "tags": {
-                "displayName": "ubuntuVM1"
-            },
-            "properties": {
-                "hardwareProfile": {
-                    "vmSize": "Standard_A2_v2"
-                },
-                "osProfile": {
-                    "computerName": "ubuntuVM1",
-                    "adminUsername": "adminUsername",
-                    "adminPassword": "adminPassword"
-                },
-                "storageProfile": {
-                    "imageReference": {
-                        "publisher": "Canonical",
-                        "offer": "UbuntuServer",
-                        "sku": "16.04-LTS",
-                        "version": "latest"
-                    },
-                    "osDisk": {
-                        "name": "ubuntuVM1-OSDisk",
-                        "caching": "ReadWrite",
-                        "createOption": "FromImage"
-                    }
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'ubuntuVM1-NetworkInterface')]"
-                        }
-                    ]
-                },
-                "diagnosticsProfile": {
-                    "bootDiagnostics": {
-                        "enabled": true,
-                        "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', toLower('ubuntuVM1storage'))).primaryEndpoints.blob]"
-                    }
-                }
-            }
+        "vmSize": {
+            "type": "string"
         }
+    },
+    "variables": {
+        "networkInterfaceName": "value",
+        "networkSecurityGroupName": "value",
+        "networkSecurityGroupName2": "value",
+        "publicIPAddressName": "value",
+        "vNetAddressPrefixes": "value",
+        "vNetName": "value",
+        "vNetSubnetAddressPrefix": "value",
+        "vNetSubnetName": "value",
+        "vmName": "value"
+    },
+    "resources": [
+      {
+        "type": "Microsoft.Network/networkSecurityGroups",
+        "apiVersion": "2020-05-01",
+        "name": "[variables('networkSecurityGroupName')]",
+        "location": "[parameters('location')]",
+        "properties": {
+          "securityRules": [
+            {
+              "name": "ssh_rule",
+              "properties": {
+                "description": "Locks inbound down to ssh default port 22.",
+                "protocol": "Tcp",
+                "sourcePortRange": "*",
+                "destinationPortRange": "22",
+                "sourceAddressPrefix": "*",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 123,
+                "direction": "Inbound"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "Microsoft.Network/publicIPAddresses",
+        "apiVersion": "2020-05-01",
+        "name": "[variables('publicIPAddressName')]",
+        "location": "[parameters('location')]",
+        "properties": {
+          "publicIPAllocationMethod": "Dynamic"
+        },
+        "sku": {
+          "name": "Basic"
+        }
+      },
+      {
+        "comments": "Simple Network Security Group for subnet [variables('vNetSubnetName')]",
+        "type": "Microsoft.Network/networkSecurityGroups",
+        "apiVersion": "2020-05-01",
+        "name": "[variables('networkSecurityGroupName2')]",
+        "location": "[parameters('location')]",
+        "properties": {
+          "securityRules": [
+            {
+              "name": "default-allow-22",
+              "properties": {
+                "priority": 1000,
+                "access": "Allow",
+                "direction": "Inbound",
+                "destinationPortRange": "22",
+                "protocol": "Tcp",
+                "sourceAddressPrefix": "*",
+                "sourcePortRange": "*",
+                "destinationAddressPrefix": "*"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "Microsoft.Network/virtualNetworks",
+        "apiVersion": "2020-05-01",
+        "name": "[variables('vNetName')]",
+        "location": "[parameters('location')]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName2'))]"
+        ],
+        "properties": {
+          "addressSpace": {
+            "addressPrefixes": [
+              "[variables('vNetAddressPrefixes')]"
+            ]
+          },
+          "subnets": [
+            {
+              "name": "[variables('vNetSubnetName')]",
+              "properties": {
+                "addressPrefix": "[variables('vNetSubnetAddressPrefix')]",
+                "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName2'))]"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "Microsoft.Network/networkInterfaces",
+        "apiVersion": "2020-05-01",
+        "name": "[variables('networkInterfaceName')]",
+        "location": "[parameters('location')]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]",
+          "[resourceId('Microsoft.Network/virtualNetworks', variables('vNetName'))]",
+          "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+        ],
+        "properties": {
+          "ipConfigurations": [
+            {
+              "name": "ipconfig1",
+              "properties": {
+                "privateIPAllocationMethod": "Dynamic",
+                "publicIPAddress": {
+                  "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
+                },
+                "subnet": {
+                  "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vNetName'), variables('vNetSubnetName'))]"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "Microsoft.Compute/virtualMachines",
+        "apiVersion": "2021-11-01",
+        "name": "[variables('vmName')]",
+        "location": "[parameters('location')]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+        ],
+        "properties": {
+          "hardwareProfile": {
+            "vmSize": "[parameters('vmSize')]"
+          },
+          "osProfile": {
+            "computerName": "[variables('vmName')]",
+            "adminUsername": "[parameters('adminUsername')]",
+            "linuxConfiguration": {
+              "disablePasswordAuthentication": true,
+              "ssh": {
+                "publicKeys": [
+                  {
+                    "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+                    "keyData": "[parameters('adminPublicKey')]"
+                  }
+                ]
+              }
+            }
+          },
+          "storageProfile": {
+            "imageReference": {
+              "publisher": "Canonical",
+              "offer": "0001-com-ubuntu-server-jammy",
+              "sku": "22_04-lts-gen2",
+              "version": "latest"
+            },
+            "osDisk": {
+              "createOption": "fromImage"
+            }
+          },
+          "networkProfile": {
+            "networkInterfaces": [
+              {
+                "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+              }
+            ]
+          }
+        }
+      }
     ]
 }`,
                 [
