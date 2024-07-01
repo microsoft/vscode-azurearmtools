@@ -2,12 +2,12 @@ steps:
   # Install nuget for use by 'npm run package'
   - task: NuGetToolInstaller@0
     inputs:
-      versionSpec: "5.2.0"
+      versionSpec: "5.11.6"
 
   - task: NodeTool@0
     displayName: "Install node.js"
     inputs:
-      versionSpec: 18.16.0 
+      versionSpec: 18.16.0
 
   - script: npm install -g npm@8.19.4
     displayName: "Install npm"

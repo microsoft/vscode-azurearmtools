@@ -30,6 +30,7 @@ import { writeToLog } from '../support/testLog';
 import { UseRealSnippets } from '../support/TestSnippets';
 import { RequiresLanguageServer } from '../support/testWithLanguageServer';
 import { testWithPrep } from '../support/testWithPrep';
+import { UseRealFunctionMetadata } from '../TestData';
 
 const resultsFolder = path.join(__dirname, '..', '..', '..', 'test', 'snippets', 'results');
 const expectedFolder = path.join(__dirname, '..', '..', '..', 'test', 'snippets', 'expected');
@@ -252,6 +253,81 @@ const overrideExpectedDiagnostics: { [name: string]: (string | RegExp)[] } = {
         // TODO: fix snippet
         "Template validation failed: The template resource 'route-name' for type 'Microsoft.WindowsAzure.ResourceStack.Frontdoor.Common.Entities.TemplateGenericProperty`1[System.String]' at line '5' and column '{COL}' has incorrect segment lengths. A nested resource type must have identical number of segments as its resource name. A root resource type must have segment length one greater than its resource name. Please see https://aka.ms/arm-template/#resources for usage details."
     ],
+    "Ubuntu Virtual Machine": [
+        "Undefined parameter reference: 'adminPublicKey'",
+        "Undefined parameter reference: 'adminUsername'",
+        "Undefined parameter reference: 'adminUsername'",
+        "Undefined parameter reference: 'vmSize'",
+        "Undefined variable reference: 'networkInterfaceName'",
+        "Undefined variable reference: 'networkInterfaceName'",
+        "Undefined variable reference: 'networkInterfaceName'",
+        "Undefined variable reference: 'networkSecurityGroupName'",
+        "Undefined variable reference: 'networkSecurityGroupName'",
+        "Undefined variable reference: 'networkSecurityGroupName2'",
+        "Undefined variable reference: 'networkSecurityGroupName2'",
+        "Undefined variable reference: 'networkSecurityGroupName2'",
+        "Undefined variable reference: 'publicIPAddressName'",
+        "Undefined variable reference: 'publicIPAddressName'",
+        "Undefined variable reference: 'publicIPAddressName'",
+        "Undefined variable reference: 'vNetAddressPrefixes'",
+        "Undefined variable reference: 'vNetName'",
+        "Undefined variable reference: 'vNetName'",
+        "Undefined variable reference: 'vNetName'",
+        "Undefined variable reference: 'vNetSubnetAddressPrefix'",
+        "Undefined variable reference: 'vNetSubnetName'",
+        "Undefined variable reference: 'vNetSubnetName'",
+        "Undefined variable reference: 'vmName'",
+        "Undefined variable reference: 'vmName'"
+    ],
+    "Virtual Network": [
+        "Template validation failed: The template variable 'networkSecurityGroupName' is not found. Please see https://aka.ms/arm-template/#variables for usage details.",
+        "Undefined variable reference: 'networkSecurityGroupName'",
+        "Undefined variable reference: 'networkSecurityGroupName'",
+        "Undefined variable reference: 'networkSecurityGroupName'",
+    ],
+    "Windows Virtual Machine": [
+        "Undefined parameter reference: 'OSVersion'",
+        "Undefined parameter reference: 'adminPassword'",
+        "Undefined parameter reference: 'adminUsername'",
+        "Undefined parameter reference: 'dnsLabelPrefix'",
+        "Undefined parameter reference: 'publicIPAllocationMethod'",
+        "Undefined parameter reference: 'publicIpName'",
+        "Undefined parameter reference: 'publicIpName'",
+        "Undefined parameter reference: 'publicIpName'",
+        "Undefined parameter reference: 'publicIpSku'",
+        "Undefined parameter reference: 'securityType'",
+        "Undefined parameter reference: 'securityType'",
+        "Undefined parameter reference: 'vmName'",
+        "Undefined parameter reference: 'vmName'",
+        "Undefined parameter reference: 'vmName'",
+        "Undefined parameter reference: 'vmName'",
+        "Undefined parameter reference: 'vmSize'",
+        "Undefined variable reference: 'addressPrefix'",
+        "Undefined variable reference: 'extensionName'",
+        "Undefined variable reference: 'extensionName'",
+        "Undefined variable reference: 'extensionPublisher'",
+        "Undefined variable reference: 'extensionVersion'",
+        "Undefined variable reference: 'maaEndpoint'",
+        "Undefined variable reference: 'maaTenantName'",
+        "Undefined variable reference: 'networkSecurityGroupName'",
+        "Undefined variable reference: 'networkSecurityGroupName'",
+        "Undefined variable reference: 'networkSecurityGroupName'",
+        "Undefined variable reference: 'nicName'",
+        "Undefined variable reference: 'nicName'",
+        "Undefined variable reference: 'nicName'",
+        "Undefined variable reference: 'securityProfileJson'",
+        "Undefined variable reference: 'securityProfileJson'",
+        "Undefined variable reference: 'securityProfileJson'",
+        "Undefined variable reference: 'storageAccountName'",
+        "Undefined variable reference: 'storageAccountName'",
+        "Undefined variable reference: 'storageAccountName'",
+        "Undefined variable reference: 'subnetName'",
+        "Undefined variable reference: 'subnetName'",
+        "Undefined variable reference: 'subnetPrefix'",
+        "Undefined variable reference: 'virtualNetworkName'",
+        "Undefined variable reference: 'virtualNetworkName'",
+        "Undefined variable reference: 'virtualNetworkName'",
+    ],
     "Windows VM Custom Script": [
         // Blocked by https://github.com/Azure/azure-resource-manager-schemas/issues/995
         "Missing required property \"commandToExecute\"",
@@ -296,7 +372,7 @@ suite("Snippets functional tests", () => {
                     for (let i = 0; i < 1; ++i) {
                         testWithPrep(
                             `snippet: ${snippetName}`,
-                            [RequiresLanguageServer.instance, UseRealSnippets.instance],
+                            [RequiresLanguageServer.instance, UseRealSnippets.instance, UseRealFunctionMetadata.instance],
                             async function (this: Context): Promise<void> {
                                 const snippets = (await manager.getAllSnippets());
                                 const snippet = snippets.find(s => s.name === snippetName);
