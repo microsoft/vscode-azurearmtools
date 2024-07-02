@@ -72,6 +72,47 @@
             "maximumArguments": 2
         },
         {
+            "name": "parseCidr",
+            "expectedUsage": "parseCidr(cidrString)",
+            "description": "Parses an IP address range in CIDR notation to get various properties of the address range. Expects a string in CIDR notation containing an IP address range to be converted.",
+            "minimumArguments": 1,
+            "maximumArguments": 1,
+            "returnValueMembers": [
+                {
+                    "name": "network"
+                },
+                {
+                    "name": "netmask"
+                },
+                {
+                    "name": "broadcast"
+                },
+                {
+                    "name": "firstUsable"
+                },
+                {
+                    "name": "lastUsable"
+                },
+                {
+                    "name": "cidr"
+                }
+            ]
+        },
+        {
+            "name": "cidrSubnet",
+            "expectedUsage": "cidrSubnet(network, newCIDR, subnetIndex)",
+            "description": "Splits the specified IP address range in CIDR notation into subnets with a new CIDR value and returns the IP address range of the subnet with the specified index. Returns a string of the IP address range of the subnet with the specified index.",
+            "minimumArguments": 3,
+            "maximumArguments": 3
+        },
+        {
+            "name": "cidrHost",
+            "expectedUsage": "cidrHost(network, hostIndex)",
+            "description": "Calculates the usable IP address of the host with the specified index on the specified IP address range in CIDR notation.",
+            "minimumArguments": 2,
+            "maximumArguments": 2
+        },
+        {
             "name": "copyIndex",
             "expectedUsage": "copyIndex([offset]) or copyIndex(loopName, [offset])",
             "description": "Returns the current index of an iteration loop.\nThis function is always used with a copy object.",
