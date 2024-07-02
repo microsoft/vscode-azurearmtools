@@ -842,13 +842,13 @@
             "maximumArguments": 0,
             "returnValueMembers": [
                 {
-                    "name": "country"
-                },
-                {
                     "name": "countryCode"
                 },
                 {
                     "name": "displayName"
+                },
+                {
+                    "name": "id"
                 },
                 {
                     "name": "tenantId"
