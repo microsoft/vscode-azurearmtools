@@ -3,7 +3,7 @@
 		{
 			"name": "vpnVnetConnection1",
 			"type": "Microsoft.Network/connections",
-			"apiVersion": "2023-04-01",
+			"apiVersion": "2023-11-01",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Network/virtualNetworkGateways', 'vnetGateway1')]",

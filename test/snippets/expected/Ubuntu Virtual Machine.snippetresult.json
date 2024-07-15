@@ -2,7 +2,7 @@
     "resources": [
          {
             "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "2023-11-01",
             "name": "[variables('networkSecurityGroupName')]",
             "location": "[parameters('location')]",
             "properties": {
@@ -26,7 +26,7 @@
          },
          {
             "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "2023-11-01",
             "name": "[variables('publicIPAddressName')]",
             "location": "[parameters('location')]",
             "properties": {
@@ -39,7 +39,7 @@
          {
             "comments": "Simple Network Security Group for subnet [variables('vNetSubnetName')]",
             "type": "Microsoft.Network/networkSecurityGroups",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "2023-11-01",
             "name": "[variables('networkSecurityGroupName2')]",
             "location": "[parameters('location')]",
             "properties": {
@@ -62,7 +62,7 @@
          },
          {
             "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "2023-11-01",
             "name": "[variables('vNetName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
@@ -89,7 +89,7 @@
          },
          {
             "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "2023-11-01",
             "name": "[variables('networkInterfaceName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
@@ -116,7 +116,7 @@
          },
          {
             "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2021-11-01",
+            "apiVersion": "2023-03-01",
             "name": "[variables('vmName')]",
             "location": "[parameters('location')]",
             "dependsOn": [

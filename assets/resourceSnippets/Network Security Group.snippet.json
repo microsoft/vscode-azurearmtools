@@ -9,7 +9,7 @@
 		{
 			"name": "${1:networkSecurityGroup1}",
 			"type": "Microsoft.Network/networkSecurityGroups",
-			"apiVersion": "2023-04-01",
+			"apiVersion": "2023-11-01",
 			"location": "[resourceGroup().location]",
 			"properties": {
 				"securityRules": [

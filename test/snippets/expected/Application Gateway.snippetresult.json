@@ -2,7 +2,7 @@
 	"resources": [
 		{
 			"type": "Microsoft.Network/applicationGateways",
-			"apiVersion": "2023-04-01",
+			"apiVersion": "2023-11-01",
 			"name": "applicationGatewayName",
 			"location": "[resourceGroup().location]",
 			"dependsOn": [

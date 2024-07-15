@@ -3,7 +3,7 @@
 		{
 			"name": "recoveryServiceVault1",
 			"type": "Microsoft.RecoveryServices/vaults",
-			"apiVersion": "2023-04-01",
+			"apiVersion": "2024-02-01",
 			"location": "[resourceGroup().location]",
 			"sku": {
 				"name": "RS0",

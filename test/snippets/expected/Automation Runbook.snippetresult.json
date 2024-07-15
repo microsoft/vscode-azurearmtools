@@ -3,7 +3,7 @@
 		{
 			"name": "[concat('parent', '/', 'automationRunbook1')]",
 			"type": "Microsoft.Automation/automationAccounts/runbooks",
-			"apiVersion": "2022-08-08",
+			"apiVersion": "2023-11-01",
 			"location": "[resourceGroup().location]",
 			"tags": {},
 			"dependsOn": [
